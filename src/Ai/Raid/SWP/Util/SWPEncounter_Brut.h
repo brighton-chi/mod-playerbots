@@ -72,8 +72,6 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     brutallusRangedBurnPadAssignments;
 extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
     brutallusRangedBurnStates;
-extern std::unordered_set<ObjectGuid>
-    brutallusMainTankInitialPositionReached;
 
 float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(

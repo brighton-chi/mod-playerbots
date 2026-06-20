@@ -332,18 +332,15 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     if (!kiljaeden)
         return false;
 
-    auto& darknessStates = GetKiljaedenDarknessShieldStates();
-    KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
-
     // Design choice: End drake control after phase changes
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(
             static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
     {
-        darknessState.inDarkness = false;
-        darknessState.shieldCastThisDarkness = false;
-        darknessState.darknessStartMs = 0;
-        darknessState.lastDarknessCastMsLeft = 0;
+        _inDarkness = false;
+        _shieldCastThisDarkness = false;
+        _darknessStartMs = 0;
+        _lastDarknessCastMsLeft = 0;
 
         if (bot->HasAura(
                 static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
@@ -358,20 +355,20 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
-        if (!darknessState.inDarkness)
+        if (!_inDarkness)
         {
-            darknessState.inDarkness = true;
-            darknessState.shieldCastThisDarkness = false;
-            darknessState.darknessStartMs = getMSTime();
+            _inDarkness = true;
+            _shieldCastThisDarkness = false;
+            _darknessStartMs = getMSTime();
         }
 
         return ExecuteDuringDarknessOfAThousandSouls(kiljaeden);
     }
 
-    darknessState.inDarkness = false;
-    darknessState.shieldCastThisDarkness = false;
-    darknessState.darknessStartMs = 0;
-    darknessState.lastDarknessCastMsLeft = 0;
+    _inDarkness = false;
+    _shieldCastThisDarkness = false;
+    _darknessStartMs = 0;
+    _lastDarknessCastMsLeft = 0;
 
     return ExecuteOutsideDarknessOfAThousandSouls(kiljaeden);
 }
@@ -417,15 +414,13 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
     }
 
     const uint32 darknessCastTimeLeft = darknessSpell->GetCastTimeRemaining();
-    auto& darknessStates = GetKiljaedenDarknessShieldStates();
-    KiljaedenDarknessShieldState& darknessState = darknessStates[bot->GetGUID().GetCounter()];
-    bool const darknessCastReset = darknessState.lastDarknessCastMsLeft > 0 &&
-        darknessCastTimeLeft > darknessState.lastDarknessCastMsLeft + 250;
-    if (!darknessState.inDarkness || darknessCastReset)
+    bool const darknessCastReset = _lastDarknessCastMsLeft > 0 &&
+        darknessCastTimeLeft > _lastDarknessCastMsLeft + 250;
+    if (!_inDarkness || darknessCastReset)
     {
-        darknessState.inDarkness = true;
-        darknessState.shieldCastThisDarkness = false;
-        darknessState.darknessStartMs = getMSTime();
+        _inDarkness = true;
+        _shieldCastThisDarkness = false;
+        _darknessStartMs = getMSTime();
     }
 
     // const uint32 darknessElapsedMs = getMSTimeDiff(darknessState.darknessStartMs, getMSTime());
@@ -434,33 +429,33 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         if (CastKiljaedenDragonSpell(
                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
         {
-            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+            _lastDarknessCastMsLeft = darknessCastTimeLeft;
             return true;
         }
 
         if (CastKiljaedenDragonSpell(
                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
         {
-            darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+            _lastDarknessCastMsLeft = darknessCastTimeLeft;
             return true;
         }
     }
 
     // constexpr uint32 minDarknessElapsedBeforeShieldMs = 3000;
-    if (!darknessState.shieldCastThisDarkness &&
+    if (!_shieldCastThisDarkness &&
         darknessCastTimeLeft < 4500 /* &&
         darknessElapsedMs >= minDarknessElapsedBeforeShieldMs */)
     {
         bool const castedShield = CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
         if (castedShield)
-            darknessState.shieldCastThisDarkness = true;
+            _shieldCastThisDarkness = true;
 
-        darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+        _lastDarknessCastMsLeft = darknessCastTimeLeft;
         return castedShield;
     }
 
-    darknessState.lastDarknessCastMsLeft = darknessCastTimeLeft;
+    _lastDarknessCastMsLeft = darknessCastTimeLeft;
 
     return false;
 }

@@ -147,7 +147,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return Attack(alythess);
 
     const ObjectGuid guid = bot->GetGUID();
-    uint8 index = alythessTankStep.count(guid) ? alythessTankStep[guid] : 0;
+    uint8 index = _alythessTankStep;
     if (index >= ALYTHESS_TANK_POSITION_COUNT)
         index = 0;
 
@@ -177,7 +177,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             return false;
 
         index = safeIndex;
-        alythessTankStep[guid] = index;
+        _alythessTankStep = index;
     }
 
     const Position position = GetAlythessTankPosition(alythess, index);
@@ -195,7 +195,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
                 return false;
 
             index = safeIndex;
-            alythessTankStep[guid] = index;
+            _alythessTankStep = index;
             const Position newPosition = GetAlythessTankPosition(alythess, index);
             const float newDistToPosition = bot->GetExactDist2d(newPosition);
             if (newDistToPosition > maxDistance)

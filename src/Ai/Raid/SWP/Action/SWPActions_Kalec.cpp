@@ -25,7 +25,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     // If the fight just started, taunt (if needed) before moving
     if (kalecgos->GetVictim() != bot && kalecgos->GetHealthPct() > 90.0f)
         return botAI->DoSpecificAction("taunt spell", event, true);
-    
+
     const Position& position = KALECGOS_TANK_POSITION;
     const float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -99,15 +99,14 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 // Kalecgos' Combat Reach is 10.5f
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
-    if (hasReachedKalecgosInitialRangedPosition.find(bot->GetGUID()) ==
-        hasReachedKalecgosInitialRangedPosition.end())
+    if (!_initialRangedPositionReached)
     {
         const Position& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
         constexpr float initialRangedRadius = 10.0f;
         if (bot->GetExactDist2d(initialPos.GetPositionX(), initialPos.GetPositionY()) <=
             initialRangedRadius)
         {
-            SetKalecgosInitialRangedPositionReached(bot, true);
+            _initialRangedPositionReached = true;
             return false;
         }
 

@@ -56,13 +56,11 @@ extern const Position KALECGOS_INITIAL_RANGED_POSITION;
 
 extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
-extern std::unordered_set<ObjectGuid> hasReachedKalecgosInitialRangedPosition;
 
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
 void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
 Player* GetKalecgosReplacementTank(PlayerbotAI* botAI, Player* bot);
-void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached);
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
 bool IsInKalecgosSpectralRealm(Player* bot);
 bool IsKalecgosRealmTransitionGraceActive(Player* bot);

@@ -25,9 +25,6 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
     brutallusRangedBurnStates;
 
-std::unordered_set<ObjectGuid>
-    brutallusMainTankInitialPositionReached;
-
 float GetBrutallusMainTankAngle(Unit* brutallus)
 {
     if (!brutallus)

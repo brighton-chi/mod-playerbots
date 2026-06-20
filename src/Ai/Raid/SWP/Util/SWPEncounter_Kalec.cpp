@@ -26,8 +26,6 @@ std::unordered_map<uint32, KalecgosEncounterState>
     kalecgosEncounterStates;
 std::unordered_map<ObjectGuid, KalecgosRealmState>
     kalecgosRealmStates;
-std::unordered_set<ObjectGuid>
-    hasReachedKalecgosInitialRangedPosition;
 
 namespace
 {
@@ -734,17 +732,6 @@ void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot)
         state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
 }
 
-void SetKalecgosInitialRangedPositionReached(Player* bot, bool reached)
-{
-    if (bot->GetMapId() != SUNWELL_MAP_ID)
-        return;
-
-    if (reached)
-        hasReachedKalecgosInitialRangedPosition.insert(bot->GetGUID());
-    else
-        hasReachedKalecgosInitialRangedPosition.erase(bot->GetGUID());
-}
-
 Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -857,8 +844,6 @@ void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestam
         realmState.lastEnterMs = timestamp;
     else
         realmState.lastExitMs = timestamp;
-
-    SetKalecgosInitialRangedPositionReached(bot, false);
 }
 
 void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)

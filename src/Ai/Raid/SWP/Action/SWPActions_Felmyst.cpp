@@ -236,7 +236,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
     {
-        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        _fogCrateStuckSampleMs = 0;
         return false;
     }
 
@@ -249,7 +249,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)
     {
-        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        _fogCrateStuckSampleMs = 0;
         return false;
     }
 
@@ -259,7 +259,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
             bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
             destinations, destinationCount))
     {
-        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        _fogCrateStuckSampleMs = 0;
         return false;
     }
 
@@ -286,7 +286,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     }
 
     if (!trackedDestinationFound)
-        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        _fogCrateStuckSampleMs = 0;
 
     if (shouldRepositionAfterThirdPass)
     {
@@ -339,7 +339,7 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
             FELMYST_STUCK_CRATE_POSITION.GetPositionY()) >
         crateCollisionCheckDistance)
     {
-        felmystFogCrateStuckStates.erase(bot->GetGUID());
+        _fogCrateStuckSampleMs = 0;
         return false;
     }
 
@@ -348,33 +348,28 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
         destination.GetPositionX(), destination.GetPositionY(),
         destination.GetPositionZ());
 
-    FelmystFogCrateStuckState& state =
-        felmystFogCrateStuckStates[bot->GetGUID()];
-
-    if (!state.sampleMs ||
-        state.destination.GetExactDist(destination) >
+    if (!_fogCrateStuckSampleMs ||
+        _fogCrateStuckDestination.GetExactDist(destination) >
             FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
     {
-        state.destination = destination;
-        state.nearestDestinationDistance = distanceToDestination;
-        state.sampleMs = now;
+        _fogCrateStuckDestination = destination;
+        _fogCrateStuckNearestDistance = distanceToDestination;
+        _fogCrateStuckSampleMs = now;
         return false;
     }
 
     if (distanceToDestination + progressResetDistance <
-        state.nearestDestinationDistance)
+        _fogCrateStuckNearestDistance)
     {
-        state.nearestDestinationDistance = distanceToDestination;
-        state.sampleMs = now;
+        _fogCrateStuckNearestDistance = distanceToDestination;
+        _fogCrateStuckSampleMs = now;
         return false;
     }
 
-    if (getMSTimeDiff(state.sampleMs, now) < stuckTimeoutMs)
+    if (getMSTimeDiff(_fogCrateStuckSampleMs, now) < stuckTimeoutMs)
         return false;
 
-    felmystFogCrateStuckStates.erase(bot->GetGUID());
-    // bot->RemoveAurasWithInterruptFlags(
-    //     AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+    _fogCrateStuckSampleMs = 0;
     botAI->InterruptSpell();
     return bot->TeleportTo(
         SUNWELL_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),

@@ -64,8 +64,6 @@ extern std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
 
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-    GetKiljaedenDarknessShieldStates();
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);

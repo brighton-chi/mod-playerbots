@@ -37,7 +37,6 @@ extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
 extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
 extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
-extern std::unordered_map<ObjectGuid, uint8> alythessTankStep;
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 

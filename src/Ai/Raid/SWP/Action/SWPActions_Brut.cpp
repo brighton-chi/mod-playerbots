@@ -58,9 +58,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         assistTank->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
 
     constexpr float tankPositionTolerance = 2.0f;
-    const bool hasReachedInitialMainTankPosition = mainTank == bot &&
-        brutallusMainTankInitialPositionReached.find(bot->GetGUID()) !=
-            brutallusMainTankInitialPositionReached.end();
+    const bool hasReachedInitialMainTankPosition =
+        mainTank == bot && _mainTankInitialPositionReached;
 
     if (mainTank == bot)
     {
@@ -76,7 +75,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         if (!hasReachedInitialMainTankPosition &&
             distToPosition <= tankPositionTolerance)
         {
-            brutallusMainTankInitialPositionReached.insert(bot->GetGUID());
+            _mainTankInitialPositionReached = true;
         }
 
         if (brutallus->GetVictim() == bot &&

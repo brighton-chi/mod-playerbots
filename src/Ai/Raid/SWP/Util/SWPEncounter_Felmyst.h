@@ -115,8 +115,6 @@ extern std::unordered_map<uint32, bool>
     felmystEncapsulateOccurredThisGroundPhase;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
-extern std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
-    felmystFogCrateStuckStates;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void RecordFelmystIncomingEncapsulateTarget(

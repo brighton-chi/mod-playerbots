@@ -24,24 +24,18 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetInstanceId();
     const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
-    const bool isRanged = botAI->IsRanged(bot);
 
     bool erased = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor") &&
+        !IsKalecgosRealmTransitionGraceActive(bot))
     {
-        if (isRanged && hasReachedKalecgosInitialRangedPosition.erase(guid) > 0)
+        if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
             erased = true;
 
-        if (!AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor") &&
-            !IsKalecgosRealmTransitionGraceActive(bot))
-        {
-            if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
-                erased = true;
-
-            if (kalecgosRealmStates.erase(guid) > 0)
-                erased = true;
-        }
+        if (kalecgosRealmStates.erase(guid) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
@@ -52,13 +46,10 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         }
 
-        if (isRanged && brutallusRangedBurnStates.erase(guid) > 0)
+        if (botAI->IsRanged(bot) && brutallusRangedBurnStates.erase(guid) > 0)
             erased = true;
 
-        if (isRanged && ReleaseBrutallusBurnPad(bot))
-            erased = true;
-
-        if (brutallusMainTankInitialPositionReached.erase(guid) > 0)
+        if (botAI->IsRanged(bot) && ReleaseBrutallusBurnPad(bot))
             erased = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
@@ -71,34 +62,28 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         }
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
     {
-        if (felmystFogCrateStuckStates.erase(guid) > 0)
+        if (felmystRangedAssignments.erase(instanceId) > 0)
             erased = true;
 
-        if (isMechanicTracker)
-        {
-            if (felmystRangedAssignments.erase(instanceId) > 0)
-                erased = true;
+        if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
+            erased = true;
 
-            if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
-                erased = true;
+        if (felmystEncapsulateOccurredThisGroundPhase.erase(instanceId) > 0)
+            erased = true;
 
-            if (felmystEncapsulateOccurredThisGroundPhase.erase(instanceId) > 0)
-                erased = true;
+        if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
+            erased = true;
 
-            if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
-                erased = true;
+        if (felmystFogPassStates.erase(instanceId) > 0)
+            erased = true;
 
-            if (felmystFogPassStates.erase(instanceId) > 0)
-                erased = true;
+        if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
+            erased = true;
 
-            if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
-                erased = true;
-
-            if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
-                erased = true;
-        }
+        if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
@@ -108,9 +93,6 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
             erased = true;
         }
-
-        if (botAI->IsTank(bot) && alythessTankStep.erase(guid) > 0)
-            erased = true;
 
         if (isMechanicTracker &&
             eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
@@ -128,9 +110,6 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (muruVoidSentinelTankAssignments.erase(instanceId) > 0)
             erased = true;
-
-        if (muruEntropiusInitialRangedPositionsReached.erase(guid) > 0)
-            erased = true;
     }
 
     if (isMechanicTracker &&
@@ -139,8 +118,11 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
 
-        if (isRanged && kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
+        if (botAI->IsRanged(bot) &&
+            kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
+        {
             erased = true;
+        }
     }
 
     if (isMechanicTracker &&

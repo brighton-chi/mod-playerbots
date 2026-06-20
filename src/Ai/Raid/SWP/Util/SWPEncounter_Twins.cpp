@@ -99,7 +99,6 @@ const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.
 // const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1814.337f, 607.771f, 33.404f };
 const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 
-std::unordered_map<ObjectGuid, uint8> alythessTankStep;
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
     eredarTwinsIncomingConflagrationStates;
 

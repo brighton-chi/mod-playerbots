@@ -138,9 +138,6 @@ std::unordered_map<uint32, bool>
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
 
-std::unordered_map<ObjectGuid, FelmystFogCrateStuckState>
-    felmystFogCrateStuckStates;
-
 namespace
 {
 

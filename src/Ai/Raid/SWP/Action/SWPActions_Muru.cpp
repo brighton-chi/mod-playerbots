@@ -64,7 +64,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (muru && muru->GetHealth() > 1)
     {
-        SetEntropiusInitialRangedPositionReached(false);
+        _entropiusInitialRangedPositionReached = false;
 
         const Position& position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 2.0f;
@@ -93,9 +93,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         !targets.voidSentinels.empty() || hasActiveNonControlledVoidSpawns ||
         !targets.furyMages.empty() || !targets.berserkers.empty();
 
-    const bool hasReachedInitialPosition =
-        muruEntropiusInitialRangedPositionsReached.find(bot->GetGUID()) !=
-        muruEntropiusInitialRangedPositionsReached.end();
+    const bool hasReachedInitialPosition = _entropiusInitialRangedPositionReached;
 
     if (!hasReachedInitialPosition && TryGetMuruDarknessActiveState(bot, muru))
         return false;
@@ -109,7 +107,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         constexpr float arrivalDistance = 2.0f;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= arrivalDistance)
         {
-            SetEntropiusInitialRangedPositionReached(true);
+            _entropiusInitialRangedPositionReached = true;
             return false;
         }
 
@@ -124,18 +122,6 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
-}
-
-void MuruPositionRangedAction::SetEntropiusInitialRangedPositionReached(bool reached)
-{
-    const ObjectGuid guid = bot->GetGUID();
-    if (reached)
-    {
-        muruEntropiusInitialRangedPositionsReached.insert(guid);
-        return;
-    }
-
-    muruEntropiusInitialRangedPositionsReached.erase(guid);
 }
 
 bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(

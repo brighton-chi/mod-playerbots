@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_SWPACTIONS_H
 #define _PLAYERBOT_SWPACTIONS_H
 
+#include <limits>
 #include <vector>
 
 #include "Action.h"
@@ -64,6 +65,9 @@ public:
     KalecgosDisperseRangedAction(
         PlayerbotAI* botAI, std::string const name = "kalecgos disperse ranged") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool _initialRangedPositionReached = false;
 };
 
 class KalecgosRemoveArcaneBuffetAction : public Action
@@ -106,6 +110,9 @@ public:
     BrutallusTanksHandleBossAction(
         PlayerbotAI* botAI, std::string const name = "brutallus tanks handle boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool _mainTankInitialPositionReached = false;
 };
 
 class BrutallusPositionMeleeAction : public MovementAction
@@ -217,6 +224,9 @@ public:
     bool Execute(Event event) override;
 
 private:
+    Position _fogCrateStuckDestination;
+    float _fogCrateStuckNearestDistance = std::numeric_limits<float>::max();
+    uint32 _fogCrateStuckSampleMs = 0;
     bool TryTeleportStuckBotOntoCrate(Position const& destination);
 };
 
@@ -260,6 +270,9 @@ public:
     EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
         PlayerbotAI* botAI, std::string const name = "eredar twins first assist tank move out of blaze") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    uint8 _alythessTankStep = 0;
 };
 
 class EredarTwinsPositionRangedAction : public MovementAction
@@ -328,7 +341,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    void SetEntropiusInitialRangedPositionReached(bool reached);
+    bool _entropiusInitialRangedPositionReached = false;
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
@@ -535,6 +548,10 @@ public:
     bool Execute(Event event) override;
 
 private:
+    bool _inDarkness = false;
+    bool _shieldCastThisDarkness = false;
+    uint32 _darknessStartMs = 0;
+    uint32 _lastDarknessCastMsLeft = 0;
     bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden);
     bool ExecuteOutsideDarknessOfAThousandSouls(Unit* kiljaeden);
 };

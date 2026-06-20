@@ -20,8 +20,6 @@ namespace
 {
 
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>
-    kiljaedenDarknessShieldStates;
 
 float GetCenteredArcSlotAngleOffset(
     uint8 slotIndex, uint8 slotCount, float arcWidth)
@@ -165,12 +163,6 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     kiljaedenRangedArmageddonAssignments;
-
-std::unordered_map<ObjectGuid::LowType, KiljaedenDarknessShieldState>&
-    GetKiljaedenDarknessShieldStates()
-{
-    return kiljaedenDarknessShieldStates;
-}
 
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {
