@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPACTIONS_H
-#define _PLAYERBOT_SWPACTIONS_H
+#ifndef PLAYERBOTS_SWPACTIONS_H
+#define PLAYERBOTS_SWPACTIONS_H
 
 #include <limits>
 #include <vector>

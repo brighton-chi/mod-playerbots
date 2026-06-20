@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPACTIONCONTEXT_H
-#define _PLAYERBOT_SWPACTIONCONTEXT_H
+#ifndef PLAYERBOTS_SWPACTIONCONTEXT_H
+#define PLAYERBOTS_SWPACTIONCONTEXT_H
 
 #include "SWPActions.h"
 #include "NamedObjectContext.h"

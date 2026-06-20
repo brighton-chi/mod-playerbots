@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPTRIGGERCONTEXT_H
-#define _PLAYERBOT_SWPTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_SWPTRIGGERCONTEXT_H
+#define PLAYERBOTS_SWPTRIGGERCONTEXT_H
 
 #include "SWPTriggers.h"
 #include "NamedObjectContext.h"
