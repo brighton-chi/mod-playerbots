@@ -23,7 +23,7 @@ public:
     FindTargetStrategy(PlayerbotAI* botAI) : result(nullptr), botAI(botAI) {}
 
     Unit* GetResult();
-    virtual TargetValueExclusionType GetExclusionType() const;
+    virtual TargetValueExclusionType GetExclusionType();
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) = 0;
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
     bool IsHighPriority(Unit* attacker);
@@ -132,7 +132,7 @@ public:
 class FindTargetValue : public UnitCalculatedValue, public Qualified
 {
 public:
-    FindTargetValue(PlayerbotAI* ai) : UnitCalculatedValue(ai, "find target", /*2 * 1000*/ 1) {}
+    FindTargetValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "find target", /*2 * 1000*/ 1) {}
 
 public:
     Unit* Calculate();
@@ -141,14 +141,14 @@ public:
 class FindBossTargetStrategy : public FindTargetStrategy
 {
 public:
-    FindBossTargetStrategy(PlayerbotAI* ai) : FindTargetStrategy(ai) {}
+    FindBossTargetStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatManager);
 };
 
 class BossTargetValue : public TargetValue, public Qualified
 {
 public:
-    BossTargetValue(PlayerbotAI* ai) : TargetValue(ai, "boss target", 2 * 1000) {}
+    BossTargetValue(PlayerbotAI* botAI) : TargetValue(botAI, "boss target", 2 * 1000) {}
 
 public:
     Unit* Calculate();
