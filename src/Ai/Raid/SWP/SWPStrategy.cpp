@@ -20,7 +20,6 @@ using namespace SunwellHelpers;
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Player* bot = botAI->GetBot();
-
     if (!botAI->IsMelee(bot))
         return;
 
@@ -39,18 +38,16 @@ void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions
 
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* muru = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get();
-    Unit* entropius = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "entropius")->Get();
-    if (!muru && !entropius)
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "m'uru")->Get() &&
+        !botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "entropius")->Get())
+    {
         return;
+    }
 
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker)
-            continue;
-
-        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
             exclusions.insert(guid);
     }
 }
@@ -66,10 +63,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker)
-            continue;
-
-        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
+        if (!attacker || attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
             continue;
 
         if (guid == muru->GetGUID())
@@ -79,7 +73,6 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         }
 
         Player* bot = botAI->GetBot();
-
         if (botAI->IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
             continue;
 
@@ -93,19 +86,16 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()))
+    if (!botAI->IsMelee(botAI->GetBot()) ||
+        !botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
+    {
         return;
-
-    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-        return;
+    }
 
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker)
-            continue;
-
-        if (attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
             exclusions.insert(guid);
     }
 }
@@ -118,10 +108,7 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker)
-            continue;
-
-        if (attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+        if (!attacker || attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
             continue;
 
         Unit* victim = attacker->GetVictim();
