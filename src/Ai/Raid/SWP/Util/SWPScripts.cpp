@@ -60,7 +60,8 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
     if (!referencePlayer)
         return nullptr;
 
-    if (!IsInKalecgosSpectralRealm(referencePlayer))
+    if (!referencePlayer->HasAura(
+            static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
     {
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
             botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
@@ -78,7 +79,8 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
         Player* member = ref->GetSource();
         if (!member || member == referencePlayer ||
             member->GetMapId() != referencePlayer->GetMapId() ||
-            IsInKalecgosSpectralRealm(member))
+            member->HasAura(
+                static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
         {
             continue;
         }
