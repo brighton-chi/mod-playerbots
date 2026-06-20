@@ -813,28 +813,6 @@ bool IsInKalecgosSpectralRealm(Player* bot)
     return realmStateItr->second.inSpectralRealm;
 }
 
-bool IsKalecgosRealmTransitionGraceActive(Player* bot)
-{
-    if (bot->GetMapId() != SUNWELL_MAP_ID ||
-        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
-    {
-        return false;
-    }
-
-    auto const realmStateItr = kalecgosRealmStates.find(bot->GetGUID());
-    if (realmStateItr == kalecgosRealmStates.end())
-        return false;
-
-    const uint32 now = getMSTime();
-    constexpr uint32 realmTransitionGraceMs = 2000;
-    const KalecgosRealmState& realmState = realmStateItr->second;
-
-    return (realmState.lastEnterMs &&
-            getMSTimeDiff(realmState.lastEnterMs, now) < realmTransitionGraceMs) ||
-            (realmState.lastExitMs &&
-            getMSTimeDiff(realmState.lastExitMs, now) < realmTransitionGraceMs);
-}
-
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
 {
     KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];

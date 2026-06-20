@@ -58,46 +58,33 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         assistTank->GetAura(static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
 
     constexpr float tankPositionTolerance = 2.0f;
-    const bool hasReachedInitialMainTankPosition =
-        mainTank == bot && _mainTankInitialPositionReached;
 
     if (mainTank == bot)
     {
+        if (brutallus->GetVictim() != bot && !mainTankAura &&
+            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) ||
+             !assistTankAura))
+        {
+            return botAI->DoSpecificAction("taunt spell", event, true);
+        }
+
         const Position position = {
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(),
             bot->GetPositionZ()
         };
 
-        const float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
-        if (!hasReachedInitialMainTankPosition &&
-            distToPosition <= tankPositionTolerance)
+        if (_mainTankInitialPositionReached == false &&
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <=
+            tankPositionTolerance)
         {
             _mainTankInitialPositionReached = true;
         }
-
-        if (brutallus->GetVictim() == bot &&
-            (hasReachedInitialMainTankPosition ||
-             distToPosition <= tankPositionTolerance))
-        {
-            return false;
-        }
-
-        if (!hasReachedInitialMainTankPosition &&
-            distToPosition > tankPositionTolerance)
+        else if (_mainTankInitialPositionReached == false)
         {
             return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-
-        if (!mainTankAura &&
-            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) ||
-             !assistTankAura))
-        {
-            return botAI->DoSpecificAction("taunt spell", event, true);
         }
     }
     else
@@ -115,25 +102,20 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         const Position position = GetBrutallusPositionAtAngle(
             brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS, bot->GetPositionZ());
 
-        const float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
-        if (distToPosition > tankPositionTolerance)
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) >
+            tankPositionTolerance)
         {
             return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           position.GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
-        if ((!assistTankAura &&
-            ((mainTankAura && mainTankAura->GetStackAmount() >= 3) ||
-             !mainTankAura)))
+        if (!assistTankAura && mainTankAura &&
+            mainTankAura->GetStackAmount() >= 3)
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
     }
-
-    return false;
 }
 
 bool BrutallusPositionMeleeAction::Execute(Event /*event*/)

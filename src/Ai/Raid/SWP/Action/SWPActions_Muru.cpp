@@ -908,11 +908,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(
     }
 
     std::array<Unit*, 5> priorities = {
-        furyMage,
-        berserker,
-        voidSentinel,
-        validMuru,
-        targets.entropius
+        furyMage, berserker, voidSentinel, validMuru, targets.entropius
     };
 
     for (Unit* target : priorities)

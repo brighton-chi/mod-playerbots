@@ -5,17 +5,17 @@
 
 #include <list>
 
-#include "CreatureAI.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SWPActions.h"
-#include "SWPEncounter_Brut.h"
 #include "SWPData.h"
-#include "SWPEncounter_Twins.h"
+#include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
+#include "SWPEncounter_Twins.h"
+#include "CreatureAI.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
 
@@ -28,8 +28,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     bool erased = false;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor") &&
-        !IsKalecgosRealmTransitionGraceActive(bot))
+        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
         if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
             erased = true;

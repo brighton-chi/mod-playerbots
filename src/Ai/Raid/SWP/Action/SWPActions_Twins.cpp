@@ -282,21 +282,17 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2RangedStackPosition(alythess) :
         GetEredarTwinsP2MeleeStackPosition(alythess);
 
-    const float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
-    if (distToPosition > 0.5f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 0.5f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (botAI->IsTank(bot))
+    if (alythess && botAI->IsTank(bot) &&
+        AI_VALUE(Unit*, "current target") != alythess)
     {
-        Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        if (alythess && AI_VALUE(Unit*, "current target") != alythess)
-            return Attack(alythess);
+        return Attack(alythess);
     }
 
     return false;
@@ -325,11 +321,8 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-
-    if (sacrolash)
-        SetRtiTarget(botAI, "star", sacrolash);
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
 
     if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
     {
@@ -347,6 +340,8 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
     if (sacrolash)
     {
+        SetRtiTarget(botAI, "star", sacrolash);
+
         if (AI_VALUE(Unit*, "current target") != sacrolash)
             return Attack(sacrolash);
 
@@ -373,8 +368,6 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
         if (AI_VALUE(Unit*, "current target") != alythess)
             return Attack(alythess);
-
-        return false;
     }
 
     return false;

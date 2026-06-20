@@ -3,16 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <list>
-#include <unordered_map>
-
 #include "SWPTriggers.h"
 #include "SWPEncounter_Brut.h"
-#include "SWPEncounter_Twins.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
+#include "SWPEncounter_Twins.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -877,7 +874,6 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
 
-    // constexpr float orbInUsePendingDistance = 15.0f;
     constexpr uint32 orbUseGracePeriodMs = 2000;
 
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
@@ -887,16 +883,6 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     {
         return false;
     }
-
-    /* for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
-    {
-        GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
-        if (orb && orb->HasGameObjectFlag(GO_FLAG_IN_USE) &&
-            bot->GetExactDist2d(orb) <= orbInUsePendingDistance)
-        {
-            return false;
-        }
-    } */
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }
