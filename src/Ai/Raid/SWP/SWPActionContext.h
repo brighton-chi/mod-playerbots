@@ -18,6 +18,9 @@ public:
         creators["sunwell plateau erase timers and trackers"] =
             &RaidSunwellActionContext::sunwell_plateau_erase_timers_and_trackers;
 
+        creators["sunwell plateau remove protective aura"] =
+            &RaidSunwellActionContext::sunwell_plateau_remove_protective_aura;
+
         // Trash
         creators["volatile fiend keep enemy away from group"] =
             &RaidSunwellActionContext::volatile_fiend_keep_enemy_away_from_group;
@@ -204,6 +207,10 @@ private:
     // General
     static Action* sunwell_plateau_erase_timers_and_trackers(PlayerbotAI* botAI) {
         return new SunwellPlateauEraseTimersAndTrackersAction(botAI);
+    }
+
+    static Action* sunwell_plateau_remove_protective_aura(PlayerbotAI* botAI) {
+        return new SunwellPlateauRemoveProtectiveAuraAction(botAI);
     }
 
     // Trash

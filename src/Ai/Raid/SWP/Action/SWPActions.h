@@ -23,6 +23,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class SunwellPlateauRemoveProtectiveAuraAction : public Action
+{
+public:
+    SunwellPlateauRemoveProtectiveAuraAction(
+        PlayerbotAI* botAI, std::string const name = "sunwell plateau remove protective aura") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction

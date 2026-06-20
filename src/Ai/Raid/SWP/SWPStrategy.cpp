@@ -148,6 +148,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
         NextAction("sunwell plateau erase timers and trackers", ACTION_EMERGENCY + 11) }));
 
+    triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {
+        NextAction("sunwell plateau remove protective aura", ACTION_RAID) }));
+
     // Trash
     triggers.push_back(new TriggerNode("volatile fiend self destructs when near", {
         NextAction("volatile fiend keep enemy away from group", ACTION_EMERGENCY + 1) }));

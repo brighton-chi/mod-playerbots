@@ -64,6 +64,12 @@ enum class SunwellSpells : uint32
     // Hunter
     SPELL_MISDIRECTION                 = 35079,
 
+    // Mage
+    SPELL_ICE_BLOCK                    = 45438,
+
+    // Paladin
+    SPELL_DIVINE_SHIELD                = 642,
+
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
 

@@ -133,6 +133,22 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
     return erased;
 }
 
+bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_MAGE)
+    {
+        return bot->RemoveAurasByType(
+            static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        return bot->RemoveAurasByType(
+            static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+    }
+
+    return false;
+}
+
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 25.0f;

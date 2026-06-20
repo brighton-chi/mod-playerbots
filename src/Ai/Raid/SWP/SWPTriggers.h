@@ -18,6 +18,14 @@ public:
     bool IsActive() override;
 };
 
+class SunwellPlateauBotHasProtectiveAuraTrigger : public Trigger
+{
+public:
+    SunwellPlateauBotHasProtectiveAuraTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "sunwell plateau bot has protective aura") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class VolatileFiendSelfDestructsWhenNearTrigger : public Trigger

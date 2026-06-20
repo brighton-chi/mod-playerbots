@@ -18,6 +18,9 @@ public:
         creators["sunwell plateau bot is not in combat"] =
             &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
 
+        creators["sunwell plateau bot has protective aura"] =
+            &RaidSunwellTriggerContext::sunwell_plateau_bot_has_protective_aura;
+
         // Trash
         creators["volatile fiend self destructs when near"] =
             &RaidSunwellTriggerContext::volatile_fiend_self_destructs_when_near;
@@ -204,6 +207,10 @@ private:
     // General
     static Trigger* sunwell_plateau_bot_is_not_in_combat(PlayerbotAI* botAI) {
         return new SunwellPlateauBotIsNotInCombatTrigger(botAI);
+    }
+
+    static Trigger* sunwell_plateau_bot_has_protective_aura(PlayerbotAI* botAI) {
+        return new SunwellPlateauBotHasProtectiveAuraTrigger(botAI);
     }
 
     // Trash
