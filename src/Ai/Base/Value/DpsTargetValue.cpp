@@ -14,7 +14,7 @@ class DpsFindTargetStrategy : public FindTargetStrategy
 public:
     DpsFindTargetStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
 
-    TargetValueExclusionType GetExclusionType() const override { return TargetValueExclusionType::Dps; }
+    TargetValueExclusionType GetExclusionType() override { return TargetValueExclusionType::Dps; }
 };
 
 class FindMaxThreatGapTargetStrategy : public DpsFindTargetStrategy

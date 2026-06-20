@@ -132,7 +132,7 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
 
 }
 
-void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) const
+void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
     AppendFelmystVaporPhaseMeleeExclusions(botAI, exclusions);
     AppendMuruDarkFiendExclusions(botAI, exclusions);

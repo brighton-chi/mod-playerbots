@@ -74,6 +74,7 @@ public:
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
     virtual void AppendTargetExclusions([[maybe_unused]] GuidSet& exclusions,
                                         [[maybe_unused]] TargetValueExclusionType type) {}
+    virtual bool HasTargetExclusions() const { return false; }
     virtual std::string const getName() = 0;
     virtual uint32 GetType() const { return STRATEGY_TYPE_GENERIC; }
     virtual ActionNode* GetAction(std::string const name);

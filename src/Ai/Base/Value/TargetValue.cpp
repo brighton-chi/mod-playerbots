@@ -17,7 +17,7 @@
 GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type)
 {
     GuidSet exclusions;
-    if (!botAI || type == TargetValueExclusionType::None)
+    if (!botAI || type == TargetValueExclusionType::None || !botAI->HasTargetExclusions())
         return exclusions;
 
     for (auto const& strategyName : botAI->GetStrategies(BOT_STATE_COMBAT))
@@ -34,7 +34,7 @@ GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionT
 
 Unit* FindTargetStrategy::GetResult() { return result; }
 
-TargetValueExclusionType FindTargetStrategy::GetExclusionType() const { return TargetValueExclusionType::None; }
+TargetValueExclusionType FindTargetStrategy::GetExclusionType() { return TargetValueExclusionType::None; }
 
 Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 {

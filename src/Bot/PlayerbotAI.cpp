@@ -1769,6 +1769,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     }
 }
 
+bool PlayerbotAI::HasTargetExclusions() const
+{
+    return engines[BOT_STATE_COMBAT] && engines[BOT_STATE_COMBAT]->HasTargetExclusions();
+}
+
 bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool silent, std::string const qualifier)
 {
     std::ostringstream out;
