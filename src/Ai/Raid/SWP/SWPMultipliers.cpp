@@ -617,7 +617,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (IsEredarTwinsConflagrationTarget(alythess, bot) &&
+    if (IsEredarTwinsConflagrationTarget(bot) &&
         (dynamic_cast<CastReachTargetSpellAction*>(action) ||
          (dynamic_cast<MovementAction*>(action) &&
           !dynamic_cast<EredarTwinsConflagratedBotMoveFromGroupAction*>(action))))

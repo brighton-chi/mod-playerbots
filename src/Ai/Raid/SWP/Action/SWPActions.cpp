@@ -137,13 +137,13 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_MAGE)
     {
-        return bot->RemoveAurasByType(
-            static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+        return true;
     }
     else if (bot->getClass() == CLASS_PALADIN)
     {
-        return bot->RemoveAurasByType(
-            static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+        return true;
     }
 
     return false;

@@ -386,11 +386,13 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
+        !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
         return false;
+    }
 
-    return !IsEredarTwinsConflagrationTarget(alythess, bot);
+    return !IsEredarTwinsConflagrationTarget(bot);
 }
 
 bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
@@ -398,11 +400,13 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
     if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (!alythess || AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
+        AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
         return false;
+    }
 
-    if (IsEredarTwinsConflagrationTarget(alythess, bot))
+    if (IsEredarTwinsConflagrationTarget(bot))
         return false;
 
     return !IsAlythessTank(botAI, bot);
@@ -449,8 +453,7 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    return IsEredarTwinsConflagrationTarget(alythess, bot);
+    return IsEredarTwinsConflagrationTarget(bot);
 }
 
 // M'uru

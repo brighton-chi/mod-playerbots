@@ -218,7 +218,7 @@ void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 duratio
     state.expireMs = now + durationMs;
 }
 
-bool IsEredarTwinsConflagrationTarget(Unit* alythess, Player* bot)
+bool IsEredarTwinsConflagrationTarget(Player* bot)
 {
     auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
 

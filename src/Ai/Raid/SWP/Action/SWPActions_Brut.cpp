@@ -116,6 +116,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
     }
+
+    return false;
 }
 
 bool BrutallusPositionMeleeAction::Execute(Event /*event*/)

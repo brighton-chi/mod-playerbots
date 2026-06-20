@@ -282,7 +282,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2RangedStackPosition(alythess) :
         GetEredarTwinsP2MeleeStackPosition(alythess);
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY() > 0.5f)
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.5f)
     {
         return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
