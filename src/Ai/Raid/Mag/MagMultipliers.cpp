@@ -78,22 +78,3 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
-
-float MagtheridonDisableMainTankMovementMultiplier::GetValue(Action* action)
-{
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
-        return 1.0f;
-
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
-    if (!botAI->IsTank(bot) || !botAI->IsMainTank(bot))
-        return 1.0f;
-
-    if (dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
-}

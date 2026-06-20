@@ -699,7 +699,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         _wasBlockingBlueBeam[botGuid] = true;
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
-        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
@@ -791,7 +791,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         }
         _wasBlockingGreenBeam[botGuid] = true;
 
-        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
         float bx = netherspite->GetPositionX();
         float by = netherspite->GetPositionY();
@@ -850,7 +850,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
                                         voidZones, 4.0f);
@@ -961,7 +961,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
 
 bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
     constexpr float safeDistance = 4.0f;
     for (Unit* vz : voidZones)

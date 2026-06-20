@@ -253,7 +253,7 @@ namespace KarazhanHelpers
         return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
     }
 
-    std::vector<Unit*> GetAllVoidZones(Player* bot)
+    std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
     {
         std::vector<Unit*> voidZones;
         std::list<Creature*> creatureList;

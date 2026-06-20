@@ -117,7 +117,7 @@ namespace KarazhanHelpers
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
     std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
     bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
-    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
+    std::vector<Unit*> GetSpawnedInfernals(Player* bot);
     bool IsStraightPathSafe(
         const Position& start, const Position& target,
         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
