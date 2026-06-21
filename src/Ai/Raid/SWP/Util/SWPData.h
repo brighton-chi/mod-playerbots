@@ -13,6 +13,9 @@ namespace SunwellHelpers
 
 enum class SunwellSpells : uint32
 {
+    // Trash - Apocalypse Guard
+    SPELL_INFERNAL_DEFENSE             = 46287,
+
     // Kalecgos
     SPELL_SPECTRAL_EXHAUSTION          = 44867,
     SPELL_SPECTRAL_BLAST_PORTAL        = 44866,
@@ -70,11 +73,11 @@ enum class SunwellSpells : uint32
     // Paladin
     SPELL_DIVINE_SHIELD                = 642,
 
+    // Priest
+    SPELL_SHADOWFORM                   = 15473,
+
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
-
-    // Apocalypse Guard
-    SPELL_INFERNAL_DEFENSE             = 46287,
 };
 
 enum class SunwellNpcs : uint32

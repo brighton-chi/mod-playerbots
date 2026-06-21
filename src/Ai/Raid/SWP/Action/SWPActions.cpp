@@ -196,8 +196,8 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
             target = apocalypseGuard;
     }
 
-    if (botAI->HasAura("shadowform", bot))
-        botAI->RemoveAura("shadowform");
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM)))
+        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM));
 
     if (botAI->CanCastSpell("smite", target))
         return botAI->CastSpell("smite", target);
