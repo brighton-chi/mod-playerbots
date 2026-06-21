@@ -519,7 +519,7 @@ int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master) const
         return 59;
 
     // check if bot has master and if master is self
-    bool const noRealMaster = (!master || master == bot);
+    bool const noRealMaster = (!master /*|| master == bot*/);
 
     if (!noRealMaster && !bot->InBattleground())
     {
