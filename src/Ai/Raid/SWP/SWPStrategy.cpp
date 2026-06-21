@@ -347,7 +347,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
     multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
-    multipliers.push_back(new BrutallusNoTankingWithTooManyMeteorStacksMultiplier(botAI));
+    multipliers.push_back(new BrutallusRestrictTauntMultiplier(botAI));
     multipliers.push_back(new BrutallusDelayCooldownsMultiplier(botAI));
 
     // Felmyst

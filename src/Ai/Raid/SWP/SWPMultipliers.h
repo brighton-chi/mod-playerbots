@@ -6,10 +6,7 @@
 #ifndef PLAYERBOTS_SWPMULTIPLIERS_H
 #define PLAYERBOTS_SWPMULTIPLIERS_H
 
-#include <vector>
-
 #include "Multiplier.h"
-#include "ObjectGuid.h"
 
 // Kalecgos
 
@@ -87,11 +84,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class BrutallusNoTankingWithTooManyMeteorStacksMultiplier : public Multiplier
+class BrutallusRestrictTauntMultiplier : public Multiplier
 {
 public:
-    BrutallusNoTankingWithTooManyMeteorStacksMultiplier(PlayerbotAI* botAI) : Multiplier(
-        botAI, "brutallus no tanking with too many meteor stacks") {}
+    BrutallusRestrictTauntMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "brutallus restrict taunt") {}
     virtual float GetValue(Action* action);
 };
 

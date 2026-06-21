@@ -132,7 +132,11 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
 
 float KalecgosControlMovementMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (kalecgos && kalecgos->IsFriendlyTo(bot))
+        return 1.0f;
+
+    if (!kalecgos &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
         return 1.0f;
@@ -283,7 +287,7 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float BrutallusNoTankingWithTooManyMeteorStacksMultiplier::GetValue(Action* action)
+float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "brutallus"))
         return 1.0f;
