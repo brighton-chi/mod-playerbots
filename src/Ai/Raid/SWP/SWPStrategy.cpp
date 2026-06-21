@@ -27,7 +27,7 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
         exclusions.insert(felmyst->GetGUID());
 }
 
-void AppendEredarTwinsAttackerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
     Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
@@ -130,10 +130,11 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
+            AppendEredarTwinsAlythessExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Attacker:
-            AppendEredarTwinsAttackerExclusions(botAI, exclusions);
+            AppendEredarTwinsAlythessExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:

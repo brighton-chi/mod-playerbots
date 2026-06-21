@@ -316,53 +316,52 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-
-    if (sacrolash && ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
+    if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        if (AI_VALUE(Unit*, "current target") == sacrolash)
+        if (ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-            return true;
+            if (AI_VALUE(Unit*, "current target") == sacrolash)
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                bot->SetTarget(ObjectGuid::Empty);
+                bot->SetSelection(ObjectGuid());
+                return true;
+            }
+
+            return false;
         }
-
-        return false;
-    }
-
-    if (sacrolash)
-    {
-        SetRtiTarget(botAI, "star", sacrolash);
-
-        if (AI_VALUE(Unit*, "current target") != sacrolash)
-            return Attack(sacrolash);
-
-        return false;
-    }
-
-    if (alythess && ShouldHoldAlythessThreat(botAI, bot, alythess))
-    {
-        if (AI_VALUE(Unit*, "current target") == alythess)
+        else
         {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-            return true;
+            SetRtiTarget(botAI, "star", sacrolash);
+
+            if (AI_VALUE(Unit*, "current target") != sacrolash)
+                return Attack(sacrolash);
         }
-
-        return false;
     }
-
-    if (alythess)
+    else if (alythess)
     {
-        SetRtiTarget(botAI, "circle", alythess);
+        if (ShouldHoldAlythessThreat(botAI, bot, alythess))
+        {
+            if (AI_VALUE(Unit*, "current target") == alythess)
+            {
+                bot->AttackStop();
+                bot->InterruptNonMeleeSpells(true);
+                bot->SetTarget(ObjectGuid::Empty);
+                bot->SetSelection(ObjectGuid());
+                return true;
+            }
 
-        if (AI_VALUE(Unit*, "current target") != alythess)
-            return Attack(alythess);
+            return false;
+        }
+        else
+        {
+            SetRtiTarget(botAI, "circle", alythess);
+
+            if (AI_VALUE(Unit*, "current target") != alythess)
+                return Attack(alythess);
+        }
     }
 
     return false;
