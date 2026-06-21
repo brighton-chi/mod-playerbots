@@ -172,8 +172,11 @@ public:
             &RaidSunwellTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden hands of the deceiver are active"] =
-            &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
+        creators["kil'jaeden encounter has begun"] =
+            &RaidSunwellTriggerContext::kiljaeden_encounter_has_begun;
+
+        creators["kil'jaeden hands summon felfire portals"] =
+            &RaidSunwellTriggerContext::kiljaeden_hands_summon_felfire_portals;
 
         creators["kil'jaeden it's raining meteors"] =
             &RaidSunwellTriggerContext::kiljaeden_its_raining_meteors;
@@ -412,8 +415,12 @@ private:
     }
 
     // Kil'jaeden <The Deceiver>
-    static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI) {
-        return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
+    static Trigger* kiljaeden_encounter_has_begun(PlayerbotAI* botAI) {
+        return new KiljaedenEncounterHasBegunTrigger(botAI);
+    }
+
+    static Trigger* kiljaeden_hands_summon_felfire_portals(PlayerbotAI* botAI) {
+        return new KiljaedenHandsSummonFelfirePortalsTrigger(botAI);
     }
 
     static Trigger* kiljaeden_its_raining_meteors(PlayerbotAI* botAI) {

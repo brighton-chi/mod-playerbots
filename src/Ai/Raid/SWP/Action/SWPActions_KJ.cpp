@@ -15,14 +15,8 @@
 
 using namespace SunwellHelpers;
 
-bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
+bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
-    Unit* handOfTheDeceiver = AI_VALUE2(Unit*, "find target", "hand of the deceiver");
-    if (!handOfTheDeceiver)
-        return false;
-
-    MarkTargetWithSkull(bot, handOfTheDeceiver);
-
     const uint32 instanceId = bot->GetInstanceId();
     auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
     if (announcementTime == kiljaedenDragonOrbAnnouncementTimes.end())
@@ -53,6 +47,21 @@ bool KiljaedenMarkHandsAndAnnounceOrbUserAction::Execute(Event /*event*/)
 
         return botAI->SayToRaid(text);
     }
+
+    return false;
+}
+
+bool KiljaedenMoveAwayFromFelfirePortalAction::Execute(Event /*event*/)
+{
+    constexpr float searchRadius = 20.0f;
+    Unit* felfirePortal = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_FELFIRE_PORTAL), searchRadius, true);
+    if (!felfirePortal)
+        return false;
+
+    constexpr float safeDistance = 15.0f;
+    if (bot->GetDistance2d(felfirePortal) < safeDistance)
+        return FleePosition(felfirePortal->GetPosition(), safeDistance);
 
     return false;
 }

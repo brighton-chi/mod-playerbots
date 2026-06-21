@@ -649,10 +649,15 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 // Kil'jaeden <The Deceiver>
 
-bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
+bool KiljaedenEncounterHasBegunTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
-           IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    return IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+}
+
+bool KiljaedenHandsSummonFelfirePortalsTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool KiljaedenItsRainingMeteorsTrigger::IsActive()

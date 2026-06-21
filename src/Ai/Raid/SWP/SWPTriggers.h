@@ -424,11 +424,19 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
+class KiljaedenEncounterHasBegunTrigger : public Trigger
 {
 public:
-    KiljaedenHandsOfTheDeceiverAreActiveTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
+    KiljaedenEncounterHasBegunTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden encounter has begun") {}
+    bool IsActive() override;
+};
+
+class KiljaedenHandsSummonFelfirePortalsTrigger : public Trigger
+{
+public:
+    KiljaedenHandsSummonFelfirePortalsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands summon felfire portals") {}
     bool IsActive() override;
 };
 

@@ -302,8 +302,11 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru enslaved void spawn cast shadow bolt volley", ACTION_RAID + 5) }));
 
     // Kil'jaeden <The Deceiver>
-    triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
-        NextAction("kil'jaeden mark hands and announce orb user", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("kil'jaeden encounter has begun", {
+        NextAction("kil'jaeden announce dragon orb user", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden hands summon felfire portals", {
+        NextAction("kil'jaeden move away from felfire portals", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden it's raining meteors", {
         NextAction("kil'jaeden avoid armageddons", ACTION_RAID + 1) }));

@@ -473,11 +473,19 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenMarkHandsAndAnnounceOrbUserAction : public Action
+class KiljaedenAnnounceDragonOrbUserAction : public Action
 {
 public:
-    KiljaedenMarkHandsAndAnnounceOrbUserAction(
-        PlayerbotAI* botAI, std::string const name = "kil'jaeden mark hands and announce orb user") : Action(botAI, name) {}
+    KiljaedenAnnounceDragonOrbUserAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden announce dragon orb user") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenMoveAwayFromFelfirePortalAction : public MovementAction
+{
+public:
+    KiljaedenMoveAwayFromFelfirePortalAction(
+        PlayerbotAI* botAI, std::string const name = "kil'jaeden move away from felfire portal") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

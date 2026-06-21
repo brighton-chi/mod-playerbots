@@ -172,8 +172,11 @@ public:
             &RaidSunwellActionContext::muru_enslaved_void_spawn_cast_shadow_bolt_volley;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden mark hands and announce orb user"] =
-            &RaidSunwellActionContext::kiljaeden_mark_hands_and_announce_orb_user;
+        creators["kil'jaeden announce dragon orb user"] =
+            &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
+
+        creators["kil'jaeden move away from felfire portal"] =
+            &RaidSunwellActionContext::kiljaeden_move_away_from_felfire_portal;
 
         creators["kil'jaeden avoid armageddons"] =
             &RaidSunwellActionContext::kiljaeden_avoid_armageddons;
@@ -412,8 +415,12 @@ private:
     }
 
     // Kil'jaeden <The Deceiver>
-    static Action* kiljaeden_mark_hands_and_announce_orb_user(PlayerbotAI* botAI) {
-        return new KiljaedenMarkHandsAndAnnounceOrbUserAction(botAI);
+    static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
+        return new KiljaedenAnnounceDragonOrbUserAction(botAI);
+    }
+
+    static Action* kiljaeden_move_away_from_felfire_portal(PlayerbotAI* botAI) {
+        return new KiljaedenMoveAwayFromFelfirePortalAction(botAI);
     }
 
     static Action* kiljaeden_avoid_armageddons(PlayerbotAI* botAI) {
