@@ -86,9 +86,8 @@ KalecgosEncounterState& GetPreparedKalecgosEncounterState(
 bool IsKalecgosActiveRiftCandidate(
     Player* candidate, const KalecgosEncounterState& state)
 {
-    if (!candidate || !candidate->IsAlive() ||
-        candidate->GetMapId() != SUNWELL_MAP_ID || !state.activeRiftOpenedMs ||
-        state.activeRiftGroup == KALECGOS_INVALID_GROUP)
+    if (!candidate || !candidate->IsAlive() || candidate->GetMapId() != SUNWELL_MAP_ID ||
+        !state.activeRiftOpenedMs || state.activeRiftGroup == KALECGOS_INVALID_GROUP)
     {
         return false;
     }
@@ -406,7 +405,7 @@ Player* GetKalecgosCurrentVictimTank(
     PlayerbotAI* botAI, Group* group, const KalecgosEncounterState& state)
 {
     if (Unit* kalecgos =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kalecgos")->Get())
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kalecgos")->Get())
     {
         Unit* victim = kalecgos->GetVictim();
         if (victim && victim->IsPlayer())

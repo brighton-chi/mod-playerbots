@@ -66,13 +66,23 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
-    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "kalecgos") &&
-           GetKalecgosCurrentTank(botAI, bot) == bot;
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+        return false;
+
+    return GetKalecgosCurrentTank(botAI, bot) == bot;
 }
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
 
     if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
@@ -87,11 +97,9 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
     if (!botAI->IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
-    }
 
     return !ShouldEnterKalecgosSpectralRift(botAI, bot);
 }
@@ -107,7 +115,11 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
     if (botAI->IsTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
         return false;
 
     Aura* arcaneBuffet =
@@ -118,7 +130,7 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
 bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
 {
     return botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+           bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
 }
 
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
