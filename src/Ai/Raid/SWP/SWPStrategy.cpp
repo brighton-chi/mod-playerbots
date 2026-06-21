@@ -4,12 +4,11 @@
  */
 
 #include "SWPStrategy.h"
-
-#include "AiObjectContext.h"
-#include "PlayerbotAI.h"
-#include "SWPEncounter_Twins.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Muru.h"
+#include "SWPEncounter_Twins.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
 #include "SWPMultipliers.h"
 
 namespace
@@ -361,6 +360,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Eredar Twins
     multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableKillingSpreeMultiplier(botAI));

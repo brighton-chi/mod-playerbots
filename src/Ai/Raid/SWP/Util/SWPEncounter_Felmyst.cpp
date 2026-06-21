@@ -8,9 +8,9 @@
 #include <list>
 #include <vector>
 
+#include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SWPEncounter_Felmyst.h"
 
 namespace SunwellHelpers
 {
@@ -137,6 +137,10 @@ std::unordered_map<uint32, bool>
 
 std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+
+std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
+
+std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
 namespace
 {

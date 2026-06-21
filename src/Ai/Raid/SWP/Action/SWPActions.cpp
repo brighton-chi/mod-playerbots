@@ -83,6 +83,12 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
             erased = true;
+
+        if (felmystLandingDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (felmystLandingTouchdownTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
@@ -93,10 +99,13 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
         }
 
-        if (isMechanicTracker &&
-            eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
+        if (isMechanicTracker)
         {
-            erased = true;
+            if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
+                erased = true;
+
+            if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
+                erased = true;
         }
     }
 

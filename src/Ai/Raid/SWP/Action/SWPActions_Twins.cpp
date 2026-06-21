@@ -246,11 +246,6 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
         Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-
-        // But don't jump down at the beginning of the fight
-        if (sacrolash && sacrolash->GetHealthPct() > 95.0f)
-            return false;
-
         const Position& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
         const Position landingPos = GetEredarTwinsP2RangedStackPosition(alythess);
 

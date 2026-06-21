@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "SWPEncounter_KJ.h"
 #include "Timer.h"
 
 namespace SunwellHelpers

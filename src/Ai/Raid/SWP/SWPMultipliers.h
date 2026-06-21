@@ -168,6 +168,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class EredarTwinsHoldDpsAtStartMultiplier : public Multiplier
+{
+public:
+    EredarTwinsHoldDpsAtStartMultiplier(PlayerbotAI* botAI) : Multiplier(
+        botAI, "eredar twins hold dps at start") {}
+    virtual float GetValue(Action* action);
+};
+
 class EredarTwinsControlThreatMultiplier : public Multiplier
 {
 public:

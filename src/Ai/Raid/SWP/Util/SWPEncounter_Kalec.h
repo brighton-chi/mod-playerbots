@@ -3,13 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPENCOUNTER_KALEC_H
-#define _PLAYERBOT_SWPENCOUNTER_KALEC_H
+#ifndef PLAYERBOTS_SWPENCOUNTERKALEC_H
+#define PLAYERBOTS_SWPENCOUNTERKALEC_H
 
 #include <array>
 #include <limits>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "ObjectGuid.h"
 #include "Position.h"

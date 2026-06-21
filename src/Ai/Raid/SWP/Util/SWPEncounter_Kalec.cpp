@@ -7,11 +7,11 @@
 #include <map>
 #include <vector>
 
-#include "Playerbots.h"
+#include "SWPEncounter_Kalec.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
-#include "SWPEncounter_Kalec.h"
 #include "Timer.h"
 
 namespace SunwellHelpers

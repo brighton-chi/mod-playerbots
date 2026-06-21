@@ -8,15 +8,13 @@
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
-#include "SWPEncounter_Twins.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
-#include "Timer.h"
+#include "SWPEncounter_Twins.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
-#include "TargetValue.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "FollowActions.h"
@@ -30,6 +28,8 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "TargetValue.h"
+#include "Timer.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
@@ -38,9 +38,6 @@ using namespace SunwellHelpers;
 
 namespace
 {
-
-std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
-std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
 bool IsDpsCooldownAction(Action* action)
 {
@@ -77,11 +74,8 @@ float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
-    }
 
      if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
          return 0.0f;
@@ -343,15 +337,10 @@ float FelmystControlMovementMultiplier::GetValue(Action* action)
 float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    const uint32 instanceId = bot->GetInstanceId();
-
     if (!felmyst)
-    {
-        felmystLandingDpsWaitTimer.erase(instanceId);
-        felmystLandingTouchdownTimer.erase(instanceId);
         return 1.0f;
-    }
 
+    const uint32 instanceId = bot->GetInstanceId();
     Position landingDestination;
     const bool isGoingToLand =
         felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination);
@@ -540,6 +529,34 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsRanged(bot))
+        return 1.0f;
+
+    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!alythess || !sacrolash)
+        return 1.0f;
+
+    const uint32 instanceId = bot->GetInstanceId();
+    const time_t now = std::time(nullptr);
+    auto const it = eredarTwinsDpsHoldTimer.try_emplace(instanceId, now).first;
+    constexpr uint8 dpsHoldSeconds = 8;
+
+    if ((now - it->second) >= dpsHoldSeconds)
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        (dynamic_cast<CastSpellAction*>(action) &&
+         !dynamic_cast<CastHealingSpellAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
@@ -609,9 +626,11 @@ float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
 
 float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    if (!alythess && !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
+        !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||

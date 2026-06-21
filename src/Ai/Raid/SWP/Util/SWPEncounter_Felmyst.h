@@ -3,10 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPENCOUNTER_FELMYST_H
-#define _PLAYERBOT_SWPENCOUNTER_FELMYST_H
+#ifndef PLAYERBOTS_SWPENCOUNTERFELMYST_H
+#define PLAYERBOTS_SWPENCOUNTERFELMYST_H
 
 #include <array>
+#include <ctime>
 #include <limits>
 #include <unordered_map>
 
@@ -115,6 +116,8 @@ extern std::unordered_map<uint32, bool>
     felmystEncapsulateOccurredThisGroundPhase;
 extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
     felmystIncomingEncapsulateStates;
+extern std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
+extern std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void RecordFelmystIncomingEncapsulateTarget(

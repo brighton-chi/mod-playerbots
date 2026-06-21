@@ -7,10 +7,10 @@
 #include <map>
 #include <vector>
 
-#include "PlayerbotTextMgr.h"
 #include "SWPActions.h"
 #include "SWPEncounter_KJ.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;

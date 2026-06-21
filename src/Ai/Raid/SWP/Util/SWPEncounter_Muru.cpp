@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <list>
 
+#include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SWPEncounter_Muru.h"
 
 namespace SunwellHelpers
 {

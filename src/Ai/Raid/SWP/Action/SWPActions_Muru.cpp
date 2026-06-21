@@ -9,10 +9,10 @@
 #include <list>
 #include <vector>
 
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Muru.h"
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"

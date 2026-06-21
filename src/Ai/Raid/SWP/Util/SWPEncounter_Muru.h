@@ -3,11 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPENCOUNTER_MURU_H
-#define _PLAYERBOT_SWPENCOUNTER_MURU_H
+#ifndef PLAYERBOTS_SWPENCOUNTERMURU_H
+#define PLAYERBOTS_SWPENCOUNTERMURU_H
 
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "ObjectGuid.h"

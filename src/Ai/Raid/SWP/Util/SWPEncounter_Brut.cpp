@@ -8,8 +8,8 @@
 #include <cmath>
 #include <vector>
 
-#include "Playerbots.h"
 #include "SWPEncounter_Brut.h"
+#include "Playerbots.h"
 
 namespace SunwellHelpers
 {

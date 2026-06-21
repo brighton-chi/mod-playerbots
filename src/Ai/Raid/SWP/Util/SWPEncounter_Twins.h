@@ -3,10 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPENCOUNTER_TWINS_H
-#define _PLAYERBOT_SWPENCOUNTER_TWINS_H
+#ifndef PLAYERBOTS_SWPENCOUNTERTWINS_H
+#define PLAYERBOTS_SWPENCOUNTERTWINS_H
 
 #include <array>
+#include <ctime>
 #include <unordered_map>
 
 #include "ObjectGuid.h"
@@ -39,6 +40,7 @@ extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
+extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
 bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
 bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);

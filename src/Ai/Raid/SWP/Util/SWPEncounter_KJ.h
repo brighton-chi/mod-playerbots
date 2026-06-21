@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SWPENCOUNTER_KJ_H
-#define _PLAYERBOT_SWPENCOUNTER_KJ_H
+#ifndef PLAYERBOTS_SWPENCOUNTERKJ_H
+#define PLAYERBOTS_SWPENCOUNTERKJ_H
 
 #include <unordered_map>
 #include <vector>
