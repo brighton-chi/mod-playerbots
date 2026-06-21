@@ -175,8 +175,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage bot struck by dark barrage", {
         NextAction("illidan stormrage remove dark barrage", ACTION_EMERGENCY + 6) }));
 
-    // triggers.push_back(new TriggerNode("illidan stormrage boss is preparing to land", {
-    //    NextAction("illidan stormrage move away from landing point", ACTION_EMERGENCY + 3) }));
+    triggers.push_back(new TriggerNode("illidan stormrage boss is preparing to land", {
+        NextAction("illidan stormrage move away from landing point", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage boss deals splash damage", {
         NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
