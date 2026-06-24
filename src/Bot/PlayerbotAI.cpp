@@ -2379,24 +2379,20 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
     return false;
 }
 
-ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group, bool ignoreMemberFlag)
+ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
 {
     if (!group)
         return ObjectGuid::Empty;
 
-    if (!ignoreMemberFlag)
+    // Check for main tank flag
+    Group::MemberSlotList const& slots = group->GetMemberSlots();
+    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
     {
-        // Check for main tank flag
-        Group::MemberSlotList const& slots = group->GetMemberSlots();
-        for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
-        {
-            if (itr->flags & MEMBER_FLAG_MAINTANK)
-                return itr->guid;
-        }
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return itr->guid;
     }
 
-    // Return the first alive tank: used as a fallback when no maintank flag is set
-    // or as the primary lookup when ignoreMemberFlag is true.
+    // Fallback if no flag is set: return the first alive tank
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
