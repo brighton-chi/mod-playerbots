@@ -237,7 +237,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     constexpr float searchRadius = 100.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, NPC_BURNING_ABYSSAL, searchRadius);
+        creatureList, static_cast<uint32>(MagtheridonNpcs::NPC_BURNING_ABYSSAL), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -383,8 +383,10 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
         return false;
 
     // Handle active cube logic based on Blast Nova casting state
-    bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-                           magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
+    bool blastNovaActive =
+        magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
+        magtheridon->FindCurrentSpellBySpellId(
+            static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
     if (!blastNovaActive)
         // After 49 seconds, wait at safe distance from cube
@@ -432,13 +434,13 @@ bool MagtheridonUseManticronCubeAction::ShouldActivateCubeLogic(Unit* magtherido
 bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)
 {
     constexpr float safeWaitDistance = 8.0f;
-    float cubeDist = bot->GetExactDist2d(cubeInfo.x, cubeInfo.y);
+    float cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
 
     if (fabs(cubeDist - safeWaitDistance) <= 1.0f)
         return true;
 
-    Position safePos = FindSafePositionNearCube(cubeInfo, safeWaitDistance);
-    if (safePos.GetPositionX() != 0.0f || safePos.GetPositionY() != 0.0f)
+    Position safePos;
+    if (FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
     {
         botAI->InterruptSpell();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
@@ -455,51 +457,57 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
                   false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-Position MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
-    const CubeInfo& cubeInfo, float preferredDistance)
+bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
+    const CubeInfo& cubeInfo, float preferredDistance, Position& outPos)
 {
     constexpr float maxSearchRadius = 15.0f;
     constexpr float distanceStep = 1.0f;
     constexpr float angleStep = M_PI / 12.0f;
 
-    Position bestPos;
-    float bestDist = std::numeric_limits<float>::max();
-    bool foundPathSafe = false;
+    float minMoveDistance = std::numeric_limits<float>::max();
+    bool foundSafe = false;
 
-    for (float dist = preferredDistance; dist <= maxSearchRadius; dist += distanceStep)
+    for (float distance = 2.0f; distance <= maxSearchRadius; distance += distanceStep)
     {
         for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
         {
-            float x = cubeInfo.x + cos(angle) * dist;
-            float y = cubeInfo.y + sin(angle) * dist;
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
+
+            // Must be within acceptable range of the cube
+            float cubeDist = std::sqrt(
+                (x - cubeInfo.x) * (x - cubeInfo.x) + (y - cubeInfo.y) * (y - cubeInfo.y));
+            if (std::fabs(cubeDist - preferredDistance) > 2.0f)
+                continue;
 
             if (!IsSafeFromMagtheridonHazards(botAI, bot, x, y))
                 continue;
 
+            float moveDistance = bot->GetExactDist2d(x, y);
             Position candidate(x, y, bot->GetPositionZ());
-            float moveDist = bot->GetExactDist2d(x, y);
+            bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), candidate);
 
-            if (IsPathSafeFromHazards(bot->GetPosition(), candidate))
+            if (pathSafe || !foundSafe)
             {
-                if (moveDist < bestDist)
+                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
                 {
-                    bestPos = candidate;
-                    bestDist = moveDist;
-                    foundPathSafe = true;
+                    outPos = candidate;
+                    minMoveDistance = moveDistance;
+                    foundSafe = true;
                 }
-            }
-            else if (!foundPathSafe && moveDist < bestDist)
-            {
-                bestPos = candidate;
-                bestDist = moveDist;
+                else if (!foundSafe && moveDistance < minMoveDistance)
+                {
+                    outPos = candidate;
+                    minMoveDistance = moveDistance;
+                }
             }
         }
 
-        if (foundPathSafe)
+        if (foundSafe)
             break;
     }
 
-    return bestPos;
+    return foundSafe;
 }
 
 bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
@@ -528,7 +536,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
     constexpr float interactDistance = 1.0f;
     float cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
 
-    if (cubeDist < interactDistance)
+    if (cubeDist < interactDistance + 1.0f)
     {
         uint32 delay = urand(200, 1500);
         botAI->AddTimedEvent(
@@ -541,11 +549,9 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
         botAI->SetNextCheckDelay(delay + 50);
         return true;
     }
-    else
-    {
-        botAI->InterruptSpell();
-        return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
-    }
+
+    botAI->InterruptSpell();
+    return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
 // Known issue: The Blast Nova timer resets when Magtheridon stops casting it, which is needed to
@@ -582,7 +588,10 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
     }
     else
     {
-        RemoveCubeClicker(bot);
+        // Only erase assignments during Phase 1; during Phase 2 non-tracker bots
+        // should leave cube assignments intact.
+        if (!IsMagtheridonActive(magtheridon))
+            RemoveCubeClicker(bot);
 
         if (IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
         {

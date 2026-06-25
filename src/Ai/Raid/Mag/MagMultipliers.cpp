@@ -7,6 +7,7 @@
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 #include "WipeAction.h"
 
 using namespace MagtheridonHelpers;
@@ -45,11 +46,8 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
-    if (botAI->IsHeal(bot) ||
-        (botAI->IsTank(bot) && botAI->IsMainTank(bot)))
-    {
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot))
         return 1.0f;
-    }
 
     constexpr time_t dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
@@ -70,7 +68,8 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot) || bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon)
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
@@ -79,8 +78,17 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
+    if (botAI->IsMainTank(bot))
+    {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
+
+        if (!IsMagtheridonActive(magtheridon) &&
+            dynamic_cast<CastReachTargetSpellAction*>(action))
+        {
+            return 0.0f;
+        }
+    }
 
     return 1.0f;
 }
