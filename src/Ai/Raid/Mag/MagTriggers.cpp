@@ -24,7 +24,7 @@ bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
 
 bool MagtheridonNEChannelerEngagedBySecondAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 1, false))
+    if (!botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "magtheridon") &&
@@ -44,18 +44,15 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
 
 bool MagtheridonDeterminingKillOrderTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+    if (botAI->IsHeal(bot) || !AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
     Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
     return !botAI->IsMainTank(bot) &&
-           !(botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond) &&
-           !(botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle);
+           !(botAI->IsAssistTankOfIndex(bot, 0, false) && channelerDiamond) &&
+           !(botAI->IsAssistTankOfIndex(bot, 1, true) && channelerTriangle);
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
@@ -73,7 +70,7 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
-    // In case another tank takes aggro
+    // Include an assist tank that pulls aggro
     return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
 }
 

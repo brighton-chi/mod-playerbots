@@ -77,8 +77,7 @@ namespace MagtheridonHelpers
 
     CubeInfo const* GetAssignedCube(Player* bot)
     {
-        uint32 const instanceId = bot->GetMap()->GetInstanceId();
-        auto mapIt = botToCubeAssignments.find(instanceId);
+        auto mapIt = botToCubeAssignments.find(bot->GetMap()->GetInstanceId());
         if (mapIt == botToCubeAssignments.end())
             return nullptr;
 
@@ -88,13 +87,12 @@ namespace MagtheridonHelpers
 
     bool IsCubeClicker(Player* bot)
     {
-        uint32 const instanceId = bot->GetMap()->GetInstanceId();
-        auto mapIt = botToCubeAssignments.find(instanceId);
+        auto mapIt = botToCubeAssignments.find(bot->GetMap()->GetInstanceId());
         return mapIt != botToCubeAssignments.end() &&
                mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
     }
 
-    bool NeedsCubeReassignment(uint32 instanceId)
+    bool NeedsCubeReassignment(const uint32 instanceId)
     {
         auto mapIt = botToCubeAssignments.find(instanceId);
         if (mapIt == botToCubeAssignments.end() || mapIt->second.empty())
@@ -118,7 +116,7 @@ namespace MagtheridonHelpers
 
     void RemoveCubeClicker(Player* bot)
     {
-        uint32 const instanceId = bot->GetMap()->GetInstanceId();
+        const uint32 instanceId = bot->GetMap()->GetInstanceId();
         auto mapIt = botToCubeAssignments.find(instanceId);
         if (mapIt != botToCubeAssignments.end())
             mapIt->second.erase(bot->GetGUID());
@@ -128,55 +126,76 @@ namespace MagtheridonHelpers
         Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI, uint32 instanceId)
     {
         auto& assignment = botToCubeAssignments[instanceId];
-        assignment.clear();
-        if (!group)
-            return;
-
-        size_t cubeIndex = 0;
-        std::vector<Player*> candidates;
-
-        // Assign ranged DPS (excluding Warlocks) to cubes first
-        for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
+        if (!group || cubes.empty())
         {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member) ||
-                member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member))
-            {
-                continue;
-            }
-
-            candidates.push_back(member);
-            if (candidates.size() >= cubes.size())
-                break;
+            assignment.clear();
+            return;
         }
 
-        // If there are still cubes left, assign any other non-tank bots
-        if (candidates.size() < cubes.size())
+        // Prune dead or absent players from the existing assignment
+        for (auto it = assignment.begin(); it != assignment.end(); )
         {
-            for (GroupReference* ref = group->GetFirstMember();
-                ref && candidates.size() < cubes.size(); ref = ref->next())
+            Player* player = ObjectAccessor::FindPlayer(it->first);
+            if (!player || !player->IsAlive() || player->GetMapId() != MAGTHERIDON_MAP_ID)
+                it = assignment.erase(it);
+            else
+                ++it;
+        }
+
+        // Fill unassigned cubes
+        for (CubeInfo const& cube : cubes)
+        {
+            bool alreadyAssigned = false;
+            for (auto const& pair : assignment)
+            {
+                if (pair.second.guid == cube.guid)
+                {
+                    alreadyAssigned = true;
+                    break;
+                }
+            }
+            if (alreadyAssigned)
+                continue;
+
+            Player* candidate = nullptr;
+
+            // Pass 1: ranged DPS excluding warlocks
+            for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || botAI->IsTank(member) ||
-                    !GET_PLAYERBOT_AI(member))
+                if (!member || !member->IsAlive() || !botAI->IsRangedDps(member) ||
+                    !GET_PLAYERBOT_AI(member) || member->getClass() == CLASS_WARLOCK)
                 {
                     continue;
                 }
 
-                if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
-                    candidates.push_back(member);
+                if (assignment.find(member->GetGUID()) != assignment.end())
+                    continue;
+
+                candidate = member;
             }
-        }
 
-        for (Player* member : candidates)
-        {
-            if (cubeIndex >= cubes.size())
-                break;
+            // Pass 2: any non-tank bot
+            if (!candidate)
+            {
+                for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
+                {
+                    Player* member = ref->GetSource();
+                    if (!member || !member->IsAlive() || botAI->IsTank(member) ||
+                        !GET_PLAYERBOT_AI(member))
+                    {
+                        continue;
+                    }
 
-            if (!member || !member->IsAlive())
-                continue;
+                    if (assignment.find(member->GetGUID()) != assignment.end())
+                        continue;
 
-            assignment[member->GetGUID()] = cubes[cubeIndex++];
+                    candidate = member;
+                }
+            }
+
+            if (candidate)
+                assignment[candidate->GetGUID()] = cube;
         }
     }
 
