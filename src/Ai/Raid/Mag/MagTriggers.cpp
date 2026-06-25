@@ -37,7 +37,7 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
-       return false;
+        return false;
 
     return GetChanneler(bot, WEST_CHANNELER) || GetChanneler(bot, EAST_CHANNELER);
 }
@@ -66,7 +66,7 @@ bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
 
 bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsTank(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -88,31 +88,7 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    bool needsReassign = botToCubeAssignment.empty();
-    if (!needsReassign)
-    {
-        for (auto const& pair : botToCubeAssignment)
-        {
-            Player* assigned = ObjectAccessor::FindPlayer(pair.first);
-            if (!assigned || !assigned->IsAlive())
-            {
-                needsReassign = true;
-                break;
-            }
-        }
-    }
-
-    if (needsReassign)
-    {
-        std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
-        AssignBotsToCubesByGuidAndCoords(group, cubes, botAI);
-    }
-
-    return botToCubeAssignment.find(bot->GetGUID()) != botToCubeAssignment.end();
+    return IsCubeClicker(bot);
 }
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()

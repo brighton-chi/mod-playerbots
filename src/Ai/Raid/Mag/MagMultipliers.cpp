@@ -7,7 +7,6 @@
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
-#include "WarlockActions.h"
 #include "WipeAction.h"
 
 using namespace MagtheridonHelpers;
@@ -25,12 +24,11 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
         magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
     {
-        auto it = botToCubeAssignment.find(bot->GetGUID());
-        if (it != botToCubeAssignment.end())
+        if (IsCubeClicker(bot) &&
+            !dynamic_cast<MagtheridonUseManticronCubeAction*>(action) &&
+            !dynamic_cast<MagtheridonManageTimersAndAssignmentsAction*>(action))
         {
-            if (!dynamic_cast<MagtheridonUseManticronCubeAction*>(action) &&
-                !dynamic_cast<MagtheridonManageTimersAndAssignmentsAction*>(action))
-                return 0.0f;
+            return 0.0f;
         }
     }
 
@@ -44,11 +42,11 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
-    if (botAI->IsHeal(bot))
+    if (botAI->IsHeal(bot) ||
+        (botAI->IsTank(bot) && botAI->IsMainTank(bot)))
+    {
         return 1.0f;
-
-    if (botAI->IsTank(bot) && botAI->IsMainTank(bot))
-        return 1.0f;
+    }
 
     constexpr uint8 dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
@@ -63,17 +61,21 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
+float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    if (!botAI->IsTank(bot) || bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (bot->GetVictim() == nullptr)
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return 1.0f;
 
-    if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<TankAssistAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (botAI->IsMainTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
     return 1.0f;

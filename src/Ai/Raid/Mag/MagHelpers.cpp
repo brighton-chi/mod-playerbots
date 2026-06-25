@@ -14,6 +14,9 @@ namespace MagtheridonHelpers
     const Position RANGED_SPREAD_POSITION =           { -14.890f,   1.995f, -0.406f,   0.0f };
     const Position HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -0.404f,   0.0f };
 
+    std::unordered_map<uint32, time_t> blastNovaTimer;
+    std::unordered_map<uint32, time_t> dpsWaitTimer;
+
     // Identify channelers by their database GUIDs
     Creature* GetChanneler(Player* bot, uint32 dbGuid)
     {
@@ -32,10 +35,17 @@ namespace MagtheridonHelpers
         return channeler;
     }
 
+    bool IsMagtheridonActive(Unit* magtheridon)
+    {
+        return magtheridon &&
+        !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SPELL_SHADOW_CAGE));
+    }
+
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
     // Get the positions of all Manticron Cubes by their database GUIDs
-    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids)
+    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
+        Map* map, const std::vector<uint32>& cubeDbGuids)
     {
         std::vector<CubeInfo> cubes;
         if (!map)
@@ -62,11 +72,63 @@ namespace MagtheridonHelpers
         return cubes;
     }
 
-    std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
+    static std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>>
+        botToCubeAssignments;
 
-    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI)
+    CubeInfo const* GetAssignedCube(Player* bot)
     {
-        botToCubeAssignment.clear();
+        uint32 const instanceId = bot->GetMap()->GetInstanceId();
+        auto mapIt = botToCubeAssignments.find(instanceId);
+        if (mapIt == botToCubeAssignments.end())
+            return nullptr;
+
+        auto it = mapIt->second.find(bot->GetGUID());
+        return it != mapIt->second.end() ? &it->second : nullptr;
+    }
+
+    bool IsCubeClicker(Player* bot)
+    {
+        uint32 const instanceId = bot->GetMap()->GetInstanceId();
+        auto mapIt = botToCubeAssignments.find(instanceId);
+        return mapIt != botToCubeAssignments.end() &&
+               mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
+    }
+
+    bool NeedsCubeReassignment(uint32 instanceId)
+    {
+        auto mapIt = botToCubeAssignments.find(instanceId);
+        if (mapIt == botToCubeAssignments.end() || mapIt->second.empty())
+            return true;
+
+        for (auto const& pair : mapIt->second)
+        {
+            Player* assigned = ObjectAccessor::FindPlayer(pair.first);
+            if (!assigned || !assigned->IsAlive())
+                return true;
+        }
+
+        return false;
+    }
+
+    void AssignCubeClickers(Group* group, Map* map, PlayerbotAI* botAI)
+    {
+        std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(map, MANTICRON_CUBE_DB_GUIDS);
+        AssignBotsToCubesByGuidAndCoords(group, cubes, botAI, map->GetInstanceId());
+    }
+
+    void RemoveCubeClicker(Player* bot)
+    {
+        uint32 const instanceId = bot->GetMap()->GetInstanceId();
+        auto mapIt = botToCubeAssignments.find(instanceId);
+        if (mapIt != botToCubeAssignments.end())
+            mapIt->second.erase(bot->GetGUID());
+    }
+
+    void AssignBotsToCubesByGuidAndCoords(
+        Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI, uint32 instanceId)
+    {
+        auto& assignment = botToCubeAssignments[instanceId];
+        assignment.clear();
         if (!group)
             return;
 
@@ -109,47 +171,39 @@ namespace MagtheridonHelpers
             if (!member || !member->IsAlive())
                 continue;
 
-            botToCubeAssignment[member->GetGUID()] = cubes[cubeIndex++];
+            assignment[member->GetGUID()] = cubes[cubeIndex++];
         }
     }
 
-    std::unordered_map<uint32, bool> lastBlastNovaState;
-    std::unordered_map<uint32, time_t> blastNovaTimer;
-    std::unordered_map<uint32, time_t> spreadWaitTimer;
-    std::unordered_map<uint32, time_t> dpsWaitTimer;
-
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float /*z*/)
+    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y)
     {
         // Debris
         std::list<Creature*> debrisList;
         constexpr float searchRadius = 40.0f;
-
         constexpr float debrisHazardRadius = 9.0f;
         bot->GetCreatureListWithEntryInGrid(debrisList, NPC_TARGET_TRIGGER, searchRadius);
 
         for (Creature* creature : debrisList)
         {
-            if (creature && creature->IsAlive())
-            {
-                float dx = x - creature->GetPositionX();
-                float dy = y - creature->GetPositionY();
-                if ((dx * dx + dy * dy) < (debrisHazardRadius * debrisHazardRadius))
-                    return false;
-            }
+            if (creature && creature->GetDistance2d(x, y) < debrisHazardRadius)
+                return false;
         }
 
         // Conflagration
         constexpr float conflagrationHazardRadius = 5.0f;
-        GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
-        for (auto const& goGuid : gos)
+        GuidVector const& gameObjects =
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
+        for (auto const& goGuid : gameObjects)
         {
             GameObject* go = botAI->GetGameObject(goGuid);
-            if (!go || go->GetEntry() != GO_BLAZE)
+            if (!go || !go->isSpawned() ||
+                go->GetEntry() !=
+                    static_cast<uint32>(MagtheridonHelpers::MagtheridonObjects::GO_BLAZE))
+            {
                 continue;
+            }
 
-            float dx = x - go->GetPositionX();
-            float dy = y - go->GetPositionY();
-            if ((dx * dx + dy * dy) < (conflagrationHazardRadius * conflagrationHazardRadius))
+            if (go->GetDistance2d(x, y) < conflagrationHazardRadius)
                 return false;
         }
 
