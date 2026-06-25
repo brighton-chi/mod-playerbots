@@ -15,12 +15,13 @@ namespace MagtheridonHelpers
 enum class MagtheridonSpells : uint32
 {
     // Magtheridon
-    SPELL_SHADOW_CAGE   = 30205,
-    SPELL_BLAST_NOVA    = 30616,
-    SPELL_SHADOW_GRASP  = 30410,
+    SPELL_SHADOW_CAGE       = 30205,
+    SPELL_BLAST_NOVA        = 30616,
+    SPELL_SHADOW_GRASP      = 30410,
+    SPELL_DEBRIS_VISUAL     = 30632,
 
     // Hunter
-    SPELL_MISDIRECTION  = 35079,
+    SPELL_MISDIRECTION      = 35079,
 };
 
 enum class MagtheridonNPCs : uint32

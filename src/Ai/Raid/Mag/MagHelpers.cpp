@@ -38,7 +38,7 @@ namespace MagtheridonHelpers
     bool IsMagtheridonActive(Unit* magtheridon)
     {
         return magtheridon &&
-        !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SPELL_SHADOW_CAGE));
+               !magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SPELL_SHADOW_CAGE));
     }
 
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -139,9 +139,11 @@ namespace MagtheridonHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member, true) ||
+            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member) ||
                 member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member))
+            {
                 continue;
+            }
 
             candidates.push_back(member);
             if (candidates.size() >= cubes.size())
@@ -155,8 +157,11 @@ namespace MagtheridonHelpers
                 ref && candidates.size() < cubes.size(); ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
+                if (!member || !member->IsAlive() || botAI->IsTank(member) ||
+                    !GET_PLAYERBOT_AI(member))
+                {
                     continue;
+                }
 
                 if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
                     candidates.push_back(member);
@@ -181,12 +186,16 @@ namespace MagtheridonHelpers
         std::list<Creature*> debrisList;
         constexpr float searchRadius = 40.0f;
         constexpr float debrisHazardRadius = 9.0f;
-        bot->GetCreatureListWithEntryInGrid(debrisList, NPC_TARGET_TRIGGER, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(
+            debrisList, static_cast<uint32>(MagtheridonNpcs::NPC_TARGET_TRIGGER), searchRadius);
 
         for (Creature* creature : debrisList)
         {
-            if (creature && creature->GetDistance2d(x, y) < debrisHazardRadius)
+            if (creature && creature->GetDistance2d(x, y) < debrisHazardRadius &&
+                creature->HasAura(static_cast<uint32>(MagtheridonSpells::SPELL_DEBRIS_VISUAL)))
+            {
                 return false;
+            }
         }
 
         // Conflagration

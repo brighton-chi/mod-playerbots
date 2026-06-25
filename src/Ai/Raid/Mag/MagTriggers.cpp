@@ -10,7 +10,7 @@ bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return magtheridon && magtheridon->HasAura(SPELL_SHADOW_CAGE);
+    return magtheridon && !IsMagtheridonActive(magtheridon);
 }
 
 bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
@@ -70,7 +70,11 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return magtheridon && !magtheridon->HasAura(SPELL_SHADOW_CAGE);
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
+        return false;
+
+    // In case another tank takes aggro
+    return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
 }
 
 bool MagtheridonBossEngagedByRangedTrigger::IsActive()
@@ -79,16 +83,14 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return magtheridon && !magtheridon->HasAura(SPELL_SHADOW_CAGE);
+    return magtheridon && IsMagtheridonActive(magtheridon) &&
+           magtheridon->GetVictim() != bot;
 }
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
-        return false;
-
-    return IsCubeClicker(bot);
+    return magtheridon && IsMagtheridonActive(magtheridon) && IsCubeClicker(bot);
 }
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()

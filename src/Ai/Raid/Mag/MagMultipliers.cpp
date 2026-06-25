@@ -21,15 +21,18 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     if (dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
-    if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
-        magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
+    if (!magtheridon->HasUnitState(UNIT_STATE_CASTING) ||
+        !magtheridon->FindCurrentSpellBySpellId(
+            static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA)))
     {
-        if (IsCubeClicker(bot) &&
-            !dynamic_cast<MagtheridonUseManticronCubeAction*>(action) &&
-            !dynamic_cast<MagtheridonManageTimersAndAssignmentsAction*>(action))
-        {
-            return 0.0f;
-        }
+        return 1.0f;
+    }
+
+    if (IsCubeClicker(bot) &&
+        !dynamic_cast<MagtheridonUseManticronCubeAction*>(action) &&
+        !dynamic_cast<MagtheridonManageTimersAndAssignmentsAction*>(action))
+    {
+        return 0.0f;
     }
 
     return 1.0f;
@@ -39,7 +42,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
     if (botAI->IsHeal(bot) ||
@@ -48,14 +51,15 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    constexpr uint8 dpsWaitSeconds = 6;
+    constexpr time_t dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
-    if (it == dpsWaitTimer.end() ||
-        (time(nullptr) - it->second) < dpsWaitSeconds)
+    if (it != dpsWaitTimer.end() && time(nullptr) - it->second > dpsWaitSeconds)
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastSpellAction*>(action))
     {
-        if (dynamic_cast<AttackAction*>(action) ||
-            dynamic_cast<CastSpellAction*>(action))
-            return 0.0f;
+        return 0.0f;
     }
 
     return 1.0f;

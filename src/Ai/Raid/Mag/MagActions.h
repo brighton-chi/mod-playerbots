@@ -91,6 +91,8 @@ private:
     bool ShouldActivateCubeLogic(Unit* magtheridon);
     bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
     bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
+    Position FindSafePositionNearCube(const CubeInfo& cubeInfo, float preferredDistance);
+    bool IsPathSafeFromHazards(const Position& start, const Position& end);
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action
