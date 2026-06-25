@@ -4,10 +4,14 @@
 #include "MagMultipliers.h"
 #include "MagActions.h"
 #include "MagHelpers.h"
+#include "DruidBearActions.h"
+#include "DKActions.h"
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include "WarriorActions.h"
 #include "WipeAction.h"
 
 using namespace MagtheridonHelpers;
@@ -78,16 +82,25 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot))
-    {
-        if (dynamic_cast<AvoidAoeAction*>(action))
-            return 0.0f;
+    if (!botAI->IsMainTank(bot))
+        return 1.0f;
 
-        if (!IsMagtheridonActive(magtheridon) &&
-            dynamic_cast<CastReachTargetSpellAction*>(action))
-        {
-            return 0.0f;
-        }
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    if (IsMagtheridonActive(magtheridon) || GetChanneler(bot, SOUTH_CHANNELER) ||
+        GetChanneler(bot, WEST_CHANNELER) || GetChanneler(bot, EAST_CHANNELER))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action))
+    {
+        return 0.0f;
     }
 
     return 1.0f;

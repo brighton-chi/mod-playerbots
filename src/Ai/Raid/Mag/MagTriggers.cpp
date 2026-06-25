@@ -80,8 +80,15 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return magtheridon && IsMagtheridonActive(magtheridon) &&
-           magtheridon->GetVictim() != bot;
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
+        return false;
+
+    constexpr time_t dpsWaitSeconds = 6;
+    auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
+    if (it == dpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+        return false;
+
+    return magtheridon->GetVictim() != bot;
 }
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActive()

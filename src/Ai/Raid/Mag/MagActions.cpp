@@ -10,31 +10,31 @@ using namespace MagtheridonHelpers;
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
-    Creature* currentTarget = nullptr;
+    Creature* channelerTarget = nullptr;
     if (Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER))
     {
-        currentTarget = channelerSquare;
+        channelerTarget = channelerSquare;
         MarkTargetWithSquare(bot, channelerSquare);
         SetRtiTarget(botAI, "square", channelerSquare);
     }
     else if (Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER))
     {
-        currentTarget = channelerStar;
+        channelerTarget = channelerStar;
         MarkTargetWithStar(bot, channelerStar);
         SetRtiTarget(botAI, "star", channelerStar);
     }
     else if (Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER))
     {
-        currentTarget = channelerCircle;
+        channelerTarget = channelerCircle;
         MarkTargetWithCircle(bot, channelerCircle);
         SetRtiTarget(botAI, "circle", channelerCircle);
     }
 
-    if (currentTarget && AI_VALUE(Unit*, "current target") != currentTarget)
-        return Attack(currentTarget);
+    if (channelerTarget && AI_VALUE(Unit*, "current target") != channelerTarget)
+        return Attack(channelerTarget);
 
     // After first three channelers are dead, wait for Magtheridon to activate
-    if (!currentTarget)
+    if (!channelerTarget)
     {
         const Position& position = WAITING_FOR_MAGTHERIDON_POSITION;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -345,8 +345,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
         }
     }
 
-    const Position& position = MAGTHERIDON_TANK_POSITION;
-    float safeDistFromBoss = magtheridon->GetExactDist2d(position) > 5.0f ? 5.0f : 15.0f;
+    constexpr float safeDistFromBoss = 15.0f;
     const float currentDistance = bot->GetDistance2d(magtheridon);
     if (currentDistance < safeDistFromBoss)
         return MoveAway(magtheridon, safeDistFromBoss - currentDistance);
