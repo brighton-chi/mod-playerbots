@@ -74,4 +74,11 @@ public:
     bool IsActive() override;
 };
 
+class MagtheridonStandingInDebrisTrigger : public Trigger
+{
+public:
+    MagtheridonStandingInDebrisTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon standing in debris") {};
+    bool IsActive() override;
+};
+
 #endif

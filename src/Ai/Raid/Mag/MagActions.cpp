@@ -482,6 +482,12 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
             if (!IsSafeFromMagtheridonHazards(botAI, bot, x, y))
                 continue;
 
+            constexpr float debrisHazardRadius = 9.0f;
+            constexpr uint32 debrisMaxAgeMs = 8000;
+            if (IsPositionInActiveDebris(
+                    bot->GetMap()->GetInstanceId(), x, y, debrisHazardRadius, debrisMaxAgeMs))
+                continue;
+
             const float moveDistance = bot->GetExactDist2d(x, y);
             Position candidate(x, y, bot->GetPositionZ());
             const bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), candidate);
@@ -513,8 +519,11 @@ bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
     const Position& start, const Position& end)
 {
     constexpr uint8 numChecks = 10;
+    constexpr float debrisHazardRadius = 9.0f;
+    constexpr uint32 debrisMaxAgeMs = 8000;
     const float dx = end.GetPositionX() - start.GetPositionX();
     const float dy = end.GetPositionY() - start.GetPositionY();
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
 
     for (uint8 i = 1; i <= numChecks; ++i)
     {
@@ -523,6 +532,9 @@ bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
         const float checkY = start.GetPositionY() + dy * ratio;
 
         if (!IsSafeFromMagtheridonHazards(botAI, bot, checkX, checkY))
+            return false;
+
+        if (IsPositionInActiveDebris(instanceId, checkX, checkY, debrisHazardRadius, debrisMaxAgeMs))
             return false;
     }
 
@@ -551,6 +563,59 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
 
     botAI->InterruptSpell();
     return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
+{
+    Position safePos;
+    if (FindSafePosition(safePos))
+    {
+        botAI->InterruptSpell();
+        return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
+}
+
+bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
+{
+    constexpr float maxSearchRadius = 15.0f;
+    constexpr float distanceStep = 1.0f;
+    constexpr float angleStep = M_PI / 12.0f;
+    constexpr float hazardRadius = 9.0f;
+    constexpr uint32 maxAgeMs = 8000;
+
+    float minMoveDistance = std::numeric_limits<float>::max();
+    bool foundSafe = false;
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+
+    for (float distance = 2.0f; distance <= maxSearchRadius; distance += distanceStep)
+    {
+        for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+        {
+            float const x = bot->GetPositionX() + distance * std::cos(angle);
+            float const y = bot->GetPositionY() + distance * std::sin(angle);
+
+            if (IsPositionInActiveDebris(instanceId, x, y, hazardRadius, maxAgeMs))
+                continue;
+
+            if (!IsSafeFromMagtheridonHazards(botAI, bot, x, y))
+                continue;
+
+            float const moveDistance = bot->GetExactDist2d(x, y);
+
+            if (!foundSafe || moveDistance < minMoveDistance)
+            {
+                outPos = Position(x, y, bot->GetPositionZ());
+                minMoveDistance = moveDistance;
+                foundSafe = true;
+            }
+        }
+    }
+
+    return foundSafe;
 }
 
 // Known issue: The Blast Nova timer resets when Magtheridon stops casting it, which is needed to

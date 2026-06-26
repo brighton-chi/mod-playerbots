@@ -528,6 +528,7 @@ void AddPlayerbotsSecureLoginScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_HyjalSummitBotScripts();
+void AddSC_MagtheridonBotScripts();
 void AddSC_SunwellPlateauBotScripts();
 
 void AddPlayerbotsScripts()
@@ -546,5 +547,6 @@ void AddPlayerbotsScripts()
     AddSC_TempestKeepBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_HyjalSummitBotScripts();
+    AddSC_MagtheridonBotScripts();
     AddSC_SunwellPlateauBotScripts();
 }

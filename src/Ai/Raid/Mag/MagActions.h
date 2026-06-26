@@ -107,4 +107,16 @@ private:
     bool lastBlastNovaState = false;
 };
 
+class MagtheridonMoveOutOfDebrisAction : public MovementAction
+{
+public:
+    MagtheridonMoveOutOfDebrisAction(
+        PlayerbotAI* botAI, std::string const name = "magtheridon move out of debris") : MovementAction(botAI, name) {};
+
+    bool Execute(Event event) override;
+
+private:
+    bool FindSafePosition(Position& outPos);
+};
+
 #endif

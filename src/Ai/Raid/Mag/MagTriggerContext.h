@@ -38,6 +38,9 @@ public:
 
         creators["magtheridon need to manage timers and assignments"] =
             &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
+
+        creators["magtheridon standing in debris"] =
+            &RaidMagtheridonTriggerContext::magtheridon_standing_in_debris;
     }
 
 private:
@@ -79,6 +82,10 @@ private:
 
     static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI);
+    }
+
+    static Trigger* magtheridon_standing_in_debris(PlayerbotAI* botAI) {
+        return new MagtheridonStandingInDebrisTrigger(botAI);
     }
 };
 

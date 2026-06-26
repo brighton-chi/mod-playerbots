@@ -70,6 +70,13 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
+    // Suppress if the tank position is in debris
+    if (IsPositionInActiveDebris(
+            magtheridon->GetMap()->GetInstanceId(),
+            MAGTHERIDON_TANK_POSITION.GetPositionX(),
+            MAGTHERIDON_TANK_POSITION.GetPositionY(), 9.0f, 8000))
+        return false;
+
     // Include an assist tank that pulls aggro
     return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
 }
@@ -101,4 +108,14 @@ bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
     return !botAI->IsTank(bot) &&
            AI_VALUE2(Unit*, "find target", "magtheridon");
+}
+
+bool MagtheridonStandingInDebrisTrigger::IsActive()
+{
+    constexpr float hazardRadius  = 9.0f;
+    constexpr uint32 maxAgeMs     = 8000;
+
+    return IsPositionInActiveDebris(
+        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY(),
+        hazardRadius, maxAgeMs);
 }

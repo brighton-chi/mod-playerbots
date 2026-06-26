@@ -32,6 +32,9 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("magtheridon need to manage timers and assignments", {
         NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 11) }));
+
+    triggers.push_back(new TriggerNode("magtheridon standing in debris", {
+        NextAction("magtheridon move out of debris", ACTION_EMERGENCY + 9) }));
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

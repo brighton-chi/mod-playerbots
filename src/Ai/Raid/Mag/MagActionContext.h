@@ -38,6 +38,9 @@ public:
 
         creators["magtheridon manage timers and assignments"] =
             &RaidMagtheridonActionContext::magtheridon_manage_timers_and_assignments;
+
+        creators["magtheridon move out of debris"] =
+            &RaidMagtheridonActionContext::magtheridon_move_out_of_debris;
     }
 
 private:
@@ -79,6 +82,10 @@ private:
 
     static Action* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonManageTimersAndAssignmentsAction(botAI);
+    }
+
+    static Action* magtheridon_move_out_of_debris(PlayerbotAI* botAI) {
+        return new MagtheridonMoveOutOfDebrisAction(botAI);
     }
 };
 

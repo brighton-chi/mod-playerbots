@@ -199,24 +199,31 @@ namespace MagtheridonHelpers
         }
     }
 
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y)
-    {
-        // Debris
-        std::list<Creature*> debrisList;
-        constexpr float searchRadius = 40.0f;
-        constexpr float debrisHazardRadius = 9.0f;
-        bot->GetCreatureListWithEntryInGrid(
-            debrisList, static_cast<uint32>(MagtheridonNpcs::NPC_TARGET_TRIGGER), searchRadius);
+    std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 
-        for (Creature* creature : debrisList)
+    bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius, uint32 maxAgeMs)
+    {
+        auto it = activeDebrisPositions.find(instanceId);
+        if (it == activeDebrisPositions.end())
+            return false;
+
+        uint32 const now = getMSTime();
+        for (DebrisData const& debris : it->second)
         {
-            if (creature && creature->GetDistance2d(x, y) < debrisHazardRadius &&
-                creature->HasAura(static_cast<uint32>(MagtheridonSpells::SPELL_DEBRIS_VISUAL)))
-            {
-                return false;
-            }
+            if (getMSTimeDiff(debris.spawnTime, now) > maxAgeMs)
+                continue;
+
+            float dx = x - debris.position.GetPositionX();
+            float dy = y - debris.position.GetPositionY();
+            if ((dx * dx + dy * dy) < (radius * radius))
+                return true;
         }
 
+        return false;
+    }
+
+    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y)
+    {
         // Conflagration
         constexpr float conflagrationHazardRadius = 5.0f;
         GuidVector const& gameObjects =

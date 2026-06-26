@@ -18,6 +18,7 @@ enum class MagtheridonSpells : uint32
     SPELL_SHADOW_CAGE       = 30205,
     SPELL_BLAST_NOVA        = 30616,
     SPELL_SHADOW_GRASP      = 30410,
+    SPELL_DEBRIS_SPAWN      = 30630,
     SPELL_DEBRIS_VISUAL     = 30632,
 
     // Hunter
@@ -28,6 +29,7 @@ enum class MagtheridonNpcs : uint32
 {
     NPC_BURNING_ABYSSAL = 17454,
     NPC_TARGET_TRIGGER  = 17474,
+    NPC_DEBRIS          = 17516,
 };
 
 enum class MagtheridonObjects : uint32
@@ -71,6 +73,15 @@ bool IsCubeClicker(Player* bot);
 void AssignCubeClickers(Group* group, Map* map, PlayerbotAI* botAI);
 void RemoveCubeClicker(Player* bot);
 bool NeedsCubeReassignment(uint32 instanceId);
+
+// Debris tracking — populated by MagScripts.cpp AllSpellScript hook
+struct DebrisData
+{
+    Position position;
+    uint32 spawnTime;
+};
+extern std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
+bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius, uint32 maxAgeMs);
 
 }
 
