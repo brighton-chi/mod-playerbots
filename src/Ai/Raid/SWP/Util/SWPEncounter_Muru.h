@@ -44,7 +44,8 @@ extern const Position MURU_CENTER_POSITION;
 extern const Position MURU_ENTRANCE_POSITION;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    muruVoidSentinelTankAssignments;
 
 Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);

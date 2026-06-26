@@ -58,8 +58,7 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_PRIEST &&
-           AI_VALUE2(Unit*, "find target", "apocalypse guard");
+    return bot->getClass() == CLASS_PRIEST && AI_VALUE2(Unit*, "find target", "apocalypse guard");
 }
 
 // Kalecgos
@@ -124,6 +123,7 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
 
     Aura* arcaneBuffet =
         bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_ARCANE_BUFFET));
+
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
@@ -158,22 +158,14 @@ bool BrutallusBossEngagedByTanksTrigger::IsActive()
 
 bool BrutallusBossEngagedByMeleeTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
-        return false;
-
-    return botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
-           !botAI->IsAssistTankOfIndex(bot, 0, true);
+    return botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "brutallus") &&
+           !botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool BrutallusBossEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
-        return false;
-
-    return !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "brutallus") &&
+           bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
 }
 
 bool BrutallusBotIsBurningTrigger::IsActive()
@@ -211,10 +203,7 @@ bool FelmystPullingBossTrigger::IsActive()
 bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
-        return false;
-
-    return botAI->IsMainTank(bot);
+    return felmyst && !felmyst->IsFlying() && botAI->IsMainTank(bot);
 }
 
 bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
@@ -306,10 +295,7 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
 bool FelmystBossSummonsDemonicVaporTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || !felmyst->IsFlying())
-        return false;
-
-    if (GetFelmystDemonicVaporSummonedByBot(bot))
+    if (!felmyst || !felmyst->IsFlying() || GetFelmystDemonicVaporSummonedByBot(bot))
         return false;
 
     FelmystFogOfCorruptionState fogState;
@@ -490,20 +476,16 @@ bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
 
 bool MuruBossesEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "m'uru") ||
-           AI_VALUE2(Unit*, "find target", "entropius");
+    return botAI->IsRanged(bot) &&
+           (AI_VALUE2(Unit*, "find target", "m'uru") ||
+            AI_VALUE2(Unit*, "find target", "entropius"));
 }
 
 bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "m'uru") ||
-           AI_VALUE2(Unit*, "find target", "entropius");
+    return botAI->IsDps(bot) &&
+           (AI_VALUE2(Unit*, "find target", "m'uru") ||
+            AI_VALUE2(Unit*, "find target", "entropius"));
 }
 
 bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
@@ -666,10 +648,7 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    if (bot->HasAura(
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
@@ -708,10 +687,7 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return false;
-
-    if (bot->HasAura(
+    if (!kiljaeden || bot->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
@@ -726,10 +702,7 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    if (bot->HasAura(
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
@@ -755,10 +728,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    if (bot->HasAura(
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
@@ -799,10 +769,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
-    if (bot->HasAura(
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
             static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
     {
         return false;
@@ -851,10 +818,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
-        return false;
-
-    if (GetKiljaedenDragonOrbUser(bot) != bot)
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f || GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
 
     constexpr uint32 orbUseGracePeriodMs = 2000;

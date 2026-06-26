@@ -22,7 +22,8 @@ namespace
 {
 
 const Position ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-const std::array<Position, ALYTHESS_TANK_POSITION_COUNT> alythessTankPositions = {{
+const std::array<Position, ALYTHESS_TANK_POSITION_COUNT> alythessTankPositions =
+{{
     { 1816.830f, 620.792f, 33.404f },
     { 1824.211f, 625.169f, 33.404f },
     { 1818.701f, 631.196f, 33.404f },
@@ -157,8 +158,7 @@ bool IsAlythessTankPositionSafe(Player* bot, const Position& position)
 
     std::list<GameObject*> targets;
     AnyGameObjectInObjectRangeCheck u_check(bot, blazeSearchRadius);
-    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(
-        bot, targets, u_check);
+    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, blazeSearchRadius);
 
     for (GameObject* go : targets)
@@ -185,8 +185,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_BLAZE),
-        blazeObjectRadius);
+        static_cast<uint32>(SunwellObjects::GO_BLAZE), blazeObjectRadius);
 
     if (!blazeObject)
     {

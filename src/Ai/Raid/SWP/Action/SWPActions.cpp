@@ -109,8 +109,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         }
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "m'uru") &&
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru") &&
         !AI_VALUE2(Unit*, "find target", "entropius"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
@@ -120,8 +119,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
     {
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
@@ -133,10 +131,10 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         }
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
+        ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
     {
-        ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
+        erased = true;
     }
 
     return erased;

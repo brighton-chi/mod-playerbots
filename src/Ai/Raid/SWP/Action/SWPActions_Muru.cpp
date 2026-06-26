@@ -135,11 +135,8 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
-            !botAI->IsRanged(member))
-        {
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
             continue;
-        }
 
         rangedMembers.push_back(member);
     }
@@ -214,14 +211,9 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     {
         bool needsAttack = false;
         if (botAI->IsMelee(bot))
-        {
-            needsAttack = currentTarget != target ||
-                !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
-        }
+            needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
         else
-        {
             needsAttack = currentTarget != target;
-        }
 
         if (needsAttack)
             return Attack(target);
@@ -268,11 +260,15 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
         currentTarget,
         static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
 
-    Player* voidSentinelVictim = voidSentinel && voidSentinel->IsAlive() ?
-        (voidSentinel->GetVictim() ? voidSentinel->GetVictim()->ToPlayer() : nullptr) : nullptr;
+    Player* voidSentinelVictim = nullptr;
+    if (voidSentinel && voidSentinel->IsAlive())
+    {
+        Unit* victim = voidSentinel->GetVictim();
+        if (victim)
+            voidSentinelVictim = victim->ToPlayer();
+    }
 
-    const bool voidSentinelHasTankAggro =
-        voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
+    const bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
@@ -399,11 +395,8 @@ Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
     Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const
 {
     Unit* selected = nullptr;
-    if (currentTarget && currentTarget->IsAlive() &&
-        currentTarget->GetEntry() == entry)
-    {
+    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
         selected = currentTarget;
-    }
 
     constexpr float targetSwitchDistance = 10.0f;
     auto const getDistanceFromStack = [](Unit* unit)
@@ -454,8 +447,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     {
         for (Creature* creature : darkFiends)
         {
-            if (creature && creature->IsAlive() &&
-                creature->GetExactDist2d(muru) < 15.0f)
+            if (creature && creature->IsAlive() && creature->GetExactDist2d(muru) < 15.0f)
             {
                 darkFiendNearMuru = creature;
                 break;
@@ -515,11 +507,8 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 10.0f;
     const float distFromHazard = bot->GetDistance2d(hazard);
-    if (distFromHazard < safeDistance &&
-        MoveAway(hazard, safeDistance - distFromHazard))
-    {
+    if (distFromHazard < safeDistance && MoveAway(hazard, safeDistance - distFromHazard))
         return true;
-    }
 
     const float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
     return Move(randomAngle, safeDistance - distFromHazard);
@@ -620,8 +609,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     GatherMuruEncounterTargets(botAI, targets);
     const bool isTankingVoidSentinel = std::any_of(
         targets.voidSentinels.begin(), targets.voidSentinels.end(),
-        [this](Unit* voidSentinel)
-        {
+        [this](Unit* voidSentinel) {
             return voidSentinel && voidSentinel->GetVictim() == bot;
         });
 

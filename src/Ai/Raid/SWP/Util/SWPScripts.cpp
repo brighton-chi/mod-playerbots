@@ -60,8 +60,7 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
     if (!referencePlayer)
         return nullptr;
 
-    if (!referencePlayer->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (!referencePlayer->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
     {
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
             botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
@@ -79,8 +78,7 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
         Player* member = ref->GetSource();
         if (!member || member == referencePlayer ||
             member->GetMapId() != referencePlayer->GetMapId() ||
-            member->HasAura(
-                static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+            member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
         {
             continue;
         }
@@ -116,7 +114,8 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
+static void RequestInterruptForBotsNeedingFelmystFogMovement(
+    Unit* contextUnit, Player* groupReference)
 {
     if (!contextUnit)
         return;
@@ -130,10 +129,7 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive())
-            continue;
-
-        if (group && player->GetGroup() != group)
+        if (!player || !player->IsAlive() || (group && player->GetGroup() != group))
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
@@ -150,8 +146,11 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, 
 
         std::array<Position, 3> destinations;
         uint8 destinationCount = 0;
-        if (!TryGetFelmystFogSafeDestinations(player, fogState.lane, destinations, destinationCount))
+        if (!TryGetFelmystFogSafeDestinations(
+                player, fogState.lane, destinations, destinationCount))
+        {
             continue;
+        }
 
         botAI->RequestSpellInterrupt();
     }
@@ -247,11 +246,9 @@ class KalecgosSpellListenerScript : public AllSpellScript
 public:
     KalecgosSpellListenerScript() : AllSpellScript("KalecgosSpellListenerScript") {}
 
-    void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spellInfo)
-            return;
-
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
@@ -280,7 +277,8 @@ public:
                 break;
 
             case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
-                RecordKalecgosNormalRealmEnter(player);
+                if (FindFirstSunwellCombatBotInGroup(player))
+                    UpdateKalecgosRealmState(player, false, getMSTime());
                 break;
 
             default:
@@ -296,9 +294,6 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!spell || !caster || !spellInfo)
-            return;
-
         if (spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE))
             return;
 
@@ -388,9 +383,6 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo)
-            return;
-
         if (caster->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS) ||
             spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
         {
@@ -430,8 +422,8 @@ public:
             {
                 hasSunwellStrategy = true;
 
-                if (!player->IsAlive() ||
-                    player->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+                if (!player->IsAlive() || player->HasAura(
+                        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
                 {
                     continue;
                 }
@@ -443,8 +435,11 @@ public:
             }
         }
 
-        if (!hasSunwellStrategy || !kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
+        if (!hasSunwellStrategy ||
+            !kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
+        {
             return;
+        }
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
@@ -502,17 +497,14 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || !spellInfo)
-            return;
-
         if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
         {
             Map::PlayerList const& players = caster->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
             {
                 Player* player = it->GetSource();
-                if (!player || !player->IsAlive() ||
-                    player->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+                if (!player || !player->IsAlive() || player->HasAura(
+                        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
                 {
                     continue;
                 }

@@ -130,11 +130,8 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
     if (kalecgos && kalecgos->IsFriendlyTo(bot))
         return 1.0f;
 
-    if (!kalecgos &&
-        !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
-    {
+    if (!kalecgos && !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
         return 1.0f;
-    }
 
     if (dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
@@ -175,8 +172,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 
 float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsAssistTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (!botAI->IsAssistTank(bot) || !AI_VALUE2(Unit*, "find target", "kalecgos"))
     {
         return 1.0f;
     }
@@ -388,10 +384,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
-        return 1.0f;
-
-    if (!GetFelmystEncapsulateTarget(bot))
+    if (!felmyst || felmyst->IsFlying() || !GetFelmystEncapsulateTarget(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -861,11 +854,8 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
     if (!kiljaeden)
         return 1.0f;
 
-    if (bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
-    {
+    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
         return 1.0f;
-    }
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
         dynamic_cast<MovementAction*>(action) &&
@@ -883,11 +873,8 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (!bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
-    {
+    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
         return 1.0f;
-    }
 
     if (dynamic_cast<WipeAction*>(action))
         return 1.0f;

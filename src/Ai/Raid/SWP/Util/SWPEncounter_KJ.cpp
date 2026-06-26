@@ -19,10 +19,7 @@ namespace SunwellHelpers
 namespace
 {
 
-std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-
-float GetCenteredArcSlotAngleOffset(
-    uint8 slotIndex, uint8 slotCount, float arcWidth)
+float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
         return 0.0f;
@@ -152,14 +149,13 @@ uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
-std::unordered_map<uint32, std::vector<KiljaedenArmageddon>>
-    kiljaedenArmageddons;
+std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
 
-std::unordered_map<uint32, uint32>
-    kiljaedenDragonOrbAnnouncementTimes;
+std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    kiljaedenRangedAssignments;
+std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
+
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     kiljaedenRangedArmageddonAssignments;
@@ -251,10 +247,9 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
         localSlotIndex -= KILJAEDEN_INNER_RANGED_SLOT_COUNT;
     }
 
-    const float angleOffset =
-        GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
-    const float angle = Position::NormalizeOrientation(
-        KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
+    const float angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
+    const float angle =
+        Position::NormalizeOrientation(KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
     const float positionX =
         KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
     const float positionY =
@@ -445,9 +440,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     {
         CandidateSlotScore score;
         score.slotIndex = candidateSlotIndex;
-        score.sameRow =
-            (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
-            (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
+        score.sameRow = (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
+                        (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
         float angleDistance = Position::NormalizeOrientation(
             slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]);
         if (angleDistance > static_cast<float>(M_PI))
@@ -460,8 +454,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     };
 
     auto const shouldTakeCandidate = [&](CandidateSlotScore const& candidate,
-                                         CandidateSlotScore const& best,
-                                         bool bestFound)
+                                         CandidateSlotScore const& best, bool bestFound)
     {
         if (!bestFound)
             return true;
@@ -501,13 +494,12 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         bestCandidate.slotIndex = rangedBot.slotIndex;
 
         for (uint8 candidateSlotIndex = 0;
-                candidateSlotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++candidateSlotIndex)
+             candidateSlotIndex < KILJAEDEN_TOTAL_RANGED_SLOT_COUNT; ++candidateSlotIndex)
         {
             if (!safeSlots[candidateSlotIndex] || plannedOccupancy[candidateSlotIndex] >= 2)
                 continue;
 
-            const CandidateSlotScore candidate =
-                getCandidateScore(rangedBot, candidateSlotIndex);
+            const CandidateSlotScore candidate = getCandidateScore(rangedBot, candidateSlotIndex);
             if (!shouldTakeCandidate(candidate, bestCandidate, bestFound))
                 continue;
 
@@ -546,11 +538,6 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     return nullptr;
 }
 
-void RecordKiljaedenDragonOrbUse(Player* bot)
-{
-    kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
-}
-
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 {
     auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
@@ -560,20 +547,18 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
     return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
 }
 
-void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
+bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 {
     auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
     if (announcementTime == kiljaedenDragonOrbAnnouncementTimes.end())
-        return;
+        return false;
 
     constexpr uint32 announcementResetDelayMs = 10000;
-    if (getMSTimeDiff(announcementTime->second, getMSTime()) <
-        announcementResetDelayMs)
-    {
-        return;
-    }
+    if (getMSTimeDiff(announcementTime->second, getMSTime()) < announcementResetDelayMs)
+        return false;
 
     kiljaedenDragonOrbAnnouncementTimes.erase(announcementTime);
+    return true;
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)

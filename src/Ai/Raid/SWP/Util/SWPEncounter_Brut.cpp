@@ -35,8 +35,7 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
                    BRUTALLUS_MAIN_TANK_POSITION.GetPositionX() - brutallus->GetPositionX()));
 }
 
-Position GetBrutallusPositionAtAngle(
-    Unit* brutallus, float angle, float radius, float z)
+Position GetBrutallusPositionAtAngle(Unit* brutallus, float angle, float radius, float z)
 {
     if (!brutallus)
         return { 0.0f, 0.0f, z };
@@ -49,8 +48,7 @@ Position GetBrutallusPositionAtAngle(
 namespace
 {
 
-float GetCenteredArcSlotAngleOffset(
-    uint8 slotIndex, uint8 slotCount, float arcWidth)
+float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
         return 0.0f;
@@ -78,8 +76,7 @@ float GetCenteredArcSlotAngleOffset(
     return angleOffset;
 }
 
-float GetBrutallusTankAngle(
-    Unit* brutallus, Player* tank, float fallbackAngle)
+float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
 {
     if (!brutallus || !tank)
         return Position::NormalizeOrientation(fallbackAngle);
@@ -89,8 +86,7 @@ float GetBrutallusTankAngle(
                    tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-float GetBrutallusMidpointAngle(
-    Unit* brutallus, Player* mainTank, Player* assistTank)
+float GetBrutallusMidpointAngle(Unit* brutallus, Player* mainTank, Player* assistTank)
 {
     const float mainTankAngle =
         GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
@@ -293,8 +289,7 @@ bool TryGetBrutallusAssignedPositionIndex(
 
         const bool isMelee = botAI->IsMelee(member);
         if ((wantRanged && isMelee) || (!wantRanged && !isMelee) ||
-            botAI->IsMainTank(member) ||
-            botAI->IsAssistTankOfIndex(member, 0, true))
+            botAI->IsMainTank(member) || botAI->IsAssistTankOfIndex(member, 0, true))
         {
             continue;
         }
@@ -337,8 +332,7 @@ bool TryGetBrutallusRangedPosition(
         GetBrutallusArcPositionIndex(rangedIndex)
     };
 
-    const float angle =
-        GetBrutallusRangedSlotAngle(brutallus, mainTank, assistTank, slotInfo);
+    const float angle = GetBrutallusRangedSlotAngle(brutallus, mainTank, assistTank, slotInfo);
 
     position = GetBrutallusPositionAtAngle(brutallus, angle, radius, z);
     return true;
@@ -441,8 +435,7 @@ void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
 
     auto const assignNextOpenSlot = [&](Player* member)
     {
-        for (uint8 slotIndex = 0;
-                slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
+        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
         {
             if (usedPositions[slotIndex])
                 continue;
@@ -464,11 +457,8 @@ void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
-            !botAI->IsRanged(member))
-        {
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
             continue;
-        }
 
         if (assignments.find(member->GetGUID()) != assignments.end())
             continue;

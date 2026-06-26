@@ -273,7 +273,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
             Position(
                 lastMove.lastMoveToX, lastMove.lastMoveToY,
                 lastMove.lastMoveToZ).GetExactDist(destination) >
-                FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+            FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
         {
             continue;
         }
@@ -350,7 +350,7 @@ bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
 
     if (!_fogCrateStuckSampleMs ||
         _fogCrateStuckDestination.GetExactDist(destination) >
-            FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+        FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
     {
         _fogCrateStuckDestination = destination;
         _fogCrateStuckNearestDistance = distanceToDestination;

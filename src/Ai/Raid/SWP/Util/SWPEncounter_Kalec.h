@@ -63,7 +63,7 @@ Player* GetKalecgosReplacementTank(PlayerbotAI* botAI, Player* bot);
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
-void RecordKalecgosNormalRealmEnter(Player* bot);
+void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp);
 
 }
 

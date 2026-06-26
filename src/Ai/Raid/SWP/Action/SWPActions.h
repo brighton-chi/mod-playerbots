@@ -455,7 +455,7 @@ class MuruEnslavedVoidSpawnAttackAction : public Action
 {
 public:
     MuruEnslavedVoidSpawnAttackAction(
-        PlayerbotAI* botAI, std::string const name) : Action(botAI, name) {}
+        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn attack") : Action(botAI, name) {}
 
 protected:
     Unit* GetControlledVoidSpawn() const;
@@ -467,7 +467,8 @@ class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidS
 {
 public:
     MuruEnslavedVoidSpawnCastShadowBoltVolleyAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") : MuruEnslavedVoidSpawnAttackAction(botAI, name) {}
+        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn cast shadow bolt volley") :
+        MuruEnslavedVoidSpawnAttackAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

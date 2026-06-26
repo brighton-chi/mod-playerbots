@@ -237,7 +237,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedPosition(
-            brutallus, mainTank, assistTank, rangedIndex,
+                brutallus, mainTank, assistTank, rangedIndex,
                 BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
         {
             return false;

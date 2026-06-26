@@ -40,9 +40,12 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
         {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "kiljaeden_no_designated_dragon_orb_user",
-                "No bot has been assigned as the designated dragon orb user, and therefore a player must control the dragons."
-                "If you would like a bot to use the dragon orbs, please set the assistant flag for a bot.",
-                {});
+                "No bot has been assigned as the designated dragon orb user, "
+                "and therefore a player must control the dragons. "
+                "If you would like a bot to use the dragon orbs, "
+                "please set the assistant flag for a bot.",
+                {}
+            );
         }
 
         return botAI->SayToRaid(text);
@@ -73,15 +76,7 @@ bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint32 minInterval = 0;
-    if (FleePosition(armageddon.destination, armageddon.safeDistance, minInterval))
-        return true;
-
-    /* constexpr float minDistance = 5.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-    if (nearestPlayer)
-        return FleePosition(nearestPlayer->GetPosition(), minDistance); */
-
-    return false;
+    return FleePosition(armageddon.destination, armageddon.safeDistance, minInterval);
 }
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
@@ -316,7 +311,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     if (closestDistance < 3.0f)
     {
         closestOrb->Use(bot);
-        RecordKiljaedenDragonOrbUse(bot);
+        kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
         return true;
     }
 
@@ -342,8 +337,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         return false;
 
     // Design choice: End drake control after phase changes
-    if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-        kiljaeden->FindCurrentSpellBySpellId(
+    if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) && kiljaeden->FindCurrentSpellBySpellId(
             static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
     {
         _inDarkness = false;
@@ -351,11 +345,9 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         _darknessStartMs = 0;
         _lastDarknessCastMsLeft = 0;
 
-        if (bot->HasAura(
-                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
         {
-            bot->RemoveAura(
-                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+            bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
             return true;
         }
 
@@ -424,7 +416,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
 
     const uint32 darknessCastTimeLeft = darknessSpell->GetCastTimeRemaining();
     bool const darknessCastReset = _lastDarknessCastMsLeft > 0 &&
-        darknessCastTimeLeft > _lastDarknessCastMsLeft + 250;
+               darknessCastTimeLeft > _lastDarknessCastMsLeft + 250;
     if (!_inDarkness || darknessCastReset)
     {
         _inDarkness = true;
@@ -432,7 +424,6 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         _darknessStartMs = getMSTime();
     }
 
-    // const uint32 darknessElapsedMs = getMSTimeDiff(darknessState.darknessStartMs, getMSTime());
     if (darknessCastTimeLeft > 3000)
     {
         if (CastKiljaedenDragonSpell(
@@ -450,10 +441,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
         }
     }
 
-    // constexpr uint32 minDarknessElapsedBeforeShieldMs = 3000;
-    if (!_shieldCastThisDarkness &&
-        darknessCastTimeLeft < 4500 /* &&
-        darknessElapsedMs >= minDarknessElapsedBeforeShieldMs */)
+    if (!_shieldCastThisDarkness && darknessCastTimeLeft < 4500)
     {
         bool const castedShield = CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));

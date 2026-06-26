@@ -29,8 +29,11 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
 
 void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    Unit* sacrolash =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
+    Unit* alythess =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+
     if (sacrolash && alythess)
         exclusions.insert(alythess->GetGUID());
 }
@@ -107,8 +110,11 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
     for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker || attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+        if (!attacker ||
+            attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+        {
             continue;
+        }
 
         Unit* victim = attacker->GetVictim();
         if (!victim || !victim->IsPlayer() || !botAI->IsTank(victim->ToPlayer()))
