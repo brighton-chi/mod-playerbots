@@ -1,7 +1,10 @@
 #include "MagTriggers.h"
 #include "MagHelpers.h"
+#include "Log.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+
+#include <unordered_map>
 
 using namespace MagtheridonHelpers;
 
@@ -109,8 +112,21 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr) &&
-           AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr) ||
+        !AI_VALUE2(Unit*, "find target", "magtheridon"))
+        return false;
+
+    static std::unordered_map<uint32, ObjectGuid> lastKnownTracker;
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    ObjectGuid const currentGuid = bot->GetGUID();
+
+    if (lastKnownTracker[instanceId] != currentGuid)
+    {
+        LOG_INFO("playerbots", "Mag: tracker changed to {}", bot->GetName());
+        lastKnownTracker[instanceId] = currentGuid;
+    }
+
+    return true;
 }
 
 bool MagtheridonStandingInDebrisTrigger::IsActive()

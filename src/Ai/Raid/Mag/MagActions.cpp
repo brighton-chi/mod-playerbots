@@ -603,13 +603,13 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         magtheridon->FindCurrentSpellBySpellId(
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
-    if (!_lastBlastNovaState && blastNovaActive)
+    if (!lastBlastNovaState[instanceId] && blastNovaActive)
     {
         blastNovaTimer[instanceId] = now;
-        LOG_INFO("playerbots", "Mag: Nova start, blastNovaTimer={}", now);
+        LOG_INFO("playerbots", "Mag: Nova start, timer={}", now);
     }
 
-    _lastBlastNovaState = blastNovaActive;
+    lastBlastNovaState[instanceId] = blastNovaActive;
 
     bool updated = false;
 
@@ -621,12 +621,11 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         if (dpsWaitTimer.try_emplace(instanceId, now).second)
             updated = true;
 
-        if (magtheridon->GetHealthPct() < 30.0f && !_ceilingCollapseApplied)
+        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied[instanceId])
         {
             blastNovaTimer[instanceId] += 18;
-            _ceilingCollapseApplied = true;
+            ceilingCollapseApplied[instanceId] = true;
             updated = true;
-            LOG_INFO("playerbots", "Mag: Ceiling +18s, blastNovaTimer={}", blastNovaTimer[instanceId]);
         }
 
         if (NeedsCubeReassignment(instanceId) && AssignCubeClickers())
@@ -643,20 +642,21 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         if (botToCubeAssignments.erase(instanceId) > 0)
             updated = true;
 
-        if (_lastBlastNovaState)
-        {
-            _lastBlastNovaState = false;
+        if (ceilingCollapseApplied.erase(instanceId) > 0)
             updated = true;
-        }
 
-        if (_ceilingCollapseApplied)
-        {
-            _ceilingCollapseApplied = false;
+        if (lastBlastNovaState.erase(instanceId) > 0)
             updated = true;
-        }
     }
 
-    LOG_INFO("playerbots", "Mag: tick blastNovaTimer={}", blastNovaTimer.count(instanceId) ? static_cast<long>(blastNovaTimer[instanceId]) : -1L);
+    auto timerIt = blastNovaTimer.find(instanceId);
+    long elapsed = timerIt != blastNovaTimer.end() ? static_cast<long>(time(nullptr) - timerIt->second) : -1L;
+    static long lastLoggedElapsed = -2L;
+    if (elapsed != lastLoggedElapsed)
+    {
+        LOG_INFO("playerbots", "Mag: elapsed={}s", elapsed);
+        lastLoggedElapsed = elapsed;
+    }
 
     return updated;
 }

@@ -7,7 +7,11 @@
 #include "DruidBearActions.h"
 #include "DKActions.h"
 #include "ChooseTargetActions.h"
+#include "FollowActions.h"
 #include "GenericSpellActions.h"
+#include "HunterActions.h"
+#include "MageActions.h"
+#include "MovementActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
@@ -16,26 +20,29 @@
 
 using namespace MagtheridonHelpers;
 
-// Don't do anything other than clicking cubes when Magtheridon is casting Blast Nova
+// When a cube clicker is in the handling phase (waiting near cube or moving to click),
+// suppress movement actions that would pull them away from the cube
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return 1.0f;
 
-    if (dynamic_cast<WipeAction*>(action))
+    if (!IsCubeClicker(bot))
         return 1.0f;
 
-    if (!magtheridon->HasUnitState(UNIT_STATE_CASTING) ||
-        !magtheridon->FindCurrentSpellBySpellId(
-            static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA)))
+    auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
+    if (timerIt == blastNovaTimer.end() ||
+        time(nullptr) - timerIt->second < BLAST_NOVA_INTERIM_SECONDS)
     {
         return 1.0f;
     }
 
-    if (IsCubeClicker(bot) &&
-        !dynamic_cast<MagtheridonUseManticronCubeAction*>(action) &&
-        !dynamic_cast<MagtheridonManageTimersAndAssignmentsAction*>(action))
+    if (dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action))
     {
         return 0.0f;
     }

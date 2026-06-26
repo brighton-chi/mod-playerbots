@@ -64,6 +64,8 @@ extern const Position HEALER_SPREAD_POSITION;
 
 extern std::unordered_map<uint32, time_t> dpsWaitTimer;
 extern std::unordered_map<uint32, time_t> blastNovaTimer;
+extern std::unordered_map<uint32, bool> ceilingCollapseApplied;
+extern std::unordered_map<uint32, bool> lastBlastNovaState;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>>
     botToCubeAssignments;
 extern std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;

@@ -1,6 +1,5 @@
 #include "MagHelpers.h"
 #include "AllSpellScript.h"
-#include "Log.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "ScriptMgr.h"
@@ -38,7 +37,7 @@ public:
             if (it != blastNovaTimer.end())
             {
                 it->second += 7;
-                LOG_INFO("playerbots", "Mag: Quake +7s, blastNovaTimer={}", it->second);
+                LOG_INFO("playerbots", "Mag: Quake +7s, timer={}", it->second);
             }
         }
     }

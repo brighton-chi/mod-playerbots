@@ -106,8 +106,6 @@ public:
 private:
     bool AssignCubeClickers();
     bool NeedsCubeReassignment(uint32 instanceId);
-    bool _lastBlastNovaState = false;
-    bool _ceilingCollapseApplied = false;
 };
 
 class MagtheridonMoveOutOfDebrisAction : public MovementAction
