@@ -63,7 +63,13 @@ bool KiljaedenMoveAwayFromFelfirePortalAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 15.0f;
-    if (bot->GetDistance2d(felfirePortal) < safeDistance)
+    const float currentDistance = bot->GetDistance2d(felfirePortal);
+    if (currentDistance >= safeDistance)
+        return false;
+
+    if (botAI->IsTank(bot))
+        return MoveAway(felfirePortal, safeDistance - currentDistance, true);
+    else
         return FleePosition(felfirePortal->GetPosition(), safeDistance);
 
     return false;
