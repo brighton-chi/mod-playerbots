@@ -20,6 +20,7 @@ enum class MagtheridonSpells : uint32
     SPELL_SHADOW_GRASP      = 30410,
     SPELL_DEBRIS_SPAWN      = 30630,
     SPELL_DEBRIS_VISUAL     = 30632,
+    SPELL_QUAKE             = 30657,
 
     // Hunter
     SPELL_MISDIRECTION      = 35079,
