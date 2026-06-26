@@ -60,6 +60,13 @@ public:
     bool IsActive() override;
 };
 
+class MagtheridonStandingInDebrisTrigger : public Trigger
+{
+public:
+    MagtheridonStandingInDebrisTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon standing in debris") {};
+    bool IsActive() override;
+};
+
 class MagtheridonIncomingBlastNovaTrigger : public Trigger
 {
 public:
@@ -71,13 +78,6 @@ class MagtheridonNeedToManageTimersAndAssignmentsTrigger : public Trigger
 {
 public:
     MagtheridonNeedToManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon need to manage timers and assignments") {};
-    bool IsActive() override;
-};
-
-class MagtheridonStandingInDebrisTrigger : public Trigger
-{
-public:
-    MagtheridonStandingInDebrisTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon standing in debris") {};
     bool IsActive() override;
 };
 

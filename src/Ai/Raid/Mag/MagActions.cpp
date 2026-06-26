@@ -460,10 +460,10 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
         const float x = cubeInfo.x + std::cos(angle) * preferredDistance;
         const float y = cubeInfo.y + std::sin(angle) * preferredDistance;
 
-        if (IsPositionInActiveConflagration(botAI, bot, x, y))
+        if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
             continue;
 
-        if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
+        if (IsPositionInActiveConflagration(botAI, bot, x, y))
             continue;
 
         const float moveDistance = bot->GetExactDist2d(x, y);
@@ -503,10 +503,10 @@ bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
         const float checkX = start.GetPositionX() + dx * ratio;
         const float checkY = start.GetPositionY() + dy * ratio;
 
-        if (IsPositionInActiveConflagration(botAI, bot, checkX, checkY))
+        if (IsPositionInActiveDebris(instanceId, checkX, checkY))
             return false;
 
-        if (IsPositionInActiveDebris(instanceId, checkX, checkY))
+        if (IsPositionInActiveConflagration(botAI, bot, checkX, checkY))
             return false;
     }
 

@@ -24,4 +24,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class MagtheridonDebrisDangerMultiplier : public Multiplier
+{
+public:
+    MagtheridonDebrisDangerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon debris danger multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

@@ -33,14 +33,14 @@ public:
         creators["magtheridon boss engaged by ranged"] =
             &RaidMagtheridonTriggerContext::magtheridon_boss_engaged_by_ranged;
 
+        creators["magtheridon standing in debris"] =
+            &RaidMagtheridonTriggerContext::magtheridon_standing_in_debris;
+
         creators["magtheridon incoming blast nova"] =
             &RaidMagtheridonTriggerContext::magtheridon_incoming_blast_nova;
 
         creators["magtheridon need to manage timers and assignments"] =
             &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
-
-        creators["magtheridon standing in debris"] =
-            &RaidMagtheridonTriggerContext::magtheridon_standing_in_debris;
     }
 
 private:
@@ -76,16 +76,16 @@ private:
         return new MagtheridonBossEngagedByRangedTrigger(botAI);
     }
 
+    static Trigger* magtheridon_standing_in_debris(PlayerbotAI* botAI) {
+        return new MagtheridonStandingInDebrisTrigger(botAI);
+    }
+
     static Trigger* magtheridon_incoming_blast_nova(PlayerbotAI* botAI) {
         return new MagtheridonIncomingBlastNovaTrigger(botAI);
     }
 
     static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI);
-    }
-
-    static Trigger* magtheridon_standing_in_debris(PlayerbotAI* botAI) {
-        return new MagtheridonStandingInDebrisTrigger(botAI);
     }
 };
 

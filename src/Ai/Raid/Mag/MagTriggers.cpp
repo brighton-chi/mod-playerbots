@@ -71,15 +71,6 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
-    // Suppress if the tank position is in debris
-    if (IsPositionInActiveDebris(
-            magtheridon->GetMap()->GetInstanceId(),
-            MAGTHERIDON_TANK_POSITION.GetPositionX(),
-            MAGTHERIDON_TANK_POSITION.GetPositionY()))
-    {
-        return false;
-    }
-
     // Include an assist tank that pulls aggro
     return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
 }
@@ -101,6 +92,15 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
     return magtheridon->GetVictim() != bot;
 }
 
+bool MagtheridonStandingInDebrisTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+        return false;
+
+    return IsPositionInActiveDebris(
+        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY());
+}
+
 bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -111,13 +111,4 @@ bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr) &&
            AI_VALUE2(Unit*, "find target", "magtheridon");
-}
-
-bool MagtheridonStandingInDebrisTrigger::IsActive()
-{
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
-        return false;
-
-    return IsPositionInActiveDebris(
-        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY());
 }

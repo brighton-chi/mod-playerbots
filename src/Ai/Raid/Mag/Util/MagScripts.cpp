@@ -2,7 +2,7 @@
 #include "AllSpellScript.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
@@ -14,7 +14,8 @@ class MagtheridonBotSpellScript : public AllSpellScript
 public:
     MagtheridonBotSpellScript() : AllSpellScript("MagtheridonBotSpellScript") {}
 
-    void OnSpellCast(Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
         const uint32 instanceId = caster->GetMap()->GetInstanceId();
 
@@ -26,10 +27,12 @@ public:
 
             activeDebrisPositions[instanceId].push_back({ caster->GetPosition(), now });
 
-            // Purge entries older than 10 seconds
+            constexpr uint32 debrisLifetimeMs = 10000;
             auto& positions = activeDebrisPositions[instanceId];
             positions.erase(std::remove_if(positions.begin(), positions.end(),
-                [now](DebrisData const& d) { return getMSTimeDiff(d.spawnTime, now) > 10000; }),
+                [now](DebrisData const& d) {
+                    return getMSTimeDiff(d.spawnTime, now) > debrisLifetimeMs;
+                }),
                 positions.end());
 
             // Interrupt casts for bots that could be standing in incoming debris
@@ -44,8 +47,11 @@ public:
                 if (!botAI || !botAI->HasStrategy("magtheridon", BOT_STATE_COMBAT))
                     continue;
 
-                if (IsPositionInActiveDebris(instanceId, player->GetPositionX(), player->GetPositionY()))
+                if (IsPositionInActiveDebris(
+                        instanceId, player->GetPositionX(), player->GetPositionY()))
+                {
                     botAI->RequestSpellInterrupt();
+                }
             }
         }
         else if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_QUAKE))

@@ -85,9 +85,8 @@ bool IsCubeClicker(Player* bot)
            mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }
 
-bool IsPositionInActiveDebris(uint32 instanceId, float x, float y)
+bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius)
 {
-    constexpr float hazardRadius = 10.0f;
     constexpr uint32 maxAgeMs = 8000;
 
     auto it = activeDebrisPositions.find(instanceId);
@@ -102,7 +101,7 @@ bool IsPositionInActiveDebris(uint32 instanceId, float x, float y)
 
         float dx = x - debris.position.GetPositionX();
         float dy = y - debris.position.GetPositionY();
-        if ((dx * dx + dy * dy) < (hazardRadius * hazardRadius))
+        if ((dx * dx + dy * dy) < (radius * radius))
             return true;
     }
 

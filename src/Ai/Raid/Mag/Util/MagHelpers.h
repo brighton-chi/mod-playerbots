@@ -76,7 +76,7 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
-bool IsPositionInActiveDebris(uint32 instanceId, float x, float y);
+bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius = 10.0f);
 bool IsPositionInActiveConflagration(
     PlayerbotAI* botAI, Player* bot, float x, float y);
 

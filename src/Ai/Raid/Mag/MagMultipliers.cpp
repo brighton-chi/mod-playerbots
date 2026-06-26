@@ -20,8 +20,8 @@
 
 using namespace MagtheridonHelpers;
 
-// When a cube clicker is in the handling phase (waiting near cube or moving to click),
-// suppress movement actions that would pull them away from the cube
+// When a cube clicker is in the handling phase (waiting near cube or moving
+// to use), suppress movement actions that would pull them away from the cube
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
@@ -50,7 +50,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Bots will wait for 6 seconds after Magtheridon becomes attackable before engaging
+// Wait for 6 seconds after Magtheridon becomes attackable before engaging
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -112,3 +112,25 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon") ||
+        dynamic_cast<WipeAction*>(action) ||
+        dynamic_cast<MagtheridonMoveOutOfDebrisAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    // 15y is wider than the default hazard zone but is needed to
+    // keep the multiplier in effect
+    if (IsPositionInActiveDebris(
+            bot->GetMap()->GetInstanceId(), bot->GetPositionX(),
+            bot->GetPositionY(), 15.0f))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
