@@ -291,9 +291,6 @@ float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (bot->GetVictim() && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
-
     return 1.0f;
 }
 
