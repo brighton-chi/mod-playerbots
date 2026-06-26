@@ -364,7 +364,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
     if (!magtheridon)
         return false;
 
-    CubeInfo const* cubeInfo = GetAssignedCube(bot);
+    CubeInfo const* cubeInfo = GetAssignedCube();
     if (!cubeInfo)
         return false;
 
@@ -388,6 +388,16 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
 
     // Otherwise, if Blast Nova is coming soon, move to and wait near the cube
     return HandleWaitingPhase(*cubeInfo);
+}
+
+CubeInfo const* MagtheridonUseManticronCubeAction::GetAssignedCube()
+{
+    auto mapIt = botToCubeAssignments.find(bot->GetMap()->GetInstanceId());
+    if (mapIt == botToCubeAssignments.end())
+        return nullptr;
+
+    auto it = mapIt->second.find(bot->GetGUID());
+    return it != mapIt->second.end() ? &it->second : nullptr;
 }
 
 bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
@@ -592,37 +602,149 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         magtheridon->FindCurrentSpellBySpellId(
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
-    if (!lastBlastNovaState && blastNovaActive)
+    if (!_lastBlastNovaState && blastNovaActive)
         blastNovaTimer[instanceId] = now;
 
-    lastBlastNovaState = blastNovaActive;
+    _lastBlastNovaState = blastNovaActive;
 
-    if (IsMagtheridonActive(magtheridon) &&
-        IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
+    bool updated = false;
+
+    if (IsMagtheridonActive(magtheridon))
     {
-        blastNovaTimer.try_emplace(instanceId, now);
-        dpsWaitTimer.try_emplace(instanceId, now);
+        if (blastNovaTimer.try_emplace(instanceId, now).second)
+            updated = true;
 
-        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied)
+        if (dpsWaitTimer.try_emplace(instanceId, now).second)
+            updated = true;
+
+        if (magtheridon->GetHealthPct() < 30.0f && !_ceilingCollapseApplied)
         {
             blastNovaTimer[instanceId] += 18;
-            ceilingCollapseApplied = true;
+            _ceilingCollapseApplied = true;
+            updated = true;
         }
 
-        if (NeedsCubeReassignment(instanceId))
-            AssignCubeClickers(bot->GetGroup(), bot->GetMap(), botAI);
+        if (NeedsCubeReassignment(instanceId) && AssignCubeClickers())
+            updated = true;
     }
     else
     {
-        if (!IsMagtheridonActive(magtheridon))
-            UnassignCubeClicker(bot);
+        if (blastNovaTimer.erase(instanceId) > 0)
+            updated = true;
 
-        if (IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
+        if (dpsWaitTimer.erase(instanceId) > 0)
+            updated = true;
+
+        if (botToCubeAssignments.erase(instanceId) > 0)
+            updated = true;
+
+        if (_lastBlastNovaState)
         {
-            blastNovaTimer.erase(instanceId);
-            dpsWaitTimer.erase(instanceId);
-            ceilingCollapseApplied = false;
+            _lastBlastNovaState = false;
+            updated = true;
         }
+
+        if (_ceilingCollapseApplied)
+        {
+            _ceilingCollapseApplied = false;
+            updated = true;
+        }
+    }
+
+    return updated;
+}
+
+bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
+{
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
+
+    auto& assignment = botToCubeAssignments[instanceId];
+    Group* group = bot->GetGroup();
+    if (!group || cubes.empty())
+    {
+        assignment.clear();
+        return true;
+    }
+
+    // Prune dead or absent players from the existing assignment
+    for (auto it = assignment.begin(); it != assignment.end(); )
+    {
+        Player* player = ObjectAccessor::FindPlayer(it->first);
+        if (!player || !player->IsAlive() || player->GetMapId() != MAGTHERIDON_MAP_ID)
+            it = assignment.erase(it);
+        else
+            ++it;
+    }
+
+    // Fill unassigned cubes
+    for (CubeInfo const& cube : cubes)
+    {
+        bool alreadyAssigned = false;
+        for (auto const& pair : assignment)
+        {
+            if (pair.second.guid == cube.guid)
+            {
+                alreadyAssigned = true;
+                break;
+            }
+        }
+        if (alreadyAssigned)
+            continue;
+
+        Player* candidate = nullptr;
+
+        // Pass 1: ranged DPS excluding warlocks
+        for (GroupReference* ref = group->GetFirstMember();
+             ref && !candidate; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member) ||
+                !GET_PLAYERBOT_AI(member) || member->getClass() == CLASS_WARLOCK)
+                continue;
+
+            if (assignment.find(member->GetGUID()) != assignment.end())
+                continue;
+
+            candidate = member;
+        }
+
+        // Pass 2: any non-tank bot
+        if (!candidate)
+        {
+            for (GroupReference* ref = group->GetFirstMember();
+                 ref && !candidate; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || !member->IsAlive() || botAI->IsTank(member) ||
+                    !GET_PLAYERBOT_AI(member))
+                    continue;
+
+                if (assignment.find(member->GetGUID()) != assignment.end())
+                    continue;
+
+                candidate = member;
+            }
+        }
+
+        if (candidate)
+            assignment[candidate->GetGUID()] = cube;
+    }
+
+    return true;
+}
+
+bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(const uint32 instanceId)
+{
+    auto mapIt = botToCubeAssignments.find(instanceId);
+    if (mapIt == botToCubeAssignments.end() || mapIt->second.empty())
+        return true;
+
+    for (auto const& pair : mapIt->second)
+    {
+        Player* assigned = ObjectAccessor::FindPlayer(pair.first);
+        if (!assigned || !assigned->IsAlive())
+            return true;
     }
 
     return false;

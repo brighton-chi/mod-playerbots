@@ -35,13 +35,25 @@ enum class MagtheridonObjects : uint32
     GO_BLAZE            = 181832,
 };
 
-constexpr uint32 MAGTHERIDON_MAP_ID         = 544;
-constexpr uint32 SOUTH_CHANNELER            = 90978;
-constexpr uint32 WEST_CHANNELER             = 90979;
-constexpr uint32 NORTHWEST_CHANNELER        = 90980;
-constexpr uint32 EAST_CHANNELER             = 90982;
-constexpr uint32 NORTHEAST_CHANNELER        = 90981;
-constexpr uint8 BLAST_NOVA_INTERIM_SECONDS = 49;
+struct CubeInfo
+{
+    ObjectGuid guid;
+    float x, y, z;
+};
+
+struct DebrisData
+{
+    Position position;
+    uint32 spawnTime;
+};
+
+constexpr uint32 MAGTHERIDON_MAP_ID        = 544;
+constexpr uint32 SOUTH_CHANNELER           = 90978;
+constexpr uint32 WEST_CHANNELER            = 90979;
+constexpr uint32 NORTHWEST_CHANNELER       = 90980;
+constexpr uint32 EAST_CHANNELER            = 90982;
+constexpr uint32 NORTHEAST_CHANNELER       = 90981;
+constexpr uint8 BLAST_NOVA_INTERIM_SECONDS = 45;
 
 extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
 extern const Position MAGTHERIDON_TANK_POSITION;
@@ -52,32 +64,19 @@ extern const Position HEALER_SPREAD_POSITION;
 
 extern std::unordered_map<uint32, time_t> dpsWaitTimer;
 extern std::unordered_map<uint32, time_t> blastNovaTimer;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>>
+    botToCubeAssignments;
+extern std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 
-struct CubeInfo
-{
-    ObjectGuid guid;
-    float x, y, z;
-};
 extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
     Map* map, const std::vector<uint32>& cubeDbGuids);
-
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
-CubeInfo const* GetAssignedCube(Player* bot);
 bool IsCubeClicker(Player* bot);
-void AssignCubeClickers(Group* group, Map* map, PlayerbotAI* botAI);
-void UnassignCubeClicker(Player* bot);
-bool NeedsCubeReassignment(uint32 instanceId);
-
-struct DebrisData
-{
-    Position position;
-    uint32 spawnTime;
-};
-extern std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 bool IsPositionInActiveDebris(uint32 instanceId, float x, float y);
-bool IsPositionInActiveConflagration(PlayerbotAI* botAI, Player* bot, float x, float y);
+bool IsPositionInActiveConflagration(
+    PlayerbotAI* botAI, Player* bot, float x, float y);
 
 }
 

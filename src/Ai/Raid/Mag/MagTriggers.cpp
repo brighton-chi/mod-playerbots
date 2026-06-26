@@ -1,6 +1,7 @@
 #include "MagTriggers.h"
 #include "MagHelpers.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace MagtheridonHelpers;
 
@@ -108,7 +109,7 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return !botAI->IsTank(bot) &&
+    return IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr) &&
            AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 

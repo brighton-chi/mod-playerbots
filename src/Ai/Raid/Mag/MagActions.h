@@ -87,6 +87,7 @@ public:
     bool Execute(Event event) override;
 
 private:
+    MagtheridonHelpers::CubeInfo const* GetAssignedCube();
     bool HandleCubeRelease(Unit* magtheridon);
     bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
     bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
@@ -103,8 +104,10 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool lastBlastNovaState = false;
-    bool ceilingCollapseApplied = false;
+    bool AssignCubeClickers();
+    bool NeedsCubeReassignment(uint32 instanceId);
+    bool _lastBlastNovaState = false;
+    bool _ceilingCollapseApplied = false;
 };
 
 class MagtheridonMoveOutOfDebrisAction : public MovementAction
