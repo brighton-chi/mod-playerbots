@@ -42,6 +42,9 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!brutallus)
         return false;
 
+    if (brutallus->GetHealthPct() > 99.0f)
+        _mainTankInitialPositionReached = false;
+
     if (AI_VALUE(Unit*, "current target") != brutallus)
         return Attack(brutallus);
 

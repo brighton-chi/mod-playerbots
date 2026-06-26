@@ -140,16 +140,15 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     if (!alythess)
         return false;
 
+    uint8 index = _alythessTankStep;
+    if (index >= ALYTHESS_TANK_POSITION_COUNT || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+        index = 0;
+
     MarkTargetWithCircle(bot, alythess);
     SetRtiTarget(botAI, "circle", alythess);
 
     if (AI_VALUE(Unit*, "current target") != alythess)
         return Attack(alythess);
-
-    const ObjectGuid guid = bot->GetGUID();
-    uint8 index = _alythessTankStep;
-    if (index >= ALYTHESS_TANK_POSITION_COUNT)
-        index = 0;
 
     auto const findSafeAlythessTankIndex =
         [&](uint8 startIndex, bool includeStart, uint8& safeIndex)

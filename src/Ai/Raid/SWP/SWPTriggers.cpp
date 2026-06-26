@@ -165,7 +165,7 @@ bool BrutallusBossEngagedByMeleeTrigger::IsActive()
 bool BrutallusBossEngagedByRangedTrigger::IsActive()
 {
     return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "brutallus") &&
-           bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+           !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
 }
 
 bool BrutallusBotIsBurningTrigger::IsActive()

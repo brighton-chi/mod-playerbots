@@ -93,12 +93,10 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         !targets.voidSentinels.empty() || hasActiveNonControlledVoidSpawns ||
         !targets.furyMages.empty() || !targets.berserkers.empty();
 
-    const bool hasReachedInitialPosition = _entropiusInitialRangedPositionReached;
-
-    if (!hasReachedInitialPosition && TryGetMuruDarknessActiveState(bot, muru))
+    if (!_entropiusInitialRangedPositionReached && TryGetMuruDarknessActiveState(bot, muru))
         return false;
 
-    if (!hasActiveAdds && !hasReachedInitialPosition)
+    if (!hasActiveAdds && !_entropiusInitialRangedPositionReached)
     {
         Position position;
         if (!TryGetEntropiusInitialRangedPosition(position))
