@@ -74,8 +74,10 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
     if (IsPositionInActiveDebris(
             magtheridon->GetMap()->GetInstanceId(),
             MAGTHERIDON_TANK_POSITION.GetPositionX(),
-            MAGTHERIDON_TANK_POSITION.GetPositionY(), 9.0f, 8000))
+            MAGTHERIDON_TANK_POSITION.GetPositionY()))
+    {
         return false;
+    }
 
     // Include an assist tank that pulls aggro
     return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
@@ -90,7 +92,7 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
-    constexpr time_t dpsWaitSeconds = 6;
+    constexpr uint8 dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
     if (it == dpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
         return false;
@@ -112,10 +114,9 @@ bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 
 bool MagtheridonStandingInDebrisTrigger::IsActive()
 {
-    constexpr float hazardRadius  = 9.0f;
-    constexpr uint32 maxAgeMs     = 8000;
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+        return false;
 
     return IsPositionInActiveDebris(
-        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY(),
-        hazardRadius, maxAgeMs);
+        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY());
 }

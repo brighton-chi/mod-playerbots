@@ -313,7 +313,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distanceToPosition);
+            const float moveDist = std::min(4.0f, distanceToPosition);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -325,7 +325,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Just stay away from boss and other players
+// Ranged stay away from Magtheridon and other players
 // Magtheridon's CombatReach is 12 yards and BoundingRadius is 4 yards
 bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 {
@@ -335,17 +335,15 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 
     if (IsCubeClicker(bot))
     {
-        const time_t now = time(nullptr);
         auto timerIt = blastNovaTimer.find(magtheridon->GetMap()->GetInstanceId());
-        if (timerIt != blastNovaTimer.end())
+        if (timerIt != blastNovaTimer.end() &&
+            time(nullptr) - timerIt->second >= BLAST_NOVA_INTERIM_SECONDS)
         {
-            const time_t lastBlastNova = timerIt->second;
-            if (now - lastBlastNova >= BLAST_NOVA_INTERIM_SECONDS)
-                return false;
+            return false;
         }
     }
 
-    constexpr float safeDistFromBoss = 15.0f;
+    constexpr float safeDistFromBoss = 13.0f; // 25y clearance; main concern is frontal cleave
     const float currentDistance = bot->GetDistance2d(magtheridon);
     if (currentDistance < safeDistFromBoss)
         return MoveAway(magtheridon, safeDistFromBoss - currentDistance);
@@ -378,24 +376,18 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
     if (HandleCubeRelease(magtheridon))
         return true;
 
-    // Check if cube logic should be active (50+ second rule)
-    if (!ShouldActivateCubeLogic(magtheridon))
-        return false;
-
     // Handle active cube logic based on Blast Nova casting state
     const bool blastNovaActive =
         magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
         magtheridon->FindCurrentSpellBySpellId(
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
-    if (!blastNovaActive)
-        // When cube logic first activates, wait at safe distance from cube
-        return HandleWaitingPhase(*cubeInfo);
-    else
-        // Blast Nova is casting - move to and click cube
+    // If Blast Nova is actively casting, always try to click the cube
+    if (blastNovaActive)
         return HandleCubeInteraction(*cubeInfo, cube);
 
-    return false;
+    // Otherwise, if Blast Nova is coming soon, move to and wait near the cube
+    return HandleWaitingPhase(*cubeInfo);
 }
 
 bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
@@ -419,24 +411,18 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     return false;
 }
 
-bool MagtheridonUseManticronCubeAction::ShouldActivateCubeLogic(Unit* magtheridon)
-{
-    auto timerIt = blastNovaTimer.find(magtheridon->GetMap()->GetInstanceId());
-    if (timerIt == blastNovaTimer.end())
-        return false;
-
-    const time_t now = time(nullptr);
-    const time_t lastBlastNova = timerIt->second;
-
-    return (now - lastBlastNova >= BLAST_NOVA_INTERIM_SECONDS);
-}
-
 bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)
 {
-    constexpr float safeWaitDistance = 8.0f;
-    const float cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
+    auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
+    if (timerIt == blastNovaTimer.end() ||
+        time(nullptr) - timerIt->second < BLAST_NOVA_INTERIM_SECONDS)
+    {
+        return false;
+    }
 
-    if (fabs(cubeDist - safeWaitDistance) <= 1.0f)
+    constexpr float safeWaitDistance = 8.0f;
+
+    if (fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f)
         return true;
 
     Position safePos;
@@ -448,68 +434,46 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // No safe position found; fall back to a random angle at the preferred distance
-    const float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
-    const float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
-    const float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
-
-    return MoveTo(MAGTHERIDON_MAP_ID, fallbackX, fallbackY, bot->GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    return false;
 }
 
 bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
     const CubeInfo& cubeInfo, float preferredDistance, Position& outPos)
 {
-    constexpr float maxSearchRadius = 15.0f;
-    constexpr float distanceStep = 1.0f;
-    constexpr float angleStep = M_PI / 12.0f;
+    constexpr float angleStep = M_PI / 8.0f;
 
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    for (float distance = 2.0f; distance <= maxSearchRadius; distance += distanceStep)
+    for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
     {
-        for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+        const float x = cubeInfo.x + std::cos(angle) * preferredDistance;
+        const float y = cubeInfo.y + std::sin(angle) * preferredDistance;
+
+        if (IsPositionInActiveConflagration(botAI, bot, x, y))
+            continue;
+
+        if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
+            continue;
+
+        const float moveDistance = bot->GetExactDist2d(x, y);
+        Position candidate(x, y, bot->GetPositionZ());
+        const bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), candidate);
+
+        if (pathSafe || !foundSafe)
         {
-            const float x = bot->GetPositionX() + distance * std::cos(angle);
-            const float y = bot->GetPositionY() + distance * std::sin(angle);
-
-            const float cubeDist = std::sqrt(
-                (x - cubeInfo.x) * (x - cubeInfo.x) + (y - cubeInfo.y) * (y - cubeInfo.y));
-            if (std::fabs(cubeDist - preferredDistance) > 2.0f)
-                continue;
-
-            if (IsPositionInActiveConflagration(botAI, bot, x, y))
-                continue;
-
-            constexpr float debrisHazardRadius = 9.0f;
-            constexpr uint32 debrisMaxAgeMs = 8000;
-            if (IsPositionInActiveDebris(
-                    bot->GetMap()->GetInstanceId(), x, y, debrisHazardRadius, debrisMaxAgeMs))
-                continue;
-
-            const float moveDistance = bot->GetExactDist2d(x, y);
-            Position candidate(x, y, bot->GetPositionZ());
-            const bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), candidate);
-
-            if (pathSafe || !foundSafe)
+            if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
             {
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    outPos = candidate;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    outPos = candidate;
-                    minMoveDistance = moveDistance;
-                }
+                outPos = candidate;
+                minMoveDistance = moveDistance;
+                foundSafe = true;
+            }
+            else if (!foundSafe && moveDistance < minMoveDistance)
+            {
+                outPos = candidate;
+                minMoveDistance = moveDistance;
             }
         }
-
-        if (foundSafe)
-            break;
     }
 
     return foundSafe;
@@ -519,11 +483,9 @@ bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
     const Position& start, const Position& end)
 {
     constexpr uint8 numChecks = 10;
-    constexpr float debrisHazardRadius = 9.0f;
-    constexpr uint32 debrisMaxAgeMs = 8000;
     const float dx = end.GetPositionX() - start.GetPositionX();
     const float dy = end.GetPositionY() - start.GetPositionY();
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
 
     for (uint8 i = 1; i <= numChecks; ++i)
     {
@@ -534,7 +496,7 @@ bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
         if (IsPositionInActiveConflagration(botAI, bot, checkX, checkY))
             return false;
 
-        if (IsPositionInActiveDebris(instanceId, checkX, checkY, debrisHazardRadius, debrisMaxAgeMs))
+        if (IsPositionInActiveDebris(instanceId, checkX, checkY))
             return false;
     }
 
@@ -581,11 +543,9 @@ bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
 
 bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 {
-    constexpr float maxSearchRadius = 15.0f;
+    constexpr float maxSearchRadius = 20.0f;
     constexpr float distanceStep = 1.0f;
     constexpr float angleStep = M_PI / 12.0f;
-    constexpr float hazardRadius = 9.0f;
-    constexpr uint32 maxAgeMs = 8000;
 
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
@@ -598,7 +558,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 
-            if (IsPositionInActiveDebris(instanceId, x, y, hazardRadius, maxAgeMs))
+            if (IsPositionInActiveDebris(instanceId, x, y))
                 continue;
 
             if (IsPositionInActiveConflagration(botAI, bot, x, y))
@@ -643,18 +603,25 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         blastNovaTimer.try_emplace(instanceId, now);
         dpsWaitTimer.try_emplace(instanceId, now);
 
+        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied)
+        {
+            blastNovaTimer[instanceId] += 18;
+            ceilingCollapseApplied = true;
+        }
+
         if (NeedsCubeReassignment(instanceId))
             AssignCubeClickers(bot->GetGroup(), bot->GetMap(), botAI);
     }
     else
     {
         if (!IsMagtheridonActive(magtheridon))
-            RemoveCubeClicker(bot);
+            UnassignCubeClicker(bot);
 
         if (IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
         {
             blastNovaTimer.erase(instanceId);
             dpsWaitTimer.erase(instanceId);
+            ceilingCollapseApplied = false;
         }
     }
 

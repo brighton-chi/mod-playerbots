@@ -53,7 +53,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (botAI->IsHeal(bot) || botAI->IsMainTank(bot))
         return 1.0f;
 
-    constexpr time_t dpsWaitSeconds = 6;
+    constexpr uint8 dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
     if (it != dpsWaitTimer.end() && time(nullptr) - it->second > dpsWaitSeconds)
         return 1.0f;

@@ -110,21 +110,9 @@ namespace MagtheridonHelpers
 
     void AssignCubeClickers(Group* group, Map* map, PlayerbotAI* botAI)
     {
+        const uint32 instanceId = map->GetInstanceId();
         std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(map, MANTICRON_CUBE_DB_GUIDS);
-        AssignBotsToCubesByGuidAndCoords(group, cubes, botAI, map->GetInstanceId());
-    }
 
-    void RemoveCubeClicker(Player* bot)
-    {
-        const uint32 instanceId = bot->GetMap()->GetInstanceId();
-        auto mapIt = botToCubeAssignments.find(instanceId);
-        if (mapIt != botToCubeAssignments.end())
-            mapIt->second.erase(bot->GetGUID());
-    }
-
-    void AssignBotsToCubesByGuidAndCoords(
-        Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI, uint32 instanceId)
-    {
         auto& assignment = botToCubeAssignments[instanceId];
         if (!group || cubes.empty())
         {
@@ -160,7 +148,8 @@ namespace MagtheridonHelpers
             Player* candidate = nullptr;
 
             // Pass 1: ranged DPS excluding warlocks
-            for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
+            for (GroupReference* ref = group->GetFirstMember();
+                 ref && !candidate; ref = ref->next())
             {
                 Player* member = ref->GetSource();
                 if (!member || !member->IsAlive() || !botAI->IsRangedDps(member) ||
@@ -178,7 +167,8 @@ namespace MagtheridonHelpers
             // Pass 2: any non-tank bot
             if (!candidate)
             {
-                for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
+                for (GroupReference* ref = group->GetFirstMember();
+                     ref && !candidate; ref = ref->next())
                 {
                     Player* member = ref->GetSource();
                     if (!member || !member->IsAlive() || botAI->IsTank(member) ||
@@ -199,15 +189,26 @@ namespace MagtheridonHelpers
         }
     }
 
+    void UnassignCubeClicker(Player* bot)
+    {
+        const uint32 instanceId = bot->GetMap()->GetInstanceId();
+        auto mapIt = botToCubeAssignments.find(instanceId);
+        if (mapIt != botToCubeAssignments.end())
+            mapIt->second.erase(bot->GetGUID());
+    }
+
     std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 
-    bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius, uint32 maxAgeMs)
+    bool IsPositionInActiveDebris(uint32 instanceId, float x, float y)
     {
+        constexpr float hazardRadius = 8.0f;
+        constexpr uint32 maxAgeMs = 8000;
+
         auto it = activeDebrisPositions.find(instanceId);
         if (it == activeDebrisPositions.end())
             return false;
 
-        uint32 const now = getMSTime();
+        const uint32 now = getMSTime();
         for (DebrisData const& debris : it->second)
         {
             if (getMSTimeDiff(debris.spawnTime, now) > maxAgeMs)
@@ -215,7 +216,7 @@ namespace MagtheridonHelpers
 
             float dx = x - debris.position.GetPositionX();
             float dy = y - debris.position.GetPositionY();
-            if ((dx * dx + dy * dy) < (radius * radius))
+            if ((dx * dx + dy * dy) < (hazardRadius * hazardRadius))
                 return true;
         }
 

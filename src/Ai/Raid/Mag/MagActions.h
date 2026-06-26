@@ -88,7 +88,6 @@ public:
 
 private:
     bool HandleCubeRelease(Unit* magtheridon);
-    bool ShouldActivateCubeLogic(Unit* magtheridon);
     bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
     bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
     bool FindSafePositionNearCube(const MagtheridonHelpers::CubeInfo& cubeInfo, float preferredDistance, Position& outPos);
@@ -105,6 +104,7 @@ public:
 
 private:
     bool lastBlastNovaState = false;
+    bool ceilingCollapseApplied = false;
 };
 
 class MagtheridonMoveOutOfDebrisAction : public MovementAction
