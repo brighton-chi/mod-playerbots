@@ -3,6 +3,7 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
+#include "Log.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -603,7 +604,10 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
     if (!_lastBlastNovaState && blastNovaActive)
+    {
         blastNovaTimer[instanceId] = now;
+        LOG_INFO("playerbots", "Mag: Nova start, blastNovaTimer={}", now);
+    }
 
     _lastBlastNovaState = blastNovaActive;
 
@@ -622,6 +626,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
             blastNovaTimer[instanceId] += 18;
             _ceilingCollapseApplied = true;
             updated = true;
+            LOG_INFO("playerbots", "Mag: Ceiling +18s, blastNovaTimer={}", blastNovaTimer[instanceId]);
         }
 
         if (NeedsCubeReassignment(instanceId) && AssignCubeClickers())
@@ -650,6 +655,8 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
             updated = true;
         }
     }
+
+    LOG_INFO("playerbots", "Mag: tick blastNovaTimer={}", blastNovaTimer.count(instanceId) ? static_cast<long>(blastNovaTimer[instanceId]) : -1L);
 
     return updated;
 }
