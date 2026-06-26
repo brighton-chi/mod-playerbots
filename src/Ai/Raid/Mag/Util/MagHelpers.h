@@ -66,7 +66,7 @@ extern std::unordered_map<uint32, time_t> blastNovaTimer;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
-bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y);
+bool IsPositionInActiveConflagration(PlayerbotAI* botAI, Player* bot, float x, float y);
 void AssignBotsToCubesByGuidAndCoords(
     Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI, uint32 instanceId);
 CubeInfo const* GetAssignedCube(Player* bot);

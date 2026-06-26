@@ -222,9 +222,8 @@ namespace MagtheridonHelpers
         return false;
     }
 
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y)
+    bool IsPositionInActiveConflagration(PlayerbotAI* botAI, Player* bot, float x, float y)
     {
-        // Conflagration
         constexpr float conflagrationHazardRadius = 5.0f;
         GuidVector const& gameObjects =
             botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
@@ -239,9 +238,9 @@ namespace MagtheridonHelpers
             }
 
             if (go->GetDistance2d(x, y) < conflagrationHazardRadius)
-                return false;
+                return true;
         }
 
-        return true;
+        return false;
     }
 }

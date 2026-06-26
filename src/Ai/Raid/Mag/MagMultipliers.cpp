@@ -82,7 +82,7 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsMainTank(bot) && magtheridon->GetVictim() != bot)
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
