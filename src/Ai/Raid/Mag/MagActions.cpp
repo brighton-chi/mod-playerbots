@@ -3,7 +3,6 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
-#include "Log.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -291,7 +290,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     return false;
 }
 
-// Main tank will back up to the Northern point of the room
+// Main tank will back up to the Eastern point of the room
 bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -604,10 +603,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
     if (!lastBlastNovaState[instanceId] && blastNovaActive)
-    {
         blastNovaTimer[instanceId] = now;
-        LOG_INFO("playerbots", "Mag: Nova start, timer={}", now);
-    }
 
     lastBlastNovaState[instanceId] = blastNovaActive;
 
@@ -647,15 +643,6 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 
         if (lastBlastNovaState.erase(instanceId) > 0)
             updated = true;
-    }
-
-    auto timerIt = blastNovaTimer.find(instanceId);
-    long elapsed = timerIt != blastNovaTimer.end() ? static_cast<long>(time(nullptr) - timerIt->second) : -1L;
-    static long lastLoggedElapsed = -2L;
-    if (elapsed != lastLoggedElapsed)
-    {
-        LOG_INFO("playerbots", "Mag: elapsed={}s", elapsed);
-        lastLoggedElapsed = elapsed;
     }
 
     return updated;

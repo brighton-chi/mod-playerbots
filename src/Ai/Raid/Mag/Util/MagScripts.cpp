@@ -2,6 +2,7 @@
 #include "AllSpellScript.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
@@ -30,15 +31,29 @@ public:
             positions.erase(std::remove_if(positions.begin(), positions.end(),
                 [now](DebrisData const& d) { return getMSTimeDiff(d.spawnTime, now) > 10000; }),
                 positions.end());
+
+            // Interrupt casts for bots that could be standing in incoming debris
+            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+            {
+                Player* player = it->GetSource();
+                if (!player || !player->IsAlive())
+                    continue;
+
+                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+                if (!botAI || !botAI->HasStrategy("magtheridon", BOT_STATE_COMBAT))
+                    continue;
+
+                if (IsPositionInActiveDebris(instanceId, player->GetPositionX(), player->GetPositionY()))
+                    botAI->RequestSpellInterrupt();
+            }
         }
         else if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_QUAKE))
         {
+            // To account for Blast Nova delay caused by Quake's DelayAll(6999ms)
             auto it = blastNovaTimer.find(instanceId);
             if (it != blastNovaTimer.end())
-            {
                 it->second += 7;
-                LOG_INFO("playerbots", "Mag: Quake +7s, timer={}", it->second);
-            }
         }
     }
 };

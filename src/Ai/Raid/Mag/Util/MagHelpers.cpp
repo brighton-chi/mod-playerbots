@@ -87,7 +87,7 @@ bool IsCubeClicker(Player* bot)
 
 bool IsPositionInActiveDebris(uint32 instanceId, float x, float y)
 {
-    constexpr float hazardRadius = 8.0f;
+    constexpr float hazardRadius = 10.0f;
     constexpr uint32 maxAgeMs = 8000;
 
     auto it = activeDebrisPositions.find(instanceId);
