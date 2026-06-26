@@ -378,7 +378,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
     if (HandleCubeRelease(magtheridon))
         return true;
 
-    // Check if cube logic should be active (49+ second rule)
+    // Check if cube logic should be active (50+ second rule)
     if (!ShouldActivateCubeLogic(magtheridon))
         return false;
 
@@ -389,7 +389,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
     if (!blastNovaActive)
-        // After 49 seconds, wait at safe distance from cube
+        // When cube logic first activates, wait at safe distance from cube
         return HandleWaitingPhase(*cubeInfo);
     else
         // Blast Nova is casting - move to and click cube
@@ -618,10 +618,6 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
     return foundSafe;
 }
 
-// Known issue: The Blast Nova timer resets when Magtheridon stops casting it, which is needed to
-// ensure that bots use cubes. However, Blast Nova's cooldown runs from when he starts casting it.
-// This means that if a Blast Nova is not interrupted or takes too long to interrupt,
-// the timer will be thrown off for the rest of the encounter.
 bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -636,7 +632,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         magtheridon->FindCurrentSpellBySpellId(
             static_cast<uint32>(MagtheridonSpells::SPELL_BLAST_NOVA));
 
-    if (lastBlastNovaState && !blastNovaActive)
+    if (!lastBlastNovaState && blastNovaActive)
         blastNovaTimer[instanceId] = now;
 
     lastBlastNovaState = blastNovaActive;

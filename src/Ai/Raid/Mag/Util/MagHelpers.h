@@ -43,7 +43,7 @@ constexpr uint32 WEST_CHANNELER             = 90979;
 constexpr uint32 NORTHWEST_CHANNELER        = 90980;
 constexpr uint32 EAST_CHANNELER             = 90982;
 constexpr uint32 NORTHEAST_CHANNELER        = 90981;
-constexpr time_t BLAST_NOVA_INTERIM_SECONDS = 49;
+constexpr time_t BLAST_NOVA_INTERIM_SECONDS = 50;
 
 extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
 extern const Position MAGTHERIDON_TANK_POSITION;
