@@ -50,6 +50,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidOnyxiaTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
     triggerContexts.Add(new RaidRsTriggerContext());
+    triggerContexts.Add(new TbcDungeonHellfireRampartsTriggerContext());
     triggerContexts.Add(new TbcDungeonAuchenaiCryptsTriggerContext());
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
