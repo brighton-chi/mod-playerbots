@@ -2423,7 +2423,7 @@ bool PlayerbotAI::IsExplicitMainTank(Player* player)
     return false;
 }
 
-bool PlayerbotAI::IsMainTank(Player* player, bool ignoreMemberFlag)
+bool PlayerbotAI::IsMainTank(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
