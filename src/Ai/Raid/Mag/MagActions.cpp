@@ -266,7 +266,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
         }
     }
 
-    if (warlockIndex >= 0 && (size_t)warlockIndex < abyssals.size())
+    if (warlockIndex >= 0 && warlockIndex < abyssals.size())
     {
         Unit* assignedAbyssal = abyssals[warlockIndex];
         if (!botAI->HasAura("banish", assignedAbyssal) &&
@@ -435,8 +435,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
     if (fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f)
         return true;
 
-    Position safePos;
-    if (FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
+    if (Position safePos; FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
     {
         botAI->InterruptSpell();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
@@ -467,50 +466,15 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
             continue;
 
         const float moveDistance = bot->GetExactDist2d(x, y);
-        Position candidate(x, y, bot->GetPositionZ());
-        const bool pathSafe = IsPathSafeFromHazards(bot->GetPosition(), candidate);
-
-        if (pathSafe || !foundSafe)
+        if (moveDistance < minMoveDistance)
         {
-            if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-            {
-                outPos = candidate;
-                minMoveDistance = moveDistance;
-                foundSafe = true;
-            }
-            else if (!foundSafe && moveDistance < minMoveDistance)
-            {
-                outPos = candidate;
-                minMoveDistance = moveDistance;
-            }
+            outPos = Position(x, y, bot->GetPositionZ());
+            minMoveDistance = moveDistance;
+            foundSafe = true;
         }
     }
 
     return foundSafe;
-}
-
-bool MagtheridonUseManticronCubeAction::IsPathSafeFromHazards(
-    const Position& start, const Position& end)
-{
-    constexpr uint8 numChecks = 10;
-    const float dx = end.GetPositionX() - start.GetPositionX();
-    const float dy = end.GetPositionY() - start.GetPositionY();
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        const float ratio = static_cast<float>(i) / numChecks;
-        const float checkX = start.GetPositionX() + dx * ratio;
-        const float checkY = start.GetPositionY() + dy * ratio;
-
-        if (IsPositionInActiveDebris(instanceId, checkX, checkY))
-            return false;
-
-        if (IsPositionInActiveConflagration(botAI, bot, checkX, checkY))
-            return false;
-    }
-
-    return true;
 }
 
 bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
@@ -539,8 +503,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
 
 bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
 {
-    Position safePos;
-    if (FindSafePosition(safePos))
+    if (Position safePos; FindSafePosition(safePos))
     {
         botAI->InterruptSpell();
         return MoveTo(MAGTHERIDON_MAP_ID, safePos.GetPositionX(), safePos.GetPositionY(),
