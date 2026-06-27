@@ -24,6 +24,6 @@ VALUES
    0, 0, '', '', '', '', '', '', '', '');
 
 INSERT INTO ai_playerbot_texts_chance
-  (id, name, probability)
+  (name, probability)
 VALUES
-  (193, 'missing_group_buff_reagent', 100);
+  ('missing_group_buff_reagent', 100);

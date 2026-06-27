@@ -495,12 +495,12 @@ AiPlayerbot.AutoGreaterBlessings = 1
 # Default: 2 (all groups)
 AiPlayerbot.AutoPartyBuffs = 2
 
-# Tell the group when a bot wants to use a reagent-based greater blessing or group buff
-# but has to fall back to the single-target version because it is out of reagents.
-# Default: 0 (disabled)
-AiPlayerbot.TellWhenMissingBuffReagents = 0
+# Bots tell the group when they attempt to use a reagent-based greater blessing or group buff
+# but have to fall back to the single-target version because they are out of reagents.
+# Default: 1 (enabled)
+AiPlayerbot.TellWhenMissingBuffReagents = 1
 
-# Cooldown for the missing-buff-reagent message, in seconds.
+# Cooldown for the missing buff reagent message, in seconds.
 # Default: 300 (5 minutes)
 AiPlayerbot.MissingBuffReagentMessageCooldown = 300
 
