@@ -73,6 +73,8 @@ Player* FindKalecgosGroupMember(Group* group, ObjectGuid playerGuid)
 KalecgosEncounterState& GetPreparedKalecgosEncounterState(PlayerbotAI* botAI, Player* bot)
 {
     KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
+    if (!state.encounterStartMs)
+        state.encounterStartMs = getMSTime();
     ClearExpiredKalecgosActiveRift(state, getMSTime());
     EnsureKalecgosGroupAssignments(botAI, bot);
     return state;

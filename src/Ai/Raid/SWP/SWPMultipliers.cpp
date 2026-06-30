@@ -178,8 +178,6 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
     }
 
     KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
-    if (!state.encounterStartMs)
-        state.encounterStartMs = getMSTime();
 
     constexpr uint32 pullThreatSuppressionMs = 5000;
     if (getMSTimeDiff(state.encounterStartMs, getMSTime()) >=
