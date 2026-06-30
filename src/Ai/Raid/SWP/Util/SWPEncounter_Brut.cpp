@@ -201,7 +201,7 @@ bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex
 }
 
 bool TryGetBrutallusMeleePosition(
-    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 meleeIndex, float z, Position& position)
 {
     if (!brutallus)

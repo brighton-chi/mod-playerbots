@@ -134,7 +134,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusMeleePosition(
-            bot, brutallus, mainTank, assistTank, meleeIndex, bot->GetPositionZ(), position))
+            brutallus, mainTank, assistTank, meleeIndex, bot->GetPositionZ(), position))
     {
         return false;
     }

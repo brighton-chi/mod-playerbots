@@ -76,7 +76,7 @@ float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(
     Unit* brutallus, float angle, float radius, float z);
 bool TryGetBrutallusMeleePosition(
-    Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
+    Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 meleeIndex, float z, Position& position);
 float GetBrutallusRangedSlotAngle(
     Unit* brutallus, Player* mainTank, Player* assistTank,
