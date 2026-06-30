@@ -129,6 +129,11 @@ public:
     BrutallusPositionMeleeAction(
         PlayerbotAI* botAI, std::string const name = "brutallus position melee") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool TryGetBrutallusMeleePosition(
+        Unit* brutallus, Player* mainTank, Player* assistTank,
+        uint8 meleeIndex, Position& position);
 };
 
 class BrutallusPositionRangedAction : public MovementAction
@@ -570,7 +575,7 @@ private:
     uint32 _darknessStartMs = 0;
     uint32 _lastDarknessCastMsLeft = 0;
     bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden);
-    bool ExecuteOutsideDarknessOfAThousandSouls(Unit* kiljaeden);
+    bool ExecuteOutsideDarknessOfAThousandSouls();
 };
 
 #endif

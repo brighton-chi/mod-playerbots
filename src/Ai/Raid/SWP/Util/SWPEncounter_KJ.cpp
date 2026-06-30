@@ -131,7 +131,7 @@ float GetKiljaedenNearestArmageddonDistance(
     return nearestDistance;
 }
 
-}
+} // end anonymous namespace
 
 const Position KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 const Position KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };

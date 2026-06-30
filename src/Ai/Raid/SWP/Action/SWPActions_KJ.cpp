@@ -377,7 +377,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     _darknessStartMs = 0;
     _lastDarknessCastMsLeft = 0;
 
-    return ExecuteOutsideDarknessOfAThousandSouls(kiljaeden);
+    return ExecuteOutsideDarknessOfAThousandSouls();
 }
 
 bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden)
@@ -463,7 +463,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
     return false;
 }
 
-bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* /*kiljaeden*/)
+bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls()
 {
     Unit* dragon = GetKiljaedenControlledDragon(bot);
     if (!dragon)

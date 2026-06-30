@@ -102,7 +102,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
 
         const Position position = GetBrutallusPositionAtAngle(
-            brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS, bot->GetPositionZ());
+            bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) >
             tankPositionTolerance)
@@ -134,7 +134,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusMeleePosition(
-            brutallus, mainTank, assistTank, meleeIndex, bot->GetPositionZ(), position))
+            brutallus, mainTank, assistTank, meleeIndex, position))
     {
         return false;
     }
@@ -147,6 +147,105 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
+    Unit* brutallus, Player* mainTank, Player* assistTank,
+    uint8 meleeIndex, Position& position)
+{
+    struct BrutallusMeleeRingLayout
+    {
+        float radius;
+        uint8 slotCount;
+    };
+
+    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts = {{
+        { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
+        { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
+        { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
+        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS }
+    }};
+
+    uint8 totalMeleeSlots = 0;
+    for (auto const& meleeRingLayout : meleeRingLayouts)
+        totalMeleeSlots += meleeRingLayout.slotCount;
+
+    if (meleeIndex >= totalMeleeSlots)
+        return false;
+
+    float meleeRadius = 0.0f;
+    uint8 localMeleeIndex = meleeIndex;
+    uint8 maxMeleeSlots = 0;
+    for (auto const& meleeRingLayout : meleeRingLayouts)
+    {
+        if (localMeleeIndex < meleeRingLayout.slotCount)
+        {
+            meleeRadius = meleeRingLayout.radius;
+            maxMeleeSlots = meleeRingLayout.slotCount;
+            break;
+        }
+
+        localMeleeIndex -= meleeRingLayout.slotCount;
+    }
+
+    if (!maxMeleeSlots)
+        return false;
+
+    auto const getTankAngle = [](Unit* brutallus, Player* tank, float fallbackAngle) -> float
+    {
+        if (!tank)
+            return Position::NormalizeOrientation(fallbackAngle);
+
+        return Position::NormalizeOrientation(
+            std::atan2(tank->GetPositionY() - brutallus->GetPositionY(),
+                       tank->GetPositionX() - brutallus->GetPositionX()));
+    };
+
+    const float mainTankAngle =
+        getTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+
+    float midpointAngle;
+    if (!mainTank || !assistTank)
+    {
+        midpointAngle = Position::NormalizeOrientation(
+            mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET / 2.0f);
+    }
+    else
+    {
+        const float assistTankAngle = getTankAngle(
+            brutallus, assistTank,
+            Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+
+        const float midpointX =
+            (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
+        const float midpointY =
+            (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
+
+        if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
+        {
+            float assistAngleDelta =
+                Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
+            if (assistAngleDelta > static_cast<float>(M_PI))
+                assistAngleDelta -= 2.0f * static_cast<float>(M_PI);
+
+            midpointAngle = Position::NormalizeOrientation(mainTankAngle + assistAngleDelta / 2.0f);
+        }
+        else
+        {
+            midpointAngle = Position::NormalizeOrientation(
+                std::atan2(midpointY - brutallus->GetPositionY(),
+                           midpointX - brutallus->GetPositionX()));
+        }
+    }
+
+    const float baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
+    const float angleOffset =
+        GetCenteredArcSlotAngleOffset(
+            localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
+
+    const float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
+    position = GetBrutallusPositionAtAngle(bot, brutallus, angle, meleeRadius);
+    return true;
 }
 
 bool BrutallusPositionRangedAction::Execute(Event /*event*/)
@@ -188,7 +287,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             std::atan2(bot->GetPositionY() - brutallus->GetPositionY(),
                        bot->GetPositionX() - brutallus->GetPositionX()));
         const Position position = GetBrutallusPositionAtAngle(
-            brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS, bot->GetPositionZ());
+            bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
@@ -205,17 +304,17 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position returnTargetPosition;
         if (!TryGetBrutallusRangedPosition(
-                brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_OUTER_LANE_RADIUS, bot->GetPositionZ(), returnTargetPosition))
+                bot, brutallus, mainTank, assistTank, rangedIndex,
+                BRUTALLUS_OUTER_LANE_RADIUS, returnTargetPosition))
         {
             return false;
         }
 
         Position position;
         if (!TryGetBrutallusLaneTraversalPosition(
-                brutallus, returnTargetPosition.GetPositionX(),
+                bot, brutallus, returnTargetPosition.GetPositionX(),
                 returnTargetPosition.GetPositionY(), BRUTALLUS_OUTER_LANE_RADIUS,
-                bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), position))
+                bot->GetPositionX(), bot->GetPositionY(), position))
         {
             return false;
         }
@@ -240,8 +339,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedPosition(
-                brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
+                bot, brutallus, mainTank, assistTank, rangedIndex,
+                BRUTALLUS_NORMAL_RANGED_RADIUS, position))
         {
             return false;
         }
@@ -260,8 +359,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedPosition(
-            brutallus, mainTank, assistTank, rangedIndex,
-            BRUTALLUS_NORMAL_RANGED_RADIUS, bot->GetPositionZ(), position))
+            bot, brutallus, mainTank, assistTank, rangedIndex,
+            BRUTALLUS_NORMAL_RANGED_RADIUS, position))
     {
         return false;
     }
@@ -318,8 +417,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         Position stepPosition;
         if (!TryGetBrutallusRangedPosition(
-                brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionZ(), stepPosition))
+                bot, brutallus, mainTank, assistTank, rangedIndex,
+                BRUTALLUS_INNER_LANE_RADIUS, stepPosition))
         {
             return false;
         }
@@ -340,16 +439,16 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         Position padIngressPosition;
         if (!TryGetBrutallusBurnPadPosition(
                 bot, brutallus, mainTank, rangedIndex, BRUTALLUS_INNER_LANE_RADIUS,
-                bot->GetPositionZ(), padIngressPosition))
+                padIngressPosition))
         {
             return false;
         }
 
         Position position;
         if (!TryGetBrutallusLaneTraversalPosition(
-                brutallus, padIngressPosition.GetPositionX(), padIngressPosition.GetPositionY(),
+                bot, brutallus, padIngressPosition.GetPositionX(), padIngressPosition.GetPositionY(),
                 BRUTALLUS_INNER_LANE_RADIUS, bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), position))
+                position))
         {
             return false;
         }
@@ -373,7 +472,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     Position position;
     if (!TryGetBrutallusBurnPadPosition(
             bot, brutallus, mainTank, rangedIndex, BRUTALLUS_BURN_PAD_RADIUS,
-            bot->GetPositionZ(), position))
+            position))
     {
         return false;
     }

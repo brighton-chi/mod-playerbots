@@ -367,7 +367,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
-           IsSacrolashTank(botAI, bot);
+           IsAnySacrolashTank(botAI, bot);
 }
 
 bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
@@ -446,7 +446,7 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
         return false;
     }
 
-    return !IsSacrolashTank(botAI, bot) && !IsAlythessTank(botAI, bot);
+    return !IsAnySacrolashTank(botAI, bot) && !IsAlythessTank(botAI, bot);
 }
 
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()

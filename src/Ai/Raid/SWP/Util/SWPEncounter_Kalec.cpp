@@ -109,7 +109,7 @@ bool IsKalecgosPortalEligibleCandidate(Player* candidate)
 bool IsKalecgosTankPortalEligibleCandidate(Player* candidate)
 {
     return candidate && candidate->IsAlive() && candidate->GetMapId() == SUNWELL_MAP_ID &&
-           candidate->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)) &&
+           !candidate->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION)) &&
            !candidate->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
 }
 
@@ -559,21 +559,24 @@ uint8 GetLeastFilledGroup(
     return GetLeastFilledGroup(groupSizes);
 }
 
-}
+} // end anonymous namespace
 
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot)
 {
     switch (bot->getClass())
     {
         case CLASS_MAGE:
-            return true;
-        case CLASS_DRUID:
-            return botAI->IsHeal(bot) || botAI->IsRangedDps(bot);
         case CLASS_SHAMAN:
-            return botAI->IsHeal(bot);
+            break;
+        case CLASS_DRUID:
+            if (!botAI->IsRanged(bot))
+                return false;
+            break;
         default:
             return false;
     }
+
+    return botAI->HasStrategy("cure", BOT_STATE_COMBAT);
 }
 
 void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot)

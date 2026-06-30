@@ -42,7 +42,7 @@ extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
-bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
+bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
 bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
 bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
 bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess);

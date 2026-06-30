@@ -361,7 +361,7 @@ FelmystFogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
         FELMYST_FOG_DESTINATION_MATCH_DISTANCE);
 }
 
-}
+} // end anonymous namespace
 
 bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
 {

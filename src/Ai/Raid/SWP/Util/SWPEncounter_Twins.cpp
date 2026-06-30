@@ -92,7 +92,7 @@ bool ShouldHoldTwinThreat(
     return botThreat >= twinTankThreat * threatHoldRatio;
 }
 
-}
+} // end anonymous namespace
 
 const Position SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
 const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
@@ -124,7 +124,7 @@ Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
     return GetAlythessAdjustedPosition(alythess, basePosition);
 }
 
-bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot)
+bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot)
 {
     return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
 }
@@ -140,7 +140,7 @@ bool ShouldHoldSacrolashThreat(
     constexpr float sacrolashThreatHoldRatio = 0.8f;
 
     return alythess && ShouldHoldTwinThreat(
-        botAI, bot, sacrolash, sacrolashThreatHoldRatio, IsSacrolashTank, true);
+        botAI, bot, sacrolash, sacrolashThreatHoldRatio, IsAnySacrolashTank, true);
 }
 
 bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess)
