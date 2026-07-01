@@ -180,6 +180,9 @@ bool MaintenanceAction::Execute(Event /*event*/)
         return false;
     }
 
+    if (botAI->IsRealPlayer()) // No maintenance for selfbots
+        return false;
+
     botAI->TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
 
