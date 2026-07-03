@@ -8,5 +8,28 @@
 
 #include "Multiplier.h"
 
+class SethekkProphetUseTremorTotemMultiplier : public Multiplier
+{
+public:
+    SethekkProphetUseTremorTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "sethekk prophet use tremor totem") {}
+    virtual float GetValue(Action* action);
+};
+
+class AnzuControlSpellCastingWithSpellBombMultiplier : public Multiplier
+{
+public:
+    AnzuControlSpellCastingWithSpellBombMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "anzu control spell casting with spell bomb") {}
+    virtual float GetValue(Action* action);
+};
+
+class TalonKingIkissDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    TalonKingIkissDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "talon king ikiss delay bloodlust and heroism") {}
+    virtual float GetValue(Action* action);
+};
 
 #endif

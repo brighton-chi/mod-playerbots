@@ -16,11 +16,51 @@ public:
     bool IsActive() override;
 };
 
+class SethekkProphetCastsFearTrigger : public Trigger
+{
+public:
+    SethekkProphetCastsFearTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "sethekk prophet casts fear") {}
+    bool IsActive() override;
+};
+
 class DarkweaverSythSummonsElementalsTrigger : public Trigger
 {
 public:
     DarkweaverSythSummonsElementalsTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "darkweaver syth summons elementals") {}
+    bool IsActive() override;
+};
+
+class AnzuEncounterHasTwoPhasesTrigger : public Trigger
+{
+public:
+    AnzuEncounterHasTwoPhasesTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "anzu encounter has two phases") {}
+    bool IsActive() override;
+};
+
+class AnzuBirdSpiritsProvideBuffsTrigger : public Trigger
+{
+public:
+    AnzuBirdSpiritsProvideBuffsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "anzu bird spirits provide buffs") {}
+    bool IsActive() override;
+};
+
+class TalonKingIkissNeedToPositionForArcaneExplosionTrigger : public Trigger
+{
+public:
+    TalonKingIkissNeedToPositionForArcaneExplosionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "talon king ikiss need to position for arcane explosion") {}
+    bool IsActive() override;
+};
+
+class TalonKingIkissBossPreparingToCastArcaneExplosionTrigger : public Trigger
+{
+public:
+    TalonKingIkissBossPreparingToCastArcaneExplosionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "talon king ikiss boss preparing to cast arcane explosion") {}
     bool IsActive() override;
 };
 

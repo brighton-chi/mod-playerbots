@@ -4,6 +4,7 @@
 #include "Strategy.h"
 #include "HRStrategy.h"
 #include "ACStrategy.h"
+#include "SethStrategy.h"
 #include "UKStrategy.h"
 #include "NexStrategy.h"
 #include "ANStrategy.h"

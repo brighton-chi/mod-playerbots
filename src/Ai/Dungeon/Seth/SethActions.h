@@ -7,7 +7,6 @@
 #define PLAYERBOTS_SETHACTIONS_H
 
 #include "Action.h"
-#include "AttackAction.h"
 #include "MovementActions.h"
 
 class TimeLostControllerMarkCharmingTotemWithSkullAction : public Action
@@ -18,11 +17,54 @@ public:
     bool Execute(Event event) override;
 };
 
+class SethekkProphetDropTremorTotemAction : public Action
+{
+public:
+    SethekkProphetDropTremorTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "sethekk prophet drop tremor totem") {}
+    bool Execute(Event event) override;
+};
+
 class DarkweaverSythMarkElementalsWithSkullAction : public Action
 {
 public:
     DarkweaverSythMarkElementalsWithSkullAction(
         PlayerbotAI* botAI) : Action(botAI, "darkweaver syth mark elementals with skull") {}
+    bool Execute(Event event) override;
+};
+
+class AnzuAlternateMarksOnBossAction : public Action
+{
+public:
+    AnzuAlternateMarksOnBossAction(
+        PlayerbotAI* botAI) : Action(botAI, "anzu alternate marks on boss") {}
+    bool Execute(Event event) override;
+};
+
+class AnzuCastHealOverTimeSpellOnBirdSpiritAction : public Action
+{
+public:
+    AnzuCastHealOverTimeSpellOnBirdSpiritAction(
+        PlayerbotAI* botAI) : Action(botAI, "anzu cast heal over time spell on bird spirit") {}
+    bool Execute(Event event) override;
+};
+
+class TalonKingIkissMoveToPillarPositionAction : public MovementAction
+{
+public:
+    TalonKingIkissMoveToPillarPositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss move to pillar position") {}
+    bool Execute(Event event) override;
+
+private:
+    bool _hasReachedPillarPosition = false;
+};
+
+class TalonKingIkissLosArcaneExplosionAction : public MovementAction
+{
+public:
+    TalonKingIkissLosArcaneExplosionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss los arcane explosion") {}
     bool Execute(Event event) override;
 };
 
