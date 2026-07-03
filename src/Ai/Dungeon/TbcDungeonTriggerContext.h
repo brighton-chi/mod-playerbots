@@ -3,5 +3,6 @@
 
 #include "ACTriggerContext.h"
 #include "HRTriggerContext.h"
+#include "SethTriggerContext.h"
 
 #endif
