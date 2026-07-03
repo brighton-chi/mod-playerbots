@@ -173,9 +173,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsAssistTank(bot) || !AI_VALUE2(Unit*, "find target", "kalecgos"))
-    {
         return 1.0f;
-    }
 
     KalecgosEncounterState& state = kalecgosEncounterStates[bot->GetInstanceId()];
 
