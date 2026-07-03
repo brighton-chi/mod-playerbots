@@ -45,6 +45,9 @@ public:
         creators["magtheridon incoming blast nova"] =
             &RaidMagtheridonTriggerContext::magtheridon_incoming_blast_nova;
 
+        creators["magtheridon bot is not in combat"] =
+            &RaidMagtheridonTriggerContext::magtheridon_bot_is_not_in_combat;
+
         creators["magtheridon need to manage timers and assignments"] =
             &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
     }
@@ -88,6 +91,10 @@ private:
 
     static Trigger* magtheridon_incoming_blast_nova(PlayerbotAI* botAI) {
         return new MagtheridonIncomingBlastNovaTrigger(botAI);
+    }
+
+    static Trigger* magtheridon_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new MagtheridonBotIsNotInCombatTrigger(botAI);
     }
 
     static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {

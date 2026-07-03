@@ -45,6 +45,9 @@ public:
         creators["magtheridon use manticron cube"] =
             &RaidMagtheridonActionContext::magtheridon_use_manticron_cube;
 
+        creators["magtheridon erase timers and trackers"] =
+            &RaidMagtheridonActionContext::magtheridon_erase_timers_and_trackers;
+
         creators["magtheridon manage timers and assignments"] =
             &RaidMagtheridonActionContext::magtheridon_manage_timers_and_assignments;
     }
@@ -88,6 +91,10 @@ private:
 
     static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI) {
         return new MagtheridonUseManticronCubeAction(botAI);
+    }
+
+    static Action* magtheridon_erase_timers_and_trackers(PlayerbotAI* botAI) {
+        return new MagtheridonEraseTimersAndTrackersAction(botAI);
     }
 
     static Action* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) {

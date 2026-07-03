@@ -79,7 +79,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(distanceToPosition, 10.0f);
+            const float moveDist = std::min(distanceToPosition, 3.5f);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -113,7 +113,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(distanceToPosition, 10.0f);
+            const float moveDist = std::min(distanceToPosition, 3.5f);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -319,7 +319,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(4.0f, distanceToPosition);
+            const float moveDist = std::min(2.25f, distanceToPosition);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -349,7 +349,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float safeDistFromBoss = 13.0f; // 25y clearance; main concern is frontal cleave
+    constexpr float safeDistFromBoss = 10.0f;
     const float currentDistance = bot->GetDistance2d(magtheridon);
     if (currentDistance < safeDistFromBoss)
         return MoveAway(magtheridon, safeDistFromBoss - currentDistance);
@@ -711,4 +711,25 @@ bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(const ui
     }
 
     return false;
+}
+
+bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
+{
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    bool erased = false;
+
+    if (blastNovaTimer.erase(instanceId) > 0)
+        erased = true;
+    if (dpsWaitTimer.erase(instanceId) > 0)
+        erased = true;
+    if (ceilingCollapseApplied.erase(instanceId) > 0)
+        erased = true;
+    if (lastBlastNovaState.erase(instanceId) > 0)
+        erased = true;
+    if (botToCubeAssignments.erase(instanceId) > 0)
+        erased = true;
+    if (activeDebrisPositions.erase(instanceId) > 0)
+        erased = true;
+
+    return erased;
 }
