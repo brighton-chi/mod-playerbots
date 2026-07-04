@@ -142,6 +142,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystFocusAttacksOnCharmedPlayerMultiplier : public Multiplier
+{
+public:
+    FelmystFocusAttacksOnCharmedPlayerMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst focus attacks on charmed player") {}
+    virtual float GetValue(Action* action);
+};
+
 class FelmystDelayCooldownsMultiplier : public Multiplier
 {
 public:

@@ -97,6 +97,9 @@ public:
         creators["felmyst melee cannot reach boss"] =
             &RaidSunwellTriggerContext::felmyst_melee_cannot_reach_boss;
 
+        creators["felmyst player is charmed by fog"] =
+            &RaidSunwellTriggerContext::felmyst_player_is_charmed_by_fog;
+
         // Eredar Twins
         creators["eredar twins melee is at balcony"] =
             &RaidSunwellTriggerContext::eredar_twins_melee_is_at_balcony;
@@ -293,6 +296,9 @@ private:
     }
     static Trigger* felmyst_melee_cannot_reach_boss(PlayerbotAI* botAI) {
         return new FelmystMeleeCannotReachBossTrigger(botAI);
+    }
+    static Trigger* felmyst_player_is_charmed_by_fog(PlayerbotAI* botAI) {
+        return new FelmystPlayerIsCharmedByFogTrigger(botAI);
     }
 
     // Eredar Twins

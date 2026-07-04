@@ -347,6 +347,12 @@ bool FelmystMeleeCannotReachBossTrigger::IsActive()
     return IsFelmystAirPhaseTargetSuppressed(felmyst);
 }
 
+bool FelmystPlayerIsCharmedByFogTrigger::IsActive()
+{
+    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "felmyst") &&
+        GetFelmystCharmedTarget(botAI, bot);
+}
+
 // Eredar Twins
 
 bool EredarTwinsMeleeIsAtBalconyTrigger::IsActive()

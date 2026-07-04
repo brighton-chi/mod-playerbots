@@ -389,3 +389,12 @@ bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
     bot->SetSelection(ObjectGuid());
     return true;
 }
+
+bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
+{
+    Player* charmedPlayer = GetFelmystCharmedTarget(botAI, bot);
+    if (charmedPlayer && AI_VALUE(Unit*, "current target") != charmedPlayer)
+        return Attack(charmedPlayer);
+
+    return false;
+}

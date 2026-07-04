@@ -251,6 +251,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystKillCharmedPlayerAction : public AttackAction
+{
+public:
+    FelmystKillCharmedPlayerAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "felmyst kill charmed player") {}
+    bool Execute(Event event) override;
+};
 // Eredar Twins
 
 class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction

@@ -226,6 +226,14 @@ public:
     bool IsActive() override;
 };
 
+class FelmystPlayerIsCharmedByFogTrigger : public Trigger
+{
+public:
+    FelmystPlayerIsCharmedByFogTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst player is charmed by fog") {}
+    bool IsActive() override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeIsAtBalconyTrigger : public Trigger

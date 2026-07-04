@@ -97,6 +97,9 @@ public:
         creators["felmyst melee clear target"] =
             &RaidSunwellActionContext::felmyst_melee_clear_target;
 
+        creators["felmyst kill charmed player"] =
+            &RaidSunwellActionContext::felmyst_kill_charmed_player;
+
         // Eredar Twins
         creators["eredar twins melee jump down from balcony"] =
             &RaidSunwellActionContext::eredar_twins_melee_jump_down_from_balcony;
@@ -293,6 +296,9 @@ private:
     }
     static Action* felmyst_melee_clear_target(PlayerbotAI* botAI) {
         return new FelmystMeleeClearTargetAction(botAI);
+    }
+    static Action* felmyst_kill_charmed_player(PlayerbotAI* botAI) {
+        return new FelmystKillCharmedPlayerAction(botAI);
     }
 
     // Eredar Twins

@@ -134,13 +134,13 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane);
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptionState& state);
 bool TryGetActiveFelmystFogOfCorruptionState(
     Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
-Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
 Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 bool TryGetFelmystRangedPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
+Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot);
 
 }
 

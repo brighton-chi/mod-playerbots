@@ -1385,33 +1385,42 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
     return closestTarget;
 }
 
-Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot)
+Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
+    GuidVector attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
 
-    Unit* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    Player* lowestHpTarget = nullptr;
+    uint32 lowestHp = std::numeric_limits<uint32>::max();
+    constexpr float maxDistance = 30.0f;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    for (ObjectGuid const& guid : attackers)
     {
-        Player* member = ref->GetSource();
-        if (!member ||
-            !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsPlayer())
+            continue;
+
+        Player* member = unit->ToPlayer();
+        if (!member->IsAlive() || member->GetMapId() != SUNWELL_MAP_ID)
+            continue;
+
+        if (!member->HasAura(
+                static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
         {
             continue;
         }
 
-        float distance = bot->GetDistance(member);
-        if (!closestTarget || distance < closestDistance)
+        if (bot->GetDistance2d(member) > maxDistance)
+            continue;
+
+        if (member->GetHealth() < lowestHp)
         {
-            closestTarget = member;
-            closestDistance = distance;
+            lowestHp = member->GetHealth();
+            lowestHpTarget = member;
         }
     }
 
-    return closestTarget;
+    return lowestHpTarget;
 }
 
 Unit* GetNearestFelmystDemonicVaporHazard(Player* bot)
