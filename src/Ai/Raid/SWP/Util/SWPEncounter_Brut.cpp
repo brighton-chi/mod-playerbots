@@ -35,16 +35,6 @@ float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
         tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-bool IsBrutallusMainTankGroup(uint8 rangedIndex)
-{
-    return rangedIndex % 2 == 0;
-}
-
-uint8 GetBrutallusArcPositionIndex(uint8 rangedIndex)
-{
-    return static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP);
-}
-
 bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid)
 {
     auto const burnStateItr = brutallusRangedBurnStates.find(ownerGuid);
@@ -105,7 +95,7 @@ bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex
         return false;
     };
 
-    if (IsBrutallusMainTankGroup(rangedIndex))
+    if (rangedIndex % 2 == 0)
         return assignFromOrder(mainGroupPriority) || assignFromOrder(mainGroupOverflow);
 
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
@@ -215,8 +205,8 @@ bool TryGetBrutallusRangedPosition(
         return false;
 
     const BrutallusRangedSlotInfo slotInfo = {
-        IsBrutallusMainTankGroup(rangedIndex),
-        GetBrutallusArcPositionIndex(rangedIndex)
+        rangedIndex % 2 == 0,
+        static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
 
     const float mainTankAngle =
