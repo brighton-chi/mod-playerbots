@@ -66,8 +66,10 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event event)
 
 bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
 {
+    constexpr float searchRadius = 60.0f;
+
     // Priority: falcon > eagle (banish only) > hawk
-    if (Unit* spirit = GetFirstAliveUnitByEntry(botAI, NPC_FALCON_SPIRIT);
+    if (Creature* spirit = bot->FindNearestCreature(NPC_FALCON_SPIRIT, searchRadius, true);
         spirit && !spirit->GetAuraEffect(
             SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
     {
@@ -81,7 +83,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
     if (Unit* anzu = AI_VALUE2(Unit*, "find target", "anzu");
         anzu && anzu->HasAura(SPELL_BANISH_ANZU))
     {
-        if (Unit* spirit = GetFirstAliveUnitByEntry(botAI, NPC_EAGLE_SPIRIT);
+        if (Creature* spirit = bot->FindNearestCreature(NPC_EAGLE_SPIRIT, searchRadius, true);
             spirit && !spirit->GetAuraEffect(
                 SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
         {
@@ -93,7 +95,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
         }
     }
 
-    if (Unit* spirit = GetFirstAliveUnitByEntry(botAI, NPC_HAWK_SPIRIT);
+    if (Creature* spirit = bot->FindNearestCreature(NPC_HAWK_SPIRIT, searchRadius, true);
         spirit && !spirit->GetAuraEffect(
             SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
     {
