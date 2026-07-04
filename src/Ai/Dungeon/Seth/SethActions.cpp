@@ -130,7 +130,7 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event event)
 bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event event)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    if (!ikiss)
+    if (!ikiss || !ikiss->GetVictim())
         return false;
 
     Player* victim = ikiss->GetVictim()->ToPlayer();
@@ -156,7 +156,7 @@ bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
     float const botAngle = pillarCenter.GetAngle(bot);
 
     return MoveToPillar(pillarCenter, distToPillar, botAngle) ||
-           MoveAroundPillar(ikiss, pillarCenter, botAngle);
+        MoveAroundPillar(ikiss, pillarCenter, botAngle);
 }
 
 bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
