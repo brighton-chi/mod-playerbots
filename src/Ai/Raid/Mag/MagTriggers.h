@@ -73,15 +73,6 @@ public:
         PlayerbotAI* botAI) : Trigger(botAI, "magtheridon boss engaged by ranged") {}
     bool IsActive() override;
 };
-
-class MagtheridonStandingInDebrisTrigger : public Trigger
-{
-public:
-    MagtheridonStandingInDebrisTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "magtheridon standing in debris") {}
-    bool IsActive() override;
-};
-
 class MagtheridonStandingInDebrisTrigger : public Trigger
 {
 public:
@@ -102,13 +93,6 @@ class MagtheridonNeedToManageTimersAndAssignmentsTrigger : public Trigger
 public:
     MagtheridonNeedToManageTimersAndAssignmentsTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "magtheridon need to manage timers and assignments") {}
-    bool IsActive() override;
-};
-
-class MagtheridonBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    MagtheridonBotIsNotInCombatTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon bot is not in combat") {};
     bool IsActive() override;
 };
 
