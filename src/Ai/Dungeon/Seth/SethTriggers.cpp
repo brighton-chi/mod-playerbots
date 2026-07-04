@@ -16,16 +16,16 @@ constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, SETHEKK_HALLS_MAP_ID) &&
-           AI_VALUE2(Unit*, "find target", "time-lost controller");
+        AI_VALUE2(Unit*, "find target", "time-lost controller");
 }
 
 bool SethekkProphetCastsFearTrigger::IsActive()
 {
     return bot->getClass() == CLASS_SHAMAN &&
-           AI_VALUE2(Unit*, "find target", "sethekk prophet");
+        AI_VALUE2(Unit*, "find target", "sethekk prophet");
 }
 
-bool DarkweaverSythSummonsElementalsTrigger::IsActive()
+bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(botAI, bot, SETHEKK_HALLS_MAP_ID))
         return false;
@@ -42,7 +42,7 @@ bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
 bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
 {
     return bot->getClass() == CLASS_DRUID && botAI->IsCaster(bot) &&
-           AI_VALUE2(Unit*, "find target", "anzu");
+        AI_VALUE2(Unit*, "find target", "anzu");
 }
 
 bool TalonKingIkissNeedToPositionForArcaneExplosionTrigger::IsActive()

@@ -124,8 +124,8 @@ bool TalonKingIkissMoveToPillarPositionAction::Execute(Event event)
         return false;
 
     const Position position = { 35.538f, 309.573f, 25.086f };
-    const float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    const float distToPosition = bot->GetExactDist2d(
+        position.GetPositionX(), position.GetPositionY());
 
     float moveX = 0.0f;
     float moveY = 0.0f;
@@ -146,8 +146,9 @@ bool TalonKingIkissMoveToPillarPositionAction::Execute(Event event)
 
     if (distToPosition > 2.0f)
     {
-        return MoveTo(SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        return MoveTo(
+            SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
     }
     else
     {
@@ -182,6 +183,7 @@ bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
     float const moveY = bot->GetPositionY() + sin(tangentAngle) * orbitIncrement;
 
     botAI->Reset();
-    return MoveTo(SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(
+        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }

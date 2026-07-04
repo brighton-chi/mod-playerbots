@@ -15,7 +15,7 @@ void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& tri
     triggers.push_back(new TriggerNode("sethekk prophet casts fear", {
         NextAction("sethekk prophet drop tremor totem", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("darkweaver syth summons elementals", {
+    triggers.push_back(new TriggerNode("darkweaver syth boss summons elementals", {
         NextAction("darkweaver syth mark elementals with skull", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("anzu encounter has two phases", {

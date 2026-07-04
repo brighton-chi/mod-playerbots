@@ -24,11 +24,11 @@ public:
     bool IsActive() override;
 };
 
-class DarkweaverSythSummonsElementalsTrigger : public Trigger
+class DarkweaverSythBossSummonsElementalsTrigger : public Trigger
 {
 public:
-    DarkweaverSythSummonsElementalsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "darkweaver syth summons elementals") {}
+    DarkweaverSythBossSummonsElementalsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "darkweaver syth boss summons elementals") {}
     bool IsActive() override;
 };
 

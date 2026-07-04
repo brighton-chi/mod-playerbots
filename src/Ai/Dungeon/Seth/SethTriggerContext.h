@@ -20,8 +20,8 @@ public:
         creators["sethekk prophet casts fear"] =
             &TbcDungeonSethekkHallsTriggerContext::sethekk_prophet_casts_fear;
 
-        creators["darkweaver syth summons elementals"] =
-            &TbcDungeonSethekkHallsTriggerContext::darkweaver_syth_summons_elementals;
+        creators["darkweaver syth boss summons elementals"] =
+            &TbcDungeonSethekkHallsTriggerContext::darkweaver_syth_boss_summons_elementals;
 
         creators["anzu encounter has two phases"] =
             &TbcDungeonSethekkHallsTriggerContext::anzu_encounter_has_two_phases;
@@ -42,8 +42,8 @@ private:
     static Trigger* sethekk_prophet_casts_fear(PlayerbotAI* botAI) {
         return new SethekkProphetCastsFearTrigger(botAI);
     }
-    static Trigger* darkweaver_syth_summons_elementals(PlayerbotAI* botAI) {
-        return new DarkweaverSythSummonsElementalsTrigger(botAI);
+    static Trigger* darkweaver_syth_boss_summons_elementals(PlayerbotAI* botAI) {
+        return new DarkweaverSythBossSummonsElementalsTrigger(botAI);
     }
     static Trigger* anzu_encounter_has_two_phases(PlayerbotAI* botAI) {
         return new AnzuEncounterHasTwoPhasesTrigger(botAI);
