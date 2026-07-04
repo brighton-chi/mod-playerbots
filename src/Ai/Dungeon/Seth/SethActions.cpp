@@ -10,10 +10,10 @@
 namespace
 {
 constexpr uint32 SETHEKK_HALLS_MAP_ID = 556;
+constexpr uint32 SPELL_TREMOR_TOTEM = 8143;
+constexpr uint32 SPELL_BANISH_ANZU = 42354;
 constexpr uint32 SPELL_REJUVENATION_RANK_1 = 774;
 constexpr uint32 REJUVENATION_SPELL_ICON_ID = 64;
-constexpr uint32 SPELL_BANISH_ANZU = 42354;
-constexpr uint32 SPELL_TREMOR_TOTEM = 8143;
 constexpr uint32 NPC_CHARMING_TOTEM = 20343;
 constexpr uint32 NPC_HAWK_SPIRIT = 23134;
 constexpr uint32 NPC_FALCON_SPIRIT = 23135;
@@ -64,52 +64,31 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event event)
     return false;
 }
 
+// Priority: Falcon (haste) > Eagle during Banish (damage all enemies) > Hawk (damage reduction)
 bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
 {
     constexpr float searchRadius = 60.0f;
+    Creature* targetSpirit = nullptr;
 
-    // Priority: falcon > eagle (banish only) > hawk
-    if (Creature* spirit = bot->FindNearestCreature(NPC_FALCON_SPIRIT, searchRadius, true);
-        spirit && !spirit->GetAuraEffect(
-            SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
+    for (uint32 entry : { NPC_FALCON_SPIRIT, NPC_HAWK_SPIRIT, NPC_EAGLE_SPIRIT })
     {
-        if (botAI->CanCastSpell(SPELL_REJUVENATION_RANK_1, spirit) &&
-            botAI->CastSpell(SPELL_REJUVENATION_RANK_1, spirit))
-        {
-            return true;
-        }
-    }
-
-    if (Unit* anzu = AI_VALUE2(Unit*, "find target", "anzu");
-        anzu && anzu->HasAura(SPELL_BANISH_ANZU))
-    {
-        if (Creature* spirit = bot->FindNearestCreature(NPC_EAGLE_SPIRIT, searchRadius, true);
-            spirit && !spirit->GetAuraEffect(
+        Creature* spirit = bot->FindNearestCreature(entry, searchRadius, true);
+        if (spirit && !spirit->GetAuraEffect(
                 SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
         {
-            if (botAI->CanCastSpell(SPELL_REJUVENATION_RANK_1, spirit) &&
-                botAI->CastSpell(SPELL_REJUVENATION_RANK_1, spirit))
-            {
-                return true;
-            }
+            targetSpirit = spirit;
+            break;
         }
     }
 
-    if (Creature* spirit = bot->FindNearestCreature(NPC_HAWK_SPIRIT, searchRadius, true);
-        spirit && !spirit->GetAuraEffect(
-            SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, REJUVENATION_SPELL_ICON_ID, 0))
-    {
-        if (botAI->CanCastSpell(SPELL_REJUVENATION_RANK_1, spirit) &&
-            botAI->CastSpell(SPELL_REJUVENATION_RANK_1, spirit))
-        {
-            return true;
-        }
-    }
+    if (!targetSpirit)
+        return false;
 
-    return false;
+    return botAI->CanCastSpell(SPELL_REJUVENATION_RANK_1, targetSpirit) &&
+        botAI->CastSpell(SPELL_REJUVENATION_RANK_1, targetSpirit);
 }
 
-bool TalonKingIkissMoveToPillarPositionAction::Execute(Event event)
+bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event event)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
@@ -125,28 +104,20 @@ bool TalonKingIkissMoveToPillarPositionAction::Execute(Event event)
     const float distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
-    float moveX = 0.0f;
-    float moveY = 0.0f;
-
-    if (botAI->IsTank(bot))
-    {
-        const float dX = position.GetPositionX() - bot->GetPositionX();
-        const float dY = position.GetPositionY() - bot->GetPositionY();
-        const float moveDist = std::min(2.0f, distToPosition);
-        float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-    }
-    else
-    {
-        float moveX = position.GetPositionX();
-        float moveY = position.GetPositionY();
-    }
-
     if (distToPosition > 2.0f)
     {
-        return MoveTo(
-            SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        if (bot->IsWithinMeleeRange(ikiss))
+        {
+            const float dX = position.GetPositionX() - bot->GetPositionX();
+            const float dY = position.GetPositionY() - bot->GetPositionY();
+            const float moveDist = std::min(2.0f, distToPosition);
+            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(
+                SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
     }
     else
     {
@@ -156,31 +127,79 @@ bool TalonKingIkissMoveToPillarPositionAction::Execute(Event event)
     return false;
 }
 
+bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event event)
+{
+    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    if (!ikiss)
+        return false;
+
+    Player* victim = ikiss->GetVictim()->ToPlayer();
+    if (!victim)
+        return false;
+
+    constexpr float maxDistance = 10.0f;
+    constexpr float tolerance = 5.0f;
+    if (bot->GetExactDist2d(victim) <= maxDistance + tolerance)
+        return false;
+
+    return MoveTo(victim, maxDistance, MovementPriority::MOVEMENT_COMBAT);
+}
+
 bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
         return false;
 
-    // TODO: Replace with actual pillar center coordinates
     const Position pillarCenter = { 23.730f, 309.230f };
-    constexpr float orbitIncrement = 3.5f;
+    float const distToPillar = bot->GetExactDist2d(pillarCenter);
+    float const botAngle = pillarCenter.GetAngle(bot);
 
-    // Angle from pillar to each unit
-    float const angleToBot = pillarCenter.GetAngle(bot);
-    float const angleToIkiss = pillarCenter.GetAngle(ikiss);
+    return MoveToPillar(pillarCenter, distToPillar, botAngle) ||
+           MoveAroundPillar(ikiss, pillarCenter, botAngle);
+}
 
-    // Move away from ikiss: if bot is clockwise of ikiss, orbit further CW
-    float const delta = Position::NormalizeOrientation(angleToBot - angleToIkiss);
+bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
+    Position const& pillarCenter, float distToPillar, float botAngle)
+{
+    constexpr float circleRadiusMin = 10.0f;
+    constexpr float circleRadiusMax = 12.0f;
+
+    if (distToPillar >= circleRadiusMin && distToPillar <= circleRadiusMax)
+        return false;
+
+    float const targetRadius =
+        distToPillar < circleRadiusMin ? circleRadiusMin : circleRadiusMax;
+    float const moveX = pillarCenter.GetPositionX() + targetRadius * cos(botAngle);
+    float const moveY = pillarCenter.GetPositionY() + targetRadius * sin(botAngle);
+
+    botAI->InterruptSpell();
+    return MoveTo(
+        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
+    Unit* ikiss, Position const& pillarCenter, float botAngle)
+{
+    constexpr float circleRadius = 11.0f;
+    constexpr float arcStep = 4.0f;
+
+    float const destAngle = pillarCenter.GetAngle(ikiss) + M_PI;
+    float const destX = pillarCenter.GetPositionX() + circleRadius * cos(destAngle);
+    float const destY = pillarCenter.GetPositionY() + circleRadius * sin(destAngle);
+
+    if (bot->GetExactDist2d(destX, destY) < 2.0f)
+        return false;
+
+    float const delta = Position::NormalizeOrientation(destAngle - botAngle);
     float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
+    float const tangentAngle = botAngle + direction * static_cast<float>(M_PI_2);
 
-    // Tangent to the pillar circle (perpendicular to pillar→bot)
-    float const tangentAngle = angleToBot + direction * (M_PI / 16.0f);
+    float const moveX = bot->GetPositionX() + cos(tangentAngle) * arcStep;
+    float const moveY = bot->GetPositionY() + sin(tangentAngle) * arcStep;
 
-    float const moveX = bot->GetPositionX() + cos(tangentAngle) * orbitIncrement;
-    float const moveY = bot->GetPositionY() + sin(tangentAngle) * orbitIncrement;
-
-    botAI->Reset();
+    botAI->InterruptSpell();
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);

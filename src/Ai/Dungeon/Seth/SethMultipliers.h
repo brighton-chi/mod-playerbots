@@ -32,4 +32,12 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class TalonKingIkissControlMovementMultiplier : public Multiplier
+{
+public:
+    TalonKingIkissControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "talon king ikiss control movement") {}
+    virtual float GetValue(Action* action);
+};
+
 #endif

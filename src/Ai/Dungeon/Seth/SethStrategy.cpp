@@ -24,10 +24,13 @@ void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& tri
     triggers.push_back(new TriggerNode("anzu bird spirits provide buffs", {
         NextAction("anzu cast heal over time spell on bird spirit", ACTION_HIGH) }));
 
-    triggers.push_back(new TriggerNode("talon king ikiss need to position for arcane explosion", {
-        NextAction("talon king ikiss move to pillar position", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("talon king ikiss boss engaged by tank", {
+        NextAction("talon king ikiss tank move boss to pillar position", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("talon king ikiss boss preparing to cast arcane explosion", {
+    triggers.push_back(new TriggerNode("talon king ikiss ranged prepare for arcane explosion", {
+        NextAction("talon king ikiss ranged stay near victim of boss", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("talon king ikiss boss casting arcane explosion", {
         NextAction("talon king ikiss los arcane explosion", ACTION_EMERGENCY + 10) }));
 }
 
@@ -36,4 +39,5 @@ void TbcDungeonSethekkHallsStrategy::InitMultipliers(std::vector<Multiplier*>& m
     multipliers.push_back(new SethekkProphetUseTremorTotemMultiplier(botAI));
     multipliers.push_back(new AnzuControlSpellCastingWithSpellBombMultiplier(botAI));
     multipliers.push_back(new TalonKingIkissDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new TalonKingIkissControlMovementMultiplier(botAI));
 }

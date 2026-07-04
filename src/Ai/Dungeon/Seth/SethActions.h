@@ -49,15 +49,23 @@ public:
     bool Execute(Event event) override;
 };
 
-class TalonKingIkissMoveToPillarPositionAction : public MovementAction
+class TalonKingIkissTankMoveBossToPillarPositionAction : public MovementAction
 {
 public:
-    TalonKingIkissMoveToPillarPositionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss move to pillar position") {}
+    TalonKingIkissTankMoveBossToPillarPositionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss tank move boss to pillar position") {}
     bool Execute(Event event) override;
 
 private:
     bool _hasReachedPillarPosition = false;
+};
+
+class TalonKingIkissRangedStayNearVictimOfBossAction : public MovementAction
+{
+public:
+    TalonKingIkissRangedStayNearVictimOfBossAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss ranged stay near victim of boss") {}
+    bool Execute(Event event) override;
 };
 
 class TalonKingIkissLosArcaneExplosionAction : public MovementAction
@@ -66,6 +74,10 @@ public:
     TalonKingIkissLosArcaneExplosionAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss los arcane explosion") {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveToPillar(Position const& pillarCenter, float distToPillar, float botAngle);
+    bool MoveAroundPillar(Unit* ikiss, Position const& pillarCenter, float botAngle);
 };
 
 #endif

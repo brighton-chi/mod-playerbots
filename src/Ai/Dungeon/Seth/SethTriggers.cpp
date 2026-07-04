@@ -48,13 +48,25 @@ bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "anzu");
 }
 
-bool TalonKingIkissNeedToPositionForArcaneExplosionTrigger::IsActive()
+bool TalonKingIkissBossEngagedByTankTrigger::IsActive()
 {
+    if (!botAI->IsTank(bot))
+        return false;
+
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     return ikiss && ikiss->GetVictim() == bot;
 }
 
-bool TalonKingIkissBossPreparingToCastArcaneExplosionTrigger::IsActive()
+bool TalonKingIkissRangedPrepareForArcaneExplosionTrigger::IsActive()
+{
+    if (!botAI->IsRanged(bot))
+        return false;
+
+    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    return ikiss && !ikiss->HasAura(SPELL_ARCANE_BUBBLE) && bot->IsWithinLOSInMap(ikiss);
+}
+
+bool TalonKingIkissBossCastingArcaneExplosionTrigger::IsActive()
 {
     // Arcane Bubble is put up 1s before casting Arcane Explosion
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");

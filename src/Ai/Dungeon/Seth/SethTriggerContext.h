@@ -29,11 +29,14 @@ public:
         creators["anzu bird spirits provide buffs"] =
             &TbcDungeonSethekkHallsTriggerContext::anzu_bird_spirits_provide_buffs;
 
-        creators["talon king ikiss need to position for arcane explosion"] =
-            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_need_to_position_for_arcane_explosion;
+        creators["talon king ikiss ranged prepare for arcane explosion"] =
+            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_ranged_prepare_for_arcane_explosion;
 
-        creators["talon king ikiss boss preparing to cast arcane explosion"] =
-            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_boss_preparing_to_cast_arcane_explosion;
+        creators["talon king ikiss boss engaged by tank"] =
+            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_boss_engaged_by_tank;
+
+        creators["talon king ikiss boss casting arcane explosion"] =
+            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_boss_casting_arcane_explosion;
     }
 private:
     static Trigger* time_lost_controller_drops_charming_totem(PlayerbotAI* botAI) {
@@ -51,11 +54,14 @@ private:
     static Trigger* anzu_bird_spirits_provide_buffs(PlayerbotAI* botAI) {
         return new AnzuBirdSpiritsProvideBuffsTrigger(botAI);
     }
-    static Trigger* talon_king_ikiss_need_to_position_for_arcane_explosion(PlayerbotAI* botAI) {
-        return new TalonKingIkissNeedToPositionForArcaneExplosionTrigger(botAI);
+    static Trigger* talon_king_ikiss_ranged_prepare_for_arcane_explosion(PlayerbotAI* botAI) {
+        return new TalonKingIkissRangedPrepareForArcaneExplosionTrigger(botAI);
     }
-    static Trigger* talon_king_ikiss_boss_preparing_to_cast_arcane_explosion(PlayerbotAI* botAI) {
-        return new TalonKingIkissBossPreparingToCastArcaneExplosionTrigger(botAI);
+    static Trigger* talon_king_ikiss_boss_engaged_by_tank(PlayerbotAI* botAI) {
+        return new TalonKingIkissBossEngagedByTankTrigger(botAI);
+    }
+    static Trigger* talon_king_ikiss_boss_casting_arcane_explosion(PlayerbotAI* botAI) {
+        return new TalonKingIkissBossCastingArcaneExplosionTrigger(botAI);
     }
 };
 

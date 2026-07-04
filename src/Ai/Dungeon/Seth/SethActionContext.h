@@ -29,8 +29,11 @@ public:
         creators["anzu cast heal over time spell on bird spirit"] =
             &TbcDungeonSethekkHallsActionContext::anzu_cast_heal_over_time_spell_on_bird_spirit;
 
-        creators["talon king ikiss move to pillar position"] =
-            &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_move_to_pillar_position;
+        creators["talon king ikiss tank move boss to pillar position"] =
+            &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_tank_move_boss_to_pillar_position;
+
+        creators["talon king ikiss ranged stay near victim of boss"] =
+            &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_ranged_stay_near_victim_of_boss;
 
         creators["talon king ikiss los arcane explosion"] =
             &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_los_arcane_explosion;
@@ -51,8 +54,11 @@ private:
     static Action* anzu_cast_heal_over_time_spell_on_bird_spirit(PlayerbotAI* botAI) {
         return new AnzuCastHealOverTimeSpellOnBirdSpiritAction(botAI);
     }
-    static Action* talon_king_ikiss_move_to_pillar_position(PlayerbotAI* botAI) {
-        return new TalonKingIkissMoveToPillarPositionAction(botAI);
+    static Action* talon_king_ikiss_tank_move_boss_to_pillar_position(PlayerbotAI* botAI) {
+        return new TalonKingIkissTankMoveBossToPillarPositionAction(botAI);
+    }
+    static Action* talon_king_ikiss_ranged_stay_near_victim_of_boss(PlayerbotAI* botAI) {
+        return new TalonKingIkissRangedStayNearVictimOfBossAction(botAI);
     }
     static Action* talon_king_ikiss_los_arcane_explosion(PlayerbotAI* botAI) {
         return new TalonKingIkissLosArcaneExplosionAction(botAI);

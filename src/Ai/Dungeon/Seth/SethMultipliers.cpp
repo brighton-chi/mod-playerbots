@@ -4,10 +4,20 @@
  */
 
 #include "SethMultipliers.h"
+#include "FollowActions.h"
 #include "GenericSpellActions.h"
+#include "HunterActions.h"
+#include "MageActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "ReachTargetActions.h"
+#include "SethActions.h"
 #include "ShamanActions.h"
+
+namespace
+{
+constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
+}
 
 float SethekkProphetUseTremorTotemMultiplier::GetValue(Action* action)
 {
@@ -65,6 +75,41 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         ikiss && ikiss->GetHealthPct() > 95.0f)
     {
         return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
+{
+    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    if (!ikiss)
+        return 1.0f;
+
+    if (/*dynamic_cast<FleeAction*>(action) ||*/
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action) &&
+        !dynamic_cast<TankFaceAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (ikiss->HasAura(SPELL_ARCANE_BUBBLE))
+    {
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<TalonKingIkissLosArcaneExplosionAction*>(action))
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;
