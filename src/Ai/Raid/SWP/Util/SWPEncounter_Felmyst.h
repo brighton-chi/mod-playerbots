@@ -106,12 +106,10 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystDemonicVaporRegionIndices;
 extern std::unordered_map<uint32, uint8> felmystDemonicVaporUsedRegionMasks;
 extern std::unordered_map<uint32, uint8> felmystDemonicVaporFirstRegionIndices;
-extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
-    felmystFogOfCorruptionStates;
+extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
 extern std::unordered_map<uint32, FelmystFogPassState> felmystFogPassStates;
 extern std::unordered_map<uint32, bool> felmystEncapsulateOccurredThisGroundPhase;
-extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
-    felmystIncomingEncapsulateStates;
+extern std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
 extern std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
@@ -119,8 +117,7 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 Position const& GetFelmystMainTankGroundPosition(Player* player);
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
-    Position& position);
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
 FelmystGroundStack GetClosestFelmystGroundStack(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);

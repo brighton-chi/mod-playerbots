@@ -54,11 +54,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             erased = true;
 
-        if (isMechanicTracker &&
-            brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
-        {
+        if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
@@ -124,11 +121,8 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
 
-        if (botAI->IsRanged(bot) &&
-            kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
-        {
+        if (botAI->IsRanged(bot) && kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&

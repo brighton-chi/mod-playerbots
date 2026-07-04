@@ -39,11 +39,8 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == referencePlayer ||
-            member->GetMapId() != referencePlayer->GetMapId())
-        {
+        if (!member || member == referencePlayer || member->GetMapId() != SUNWELL_MAP_ID)
             continue;
-        }
 
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
             botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
@@ -60,7 +57,7 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
     if (!referencePlayer)
         return nullptr;
 
-    if (!referencePlayer->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (!IsInSpectralRealm(referencePlayer))
     {
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
             botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
@@ -76,9 +73,8 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == referencePlayer ||
-            member->GetMapId() != referencePlayer->GetMapId() ||
-            member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+        if (!member || member == referencePlayer || IsInSpectralRealm(member) ||
+            member->GetMapId() != SUNWELL_MAP_ID)
         {
             continue;
         }
@@ -233,8 +229,11 @@ static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
         return;
     }
 
-    Player* target = currentSpell->m_targets.GetUnitTarget() ?
-        currentSpell->m_targets.GetUnitTarget()->ToPlayer() : nullptr;
+    Unit* unitTarget = currentSpell->m_targets.GetUnitTarget();
+    if (!unitTarget)
+        return;
+
+    Player* target = unitTarget->ToPlayer();
     if (!target || !FindFirstSunwellCombatBotInGroup(target))
         return;
 
@@ -422,11 +421,8 @@ public:
             {
                 hasSunwellStrategy = true;
 
-                if (!player->IsAlive() || player->HasAura(
-                        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
-                {
+                if (!player->IsAlive() || HasKiljaedenDragonAura(player))
                     continue;
-                }
 
                 if (creature->GetExactDist2d(player) > KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE)
                     continue;
@@ -503,11 +499,8 @@ public:
             for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
             {
                 Player* player = it->GetSource();
-                if (!player || !player->IsAlive() || player->HasAura(
-                        static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
-                {
+                if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
                     continue;
-                }
 
                 PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
                 if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))

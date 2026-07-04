@@ -77,8 +77,8 @@ float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
 
-     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-         return 0.0f;
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -146,14 +146,11 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
 
 float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!botAI->IsTank(bot) || IsInSpectralRealm(bot))
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) ||
-        !AI_VALUE2(Unit*, "find target", "kalecgos"))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
-    }
 
     if (GetKalecgosCurrentTank(botAI, bot) == bot)
         return 1.0f;
@@ -195,7 +192,7 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (IsInSpectralRealm(bot))
         return 1.0f;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
@@ -402,6 +399,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     FelmystFogLane thirdPassLane = FelmystFogLane::None;
     const bool shouldRepositionAfterThirdPass =
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
+
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
         !shouldRepositionAfterThirdPass)
     {
@@ -509,8 +507,8 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-         return 0.0f;
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -844,10 +842,7 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden)
-        return 1.0f;
-
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!kiljaeden || HasKiljaedenDragonAura(bot))
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
@@ -863,10 +858,7 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
 
 float KiljaedenControlDragonMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
-        return 1.0f;
-
-    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden") || !HasKiljaedenDragonAura(bot))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))

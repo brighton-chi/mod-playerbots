@@ -16,14 +16,11 @@ namespace SunwellHelpers
 
 const Position BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    brutallusRangedAssignments;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    brutallusRangedBurnPadAssignments;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedBurnPadAssignments;
 
-std::unordered_map<ObjectGuid, BrutallusRangedBurnState>
-    brutallusRangedBurnStates;
+std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
 
 namespace
 {
@@ -33,9 +30,9 @@ float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
     if (!brutallus || !tank)
         return Position::NormalizeOrientation(fallbackAngle);
 
-    return Position::NormalizeOrientation(
-        std::atan2(tank->GetPositionY() - brutallus->GetPositionY(),
-                   tank->GetPositionX() - brutallus->GetPositionX()));
+    return Position::NormalizeOrientation(std::atan2(
+        tank->GetPositionY() - brutallus->GetPositionY(),
+        tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
 bool IsBrutallusMainTankGroup(uint8 rangedIndex)
@@ -45,15 +42,14 @@ bool IsBrutallusMainTankGroup(uint8 rangedIndex)
 
 uint8 GetBrutallusArcPositionIndex(uint8 rangedIndex)
 {
-    return static_cast<uint8>(
-        (rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP);
+    return static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP);
 }
 
 bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid)
 {
     auto const burnStateItr = brutallusRangedBurnStates.find(ownerGuid);
     return burnStateItr != brutallusRangedBurnStates.end() &&
-           burnStateItr->second != BrutallusRangedBurnState::None;
+        burnStateItr->second != BrutallusRangedBurnState::None;
 }
 
 bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
@@ -122,9 +118,9 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
     if (!brutallus)
         return 0.0f;
 
-    return Position::NormalizeOrientation(
-        std::atan2(BRUTALLUS_MAIN_TANK_POSITION.GetPositionY() - brutallus->GetPositionY(),
-                   BRUTALLUS_MAIN_TANK_POSITION.GetPositionX() - brutallus->GetPositionX()));
+    return Position::NormalizeOrientation(std::atan2(
+        BRUTALLUS_MAIN_TANK_POSITION.GetPositionY() - brutallus->GetPositionY(),
+        BRUTALLUS_MAIN_TANK_POSITION.GetPositionX() - brutallus->GetPositionX()));
 }
 
 Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, float radius)
@@ -228,6 +224,7 @@ bool TryGetBrutallusRangedPosition(
     const float assistTankAngle = GetBrutallusTankAngle(
         brutallus, assistTank,
         Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+
     const float tankAngle = slotInfo.isMainTankGroup ? mainTankAngle : assistTankAngle;
     const float angleOffset = GetCenteredArcSlotAngleOffset(
         slotInfo.arcPositionIndex, BRUTALLUS_RANGED_POSITIONS_PER_GROUP,
@@ -279,9 +276,8 @@ bool TryGetBrutallusLaneTraversalPosition(
     if (!brutallus)
         return false;
 
-    const float targetAngle = Position::NormalizeOrientation(
-        std::atan2(targetY - brutallus->GetPositionY(),
-                   targetX - brutallus->GetPositionX()));
+    const float targetAngle = Position::NormalizeOrientation(std::atan2(
+        targetY - brutallus->GetPositionY(), targetX - brutallus->GetPositionX()));
 
     const float currentAngle = Position::NormalizeOrientation(
         std::atan2(currentY - brutallus->GetPositionY(), currentX - brutallus->GetPositionX()));
@@ -346,8 +342,8 @@ void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
             return true;
         }
 
-        assignments[member->GetGUID()] = static_cast<uint8>(
-            assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
+        assignments[member->GetGUID()] =
+            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
 
         return true;
     };

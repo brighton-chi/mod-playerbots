@@ -97,7 +97,7 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
         return false;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot) || kalecgos->GetVictim() == bot)
         return false;
 
     return !ShouldEnterKalecgosSpectralRift(botAI, bot);
@@ -115,28 +115,24 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
         return false;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    if (!kalecgos || kalecgos->IsFriendlyTo(bot))
+    if (!kalecgos || kalecgos->IsFriendlyTo(bot) || IsInSpectralRealm(bot))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
-        return false;
-
-    Aura* arcaneBuffet =
-        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_ARCANE_BUFFET));
-
+    Aura* arcaneBuffet = bot->GetAura(
+        static_cast<uint32>(SunwellSpells::SPELL_ARCANE_BUFFET));
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
 bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
 {
-    return botAI->IsTank(bot) &&
-           bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
+    return botAI->IsTank(bot) && IsInSpectralRealm(bot);
 }
 
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)) &&
-           bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + 3.0f;
+    constexpr float KALECGOS_SPECTRAL_REALM_Z_OFFSET = 3.0f;
+    return IsInSpectralRealm(bot) &&
+        bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + KALECGOS_SPECTRAL_REALM_Z_OFFSET;
 }
 
 // Brutallus
@@ -152,20 +148,32 @@ bool BrutallusPullingBossTrigger::IsActive()
 
 bool BrutallusBossEngagedByTanksTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "brutallus") &&
-           (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true));
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true)) &&
+        AI_VALUE2(Unit*, "find target", "brutallus");
 }
 
 bool BrutallusBossEngagedByMeleeTrigger::IsActive()
 {
-    return botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "brutallus") &&
-           !botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true);
+    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, true))
+    {
+        return false;
+    }
+
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    return brutallus && brutallus->GetVictim() != bot;
 }
 
 bool BrutallusBossEngagedByRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "brutallus") &&
-           !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+    if (!botAI->IsRanged(bot) ||
+        bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+    {
+        return false;
+    }
+
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    return brutallus && brutallus->GetVictim() != bot;
 }
 
 bool BrutallusBotIsBurningTrigger::IsActive()
@@ -224,8 +232,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot) &&
-           !DidFelmystEncapsulateOccurThisGroundPhase(bot);
+    return !GetFelmystEncapsulateTarget(bot) && !DidFelmystEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
@@ -246,8 +253,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot || botAI->IsMainTank(bot))
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot) &&
-           !DidFelmystEncapsulateOccurThisGroundPhase(bot);
+    return !GetFelmystEncapsulateTarget(bot) && !DidFelmystEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
@@ -349,7 +355,7 @@ bool EredarTwinsMeleeIsAtBalconyTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
-           AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        AI_VALUE2(Unit*, "find target", "lady sacrolash");
 }
 
 bool EredarTwinsPullingBossesTrigger::IsActive()
@@ -366,8 +372,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
     if (!botAI->IsTank(bot) || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
-           IsAnySacrolashTank(botAI, bot);
+    return AI_VALUE2(Unit*, "find target", "lady sacrolash") && IsAnySacrolashTank(botAI, bot);
 }
 
 bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
@@ -375,8 +380,7 @@ bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
     if (!botAI->IsTank(bot) || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
-           IsAlythessTank(botAI, bot);
+    return AI_VALUE2(Unit*, "find target", "grand warlock alythess") && IsAlythessTank(botAI, bot);
 }
 
 bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
@@ -425,13 +429,13 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
         return false;
     }
 
-    Aura* flameSear =
-        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_SEAR));
+    Aura* flameSear = bot->GetAura(
+        static_cast<uint32>(SunwellSpells::SPELL_FLAME_SEAR));
     if (!flameSear || flameSear->GetDuration() > 2000)
         return false;
 
-    Aura* flameTouched =
-        bot->GetAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
+    Aura* flameTouched = bot->GetAura(
+        static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
     return flameTouched && flameTouched->GetStackAmount() >= 5;
 }
 
@@ -477,15 +481,13 @@ bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
 bool MuruBossesEngagedByRangedTrigger::IsActive()
 {
     return botAI->IsRanged(bot) &&
-           (AI_VALUE2(Unit*, "find target", "m'uru") ||
-            AI_VALUE2(Unit*, "find target", "entropius"));
+        (AI_VALUE2(Unit*, "find target", "m'uru") || AI_VALUE2(Unit*, "find target", "entropius"));
 }
 
 bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
     return botAI->IsDps(bot) &&
-           (AI_VALUE2(Unit*, "find target", "m'uru") ||
-            AI_VALUE2(Unit*, "find target", "entropius"));
+        (AI_VALUE2(Unit*, "find target", "m'uru") || AI_VALUE2(Unit*, "find target", "entropius"));
 }
 
 bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
@@ -517,13 +519,13 @@ bool MuruAddsSpawnAtEntranceTrigger::IsActive()
         return false;
 
     return !AI_VALUE2(Unit*, "find target", "shadowsword fury mage") &&
-           !AI_VALUE2(Unit*, "find target", "shadowsword berserker");
+        !AI_VALUE2(Unit*, "find target", "shadowsword berserker");
 }
 
 bool MuruDarkFiendsSpawnedTrigger::IsActive()
 {
     return (bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_SHAMAN) &&
-           AI_VALUE2(Unit*, "find target", "dark fiend");
+        AI_VALUE2(Unit*, "find target", "dark fiend");
 }
 
 bool MuruEntropiusMakesMiniDarknessTrigger::IsActive()
@@ -575,8 +577,8 @@ bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
     }
 
     Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    return berserker &&
-           berserker->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FLURRY));
+    return berserker && berserker->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_FLURRY));
 }
 
 bool MuruFuryMageCastingFelFireballTrigger::IsActive()
@@ -589,8 +591,7 @@ bool MuruFuryMageCastingFelFireballTrigger::IsActive()
 
     Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
     return furyMage && furyMage->HasUnitState(UNIT_STATE_CASTING) &&
-           furyMage->FindCurrentSpellBySpellId(
-               static_cast<uint32>(SunwellSpells::SPELL_FEL_FIREBALL));
+        furyMage->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_FEL_FIREBALL));
 }
 
 bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
@@ -599,8 +600,8 @@ bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
         return false;
 
     Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
-    return furyMage &&
-           furyMage->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPELL_FURY));
+    return furyMage && furyMage->HasAura(
+        static_cast<uint32>(SunwellSpells::SPELL_SPELL_FURY));
 }
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
@@ -626,7 +627,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
     }
 
     return AI_VALUE2(Unit*, "find target", "m'uru") ||
-           AI_VALUE2(Unit*, "find target", "entropius");
+        AI_VALUE2(Unit*, "find target", "entropius");
 }
 
 // Kil'jaeden <The Deceiver>
@@ -634,7 +635,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 bool KiljaedenEncounterHasBegunTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
-           AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+        AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool KiljaedenHandsSummonFelfirePortalsTrigger::IsActive()
@@ -648,8 +649,8 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
+        HasKiljaedenDragonAura(bot))
     {
         return false;
     }
@@ -663,9 +664,9 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
     {
         for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
         {
-            if (position.GetExactDist2d(armageddon.destination.GetPositionX(),
-                                        armageddon.destination.GetPositionY()) <
-                armageddon.safeDistance)
+            if (position.GetExactDist2d(
+                    armageddon.destination.GetPositionX(),
+                    armageddon.destination.GetPositionY()) < armageddon.safeDistance)
             {
                 return false;
             }
@@ -674,11 +675,8 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
         return true;
     };
 
-    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) ||
-        isSafePosition(KILJAEDEN_E_MELEE_POSITION))
-    {
+    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
         return false;
-    }
 
     KiljaedenArmageddon armageddon;
     return TryGetKiljaedenNearestArmageddon(bot, armageddon);
@@ -687,11 +685,8 @@ bool KiljaedenItsRainingMeteorsTrigger::IsActive()
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
-    {
+    if (!kiljaeden || HasKiljaedenDragonAura(bot))
         return false;
-    }
 
     return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
@@ -702,8 +697,8 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
         return false;
     }
@@ -728,8 +723,8 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
         return false;
     }
@@ -769,8 +764,8 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) || bot->HasAura(
-            static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
+        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
         return false;
     }
@@ -823,8 +818,7 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 
     constexpr uint32 orbUseGracePeriodMs = 2000;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)) ||
-        GetKiljaedenControlledDragon(bot) ||
+    if (HasKiljaedenDragonAura(bot) || GetKiljaedenControlledDragon(bot) ||
         HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs) ||
         !bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
     {

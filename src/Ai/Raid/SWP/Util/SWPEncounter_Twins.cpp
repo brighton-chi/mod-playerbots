@@ -43,8 +43,11 @@ Position GetAlythessAdjustedPosition(Unit* alythess, const Position& basePositio
     const float offsetY = alythess->GetPositionY() - ALYTHESS_START_POSITION.GetPositionY();
     const float offsetZ = alythess->GetPositionZ() - ALYTHESS_START_POSITION.GetPositionZ();
 
-    return { basePosition.GetPositionX() + offsetX, basePosition.GetPositionY() + offsetY,
-             basePosition.GetPositionZ() + offsetZ };
+    return {
+        basePosition.GetPositionX() + offsetX,
+        basePosition.GetPositionY() + offsetY,
+        basePosition.GetPositionZ() + offsetZ,
+    };
 }
 
 bool ShouldHoldTwinThreat(

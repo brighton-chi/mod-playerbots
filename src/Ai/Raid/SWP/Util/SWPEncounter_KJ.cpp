@@ -64,8 +64,8 @@ uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 
 bool IsKiljaedenDragonGroupTarget(PlayerbotAI* botAI, Player* bot, Player* member)
 {
-    return member && member->IsAlive() && member != bot &&
-           member->GetMapId() == bot->GetMapId() && !botAI->IsTank(member);
+    return member && member->IsAlive() && member != bot && !botAI->IsTank(member) &&
+        member->GetMapId() == SUNWELL_MAP_ID;
 }
 
 uint32 GetKiljaedenDragonAppliedAuraSpell(uint32 spellId)
@@ -95,9 +95,9 @@ float GetKiljaedenRangedSlotAngle(uint8 slotIndex)
     if (!TryGetKiljaedenRangedSlotPosition(slotIndex, position))
         return 0.0f;
 
-    return Position::NormalizeOrientation(
-        std::atan2(position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
-                   position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+    return Position::NormalizeOrientation(std::atan2(
+        position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
+        position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
 }
 
 bool IsKiljaedenRangedSlotSafe(
@@ -224,8 +224,8 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-           kiljaeden->FindCurrentSpellBySpellId(
-               static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+        kiljaeden->FindCurrentSpellBySpellId(
+            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
@@ -250,10 +250,8 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     const float angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
     const float angle =
         Position::NormalizeOrientation(KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-    const float positionX =
-        KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
-    const float positionY =
-        KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+    const float positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
+    const float positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
 
     position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
     return true;
@@ -277,8 +275,9 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID &&
-                    GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
+            found = member->GetMapId() == SUNWELL_MAP_ID && GET_PLAYERBOT_AI(member) &&
+                botAI->IsRanged(member);
+
             break;
         }
 
@@ -435,13 +434,15 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     auto& tempAssignments = kiljaedenRangedArmageddonAssignments[instanceId];
     tempAssignments.clear();
 
-    auto const getCandidateScore = [&](KiljaedenRangedBotAssignment const& rangedBot,
-                                       uint8 candidateSlotIndex)
+    auto const getCandidateScore =
+        [&](KiljaedenRangedBotAssignment const& rangedBot, uint8 candidateSlotIndex)
     {
         CandidateSlotScore score;
         score.slotIndex = candidateSlotIndex;
-        score.sameRow = (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
-                        (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
+        score.sameRow =
+            (candidateSlotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT) ==
+            (rangedBot.slotIndex < KILJAEDEN_INNER_RANGED_SLOT_COUNT);
+
         float angleDistance = Position::NormalizeOrientation(
             slotAngles[candidateSlotIndex] - slotAngles[rangedBot.slotIndex]);
         if (angleDistance > static_cast<float>(M_PI))
@@ -453,8 +454,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         return score;
     };
 
-    auto const shouldTakeCandidate = [&](CandidateSlotScore const& candidate,
-                                         CandidateSlotScore const& best, bool bestFound)
+    auto const shouldTakeCandidate =
+        [&](CandidateSlotScore const& candidate, CandidateSlotScore const& best, bool bestFound)
     {
         if (!bestFound)
             return true;
@@ -538,15 +539,6 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     return nullptr;
 }
 
-bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
-{
-    auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
-    if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
-        return false;
-
-    return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
-}
-
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 {
     auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
@@ -559,6 +551,20 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
 
     kiljaedenDragonOrbAnnouncementTimes.erase(announcementTime);
     return true;
+}
+
+bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
+{
+    auto const orbUseTime = kiljaedenDragonOrbUseTimes.find(bot->GetGUID().GetCounter());
+    if (orbUseTime == kiljaedenDragonOrbUseTimes.end())
+        return false;
+
+    return getMSTimeDiff(orbUseTime->second, getMSTime()) < recentMs;
+}
+
+bool HasKiljaedenDragonAura(Player* bot)
+{
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)
@@ -609,7 +615,8 @@ Player* FindBestKiljaedenDragonClusterTarget(
 
         uint32 clusterSize = 0;
         uint32 totalClusterSize = 0;
-        for (GroupReference* otherRef = group->GetFirstMember(); otherRef; otherRef = otherRef->next())
+        for (GroupReference* otherRef = group->GetFirstMember();
+             otherRef; otherRef = otherRef->next())
         {
             Player* other = otherRef->GetSource();
             if (!IsKiljaedenDragonGroupTarget(botAI, bot, other) ||
@@ -660,7 +667,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == bot ||
-            member->GetMapId() != bot->GetMapId() ||
+            member->GetMapId() != SUNWELL_MAP_ID ||
             HasKiljaedenDragonApplicableAura(member, spellId))
         {
             continue;

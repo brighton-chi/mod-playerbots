@@ -76,8 +76,9 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
-bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
+bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
+bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
 Player* FindBestKiljaedenDragonClusterTarget(

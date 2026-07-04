@@ -19,20 +19,21 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
     const Position landingPos = GetEredarTwinsP2MeleeStackPosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
-    const float distanceToJumpPos =
-        bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
+    const float distanceToJumpPos = bot->GetExactDist2d(
+        jumpPos.GetPositionX(), jumpPos.GetPositionY());
 
     if (distanceToJumpPos > arrivalDistance)
     {
-        return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
-                      jumpPos.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(
+            SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
+            jumpPos.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
-        return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
-                      landingPos.GetPositionY(), landingPos.GetPositionZ(),
-                      MovementPriority::MOVEMENT_FORCED);
+        return JumpTo(
+            SUNWELL_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
+            landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 }
 
@@ -116,18 +117,20 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     if (sacrolash->GetVictim() == bot && bot->IsWithinMeleeRange(sacrolash))
     {
         const Position& position = SACROLASH_TANK_POSITION;
-        const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                         position.GetPositionY());
+        const float distToPosition = bot->GetExactDist2d(
+            position.GetPositionX(), position.GetPositionY());
+
         if (distToPosition > 2.0f)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveDist = std::min(2.25f, distToPosition);
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+            return MoveTo(
+                SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 
@@ -158,8 +161,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         {
             const uint8 candidateIndex =
                 static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITION_COUNT);
-            if (IsAlythessTankPositionSafe(
-                    bot, GetAlythessTankPosition(alythess, candidateIndex)))
+
+            if (IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, candidateIndex)))
             {
                 safeIndex = candidateIndex;
                 return true;
@@ -186,8 +189,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
     if (alythess->GetVictim() == bot)
     {
-        if (distToPosition <= maxDistance &&
-            ShouldAdvanceAlythessTankPosition(alythess, bot))
+        if (distToPosition <= maxDistance && ShouldAdvanceAlythessTankPosition(alythess, bot))
         {
             uint8 safeIndex = index;
             if (!findSafeAlythessTankIndex(index, false, safeIndex))
@@ -197,28 +199,31 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             _alythessTankStep = index;
             const Position newPosition = GetAlythessTankPosition(alythess, index);
             const float newDistToPosition = bot->GetExactDist2d(newPosition);
+
             if (newDistToPosition > maxDistance)
             {
                 const float dX = newPosition.GetPositionX() - bot->GetPositionX();
                 const float dY = newPosition.GetPositionY() - bot->GetPositionY();
-                const float moveDist = std::min(5.0f, newDistToPosition);
+                const float moveDist = std::min(3.5f, newDistToPosition);
                 const float moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
                 const float moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
 
-                return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                              false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                return MoveTo(
+                    SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                    false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
         else if (distToPosition > maxDistance)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distToPosition);
+            const float moveDist = std::min(3.5f, distToPosition);
             const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(
+                SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+                false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -234,9 +239,10 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
-            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(
+                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                position.GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -249,20 +255,21 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
         const Position landingPos = GetEredarTwinsP2RangedStackPosition(alythess);
 
         constexpr float arrivalDistance = 2.0f;
-        const float distanceToJumpPos =
-            bot->GetExactDist2d(jumpPos.GetPositionX(), jumpPos.GetPositionY());
+        const float distanceToJumpPos = bot->GetExactDist2d(
+            jumpPos.GetPositionX(), jumpPos.GetPositionY());
 
         if (distanceToJumpPos > arrivalDistance)
         {
-            return MoveTo(SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
-                          jumpPos.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(
+                SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
+                jumpPos.GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
         {
-            return JumpTo(SUNWELL_MAP_ID, landingPos.GetPositionX(),
-                          landingPos.GetPositionY(), landingPos.GetPositionZ(),
-                          MovementPriority::MOVEMENT_FORCED);
+            return JumpTo(
+                SUNWELL_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
+                landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
         }
     }
 
@@ -278,9 +285,10 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.5f)
     {
-        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(
+            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     if (alythess && botAI->IsTank(bot) && AI_VALUE(Unit*, "current target") != alythess)
@@ -295,15 +303,15 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
     {
         case CLASS_MAGE:
             return botAI->CanCastSpell("ice block", bot) &&
-                   botAI->CastSpell("ice block", bot);
+                botAI->CastSpell("ice block", bot);
 
         case CLASS_PALADIN:
             return botAI->CanCastSpell("divine shield", bot) &&
-                   botAI->CastSpell("divine shield", bot);
+                botAI->CastSpell("divine shield", bot);
 
         case CLASS_ROGUE:
             return botAI->CanCastSpell("cloak of shadows", bot) &&
-                   botAI->CastSpell("cloak of shadows", bot);
+                botAI->CastSpell("cloak of shadows", bot);
 
         default:
             return false;
@@ -372,9 +380,10 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
-            return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          position.GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(
+                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                position.GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
         }
     }
     else

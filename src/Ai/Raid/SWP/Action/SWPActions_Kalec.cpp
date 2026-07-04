@@ -27,22 +27,23 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
     const Position& position = KALECGOS_TANK_POSITION;
-    const float distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    const float distToPosition = bot->GetExactDist2d(
+        position.GetPositionX(), position.GetPositionY());
 
     if (distToPosition > 3.0f)
     {
-        float maxMoveDist = kalecgos->GetVictim() == bot ? 5.0f : 10.0f;
+        float maxMoveDist = kalecgos->GetVictim() == bot ? 2.25f : 3.5f;
         const float moveDist = std::min(maxMoveDist, distToPosition);
+        bool backwards = kalecgos->GetVictim() == bot;
 
         const float dX = position.GetPositionX() - bot->GetPositionX();
         const float dY = position.GetPositionY() - bot->GetPositionY();
         const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        bool backwards = kalecgos->GetVictim() == bot;
-        return MoveTo(SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        return MoveTo(
+            SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
     // Once the fight is in progress, move to the tank position before taunting
@@ -70,8 +71,8 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
         }
 
         const Position& position = KALECGOS_TANK_POSITION;
-        if (surfaceTank->GetExactDist2d(position.GetPositionX(),
-            position.GetPositionY()) > 3.0f || kalecgos->GetVictim() != surfaceTank)
+        if (surfaceTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f ||
+            kalecgos->GetVictim() != surfaceTank)
         {
             return false;
         }
@@ -89,9 +90,9 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     }
     else
     {
-        return MoveTo(SUNWELL_MAP_ID, rift->GetPositionX(), rift->GetPositionY(),
-                      rift->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(
+            SUNWELL_MAP_ID, rift->GetPositionX(), rift->GetPositionY(), rift->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 }
 
@@ -107,6 +108,7 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     {
         const Position& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
         constexpr float initialRangedRadius = 10.0f;
+
         if (bot->GetExactDist2d(initialPos.GetPositionX(), initialPos.GetPositionY()) <=
             initialRangedRadius)
         {
@@ -114,9 +116,9 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        return MoveInside(SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
-                          initialPos.GetPositionZ(), initialRangedRadius,
-                          MovementPriority::MOVEMENT_COMBAT);
+        return MoveInside(
+            SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
+            initialPos.GetPositionZ(), initialRangedRadius, MovementPriority::MOVEMENT_COMBAT);
     }
 
     if (kalecgos)
@@ -143,15 +145,15 @@ bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
     {
         case CLASS_MAGE:
             return botAI->CanCastSpell("ice block", bot) &&
-                   botAI->CastSpell("ice block", bot);
+                botAI->CastSpell("ice block", bot);
 
         case CLASS_PALADIN:
             return botAI->CanCastSpell("divine shield", bot) &&
-                   botAI->CastSpell("divine shield", bot);
+                botAI->CastSpell("divine shield", bot);
 
         case CLASS_ROGUE:
             return botAI->CanCastSpell("cloak of shadows", bot) &&
-                   botAI->CastSpell("cloak of shadows", bot);
+                botAI->CastSpell("cloak of shadows", bot);
 
         default:
             return false;
@@ -160,18 +162,24 @@ bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
 
 bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 {
+    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr");
+    if (!sathrovarr)
+        return false;
+
     constexpr float searchRadius = 20.0f;
     Unit* kalec = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
-    if (!kalec)
+
+    if (!kalec || sathrovarr->getVictim() != kalec)
         return false;
 
     const Position& position = kalec->GetPosition();
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f)
     {
-        return MoveTo(SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                      position.GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(
+            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -179,6 +187,7 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
-    return bot->TeleportTo(SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                           KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
+    return bot->TeleportTo(
+        SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+        KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
 }
