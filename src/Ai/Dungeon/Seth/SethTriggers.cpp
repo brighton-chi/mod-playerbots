@@ -21,7 +21,10 @@ bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 
 bool SethekkProphetCastsFearTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_SHAMAN &&
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
         AI_VALUE2(Unit*, "find target", "sethekk prophet");
 }
 

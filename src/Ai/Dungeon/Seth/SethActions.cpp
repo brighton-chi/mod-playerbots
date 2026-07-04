@@ -14,7 +14,6 @@ constexpr uint32 SPELL_REJUVENATION_RANK_1 = 774;
 constexpr uint32 REJUVENATION_SPELL_ICON_ID = 64;
 constexpr uint32 SPELL_BANISH_ANZU = 42354;
 constexpr uint32 SPELL_TREMOR_TOTEM = 8143;
-constexpr uint32 SPELL_TREMOR_TOTEM_PASSIVE = 8145;
 constexpr uint32 NPC_CHARMING_TOTEM = 20343;
 constexpr uint32 NPC_HAWK_SPIRIT = 23134;
 constexpr uint32 NPC_FALCON_SPIRIT = 23135;
@@ -31,9 +30,6 @@ bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event event)
 
 bool SethekkProphetDropTremorTotemAction::Execute(Event event)
 {
-    if (bot->HasAura(SPELL_TREMOR_TOTEM_PASSIVE))
-        return false;
-
     if (botAI->CanCastSpell(SPELL_TREMOR_TOTEM, bot))
         return botAI->CastSpell(SPELL_TREMOR_TOTEM, bot);
 
