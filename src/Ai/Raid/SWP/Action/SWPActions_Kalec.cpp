@@ -170,7 +170,7 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
     Unit* kalec = bot->FindNearestCreature(
         static_cast<uint32>(SunwellNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
 
-    if (!kalec || sathrovarr->getVictim() != kalec)
+    if (!kalec || sathrovarr->GetVictim() != kalec)
         return false;
 
     const Position& position = kalec->GetPosition();

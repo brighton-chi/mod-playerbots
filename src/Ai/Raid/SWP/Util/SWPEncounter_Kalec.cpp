@@ -446,7 +446,7 @@ uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& 
             if (!member || GetKalecgosAssignedGroup(state, member->GetGUID()) != groupIndex)
                 continue;
 
-            if (CanKalecgosBotEnterRift(group, member, state))
+            if (CanKalecgosBotEnterRift(member, state))
                 return groupIndex;
         }
     }
@@ -722,7 +722,7 @@ bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     if (!IsKalecgosActiveRiftCandidate(bot, state))
         return false;
 
-    return CanKalecgosBotEnterRift(group, bot, state);
+    return CanKalecgosBotEnterRift(bot, state);
 }
 
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
