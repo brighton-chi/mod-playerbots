@@ -128,6 +128,9 @@ public:
         creators["eredar twins conflagrated bot move from group"] =
             &RaidSunwellActionContext::eredar_twins_conflagrated_bot_move_from_group;
 
+        creators["eredar twins move from conflag sacrolash victim"] =
+            &RaidSunwellActionContext::eredar_twins_move_from_conflag_sacrolash_victim;
+
         // M'uru
         creators["m'uru misdirect enemies to tanks"] =
             &RaidSunwellActionContext::muru_misdirect_enemies_to_tanks;
@@ -328,6 +331,9 @@ private:
     }
     static Action* eredar_twins_conflagrated_bot_move_from_group(PlayerbotAI* botAI) {
         return new EredarTwinsConflagratedBotMoveFromGroupAction(botAI);
+    }
+    static Action* eredar_twins_move_from_conflag_sacrolash_victim(PlayerbotAI* botAI) {
+        return new EredarTwinsMoveFromConflagSacrolashVictimAction(botAI);
     }
 
     // M'uru

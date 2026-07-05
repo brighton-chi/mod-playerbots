@@ -335,6 +335,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class EredarTwinsMoveFromConflagSacrolashVictimAction : public MovementAction
+{
+public:
+    EredarTwinsMoveFromConflagSacrolashVictimAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "eredar twins move from conflag sacrolash victim") {}
+    bool Execute(Event event) override;
+};
+
 // M'uru
 
 class MuruMisdirectEnemiesToTanksAction : public AttackAction

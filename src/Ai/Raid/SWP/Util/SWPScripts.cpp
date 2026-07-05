@@ -210,7 +210,7 @@ static void RequestInterruptForBotsWithDelayedEredarTwinsConflagration(Creature*
             continue;
         }
 
-        if (!IsEredarTwinsConflagrationTarget(player))
+        if (GetEredarTwinsConflagrationTarget(player) != player)
             continue;
 
         botAI->RequestSpellInterrupt();

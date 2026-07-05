@@ -373,6 +373,12 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
 bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 {
+    if (bot->getClass() == CLASS_ROGUE && botAI->CanCastSpell("vanish", bot) &&
+        botAI->CastSpell("vanish", bot))
+    {
+        return true;
+    }
+
     if (AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
         const Position& position = botAI->IsRanged(bot) ?
@@ -398,6 +404,26 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
                 return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
             }
         }
+    }
+
+    return false;
+}
+
+bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
+{
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!sacrolash)
+        return false;
+
+    Unit* victim = sacrolash->GetVictim();
+    if (!victim)
+        return false;
+
+    constexpr float safeDistance = 10.0f;
+    if (bot->GetDistance2d(victim) < safeDistance)
+    {
+        botAI->InterruptSpell();
+        return MoveFromGroup(safeDistance);
     }
 
     return false;

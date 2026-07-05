@@ -216,6 +216,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class EredarTwinsNoMovingIntoConflagrationMultiplier : public Multiplier
+{
+public:
+    EredarTwinsNoMovingIntoConflagrationMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins no moving into conflagration") {}
+    virtual float GetValue(Action* action);
+};
+
 class EredarTwinsDelayCooldownsMultiplier : public Multiplier
 {
 public:

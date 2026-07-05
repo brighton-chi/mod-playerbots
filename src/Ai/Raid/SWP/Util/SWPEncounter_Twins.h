@@ -52,7 +52,7 @@ Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
 bool IsAlythessTankPositionSafe(Player* bot, const Position& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);
-bool IsEredarTwinsConflagrationTarget(Player* bot);
+Player* GetEredarTwinsConflagrationTarget(Player* bot);
 
 }
 

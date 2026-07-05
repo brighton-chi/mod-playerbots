@@ -264,6 +264,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins bot has conflagration", {
         NextAction("eredar twins conflagrated bot move from group", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("eredar twins sacrolash victim has conflagration", {
+        NextAction("eredar twins move from conflag sacrolash victim", ACTION_EMERGENCY + 10) }));
+
     // M'uru
     triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared", {
         NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 2) }));
@@ -379,6 +382,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsNoMovingIntoConflagrationMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru

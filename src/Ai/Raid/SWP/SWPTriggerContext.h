@@ -128,6 +128,9 @@ public:
         creators["eredar twins bot has conflagration"] =
             &RaidSunwellTriggerContext::eredar_twins_bot_has_conflagration;
 
+        creators["eredar twins sacrolash victim has conflagration"] =
+            &RaidSunwellTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
+
         // M'uru
         creators["m'uru void sentinel or entropius has appeared"] =
             &RaidSunwellTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
@@ -328,6 +331,9 @@ private:
     }
     static Trigger* eredar_twins_bot_has_conflagration(PlayerbotAI* botAI) {
         return new EredarTwinsBotHasConflagrationTrigger(botAI);
+    }
+    static Trigger* eredar_twins_sacrolash_victim_has_conflagration(PlayerbotAI* botAI) {
+        return new EredarTwinsSacrolashVictimHasConflagrationTrigger(botAI);
     }
 
     // M'uru

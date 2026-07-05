@@ -308,6 +308,14 @@ public:
     bool IsActive() override;
 };
 
+class EredarTwinsSacrolashVictimHasConflagrationTrigger : public Trigger
+{
+public:
+    EredarTwinsSacrolashVictimHasConflagrationTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins sacrolash victim has conflagration") {}
+    bool IsActive() override;
+};
+
 // M'uru
 
 class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public Trigger

@@ -400,7 +400,7 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
         return false;
     }
 
-    return !IsEredarTwinsConflagrationTarget(bot);
+    return GetEredarTwinsConflagrationTarget(bot) != bot;
 }
 
 bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
@@ -414,7 +414,7 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
         return false;
     }
 
-    if (IsEredarTwinsConflagrationTarget(bot))
+    if (GetEredarTwinsConflagrationTarget(bot) == bot)
         return false;
 
     return !IsAlythessTank(botAI, bot);
@@ -461,7 +461,17 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()
 {
-    return IsEredarTwinsConflagrationTarget(bot);
+    return GetEredarTwinsConflagrationTarget(bot) == bot;
+}
+
+bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActive()
+{
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!sacrolash)
+        return false;
+
+    Player* conflagTarget = GetEredarTwinsConflagrationTarget(bot);
+    return conflagTarget && conflagTarget != bot && sacrolash->GetVictim() == conflagTarget;
 }
 
 // M'uru
