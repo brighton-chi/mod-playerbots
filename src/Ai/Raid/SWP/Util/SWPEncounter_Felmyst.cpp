@@ -1392,7 +1392,6 @@ Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot)
 
     Player* lowestHpTarget = nullptr;
     uint32 lowestHp = std::numeric_limits<uint32>::max();
-    constexpr float maxDistance = 30.0f;
 
     for (ObjectGuid const& guid : attackers)
     {
@@ -1410,8 +1409,17 @@ Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot)
             continue;
         }
 
-        if (bot->GetDistance2d(member) > maxDistance)
+        if (botAI->IsMelee(bot) && !bot->IsWithinMeleeRange(member))
             continue;
+
+        if (botAI->IsCaster(bot) && bot->GetDistance2d(member) > 30.0f)
+            continue;
+
+        if (bot->getClass() == CLASS_HUNTER &&
+            (bot->GetDistance2d(member) > 30.0f || bot->GetDistance2d(member) < 8.0f))
+        {
+            continue;
+        }
 
         if (member->GetHealth() < lowestHp)
         {

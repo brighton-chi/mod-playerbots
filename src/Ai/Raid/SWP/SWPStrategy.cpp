@@ -233,8 +233,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
         NextAction("felmyst melee clear target", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
-        NextAction("felmyst kill charmed player", ACTION_RAID + 2) }));
+    // triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
+    //     NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 10) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {

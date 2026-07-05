@@ -228,11 +228,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     if (!muru && !entropius)
         return nullptr;
 
-    const bool isRanged = botAI->IsRanged(bot);
-    const bool isMelee = !isRanged;
     const bool isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
-    const bool isOtherRanged = isRanged && !isShadowPriest;
+    const bool isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
 
     MuruEncounterTargets targets;
     targets.muru = muru;
@@ -272,7 +270,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
             return false;
 
         constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isRanged && isMuruPhase &&
+        if (isOtherRanged && isMuruPhase &&
             bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
         {
             return false;
@@ -296,7 +294,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
             case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
                 if (isShadowPriest)
                     return false;
-                if (!isMelee)
+                if (isOtherRanged)
                     return true;
                 return darknessActive || !isMuruPhase;
 
@@ -326,23 +324,13 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(
     }
     else
     {
-        if (isMuruPhase)
-        {
-            priorityTargets = {
-                { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
-                { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius },
-                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
-                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker }
-            };
-        }
-        else
-        {
-            priorityTargets = {
-                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
-                { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
-                { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
-            };
-        }
+        priorityTargets = {
+            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), voidSpawn },
+            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius },
+        };
     }
 
     Unit* target = nullptr;

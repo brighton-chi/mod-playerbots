@@ -19,7 +19,7 @@ using namespace SunwellHelpers;
 
 bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat() && bot->GetMapId() == SUNWELL_MAP_ID;
+    return !AI_VALUE2(bool, "combat", "self target") && bot->GetMapId() == SUNWELL_MAP_ID;
 }
 
 bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
