@@ -76,8 +76,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToPillar(Position const& pillarCenter, float distToPillar, float botAngle);
-    bool MoveAroundPillar(Unit* ikiss, Position const& pillarCenter, float botAngle);
+    bool MoveToPillar(Position const& pillarCenter, float botAngle);
+    bool MoveAroundPillar(Position const& pillarCenter, float botAngle);
 };
 
 #endif
