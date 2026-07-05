@@ -214,11 +214,6 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildKalecgosTankPortalRotationGui
     return rotationGuids;
 }
 
-bool IsKalecgosAssignedTank(const KalecgosEncounterState& state, Player* candidate)
-{
-    return candidate && HasKalecgosTankAssignment(state.tankAssignmentGuids, candidate->GetGUID());
-}
-
 Player* GetKalecgosSurfaceAssignedTank(Group* group, ObjectGuid guid)
 {
     Player* tank = FindKalecgosGroupMember(group, guid);
@@ -348,7 +343,7 @@ Player* GetKalecgosCurrentVictimTank(
         if (victim && victim->IsPlayer())
         {
             Player* currentVictim = victim->ToPlayer();
-            if (IsKalecgosAssignedTank(state, currentVictim))
+            if (HasKalecgosTankAssignment(state.tankAssignmentGuids, currentVictim->GetGUID()))
                 return currentVictim;
         }
     }
@@ -426,13 +421,6 @@ Player* GetKalecgosOutgoingTank(Group* group, const KalecgosEncounterState& stat
     return GetKalecgosSurfaceAssignedTank(group, state.activeRiftOutgoingTankGuid);
 }
 
-bool CanKalecgosBotEnterRift(Player* candidate, const KalecgosEncounterState& state)
-{
-    return !IsKalecgosAssignedTank(state, candidate) &&
-        IsKalecgosPortalEligibleCandidate(candidate) &&
-        state.blastedPlayerGuid != candidate->GetGUID();
-}
-
 uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& state)
 {
     if (!group)
@@ -446,8 +434,11 @@ uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& 
             if (!member || GetKalecgosAssignedGroup(state, member->GetGUID()) != groupIndex)
                 continue;
 
-            if (CanKalecgosBotEnterRift(member, state))
+            if (IsKalecgosPortalEligibleCandidate(member) &&
+                state.blastedPlayerGuid != member->GetGUID())
+            {
                 return groupIndex;
+            }
         }
     }
 
@@ -704,6 +695,9 @@ Player* GetKalecgosReplacementTank(PlayerbotAI* botAI, Player* bot)
 
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
 {
+    if (!IsKalecgosPortalEligibleCandidate(bot))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -712,17 +706,16 @@ bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     if (!state.activeRiftOpenedMs)
         return false;
 
-    if (IsKalecgosAssignedTank(state, bot))
+    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, bot->GetGUID()))
     {
         return GetKalecgosOutgoingTank(group, state) == bot &&
-            state.blastedPlayerGuid != bot->GetGUID() &&
-            IsKalecgosPortalEligibleCandidate(bot);
+            state.blastedPlayerGuid != bot->GetGUID();
     }
 
     if (!IsKalecgosActiveRiftCandidate(bot, state))
         return false;
 
-    return CanKalecgosBotEnterRift(bot, state);
+    return state.blastedPlayerGuid != bot->GetGUID();
 }
 
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
@@ -753,7 +746,7 @@ void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
 
     Player* currentTank = GetKalecgosBlastAnnouncementCurrentTank(group, state);
 
-    if (IsKalecgosAssignedTank(state, bot))
+    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, bot->GetGUID()))
     {
         if (!currentTank)
             return;
@@ -813,7 +806,7 @@ void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
             state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
     }
 
-    if (IsKalecgosAssignedTank(state, bot))
+    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, bot->GetGUID()))
     {
         AdvanceKalecgosTankPortalRotation(state, guid);
 
