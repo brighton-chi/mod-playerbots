@@ -71,33 +71,33 @@ constexpr uint8 FELMYST_DEMONIC_VAPOR_RIGHT_SIDE = 0x2;
 // Use the fog-lane X bands projected onto each grounded side landing.
 const std::array<FelmystDemonicVaporAnchor, 6> FELMYST_DEMONIC_VAPOR_KITE_ANCHORS = {{
     {
-        { 1492.820f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
-          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
+        { 1492.820f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
+          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Top, FELMYST_DEMONIC_VAPOR_RIGHT_SIDE,
     },
     {
-        { 1494.745f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
-          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
+        { 1494.745f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
+          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Top, FELMYST_DEMONIC_VAPOR_LEFT_SIDE,
     },
     {
-        { 1466.732f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
-          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
+        { 1466.732f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
+          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Middle, FELMYST_DEMONIC_VAPOR_RIGHT_SIDE,
     },
     {
-        { 1469.923f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
-          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
+        { 1469.923f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
+          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Middle, FELMYST_DEMONIC_VAPOR_LEFT_SIDE,
     },
     {
-        { 1441.640f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
-          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
+        { 1441.640f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
+          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Bottom, FELMYST_DEMONIC_VAPOR_RIGHT_SIDE,
     },
     {
-        { 1446.515f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
-          FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
+        { 1446.515f, FELMYST_LEFT_LANDING_POSITION.GetPositionY(),
+          FELMYST_LEFT_LANDING_POSITION.GetPositionZ() },
         FelmystFogLane::Bottom, FELMYST_DEMONIC_VAPOR_LEFT_SIDE,
     }
 }};
@@ -690,7 +690,7 @@ uint8 GetFelmystDemonicVaporAllowedSides(Player* bot)
         return FELMYST_DEMONIC_VAPOR_LEFT_SIDE | FELMYST_DEMONIC_VAPOR_RIGHT_SIDE;
 
     return rightDistance <= leftDistance ?
-        FELMYST_DEMONIC_VAPOR_RIGHT_SIDE : FELMYST_DEMONIC_VAPOR_LEFT_SIDE;
+        FELMYST_DEMONIC_VAPOR_LEFT_SIDE : FELMYST_DEMONIC_VAPOR_RIGHT_SIDE;
 }
 
 std::array<FelmystFogLane, 3> GetFelmystDemonicVaporLanePriority(FelmystFogLane lane)
