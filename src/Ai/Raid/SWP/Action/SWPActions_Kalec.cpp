@@ -162,7 +162,7 @@ bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)
 
 bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 {
-    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr");
+    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
     if (!sathrovarr)
         return false;
 
