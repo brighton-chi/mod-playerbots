@@ -485,8 +485,7 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
 }
 
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
-    Position& position)
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position)
 {
     float destinationX = 0.0f;
     float destinationY = 0.0f;
@@ -1394,10 +1393,12 @@ Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
             continue;
         }
 
-        if (botAI->IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
+        const bool isMelee = botAI->IsMelee(bot);
+
+        if (isMelee && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;
 
-        if (botAI->IsRanged(bot) && bot->GetDistance2d(member) > 30.0f)
+        if (!isMelee && bot->GetDistance2d(member) > 30.0f)
             continue;
 
         if (member->GetHealth() < lowestHp)

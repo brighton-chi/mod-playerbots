@@ -341,6 +341,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
         auto& state = felmystEncounterStates[instanceId];
         if (!state.landingDpsWaitTimer)
             state.landingDpsWaitTimer = std::time(nullptr);
+
         state.landingTouchdownTimer = 0;
     }
     else if (felmyst->IsFlying())
@@ -486,10 +487,12 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!charmedTarget)
         return 1.0f;
 
-    if (botAI->IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(charmedTarget))
+    bool const isMelee = botAI->IsMelee(bot);
+
+    if (isMelee && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(charmedTarget))
         return 1.0f;
 
-    if (botAI->IsRanged(bot) && bot->GetDistance2d(charmedTarget) > 30.0f)
+    if (!isMelee && bot->GetDistance2d(charmedTarget) > 30.0f)
         return 1.0f;
 
     if (dynamic_cast<DpsAssistAction*>(action) ||
@@ -619,26 +622,11 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (dynamic_cast<TankAssistAction*>(action) ||
+    if ((botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<TankAssistAction*>(action)) ||
         dynamic_cast<AvoidAoeAction*>(action))
     {
         return 0.0f;
     }
-
-    return 1.0f;
-}
-
-float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
-{
-    // Killing Spree hits Alythess during Phase 1 and puts bots in fire in Phase 2
-    if (bot->getClass() != CLASS_ROGUE ||
-        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<CastKillingSpreeAction*>(action))
-        return 0.0f;
 
     return 1.0f;
 }
@@ -648,9 +636,11 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
+    // Killing Spree hits Alythess during Phase 1 and puts bots in fire in Phase 2
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<FleeAction*>(action))
     {
         return 0.0f;
@@ -688,12 +678,17 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* victim = sacrolash->GetVictim();
-    if (victim && victim != bot && conflagTarget == victim &&
-        (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-         (dynamic_cast<MovementAction*>(action) &&
-          !dynamic_cast<EredarTwinsMoveFromConflagSacrolashVictimAction*>(action))))
+    if (victim && victim != bot && conflagTarget == victim)
     {
-        return 0.0f;
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+
+        if (bot->GetDistance2d(victim) < 10.0f &&
+            (dynamic_cast<MovementAction*>(action) &&
+             !dynamic_cast<EredarTwinsMoveFromConflagSacrolashVictimAction*>(action)))
+        {
+            return 0.0f;
+        }
     }
 
     return 1.0f;
@@ -702,8 +697,11 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    if (!alythess)
+        return 1.0f;
+
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!alythess || !sacrolash || sacrolash->GetHealthPct() < 80.0f)
+    if (!sacrolash || sacrolash->GetHealthPct() < 80.0f)
         return 1.0f;
 
     if (IsDpsCooldownAction(action) ||
@@ -884,7 +882,7 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot) && bot->GetVictim() &&
+    if (botAI->IsMainTank(bot) && botAI->GetState() == BOT_STATE_COMBAT &&
         dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;

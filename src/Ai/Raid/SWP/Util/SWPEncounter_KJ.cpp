@@ -257,6 +257,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
+    const bool isRanged = botAI->IsRanged(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -268,8 +269,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID && GET_PLAYERBOT_AI(member) &&
-                botAI->IsRanged(member);
+            found = member->GetMapId() == SUNWELL_MAP_ID && GET_PLAYERBOT_AI(member) && isRanged;
 
             break;
         }
@@ -308,8 +308,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !isRanged ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }

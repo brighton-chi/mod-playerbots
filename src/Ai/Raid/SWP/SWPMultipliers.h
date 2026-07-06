@@ -200,14 +200,6 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class EredarTwinsDisableKillingSpreeMultiplier : public Multiplier
-{
-public:
-    EredarTwinsDisableKillingSpreeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins disable killing spree") {}
-    virtual float GetValue(Action* action);
-};
-
 class EredarTwinsControlMovementMultiplier : public Multiplier
 {
 public:

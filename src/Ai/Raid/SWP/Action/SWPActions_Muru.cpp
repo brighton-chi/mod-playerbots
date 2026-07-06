@@ -128,7 +128,7 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     Position& position) const
 {
     Group* group = bot->GetGroup();
-    if (!group || !botAI->IsRanged(bot))
+    if (!group)
         return false;
 
     std::vector<Player*> rangedMembers;
@@ -761,11 +761,8 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
 bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
     Unit* controlled, Unit* target) const
 {
-    if (!controlled || !controlled->IsAlive() || !target ||
-        controlled->GetVictim() == target)
-    {
+    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
         return false;
-    }
 
     controlled->ClearUnitState(UNIT_STATE_FOLLOW);
     controlled->AttackStop();
