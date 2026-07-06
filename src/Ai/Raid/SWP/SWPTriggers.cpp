@@ -353,8 +353,11 @@ bool FelmystMeleeCannotReachBossTrigger::IsActive()
 
 bool FelmystPlayerIsCharmedByFogTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "felmyst") &&
-        GetFelmystCharmedTarget(botAI, bot);
+    if (!botAI->IsDps(bot))
+        return false;
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    return felmyst && GetFelmystCharmedTarget(botAI, bot, felmyst);
 }
 
 // Eredar Twins

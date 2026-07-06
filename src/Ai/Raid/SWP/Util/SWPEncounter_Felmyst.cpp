@@ -1367,23 +1367,26 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
     return closestTarget;
 }
 
-Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot)
+Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
 {
-    GuidVector attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    if (!felmyst)
+        return nullptr;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
 
     Player* lowestHpTarget = nullptr;
     uint32 lowestHp = std::numeric_limits<uint32>::max();
 
-    for (ObjectGuid const& guid : attackers)
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsPlayer())
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() ||
+            member->GetMapId() != SUNWELL_MAP_ID)
+        {
             continue;
-
-        Player* member = unit->ToPlayer();
-        if (!member->IsAlive() || member->GetMapId() != SUNWELL_MAP_ID)
-            continue;
+        }
 
         if (!member->HasAura(
                 static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
@@ -1391,17 +1394,11 @@ Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot)
             continue;
         }
 
-        if (botAI->IsMelee(bot) && !bot->IsWithinMeleeRange(member))
+        if (botAI->IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;
 
-        if (botAI->IsCaster(bot) && bot->GetDistance2d(member) > 30.0f)
+        if (botAI->IsRanged(bot) && bot->GetDistance2d(member) > 30.0f)
             continue;
-
-        if (bot->getClass() == CLASS_HUNTER &&
-            (bot->GetDistance2d(member) > 30.0f || bot->GetDistance2d(member) < 8.0f))
-        {
-            continue;
-        }
 
         if (member->GetHealth() < lowestHp)
         {

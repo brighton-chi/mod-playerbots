@@ -392,7 +392,11 @@ bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 
 bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
 {
-    Player* charmedPlayer = GetFelmystCharmedTarget(botAI, bot);
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst)
+        return false;
+
+    Player* charmedPlayer = GetFelmystCharmedTarget(botAI, bot, felmyst);
     if (!charmedPlayer)
         return false;
 

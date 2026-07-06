@@ -143,7 +143,7 @@ bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 bool TryGetFelmystRangedPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
-Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot);
+Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 
 }
 

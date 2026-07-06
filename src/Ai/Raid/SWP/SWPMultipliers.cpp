@@ -475,10 +475,21 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
 
 float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsDps(bot) || !AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (!botAI->IsDps(bot))
         return 1.0f;
 
-    if (!GetFelmystCharmedTarget(botAI, bot))
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst)
+        return 1.0f;
+
+    Player* charmedTarget = GetFelmystCharmedTarget(botAI, bot, felmyst);
+    if (!charmedTarget)
+        return 1.0f;
+
+    if (botAI->IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(charmedTarget))
+        return 1.0f;
+
+    if (botAI->IsRanged(bot) && bot->GetDistance2d(charmedTarget) > 30.0f)
         return 1.0f;
 
     if (dynamic_cast<DpsAssistAction*>(action) ||
