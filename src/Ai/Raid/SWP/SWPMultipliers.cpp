@@ -521,7 +521,7 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z ||
-        !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+        !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         return 1.0f;
     }
@@ -554,9 +554,8 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (!botAI->IsRanged(bot))
         return 1.0f;
 
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!alythess || !sacrolash)
+    if (!sacrolash)
         return 1.0f;
 
     const uint32 instanceId = bot->GetInstanceId();
@@ -631,7 +630,7 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
 
 float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
 {
-    // This hits Alythess during Phase 1 and puts bots in fire in Phase 2
+    // Killing Spree hits Alythess during Phase 1 and puts bots in fire in Phase 2
     if (bot->getClass() != CLASS_ROGUE ||
         !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
@@ -646,11 +645,8 @@ float EredarTwinsDisableKillingSpreeMultiplier::GetValue(Action* action)
 
 float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
-        !AI_VALUE2(Unit*, "find target", "lady sacrolash"))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
-    }
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
@@ -672,8 +668,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 
 float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
 {
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!sacrolash && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
     Player* conflagTarget = GetEredarTwinsConflagrationTarget(bot);
@@ -687,6 +682,10 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    if (!sacrolash)
+        return 1.0f;
 
     Unit* victim = sacrolash->GetVictim();
     if (victim && victim != bot && conflagTarget == victim &&
@@ -704,11 +703,8 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!alythess || alythess->GetHealthPct() < 80.0f ||
-        !sacrolash || sacrolash->GetHealthPct() < 80.0f)
-    {
+    if (!alythess || !sacrolash || sacrolash->GetHealthPct() < 80.0f)
         return 1.0f;
-    }
 
     if (IsDpsCooldownAction(action) ||
         (botAI->IsDps(bot) && dynamic_cast<UseTrinketAction*>(action)))

@@ -279,6 +279,9 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+    if (!alythess)
+        return false;
+
     const Position position = botAI->IsRanged(bot) ?
         GetEredarTwinsP2RangedStackPosition(alythess) :
         GetEredarTwinsP2MeleeStackPosition(alythess);
