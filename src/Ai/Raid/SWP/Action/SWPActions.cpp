@@ -19,7 +19,7 @@
 
 using namespace SunwellHelpers;
 
-bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
+bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
 {
     const ObjectGuid guid = bot->GetGUID();
     const uint32 instanceId = bot->GetInstanceId();
@@ -58,10 +58,10 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst") &&
+        felmystEncounterStates.erase(instanceId) > 0)
     {
-        if (felmystEncounterStates.erase(instanceId) > 0)
-            erased = true;
+        erased = true;
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
@@ -83,10 +83,10 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
+        kiljaedenEncounterStates.erase(instanceId) > 0)
     {
-        if (kiljaedenEncounterStates.erase(instanceId) > 0)
-            erased = true;
+        erased = true;
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&

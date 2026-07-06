@@ -15,11 +15,11 @@
 
 // General
 
-class SunwellPlateauEraseTimersAndTrackersAction : public Action
+class SunwellPlateauEraseEncounterStatesAction : public Action
 {
 public:
-    SunwellPlateauEraseTimersAndTrackersAction(
-        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau erase timers and trackers") {}
+    SunwellPlateauEraseEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau erase encounter states") {}
     bool Execute(Event event) override;
 };
 
