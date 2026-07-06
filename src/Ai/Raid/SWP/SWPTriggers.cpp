@@ -225,7 +225,9 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
 
     if (felmyst->IsFlying())
     {
-        felmystEncapsulateOccurredThisGroundPhase.erase(bot->GetInstanceId());
+        auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
+        if (stateItr != felmystEncounterStates.end())
+            stateItr->second.encapsulateOccurredThisGroundPhase = false;
         return false;
     }
 
@@ -246,7 +248,9 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
 
     if (felmyst->IsFlying())
     {
-        felmystEncapsulateOccurredThisGroundPhase.erase(bot->GetInstanceId());
+        auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
+        if (stateItr != felmystEncounterStates.end())
+            stateItr->second.encapsulateOccurredThisGroundPhase = false;
         return false;
     }
 

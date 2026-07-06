@@ -233,8 +233,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
         NextAction("felmyst melee clear target", ACTION_RAID + 1) }));
 
-    // triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
-    //     NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
+        NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 10) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
@@ -368,7 +368,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
-    // multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
+    multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins

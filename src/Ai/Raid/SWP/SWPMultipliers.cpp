@@ -338,31 +338,35 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
 
     if (isGoingToLand)
     {
-        felmystLandingDpsWaitTimer.try_emplace(instanceId, std::time(nullptr));
-        felmystLandingTouchdownTimer.erase(instanceId);
+        auto& state = felmystEncounterStates[instanceId];
+        if (!state.landingDpsWaitTimer)
+            state.landingDpsWaitTimer = std::time(nullptr);
+        state.landingTouchdownTimer = 0;
     }
     else if (felmyst->IsFlying())
     {
-        felmystLandingDpsWaitTimer.erase(instanceId);
-        felmystLandingTouchdownTimer.erase(instanceId);
+        auto& state = felmystEncounterStates[instanceId];
+        state.landingDpsWaitTimer = 0;
+        state.landingTouchdownTimer = 0;
         return 1.0f;
     }
 
     const time_t now = std::time(nullptr);
     constexpr uint8 groundedDpsWaitSeconds = 3;
-    auto it = felmystLandingDpsWaitTimer.find(instanceId);
-    if (it == felmystLandingDpsWaitTimer.end())
+    auto& state = felmystEncounterStates[instanceId];
+    if (!state.landingDpsWaitTimer)
         return 1.0f;
 
-    auto touchdownIt = felmystLandingTouchdownTimer.try_emplace(instanceId, now).first;
+    if (!state.landingTouchdownTimer)
+        state.landingTouchdownTimer = now;
 
     if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
         return 1.0f;
 
-    if ((now - touchdownIt->second) >= groundedDpsWaitSeconds)
+    if ((now - state.landingTouchdownTimer) >= groundedDpsWaitSeconds)
     {
-        felmystLandingDpsWaitTimer.erase(it);
-        felmystLandingTouchdownTimer.erase(instanceId);
+        state.landingDpsWaitTimer = 0;
+        state.landingTouchdownTimer = 0;
         return 1.0f;
     }
 

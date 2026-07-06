@@ -41,6 +41,14 @@ struct KiljaedenDarknessShieldState
     uint32 lastDarknessCastMsLeft = 0;
 };
 
+struct KiljaedenEncounterState
+{
+    std::vector<KiljaedenArmageddon> armageddons;
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    std::unordered_map<ObjectGuid, uint8> rangedArmageddonAssignments;
+    uint32 dragonOrbAnnouncementMs = 0;
+};
+
 constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
@@ -59,13 +67,8 @@ extern const Position KILJAEDEN_E_MELEE_POSITION;
 extern const Position KILJAEDEN_DARKNESS_POSITION;
 
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
-extern std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
+extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
 extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    kiljaedenRangedAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    kiljaedenRangedArmageddonAssignments;
 
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);

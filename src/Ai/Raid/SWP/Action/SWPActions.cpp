@@ -60,34 +60,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
     {
-        if (felmystRangedAssignments.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystEncapsulateOccurredThisGroundPhase.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystFogPassStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystDemonicVaporUsedRegionMasks.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystLandingDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystLandingTouchdownTimer.erase(instanceId) > 0)
+        if (felmystEncounterStates.erase(instanceId) > 0)
             erased = true;
     }
 
@@ -112,13 +85,7 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
     {
-        if (kiljaedenArmageddons.erase(instanceId) > 0)
-            erased = true;
-
-        if (kiljaedenRangedAssignments.erase(instanceId) > 0)
-            erased = true;
-
-        if (kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
+        if (kiljaedenEncounterStates.erase(instanceId) > 0)
             erased = true;
     }
 

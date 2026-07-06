@@ -18,11 +18,11 @@ using namespace SunwellHelpers;
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
     const uint32 instanceId = bot->GetInstanceId();
-    auto const announcementTime = kiljaedenDragonOrbAnnouncementTimes.find(instanceId);
+    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
 
-    if (announcementTime == kiljaedenDragonOrbAnnouncementTimes.end())
+    if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
     {
-        kiljaedenDragonOrbAnnouncementTimes[instanceId] = getMSTime();
+        kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
 
         Player* orbUser = GetKiljaedenDragonOrbUser(bot);
         std::string text;
@@ -145,8 +145,8 @@ bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
 bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
-    if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
+    auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
+    if (armageddonItr == kiljaedenEncounterStates.end() || armageddonItr->second.armageddons.empty())
         return true;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -164,7 +164,7 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
 
     auto const isSafePosition = [&](Position const& pos)
     {
-        for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
+        for (KiljaedenArmageddon const& armageddon : armageddonItr->second.armageddons)
         {
             if (pos.GetExactDist2d(
                     armageddon.destination.GetPositionX(),
@@ -221,12 +221,12 @@ bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
 
     EnsureKiljaedenRangedAssignments(botAI, bot);
 
-    auto const instanceItr = kiljaedenRangedAssignments.find(bot->GetInstanceId());
-    if (instanceItr == kiljaedenRangedAssignments.end())
+    auto const instanceItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
+    if (instanceItr == kiljaedenEncounterStates.end())
         return false;
 
-    auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
-    if (assignmentItr == instanceItr->second.end())
+    auto const assignmentItr = instanceItr->second.rangedAssignments.find(bot->GetGUID());
+    if (assignmentItr == instanceItr->second.rangedAssignments.end())
         return false;
 
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
@@ -236,13 +236,13 @@ bool KiljaedenPositionRangedAction::TryAdjustForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(botAI, bot);
     auto const armageddonAssignmentItr =
-        kiljaedenRangedArmageddonAssignments.find(bot->GetInstanceId());
+        kiljaedenEncounterStates.find(bot->GetInstanceId());
 
-    if (armageddonAssignmentItr == kiljaedenRangedArmageddonAssignments.end())
+    if (armageddonAssignmentItr == kiljaedenEncounterStates.end())
         return true;
 
-    auto const tempAssignmentItr = armageddonAssignmentItr->second.find(bot->GetGUID());
-    if (tempAssignmentItr == armageddonAssignmentItr->second.end())
+    auto const tempAssignmentItr = armageddonAssignmentItr->second.rangedArmageddonAssignments.find(bot->GetGUID());
+    if (tempAssignmentItr == armageddonAssignmentItr->second.rangedArmageddonAssignments.end())
         return true;
 
     return TryGetKiljaedenRangedSlotPosition(tempAssignmentItr->second, position);

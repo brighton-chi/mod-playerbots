@@ -427,5 +427,5 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
     if (!spellName.empty() && botAI->CanCastSpell(spellName, charmedPlayer))
         return botAI->CastSpell(spellName, charmedPlayer); */
 
-    return true;
+    return false;
 }
