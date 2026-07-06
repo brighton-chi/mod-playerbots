@@ -44,7 +44,7 @@ bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
 
 bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_DRUID && botAI->IsCaster(bot) &&
+    return bot->getClass() == CLASS_DRUID && botAI->IsHeal(bot) &&
         AI_VALUE2(Unit*, "find target", "anzu");
 }
 
