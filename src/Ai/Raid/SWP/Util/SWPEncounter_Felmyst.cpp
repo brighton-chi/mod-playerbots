@@ -110,6 +110,10 @@ const std::array<Position, 3> FELMYST_DEMONIC_VAPOR_LANE_REFERENCES = {{
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystRangedAssignments;
 
+std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
+
+std::unordered_map<uint32, bool> felmystEncapsulateOccurredThisGroundPhase;
+
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> felmystDemonicVaporRegionIndices;
 
 std::unordered_map<uint32, uint8> felmystDemonicVaporUsedRegionMasks;
@@ -119,10 +123,6 @@ std::unordered_map<uint32, uint8> felmystDemonicVaporFirstRegionIndices;
 std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
 
 std::unordered_map<uint32, FelmystFogPassState> felmystFogPassStates;
-
-std::unordered_map<uint32, bool> felmystEncapsulateOccurredThisGroundPhase;
-
-std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
 
 std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
 

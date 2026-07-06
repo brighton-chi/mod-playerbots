@@ -102,14 +102,15 @@ constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 500;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystRangedAssignments;
+extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
+    felmystIncomingEncapsulateStates;
+extern std::unordered_map<uint32, bool> felmystEncapsulateOccurredThisGroundPhase;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     felmystDemonicVaporRegionIndices;
 extern std::unordered_map<uint32, uint8> felmystDemonicVaporUsedRegionMasks;
 extern std::unordered_map<uint32, uint8> felmystDemonicVaporFirstRegionIndices;
 extern std::unordered_map<uint32, FelmystFogOfCorruptionState> felmystFogOfCorruptionStates;
 extern std::unordered_map<uint32, FelmystFogPassState> felmystFogPassStates;
-extern std::unordered_map<uint32, bool> felmystEncapsulateOccurredThisGroundPhase;
-extern std::unordered_map<uint32, FelmystIncomingEncapsulateState> felmystIncomingEncapsulateStates;
 extern std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
 
