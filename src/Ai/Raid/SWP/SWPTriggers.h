@@ -488,13 +488,6 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenRainingArmageddonMeteorsTrigger : public Trigger
-{
-public:
-    KiljaedenRainingArmageddonMeteorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden raining armageddon meteors") {}
-    bool IsActive() override;
-};
 
 class KiljaedenSaysChaosDestructionOblivionTrigger : public Trigger
 {

@@ -374,7 +374,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         return;
     }
 
-    EnsureKiljaedenRangedAssignments(botAI, bot);
     auto const canonicalItr = kiljaedenRangedAssignments.find(instanceId);
     if (canonicalItr == kiljaedenRangedAssignments.end())
     {

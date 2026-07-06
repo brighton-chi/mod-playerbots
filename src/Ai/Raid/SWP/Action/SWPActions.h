@@ -525,6 +525,10 @@ public:
     KiljaedenPositionMeleeAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden position melee") {}
     bool Execute(Event event) override;
+
+private:
+    bool TryGetPosition(Position& position) const;
+    bool TryAdjustForArmageddon(Position& position);
 };
 
 class KiljaedenPositionRangedAction : public MovementAction
@@ -535,7 +539,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryGetRangedPosition(Position& position) const;
+    bool TryGetPosition(Position& position) const;
+    bool TryAdjustForArmageddon(Position& position);
 };
 
 class KiljaedenRemoveFireBloomAction : public Action
@@ -543,14 +548,6 @@ class KiljaedenRemoveFireBloomAction : public Action
 public:
     KiljaedenRemoveFireBloomAction(
         PlayerbotAI* botAI) : Action(botAI, "kil'jaeden remove fire bloom") {}
-    bool Execute(Event event) override;
-};
-
-class KiljaedenAvoidArmageddonMeteorsAction : public MovementAction
-{
-public:
-    KiljaedenAvoidArmageddonMeteorsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden avoid armageddon meteors") {}
     bool Execute(Event event) override;
 };
 

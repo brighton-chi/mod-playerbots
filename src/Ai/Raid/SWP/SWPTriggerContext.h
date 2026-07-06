@@ -196,9 +196,6 @@ public:
         creators["kil'jaeden bot has fire bloom"] =
             &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
 
-        creators["kil'jaeden raining armageddon meteors"] =
-            &RaidSunwellTriggerContext::kiljaeden_raining_armageddon_meteors;
-
         creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
             &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
 
@@ -401,9 +398,6 @@ private:
     }
     static Trigger* kiljaeden_bot_has_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenBotHasFireBloomTrigger(botAI);
-    }
-    static Trigger* kiljaeden_raining_armageddon_meteors(PlayerbotAI* botAI) {
-        return new KiljaedenRainingArmageddonMeteorsTrigger(botAI);
     }
     static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI) {
         return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);

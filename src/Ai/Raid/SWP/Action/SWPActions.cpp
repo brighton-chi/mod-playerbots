@@ -115,6 +115,9 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (kiljaedenArmageddons.erase(instanceId) > 0)
             erased = true;
 
+        if (kiljaedenRangedAssignments.erase(instanceId) > 0)
+            erased = true;
+
         if (kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
             erased = true;
     }

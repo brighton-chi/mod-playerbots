@@ -196,9 +196,6 @@ public:
         creators["kil'jaeden remove fire bloom"] =
             &RaidSunwellActionContext::kiljaeden_remove_fire_bloom;
 
-        creators["kil'jaeden avoid armageddon meteors"] =
-            &RaidSunwellActionContext::kiljaeden_avoid_armageddon_meteors;
-
         creators["kil'jaeden stack for shield of the blue"] =
             &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
 
@@ -401,9 +398,6 @@ private:
     }
     static Action* kiljaeden_remove_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenRemoveFireBloomAction(botAI);
-    }
-    static Action* kiljaeden_avoid_armageddon_meteors(PlayerbotAI* botAI) {
-        return new KiljaedenAvoidArmageddonMeteorsAction(botAI);
     }
     static Action* kiljaeden_stack_for_shield_of_the_blue(PlayerbotAI* botAI) {
         return new KiljaedenStackForShieldOfTheBlueAction(botAI);

@@ -745,45 +745,6 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM));
 }
 
-bool KiljaedenRainingArmageddonMeteorsTrigger::IsActive()
-{
-    if (botAI->IsTank(bot) || botAI->IsRanged(bot))
-        return false;
-
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
-        HasKiljaedenDragonAura(bot))
-    {
-        return false;
-    }
-
-    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
-    if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
-        return false;
-
-    auto isSafePosition = [&](Position const& position)
-    {
-        for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
-        {
-            if (position.GetExactDist2d(
-                    armageddon.destination.GetPositionX(),
-                    armageddon.destination.GetPositionY()) < armageddon.safeDistance)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
-        return false;
-
-    KiljaedenArmageddon armageddon;
-    return TryGetKiljaedenNearestArmageddon(bot, armageddon);
-}
-
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
