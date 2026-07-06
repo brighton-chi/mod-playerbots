@@ -76,30 +76,6 @@ bool KiljaedenMoveAwayFromFelfirePortalAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KiljaedenAvoidArmageddonsAction::Execute(Event /*event*/)
-{
-    KiljaedenArmageddon armageddon;
-    if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
-        return false;
-
-    constexpr uint32 minInterval = 0;
-    return FleePosition(armageddon.destination, armageddon.safeDistance, minInterval);
-}
-
-bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
-{
-    const Position& position = KILJAEDEN_DARKNESS_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    return false;
-}
-
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
     const Position& position = KILJAEDEN_TANK_POSITION;
@@ -260,6 +236,30 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
         default:
             return false;
     }
+}
+
+bool KiljaedenAvoidArmageddonMeteorsAction::Execute(Event /*event*/)
+{
+    KiljaedenArmageddon armageddon;
+    if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
+        return false;
+
+    constexpr uint32 minInterval = 0;
+    return FleePosition(armageddon.destination, armageddon.safeDistance, minInterval);
+}
+
+bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
+{
+    const Position& position = KILJAEDEN_DARKNESS_POSITION;
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    {
+        return MoveTo(
+            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    return false;
 }
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)

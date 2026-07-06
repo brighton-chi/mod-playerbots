@@ -177,7 +177,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
         NextAction("kalecgos remove arcane buffet", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kalecgos humanoid form tanks sathrovarr", {
+    triggers.push_back(new TriggerNode("kalecgos humanoid kalec tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity", {
@@ -219,16 +219,16 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("felmyst player has gas nova", {
-        NextAction("felmyst cast mass dispel on gas nova", ACTION_EMERGENCY + 8) }));
+        NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("felmyst boss summons demonic vapor", {
+    triggers.push_back(new TriggerNode("felmyst demonic vapor trails are active", {
         NextAction("felmyst avoid demonic vapor", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst bot is demonic vapor target", {
         NextAction("felmyst kite demonic vapor", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("felmyst fog of corruption is active", {
-        NextAction("felmyst avoid fog of corruption", ACTION_EMERGENCY + 10) }));
+        NextAction("felmyst move to safe fog lane", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("felmyst melee cannot reach boss", {
         NextAction("felmyst melee clear target", ACTION_RAID + 1) }));
@@ -289,7 +289,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius makes mini darkness", {
+    triggers.push_back(new TriggerNode("m'uru entropius spawns darkness pools", {
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
@@ -320,12 +320,6 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden hands summon felfire portals", {
         NextAction("kil'jaeden move away from felfire portals", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden it's raining meteors", {
-        NextAction("kil'jaeden avoid armageddons", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!", {
-        NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
-
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by tanks", {
         NextAction("kil'jaeden position tanks", ACTION_RAID) }));
 
@@ -337,6 +331,12 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {
         NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden raining armageddon meteors", {
+        NextAction("kil'jaeden avoid armageddon meteors", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!", {
+        NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden dragon orb is active", {
         NextAction("kil'jaeden use dragon orb", ACTION_RAID + 2) }));
@@ -371,7 +371,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
-    multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
+    // multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins

@@ -205,11 +205,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystCastMassDispelOnGasNovaAction : public Action
+class FelmystMassDispelGasNovaAction : public Action
 {
 public:
-    FelmystCastMassDispelOnGasNovaAction(
-        PlayerbotAI* botAI) : Action(botAI, "felmyst cast mass dispel on gas nova") {}
+    FelmystMassDispelGasNovaAction(
+        PlayerbotAI* botAI) : Action(botAI, "felmyst mass dispel gas nova") {}
     bool Execute(Event event) override;
 };
 
@@ -229,11 +229,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystAvoidFogOfCorruptionAction : public MovementAction
+class FelmystMoveToSafeFogLaneAction : public MovementAction
 {
 public:
-    FelmystAvoidFogOfCorruptionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "felmyst avoid fog of corruption") {}
+    FelmystMoveToSafeFogLaneAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "felmyst move to safe fog lane") {}
     bool Execute(Event event) override;
 
 private:
@@ -511,22 +511,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenAvoidArmageddonsAction : public MovementAction
-{
-public:
-    KiljaedenAvoidArmageddonsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden avoid armageddons") {}
-    bool Execute(Event event) override;
-};
-
-class KiljaedenStackForShieldOfTheBlueAction : public MovementAction
-{
-public:
-    KiljaedenStackForShieldOfTheBlueAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden stack for shield of the blue") {}
-    bool Execute(Event event) override;
-};
-
 class KiljaedenPositionTanksAction : public AttackAction
 {
 public:
@@ -559,6 +543,22 @@ class KiljaedenRemoveFireBloomAction : public Action
 public:
     KiljaedenRemoveFireBloomAction(
         PlayerbotAI* botAI) : Action(botAI, "kil'jaeden remove fire bloom") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenAvoidArmageddonMeteorsAction : public MovementAction
+{
+public:
+    KiljaedenAvoidArmageddonMeteorsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden avoid armageddon meteors") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenStackForShieldOfTheBlueAction : public MovementAction
+{
+public:
+    KiljaedenStackForShieldOfTheBlueAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden stack for shield of the blue") {}
     bool Execute(Event event) override;
 };
 

@@ -434,7 +434,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (dynamic_cast<FelmystAvoidFogOfCorruptionAction*>(action))
+    if (dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action))
         return canRelocate ? 1.0f : 0.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -477,8 +477,11 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!GetFelmystCharmedTarget(botAI, bot))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<DropTargetAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

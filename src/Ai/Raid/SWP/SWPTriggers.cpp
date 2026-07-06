@@ -123,7 +123,7 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
-bool KalecgosHumanoidFormTanksSathrovarrTrigger::IsActive()
+bool KalecgosHumanoidKalecTanksSathrovarrTrigger::IsActive()
 {
     return botAI->IsTank(bot) && IsInSpectralRealm(bot);
 }
@@ -298,7 +298,7 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
     return GetFelmystGasNovaDispelTarget(bot) != nullptr;
 }
 
-bool FelmystBossSummonsDemonicVaporTrigger::IsActive()
+bool FelmystDemonicVaporTrailsAreActiveTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || !felmyst->IsFlying() || GetFelmystDemonicVaporSummonedByBot(bot))
@@ -544,7 +544,7 @@ bool MuruDarkFiendsSpawnedTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "dark fiend");
 }
 
-bool MuruEntropiusMakesMiniDarknessTrigger::IsActive()
+bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
@@ -659,54 +659,6 @@ bool KiljaedenHandsSummonFelfirePortalsTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
-bool KiljaedenItsRainingMeteorsTrigger::IsActive()
-{
-    if (botAI->IsTank(bot) || botAI->IsRanged(bot))
-        return false;
-
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
-        HasKiljaedenDragonAura(bot))
-    {
-        return false;
-    }
-
-    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
-    if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
-        return false;
-
-    auto isSafePosition = [&](Position const& position)
-    {
-        for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
-        {
-            if (position.GetExactDist2d(
-                    armageddon.destination.GetPositionX(),
-                    armageddon.destination.GetPositionY()) < armageddon.safeDistance)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
-        return false;
-
-    KiljaedenArmageddon armageddon;
-    return TryGetKiljaedenNearestArmageddon(bot, armageddon);
-}
-
-bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
-{
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || HasKiljaedenDragonAura(bot))
-        return false;
-
-    return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
-}
-
 bool KiljaedenBossEngagedByTanksTrigger::IsActive()
 {
     if (!botAI->IsTank(bot))
@@ -759,21 +711,6 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     return true;
 }
 
-bool KiljaedenBotHasFireBloomTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-    {
-        return false;
-    }
-
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f || botAI->IsMainTank(bot))
-        return false;
-
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM));
-}
-
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -791,6 +728,69 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool KiljaedenBotHasFireBloomTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
+        bot->getClass() != CLASS_PALADIN)
+    {
+        return false;
+    }
+
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f || botAI->IsMainTank(bot))
+        return false;
+
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM));
+}
+
+bool KiljaedenRainingArmageddonMeteorsTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsRanged(bot))
+        return false;
+
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
+        HasKiljaedenDragonAura(bot))
+    {
+        return false;
+    }
+
+    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
+    auto armageddonItr = kiljaedenArmageddons.find(bot->GetInstanceId());
+    if (armageddonItr == kiljaedenArmageddons.end() || armageddonItr->second.empty())
+        return false;
+
+    auto isSafePosition = [&](Position const& position)
+    {
+        for (KiljaedenArmageddon const& armageddon : armageddonItr->second)
+        {
+            if (position.GetExactDist2d(
+                    armageddon.destination.GetPositionX(),
+                    armageddon.destination.GetPositionY()) < armageddon.safeDistance)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    if (isSafePosition(KILJAEDEN_S_MELEE_POSITION) || isSafePosition(KILJAEDEN_E_MELEE_POSITION))
+        return false;
+
+    KiljaedenArmageddon armageddon;
+    return TryGetKiljaedenNearestArmageddon(bot, armageddon);
+}
+
+bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
+{
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || HasKiljaedenDragonAura(bot))
+        return false;
+
+    return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
 bool KiljaedenDragonOrbIsActiveTrigger::IsActive()

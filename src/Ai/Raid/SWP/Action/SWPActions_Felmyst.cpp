@@ -188,7 +188,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     return tryMoveToStack(FelmystGroundStack::Left);
 }
 
-bool FelmystCastMassDispelOnGasNovaAction::Execute(Event /*event*/)
+bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 {
     if (Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
         gasNovaTarget && botAI->CanCastSpell("mass dispel", gasNovaTarget))
@@ -235,7 +235,7 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
+bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
@@ -331,7 +331,7 @@ bool FelmystAvoidFogOfCorruptionAction::Execute(Event /*event*/)
     return false;
 }
 
-bool FelmystAvoidFogOfCorruptionAction::TryTeleportStuckBotOntoCrate(
+bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     Position const& destination)
 {
     constexpr float crateCollisionCheckDistance = 2.0f;

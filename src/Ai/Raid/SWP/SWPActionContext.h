@@ -82,8 +82,8 @@ public:
         creators["felmyst run away from encapsulated player"] =
             &RaidSunwellActionContext::felmyst_run_away_from_encapsulated_player;
 
-        creators["felmyst cast mass dispel on gas nova"] =
-            &RaidSunwellActionContext::felmyst_cast_mass_dispel_on_gas_nova;
+        creators["felmyst mass dispel gas nova"] =
+            &RaidSunwellActionContext::felmyst_mass_dispel_gas_nova;
 
         creators["felmyst avoid demonic vapor"] =
             &RaidSunwellActionContext::felmyst_avoid_demonic_vapor;
@@ -91,8 +91,8 @@ public:
         creators["felmyst kite demonic vapor"] =
             &RaidSunwellActionContext::felmyst_kite_demonic_vapor;
 
-        creators["felmyst avoid fog of corruption"] =
-            &RaidSunwellActionContext::felmyst_avoid_fog_of_corruption;
+        creators["felmyst move to safe fog lane"] =
+            &RaidSunwellActionContext::felmyst_move_to_safe_fog_lane;
 
         creators["felmyst melee clear target"] =
             &RaidSunwellActionContext::felmyst_melee_clear_target;
@@ -184,12 +184,6 @@ public:
         creators["kil'jaeden move away from felfire portal"] =
             &RaidSunwellActionContext::kiljaeden_move_away_from_felfire_portal;
 
-        creators["kil'jaeden avoid armageddons"] =
-            &RaidSunwellActionContext::kiljaeden_avoid_armageddons;
-
-        creators["kil'jaeden stack for shield of the blue"] =
-            &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
-
         creators["kil'jaeden position tanks"] =
             &RaidSunwellActionContext::kiljaeden_position_tanks;
 
@@ -201,6 +195,12 @@ public:
 
         creators["kil'jaeden remove fire bloom"] =
             &RaidSunwellActionContext::kiljaeden_remove_fire_bloom;
+
+        creators["kil'jaeden avoid armageddon meteors"] =
+            &RaidSunwellActionContext::kiljaeden_avoid_armageddon_meteors;
+
+        creators["kil'jaeden stack for shield of the blue"] =
+            &RaidSunwellActionContext::kiljaeden_stack_for_shield_of_the_blue;
 
         creators["kil'jaeden use dragon orb"] =
             &RaidSunwellActionContext::kiljaeden_use_dragon_orb;
@@ -285,8 +285,8 @@ private:
     static Action* felmyst_run_away_from_encapsulated_player(PlayerbotAI* botAI) {
         return new FelmystRunAwayFromEncapsulatedPlayerAction(botAI);
     }
-    static Action* felmyst_cast_mass_dispel_on_gas_nova(PlayerbotAI* botAI) {
-        return new FelmystCastMassDispelOnGasNovaAction(botAI);
+    static Action* felmyst_mass_dispel_gas_nova(PlayerbotAI* botAI) {
+        return new FelmystMassDispelGasNovaAction(botAI);
     }
     static Action* felmyst_avoid_demonic_vapor(PlayerbotAI* botAI) {
         return new FelmystAvoidDemonicVaporAction(botAI);
@@ -294,8 +294,8 @@ private:
     static Action* felmyst_kite_demonic_vapor(PlayerbotAI* botAI) {
         return new FelmystKiteDemonicVaporAction(botAI);
     }
-    static Action* felmyst_avoid_fog_of_corruption(PlayerbotAI* botAI) {
-        return new FelmystAvoidFogOfCorruptionAction(botAI);
+    static Action* felmyst_move_to_safe_fog_lane(PlayerbotAI* botAI) {
+        return new FelmystMoveToSafeFogLaneAction(botAI);
     }
     static Action* felmyst_melee_clear_target(PlayerbotAI* botAI) {
         return new FelmystMeleeClearTargetAction(botAI);
@@ -390,14 +390,8 @@ private:
     static Action* kiljaeden_move_away_from_felfire_portal(PlayerbotAI* botAI) {
         return new KiljaedenMoveAwayFromFelfirePortalAction(botAI);
     }
-    static Action* kiljaeden_avoid_armageddons(PlayerbotAI* botAI) {
-        return new KiljaedenAvoidArmageddonsAction(botAI);
-    }
     static Action* kiljaeden_position_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionTanksAction(botAI);
-    }
-    static Action* kiljaeden_stack_for_shield_of_the_blue(PlayerbotAI* botAI) {
-        return new KiljaedenStackForShieldOfTheBlueAction(botAI);
     }
     static Action* kiljaeden_position_melee(PlayerbotAI* botAI) {
         return new KiljaedenPositionMeleeAction(botAI);
@@ -407,6 +401,12 @@ private:
     }
     static Action* kiljaeden_remove_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenRemoveFireBloomAction(botAI);
+    }
+    static Action* kiljaeden_avoid_armageddon_meteors(PlayerbotAI* botAI) {
+        return new KiljaedenAvoidArmageddonMeteorsAction(botAI);
+    }
+    static Action* kiljaeden_stack_for_shield_of_the_blue(PlayerbotAI* botAI) {
+        return new KiljaedenStackForShieldOfTheBlueAction(botAI);
     }
     static Action* kiljaeden_use_dragon_orb(PlayerbotAI* botAI) {
         return new KiljaedenUseDragonOrbAction(botAI);

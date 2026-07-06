@@ -41,8 +41,8 @@ public:
         creators["kalecgos bot has too many arcane buffet stacks"] =
             &RaidSunwellTriggerContext::kalecgos_bot_has_too_many_arcane_buffet_stacks;
 
-        creators["kalecgos humanoid form tanks sathrovarr"] =
-            &RaidSunwellTriggerContext::kalecgos_humanoid_form_tanks_sathrovarr;
+        creators["kalecgos humanoid kalec tanks sathrovarr"] =
+            &RaidSunwellTriggerContext::kalecgos_humanoid_kalec_tanks_sathrovarr;
 
         creators["kalecgos bots don't observe gravity"] =
             &RaidSunwellTriggerContext::kalecgos_bots_dont_observe_gravity;
@@ -85,8 +85,8 @@ public:
         creators["felmyst player has gas nova"] =
             &RaidSunwellTriggerContext::felmyst_player_has_gas_nova;
 
-        creators["felmyst boss summons demonic vapor"] =
-            &RaidSunwellTriggerContext::felmyst_boss_summons_demonic_vapor;
+        creators["felmyst demonic vapor trails are active"] =
+            &RaidSunwellTriggerContext::felmyst_demonic_vapor_trails_are_active;
 
         creators["felmyst bot is demonic vapor target"] =
             &RaidSunwellTriggerContext::felmyst_bot_is_demonic_vapor_target;
@@ -153,8 +153,8 @@ public:
         creators["m'uru dark fiends spawned"] =
             &RaidSunwellTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru entropius makes mini darkness"] =
-            &RaidSunwellTriggerContext::muru_entropius_makes_mini_darkness;
+        creators["m'uru entropius spawns darkness pools"] =
+            &RaidSunwellTriggerContext::muru_entropius_spawns_darkness_pools;
 
         creators["m'uru darkness is coming"] =
             &RaidSunwellTriggerContext::muru_darkness_is_coming;
@@ -184,12 +184,6 @@ public:
         creators["kil'jaeden hands summon felfire portals"] =
             &RaidSunwellTriggerContext::kiljaeden_hands_summon_felfire_portals;
 
-        creators["kil'jaeden it's raining meteors"] =
-            &RaidSunwellTriggerContext::kiljaeden_its_raining_meteors;
-
-        creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
-            &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
-
         creators["kil'jaeden boss engaged by tanks"] =
             &RaidSunwellTriggerContext::kiljaeden_boss_engaged_by_tanks;
 
@@ -201,6 +195,12 @@ public:
 
         creators["kil'jaeden bot has fire bloom"] =
             &RaidSunwellTriggerContext::kiljaeden_bot_has_fire_bloom;
+
+        creators["kil'jaeden raining armageddon meteors"] =
+            &RaidSunwellTriggerContext::kiljaeden_raining_armageddon_meteors;
+
+        creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
+            &RaidSunwellTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
 
         creators["kil'jaeden dragon orb is active"] =
             &RaidSunwellTriggerContext::kiljaeden_dragon_orb_is_active;
@@ -239,8 +239,8 @@ private:
     static Trigger* kalecgos_bots_take_splash_damage(PlayerbotAI* botAI) {
         return new KalecgosBotsTakeSplashDamageTrigger(botAI);
     }
-    static Trigger* kalecgos_humanoid_form_tanks_sathrovarr(PlayerbotAI* botAI) {
-        return new KalecgosHumanoidFormTanksSathrovarrTrigger(botAI);
+    static Trigger* kalecgos_humanoid_kalec_tanks_sathrovarr(PlayerbotAI* botAI) {
+        return new KalecgosHumanoidKalecTanksSathrovarrTrigger(botAI);
     }
     static Trigger* kalecgos_bot_has_too_many_arcane_buffet_stacks(PlayerbotAI* botAI) {
         return new KalecgosBotHasTooManyArcaneBuffetStacksTrigger(botAI);
@@ -288,8 +288,8 @@ private:
     static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI) {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
     }
-    static Trigger* felmyst_boss_summons_demonic_vapor(PlayerbotAI* botAI) {
-        return new FelmystBossSummonsDemonicVaporTrigger(botAI);
+    static Trigger* felmyst_demonic_vapor_trails_are_active(PlayerbotAI* botAI) {
+        return new FelmystDemonicVaporTrailsAreActiveTrigger(botAI);
     }
     static Trigger* felmyst_bot_is_demonic_vapor_target(PlayerbotAI* botAI) {
         return new FelmystBotIsDemonicVaporTargetTrigger(botAI);
@@ -358,8 +358,8 @@ private:
     static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI) {
         return new MuruDarkFiendsSpawnedTrigger(botAI);
     }
-    static Trigger* muru_entropius_makes_mini_darkness(PlayerbotAI* botAI) {
-        return new MuruEntropiusMakesMiniDarknessTrigger(botAI);
+    static Trigger* muru_entropius_spawns_darkness_pools(PlayerbotAI* botAI) {
+        return new MuruEntropiusSpawnsDarknessPoolsTrigger(botAI);
     }
     static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI) {
         return new MuruDarknessIsComingTrigger(botAI);
@@ -390,12 +390,6 @@ private:
     static Trigger* kiljaeden_hands_summon_felfire_portals(PlayerbotAI* botAI) {
         return new KiljaedenHandsSummonFelfirePortalsTrigger(botAI);
     }
-    static Trigger* kiljaeden_its_raining_meteors(PlayerbotAI* botAI) {
-        return new KiljaedenItsRainingMeteorsTrigger(botAI);
-    }
-    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI) {
-        return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
-    }
     static Trigger* kiljaeden_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new KiljaedenBossEngagedByTanksTrigger(botAI);
     }
@@ -407,6 +401,12 @@ private:
     }
     static Trigger* kiljaeden_bot_has_fire_bloom(PlayerbotAI* botAI) {
         return new KiljaedenBotHasFireBloomTrigger(botAI);
+    }
+    static Trigger* kiljaeden_raining_armageddon_meteors(PlayerbotAI* botAI) {
+        return new KiljaedenRainingArmageddonMeteorsTrigger(botAI);
+    }
+    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI) {
+        return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
     }
     static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbIsActiveTrigger(botAI);
