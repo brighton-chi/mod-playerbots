@@ -530,19 +530,22 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Eredar Twins
 
+// convert to dpsassist disable for testing, if works combine with tank assist
 float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
+    if (botAI->IsTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
+    /* if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<EredarTwinsMeleeJumpDownFromBalconyAction*>(action))
     {
         return 0.0f;
-    }
+    } */
+    if (dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -563,11 +566,16 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!sacrolash)
+    if (botAI->IsMelee(bot) &&
+        bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    {
+        return 1.0f;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
     const uint32 instanceId = bot->GetInstanceId();
