@@ -178,9 +178,6 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
 
 bool BrutallusBotIsBurningTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "brutallus"))
-        return false;
-
     if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
         return false;
 
@@ -263,10 +260,6 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
-        return false;
-
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
         return false;
 
     if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
@@ -466,8 +459,10 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
 
 bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot))
-        return false;
+    // What happens if I force healers to attack based on "current target"?
+    // Will it prevent healing?
+    // if (botAI->IsHeal(bot))
+    //     return false;
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
@@ -766,14 +761,14 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
         return false;
     }
 
+    if (botAI->IsTank(bot))
+        return false;
+
     if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FIRE_BLOOM)))
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 55.0f)
-        return false;
-
-    return !botAI->IsMainTank(bot);
+    return kiljaeden && kiljaeden->GetHealthPct() < 55.0f;
 }
 
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()

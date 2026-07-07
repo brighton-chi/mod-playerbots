@@ -530,16 +530,22 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Eredar Twins
 
+// convert to dpsassist disable for testing, if works combine with tank assist
 float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
+    if (botAI->IsTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
+    /* if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<EredarTwinsMeleeJumpDownFromBalconyAction*>(action))
+    {
+        return 0.0f;
+    } */
+    if (/*botAI->GetState() == BOT_STATE_COMBAT*/ &&
+        dynamic_cast<DpsAssistAction*>(action))
     {
         return 0.0f;
     }
@@ -563,11 +569,16 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!sacrolash)
+    if (botAI->IsMelee(bot) &&
+        bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    {
+        return 1.0f;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
     const uint32 instanceId = bot->GetInstanceId();
@@ -592,10 +603,17 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    bool const shouldHoldSacrolashThreat = sacrolash &&
-        ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
-    bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldAlythessThreat(botAI, bot, alythess);
+    constexpr float alythessThreatRatio = 0.9f;
+    constexpr float sacrolashThreatRatio = 0.8f;
+
+    Player* sacrolashTank =
+        GetGroupMainTank(botAI, bot) || GetGroupAssistTank(botAI, bot, 1);
+    Player* alythessTank = GetGroupAssistTank(botAI, bot, 0);
+
+    bool const shouldHoldSacrolashThreat = sacrolash && sacrolashTank &&
+        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, sacrolashTank);
+    bool const shouldHoldAlythessThreat = alythess && alythessTank &&
+        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, alythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -606,16 +624,13 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     bool const suppressAlythessAttack = shouldHoldAlythessThreat &&
         (actionTarget == alythess || AI_VALUE(Unit*, "current target") == alythess);
 
-    if (dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
-        (suppressSacrolashAttack || suppressAlythessAttack))
-    {
-        return 0.0f;
-    }
+    if (!suppressSacrolashAttack && !suppressAlythessAttack)
+        return 1.0f;
 
-    if (dynamic_cast<CastSpellAction*>(action) &&
-        ((shouldHoldSacrolashThreat && actionTarget == sacrolash) ||
-         (shouldHoldAlythessThreat && actionTarget == alythess)))
+    if ((dynamic_cast<AttackAction*>(action) &&
+         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action)) ||
+        (dynamic_cast<CastSpellAction*>(action) &&
+         !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }
@@ -631,9 +646,11 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action) ||
-        (botAI->GetState() == BOT_STATE_COMBAT &&
-         dynamic_cast<TankAssistAction*>(action)))
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<TankAssistAction*>(action)))
     {
         return 0.0f;
     }

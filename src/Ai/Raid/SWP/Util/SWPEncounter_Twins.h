@@ -47,8 +47,9 @@ Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
 bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
 bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
-bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
-bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess);
+bool ShouldHoldTwinThreat(
+    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
+    bool (*isTwinTank)(PlayerbotAI*, Player*));
 bool IsAlythessTankPositionSafe(Player* bot, const Position& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);

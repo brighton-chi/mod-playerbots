@@ -303,11 +303,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsStackInRoomCenterAction : public AttackAction
+class EredarTwinsStackInRoomCenterAction : public MovementAction
 {
 public:
     EredarTwinsStackInRoomCenterAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "eredar twins stack in room center") {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "eredar twins stack in room center") {}
     bool Execute(Event event) override;
 };
 
