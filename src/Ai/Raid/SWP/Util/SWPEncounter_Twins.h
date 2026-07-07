@@ -26,9 +26,9 @@ constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
 
 struct EredarTwinsIncomingConflagrationState
 {
-	ObjectGuid targetGuid = ObjectGuid::Empty;
-	uint32 delayMs = 0;
-	uint32 expireMs = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 delayMs = 0;
+    uint32 expireMs = 0;
 };
 
 constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 500;
