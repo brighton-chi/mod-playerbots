@@ -646,9 +646,11 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action) ||
-        (botAI->GetState() == BOT_STATE_COMBAT &&
-         dynamic_cast<TankAssistAction*>(action)))
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<TankAssistAction*>(action)))
     {
         return 0.0f;
     }
