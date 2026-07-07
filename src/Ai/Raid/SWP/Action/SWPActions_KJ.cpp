@@ -337,7 +337,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     if (!closestOrb)
         return false;
 
-    if (closestDistance < 3.0f)
+    if (closestOrb->IsAtInteractDistance(*bot, closestOrb->GetInteractionDistance()))
     {
         closestOrb->Use(bot);
         kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
@@ -345,9 +345,8 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SUNWELL_MAP_ID, closestOrb->GetPositionX(), closestOrb->GetPositionY(),
-        closestOrb->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        closestOrb, closestOrb->GetInteractionDistance() - 0.5f,
+        MovementPriority::MOVEMENT_FORCED);
 }
 
 // There is an issue with the root packets that causes bots to get stuck with
