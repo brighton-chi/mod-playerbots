@@ -120,7 +120,7 @@ bool ShouldHoldTwinThreat(
         float const threat = threatRef->GetThreat();
 
         if (isTwinTank(botAI, threatPlayer) &&
-            (!foundTwinTankThreat || threat > twinTankThreat))
+            (!foundTwinTankThreat || threat < twinTankThreat))
         {
             twinTankThreat = threat;
             foundTwinTankThreat = true;

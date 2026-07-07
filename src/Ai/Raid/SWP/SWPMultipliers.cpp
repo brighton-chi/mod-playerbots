@@ -25,6 +25,7 @@
 #include "PaladinActions.h"
 #include "PartyMemberToDispel.h"
 #include "PriestActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -418,6 +419,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     FelmystFogLane thirdPassLane = FelmystFogLane::None;
     const bool shouldRepositionAfterThirdPass =
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
+
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
         !shouldRepositionAfterThirdPass)
     {
@@ -544,7 +546,7 @@ float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     } */
-    if (/*botAI->GetState() == BOT_STATE_COMBAT*/ &&
+    if (/*botAI->GetState() == BOT_STATE_COMBAT &&*/
         dynamic_cast<DpsAssistAction*>(action))
     {
         return 0.0f;
@@ -603,17 +605,14 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+
     constexpr float alythessThreatRatio = 0.9f;
     constexpr float sacrolashThreatRatio = 0.8f;
 
-    Player* sacrolashTank =
-        GetGroupMainTank(botAI, bot) || GetGroupAssistTank(botAI, bot, 1);
-    Player* alythessTank = GetGroupAssistTank(botAI, bot, 0);
-
-    bool const shouldHoldSacrolashThreat = sacrolash && sacrolashTank &&
-        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, sacrolashTank);
-    bool const shouldHoldAlythessThreat = alythess && alythessTank &&
-        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, alythessTank);
+    bool const shouldHoldSacrolashThreat = sacrolash &&
+        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
+    bool const shouldHoldAlythessThreat = alythess &&
+        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -650,7 +649,7 @@ float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (botAI->GetState() == BOT_STATE_COMBAT &&
-        dynamic_cast<TankAssistAction*>(action)))
+        dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;
     }
