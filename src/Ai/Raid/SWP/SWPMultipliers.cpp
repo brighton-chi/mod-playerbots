@@ -603,8 +603,8 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    constexpr float alythessThreatRatio = 0.95f;
-    constexpr float sacrolashThreatRatio = 0.80f;
+    constexpr float alythessThreatRatio = 0.9f;
+    constexpr float sacrolashThreatRatio = 0.8f;
 
     Player* sacrolashTank =
         GetGroupMainTank(botAI, bot) || GetGroupAssistTank(botAI, bot, 1);
