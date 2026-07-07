@@ -544,8 +544,11 @@ float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     } */
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (/*botAI->GetState() == BOT_STATE_COMBAT*/ &&
+        dynamic_cast<DpsAssistAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
