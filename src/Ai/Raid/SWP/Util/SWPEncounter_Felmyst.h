@@ -116,7 +116,7 @@ constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 500;
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
-Position const& GetFelmystMainTankGroundPosition(Player* player);
+Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
 FelmystGroundStack GetClosestFelmystGroundStack(

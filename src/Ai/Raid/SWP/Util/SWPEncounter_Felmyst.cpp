@@ -687,17 +687,14 @@ bool TryGetFelmystDemonicVaporStepDestination(
 
 } // end anonymous namespace
 
-Position const& GetFelmystMainTankGroundPosition(Player* player)
+Position const& GetFelmystMainTankGroundPosition(Player* bot)
 {
     Position const* bestPosition = &FELMYST_TANK_POSITIONS[0];
     float bestDistance = std::numeric_limits<float>::max();
 
-    if (!player)
-        return *bestPosition;
-
     for (Position const& position : FELMYST_TANK_POSITIONS)
     {
-        const float distance = player->GetExactDist2d(
+        const float distance = bot->GetExactDist2d(
             position.GetPositionX(), position.GetPositionY());
         if (distance < bestDistance)
         {
