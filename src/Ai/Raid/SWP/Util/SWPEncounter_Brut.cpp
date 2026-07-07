@@ -14,6 +14,8 @@
 namespace SunwellHelpers
 {
 
+// Note: Brutallus's CombatReach is 18.0f
+
 const Position BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;

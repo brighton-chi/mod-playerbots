@@ -78,26 +78,22 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
         }
     }
 
+    constexpr float searchRadius = 75.0f;
     GameObject* rift = bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), 50.0f, true);
+        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), searchRadius, true);
     if (!rift)
         return false;
 
-    if (bot->GetExactDist2d(rift) < 3.0f)
+    if (rift->IsAtInteractDistance(*bot, rift->GetInteractionDistance()))
     {
         rift->Use(bot);
         return true;
     }
-    else
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, rift->GetPositionX(), rift->GetPositionY(), rift->GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+
+    return MoveTo(
+        rift, rift->GetInteractionDistance() - 0.5f, MovementPriority::MOVEMENT_FORCED);
 }
 
-// Sathrovarr's Combat Reach is 4.0f
-// Kalecgos' Combat Reach is 10.5f
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
 {
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");

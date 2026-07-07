@@ -12,8 +12,6 @@
 
 using namespace SunwellHelpers;
 
-// Note: Brutallus has a BoundingRadius of 6f and a CombatReach of 18f
-
 bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");

@@ -70,7 +70,6 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bounding Radius and Combat Reach of 10.0f
 bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
@@ -201,7 +200,14 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
-    if (Unit* hazard = GetNearestFelmystDemonicVaporHazard(bot))
+    constexpr float searchRadius = 20.0f;
+    Unit* nearestTrail = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
+    Unit* nearestVapor = bot->FindNearestCreature(
+        static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true);
+
+    Unit* hazard = nearestTrail ? nearestTrail : nearestVapor;
+    if (hazard)
     {
         constexpr float safeDistFromVapor = 15.0f;
         const float currentDistance = bot->GetDistance2d(hazard);

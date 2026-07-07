@@ -17,6 +17,8 @@
 namespace SunwellHelpers
 {
 
+// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f
+
 const Position KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 const Position KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
 

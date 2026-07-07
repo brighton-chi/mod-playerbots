@@ -18,6 +18,8 @@
 namespace SunwellHelpers
 {
 
+// Note: Alythess and Sacrolash each have a CombatReach of 2.5f
+
 namespace
 {
 

@@ -299,7 +299,7 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
     if (!felmyst || felmyst->IsFlying())
         return false;
 
-    return GetFelmystGasNovaDispelTarget(bot) != nullptr;
+    return GetFelmystGasNovaDispelTarget(bot);
 }
 
 bool FelmystDemonicVaporTrailsAreActiveTrigger::IsActive()

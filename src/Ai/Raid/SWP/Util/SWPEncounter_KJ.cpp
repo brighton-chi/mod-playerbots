@@ -16,6 +16,8 @@
 namespace SunwellHelpers
 {
 
+// Note: Kil'jaeden's CombatReach is 15.0f
+
 namespace
 {
 

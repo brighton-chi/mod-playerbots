@@ -116,32 +116,31 @@ constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 500;
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
-void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
-void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 Position const& GetFelmystMainTankGroundPosition(Player* player);
 bool TryGetFelmystGroundStackPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
 FelmystGroundStack GetClosestFelmystGroundStack(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
+void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
+bool TryGetFelmystRangedPosition(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
-bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
 bool TryGetFelmystFogSafeDestinations(
     Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
     uint8& destinationCount);
 bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination);
+bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane);
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptionState& state);
 bool TryGetActiveFelmystFogOfCorruptionState(
     Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
-Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
+void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
-bool TryGetFelmystRangedPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
 Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 
