@@ -23,30 +23,6 @@ const Position MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.25
 std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
 
-Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
-{
-    Creature* nearestSingularity = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-    std::list<Creature*> singularities;
-    bot->GetCreatureListWithEntryInGrid(
-        singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
-
-    for (Creature* singularity : singularities)
-    {
-        if (!singularity || !singularity->IsAlive())
-            continue;
-
-        float distance = bot->GetExactDist2d(singularity);
-        if (distance < nearestDistance)
-        {
-            nearestDistance = distance;
-            nearestSingularity = singularity;
-        }
-    }
-
-    return nearestSingularity;
-}
-
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 {
     if (!muru)
@@ -193,6 +169,30 @@ Creature* FindAvailableVoidSpawnForEnslave(
     }
 
     return bestSpawn;
+}
+
+Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
+{
+    Creature* nearestSingularity = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    std::list<Creature*> singularities;
+    bot->GetCreatureListWithEntryInGrid(
+        singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
+
+    for (Creature* singularity : singularities)
+    {
+        if (!singularity || !singularity->IsAlive())
+            continue;
+
+        float distance = bot->GetExactDist2d(singularity);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestSingularity = singularity;
+        }
+    }
+
+    return nearestSingularity;
 }
 
 }

@@ -199,6 +199,70 @@ bool TryGetBrutallusAssignedPositionIndex(
     return false;
 }
 
+void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+        return;
+
+    auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
+
+    std::array<bool, BRUTALLUS_TOTAL_RANGED_POSITIONS> usedPositions = {};
+    for (auto const& assignment : assignments)
+    {
+        if (assignment.second < BRUTALLUS_TOTAL_RANGED_POSITIONS)
+            usedPositions[assignment.second] = true;
+    }
+
+    auto const assignNextOpenSlot = [&](Player* member)
+    {
+        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
+        {
+            if (usedPositions[slotIndex])
+                continue;
+
+            assignments[member->GetGUID()] = slotIndex;
+            usedPositions[slotIndex] = true;
+            return true;
+        }
+
+        assignments[member->GetGUID()] =
+            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
+
+        return true;
+    };
+
+    std::vector<Player*> healers;
+    std::vector<Player*> rangedDamage;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+            continue;
+
+        if (assignments.find(member->GetGUID()) != assignments.end())
+            continue;
+
+        if (botAI->IsHeal(member))
+            healers.push_back(member);
+        else
+            rangedDamage.push_back(member);
+    }
+
+    for (Player* member : healers)
+    {
+        if (!assignNextOpenSlot(member))
+            return;
+    }
+
+    for (Player* member : rangedDamage)
+    {
+        if (!assignNextOpenSlot(member))
+            return;
+    }
+}
+
 bool TryGetBrutallusRangedPosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 rangedIndex, float radius, Position& position)
@@ -305,70 +369,6 @@ bool ReleaseBrutallusBurnPad(Player* bot)
         brutallusRangedBurnPadAssignments.erase(instanceItr);
 
     return erased;
-}
-
-void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
-        return;
-
-    auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
-
-    std::array<bool, BRUTALLUS_TOTAL_RANGED_POSITIONS> usedPositions = {};
-    for (auto const& assignment : assignments)
-    {
-        if (assignment.second < BRUTALLUS_TOTAL_RANGED_POSITIONS)
-            usedPositions[assignment.second] = true;
-    }
-
-    auto const assignNextOpenSlot = [&](Player* member)
-    {
-        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_RANGED_POSITIONS; ++slotIndex)
-        {
-            if (usedPositions[slotIndex])
-                continue;
-
-            assignments[member->GetGUID()] = slotIndex;
-            usedPositions[slotIndex] = true;
-            return true;
-        }
-
-        assignments[member->GetGUID()] =
-            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
-
-        return true;
-    };
-
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDamage;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
-            continue;
-
-        if (assignments.find(member->GetGUID()) != assignments.end())
-            continue;
-
-        if (botAI->IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDamage.push_back(member);
-    }
-
-    for (Player* member : healers)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
-
-    for (Player* member : rangedDamage)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
 }
 
 }

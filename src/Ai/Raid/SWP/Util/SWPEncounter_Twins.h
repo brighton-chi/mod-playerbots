@@ -42,13 +42,13 @@ extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
+Position GetAlythessTankPosition(Unit* alythess, uint8 index);
+Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
+Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
 bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
 bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
 bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
 bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess);
-Position GetAlythessTankPosition(Unit* alythess, uint8 index);
-Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
-Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
 bool IsAlythessTankPositionSafe(Player* bot, const Position& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);

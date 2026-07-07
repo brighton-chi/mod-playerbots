@@ -25,16 +25,6 @@ const Position KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f
 std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 
-bool IsExhausted(Player* bot)
-{
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION));
-}
-
-bool IsInSpectralRealm(Player* bot)
-{
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
-}
-
 namespace
 {
 
@@ -521,6 +511,16 @@ uint8 GetLeastFilledGroup(
 
 } // end anonymous namespace
 
+bool IsExhausted(Player* bot)
+{
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION));
+}
+
+bool IsInSpectralRealm(Player* bot)
+{
+    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
+}
+
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot)
 {
     switch (bot->getClass())
@@ -720,17 +720,6 @@ bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot)
     return state.blastedPlayerGuid != bot->GetGUID();
 }
 
-void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
-{
-    KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
-    realmState.inSpectralRealm = inSpectralRealm;
-
-    if (inSpectralRealm)
-        realmState.lastEnterMs = timestamp;
-    else
-        realmState.lastExitMs = timestamp;
-}
-
 void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -821,6 +810,17 @@ void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot)
                 replacementTank ? replacementTank->GetGUID() : ObjectGuid::Empty;
         }
     }
+}
+
+void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
+{
+    KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
+    realmState.inSpectralRealm = inSpectralRealm;
+
+    if (inSpectralRealm)
+        realmState.lastEnterMs = timestamp;
+    else
+        realmState.lastExitMs = timestamp;
 }
 
 }

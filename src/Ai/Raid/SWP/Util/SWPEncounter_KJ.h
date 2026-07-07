@@ -72,12 +72,12 @@ extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTime
 
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
-void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
-bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
+bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);

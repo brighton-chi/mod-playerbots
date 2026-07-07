@@ -155,23 +155,6 @@ std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
 
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
-void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
-{
-    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
-    if (stateItr == kiljaedenEncounterStates.end())
-        return;
-
-    const uint32 now = getMSTime();
-    std::vector<KiljaedenArmageddon>& armageddons = stateItr->second.armageddons;
-    armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
-        [now](KiljaedenArmageddon const& armageddon) {
-            return !armageddon.expireMs || armageddon.expireMs <= now;
-        }), armageddons.end());
-
-    if (armageddons.empty())
-        kiljaedenEncounterStates.erase(stateItr);
-}
-
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance)
 {
@@ -216,11 +199,21 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
     return foundArmageddon;
 }
 
-bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
+void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {
-    return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-        kiljaeden->FindCurrentSpellBySpellId(
-            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
+    if (stateItr == kiljaedenEncounterStates.end())
+        return;
+
+    const uint32 now = getMSTime();
+    std::vector<KiljaedenArmageddon>& armageddons = stateItr->second.armageddons;
+    armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
+        [now](KiljaedenArmageddon const& armageddon) {
+            return !armageddon.expireMs || armageddon.expireMs <= now;
+        }), armageddons.end());
+
+    if (armageddons.empty())
+        kiljaedenEncounterStates.erase(stateItr);
 }
 
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
@@ -509,6 +502,13 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
 
     if (tempAssignments.empty())
         kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
+}
+
+bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
+{
+    return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
+        kiljaeden->FindCurrentSpellBySpellId(
+            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)

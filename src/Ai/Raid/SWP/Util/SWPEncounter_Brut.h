@@ -73,6 +73,9 @@ extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedB
 float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, float radius);
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
+bool TryGetBrutallusAssignedPositionIndex(
+    PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex);
+void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
 bool TryGetBrutallusRangedPosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 rangedIndex, float radius, Position& position);
@@ -82,9 +85,6 @@ bool TryGetBrutallusBurnPadPosition(
 bool TryGetBrutallusLaneTraversalPosition(
     Player* bot, Unit* brutallus, float targetX, float targetY, float radius,
     float currentX, float currentY, Position& position);
-void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
-bool TryGetBrutallusAssignedPositionIndex(
-    PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex);
 bool ReleaseBrutallusBurnPad(Player* bot);
 
 }

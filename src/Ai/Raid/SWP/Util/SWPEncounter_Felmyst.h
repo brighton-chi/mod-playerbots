@@ -125,7 +125,7 @@ float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
 bool TryGetFelmystRangedPosition(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
-Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
+Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
