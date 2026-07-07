@@ -314,10 +314,15 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        if (ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
+        Player* sacrolashTank =
+            GetGroupMainTank(botAI, bot) || GetGroupAssistTank(botAI, bot, 1);
+        if (!sacrolashTank)
+            return false;
+
+        constexpr float sacrolashThreatRatio = 0.8f;
+        if (ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, sacrolashTank))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
@@ -332,9 +337,14 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 
         return false;
     }
-    else if (alythess)
+    else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        if (ShouldHoldAlythessThreat(botAI, bot, alythess))
+        Player* alythessTank = GetGroupAssistTank(botAI, bot, 0);
+        if (!alythessTank)
+            return false;
+
+        constexpr float alythessThreatRatio = 0.9f;
+        if (ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, alythessTank))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
