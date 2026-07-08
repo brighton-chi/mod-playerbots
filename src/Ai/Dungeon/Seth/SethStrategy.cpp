@@ -32,6 +32,9 @@ void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 
     triggers.push_back(new TriggerNode("talon king ikiss boss casting arcane explosion", {
         NextAction("talon king ikiss los arcane explosion", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("talon king ikiss boss out of los", {
+        NextAction("talon king ikiss move to within los", ACTION_RAID + 1) }));
 }
 
 void TbcDungeonSethekkHallsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

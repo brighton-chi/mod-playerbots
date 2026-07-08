@@ -80,4 +80,12 @@ private:
     bool MoveAroundPillar(Position const& pillarCenter, float botAngle);
 };
 
+class TalonKingIkissMoveToWithinLosAction : public MovementAction
+{
+public:
+    TalonKingIkissMoveToWithinLosAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "talon king ikiss move to within los") {}
+    bool Execute(Event event) override;
+};
+
 #endif

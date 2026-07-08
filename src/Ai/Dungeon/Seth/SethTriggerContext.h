@@ -37,6 +37,9 @@ public:
 
         creators["talon king ikiss boss casting arcane explosion"] =
             &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_boss_casting_arcane_explosion;
+
+        creators["talon king ikiss boss out of los"] =
+            &TbcDungeonSethekkHallsTriggerContext::talon_king_ikiss_boss_out_of_los;
     }
 private:
     static Trigger* time_lost_controller_drops_charming_totem(PlayerbotAI* botAI) {
@@ -62,6 +65,9 @@ private:
     }
     static Trigger* talon_king_ikiss_boss_casting_arcane_explosion(PlayerbotAI* botAI) {
         return new TalonKingIkissBossCastingArcaneExplosionTrigger(botAI);
+    }
+    static Trigger* talon_king_ikiss_boss_out_of_los(PlayerbotAI* botAI) {
+        return new TalonKingIkissBossOutOfLosTrigger(botAI);
     }
 };
 

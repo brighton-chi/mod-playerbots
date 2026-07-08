@@ -116,7 +116,7 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event event)
 
             return MoveTo(
                 SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+                false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else
@@ -202,4 +202,24 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool TalonKingIkissMoveToWithinLosAction::Execute(Event event)
+{
+    constexpr Position pillarCenter = { 23.730f, 309.230f };
+    constexpr float circleRadius = 11.0f;
+    constexpr float arcStep = 4.0f;
+
+    float const botAngle = pillarCenter.GetAngle(bot);
+
+    // Orbit clockwise to regain LOS
+    float const tangentAngle = botAngle - static_cast<float>(M_PI_2);
+
+    float const moveX = bot->GetPositionX() + cos(tangentAngle) * arcStep;
+    float const moveY = bot->GetPositionY() + sin(tangentAngle) * arcStep;
+
+    botAI->InterruptSpell();
+    return MoveTo(
+        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }

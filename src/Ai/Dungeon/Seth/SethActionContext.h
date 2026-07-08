@@ -37,6 +37,9 @@ public:
 
         creators["talon king ikiss los arcane explosion"] =
             &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_los_arcane_explosion;
+
+        creators["talon king ikiss move to within los"] =
+            &TbcDungeonSethekkHallsActionContext::talon_king_ikiss_move_to_within_los;
     }
 private:
     static Action* time_lost_controller_mark_charming_totem_with_skull(PlayerbotAI* botAI) {
@@ -62,6 +65,9 @@ private:
     }
     static Action* talon_king_ikiss_los_arcane_explosion(PlayerbotAI* botAI) {
         return new TalonKingIkissLosArcaneExplosionAction(botAI);
+    }
+    static Action* talon_king_ikiss_move_to_within_los(PlayerbotAI* botAI) {
+        return new TalonKingIkissMoveToWithinLosAction(botAI);
     }
 };
 

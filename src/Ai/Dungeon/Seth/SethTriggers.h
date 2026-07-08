@@ -72,4 +72,12 @@ public:
     bool IsActive() override;
 };
 
+class TalonKingIkissBossOutOfLosTrigger : public Trigger
+{
+public:
+    TalonKingIkissBossOutOfLosTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "talon king ikiss boss out of los") {}
+    bool IsActive() override;
+};
+
 #endif

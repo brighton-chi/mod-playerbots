@@ -72,3 +72,9 @@ bool TalonKingIkissBossCastingArcaneExplosionTrigger::IsActive()
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     return ikiss && ikiss->HasAura(SPELL_ARCANE_BUBBLE) && bot->IsWithinLOSInMap(ikiss);
 }
+
+bool TalonKingIkissBossOutOfLosTrigger::IsActive()
+{
+    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    return ikiss && !ikiss->HasAura(SPELL_ARCANE_BUBBLE) && !bot->IsWithinLOSInMap(ikiss);
+}
