@@ -781,7 +781,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     if (HasKiljaedenDragonAura(bot))
         return false;
 
-    if (GetKiljaedenControlledDragon(bot) || GetKiljaedenDragonOrbUser(bot) != bot)
+    if (GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
 
     bool orbInUse = false;
@@ -831,6 +831,9 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+        return false;
+
+    if (!HasKiljaedenDragonAura(bot))
         return false;
 
     return GetKiljaedenControlledDragon(bot);

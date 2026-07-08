@@ -375,11 +375,6 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         kiljaeden->FindCurrentSpellBySpellId(
             static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
     {
-        _inDarkness = false;
-        _shieldCastThisDarkness = false;
-        _darknessStartMs = 0;
-        _lastDarknessCastMsLeft = 0;
-
         if (HasKiljaedenDragonAura(bot))
         {
             bot->RemoveAura(
@@ -395,21 +390,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         return false;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
-        if (!_inDarkness)
-        {
-            _inDarkness = true;
-            _shieldCastThisDarkness = false;
-            _darknessStartMs = getMSTime();
-        }
-
         return ExecuteDuringDarknessOfAThousandSouls(kiljaeden, dragon);
-    }
-
-    _inDarkness = false;
-    _shieldCastThisDarkness = false;
-    _darknessStartMs = 0;
-    _lastDarknessCastMsLeft = 0;
 
     return ExecuteOutsideDarknessOfAThousandSouls(dragon);
 }
@@ -451,47 +432,18 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
         return false;
     }
 
-    const uint32 darknessCastTimeLeft = darknessSpell->GetCastTimeRemaining();
-    bool const darknessCastReset = _lastDarknessCastMsLeft > 0 &&
-        darknessCastTimeLeft > _lastDarknessCastMsLeft + 250;
-
-    if (!_inDarkness || darknessCastReset)
+    if (darknessSpell->GetCastTimeRemaining() < 4000) // Cast Shield of the Blue at 4s remaining
     {
-        _inDarkness = true;
-        _shieldCastThisDarkness = false;
-        _darknessStartMs = getMSTime();
-    }
-
-    if (darknessCastTimeLeft > 3000)
-    {
-        if (CastKiljaedenDragonSpell(
-                dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
-        {
-            _lastDarknessCastMsLeft = darknessCastTimeLeft;
-            return true;
-        }
-
-        if (CastKiljaedenDragonSpell(
-                dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
-        {
-            _lastDarknessCastMsLeft = darknessCastTimeLeft;
-            return true;
-        }
-    }
-
-    if (!_shieldCastThisDarkness && darknessCastTimeLeft < 4500)
-    {
-        bool const castedShield = CastKiljaedenDragonSpell(
+        return CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
-
-        if (castedShield)
-            _shieldCastThisDarkness = true;
-
-        _lastDarknessCastMsLeft = darknessCastTimeLeft;
-        return castedShield;
     }
-
-    _lastDarknessCastMsLeft = darknessCastTimeLeft;
+    else if (CastKiljaedenDragonSpell(
+                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)) ||
+             CastKiljaedenDragonSpell(
+                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
+    {
+        return true;
+    }
 
     return false;
 }

@@ -426,6 +426,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
+    // Bots switch to non-combat engine and try to drink during the Fog phase
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<DrinkAction*>(action))
     {
@@ -909,6 +910,10 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    // Bots switch to non-combat engine and try to drink before KJ is attackable
+    if (dynamic_cast<DrinkAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

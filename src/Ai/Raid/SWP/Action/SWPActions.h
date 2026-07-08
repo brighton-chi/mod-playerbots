@@ -582,10 +582,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool _inDarkness = false;
-    bool _shieldCastThisDarkness = false;
-    uint32 _darknessStartMs = 0;
-    uint32 _lastDarknessCastMsLeft = 0;
     bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden, Unit* dragon);
     bool ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon);
 };

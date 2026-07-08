@@ -211,9 +211,6 @@ void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
         [now](KiljaedenArmageddon const& armageddon) {
             return !armageddon.expireMs || armageddon.expireMs <= now;
         }), armageddons.end());
-
-    if (armageddons.empty())
-        kiljaedenEncounterStates.erase(stateItr);
 }
 
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
