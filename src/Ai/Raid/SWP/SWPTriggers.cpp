@@ -460,11 +460,6 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
 
 bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
 {
-    // What happens if I force healers to attack based on "current target"?
-    // Will it prevent healing?
-    // if (botAI->IsHeal(bot))
-    //     return false;
-
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 

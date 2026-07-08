@@ -532,22 +532,16 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Eredar Twins
 
-// convert to dpsassist disable for testing, if works combine with tank assist
-float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
+float EredarTwinsDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsTank(bot))
-        return 1.0f;
-
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    /* if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<EredarTwinsMeleeJumpDownFromBalconyAction*>(action))
-    {
+    if (dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
-    } */
-    if (/*botAI->GetState() == BOT_STATE_COMBAT &&*/
-        dynamic_cast<DpsAssistAction*>(action))
+
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;
     }
@@ -637,26 +631,6 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-        return 1.0f;
-
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    if (botAI->GetState() == BOT_STATE_COMBAT &&
-        dynamic_cast<TankAssistAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
@@ -671,6 +645,9 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    if (botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
 
     if (!botAI->IsRanged(bot) && !IsAlythessTank(botAI, bot))
         return 1.0f;
