@@ -327,7 +327,8 @@ public:
             {
                 bool hasSunwellStrategy = false;
                 Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-                for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+                for (Map::PlayerList::const_iterator it = players.begin();
+                     it != players.end(); ++it)
                 {
                     Player* player = it->GetSource();
                     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
