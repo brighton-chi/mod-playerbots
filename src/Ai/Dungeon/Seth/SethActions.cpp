@@ -18,6 +18,8 @@ constexpr uint32 NPC_CHARMING_TOTEM = 20343;
 constexpr uint32 NPC_HAWK_SPIRIT = 23134;
 constexpr uint32 NPC_FALCON_SPIRIT = 23135;
 constexpr uint32 NPC_EAGLE_SPIRIT = 23136;
+const Position PILLAR_CENTER = { 23.730f, 309.230f };
+const Position PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
 }
 
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
@@ -100,7 +102,7 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
     if (_hasReachedPillarPosition == true)
         return false;
 
-    const Position position = { 35.538f, 309.573f, 25.086f };
+    const Position& position = PILLAR_POSITION;
     const float distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
@@ -147,7 +149,7 @@ bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
 
 bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
 {
-    const Position pillarCenter = { 23.730f, 309.230f };
+    const Position& pillarCenter = PILLAR_CENTER;
     float const botAngle = pillarCenter.GetAngle(bot);
 
     return MoveToPillar(pillarCenter, botAngle) || MoveAroundPillar(pillarCenter, botAngle);
@@ -201,24 +203,28 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
     botAI->InterruptSpell();
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
 {
-    const Position pillarCenter = { 23.730f, 309.230f };
-    constexpr float circleRadius = 11.0f;
+    Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
+    if (!ikiss)
+        return false;
+
+    const Position& pillarCenter = PILLAR_CENTER;
     constexpr float arcStep = 4.0f;
 
     float const botAngle = pillarCenter.GetAngle(bot);
+    float const targetAngle = pillarCenter.GetAngle(ikiss);
 
-    // Orbit clockwise to regain LOS
-    float const tangentAngle = botAngle - static_cast<float>(M_PI_2);
+    float const delta = Position::NormalizeOrientation(targetAngle - botAngle);
+    float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
+    float const tangentAngle = botAngle + direction * static_cast<float>(M_PI_2);
 
     float const moveX = bot->GetPositionX() + cos(tangentAngle) * arcStep;
     float const moveY = bot->GetPositionY() + sin(tangentAngle) * arcStep;
 
-    botAI->InterruptSpell();
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
