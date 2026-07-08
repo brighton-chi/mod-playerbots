@@ -20,7 +20,7 @@ constexpr uint32 NPC_FALCON_SPIRIT = 23135;
 constexpr uint32 NPC_EAGLE_SPIRIT = 23136;
 }
 
-bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event event)
+bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
     if (Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CHARMING_TOTEM))
         MarkTargetWithSkull(bot, totem);
@@ -28,7 +28,7 @@ bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event event)
     return false;
 }
 
-bool SethekkProphetDropTremorTotemAction::Execute(Event event)
+bool SethekkProphetDropTremorTotemAction::Execute(Event /*event*/)
 {
     if (botAI->CanCastSpell(SPELL_TREMOR_TOTEM, bot))
         return botAI->CastSpell(SPELL_TREMOR_TOTEM, bot);
@@ -36,7 +36,7 @@ bool SethekkProphetDropTremorTotemAction::Execute(Event event)
     return false;
 }
 
-bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event event)
+bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
 {
     if (Unit* frostElemental = AI_VALUE2(Unit*, "find target", "syth frost elemental"))
         MarkTargetWithSkull(bot, frostElemental);
@@ -50,7 +50,7 @@ bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event event)
     return false;
 }
 
-bool AnzuAlternateMarksOnBossAction::Execute(Event event)
+bool AnzuAlternateMarksOnBossAction::Execute(Event /*event*/)
 {
     Unit* anzu = AI_VALUE2(Unit*, "find target", "anzu");
     if (!anzu)
@@ -65,7 +65,7 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event event)
 }
 
 // Priority: Falcon (haste) > Eagle during Banish (damage all enemies) > Hawk (damage reduction)
-bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
+bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 60.0f;
     Creature* targetSpirit = nullptr;
@@ -88,7 +88,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event event)
         botAI->CastSpell(SPELL_REJUVENATION_RANK_1, targetSpirit);
 }
 
-bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event event)
+bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
@@ -127,7 +127,7 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event event)
     return false;
 }
 
-bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event event)
+bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss || !ikiss->GetVictim())
@@ -204,9 +204,9 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool TalonKingIkissMoveToWithinLosAction::Execute(Event event)
+bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
 {
-    constexpr Position pillarCenter = { 23.730f, 309.230f };
+    const Position pillarCenter = { 23.730f, 309.230f };
     constexpr float circleRadius = 11.0f;
     constexpr float arcStep = 4.0f;
 
