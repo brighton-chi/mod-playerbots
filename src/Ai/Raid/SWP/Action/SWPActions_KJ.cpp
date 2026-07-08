@@ -390,6 +390,10 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
         return false;
     }
 
+    Unit* dragon = GetKiljaedenControlledDragon(bot);
+    if (!dragon)
+        return false;
+
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
     {
         if (!_inDarkness)
@@ -399,7 +403,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
             _darknessStartMs = getMSTime();
         }
 
-        return ExecuteDuringDarknessOfAThousandSouls(kiljaeden);
+        return ExecuteDuringDarknessOfAThousandSouls(kiljaeden, dragon);
     }
 
     _inDarkness = false;
@@ -407,15 +411,12 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     _darknessStartMs = 0;
     _lastDarknessCastMsLeft = 0;
 
-    return ExecuteOutsideDarknessOfAThousandSouls();
+    return ExecuteOutsideDarknessOfAThousandSouls(dragon);
 }
 
-bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden)
+bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
+    Unit* kiljaeden, Unit* dragon)
 {
-    Unit* dragon = GetKiljaedenControlledDragon(bot);
-    if (!dragon)
-        return false;
-
     Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
         static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
     if (!darknessSpell)
@@ -495,12 +496,8 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(Unit* k
     return false;
 }
 
-bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls()
+bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
 {
-    Unit* dragon = GetKiljaedenControlledDragon(bot);
-    if (!dragon)
-        return false;
-
     if (dragon->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
         dragon->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
     {

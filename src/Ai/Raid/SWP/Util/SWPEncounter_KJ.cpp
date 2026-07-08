@@ -564,8 +564,11 @@ bool HasKiljaedenDragonAura(Player* bot)
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
-    if (!dragon || !dragon->IsAlive() || dragon->GetCharmerGUID() != bot->GetGUID())
+    if (!dragon || !dragon->IsAlive() ||
+        dragon->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
+    {
         return nullptr;
+    }
 
     return dragon;
 }

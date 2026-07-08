@@ -817,10 +817,10 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (GetKiljaedenDragonOrbUser(bot) != bot)
         return false;
 
-    constexpr uint32 orbUseGracePeriodMs = 2000;
-    if (HasKiljaedenDragonAura(bot) || GetKiljaedenControlledDragon(bot) ||
-        HasRecentKiljaedenDragonOrbUse(bot, orbUseGracePeriodMs) ||
-        !bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    constexpr uint32 orbUseGraceMs = 2000;
+    if (HasKiljaedenDragonAura(bot) || !bot->IsRooted() ||
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) ||
+        HasRecentKiljaedenDragonOrbUse(bot, orbUseGraceMs))
     {
         return false;
     }
@@ -830,5 +830,8 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 
 bool KiljaedenBotControlsDragonTrigger::IsActive()
 {
+    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+        return false;
+
     return GetKiljaedenControlledDragon(bot);
 }
