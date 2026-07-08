@@ -183,27 +183,31 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
     if (!ikiss)
         return false;
 
-    constexpr float circleRadius = 11.0f;
-    constexpr float arcStep = 4.0f;
+    constexpr float circleRadiusMin = 10.0f;
+    constexpr float circleRadiusMax = 12.0f;
+    constexpr float angularStep = M_PI / 16.0f;
 
+    float const radius = std::clamp(
+        bot->GetExactDist2d(pillarCenter), circleRadiusMin, circleRadiusMax);
     float const destAngle = pillarCenter.GetAngle(ikiss) + M_PI;
-    float const destX = pillarCenter.GetPositionX() + circleRadius * cos(destAngle);
-    float const destY = pillarCenter.GetPositionY() + circleRadius * sin(destAngle);
+
+    float const destX = pillarCenter.GetPositionX() + radius * cos(destAngle);
+    float const destY = pillarCenter.GetPositionY() + radius * sin(destAngle);
 
     if (bot->GetExactDist2d(destX, destY) < 2.0f)
         return false;
 
     float const delta = Position::NormalizeOrientation(destAngle - botAngle);
     float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
-    float const tangentAngle = botAngle + direction * static_cast<float>(M_PI_2);
+    float const targetAngle = botAngle + direction * angularStep;
 
-    float const moveX = bot->GetPositionX() + cos(tangentAngle) * arcStep;
-    float const moveY = bot->GetPositionY() + sin(tangentAngle) * arcStep;
+    float const moveX = pillarCenter.GetPositionX() + radius * cos(targetAngle);
+    float const moveY = pillarCenter.GetPositionY() + radius * sin(targetAngle);
 
     botAI->InterruptSpell();
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
@@ -213,17 +217,22 @@ bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
         return false;
 
     const Position& pillarCenter = PILLAR_CENTER;
-    constexpr float arcStep = 4.0f;
+    constexpr float angularStep = M_PI / 16.0f;
 
     float const botAngle = pillarCenter.GetAngle(bot);
     float const targetAngle = pillarCenter.GetAngle(ikiss);
+    float const radius = bot->GetExactDist2d(pillarCenter);
 
     float const delta = Position::NormalizeOrientation(targetAngle - botAngle);
-    float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
-    float const tangentAngle = botAngle + direction * static_cast<float>(M_PI_2);
 
-    float const moveX = bot->GetPositionX() + cos(tangentAngle) * arcStep;
-    float const moveY = bot->GetPositionY() + sin(tangentAngle) * arcStep;
+    if (fabs(delta) < angularStep)
+        return false;
+
+    float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
+    float const stepAngle = botAngle + direction * angularStep;
+
+    float const moveX = pillarCenter.GetPositionX() + radius * cos(stepAngle);
+    float const moveY = pillarCenter.GetPositionY() + radius * sin(stepAngle);
 
     return MoveTo(
         SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
