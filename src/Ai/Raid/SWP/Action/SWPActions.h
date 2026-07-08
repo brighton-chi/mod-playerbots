@@ -381,8 +381,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(
-        Unit* muru, Unit* entropius, Unit*& currentTarget);
+    Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
     Unit* SelectMuruEncounterTarget(
         Unit* currentTarget, uint32 entry,
         std::vector<Unit*> const& candidates) const;
@@ -481,7 +480,7 @@ public:
 protected:
     Unit* GetControlledVoidSpawn() const;
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
-    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
+    Unit* GetVoidSpawnVolleyPriorityTarget() const;
 };
 
 class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction

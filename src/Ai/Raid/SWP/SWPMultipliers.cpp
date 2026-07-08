@@ -723,7 +723,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (!muru)
         return 1.0f;
 
     if (botAI->GetState() == BOT_STATE_COMBAT &&
@@ -741,7 +741,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (muru && AI_VALUE(Unit*, "current target") == muru)
+    if (AI_VALUE(Unit*, "current target") == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
@@ -771,7 +771,7 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (!muru)
         return 1.0f;
 
     if (dynamic_cast<CastDisengageAction*>(action) ||
@@ -788,40 +788,54 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    // Remainder is checking only for validity of reach target actions
+    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
+    {
+        return 1.0f;
+    }
+
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
         return 1.0f;
     }
 
-    if (botAI->IsTank(bot))
-    {
-        if (muru && TryGetMuruDarknessEarlyState(bot, muru) &&
-            (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-             dynamic_cast<ReachTargetAction*>(action)))
-        {
-            return 0.0f;
-        }
-
+    if (!TryGetMuruDarknessActiveState(bot, muru))
         return 1.0f;
-    }
-    else if (muru && TryGetMuruDarknessActiveState(bot, muru) &&
-             (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-              dynamic_cast<ReachTargetAction*>(action)))
-    {
-        return 0.0f;
-    }
 
-    return 1.0f;
+    auto const isReachTargetSafeFromDarkness = [&](Action* action) -> bool
+    {
+        Unit* actionTarget = action->GetTarget();
+        if (!actionTarget)
+            return false;
+
+        const float targetDistFromMuru = muru->GetExactDist2d(actionTarget);
+        const Position& refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+            MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
+        const float targetDistFromRef = actionTarget->GetExactDist2d(
+            refPosition.GetPositionX(), refPosition.GetPositionY());
+        constexpr float targetDistThreshold = 20.0f;
+        return targetDistFromMuru > targetDistThreshold &&
+            targetDistFromRef < targetDistThreshold;
+    };
+
+    if (isReachTargetSafeFromDarkness(action))
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru))
+        return 1.0f;
+    else
+        return 0.0f;
 }
 
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!muru && !entropius)
+    if (!muru)
         return 1.0f;
 
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (entropius && entropius->GetHealthPct() < 95.0f)
         return 1.0f;
 

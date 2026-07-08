@@ -502,25 +502,17 @@ bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
 
 bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "entropius") && botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "entropius");
 }
 
 bool MuruBossesEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "m'uru") ||
-        AI_VALUE2(Unit*, "find target", "entropius");
+    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }
 
 bool MuruDeterminingDpsPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "m'uru") ||
-        AI_VALUE2(Unit*, "find target", "entropius");
+    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }
 
 bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
@@ -645,8 +637,10 @@ bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
         return false;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    return FindAvailableVoidSpawnForEnslave(botAI, bot, muru, entropius);
+    if (!muru)
+        return false;
+
+    return FindAvailableVoidSpawnForEnslave(botAI, bot);
 }
 
 bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
@@ -661,8 +655,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
         return false;
     }
 
-    return AI_VALUE2(Unit*, "find target", "m'uru") ||
-        AI_VALUE2(Unit*, "find target", "entropius");
+    return AI_VALUE2(Unit*, "find target", "m'uru");
 }
 
 // Kil'jaeden <The Deceiver>
