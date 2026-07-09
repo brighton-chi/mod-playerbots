@@ -666,7 +666,7 @@ bool KiljaedenEncounterHasBegunTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
-bool KiljaedenHandsSummonFelfirePortalsTrigger::IsActive()
+bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }

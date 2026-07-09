@@ -889,6 +889,32 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        return 1.0f;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    if (!mainTank || !firstAssistTank || !secondAssistTank)
+        return 1.0f;
+
+    if (bot != mainTank && bot != firstAssistTank && bot != secondAssistTank)
+        return 1.0f;
+
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<TankAssistAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 0.0f;
+}
+
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))

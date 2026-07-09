@@ -153,6 +153,8 @@ std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
 std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
 
+std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
+
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(

@@ -252,19 +252,27 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
-{
-public:
-    KiljaedenControlMovementAndTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
-    virtual float GetValue(Action* action);
-};
-
 class KiljaedenDelayCooldownsMultiplier : public Multiplier
 {
 public:
     KiljaedenDelayCooldownsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden delay cooldowns") {}
+    virtual float GetValue(Action* action);
+};
+
+class KiljaedenTanksFocusAssignedHandOnlyMultiplier : public Multiplier
+{
+public:
+    KiljaedenTanksFocusAssignedHandOnlyMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
+    virtual float GetValue(Action* action);
+};
+
+class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
+{
+public:
+    KiljaedenControlMovementAndTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
     virtual float GetValue(Action* action);
 };
 

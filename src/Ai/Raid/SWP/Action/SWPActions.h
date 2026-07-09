@@ -502,6 +502,19 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenFocusAndControlHandsOfTheDeceiverAction : public AttackAction
+{
+public:
+    KiljaedenFocusAndControlHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden focus and control hands of the deceiver") {}
+    bool Execute(Event event) override;
+
+private:
+    bool TanksPickUpTargets();
+    bool DpsAttackRtiTargets();
+    bool CastStunOnHands();
+};
+
 class KiljaedenMoveAwayFromFelfirePortalAction : public MovementAction
 {
 public:

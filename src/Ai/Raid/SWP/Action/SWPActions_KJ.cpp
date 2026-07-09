@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
+#include "RtiTargetValue.h"
 
 using namespace SunwellHelpers;
 
@@ -50,6 +51,179 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
         }
 
         return botAI->SayToRaid(text);
+    }
+
+    return false;
+}
+
+
+bool KiljaedenFocusAndControlHandsOfTheDeceiverAction::Execute(Event /*event*/)
+{
+    if (CastStunOnHands())
+        return true;
+
+    if (botAI->IsTank(bot))
+        return TanksPickUpTargets();
+
+    if (botAI->IsDps(bot))
+        return DpsAttackRtiTargets();
+
+    return false;
+}
+
+bool KiljaedenFocusAndControlHandsOfTheDeceiverAction::TanksPickUpTargets()
+{
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    if (!mainTank || !firstAssistTank || !secondAssistTank)
+        return false;
+
+    std::vector<Unit*> hands;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            hands.push_back(unit);
+        }
+    }
+
+    std::vector<Player*> const tanks = { mainTank, firstAssistTank, secondAssistTank };
+    std::vector<uint8> const rtiIndices = {
+        RtiTargetValue::starIndex,
+        RtiTargetValue::circleIndex,
+        RtiTargetValue::diamondIndex
+    };
+    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
+
+    size_t tankIndex = 0;
+    for (size_t i = 0; i < tanks.size(); ++i)
+    {
+        if (bot == tanks[i])
+        {
+            tankIndex = i;
+            break;
+        }
+    }
+
+    if (tankIndex >= tanks.size())
+        return false;
+
+    auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
+    ObjectGuid& assignedGuid = assignments[tankIndex];
+
+    Unit* assignedHand = nullptr;
+    if (!assignedGuid.IsEmpty())
+    {
+        for (Unit* hand : hands)
+        {
+            if (hand->GetGUID() == assignedGuid)
+            {
+                assignedHand = hand;
+                break;
+            }
+        }
+    }
+
+    if (!assignedHand)
+    {
+        assignedGuid = ObjectGuid::Empty;
+        if (tankIndex < hands.size())
+        {
+            assignedHand = hands[tankIndex];
+            assignedGuid = assignedHand->GetGUID();
+
+            MarkTargetWithIcon(bot, assignedHand, rtiIndices[tankIndex]);
+            SetRtiTarget(botAI, rtiNames[tankIndex], assignedHand);
+        }
+    }
+
+    if (!assignedHand)
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != assignedHand)
+        return Attack(assignedHand);
+
+    return false;
+}
+
+bool KiljaedenFocusAndControlHandsOfTheDeceiverAction::DpsAttackRtiTargets()
+{
+    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
+
+    for (std::string const& rtiName : rtiNames)
+    {
+        Unit* target = AI_VALUE2(Unit*, "rti target", rtiName);
+        if (target && target->IsAlive() &&
+            target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            if (AI_VALUE(Unit*, "current target") != target)
+                return Attack(target);
+        }
+    }
+
+    return false;
+}
+
+bool KiljaedenFocusAndControlHandsOfTheDeceiverAction::CastStunOnHands()
+{
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* hand = botAI->GetUnit(guid);
+        if (!hand || !hand->IsAlive() ||
+            hand->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            continue;
+        }
+
+        if (hand->HasUnitState(UNIT_STATE_STUNNED))
+            continue;
+
+        auto const castStun = [&](char const* spell)
+        {
+            return botAI->CanCastSpell(spell, hand) && botAI->CastSpell(spell, hand);
+        };
+
+        switch (bot->getClass())
+        {
+            case CLASS_DRUID:
+                if (castStun("bash") || castStun("maim"))
+                    return true;
+                break;
+
+            case CLASS_PALADIN:
+                if (castStun("hammer of justice"))
+                    return true;
+                break;
+
+            case CLASS_ROGUE:
+                if (castStun("kidney shot"))
+                    return true;
+                break;
+
+            case CLASS_WARLOCK:
+                if (castStun("shadowfury"))
+                    return true;
+                break;
+
+            case CLASS_WARRIOR:
+                if (castStun("concussion blow") || castStun("shockwave"))
+                    return true;
+                break;
+
+            default:
+                if (bot->getRace() == RACE_TAUREN && castStun("war stomp"))
+                    return true;
+                break;
+        }
     }
 
     return false;

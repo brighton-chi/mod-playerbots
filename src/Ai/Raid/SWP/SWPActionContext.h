@@ -181,6 +181,9 @@ public:
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
 
+        creators["kil'jaeden focus and control hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_focus_and_control_hands_of_the_deceiver;
+
         creators["kil'jaeden move away from felfire portal"] =
             &RaidSunwellActionContext::kiljaeden_move_away_from_felfire_portal;
 
@@ -383,6 +386,9 @@ private:
     // Kil'jaeden <The Deceiver>
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
         return new KiljaedenAnnounceDragonOrbUserAction(botAI);
+    }
+    static Action* kiljaeden_focus_and_control_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenFocusAndControlHandsOfTheDeceiverAction(botAI);
     }
     static Action* kiljaeden_move_away_from_felfire_portal(PlayerbotAI* botAI) {
         return new KiljaedenMoveAwayFromFelfirePortalAction(botAI);
