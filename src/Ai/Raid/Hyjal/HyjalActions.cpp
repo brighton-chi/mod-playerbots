@@ -262,7 +262,9 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     if (!anetheron)
         return false;
 
-    MarkTargetWithSquare(bot, anetheron);
+    if (MarkTargetWithSquare(bot, anetheron))
+        return true;
+
     SetRtiTarget(botAI, "square", anetheron);
 
     if (AI_VALUE(Unit*, "current target") != anetheron)
@@ -392,7 +394,9 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     if (!infernal)
         return false;
 
-    MarkTargetWithDiamond(bot, infernal);
+    if (MarkTargetWithDiamond(bot, infernal))
+        return true;
+
     SetRtiTarget(botAI, "diamond", infernal);
 
     if (AI_VALUE(Unit*, "current target") != infernal)
@@ -731,7 +735,9 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    MarkTargetWithStar(bot, azgalor);
+    if (MarkTargetWithStar(bot, azgalor))
+        return true;
+
     SetRtiTarget(botAI, "star", azgalor);
 
     if (AI_VALUE(Unit*, "current target") != azgalor)
@@ -909,7 +915,9 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
 
     if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
     {
-        MarkTargetWithCircle(bot, doomguard);
+        if (MarkTargetWithCircle(bot, doomguard))
+            return true;
+
         SetRtiTarget(botAI, "circle", doomguard);
 
         if (AI_VALUE(Unit*, "current target") != doomguard)

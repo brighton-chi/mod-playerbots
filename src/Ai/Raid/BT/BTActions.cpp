@@ -525,7 +525,8 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 
     Creature* const channeler = channelers.front();
 
-    MarkTargetWithSkull(bot, channeler);
+    if (MarkTargetWithSkull(bot, channeler))
+        return true;
 
     if (AI_VALUE(Unit*, "current target") != channeler)
         return Attack(channeler);
@@ -563,7 +564,8 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
     if (!gorefiend)
         return false;
 
-    MarkTargetWithSkull(bot, gorefiend);
+    if (MarkTargetWithSkull(bot, gorefiend))
+        return true;
 
     if (AI_VALUE(Unit*, "current target") != gorefiend)
         return Attack(gorefiend);
@@ -1427,7 +1429,9 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
                         gathios->GetPositionZ(), bot->GetOrientation());
     }
 
-    MarkTargetWithSquare(bot, gathios);
+    if (MarkTargetWithSquare(bot, gathios))
+        return true;
+
     SetRtiTarget(botAI, "square", gathios);
 
     if (AI_VALUE(Unit*, "current target") != gathios)
@@ -1498,7 +1502,9 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
                         malande->GetPositionZ(), bot->GetOrientation());
     }
 
-    MarkTargetWithStar(bot, malande);
+    if (MarkTargetWithStar(bot, malande))
+        return true;
+
     SetRtiTarget(botAI, "star", malande);
 
     if (AI_VALUE(Unit*, "current target") != malande)
@@ -1520,7 +1526,9 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
                         darkshadow->GetPositionZ(), bot->GetOrientation());
     }
 
-    MarkTargetWithCircle(bot, darkshadow);
+    if (MarkTargetWithCircle(bot, darkshadow))
+        return true;
+
     SetRtiTarget(botAI, "circle", darkshadow);
 
     if (AI_VALUE(Unit*, "current target") != darkshadow)
@@ -1563,7 +1571,9 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
         return botAI->CastSpell("spellsteal", zerevor);
     }
 
-    MarkTargetWithTriangle(bot, zerevor);
+    if (MarkTargetWithTriangle(bot, zerevor))
+        return true;
+
     SetRtiTarget(botAI, "triangle", zerevor);
 
     if (AI_VALUE(Unit*, "current target") != zerevor)

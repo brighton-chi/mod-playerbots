@@ -36,7 +36,7 @@ bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "midnight");
 }
 
@@ -50,17 +50,8 @@ bool MoroesBossEngagedByMainTankTrigger::IsActive()
 
 bool MoroesNeedTargetPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
-    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
-    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
-    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
-    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
-    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
-
-    return GetFirstAliveUnit({ dorothea, catriona, keira, rafe, robin, crispin });
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "moroes");
 }
 
 bool MaidenOfVirtueHealersAreStunnedByRepentanceTrigger::IsActive()
@@ -93,7 +84,7 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "romulo") &&
@@ -102,17 +93,8 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
-        return false;
-
-    Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
-    Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
-    Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
-    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
-    Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
-    Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
-
-    return GetFirstAliveUnit({ dorothee, tito, roar, strawman, tinhead, crone });
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "moroes");
 }
 
 bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
@@ -143,8 +125,11 @@ bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
 
 bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr) &&
-           AI_VALUE2(Unit*, "find target", "terestian illhoof");
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        return false;
+
+    Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
+    return illhoof != nullptr;
 }
 
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
@@ -164,7 +149,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 // Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
     Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
@@ -241,8 +226,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 
 bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) &&
-        !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+    if (!botAI->IsTank(bot) && !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "netherspite");
