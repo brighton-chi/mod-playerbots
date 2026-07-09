@@ -891,10 +891,19 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (botAI->IsHeal(bot))
+        return 1.0f;
+
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -903,16 +912,28 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return 1.0f;
 
-    if (bot != mainTank && bot != firstAssistTank && bot != secondAssistTank)
-        return 1.0f;
+    if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
-    if (botAI->GetState() == BOT_STATE_COMBAT &&
-        dynamic_cast<TankAssistAction*>(action))
+    if (botAI->IsTank(bot) &&
+        (dynamic_cast<TankAssistAction*>(action) ||
+         dynamic_cast<CastTauntAction*>(action) ||
+         dynamic_cast<CastChallengingShoutAction*>(action) ||
+         dynamic_cast<CastShockwaveAction*>(action) ||
+         dynamic_cast<CastCleaveAction*>(action) ||
+         dynamic_cast<CastGrowlAction*>(action) ||
+         dynamic_cast<CastSwipeBearAction*>(action) ||
+         dynamic_cast<CastChallengingRoarAction*>(action) ||
+         dynamic_cast<CastHandOfReckoningAction*>(action) ||
+         dynamic_cast<CastRighteousDefenseAction*>(action) ||
+         dynamic_cast<CastDarkCommandAction*>(action) ||
+         dynamic_cast<CastDeathAndDecayAction*>(action) ||
+         dynamic_cast<CastBloodBoilAction*>(action)))
     {
         return 0.0f;
     }
 
-    return 0.0f;
+    return 1.0f;
 }
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)

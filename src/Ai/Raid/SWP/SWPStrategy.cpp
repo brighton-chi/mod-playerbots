@@ -327,10 +327,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden announce dragon orb user", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
-        NextAction("kil'jaeden focus and control hands of the deceiver", ACTION_RAID) }));
-
-    triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
-        NextAction("kil'jaeden move away from felfire portals", ACTION_EMERGENCY + 1) }));
+        NextAction("kil'jaeden stun hands of the deceiver", ACTION_EMERGENCY),
+        NextAction("kil'jaeden mark and prioritize hands of the deceiver", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by tanks", {
         NextAction("kil'jaeden position tanks", ACTION_RAID) }));

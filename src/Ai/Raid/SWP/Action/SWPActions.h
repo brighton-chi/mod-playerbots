@@ -502,25 +502,28 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenFocusAndControlHandsOfTheDeceiverAction : public AttackAction
+class KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction : public AttackAction
 {
 public:
-    KiljaedenFocusAndControlHandsOfTheDeceiverAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden focus and control hands of the deceiver") {}
+    KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
 
 private:
-    bool TanksPickUpTargets();
-    bool DpsAttackRtiTargets();
-    bool CastStunOnHands();
+    void AssignHandsToTanks(std::vector<Unit*> const& hands, size_t myIndex);
+    bool DpsAttackPriorityTargets();
 };
 
-class KiljaedenMoveAwayFromFelfirePortalAction : public MovementAction
+class KiljaedenStunHandsOfTheDeceiverAction : public Action
 {
 public:
-    KiljaedenMoveAwayFromFelfirePortalAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden move away from felfire portal") {}
+    KiljaedenStunHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI) : Action(botAI, "kil'jaeden stun hands of the deceiver") {}
     bool Execute(Event event) override;
+
+private:
+    bool CastStunOnHand(Unit* hand);
+    bool CastSilenceOnHand(Unit* hand);
 };
 
 class KiljaedenPositionTanksAction : public AttackAction
