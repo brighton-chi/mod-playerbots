@@ -249,7 +249,6 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
-    const bool isRanged = botAI->IsRanged(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -261,7 +260,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID && GET_PLAYERBOT_AI(member) && isRanged;
+            found = member->GetMapId() == SUNWELL_MAP_ID &&
+                GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
 
             break;
         }
@@ -300,7 +300,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !isRanged ||
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -346,7 +346,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     auto const armageddonItr = kiljaedenEncounterStates.find(instanceId);
-    if (armageddonItr == kiljaedenEncounterStates.end() || armageddonItr->second.armageddons.empty())
+    if (armageddonItr == kiljaedenEncounterStates.end() ||
+        armageddonItr->second.armageddons.empty())
     {
         kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
         return;
@@ -537,8 +538,11 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
         return false;
 
     constexpr uint32 announcementResetDelayMs = 10000;
-    if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) < announcementResetDelayMs)
+    if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) <
+        announcementResetDelayMs)
+    {
         return false;
+    }
 
     stateItr->second.dragonOrbAnnouncementMs = 0;
     return true;
@@ -628,12 +632,21 @@ Player* FindBestKiljaedenDragonClusterTarget(
             continue;
 
         const float distanceToDragon = dragon->GetExactDist2d(candidate);
-        if (!bestTarget || clusterSize > bestClusterSize ||
-            (clusterSize == bestClusterSize && totalClusterSize > bestTotalClusterSize) ||
-            (clusterSize == bestClusterSize && totalClusterSize == bestTotalClusterSize &&
-             distanceToDragon < bestDistanceToDragon) ||
-            (clusterSize == bestClusterSize && totalClusterSize == bestTotalClusterSize &&
-             distanceToDragon == bestDistanceToDragon && candidate->GetGUID() < bestTarget->GetGUID()))
+
+        auto const isBetter = [&]() -> bool
+        {
+            if (!bestTarget)
+                return true;
+            if (clusterSize != bestClusterSize)
+                return clusterSize > bestClusterSize;
+            if (totalClusterSize != bestTotalClusterSize)
+                return totalClusterSize > bestTotalClusterSize;
+            if (distanceToDragon != bestDistanceToDragon)
+                return distanceToDragon < bestDistanceToDragon;
+            return candidate->GetGUID() < bestTarget->GetGUID();
+        };
+
+        if (isBetter())
         {
             bestTarget = candidate;
             bestClusterSize = clusterSize;
