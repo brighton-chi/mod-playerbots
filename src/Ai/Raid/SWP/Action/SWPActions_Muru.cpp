@@ -651,7 +651,7 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
 bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
 {
     Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    if (!berserker)
+    if (!berserker || berserker->HasUnitState(UNIT_STATE_STUNNED))
         return false;
 
     auto const castStun = [&](const char* spell)
