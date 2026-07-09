@@ -683,15 +683,28 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
         return false;
     }
 
-    if (botAI->IsAssistTank(bot) && kiljaeden->GetHealthPct() <= 85.0f)
+    if (kiljaeden->GetHealthPct() > 85.0f)
+        return true;
+
+    if (botAI->IsMainTank(bot))
+        return true;
+
+    // Remainder is to try to release assist tanks to pick up Sinister Reflections
+    // Marker for havinig just transitioned phases
+    if (kiljaeden->GetHealthPct() > 80.0f ||
+        (kiljaeden->GetHealthPct() < 55.0f && kiljaeden->GetHealthPct() > 50.0f) ||
+        (kiljaeden->GetHealthPct() < 25.0f && kiljaeden->GetHealthPct() > 20.0f))
     {
-        constexpr float searchRadius = 100.0f;
-        if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-            bot->FindNearestCreature(
-                static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-        {
-            return false;
-        }
+        return false;
+    }
+
+    // Actually found a Sinister Reflection
+    constexpr float searchRadius = 100.0f;
+    if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
+        bot->FindNearestCreature(
+            static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+    {
+        return false;
     }
 
     return true;
