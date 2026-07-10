@@ -3,11 +3,11 @@
 
 #include "Multiplier.h"
 
-class AttumenTheHuntsmanDisableTankAssistMultiplier : public Multiplier
+class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
-    AttumenTheHuntsmanDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable tank assist multiplier") {}
+    AttumenTheHuntsmanDisableAutomaticTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable automatic targeting multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -59,11 +59,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class ShadeOfAranArcaneExplosionDisableChargeMultiplier : public Multiplier
+class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
 {
 public:
-    ShadeOfAranArcaneExplosionDisableChargeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion disable charge multiplier") {}
+    ShadeOfAranArcaneExplosionRunAwayMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion run away multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -88,14 +88,6 @@ class NetherspiteWaitForDpsMultiplier : public Multiplier
 public:
     NetherspiteWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class PrinceMalchezaarDisableAvoidAoeMultiplier : public Multiplier
-{
-public:
-    PrinceMalchezaarDisableAvoidAoeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar disable avoid aoe multiplier") {}
     virtual float GetValue(Action* action);
 };
 

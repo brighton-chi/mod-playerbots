@@ -9,19 +9,20 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
+        // General
+        creators["karazhan erase encounter states"] =
+            &RaidKarazhanActionContext::karazhan_erase_encounter_states;
+
         // Trash
         creators["mana warp stun creature before warp breach"] =
             &RaidKarazhanActionContext::mana_warp_stun_creature_before_warp_breach;
 
         // Attumen the Huntsman
-        creators["attumen the huntsman mark target"] =
-            &RaidKarazhanActionContext::attumen_the_huntsman_mark_target;
+        creators["attumen the huntsman handle phase one"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_handle_phase_one;
 
-        creators["attumen the huntsman split bosses"] =
-            &RaidKarazhanActionContext::attumen_the_huntsman_split_bosses;
-
-        creators["attumen the huntsman stack behind"] =
-            &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
+        creators["attumen the huntsman handle phase two"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_handle_phase_two;
 
         creators["attumen the huntsman manage dps timer"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
@@ -34,8 +35,8 @@ public:
             &RaidKarazhanActionContext::moroes_mark_target;
 
         // Maiden of Virtue
-        creators["maiden of virtue move boss to healer"] =
-            &RaidKarazhanActionContext::maiden_of_virtue_move_boss_to_healer;
+        creators["maiden of virtue tank position boss"] =
+            &RaidKarazhanActionContext::maiden_of_virtue_tank_position_boss;
 
         creators["maiden of virtue position ranged"] =
             &RaidKarazhanActionContext::maiden_of_virtue_position_ranged;
@@ -135,19 +136,20 @@ public:
     }
 
 private:
+    // General
+    static Action* karazhan_erase_encounter_states(
+        PlayerbotAI* botAI) { return new KarazhanEraseEncounterStatesAction(botAI); }
+
     // Trash
     static Action* mana_warp_stun_creature_before_warp_breach(
         PlayerbotAI* botAI) { return new ManaWarpStunCreatureBeforeWarpBreachAction(botAI); }
 
     // Attumen the Huntsman
-    static Action* attumen_the_huntsman_mark_target(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanMarkTargetAction(botAI); }
+    static Action* attumen_the_huntsman_handle_phase_one(
+        PlayerbotAI* botAI) { return new AttumenTheHuntsmanHandlePhaseOneAction(botAI); }
 
-    static Action* attumen_the_huntsman_split_bosses(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanSplitBossesAction(botAI); }
-
-    static Action* attumen_the_huntsman_stack_behind(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }
+    static Action* attumen_the_huntsman_handle_phase_two(
+        PlayerbotAI* botAI) { return new AttumenTheHuntsmanHandlePhaseTwoAction(botAI); }
 
     static Action* attumen_the_huntsman_manage_dps_timer(
         PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageDpsTimerAction(botAI); }
@@ -160,8 +162,8 @@ private:
         PlayerbotAI* botAI) { return new MoroesMarkTargetAction(botAI); }
 
     // Maiden of Virtue
-    static Action* maiden_of_virtue_move_boss_to_healer(
-        PlayerbotAI* botAI) { return new MaidenOfVirtueMoveBossToHealerAction(botAI); }
+    static Action* maiden_of_virtue_tank_position_boss(
+        PlayerbotAI* botAI) { return new MaidenOfVirtueTankPositionBossAction(botAI); }
 
     static Action* maiden_of_virtue_position_ranged(
         PlayerbotAI* botAI) { return new MaidenOfVirtuePositionRangedAction(botAI); }

@@ -9,19 +9,20 @@ class RaidKarazhanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidKarazhanTriggerContext()
     {
+        // General
+        creators["karazhan bot is not in combat"] =
+            &RaidKarazhanTriggerContext::karazhan_bot_is_not_in_combat;
+
         // Trash
         creators["mana warp is about to explode"] =
             &RaidKarazhanTriggerContext::mana_warp_is_about_to_explode;
 
         // Attumen the Huntsman
-        creators["attumen the huntsman need target priority"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_need_target_priority;
+        creators["attumen the huntsman phase one active"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_one_active;
 
-        creators["attumen the huntsman attumen spawned"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_spawned;
-
-        creators["attumen the huntsman attumen is mounted"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_is_mounted;
+        creators["attumen the huntsman phase two active"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_two_active;
 
         creators["attumen the huntsman boss wipes aggro when mounting"] =
             &RaidKarazhanTriggerContext::attumen_the_huntsman_boss_wipes_aggro_when_mounting;
@@ -30,12 +31,12 @@ public:
         creators["moroes boss engaged by main tank"] =
             &RaidKarazhanTriggerContext::moroes_boss_engaged_by_main_tank;
 
-        creators["moroes need target priority"] =
-            &RaidKarazhanTriggerContext::moroes_need_target_priority;
+        creators["moroes dps should prioritize adds"] =
+            &RaidKarazhanTriggerContext::moroes_dps_should_prioritize_adds;
 
         // Maiden of Virtue
-        creators["maiden of virtue healers are stunned by repentance"] =
-            &RaidKarazhanTriggerContext::maiden_of_virtue_healers_are_stunned_by_repentance;
+        creators["maiden of virtue boss engaged by tanks"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_boss_engaged_by_tanks;
 
         creators["maiden of virtue holy wrath deals chain damage"] =
             &RaidKarazhanTriggerContext::maiden_of_virtue_holy_wrath_deals_chain_damage;
@@ -135,19 +136,20 @@ public:
     }
 
 private:
+    // General
+    static Trigger* karazhan_bot_is_not_in_combat(
+        PlayerbotAI* botAI) { return new KarazhanBotIsNotInCombatTrigger(botAI); }
+
     // Trash
     static Trigger* mana_warp_is_about_to_explode(
         PlayerbotAI* botAI) { return new ManaWarpIsAboutToExplodeTrigger(botAI); }
 
     // Attumen the Huntsman
-    static Trigger* attumen_the_huntsman_need_target_priority(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanNeedTargetPriorityTrigger(botAI); }
+    static Trigger* attumen_the_huntsman_phase_one_active(
+        PlayerbotAI* botAI) { return new AttumenTheHuntsmanPhaseOneActiveTrigger(botAI); }
 
-    static Trigger* attumen_the_huntsman_attumen_spawned(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenSpawnedTrigger(botAI); }
-
-    static Trigger* attumen_the_huntsman_attumen_is_mounted(
-        PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenIsMountedTrigger(botAI); }
+    static Trigger* attumen_the_huntsman_phase_two_active(
+        PlayerbotAI* botAI) { return new AttumenTheHuntsmanPhaseTwoActiveTrigger(botAI); }
 
     static Trigger* attumen_the_huntsman_boss_wipes_aggro_when_mounting(
         PlayerbotAI* botAI) { return new AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger(botAI); }
@@ -156,12 +158,12 @@ private:
     static Trigger* moroes_boss_engaged_by_main_tank(
         PlayerbotAI* botAI) { return new MoroesBossEngagedByMainTankTrigger(botAI); }
 
-    static Trigger* moroes_need_target_priority(
-        PlayerbotAI* botAI) { return new MoroesNeedTargetPriorityTrigger(botAI); }
+    static Trigger* moroes_dps_should_prioritize_adds(
+        PlayerbotAI* botAI) { return new MoroesDpsShouldPrioritizeAddsTrigger(botAI); }
 
     // Maiden of Virtue
-    static Trigger* maiden_of_virtue_healers_are_stunned_by_repentance(
-        PlayerbotAI* botAI) { return new MaidenOfVirtueHealersAreStunnedByRepentanceTrigger(botAI); }
+    static Trigger* maiden_of_virtue_boss_engaged_by_tanks(
+        PlayerbotAI* botAI) { return new MaidenOfVirtueBossEngagedByTanksTrigger(botAI); }
 
     static Trigger* maiden_of_virtue_holy_wrath_deals_chain_damage(
         PlayerbotAI* botAI) { return new MaidenOfVirtueHolyWrathDealsChainDamageTrigger(botAI); }

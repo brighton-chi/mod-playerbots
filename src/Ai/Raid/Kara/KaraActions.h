@@ -5,6 +5,14 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
+class KarazhanEraseEncounterStatesAction : public Action
+{
+public:
+    KarazhanEraseEncounterStatesAction(
+        PlayerbotAI* botAI, std::string const name = "karazhan erase encounter states") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
 {
 public:
@@ -13,28 +21,27 @@ public:
     bool Execute(Event event) override;
 };
 
-class AttumenTheHuntsmanMarkTargetAction : public AttackAction
+class AttumenTheHuntsmanHandlePhaseOneAction : public AttackAction
 {
 public:
-    AttumenTheHuntsmanMarkTargetAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman mark target") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanHandlePhaseOneAction(
+        PlayerbotAI* botAI, std::string const name = "attumen the huntsman handle phase one") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool AssistTankMoveAttumenFromGroup(Unit* midnight, Unit* attumen);
 };
 
-class AttumenTheHuntsmanSplitBossesAction : public AttackAction
+class AttumenTheHuntsmanHandlePhaseTwoAction : public AttackAction
 {
 public:
-    AttumenTheHuntsmanSplitBossesAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman split bosses") : AttackAction(botAI, name) {}
+    AttumenTheHuntsmanHandlePhaseTwoAction(
+        PlayerbotAI* botAI, std::string const name = "attumen the huntsman handle phase two") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
-};
 
-class AttumenTheHuntsmanStackBehindAction : public MovementAction
-{
-public:
-    AttumenTheHuntsmanStackBehindAction(
-        PlayerbotAI* botAI, std::string const name = "attumen the huntsman stack behind") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
+private:
+    bool CurrentTankPositionAttumen(Unit* attumen);
+    bool StackBehindAttumen(Unit* attumen);
 };
 
 class AttumenTheHuntsmanManageDpsTimerAction : public Action
@@ -61,12 +68,15 @@ public:
     bool Execute(Event event) override;
 };
 
-class MaidenOfVirtueMoveBossToHealerAction : public AttackAction
+class MaidenOfVirtueTankPositionBossAction : public AttackAction
 {
 public:
-    MaidenOfVirtueMoveBossToHealerAction(
-        PlayerbotAI* botAI, std::string const name = "maiden of virtue move boss to healer") : AttackAction(botAI, name) {}
+    MaidenOfVirtueTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "maiden of virtue tank position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveBossToStunnedHealer(Unit* stunnedHealer);
 };
 
 class MaidenOfVirtuePositionRangedAction : public MovementAction
@@ -91,6 +101,9 @@ public:
     BigBadWolfRunAwayFromBossAction(
         PlayerbotAI* botAI, std::string const name = "big bad wolf run away from boss") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    uint8 _runIndex = 0;
 };
 
 class RomuloAndJulianneMarkTargetAction : public Action

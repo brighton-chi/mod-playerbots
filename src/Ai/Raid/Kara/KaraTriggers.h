@@ -3,6 +3,14 @@
 
 #include "Trigger.h"
 
+class KarazhanBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    KarazhanBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "karazhan bot is not in combat") {}
+    bool IsActive() override;
+};
+
 class ManaWarpIsAboutToExplodeTrigger : public Trigger
 {
 public:
@@ -11,27 +19,19 @@ public:
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanNeedTargetPriorityTrigger : public Trigger
+class AttumenTheHuntsmanPhaseOneActiveTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanNeedTargetPriorityTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman need target priority") {}
+    AttumenTheHuntsmanPhaseOneActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman phase one active") {}
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanAttumenSpawnedTrigger : public Trigger
+class AttumenTheHuntsmanPhaseTwoActiveTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanAttumenSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen spawned") {}
-    bool IsActive() override;
-};
-
-class AttumenTheHuntsmanAttumenIsMountedTrigger : public Trigger
-{
-public:
-    AttumenTheHuntsmanAttumenIsMountedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman attumen is mounted") {}
+    AttumenTheHuntsmanPhaseTwoActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman phase two active") {}
     bool IsActive() override;
 };
 
@@ -51,19 +51,19 @@ public:
     bool IsActive() override;
 };
 
-class MoroesNeedTargetPriorityTrigger : public Trigger
+class MoroesDpsShouldPrioritizeAddsTrigger : public Trigger
 {
 public:
-    MoroesNeedTargetPriorityTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "moroes need target priority") {}
+    MoroesDpsShouldPrioritizeAddsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "moroes dps should prioritize adds") {}
     bool IsActive() override;
 };
 
-class MaidenOfVirtueHealersAreStunnedByRepentanceTrigger : public Trigger
+class MaidenOfVirtueBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    MaidenOfVirtueHealersAreStunnedByRepentanceTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue healers are stunned by repentance") {}
+    MaidenOfVirtueBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue boss engaged by tanks") {}
     bool IsActive() override;
 };
 
