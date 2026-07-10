@@ -11,55 +11,33 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
+// M'uru goes invisible during the Entropius phase but remains on player threat lists
+
 namespace SunwellHelpers
 {
 
-const Position MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };
-const Position MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
-const Position MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
-const Position MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
-const Position MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
+Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };
+Position const MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
+Position const MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
+Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
+Position const MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
 
 std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
-
-Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
-{
-    Creature* nearestSingularity = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-    std::list<Creature*> singularities;
-    bot->GetCreatureListWithEntryInGrid(
-        singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
-
-    for (Creature* singularity : singularities)
-    {
-        if (!singularity || !singularity->IsAlive())
-            continue;
-
-        float distance = bot->GetExactDist2d(singularity);
-        if (distance < nearestDistance)
-        {
-            nearestDistance = distance;
-            nearestSingularity = singularity;
-        }
-    }
-
-    return nearestSingularity;
-}
 
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 {
     if (!muru)
         return false;
 
-    const uint32 instanceId = bot->GetInstanceId();
-    const uint32 now = getMSTime();
-    MuruDarknessState& state = muruDarknessStates[instanceId];
     constexpr uint32 darknessPreEffectMs = 3000;
     constexpr uint32 darknessCastMs = 2000;
     constexpr uint32 darknessPostCastDangerMs = 18000;
     constexpr uint32 darknessTotalMs =
         darknessPreEffectMs + darknessCastMs + darknessPostCastDangerMs;
+    uint32 const instanceId = bot->GetInstanceId();
+    uint32 const now = getMSTime();
+    MuruDarknessState& state = muruDarknessStates[instanceId];
 
     if (Aura* darknessPreEffect = muru->GetAura(
             static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_PRE_EFFECT)))
@@ -68,10 +46,10 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         if (remainingPreEffectMs < 0)
             remainingPreEffectMs = darknessPreEffectMs;
 
-        const uint32 remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
-        const uint32 elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
+        uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
+        uint32 const elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
             darknessPreEffectMs - remainingPreEffect : 0;
-        const uint32 startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
+        uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
 
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
             state.startMs = startMs;
@@ -83,7 +61,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     if (muru->HasUnitState(UNIT_STATE_CASTING) &&
         muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS)))
     {
-        const uint32 startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
+        uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
             state.startMs = startMs;
 
@@ -107,9 +85,8 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
     if (stateItr == muruDarknessStates.end())
         return false;
 
-    const uint32 now = getMSTime();
-    return stateItr->second.startMs < now &&
-           now - stateItr->second.startMs < earlyWindowMs;
+    uint32 const now = getMSTime();
+    return stateItr->second.startMs < now && now - stateItr->second.startMs < earlyWindowMs;
 }
 
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)
@@ -153,25 +130,21 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
         }
     };
 
-    for (const ObjectGuid& guid : units)
+    for (ObjectGuid const& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
         considerTarget(unit);
     }
 }
 
-Creature* FindAvailableVoidSpawnForEnslave(
-    PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius)
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot)
 {
-    if (!muru && !entropius)
-        return nullptr;
-
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
     auto const& units =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (const ObjectGuid& guid : units)
+    for (ObjectGuid const& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive() ||
@@ -194,6 +167,30 @@ Creature* FindAvailableVoidSpawnForEnslave(
     }
 
     return bestSpawn;
+}
+
+Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
+{
+    Creature* nearestSingularity = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    std::list<Creature*> singularities;
+    bot->GetCreatureListWithEntryInGrid(
+        singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
+
+    for (Creature* singularity : singularities)
+    {
+        if (!singularity || !singularity->IsAlive())
+            continue;
+
+        float distance = bot->GetExactDist2d(singularity);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestSingularity = singularity;
+        }
+    }
+
+    return nearestSingularity;
 }
 
 }

@@ -50,12 +50,14 @@ struct KalecgosEncounterState
     std::unordered_map<ObjectGuid, uint8> playerToGroup;
 };
 
-extern const Position KALECGOS_TANK_POSITION;
-extern const Position KALECGOS_INITIAL_RANGED_POSITION;
+extern Position const KALECGOS_TANK_POSITION;
+extern Position const KALECGOS_INITIAL_RANGED_POSITION;
 
 extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 
+bool IsExhausted(Player* bot);
+bool IsInSpectralRealm(Player* bot);
 bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
 void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
 Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
@@ -63,7 +65,7 @@ Player* GetKalecgosReplacementTank(PlayerbotAI* botAI, Player* bot);
 bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot);
 void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
-void RecordKalecgosNormalRealmEnter(Player* bot);
+void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp);
 
 }
 

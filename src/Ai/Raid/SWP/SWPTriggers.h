@@ -78,11 +78,11 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosHumanoidFormTanksSathrovarrTrigger : public Trigger
+class KalecgosHumanoidKalecTanksSathrovarrTrigger : public Trigger
 {
 public:
-    KalecgosHumanoidFormTanksSathrovarrTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos humanoid form tanks sathrovarr") {}
+    KalecgosHumanoidKalecTanksSathrovarrTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos humanoid kalec tanks sathrovarr") {}
     bool IsActive() override;
 };
 
@@ -194,11 +194,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystBossSummonsDemonicVaporTrigger : public Trigger
+class FelmystDemonicVaporTrailsAreActiveTrigger : public Trigger
 {
 public:
-    FelmystBossSummonsDemonicVaporTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst boss summons demonic vapor") {}
+    FelmystDemonicVaporTrailsAreActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst demonic vapor trails are active") {}
     bool IsActive() override;
 };
 
@@ -223,6 +223,14 @@ class FelmystMeleeCannotReachBossTrigger : public Trigger
 public:
     FelmystMeleeCannotReachBossTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "felmyst melee cannot reach boss") {}
+    bool IsActive() override;
+};
+
+class FelmystPlayerIsCharmedByFogTrigger : public Trigger
+{
+public:
+    FelmystPlayerIsCharmedByFogTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst player is charmed by fog") {}
     bool IsActive() override;
 };
 
@@ -300,6 +308,14 @@ public:
     bool IsActive() override;
 };
 
+class EredarTwinsSacrolashVictimHasConflagrationTrigger : public Trigger
+{
+public:
+    EredarTwinsSacrolashVictimHasConflagrationTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "eredar twins sacrolash victim has conflagration") {}
+    bool IsActive() override;
+};
+
 // M'uru
 
 class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public Trigger
@@ -358,11 +374,11 @@ public:
     bool IsActive() override;
 };
 
-class MuruEntropiusMakesMiniDarknessTrigger : public Trigger
+class MuruEntropiusSpawnsDarknessPoolsTrigger : public Trigger
 {
 public:
-    MuruEntropiusMakesMiniDarknessTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius makes mini darkness") {}
+    MuruEntropiusSpawnsDarknessPoolsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "m'uru entropius spawns darkness pools") {}
     bool IsActive() override;
 };
 
@@ -432,19 +448,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenHandsSummonFelfirePortalsTrigger : public Trigger
+class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
 {
 public:
-    KiljaedenHandsSummonFelfirePortalsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands summon felfire portals") {}
-    bool IsActive() override;
-};
-
-class KiljaedenItsRainingMeteorsTrigger : public Trigger
-{
-public:
-    KiljaedenItsRainingMeteorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden its raining meteors") {}
+    KiljaedenHandsOfTheDeceiverAreActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
     bool IsActive() override;
 };
 
@@ -456,19 +464,19 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenSaysChaosDestructionOblivionTrigger : public Trigger
-{
-public:
-    KiljaedenSaysChaosDestructionOblivionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!") {}
-    bool IsActive() override;
-};
-
 class KiljaedenBossEngagedByMeleeTrigger : public Trigger
 {
 public:
     KiljaedenBossEngagedByMeleeTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by melee") {}
+    bool IsActive() override;
+};
+
+class KiljaedenBossEngagedByRangedTrigger : public Trigger
+{
+public:
+    KiljaedenBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by ranged") {}
     bool IsActive() override;
 };
 
@@ -480,11 +488,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenBossEngagedByRangedTrigger : public Trigger
+class KiljaedenSaysChaosDestructionOblivionTrigger : public Trigger
 {
 public:
-    KiljaedenBossEngagedByRangedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden boss engaged by ranged") {}
+    KiljaedenSaysChaosDestructionOblivionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!") {}
     bool IsActive() override;
 };
 

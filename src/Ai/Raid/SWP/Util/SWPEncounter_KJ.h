@@ -41,6 +41,14 @@ struct KiljaedenDarknessShieldState
     uint32 lastDarknessCastMsLeft = 0;
 };
 
+struct KiljaedenEncounterState
+{
+    std::vector<KiljaedenArmageddon> armageddons;
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    std::unordered_map<ObjectGuid, uint8> rangedArmageddonAssignments;
+    uint32 dragonOrbAnnouncementMs = 0;
+};
+
 constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
@@ -52,33 +60,33 @@ constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
 extern uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4];
 
-extern const Position KILJAEDEN_CENTER_POSITION;
-extern const Position KILJAEDEN_TANK_POSITION;
-extern const Position KILJAEDEN_S_MELEE_POSITION;
-extern const Position KILJAEDEN_E_MELEE_POSITION;
-extern const Position KILJAEDEN_DARKNESS_POSITION;
+extern Position const KILJAEDEN_CENTER_POSITION;
+extern Position const KILJAEDEN_TANK_POSITION;
+extern Position const KILJAEDEN_S_MELEE_POSITION;
+extern Position const KILJAEDEN_E_MELEE_POSITION;
+extern Position const KILJAEDEN_DARKNESS_POSITION;
 
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-extern std::unordered_map<uint32, std::vector<KiljaedenArmageddon>> kiljaedenArmageddons;
-extern std::unordered_map<uint32, uint32> kiljaedenDragonOrbAnnouncementTimes;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> kiljaedenRangedArmageddonAssignments;
+extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
+extern std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
+extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
-void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
-bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
+bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
-void RecordKiljaedenDragonOrbUse(Player* bot);
+bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
-void ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
+bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
-Player* FindBestKiljaedenDragonClusterTarget(PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId);
+Player* FindBestKiljaedenDragonClusterTarget(
+    PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId);
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
 
 }

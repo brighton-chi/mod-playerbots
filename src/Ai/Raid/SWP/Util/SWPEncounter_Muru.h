@@ -37,21 +37,21 @@ struct MuruDarknessState
     uint32 expireMs = 0;
 };
 
-extern const Position MURU_STACK_POSITION;
-extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
-extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
-extern const Position MURU_CENTER_POSITION;
-extern const Position MURU_ENTRANCE_POSITION;
+extern Position const MURU_STACK_POSITION;
+extern Position const MURU_VOID_SENTINEL_N_TANK_POSITION;
+extern Position const MURU_VOID_SENTINEL_E_TANK_POSITION;
+extern Position const MURU_CENTER_POSITION;
+extern Position const MURU_ENTRANCE_POSITION;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
+    muruVoidSentinelTankAssignments;
 
-Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
-Creature* FindAvailableVoidSpawnForEnslave(
-    PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot);
+Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 
 }
 

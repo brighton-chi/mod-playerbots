@@ -91,6 +91,20 @@ struct FelmystFogCrateStuckState
     uint32 sampleMs = 0;
 };
 
+struct FelmystEncounterState
+{
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    FelmystIncomingEncapsulateState incomingEncapsulate;
+    bool encapsulateOccurredThisGroundPhase = false;
+    std::unordered_map<ObjectGuid, uint8> demonicVaporRegionIndices;
+    uint8 demonicVaporUsedRegionMask = 0;
+    uint8 demonicVaporFirstRegionIndex = 0;
+    FelmystFogOfCorruptionState fogOfCorruption;
+    FelmystFogPassState fogPass;
+    time_t landingDpsWaitTimer = 0;
+    time_t landingTouchdownTimer = 0;
+};
+
 constexpr float FELMYST_ENCAPSULATE_SAFE_DISTANCE = 20.0f;
 constexpr float FELMYST_FOG_SAFE_SPOT_ARRIVAL_DISTANCE = 8.0f;
 constexpr float FELMYST_FOG_CURRENT_POINT_MATCH_DISTANCE = 3.0f;
@@ -100,56 +114,35 @@ constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 constexpr float FELMYST_RANGED_SIDE_DISTANCE = 24.0f;
 constexpr uint32 FELMYST_INCOMING_ENCAPSULATE_DELAY_MS = 500;
 
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    felmystRangedAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    felmystDemonicVaporRegionIndices;
-extern std::unordered_map<uint32, uint8>
-    felmystDemonicVaporUsedRegionMasks;
-extern std::unordered_map<uint32, uint8>
-    felmystDemonicVaporFirstRegionIndices;
-extern std::unordered_map<uint32, FelmystFogOfCorruptionState>
-    felmystFogOfCorruptionStates;
-extern std::unordered_map<uint32, FelmystFogPassState>
-    felmystFogPassStates;
-extern std::unordered_map<uint32, bool>
-    felmystEncapsulateOccurredThisGroundPhase;
-extern std::unordered_map<uint32, FelmystIncomingEncapsulateState>
-    felmystIncomingEncapsulateStates;
-extern std::unordered_map<uint32, time_t> felmystLandingDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> felmystLandingTouchdownTimer;
+extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
-void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
-void RecordFelmystIncomingEncapsulateTarget(
-    Player* target, uint32 durationMs = 3000);
-Position const& GetFelmystMainTankGroundPosition(Player* player);
+Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
-    Position& position);
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
 FelmystGroundStack GetClosestFelmystGroundStack(
     PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
-Creature* GetFelmystDemonicVaporSummonedByBot(Player* carrier);
+void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
+bool TryGetFelmystRangedPosition(
+    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
+Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
-bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
 bool TryGetFelmystFogSafeDestinations(
     Player* bot, FelmystFogLane dangerLane, std::array<Position, 3>& destinations,
     uint8& destinationCount);
 bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination);
+bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane);
-bool TryGetFelmystFogOfCorruptionStageState(
-    Unit* felmyst, FelmystFogOfCorruptionState& state);
+bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptionState& state);
 bool TryGetActiveFelmystFogOfCorruptionState(
     Player* bot, Unit* felmyst, FelmystFogOfCorruptionState& state);
-Unit* GetNearestFelmystFogOfCorruptionCharmedTarget(Player* bot);
-Unit* GetNearestFelmystDemonicVaporHazard(Player* bot);
+void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
-bool TryGetFelmystRangedPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
+Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
 
 }
 

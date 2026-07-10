@@ -50,7 +50,18 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL;
+    if (sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
+        bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || botAI->IsRealPlayer())
+    {
+        return true;
+    }
+
+    LootObjectStack* lootStack = AI_VALUE(LootObjectStack*, "available loot");
+    if (!lootStack)
+        return false;
+
+    LootObject nearest = lootStack->GetLoot(sPlayerbotAIConfig.lootDistance);
+    return !nearest.IsEmpty() && nearest.skillId != SKILL_NONE;
 }
 
 enum ProfessionSpells

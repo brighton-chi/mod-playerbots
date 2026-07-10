@@ -26,33 +26,34 @@ constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
 
 struct EredarTwinsIncomingConflagrationState
 {
-	ObjectGuid targetGuid = ObjectGuid::Empty;
-	uint32 delayMs = 0;
-	uint32 expireMs = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 delayMs = 0;
+    uint32 expireMs = 0;
 };
 
 constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 500;
 
-extern const Position SACROLASH_TANK_POSITION;
-extern const Position EREDAR_TWINS_P1_RANGED_POSITION;
-extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
-extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+extern Position const SACROLASH_TANK_POSITION;
+extern Position const EREDAR_TWINS_P1_RANGED_POSITION;
+extern Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION;
+extern Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
-bool IsSacrolashTank(PlayerbotAI* botAI, Player* bot);
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
-bool ShouldHoldSacrolashThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess, Unit* sacrolash);
-bool ShouldHoldAlythessThreat(PlayerbotAI* botAI, Player* bot, Unit* alythess);
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
-bool IsAlythessTankPositionSafe(Player* bot, const Position& position);
+bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
+bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
+bool ShouldHoldTwinThreat(
+    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
+    bool (*isTwinTank)(PlayerbotAI*, Player*));
+bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);
-bool IsEredarTwinsConflagrationTarget(Player* bot);
+Player* GetEredarTwinsConflagrationTarget(Player* bot);
 
 }
 

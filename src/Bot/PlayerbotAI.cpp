@@ -1626,12 +1626,12 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "blacktemple", "bwl", "karazhan", "gruulslair", "hyjal", "icc",
-        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "sunwell", "tbc-ac",
-        "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk",
-        "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos",
-        "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc",
-        "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
+        "aq20", "blacktemple", "bwl", "karazhan", "gruulslair", "hyjal", "icc", "magtheridon",
+        "moltencore", "naxx", "onyxia", "rs", "ssc", "sunwell", "tbc-ac", "tbc-hr", "tbc-seth",
+        "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe",
+        "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
+        "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh",
+        "zulaman"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1664,6 +1664,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 534:
             strategyName = "hyjal";  // The Battle for Mount Hyjal (Hyjal Summit)
             break;
+        case 543:
+            strategyName = "tbc-hr";  // Hellfire Citadel: Hellfire Ramparts
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -1673,8 +1676,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep: The Eye
             break;
+        case 556:
+            strategyName = "tbc-seth";  // Auchindoun: Sethekk Halls
+            break;
         case 558:
-            strategyName = "tbc-ac"; //Auchindoun: Auchenai Crypts
+            strategyName = "tbc-ac";  // Auchindoun: Auchenai Crypts
             break;
         case 564:
             strategyName = "blacktemple";  // Black Temple
@@ -1750,6 +1756,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 668:
             strategyName = "wotlk-hor";  // Halls of Reflection
+            break;
+        case 724:
+            strategyName = "rs";  // Ruby Sanctum
             break;
         default:
             break;
@@ -2044,7 +2053,7 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     if (!IsValidUnit(unit))
         return false;
 
-    bool isMT = IsMainTank(bot);
+    bool isMT = IsExplicitMainTank(bot);
     Unit* victim = unit->GetVictim();
     if (victim && (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && IsTank(victim->ToPlayer()))))
     {
@@ -2384,7 +2393,6 @@ ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
     if (!group)
         return ObjectGuid::Empty;
 
-    // Check for main tank flag
     Group::MemberSlotList const& slots = group->GetMemberSlots();
     for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
     {
@@ -2392,7 +2400,6 @@ ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
             return itr->guid;
     }
 
-    // Fallback if no flag is set: return the first alive tank
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -2411,6 +2418,20 @@ bool PlayerbotAI::IsMainTank(Player* player)
 
     ObjectGuid const mainTankGuid = GetMainTankGuid(group);
     return !mainTankGuid.IsEmpty() && player->GetGUID() == mainTankGuid;
+}
+
+bool PlayerbotAI::IsExplicitMainTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return false;
+
+    for (Group::member_citerator itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); ++itr)
+    {
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return player->GetGUID() == itr->guid;
+    }
+    return false;
 }
 
 bool PlayerbotAI::IsBotMainTank(Player* player)

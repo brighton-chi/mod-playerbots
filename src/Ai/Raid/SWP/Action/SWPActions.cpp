@@ -19,11 +19,11 @@
 
 using namespace SunwellHelpers;
 
-bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
+bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
 {
-    const ObjectGuid guid = bot->GetGUID();
-    const uint32 instanceId = bot->GetInstanceId();
-    const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    ObjectGuid const guid = bot->GetGUID();
+    uint32 const instanceId = bot->GetInstanceId();
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
 
     bool erased = false;
 
@@ -54,63 +54,26 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             erased = true;
 
-        if (isMechanicTracker &&
-            brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
-        {
+        if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
             erased = true;
-        }
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst") &&
+        felmystEncounterStates.erase(instanceId) > 0)
     {
-        if (felmystRangedAssignments.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystIncomingEncapsulateStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystEncapsulateOccurredThisGroundPhase.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystFogOfCorruptionStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystFogPassStates.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystDemonicVaporRegionIndices.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystDemonicVaporFirstRegionIndices.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystLandingDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
-
-        if (felmystLandingTouchdownTimer.erase(instanceId) > 0)
-            erased = true;
+        erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED)))
-        {
-            bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_FLAME_TOUCHED));
+        if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
             erased = true;
-        }
 
-        if (isMechanicTracker)
-        {
-            if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
-                erased = true;
-
-            if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
-                erased = true;
-        }
+        if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "m'uru") &&
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru") &&
         !AI_VALUE2(Unit*, "find target", "entropius"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
@@ -120,23 +83,19 @@ bool SunwellPlateauEraseTimersAndTrackersAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
+        kiljaedenEncounterStates.erase(instanceId) > 0)
     {
-        if (kiljaedenArmageddons.erase(instanceId) > 0)
-            erased = true;
-
-        if (botAI->IsRanged(bot) &&
-            kiljaedenRangedArmageddonAssignments.erase(instanceId) > 0)
-        {
-            erased = true;
-        }
+        erased = true;
     }
 
-    if (isMechanicTracker &&
-        !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
-        ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
+        if (ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
+            erased = true;
+
+        if (kiljaedenHandTankAssignments.erase(instanceId) > 0)
+            erased = true;
     }
 
     return erased;
@@ -174,7 +133,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     else
     {
         constexpr float safeDistance = 20.0f;
-        const float currentDistance = bot->GetDistance(volatileFiend);
+        float const currentDistance = bot->GetDistance(volatileFiend);
         if (currentDistance < safeDistance)
         {
             botAI->InterruptSpell();
