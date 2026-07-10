@@ -7,6 +7,8 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
+#include <array>
+
 namespace
 {
 constexpr uint32 SETHEKK_HALLS_MAP_ID       = 556;
@@ -39,12 +41,15 @@ bool SethekkProphetDropTremorTotemAction::Execute(Event /*event*/)
 
 bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
 {
-    for (auto const& name : {
+    std::array<const char*, 4> const elementals =
+    {
         "syth frost elemental",
         "syth shadow elemental",
         "syth arcane elemental",
         "syth fire elemental"
-    })
+    };
+
+    for (auto const& name : elementals)
     {
         if (Unit* elemental = AI_VALUE2(Unit*, "find target", name))
             return MarkTargetWithSkull(bot, elemental);
@@ -71,7 +76,10 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     constexpr float searchRadius = 60.0f;
     Creature* targetSpirit = nullptr;
 
-    for (uint32 entry : { NPC_FALCON_SPIRIT, NPC_HAWK_SPIRIT, NPC_EAGLE_SPIRIT })
+    std::array<uint32, 3> const spiritEntries =
+        { NPC_FALCON_SPIRIT, NPC_HAWK_SPIRIT, NPC_EAGLE_SPIRIT };
+
+    for (uint32 entry : spiritEntries)
     {
         Creature* spirit = bot->FindNearestCreature(entry, searchRadius, true);
         if (spirit && !spirit->GetAuraEffect(
