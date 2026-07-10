@@ -10,7 +10,7 @@
 namespace
 {
 constexpr uint32 SETHEKK_HALLS_MAP_ID = 556;
-constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
+constexpr uint32 SPELL_ARCANE_BUBBLE  = 9438;
 }
 
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()

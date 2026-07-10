@@ -17,6 +17,7 @@
 namespace
 {
 constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
+constexpr uint32 SPELL_SPELL_BOMB    = 40303;
 }
 
 float SethekkProphetUseTremorTotemMultiplier::GetValue(Action* action)
@@ -43,7 +44,6 @@ float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
     if (bot->getPowerType() != POWER_MANA || botAI->IsTank(bot))
         return 1.0f;
 
-    constexpr uint32 SPELL_SPELL_BOMB = 40303;
     if (!bot->HasAura(SPELL_SPELL_BOMB))
         return 1.0f;
 

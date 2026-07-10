@@ -24,8 +24,9 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (!watcher)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
-            MarkTargetWithSkull(bot, watcher);
+    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID) &&
+        MarkTargetWithSkull(bot, watcher))
+        return true;
 
     SetRtiTarget(botAI, "skull", watcher);
 
@@ -70,8 +71,9 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     if (!hound)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
-            MarkTargetWithSkull(bot, hound);
+    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID) &&
+        MarkTargetWithSkull(bot, hound))
+        return true;
 
     SetRtiTarget(botAI, "skull", hound);
 
