@@ -178,7 +178,7 @@ void KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::AssignHandsToTanks(
         assignedGuid = hand->GetGUID();
 
         if (MarkTargetWithIcon(bot, hand, rtiIndices[myIndex]))
-            return true;
+            return;
 
         SetRtiTarget(botAI, rtiNames[myIndex], hand);
     }
