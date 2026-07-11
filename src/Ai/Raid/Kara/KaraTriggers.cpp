@@ -67,13 +67,14 @@ bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
 
 bool BigBadWolfBossEngagedByTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) ||
-        bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD)))
-    {
+    if (!botAI->IsTank(bot))
         return false;
-    }
 
-    return AI_VALUE2(Unit*, "find target", "the big bad wolf");
+    if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
+        return false;
+
+    return !bot->HasAura(
+        static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
 bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
@@ -93,8 +94,26 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "moroes");
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        return false;
+
+    static const std::array<const char*, 6> ozTargets =
+    {
+        "dorothee",
+        "tito",
+        "roar",
+        "strawman",
+        "tinhead",
+        "the crone"
+    };
+
+    for (const char* name : ozTargets)
+    {
+        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+            return true;
+    }
+
+    return false;
 }
 
 bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
@@ -110,10 +129,7 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "the curator");
+    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
 
 bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
@@ -135,7 +151,8 @@ bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "shade of aran") && IsFlameWreathActive(botAI, bot);
+    return AI_VALUE2(Unit*, "find target", "shade of aran") &&
+        IsFlameWreathActive(botAI, bot);
 }
 
 // Exclusion of Banish is so the player may Banish elementals if they wish
@@ -233,18 +250,19 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 
 bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
         return false;
 
     if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE)))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    return !botAI->IsMainTank(bot);
 }
 
 bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    return botAI->IsMainTank(bot) &&
+        AI_VALUE2(Unit*, "find target", "prince malchezaar");
 }
 
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
@@ -274,9 +292,8 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    return mainTank &&
-        !mainTank->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)) &&
-        botAI->CanCastSpell("fear ward", mainTank);
+    return mainTank && !mainTank->HasAura(
+        static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD));
 }
 
 bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()
@@ -297,12 +314,18 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
-    const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
-    const time_t now = std::time(nullptr);
+    uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
+    time_t const now = std::time(nullptr);
     constexpr uint8 flightPhaseDurationSeconds = 35;
 
-    return nightbaneFlightPhaseStartTimer.find(instanceId) != nightbaneFlightPhaseStartTimer.end() &&
-           (now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds);
+    if (nightbaneFlightPhaseStartTimer.find(instanceId) ==
+        nightbaneFlightPhaseStartTimer.end())
+    {
+        return false;
+    }
+
+    return now - nightbaneFlightPhaseStartTimer[instanceId] <
+        flightPhaseDurationSeconds;
 }
 
 bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()

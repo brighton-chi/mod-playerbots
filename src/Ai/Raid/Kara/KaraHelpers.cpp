@@ -29,7 +29,6 @@ const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
     { -10944.495f, -2123.857f, 92.180f },
 };
 
-const Position BIG_BAD_WOLF_BOSS_POSITION = { -10913.391f, -1773.508f, 90.477f };
 const Position BIG_BAD_WOLF_RUN_POSITION[4] =
 {
     { -10875.456f, -1779.036f, 90.477f },

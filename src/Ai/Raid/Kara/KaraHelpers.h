@@ -96,7 +96,6 @@ extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 extern std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
 extern const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
-extern const Position BIG_BAD_WOLF_BOSS_POSITION;
 extern const Position BIG_BAD_WOLF_RUN_POSITION[4];
 extern const Position NIGHTBANE_TRANSITION_BOSS_POSITION;
 extern const Position NIGHTBANE_FINAL_BOSS_POSITION;
