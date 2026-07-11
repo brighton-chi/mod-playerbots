@@ -3,11 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+
+#include <array>
+
 #include "SethActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-
-#include <array>
 
 namespace
 {

@@ -3,9 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "SethTriggers.h"
 #include "SethStrategy.h"
 #include "SethMultipliers.h"
+#include "SethTriggers.h"
 
 void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
