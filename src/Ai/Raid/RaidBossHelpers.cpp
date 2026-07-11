@@ -114,6 +114,8 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId)
         {
             continue;
         }
+
+        return member == bot;
     }
 
     return false;
