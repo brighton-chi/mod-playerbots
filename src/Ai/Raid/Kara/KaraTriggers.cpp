@@ -22,7 +22,7 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
-        return false
+        return false;
 
     return !GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
@@ -31,7 +31,7 @@ bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActive()
 bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
-        return false
+        return false;
 
     return GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
@@ -145,7 +145,8 @@ bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
         return false;
 
     Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
-    return elemental && !elemental->HasAura(SPELL_WARLOCK_BANISH);
+    return elemental && !elemental->HasAura(
+        static_cast<uint32>(KarazhanSpells::SPELL_WARLOCK_BANISH));
 }
 
 bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
@@ -165,7 +166,7 @@ bool NetherspiteRedBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL, searchRadius));
+        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), searchRadius);
 }
 
 bool NetherspiteBlueBeamIsActiveTrigger::IsActive()
@@ -176,7 +177,7 @@ bool NetherspiteBlueBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL, searchRadius));
+        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), searchRadius);
 }
 
 bool NetherspiteGreenBeamIsActiveTrigger::IsActive()
@@ -187,7 +188,7 @@ bool NetherspiteGreenBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL, searchRadius));
+        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), searchRadius);
 }
 
 bool NetherspiteBotIsNotBeamBlockerTrigger::IsActive()

@@ -22,10 +22,10 @@ float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* ac
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
         return 1.0f;
 
-    if (bot->GetState() == BOT_STATE_NONCOMBAT)
-        return 1.0f
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_<DpsAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -61,7 +61,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* attumen = GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (!attumenMounted)
+    if (!attumen)
         return 1.0f;
 
     if (botAI->IsMainTank(bot))
@@ -105,7 +105,7 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "the curator"))
         return 1.0f;
 
-    if (bot->GetState() == BOT_STATE_NON_COMBAT)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))

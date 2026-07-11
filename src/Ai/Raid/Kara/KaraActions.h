@@ -76,7 +76,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveBossToStunnedHealer(Unit* stunnedHealer);
+    bool MoveBossToStunnedHealer(Unit* healer);
 };
 
 class MaidenOfVirtuePositionRangedAction : public MovementAction

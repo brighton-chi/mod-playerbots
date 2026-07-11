@@ -15,7 +15,7 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
 
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
+    bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
 
     bool erased = false;
 
@@ -85,15 +85,15 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 
 bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 {
-    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight")
+    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     if (!midnight)
         return false;
 
     if (botAI->IsAssistTank(bot))
     {
         Unit* attumen = GetFirstAliveUnitByEntry(
-            static_cast<uint32>(KarazhanNpcs::botAI, NPC_ATTUMEN_THE_HUNTSMAN));
-        if (attumen && AssistTankMoveAttumenFromGroup(Unit* midnight, Unit* attumen))
+            botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN));
+        if (attumen && AssistTankMoveAttumenFromGroup(midnight, attumen))
             return true;
     }
 
@@ -123,7 +123,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
     Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
+        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
     if (!attumen)
         return false;
 
@@ -131,9 +131,9 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
         return Attack(attumen);
 
     if ((botAI->IsTank(bot) && attumen->GetVictim() == bot) || botAI->IsMainTank(bot))
-        return CurrentTankPositionAttumen(Unit* attumen);
+        return CurrentTankPositionAttumen(attumen);
 
-    return StackBehindAttumen(Unit* attumen);
+    return StackBehindAttumen(attumen);
 }
 
 bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* attumen)
@@ -154,7 +154,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        KARAZHAN_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -251,7 +251,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Unit* stunnedHealer = nullptr;
+    Unit* healer = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -261,12 +261,12 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
             continue;
         }
 
-        stunnedHealer = member;
+        healer = member;
         break;
     }
 
-    if (stunnedHealer)
-        return MoveBossToHealer(stunnedHealer);
+    if (healer)
+        return MoveBossToStunnedHealer(healer);
 
     Position const tankPosition = { -10945.881f, -2103.782f, 92.712f };
     float distanceToPosition = maiden->GetExactDist2d(tankPosition);
@@ -286,7 +286,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* stunnedHealer)
+bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* healer)
 {
     constexpr float endDistanceFromHealer = 6.0;
     float angle = healer->GetOrientation();
@@ -302,7 +302,7 @@ bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* stunned
 // Spread out ranged DPS between the pillars
 bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup()
+    Group* group = bot->GetGroup();
     if (!group)
         return false;
 
@@ -549,11 +549,10 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 20.0f;
-    float distance = bot->GetDistance2d(aran);
+    float const distance = bot->GetDistance2d(aran);
     if (distance < safeDistance)
     {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        botAI->InterruptSpell();
         return MoveAway(aran, safeDistance - distance);
     }
 
@@ -661,7 +660,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         return false;
 
     Unit* redPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), 150.0f);
     if (!redPortal)
         return false;
 
@@ -717,7 +716,8 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     return false;
 }
 
-Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* netherspite, Unit* portal, float distanceFromBoss)
+Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(
+    Unit* netherspite, Unit* portal, float distanceFromBoss)
 {
     float bx = netherspite->GetPositionX();
     float by = netherspite->GetPositionY();
@@ -749,7 +749,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         return false;
 
     Unit* bluePortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), 150.0f);
     if (!bluePortal)
         return false;
 
@@ -843,7 +843,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         return false;
 
     Unit* greenPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), 150.0f);
     if (!greenPortal)
         return false;
 
@@ -940,11 +940,11 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 
     std::vector<BeamAvoid> beams;
     Unit* redPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), 150.0f);
     Unit* bluePortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), 150.0f);
     Unit* greenPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL, 150.0f));
+        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), 150.0f);
 
     if (redPortal)
     {

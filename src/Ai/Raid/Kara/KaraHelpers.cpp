@@ -92,7 +92,7 @@ std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return {};
 
     std::vector<Player*> redBlockers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -117,7 +117,7 @@ std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return {};
 
     std::vector<Player*> blueBlockers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -137,7 +137,7 @@ std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
 
         Aura* blueBuff = member->GetAura(
             static_cast<uint32>(KarazhanSpells::SPELL_BLUE_BEAM_DEBUFF));
-        if (!blueBuff || !blueBuff->GetStackAmount() < 25)
+        if (!blueBuff || blueBuff->GetStackAmount() < 25)
             blueBlockers.push_back(member);
     }
 
@@ -151,10 +151,7 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
-
-    bool const hasExhaustion = member->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_GREEN));
+        return {};
 
     std::vector<Player*> greenBlockers;
 
@@ -170,7 +167,7 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
             continue;
         }
 
-        if (!hasExahustion)
+        if (!member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
             greenBlockers.push_back(member);
     }
 
@@ -182,8 +179,11 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
 
         Aura* greenBuff = member->GetAura(
             static_cast<uint32>(KarazhanSpells::SPELL_GREEN_BEAM_DEBUFF));
-        if (!hasExhuastion && (!greenBuff || greenBuff->GetStackAmount() < 25))
+        if (!member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_GREEN)) &&
+            (!greenBuff || greenBuff->GetStackAmount() < 25))
+        {
             greenBlockers.push_back(member);
+        }
     }
 
     return greenBlockers;
@@ -272,7 +272,7 @@ std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
     constexpr float searchRadius = 30.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_VOID_ZONE, searchRadius));
+        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_VOID_ZONE), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -302,7 +302,7 @@ std::vector<Unit*> GetSpawnedInfernals(Player* bot)
     constexpr float searchRadius = 100.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_NETHERSPITE_INFERNAL, searchRadius));
+        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_NETHERSPITE_INFERNAL), searchRadius);
 
     for (Creature* creature : creatureList)
     {
