@@ -154,6 +154,11 @@ bool CheckMountStateAction::isUseful()
         !bot->IsOutdoors() || bot->InArena())
         return false;
 
+    // Selfbots don't auto-mount.
+    // If they are already mounted (manually), allow dismount logic to proceed.
+    if (botAI->IsRealPlayer() && !bot->IsMounted())
+        return false;
+
     master = GetMaster();
 
     // Get shapeshift states, only applicable when there's a master
