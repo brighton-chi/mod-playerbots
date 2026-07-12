@@ -289,6 +289,18 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
+    static const Position rangedPositions[8] =
+    {
+        { -10931.178f, -2116.580f, 92.179f },
+        { -10925.828f, -2102.425f, 92.180f },
+        { -10933.089f, -2088.502f, 92.180f },
+        { -10947.590f, -2082.815f, 92.180f },
+        { -10960.912f, -2090.437f, 92.179f },
+        { -10966.017f, -2105.288f, 92.175f },
+        { -10959.242f, -2119.617f, 92.180f },
+        { -10944.495f, -2123.857f, 92.180f },
+    };
+
     constexpr uint8 maxIndex = 7;
     uint8 index = 0;
 
@@ -309,7 +321,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
         index++;
     }
 
-    Position const position = MAIDEN_OF_VIRTUE_RANGED_POSITION[index];
+    Position const position = rangedPositions[index];
     if (bot->GetExactDist2d(position) > 2.0f)
     {
         return MoveTo(
@@ -358,9 +370,17 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 // Run away, little girl, run away
 bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
 {
+    static const Position runPositions[4] =
+    {
+        { -10875.456f, -1779.036f, 90.477f },
+        { -10872.281f, -1751.638f, 90.477f },
+        { -10910.492f, -1747.401f, 90.477f },
+        { -10913.391f, -1773.508f, 90.477f },
+    };
+
     while (bot->GetExactDist2d(
-        BIG_BAD_WOLF_RUN_POSITION[_runIndex].GetPositionX(),
-        BIG_BAD_WOLF_RUN_POSITION[_runIndex].GetPositionY()) < 1.0f)
+        runPositions[_runIndex].GetPositionX(),
+        runPositions[_runIndex].GetPositionY()) < 1.0f)
     {
         _runIndex = (_runIndex + 1) % 4;
     }
@@ -370,7 +390,7 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
 
-    Position const position = BIG_BAD_WOLF_RUN_POSITION[index];
+    Position const position = runPositions[index];
     return MoveTo(
         KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
         position.GetPositionZ(), false, false, false, false,
@@ -1317,10 +1337,10 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 
     if (nightbane->GetVictim() == bot)
     {
-        const Position tankPositions[2] =
+        static const Position tankPositions[2] =
         {
-            NIGHTBANE_TRANSITION_BOSS_POSITION,
-            NIGHTBANE_FINAL_BOSS_POSITION
+            { -11160.646f, -1932.773f, 91.473f },
+            { -11173.530f, -1940.707f, 91.473f }
         };
         const Position& position = tankPositions[step];
         constexpr float maxDistance = 0.5f;
@@ -1333,12 +1353,13 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
         if (step == 0 && distanceToTarget <= maxDistance)
             _tankStep = 1;
 
-        if (step == 1 && distanceToTarget <= maxDistance)
+        /* if (step == 1 && distanceToTarget <= maxDistance)
         {
-            float orientation = atan2(nightbane->GetPositionY() - bot->GetPositionY(),
-                                      nightbane->GetPositionX() - bot->GetPositionX());
+            float orientation = atan2(
+                nightbane->GetPositionY() - bot->GetPositionY(),
+                nightbane->GetPositionX() - bot->GetPositionX());
             bot->SetFacingTo(orientation);
-        }
+        } */
     }
 
     return false;
@@ -1358,11 +1379,11 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
     constexpr float charredEarthDangerRadius = 6.0f;
     constexpr float maxDistance = 2.0f;
 
-    const Position rangedPositions[3] =
+    static const Position rangedPositions[3] =
     {
-        NIGHTBANE_RANGED_POSITION1,
-        NIGHTBANE_RANGED_POSITION2,
-        NIGHTBANE_RANGED_POSITION3
+        { -11145.949f, -1970.927f, 91.473f },
+        { -11143.594f, -1954.981f, 91.473f },
+        { -11159.778f, -1961.031f, 91.473f }
     };
 
     // Query the grid for active Charred Earth dynamic objects near the bot
@@ -1479,24 +1500,27 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
         botAI->InterruptSpell();
     }
 
-    bool const hasRainOfBones = bot->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES));
-
-    if (hasRainOfBones)
+    if (!bot->HasAura(
+        static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES)))
+    {
         _rainOfBonesHit = true;
+    }
 
     float destX, destY, destZ;
+    Position const rainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };
+    Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
+
     if (_rainOfBonesHit)
     {
-        destX = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionX();
-        destY = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionY();
-        destZ = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionZ();
+        destX = rainOfBonesPosition.GetPositionX();
+        destY = rainOfBonesPosition.GetPositionY();
+        destZ = rainOfBonesPosition.GetPositionZ();
     }
     else
     {
-        destX = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionX();
-        destY = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionY();
-        destZ = NIGHTBANE_FLIGHT_STACK_POSITION.GetPositionZ();
+        destX = flightStackPosition.GetPositionX();
+        destY = flightStackPosition.GetPositionY();
+        destZ = flightStackPosition.GetPositionZ();
     }
 
     if (bot->GetExactDist2d(destX, destY) > 2.0f)

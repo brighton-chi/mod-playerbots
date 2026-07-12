@@ -90,16 +90,6 @@ extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
-extern const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
-extern const Position BIG_BAD_WOLF_RUN_POSITION[4];
-extern const Position NIGHTBANE_TRANSITION_BOSS_POSITION;
-extern const Position NIGHTBANE_FINAL_BOSS_POSITION;
-extern const Position NIGHTBANE_RANGED_POSITION1;
-extern const Position NIGHTBANE_RANGED_POSITION2;
-extern const Position NIGHTBANE_RANGED_POSITION3;
-extern const Position NIGHTBANE_FLIGHT_STACK_POSITION;
-extern const Position NIGHTBANE_RAIN_OF_BONES_POSITION;
-
 bool IsCastingArcaneExplosion(Unit* aran);
 bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
 bool IsBanishPhase(Unit* netherspite);

@@ -12,34 +12,6 @@ std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
-const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
-{
-    { -10931.178f, -2116.580f, 92.179f },
-    { -10925.828f, -2102.425f, 92.180f },
-    { -10933.089f, -2088.502f, 92.180f },
-    { -10947.590f, -2082.815f, 92.180f },
-    { -10960.912f, -2090.437f, 92.179f },
-    { -10966.017f, -2105.288f, 92.175f },
-    { -10959.242f, -2119.617f, 92.180f },
-    { -10944.495f, -2123.857f, 92.180f },
-};
-
-const Position BIG_BAD_WOLF_RUN_POSITION[4] =
-{
-    { -10875.456f, -1779.036f, 90.477f },
-    { -10872.281f, -1751.638f, 90.477f },
-    { -10910.492f, -1747.401f, 90.477f },
-    { -10913.391f, -1773.508f, 90.477f },
-};
-
-const Position NIGHTBANE_TRANSITION_BOSS_POSITION = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
-const Position NIGHTBANE_FINAL_BOSS_POSITION = { -11173.530f, -1940.707f, 91.473f };
-const Position NIGHTBANE_RANGED_POSITION1 = { -11145.949f, -1970.927f, 91.473f };
-const Position NIGHTBANE_RANGED_POSITION2 = { -11143.594f, -1954.981f, 91.473f };
-const Position NIGHTBANE_RANGED_POSITION3 = { -11159.778f, -1961.031f, 91.473f };
-const Position NIGHTBANE_FLIGHT_STACK_POSITION = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
-const Position NIGHTBANE_RAIN_OF_BONES_POSITION = { -11165.233f, -1911.123f, 91.473f };
-
 bool IsCastingArcaneExplosion(Unit* aran)
 {
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
