@@ -1,5 +1,8 @@
 #include <array>
 
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
@@ -40,12 +43,6 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && nightbaneDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
         if (isMechanicTracker && nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
-            erased = true;
-        if (nightbaneTankStep.erase(guid) > 0)
-            erased = true;
-        if (nightbaneRangedStep.erase(guid) > 0)
-            erased = true;
-        if (nightbaneRainOfBonesHit.erase(guid) > 0)
             erased = true;
     }
 
@@ -1329,8 +1326,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != nightbane)
         return Attack(nightbane);
 
-    const ObjectGuid botGuid = bot->GetGUID();
-    uint8 step = nightbaneTankStep.count(botGuid) ? nightbaneTankStep[botGuid] : 0;
+    uint8 step = _tankStep;
 
     if (nightbane->GetVictim() == bot)
     {
@@ -1348,7 +1344,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
 
         if (step == 0 && distanceToTarget <= maxDistance)
-            nightbaneTankStep[botGuid] = 1;
+            _tankStep = 1;
 
         if (step == 1 && distanceToTarget <= maxDistance)
         {
@@ -1362,12 +1358,18 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 }
 
 // Ranged bots rotate between 3 positions to avoid standing in Charred Earth, which lasts for
-// 30s and has a minimum cooldown of 18s (so there can be 2 active at once)
-// Ranged positions are near the Northeastern door to the tower
+// 30s and has a minimum cooldown of 18s (so there can be 2 active at once).
+// Ranged positions are near the Northeastern door to the tower.
+// Uses grid-based DynamicObject search to detect Charred Earth patches, which avoids the
+// false-positive cycling caused by aura-based detection (the aura can still be present on the
+// bot after it has already moved to a safe position).
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
 {
-    const ObjectGuid botGuid = bot->GetGUID();
-    uint8 index = nightbaneRangedStep.count(botGuid) ? nightbaneRangedStep[botGuid] : 0;
+    uint8 index = _rangedStep;
+
+    constexpr float charredEarthSearchRadius = 40.0f;
+    constexpr float charredEarthDangerRadius = 6.0f;
+    constexpr float maxDistance = 2.0f;
 
     const Position rangedPositions[3] =
     {
@@ -1375,32 +1377,64 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         NIGHTBANE_RANGED_POSITION2,
         NIGHTBANE_RANGED_POSITION3
     };
-    const Position& position = rangedPositions[index];
-    constexpr float maxDistance = 2.0f;
-    float distanceToTarget = bot->GetExactDist2d(position);
 
-    if (distanceToTarget <= maxDistance &&
-        bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH)) &&
-        !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BELLOWING_ROAR)))
+    // Query the grid for active Charred Earth dynamic objects near the bot
+    std::list<WorldObject*> objs;
+    Acore::AllWorldObjectsInRange check(bot, charredEarthSearchRadius);
+    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
+        bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+    Cell::VisitObjects(bot, searcher, charredEarthSearchRadius);
+
+    // Check whether the bot's assigned position overlaps a Charred Earth patch
+    auto isPositionHazardous = [&](Position const& pos) -> bool
     {
-        index = (index + 1) % 3;
-        nightbaneRangedStep[botGuid] = index;
-        const Position& newPosition = rangedPositions[index];
-        float newDistanceToTarget = bot->GetExactDist2d(newPosition);
-        if (newDistanceToTarget > maxDistance)
+        for (WorldObject* obj : objs)
         {
-            botAI->InterruptSpell();
-            return MoveTo(KARAZHAN_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(), newPosition.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
+                continue;
+
+            DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
+            if (dynObj->GetSpellId() != static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH))
+                continue;
+
+            if (dynObj->GetExactDist2d(pos) < charredEarthDangerRadius)
+                return true;
         }
         return false;
+    };
+
+    // If the assigned position has Charred Earth under it and the bot is not Bellowing
+    // Roared (which would prevent movement), cycle to a safe position
+    if (isPositionHazardous(rangedPositions[index]) &&
+        !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BELLOWING_ROAR)))
+    {
+        uint8 const originalIndex = index;
+        bool foundSafe = false;
+        for (uint8 i = 0; i < 3; i++)
+        {
+            index = (index + 1) % 3;
+            if (!isPositionHazardous(rangedPositions[index]))
+            {
+                foundSafe = true;
+                break;
+            }
+        }
+        // If all 3 positions are hazardous, stay at the current assignment to avoid
+        // infinite cycling; the next tick will re-evaluate
+        if (!foundSafe)
+            index = originalIndex;
+
+        _rangedStep = index;
     }
 
-    if (distanceToTarget > maxDistance)
+    // Move to the assigned position if not already there
+    const Position& position = rangedPositions[index];
+    if (bot->GetExactDist2d(position) > maxDistance)
     {
         botAI->InterruptSpell();
-        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      position.GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -1458,15 +1492,14 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
         botAI->InterruptSpell();
     }
 
-    ObjectGuid const botGuid = bot->GetGUID();
     bool const hasRainOfBones = bot->HasAura(
         static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES));
 
     if (hasRainOfBones)
-        nightbaneRainOfBonesHit[botGuid] = true;
+        _rainOfBonesHit = true;
 
     float destX, destY, destZ;
-    if (nightbaneRainOfBonesHit[botGuid])
+    if (_rainOfBonesHit)
     {
         destX = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionX();
         destY = NIGHTBANE_RAIN_OF_BONES_POSITION.GetPositionY();
@@ -1496,17 +1529,20 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return false;
 
     const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
-    const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset
     if (nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
         if (botAI->IsMainTank(bot))
-            nightbaneTankStep.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "nightbane ground phase position boss"))
+                static_cast<NightbaneGroundPhasePositionBossAction*>(action)->ResetTankStep();
 
         if (botAI->IsRanged(bot))
-            nightbaneRangedStep.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "nightbane ground phase rotate ranged positions"))
+                static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(action)->ResetRangedStep();
 
         if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
             nightbaneDpsWaitTimer.erase(instanceId);
@@ -1514,7 +1550,9 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     else if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
-        nightbaneRainOfBonesHit.erase(botGuid);
+        if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                "nightbane flight phase movement"))
+            static_cast<NightbaneFlightPhaseMovementAction*>(action)->ResetRainOfBonesHit();
 
         if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         {
@@ -1527,10 +1565,14 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     else if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     {
         if (botAI->IsMainTank(bot))
-            nightbaneTankStep.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "nightbane ground phase position boss"))
+                static_cast<NightbaneGroundPhasePositionBossAction*>(action)->ResetTankStep();
 
         if (botAI->IsRanged(bot))
-            nightbaneRangedStep.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "nightbane ground phase rotate ranged positions"))
+                static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(action)->ResetRangedStep();
 
         if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         {

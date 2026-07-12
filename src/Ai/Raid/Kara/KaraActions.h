@@ -290,6 +290,10 @@ public:
     NightbaneGroundPhasePositionBossAction(
         PlayerbotAI* botAI, std::string const name = "nightbane ground phase position boss") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+    void ResetTankStep() { _tankStep = 0; }
+
+private:
+    uint8 _tankStep = 0;
 };
 
 class NightbaneGroundPhaseRotateRangedPositionsAction : public MovementAction
@@ -298,6 +302,10 @@ public:
     NightbaneGroundPhaseRotateRangedPositionsAction(
         PlayerbotAI* botAI, std::string const name = "nightbane ground phase rotate ranged positions") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+    void ResetRangedStep() { _rangedStep = 0; }
+
+private:
+    uint8 _rangedStep = 0;
 };
 
 class NightbaneCastFearWardOnMainTankAction : public Action
@@ -322,6 +330,10 @@ public:
     NightbaneFlightPhaseMovementAction(
         PlayerbotAI* botAI, std::string const name = "nightbane flight phase movement") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+    void ResetRainOfBonesHit() { _rainOfBonesHit = false; }
+
+private:
+    bool _rainOfBonesHit = false;
 };
 
 class NightbaneManageTimersAndTrackersAction : public Action

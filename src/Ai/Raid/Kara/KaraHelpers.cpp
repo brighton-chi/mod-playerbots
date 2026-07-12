@@ -12,10 +12,7 @@ std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
 std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
 // Nightbane
 std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-std::unordered_map<ObjectGuid, uint8> nightbaneTankStep;
-std::unordered_map<ObjectGuid, uint8> nightbaneRangedStep;
 std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
 const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
 {
