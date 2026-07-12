@@ -8,7 +8,8 @@ using namespace KarazhanHelpers;
 
 bool KarazhanBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == KARAZHAN_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+        !AI_VALUE2(bool, "combat", "self target");
 }
 
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()

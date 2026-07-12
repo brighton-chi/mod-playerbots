@@ -8,8 +8,6 @@ namespace KarazhanHelpers
 std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
 // Netherspite
 std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
-std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
 // Nightbane
 std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;

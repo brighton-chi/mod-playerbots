@@ -18,31 +18,26 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
 
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
 
     bool erased = false;
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "midnight"))
+    if (!AI_VALUE2(Unit*, "find target", "midnight") &&
+        attumenDpsWaitTimer.erase(instanceId) > 0)
     {
-        if (attumenDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
+        erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "netherspite"))
+    if (!AI_VALUE2(Unit*, "find target", "netherspite") &&
+        netherspiteDpsWaitTimer.erase(instanceId) > 0)
     {
-        if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
-        if (redBeamMoveTimer.erase(guid) > 0)
-            erased = true;
-        if (lastBeamMoveSideways.erase(guid) > 0)
-            erased = true;
+        erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "nightbane"))
     {
-        if (isMechanicTracker && nightbaneDpsWaitTimer.erase(instanceId) > 0)
+        if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
-        if (isMechanicTracker && nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
+        if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
             erased = true;
     }
 
@@ -653,12 +648,9 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     if (!redPortal)
         return false;
 
-    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == redBlocker);
-
-    auto it = _wasBlockingRedBeam.find(botGuid);
-    bool wasBlocking = (it != _wasBlockingRedBeam.end()) ? it->second : false;
+    bool wasBlocking = _wasBlockingRedBeam;
 
     Position beamPos = GetPositionOnBeam(netherspite, redPortal, 18.0f);
 
@@ -671,15 +663,15 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
                 "netherspite_beam_blocking_red", "%player is moving to block the red beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        _wasBlockingRedBeam[botGuid] = true;
+        _wasBlockingRedBeam = true;
 
         constexpr uint8 intervalSecs = 5;
-        if (std::time(nullptr) - redBeamMoveTimer[botGuid] >= intervalSecs)
+        if (std::time(nullptr) - _redBeamMoveTimer >= intervalSecs)
         {
-            lastBeamMoveSideways[botGuid] = !lastBeamMoveSideways[botGuid];
-            redBeamMoveTimer[botGuid] = std::time(nullptr);
+            _lastBeamMoveSideways = !_lastBeamMoveSideways;
+            _redBeamMoveTimer = std::time(nullptr);
         }
-        if (!lastBeamMoveSideways[botGuid])
+        if (!_lastBeamMoveSideways)
             return MoveTo(KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), beamPos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         else
@@ -701,7 +693,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         }
     }
 
-    _wasBlockingRedBeam[botGuid] = false;
+    _wasBlockingRedBeam = false;
     return false;
 }
 
@@ -743,12 +735,9 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     if (!bluePortal)
         return false;
 
-    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == blueBlocker);
-
-    auto it = _wasBlockingBlueBeam.find(botGuid);
-    bool wasBlocking = (it != _wasBlockingBlueBeam.end()) ? it->second : false;
+    bool wasBlocking = _wasBlockingBlueBeam;
 
     if (wasBlocking && !isBlockingNow)
     {
@@ -756,7 +745,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
-        _wasBlockingBlueBeam[botGuid] = false;
+        _wasBlockingBlueBeam = false;
     }
 
     if (isBlockingNow)
@@ -768,7 +757,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
                 "netherspite_beam_blocking_blue", "%player is moving to block the blue beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        _wasBlockingBlueBeam[botGuid] = true;
+        _wasBlockingBlueBeam = true;
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
@@ -818,7 +807,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         return false;
     }
 
-    _wasBlockingBlueBeam[botGuid] = false;
+    _wasBlockingBlueBeam = false;
     return false;
 }
 
@@ -837,12 +826,9 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     if (!greenPortal)
         return false;
 
-    const ObjectGuid botGuid = bot->GetGUID();
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     bool isBlockingNow = (bot == greenBlocker);
-
-    auto it = _wasBlockingGreenBeam.find(botGuid);
-    bool wasBlocking = (it != _wasBlockingGreenBeam.end()) ? it->second : false;
+    bool wasBlocking = _wasBlockingGreenBeam;
 
     if (wasBlocking && !isBlockingNow)
     {
@@ -850,7 +836,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "netherspite_beam_leaving_green", "%player is leaving the green beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
-        _wasBlockingGreenBeam[botGuid] = false;
+        _wasBlockingGreenBeam = false;
     }
 
     if (isBlockingNow)
@@ -862,7 +848,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
                 "netherspite_beam_blocking_green", "%player is moving to block the green beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
-        _wasBlockingGreenBeam[botGuid] = true;
+        _wasBlockingGreenBeam = true;
 
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
@@ -911,7 +897,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         return false;
     }
 
-    _wasBlockingGreenBeam[botGuid] = false;
+    _wasBlockingGreenBeam = false;
     return false;
 }
 
@@ -1059,11 +1045,9 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         return false;
 
     const uint32 instanceId = netherspite->GetMap()->GetInstanceId();
-    const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
     // DpsWaitTimer is for pausing DPS during phase transitions
-    // redBeamMoveTimer and lastBeamMoveSideways are for tank dancing in/out of the red beam
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_GREEN_BEAM_HEAL)))
     {
@@ -1073,8 +1057,9 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (botAI->IsTank(bot) &&
             !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
         {
-            redBeamMoveTimer.erase(botGuid);
-            lastBeamMoveSideways.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "netherspite block red beam"))
+                static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState();
         }
     }
     else if (IsBanishPhase(netherspite))
@@ -1084,8 +1069,9 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (botAI->IsTank(bot))
         {
-            redBeamMoveTimer.erase(botGuid);
-            lastBeamMoveSideways.erase(botGuid);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "netherspite block red beam"))
+                static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState();
         }
     }
     else if (IsBanishPhase(netherspite))
@@ -1096,8 +1082,9 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (botAI->IsTank(bot) &&
             bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
         {
-            redBeamMoveTimer.try_emplace(botGuid, now);
-            lastBeamMoveSideways.try_emplace(botGuid, false);
+            if (Action* action = botAI->GetAiObjectContext()->GetAction(
+                    "netherspite block red beam"))
+                static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState(now);
         }
     }
 
