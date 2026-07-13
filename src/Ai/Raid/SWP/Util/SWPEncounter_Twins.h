@@ -45,11 +45,10 @@ extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
-bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
+bool IsAnySacrolashTank(Player* bot);
+bool IsAlythessTank(Player* bot);
 bool ShouldHoldTwinThreat(
-    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
-    bool (*isTwinTank)(PlayerbotAI*, Player*));
+    Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
 bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);

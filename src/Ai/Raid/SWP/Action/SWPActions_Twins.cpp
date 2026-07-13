@@ -317,7 +317,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
         constexpr float threatRatio = 0.8f;
-        if (ShouldHoldTwinThreat(botAI, bot, sacrolash, threatRatio, IsAnySacrolashTank))
+        if (ShouldHoldTwinThreat(bot, sacrolash, threatRatio, IsAnySacrolashTank))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
@@ -335,7 +335,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         constexpr float threatRatio = 0.9f;
-        if (ShouldHoldTwinThreat(botAI, bot, alythess, threatRatio, IsAlythessTank))
+        if (ShouldHoldTwinThreat(bot, alythess, threatRatio, IsAlythessTank))
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);

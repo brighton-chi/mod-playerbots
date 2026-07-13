@@ -160,9 +160,10 @@ void ResetFelmystDemonicVaporFlightStateIfGrounded(Player* bot)
 }
 
 bool TryGetFelmystGroundStackCenter(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack,
+    Player* bot, Unit* felmyst, FelmystGroundStack stack,
     float& positionX, float& positionY)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!felmyst)
         return false;
 
@@ -171,7 +172,7 @@ bool TryGetFelmystGroundStackCenter(
         case FelmystGroundStack::Melee:
         {
             float const behindAngle = Position::NormalizeOrientation(
-                GetFelmystFrontAngle(botAI, bot, felmyst) + M_PI);
+                GetFelmystFrontAngle(bot, felmyst) + M_PI);
             positionX = felmyst->GetPositionX() +
                 FELMYST_MELEE_DISTANCE * std::cos(behindAngle);
             positionY = felmyst->GetPositionY() +
@@ -182,7 +183,7 @@ bool TryGetFelmystGroundStackCenter(
         case FelmystGroundStack::Left:
         case FelmystGroundStack::Right:
         {
-            float const frontAngle = GetFelmystFrontAngle(botAI, bot, felmyst);
+            float const frontAngle = GetFelmystFrontAngle(bot, felmyst);
             float const sideAngle = frontAngle +
                 (stack == FelmystGroundStack::Left ? M_PI_2 : -M_PI_2);
             positionX = felmyst->GetPositionX() +
@@ -707,12 +708,12 @@ Position const& GetFelmystMainTankGroundPosition(Player* bot)
 }
 
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position)
+    Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position)
 {
     float destinationX = 0.0f;
     float destinationY = 0.0f;
 
-    if (!TryGetFelmystGroundStackCenter(botAI, bot, felmyst, stack, destinationX, destinationY))
+    if (!TryGetFelmystGroundStackCenter(bot, felmyst, stack, destinationX, destinationY))
         return false;
 
     float destinationZ =
@@ -729,8 +730,7 @@ bool TryGetFelmystGroundStackPosition(
     return true;
 }
 
-FelmystGroundStack GetClosestFelmystGroundStack(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit)
+FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit* unit)
 {
     if (!unit || !felmyst)
         return FelmystGroundStack::None;
@@ -742,7 +742,7 @@ FelmystGroundStack GetClosestFelmystGroundStack(
     {
         float stackX = 0.0f;
         float stackY = 0.0f;
-        if (!TryGetFelmystGroundStackCenter(botAI, bot, felmyst, stack, stackX, stackY))
+        if (!TryGetFelmystGroundStackCenter(bot, felmyst, stack, stackX, stackY))
             continue;
 
         float const stackDistance = unit->GetExactDist2d(stackX, stackY);
@@ -756,8 +756,9 @@ FelmystGroundStack GetClosestFelmystGroundStack(
     return bestStack;
 }
 
-float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
+float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Position const defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
     float frontX = defaultTankPosition.GetPositionX();
     float frontY = defaultTankPosition.GetPositionY();
@@ -778,8 +779,9 @@ float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
     return std::atan2(frontY - felmyst->GetPositionY(), frontX - felmyst->GetPositionX());
 }
 
-void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureFelmystRangedAssignments(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return;
@@ -825,13 +827,12 @@ void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot)
     }
 }
 
-bool TryGetFelmystRangedPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position)
+bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
 {
     if (!felmyst)
         return false;
 
-    EnsureFelmystRangedAssignments(botAI, bot);
+    EnsureFelmystRangedAssignments(bot);
 
     auto const instanceItr = felmystEncounterStates.find(bot->GetInstanceId());
     if (instanceItr == felmystEncounterStates.end())
@@ -842,7 +843,7 @@ bool TryGetFelmystRangedPosition(
         return false;
 
     return TryGetFelmystGroundStackPosition(
-        botAI, bot, felmyst, static_cast<FelmystGroundStack>(assignmentItr->second), position);
+        bot, felmyst, static_cast<FelmystGroundStack>(assignmentItr->second), position);
 }
 
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot)
@@ -1351,8 +1352,9 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
     return closestTarget;
 }
 
-Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst)
+Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!felmyst)
         return nullptr;
 

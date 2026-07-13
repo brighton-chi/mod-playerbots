@@ -429,7 +429,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
 {
-    EnsureKiljaedenRangedAssignments(botAI, bot);
+    EnsureKiljaedenRangedAssignments(bot);
 
     auto const instanceItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
     if (instanceItr == kiljaedenEncounterStates.end())
@@ -444,7 +444,7 @@ bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
 
 bool KiljaedenPositionRangedAction::TryAdjustForArmageddon(Position& position)
 {
-    EnsureKiljaedenRangedArmageddonAssignments(botAI, bot);
+    EnsureKiljaedenRangedArmageddonAssignments(bot);
     auto const armageddonAssignmentItr =
         kiljaedenEncounterStates.find(bot->GetInstanceId());
 
@@ -681,7 +681,7 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
 
     if (!dragon->HasSpellCooldown(hasteSpellId))
     {
-        target = FindBestKiljaedenDragonClusterTarget(botAI, bot, dragon, hasteSpellId);
+        target = FindBestKiljaedenDragonClusterTarget(bot, dragon, hasteSpellId);
         if (!target)
             target = FindClosestKiljaedenDragonTarget(bot, dragon, hasteSpellId);
         if (target)
@@ -690,7 +690,7 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
 
     if (!target && !dragon->HasSpellCooldown(revitalizeSpellId))
     {
-        target = FindBestKiljaedenDragonClusterTarget(botAI, bot, dragon, revitalizeSpellId);
+        target = FindBestKiljaedenDragonClusterTarget(bot, dragon, revitalizeSpellId);
         if (!target)
             target = FindClosestKiljaedenDragonTarget(bot, dragon, revitalizeSpellId);
         if (target)

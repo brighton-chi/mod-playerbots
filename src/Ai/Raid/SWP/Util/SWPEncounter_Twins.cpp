@@ -84,21 +84,23 @@ Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
     return GetAlythessAdjustedPosition(alythess, basePosition);
 }
 
-bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot)
+bool IsAnySacrolashTank(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
 }
 
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
+bool IsAlythessTank(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return botAI->IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool ShouldHoldTwinThreat(
-    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
-    bool (*isTwinTank)(PlayerbotAI*, Player*))
+    Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*))
 {
-    if (!boss || isTwinTank(botAI, bot))
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    if (!boss || isTwinTank(bot))
         return false;
 
     float twinTankThreat = 0.0f;
@@ -119,7 +121,7 @@ bool ShouldHoldTwinThreat(
 
         float const threat = threatRef->GetThreat();
 
-        if (isTwinTank(botAI, threatPlayer) &&
+        if (isTwinTank(threatPlayer) &&
             (!foundTwinTankThreat || threat < twinTankThreat))
         {
             twinTankThreat = threat;

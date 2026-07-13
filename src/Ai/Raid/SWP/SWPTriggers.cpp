@@ -73,7 +73,7 @@ bool KalecgosBossEngagedByTankTrigger::IsActive()
     if (IsInSpectralRealm(bot))
         return false;
 
-    return GetKalecgosCurrentTank(botAI, bot) == bot;
+    return GetKalecgosCurrentTank(bot) == bot;
 }
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
@@ -82,7 +82,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
 
-    if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
+    if (!ShouldEnterKalecgosSpectralRift(bot))
         return false;
 
     constexpr float searchRadius = 75.0f;
@@ -99,7 +99,7 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot) || kalecgos->GetVictim() == bot)
         return false;
 
-    return !ShouldEnterKalecgosSpectralRift(botAI, bot);
+    return !ShouldEnterKalecgosSpectralRift(bot);
 }
 
 bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
@@ -283,9 +283,9 @@ bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
         return false;
 
     FelmystGroundStack const botStack =
-        GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
+        GetClosestFelmystGroundStack(bot, felmyst, bot);
     FelmystGroundStack const targetStack =
-        GetClosestFelmystGroundStack(botAI, bot, felmyst, encapsulateTarget);
+        GetClosestFelmystGroundStack(bot, felmyst, encapsulateTarget);
 
     return botStack != FelmystGroundStack::None && botStack == targetStack;
 }
@@ -360,7 +360,7 @@ bool FelmystPlayerIsCharmedByFogTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    return felmyst && GetFelmystCharmedTarget(botAI, bot, felmyst);
+    return felmyst && GetFelmystCharmedTarget(bot, felmyst);
 }
 
 // Eredar Twins

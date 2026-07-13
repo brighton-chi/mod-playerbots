@@ -137,8 +137,9 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     }
 }
 
-Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot)
+Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
     auto const& units =

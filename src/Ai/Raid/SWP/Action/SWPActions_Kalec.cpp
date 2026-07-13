@@ -59,13 +59,13 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
         kalecgos && botAI->IsTank(bot))
     {
-        Player* surfaceTank = GetKalecgosCurrentTank(botAI, bot);
+        Player* surfaceTank = GetKalecgosCurrentTank(bot);
         if (!surfaceTank)
             return false;
 
         if (surfaceTank == bot)
         {
-            surfaceTank = GetKalecgosReplacementTank(botAI, bot);
+            surfaceTank = GetKalecgosReplacementTank(bot);
             if (!surfaceTank)
                 return false;
         }

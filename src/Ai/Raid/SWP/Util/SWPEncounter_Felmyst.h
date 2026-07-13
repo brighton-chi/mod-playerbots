@@ -118,13 +118,11 @@ extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
-FelmystGroundStack GetClosestFelmystGroundStack(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
-float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
-void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
-bool TryGetFelmystRangedPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
+    Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
+FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit* unit);
+float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
+void EnsureFelmystRangedAssignments(Player* bot);
+bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
@@ -142,7 +140,7 @@ void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
-Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
+Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);
 
 }
 

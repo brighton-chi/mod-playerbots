@@ -153,16 +153,16 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
     return angleOffset;
 }
 
-bool TryGetBrutallusAssignedPositionIndex(
-    PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex)
+bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& positionIndex)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
     if (wantRanged)
     {
-        EnsureBrutallusRangedAssignments(botAI, bot);
+        EnsureBrutallusRangedAssignments(bot);
 
         auto const instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
         if (instanceItr == brutallusRangedAssignments.end())
@@ -199,8 +199,9 @@ bool TryGetBrutallusAssignedPositionIndex(
     return false;
 }
 
-void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureBrutallusRangedAssignments(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
         return;

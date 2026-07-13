@@ -64,8 +64,9 @@ uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
     return cooldownMs ? cooldownMs : 1000;
 }
 
-bool IsKiljaedenDragonGroupTarget(PlayerbotAI* botAI, Player* bot, Player* member)
+bool IsKiljaedenDragonGroupTarget(Player* bot, Player* member)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return member && member->IsAlive() && member != bot && !botAI->IsTank(member) &&
         member->GetMapId() == SUNWELL_MAP_ID;
 }
@@ -244,8 +245,9 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     return true;
 }
 
-void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureKiljaedenRangedAssignments(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
         return;
@@ -333,8 +335,9 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
         assignNextOpenSlot(member);
 }
 
-void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     struct CandidateSlotScore
     {
         uint8 slotIndex = 0;
@@ -586,9 +589,9 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
     return true;
 }
 
-Player* FindBestKiljaedenDragonClusterTarget(
-    PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId)
+Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!dragon)
         return nullptr;
 
@@ -607,7 +610,7 @@ Player* FindBestKiljaedenDragonClusterTarget(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* candidate = ref->GetSource();
-        if (!IsKiljaedenDragonGroupTarget(botAI, bot, candidate) ||
+        if (!IsKiljaedenDragonGroupTarget(bot, candidate) ||
             HasKiljaedenDragonApplicableAura(candidate, spellId))
         {
             continue;
@@ -619,7 +622,7 @@ Player* FindBestKiljaedenDragonClusterTarget(
              otherRef; otherRef = otherRef->next())
         {
             Player* other = otherRef->GetSource();
-            if (!IsKiljaedenDragonGroupTarget(botAI, bot, other) ||
+            if (!IsKiljaedenDragonGroupTarget(bot, other) ||
                 candidate->GetExactDist2d(other) > clusterRadius)
             {
                 continue;

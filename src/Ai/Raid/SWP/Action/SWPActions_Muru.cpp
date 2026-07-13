@@ -734,7 +734,7 @@ bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
     if (!muru)
         return false;
 
-    Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(botAI, bot);
+    Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(bot);
     if (!voidSpawn)
         return false;
 

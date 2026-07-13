@@ -156,7 +156,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
 
-    if (GetKalecgosCurrentTank(botAI, bot) == bot)
+    if (GetKalecgosCurrentTank(bot) == bot)
         return 1.0f;
 
     if (dynamic_cast<CastTauntAction*>(action) ||
@@ -495,7 +495,7 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!felmyst)
         return 1.0f;
 
-    Player* charmedTarget = GetFelmystCharmedTarget(botAI, bot, felmyst);
+    Player* charmedTarget = GetFelmystCharmedTarget(bot, felmyst);
     if (!charmedTarget)
         return 1.0f;
 
@@ -538,11 +538,12 @@ float EredarTwinsDisableAutomaticTargetingMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
 
-    if (botAI->GetState() == BOT_STATE_COMBAT &&
-        dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
@@ -558,8 +559,8 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-         return 0.0f;
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -605,9 +606,9 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     constexpr float sacrolashThreatRatio = 0.8f;
 
     bool const shouldHoldSacrolashThreat = sacrolash &&
-        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
+        ShouldHoldTwinThreat(bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
     bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, IsAlythessTank);
+        ShouldHoldTwinThreat(bot, alythess, alythessThreatRatio, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;

@@ -79,7 +79,7 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
         return false;
 
     Position position;
-    if (!TryGetFelmystRangedPosition(botAI, bot, felmyst, position))
+    if (!TryGetFelmystRangedPosition(bot, felmyst, position))
         return false;
 
     return MoveInside(
@@ -97,7 +97,7 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetFelmystGroundStackPosition(
-            botAI, bot, felmyst, FelmystGroundStack::Melee, position))
+            bot, felmyst, FelmystGroundStack::Melee, position))
     {
         return false;
     }
@@ -131,9 +131,9 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
+    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(bot, felmyst, bot);
     FelmystGroundStack const targetStack = GetClosestFelmystGroundStack(
-        botAI, bot, felmyst, encapsulateTarget);
+        bot, felmyst, encapsulateTarget);
 
     if (botStack == FelmystGroundStack::None || targetStack == FelmystGroundStack::None ||
         botStack != targetStack)
@@ -144,7 +144,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     auto const tryMoveToStack = [&](FelmystGroundStack stack)
     {
         Position position;
-        if (!TryGetFelmystGroundStackPosition(botAI, bot, felmyst, stack, position))
+        if (!TryGetFelmystGroundStackPosition(bot, felmyst, stack, position))
             return false;
 
         return MoveInside(
