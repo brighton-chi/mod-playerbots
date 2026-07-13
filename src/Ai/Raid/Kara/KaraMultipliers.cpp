@@ -262,7 +262,9 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action) ||
         (dynamic_cast<CastSpellAction*>(action) &&
          !dynamic_cast<CastHealingSpellAction*>(action)))
+    {
         return 0.0f;
+    }
 
      return 1.0f;
 }
@@ -355,7 +357,9 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action) ||
         (dynamic_cast<CastSpellAction*>(action) &&
          !dynamic_cast<CastHealingSpellAction*>(action)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

@@ -162,9 +162,6 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     static ObjectGuid currentBlueBlocker;
 
     Player* redBlocker = nullptr;
-    Player* greenBlocker = nullptr;
-    Player* blueBlocker = nullptr;
-
     std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
     if (!redBlockers.empty())
     {
@@ -186,6 +183,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
         redBlocker = nullptr;
     }
 
+    Player* greenBlocker = nullptr;
     std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
     if (!greenBlockers.empty())
     {
@@ -207,6 +205,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
         greenBlocker = nullptr;
     }
 
+    Player* blueBlocker = nullptr;
     std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
     if (!blueBlockers.empty())
     {
@@ -249,8 +248,9 @@ std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
     return voidZones;
 }
 
-bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
-                      float idealDistance, Position& outPos)
+bool FindBeamPosition(
+    Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
+    float idealDistance, Position& outPos)
 {
     constexpr float voidZoneRadius = 4.0f;
     constexpr float searchMinDist = 18.0f;
@@ -260,7 +260,6 @@ bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZo
 
     float bx = boss->GetPositionX();
     float by = boss->GetPositionY();
-    float bz = boss->GetPositionZ();
     float px = portal->GetPositionX();
     float py = portal->GetPositionY();
 
@@ -280,7 +279,7 @@ bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZo
     {
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
-        float candidateZ = bz;
+        float candidateZ = boss->GetPositionZ();
         if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
             continue;
 
@@ -327,27 +326,25 @@ std::vector<Unit*> GetSpawnedInfernals(Player* bot)
 }
 
 bool IsStraightPathSafe(
-    Position const& start, Position const& target, std::vector<Unit*> const& hazards,
-    float hazardRadius, float stepSize)
+    float sx, float sy, float tx, float ty, std::vector<Unit*> const& hazards, float hazardRadius)
 {
-    float sx = start.GetPositionX();
-    float sy = start.GetPositionY();
-    float tx = target.GetPositionX();
-    float ty = target.GetPositionY();
+    constexpr float stepSize = 0.5f;
 
-    const float totalDist = start.GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    float const totalDistX = tx - sx;
+    float const totalDistY = ty - sy;
+    float const totalDist = sqrt(totalDistX * totalDistX + totalDistY * totalDistY);
     if (totalDist == 0.0f)
         return true;
 
     for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
     {
         float t = checkDist / totalDist;
-        float checkX = sx + (tx - sx) * t;
-        float checkY = sy + (ty - sy) * t;
+        float checkX = sx + totalDistX * t;
+        float checkY = sy + totalDistY * t;
         for (Unit* hazard : hazards)
         {
-            const float hx = checkX - hazard->GetPositionX();
-            const float hy = checkY - hazard->GetPositionY();
+            float const hx = checkX - hazard->GetPositionX();
+            float const hy = checkY - hazard->GetPositionY();
             if ((hx*hx + hy*hy) < hazardRadius * hazardRadius)
                 return false;
         }
@@ -357,52 +354,67 @@ bool IsStraightPathSafe(
 }
 
 bool TryFindSafePositionWithSafePath(
-    Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-    const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
-    float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
+    Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
+    float safeDistance, float maxSampleDist, float& outX, float& outY)
 {
-    float bestMoveDist = std::numeric_limits<float>::max();
-    bool found = false;
+    constexpr uint8 numAngles = 64;
+    constexpr float stepSize = 0.5f;
 
-    for (int i = 0; i < numAngles; ++i)
+    float const centerX = center.GetPositionX();
+    float const centerY = center.GetPositionY();
+    float const originX = origin.GetPositionX();
+    float const originY = origin.GetPositionY();
+
+    // Try with safe-path requirement first, fall back to position-only
+    for (bool requireSafePath : { true, false })
     {
-        float angle = (2.0f * M_PI * i) / numAngles;
-        float dx = cos(angle);
-        float dy = sin(angle);
+        float bestMoveDist = std::numeric_limits<float>::max();
+        bool found = false;
 
-        for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
+        for (int i = 0; i < numAngles; ++i)
         {
-            float x = centerX + dx * dist;
-            float y = centerY + dy * dist;
-            float z = centerZ;
-            float destX = x, destY = y, destZ = z;
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, centerX, centerY, centerZ,
-                                                                destX, destY, destZ, true))
-                continue;
+            float angle = (2.0f * M_PI * i) / numAngles;
+            float dx = cos(angle);
+            float dy = sin(angle);
 
-            if (!IsSafePosition(destX, destY, hazards, safeDistance))
-                continue;
-
-            if (requireSafePath)
+            for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
             {
-                if (!IsStraightPathSafe(Position(originX, originY, originZ), Position(destX, destY, destZ),
-                                        hazards, safeDistance, stepSize))
+                float destX = centerX + dx * dist;
+                float destY = centerY + dy * dist;
+                float destZ = bot->GetPositionZ();
+                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+                        bot, centerX, centerY, destZ, destX, destY, destZ, true))
+                {
                     continue;
-            }
+                }
 
-            const float moveDist = Position(originX, originY, originZ).GetExactDist2d(destX, destY);
-            if (moveDist < bestMoveDist)
-            {
-                bestMoveDist = moveDist;
-                bestDestX = destX;
-                bestDestY = destY;
-                bestDestZ = destZ;
-                found = true;
+                if (!IsSafePosition(destX, destY, hazards, safeDistance))
+                    continue;
+
+                if (requireSafePath)
+                {
+                    if (!IsStraightPathSafe(originX, originY, destX, destY, hazards, safeDistance))
+                        continue;
+                }
+
+                float const ddx = destX - originX;
+                float const ddy = destY - originY;
+                float const moveDist = sqrt(ddx*ddx + ddy*ddy);
+                if (moveDist < bestMoveDist)
+                {
+                    bestMoveDist = moveDist;
+                    outX = destX;
+                    outY = destY;
+                    found = true;
+                }
             }
         }
+
+        if (found)
+            return true;
     }
 
-    return found;
+    return false;
 }
 
 }

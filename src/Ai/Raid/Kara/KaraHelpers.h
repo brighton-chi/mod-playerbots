@@ -99,16 +99,16 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
 std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
 bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
-bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
-                      float idealDistance, Position& outPos);
+bool FindBeamPosition(
+    Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
+    float idealDistance, Position& outPos);
 std::vector<Unit*> GetSpawnedInfernals(Player* bot);
 bool IsStraightPathSafe(
-    Position const& start, Position const& target, std::vector<Unit*> const& hazards,
-    float hazardRadius, float stepSize);
+    float startX, float startY, float targetX, float targetY,
+    std::vector<Unit*> const& hazards, float hazardRadius);
 bool TryFindSafePositionWithSafePath(
-    Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-    const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
-    float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ);
+    Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
+    float safeDistance, float maxSampleDist, float& outX, float& outY);
 
 }
 
