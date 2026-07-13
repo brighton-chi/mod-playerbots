@@ -577,13 +577,23 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
     return false;
 }
 
-// Mark Conjured Elementals with skull so DPS can burn them down
+// Mark Conjured Elementals with skull so DPS can burn them down.
+// Searches the grid for a non-banished elemental within 75 yards.
 bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 {
-    if (Unit* elemental = GetFirstAliveUnitByEntry(
-            botAI, static_cast<uint32>(KarazhanNpcs::NPC_CONJURED_ELEMENTAL)))
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 75.0f;
+
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_CONJURED_ELEMENTAL), searchRadius);
+
+    for (Creature* elemental : creatureList)
     {
-        return MarkTargetWithSkull(bot, elemental);
+        if (!elemental || !elemental->IsAlive())
+            continue;
+
+        if (!elemental->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_WARLOCK_BANISH)))
+            return MarkTargetWithSkull(bot, elemental);
     }
 
     return false;
@@ -672,7 +682,9 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     bool isBlockingNow = (bot == redBlocker);
     bool wasBlocking = _wasBlockingRedBeam;
 
-    Position beamPos = GetPositionOnBeam(netherspite, redPortal, 18.0f);
+    std::vector<Unit*> voidZones; // tank ignores void zones
+    Position beamPos;
+    FindBeamPosition(netherspite, redPortal, voidZones, 18.0f, beamPos);
 
     if (isBlockingNow)
     {
@@ -717,30 +729,6 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     return false;
 }
 
-Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(
-    Unit* netherspite, Unit* portal, float distanceFromBoss)
-{
-    float bx = netherspite->GetPositionX();
-    float by = netherspite->GetPositionY();
-    float bz = netherspite->GetPositionZ();
-    float px = portal->GetPositionX();
-    float py = portal->GetPositionY();
-
-    float dx = px - bx;
-    float dy = py - by;
-    float length = netherspite->GetExactDist2d(px, py);
-    if (length == 0.0f)
-        return Position(bx, by, bz);
-
-    dx /= length;
-    dy /= length;
-    float targetX = bx + dx * distanceFromBoss;
-    float targetY = by + dy * distanceFromBoss;
-    float targetZ = bz;
-
-    return Position(targetX, targetY, targetZ);
-}
-
 // Two non-Rogue/Warrior DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
 // When avoiding void zones, blocking bots will move along the beam to continue blocking
 bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
@@ -782,46 +770,13 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
-        float bx = netherspite->GetPositionX();
-        float by = netherspite->GetPositionY();
-        float bz = netherspite->GetPositionZ();
-        float px = bluePortal->GetPositionX();
-        float py = bluePortal->GetPositionY();
-
-        float dx = px - bx;
-        float dy = py - by;
-        float length = netherspite->GetExactDist2d(bluePortal);
-        if (length == 0.0f)
-            return false;
-
-        dx /= length;
-        dy /= length;
-        float bestDist = 150.0f;
-        Position bestPos;
-        bool found = false;
-
-        for (float dist = 18.0f; dist <= 30.0f; dist += 0.5f)
-        {
-            float candidateX = bx + dx * dist;
-            float candidateY = by + dy * dist;
-            float candidateZ = bz;
-            if (!IsSafePosition(candidateX, candidateY, voidZones, 4.0f))
-                continue;
-
-            float distToIdeal = fabs(dist - idealDistance);
-            if (!found || distToIdeal < bestDist)
-            {
-                bestDist = distToIdeal;
-                bestPos = Position(candidateX, candidateY, candidateZ);
-                found = true;
-            }
-        }
-
-        if (found)
+        Position beamPos;
+        if (FindBeamPosition(netherspite, bluePortal, voidZones, idealDistance, beamPos))
         {
             botAI->InterruptSpell();
-            return MoveTo(KARAZHAN_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(),
+                          beamPos.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -872,46 +827,13 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
-        float bx = netherspite->GetPositionX();
-        float by = netherspite->GetPositionY();
-        float bz = netherspite->GetPositionZ();
-        float px = greenPortal->GetPositionX();
-        float py = greenPortal->GetPositionY();
-
-        float dx = px - bx;
-        float dy = py - by;
-        float length = netherspite->GetExactDist2d(greenPortal);
-        if (length == 0.0f)
-            return false;
-
-        dx /= length;
-        dy /= length;
-        float bestDist = 150.0f;
-        Position bestPos;
-        bool found = false;
-
-        for (float dist = 18.0f; dist <= 30.0f; dist += 0.5f)
-        {
-            float candidateX = bx + dx * dist;
-            float candidateY = by + dy * dist;
-            float candidateZ = bz;
-            if (!IsSafePosition(candidateX, candidateY, voidZones, 4.0f))
-                continue;
-
-            float distToIdeal = fabs(dist - 18.0f);
-            if (!found || distToIdeal < bestDist)
-            {
-                bestDist = distToIdeal;
-                bestPos = Position(candidateX, candidateY, candidateZ);
-                found = true;
-            }
-        }
-
-        if (found)
+        Position beamPos;
+        if (FindBeamPosition(netherspite, greenPortal, voidZones, 18.0f, beamPos))
         {
             botAI->InterruptSpell();
-            return MoveTo(KARAZHAN_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            return MoveTo(KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(),
+                          beamPos.GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         return false;
@@ -1064,51 +986,71 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    const uint32 instanceId = netherspite->GetMap()->GetInstanceId();
-    const time_t now = std::time(nullptr);
+    uint32 const instanceId = netherspite->GetMap()->GetInstanceId();
+    time_t const now = std::time(nullptr);
+    bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
+    bool didSomething = false;
 
     // DpsWaitTimer is for pausing DPS during phase transitions
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_GREEN_BEAM_HEAL)))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        if (isMechanicTracker)
+        {
             netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
+            didSomething = true;
+        }
 
         if (botAI->IsTank(bot) &&
             !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
         {
             if (Action* action = botAI->GetAiObjectContext()->GetAction(
                     "netherspite block red beam"))
+            {
                 static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState();
+                didSomething = true;
+            }
         }
     }
     else if (IsBanishPhase(netherspite))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        if (isMechanicTracker && netherspiteDpsWaitTimer.count(instanceId) == 0)
+        {
             netherspiteDpsWaitTimer.erase(instanceId);
+            didSomething = true;
+        }
 
         if (botAI->IsTank(bot))
         {
             if (Action* action = botAI->GetAiObjectContext()->GetAction(
                     "netherspite block red beam"))
+            {
                 static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState();
+                didSomething = true;
+            }
         }
     }
     else if (IsBanishPhase(netherspite))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        if (isMechanicTracker)
+        {
             netherspiteDpsWaitTimer.try_emplace(instanceId, now);
+            didSomething = true;
+        }
 
         if (botAI->IsTank(bot) &&
             bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
         {
             if (Action* action = botAI->GetAiObjectContext()->GetAction(
                     "netherspite block red beam"))
+            {
                 static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState(now);
+                didSomething = true;
+            }
         }
     }
 
-    return false;
+    return didSomething;
 }
 
 // Move away from the boss to avoid Shadow Nova when Enfeebled

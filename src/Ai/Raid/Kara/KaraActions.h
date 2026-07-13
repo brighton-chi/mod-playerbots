@@ -208,7 +208,6 @@ public:
     }
 
 private:
-    Position GetPositionOnBeam(Unit* netherspite, Unit* portal, float distanceFromBoss);
     time_t _redBeamMoveTimer = 0;
     bool _lastBeamMoveSideways = false;
     bool _wasBlockingRedBeam = false;

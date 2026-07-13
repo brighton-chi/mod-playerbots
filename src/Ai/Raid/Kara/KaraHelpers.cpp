@@ -249,6 +249,53 @@ std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
     return voidZones;
 }
 
+bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
+                      float idealDistance, Position& outPos)
+{
+    constexpr float voidZoneRadius = 4.0f;
+    constexpr float searchMinDist = 18.0f;
+    constexpr float searchMaxDist = 30.0f;
+    constexpr float searchStep = 0.5f;
+    constexpr float initialBestDist = 150.0f;
+
+    float bx = boss->GetPositionX();
+    float by = boss->GetPositionY();
+    float bz = boss->GetPositionZ();
+    float px = portal->GetPositionX();
+    float py = portal->GetPositionY();
+
+    float dx = px - bx;
+    float dy = py - by;
+    float length = boss->GetExactDist2d(px, py);
+    if (length == 0.0f)
+        return false;
+
+    dx /= length;
+    dy /= length;
+
+    float bestDist = initialBestDist;
+    bool found = false;
+
+    for (float dist = searchMinDist; dist <= searchMaxDist; dist += searchStep)
+    {
+        float candidateX = bx + dx * dist;
+        float candidateY = by + dy * dist;
+        float candidateZ = bz;
+        if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
+            continue;
+
+        float distToIdeal = fabs(dist - idealDistance);
+        if (!found || distToIdeal < bestDist)
+        {
+            bestDist = distToIdeal;
+            outPos = Position(candidateX, candidateY, candidateZ);
+            found = true;
+        }
+    }
+
+    return found;
+}
+
 bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)

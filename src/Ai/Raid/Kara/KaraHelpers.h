@@ -99,6 +99,8 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
 std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
 bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
+bool FindBeamPosition(Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
+                      float idealDistance, Position& outPos);
 std::vector<Unit*> GetSpawnedInfernals(Player* bot);
 bool IsStraightPathSafe(
     Position const& start, Position const& target, std::vector<Unit*> const& hazards,

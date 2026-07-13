@@ -156,15 +156,10 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
         IsFlameWreathActive(botAI, bot);
 }
 
-// Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
-        return false;
-
-    Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
-    return elemental && !elemental->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_WARLOCK_BANISH));
+    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "conjured elemental");
 }
 
 bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
