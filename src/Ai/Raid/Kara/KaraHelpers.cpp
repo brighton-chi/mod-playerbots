@@ -18,8 +18,9 @@ bool IsCastingArcaneExplosion(Unit* aran)
         static_cast<uint32>(KarazhanSpells::SPELL_ARCANE_EXPLOSION));
 }
 
-bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
+bool IsFlameWreathActive(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Unit* aran =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
     Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
@@ -54,8 +55,9 @@ bool IsBanishPhase(Unit* netherspite)
 }
 
 // Red beam blockers: tank bots, no Nether Exhaustion Red
-std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetRedBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -79,8 +81,9 @@ std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
 
 // Blue beam blockers: DPS bots, excluding Warrior/Rogue/DK
 // no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
-std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetBlueBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -113,8 +116,9 @@ std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
 // Green beam blockers:
 // (1) Prioritize Rogues and non-tank Warrior and DK bots, no Nether Exhaustion Green
 // (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
-std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetGreenBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -155,14 +159,14 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
     return greenBlockers;
 }
 
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot)
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
 {
     static ObjectGuid currentRedBlocker;
     static ObjectGuid currentGreenBlocker;
     static ObjectGuid currentBlueBlocker;
 
     Player* redBlocker = nullptr;
-    std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
+    std::vector<Player*> redBlockers = GetRedBlockers(bot);
     if (!redBlockers.empty())
     {
         auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
@@ -184,7 +188,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     }
 
     Player* greenBlocker = nullptr;
-    std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
+    std::vector<Player*> greenBlockers = GetGreenBlockers(bot);
     if (!greenBlockers.empty())
     {
         auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
@@ -206,7 +210,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     }
 
     Player* blueBlocker = nullptr;
-    std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
+    std::vector<Player*> blueBlockers = GetBlueBlockers(bot);
     if (!blueBlockers.empty())
     {
         auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
@@ -230,7 +234,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
 }
 
-std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
+std::vector<Unit*> GetAllVoidZones(Player* bot)
 {
     std::vector<Unit*> voidZones;
     std::list<Creature*> creatureList;

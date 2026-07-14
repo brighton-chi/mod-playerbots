@@ -165,9 +165,9 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     Position leftPosition;
     Position rightPosition;
     if (!TryGetFelmystGroundStackPosition(
-            botAI, bot, felmyst, FelmystGroundStack::Left, leftPosition) ||
+            bot, felmyst, FelmystGroundStack::Left, leftPosition) ||
         !TryGetFelmystGroundStackPosition(
-            botAI, bot, felmyst, FelmystGroundStack::Right, rightPosition))
+            bot, felmyst, FelmystGroundStack::Right, rightPosition))
     {
         return false;
     }
@@ -402,7 +402,7 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    Player* charmedPlayer = GetFelmystCharmedTarget(botAI, bot, felmyst);
+    Player* charmedPlayer = GetFelmystCharmedTarget(bot, felmyst);
     if (!charmedPlayer)
         return false;
 

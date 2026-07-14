@@ -651,7 +651,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     if (botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsRanged(bot) && !IsAlythessTank(botAI, bot))
+    if (!botAI->IsRanged(bot) && !IsAlythessTank(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

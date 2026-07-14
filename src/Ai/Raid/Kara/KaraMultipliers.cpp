@@ -183,7 +183,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "shade of aran"))
         return 1.0f;
 
-    if (!IsFlameWreathActive(botAI, bot))
+    if (!IsFlameWreathActive(bot))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -210,7 +210,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
 
     if (bot == redBlocker &&
         dynamic_cast<CombatFormationMoveAction*>(action))

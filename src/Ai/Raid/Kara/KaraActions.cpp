@@ -84,8 +84,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
     {
         Unit* attumen = GetFirstAliveUnitByEntry(
             botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN));
-        if (attumen && AssistTankMoveAttumenFromGroup(midnight, attumen))
-            return true;
+        return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
     }
 
     if (AI_VALUE(Unit*, "current target") != midnight)
@@ -132,11 +131,15 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     if (attumen->GetVictim() != bot)
         return false;
 
-    Position const tankPosition = { 0.0f, 0.0f, 0.0f };
+    Position const tankPosition = { -11123.762f, -1926.619f, 49.215f };
     float const distanceToPosition = bot->GetExactDist2d(tankPosition);
 
-    if (distanceToPosition < 2.0f || distanceToPosition > 20.0f)
+    if (distanceToPosition < 2.0f || !bot->IsWithinLOS(
+            tankPosition.GetPositionX(), tankPosition.GetPositionY(),
+            tankPosition.GetPositionZ()))
+    {
         return false;
+    }
 
     float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
     float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
@@ -678,7 +681,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     if (!redPortal)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
     bool isBlockingNow = (bot == redBlocker);
     bool wasBlocking = _wasBlockingRedBeam;
 
@@ -745,7 +748,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     if (!bluePortal)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
     bool isBlockingNow = (bot == blueBlocker);
     bool wasBlocking = _wasBlockingBlueBeam;
 
@@ -770,7 +773,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         _wasBlockingBlueBeam = true;
 
         float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
-        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
         Position beamPos;
         if (FindBeamPosition(netherspite, bluePortal, voidZones, idealDistance, beamPos))
@@ -804,7 +807,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     if (!greenPortal)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
     bool isBlockingNow = (bot == greenBlocker);
     bool wasBlocking = _wasBlockingGreenBeam;
 
@@ -828,7 +831,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         }
         _wasBlockingGreenBeam = true;
 
-        std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+        std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
         Position beamPos;
         if (FindBeamPosition(netherspite, greenPortal, voidZones, 18.0f, beamPos))
@@ -854,7 +857,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     constexpr float hazardRadius = 4.0f;
     bool const nearVoidZone = !IsSafePosition(
@@ -938,14 +941,15 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
     {
         float const bx = netherspite->GetPositionX();
         float const by = netherspite->GetPositionY();
-        float const dx = beam.portal->GetPositionX() - bx;
-        float const dy = beam.portal->GetPositionY() - by;
+        float dx = beam.portal->GetPositionX() - bx;
+        float dy = beam.portal->GetPositionY() - by;
         float const length = netherspite->GetExactDist2d(beam.portal);
 
         if (length == 0.0f)
             continue;
 
-        dx /= length; dy /= length;
+        dx /= length;
+        dy /= length;
         float botdx = x - bx, botdy = y - by;
         float distanceAlongBeam = (botdx * dx + botdy * dy);
         float beamX = bx + dx * distanceAlongBeam, beamY = by + dy * distanceAlongBeam;
@@ -964,7 +968,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
 
 bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
 
     constexpr float safeDistance = 4.0f;
     for (Unit* vz : voidZones)

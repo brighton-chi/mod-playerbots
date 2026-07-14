@@ -91,13 +91,13 @@ extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
 bool IsCastingArcaneExplosion(Unit* aran);
-bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
+bool IsFlameWreathActive(Player* bot);
 bool IsBanishPhase(Unit* netherspite);
-std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
+std::vector<Player*> GetRedBlockers(Player* bot);
+std::vector<Player*> GetBlueBlockers(Player* bot);
+std::vector<Player*> GetGreenBlockers(Player* bot);
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot);
+std::vector<Unit*> GetAllVoidZones(Player* bot);
 bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
 bool FindBeamPosition(
     Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,

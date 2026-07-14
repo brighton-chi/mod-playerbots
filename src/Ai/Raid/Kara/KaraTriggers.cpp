@@ -147,13 +147,13 @@ bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    return aran && IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(botAI, bot);
+    return aran && IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "shade of aran") &&
-        IsFlameWreathActive(botAI, bot);
+        IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
@@ -168,7 +168,7 @@ bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
         return false;
 
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    return aran && !IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(botAI, bot);
+    return aran && !IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 bool NetherspiteRedBeamIsActiveTrigger::IsActive()
@@ -210,7 +210,7 @@ bool NetherspiteBotIsNotBeamBlockerTrigger::IsActive()
     if (!netherspite || IsBanishPhase(netherspite))
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
     return bot != redBlocker && bot != blueBlocker && bot != greenBlocker;
 }
 
@@ -220,7 +220,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
     if (!netherspite || !IsBanishPhase(netherspite))
         return false;
 
-    std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
+    std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     constexpr float safeDistance = 4.0f;
     for (Unit* vz : voidZones)
     {

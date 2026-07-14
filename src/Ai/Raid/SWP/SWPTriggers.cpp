@@ -394,7 +394,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
-        IsAnySacrolashTank(botAI, bot);
+        IsAnySacrolashTank(bot);
 }
 
 bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
@@ -406,7 +406,7 @@ bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "grand warlock alythess") &&
-        IsAlythessTank(botAI, bot);
+        IsAlythessTank(bot);
 }
 
 bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
@@ -434,7 +434,7 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
     if (GetEredarTwinsConflagrationTarget(bot) == bot)
         return false;
 
-    return !IsAlythessTank(botAI, bot);
+    return !IsAlythessTank(bot);
 }
 
 bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
@@ -463,7 +463,7 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
-    return !IsAnySacrolashTank(botAI, bot) && !IsAlythessTank(botAI, bot);
+    return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
 }
 
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()
@@ -640,7 +640,7 @@ bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
     if (!muru)
         return false;
 
-    return FindAvailableVoidSpawnForEnslave(botAI, bot);
+    return FindAvailableVoidSpawnForEnslave(bot);
 }
 
 bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
