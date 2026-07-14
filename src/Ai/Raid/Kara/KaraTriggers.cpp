@@ -61,6 +61,15 @@ bool MaidenOfVirtueBossEngagedByTanksTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "maiden of virtue");
 }
 
+bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "grounding totem") &&
+        AI_VALUE2(Unit*, "find target", "maiden of virtue");
+}
+
 bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
 {
     return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
@@ -82,6 +91,15 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 {
     return bot->HasAura(
         static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+}
+
+bool BigBadWolfCastsTerrifyingHowlTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
+        AI_VALUE2(Unit*, "find target", "the big bad wolf");
 }
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()

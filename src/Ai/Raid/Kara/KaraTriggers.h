@@ -75,6 +75,14 @@ public:
     bool IsActive() override;
 };
 
+class MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger : public Trigger
+{
+public:
+    MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "maiden of virtue grounding totem consumes holy fire") {}
+    bool IsActive() override;
+};
+
 class BigBadWolfBossEngagedByTankTrigger : public Trigger
 {
 public:
@@ -88,6 +96,14 @@ class BigBadWolfBossIsChasingLittleRedRidingHoodTrigger : public Trigger
 public:
     BigBadWolfBossIsChasingLittleRedRidingHoodTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf boss is chasing little red riding hood") {}
+    bool IsActive() override;
+};
+
+class BigBadWolfCastsTerrifyingHowlTrigger : public Trigger
+{
+public:
+    BigBadWolfCastsTerrifyingHowlTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf casts terrifying howl") {}
     bool IsActive() override;
 };
 

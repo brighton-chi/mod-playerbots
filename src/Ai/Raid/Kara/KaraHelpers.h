@@ -45,11 +45,12 @@ enum class KarazhanSpells : uint32
     SPELL_BELLOWING_ROAR             = 36922,
     SPELL_RAIN_OF_BONES              = 37091,
 
-    // Warlock
-    SPELL_WARLOCK_BANISH             = 18647,
-
     // Priest
-    SPELL_FEAR_WARD                  =  6346,
+    SPELL_FEAR_WARD                  = 6346,
+
+    // Shaman
+    SPELL_TREMOR_TOTEM               = 8143,
+    SPELL_GROUNDING_TOTEM            = 8177,
 };
 
 enum class KarazhanNpcs : uint32

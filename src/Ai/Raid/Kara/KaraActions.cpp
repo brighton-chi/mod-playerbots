@@ -336,6 +336,12 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
     return false;
 }
 
+bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_GROUNDING_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_GROUNDING_TOTEM), bot);
+}
+
 // The Big Bad Wolf
 
 // Tank the boss at the front left corner of the stage
@@ -398,6 +404,12 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
         KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
         position.GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool BigBadWolfSetTremorTotemAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 // Romulo and Julianne
@@ -594,7 +606,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
         if (!elemental || !elemental->IsAlive())
             continue;
 
-        if (!elemental->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_WARLOCK_BANISH)))
+        if (!botAI->HasAura("banish", elemental))
             return MarkTargetWithSkull(bot, elemental);
     }
 

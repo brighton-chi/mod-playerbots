@@ -35,6 +35,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class MaidenOfVirtueSetGroundingTotemMultiplier : public Multiplier
+{
+public:
+    MaidenOfVirtueSetGroundingTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue set grounding totem multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
 public:
@@ -104,6 +112,14 @@ class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class BigBadWolfSetTremorTotemMultiplier : public Multiplier
+{
+public:
+    BigBadWolfSetTremorTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "big bad wolf set tremor totem") {}
     virtual float GetValue(Action* action);
 };
 

@@ -37,7 +37,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("maiden of virtue tank position boss", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("maiden of virtue holy wrath deals chain damage",
-        { NextAction("maiden of virtue position ranged", ACTION_RAID) }
+        { NextAction("maiden of virtue position ranged", ACTION_RAID + 1) }
+    ));
+    triggers.push_back(new TriggerNode("maiden of virtue grounding totem consumes holy fire",
+        { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }
     ));
 
     // The Big Bad Wolf
@@ -46,6 +49,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("big bad wolf boss engaged by tank",
         { NextAction("big bad wolf position boss", ACTION_RAID) }
+    ));
+    triggers.push_back(new TriggerNode("big bad wolf casts terrifying howl",
+        { NextAction("big bad wolf set tremor totem", ACTION_RAID) }
     ));
 
     // Romulo and Julianne
@@ -149,6 +155,8 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
+    multipliers.push_back(new BigBadWolfSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDelayBloodlustAndHeroismMultiplier(botAI));

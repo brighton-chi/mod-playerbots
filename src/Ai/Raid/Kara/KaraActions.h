@@ -87,6 +87,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MaidenOfVirtueSetGroundingTotemAction : public Action
+{
+public:
+    MaidenOfVirtueSetGroundingTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "maiden of virtue set grounding totem") {}
+    bool Execute(Event event) override;
+};
+
 class BigBadWolfPositionBossAction : public AttackAction
 {
 public:
@@ -104,6 +112,14 @@ public:
 
 private:
     uint8 _runIndex = 0;
+};
+
+class BigBadWolfSetTremorTotemAction : public Action
+{
+public:
+    BigBadWolfSetTremorTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "big bad wolf set tremor totem") {}
+    bool Execute(Event event) override;
 };
 
 class RomuloAndJulianneMarkTargetAction : public Action
