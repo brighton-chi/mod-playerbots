@@ -28,7 +28,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("karazhan bot is not in combat",
-        { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 11) }
+        { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 10) }
     ));
     triggers.push_back(new TriggerNode("karazhan enemies cast fear",
         { NextAction("karazhan cast fear protection spell", ACTION_RAID) }
@@ -47,7 +47,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("attumen the huntsman handle phase two", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("attumen the huntsman boss wipes aggro when mounting",
-        { NextAction("attumen the huntsman manage dps timer", ACTION_RAID + 1) }
+        { NextAction("attumen the huntsman set dps timer", ACTION_EMERGENCY + 10) }
     ));
 
     // Moroes
@@ -116,7 +116,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shade of aran conjured elementals summoned",
         { NextAction("shade of aran mark conjured elemental", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("shade of aran boss uses counterspell and blizzard",
+    triggers.push_back(new TriggerNode("shade of aran boss casts counterspell nearby",
         { NextAction("shade of aran ranged maintain distance", ACTION_RAID + 1) }
     ));
 

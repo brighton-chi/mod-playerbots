@@ -20,8 +20,6 @@ using namespace KarazhanHelpers;
 
 bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
 {
-
-    ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     bool erased = false;
 
@@ -52,15 +50,15 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_PRIEST)
         return CastFearWardOnMainTank();
-    else // Shaman only
+    else
         return SetTremorTotem();
 }
 
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || !mainTank->IsAlive() || mainTank->HasAura(
-            static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
+    if (!mainTank || !mainTank->IsAlive() ||
+        mainTank->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
     {
         return false;
     }
@@ -186,8 +184,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     float const distanceToPosition = bot->GetExactDist2d(tankPosition);
 
     if (distanceToPosition < 2.0f || !bot->IsWithinLOS(
-            tankPosition.GetPositionX(), tankPosition.GetPositionY(),
-            tankPosition.GetPositionZ()))
+            tankPosition.GetPositionX(), tankPosition.GetPositionY(), tankPosition.GetPositionZ()))
     {
         return false;
     }
@@ -220,8 +217,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
     return false;
 }
 
-// Reset timer for bots to pause DPS when Attumen mounts Midnight
-bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
+bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
     if (bot->FindNearestCreature(
@@ -656,7 +652,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 // Don't get farther than 15 yards from Aran to avoid getting stuck in alcoves
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    /* Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
         return false;
 
@@ -670,7 +666,9 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     constexpr float distIncrement = 0.5f;
     constexpr float minDistFromPlayers = 3.0f;
 
-    float bestX = 0, bestY = 0, bestMoveDist = std::numeric_limits<float>::max();
+    float bestX = 0.0f;
+    float bestY = 0.0f;
+    float bestMoveDist = std::numeric_limits<float>::max();
     bool found = false;
 
     for (float dist = minDistFromBoss; dist <= maxDistFromBoss; dist += distIncrement)
@@ -686,12 +684,14 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
                 Player* member = ref->GetSource();
                 if (!member || member == bot || !member->IsAlive())
                     continue;
+
                 if (member->GetExactDist2d(x, y) < minDistFromPlayers)
                 {
                     tooClose = true;
                     break;
                 }
             }
+
             if (tooClose)
                 continue;
 
@@ -712,6 +712,22 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
             KARAZHAN_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    return false; */
+
+    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
+        return false;
+
+    constexpr float minDist = 11.0f;
+    constexpr float maxDist = 15.0f;
+    float const dist = bot->GetExactDist2d(aran);
+
+    if (dist > maxDist)
+        return MoveTo(aran, maxDist, MovementPriority::MOVEMENT_COMBAT);
+
+    if (dist < minDist)
+        return MoveTo(aran, minDist, MovementPriority::MOVEMENT_COMBAT);
 
     return false;
 }
@@ -1380,8 +1396,8 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
         return false;
 
     constexpr float searchRadius = 40.0f;
-    constexpr float safeDistance = 10.0f;
-    constexpr float minBossDist = 20.0f;
+    constexpr float safeDistance = 12.0f;
+    constexpr float minBossDist = 15.0f;
     constexpr float maxBossDist = 35.0f;
     constexpr float angleStep = M_PI / 16.0f;
     constexpr float distStep = 1.0f;

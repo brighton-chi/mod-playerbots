@@ -95,8 +95,8 @@ public:
         creators["shade of aran conjured elementals summoned"] =
             &RaidKarazhanTriggerContext::shade_of_aran_conjured_elementals_summoned;
 
-        creators["shade of aran boss uses counterspell and blizzard"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_boss_uses_counterspell_and_blizzard;
+        creators["shade of aran boss casts counterspell nearby"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_boss_casts_counterspell_nearby;
 
         // Netherspite
         creators["netherspite red beam is active"] =
@@ -234,8 +234,8 @@ private:
     static Trigger* shade_of_aran_conjured_elementals_summoned(PlayerbotAI* botAI) {
         return new ShadeOfAranConjuredElementalsSummonedTrigger(botAI);
     }
-    static Trigger* shade_of_aran_boss_uses_counterspell_and_blizzard(PlayerbotAI* botAI) {
-        return new ShadeOfAranBossUsesCounterspellAndBlizzardTrigger(botAI);
+    static Trigger* shade_of_aran_boss_casts_counterspell_nearby(PlayerbotAI* botAI) {
+        return new ShadeOfAranBossCastsCounterspellNearbyTrigger(botAI);
     }
 
     // Netherspite

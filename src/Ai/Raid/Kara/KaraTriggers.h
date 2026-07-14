@@ -192,11 +192,11 @@ public:
     bool IsActive() override;
 };
 
-class ShadeOfAranBossUsesCounterspellAndBlizzardTrigger : public Trigger
+class ShadeOfAranBossCastsCounterspellNearbyTrigger : public Trigger
 {
 public:
-    ShadeOfAranBossUsesCounterspellAndBlizzardTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss uses counterspell and blizzard") {}
+    ShadeOfAranBossCastsCounterspellNearbyTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "shade of aran boss casts counterspell nearby") {}
     bool IsActive() override;
 };
 

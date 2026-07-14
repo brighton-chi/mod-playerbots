@@ -30,6 +30,7 @@ enum class KarazhanSpells : uint32
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST          = 30004,
     SPELL_FLAME_WREATH_AURA          = 29946,
+    SPELL_BLIZZARD                   = 29951,
     SPELL_ARCANE_EXPLOSION           = 29973,
 
     // Netherspite

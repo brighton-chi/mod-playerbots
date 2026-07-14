@@ -180,12 +180,18 @@ bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "conjured elemental");
 }
 
-bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
+bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
 
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BLIZZARD)))
+        return false;
+
     return aran && !IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 

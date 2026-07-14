@@ -62,11 +62,11 @@ private:
     bool StackBehindAttumen(Unit* attumen);
 };
 
-class AttumenTheHuntsmanManageDpsTimerAction : public Action
+class AttumenTheHuntsmanSetDpsTimerAction : public Action
 {
 public:
-    AttumenTheHuntsmanManageDpsTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "attumen the huntsman manage dps timer") {}
+    AttumenTheHuntsmanSetDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "attumen the huntsman set dps timer") {}
     bool Execute(Event event) override;
 };
 

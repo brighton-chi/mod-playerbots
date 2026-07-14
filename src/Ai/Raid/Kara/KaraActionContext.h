@@ -33,7 +33,7 @@ public:
         creators["attumen the huntsman handle phase two"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_handle_phase_two;
 
-        creators["attumen the huntsman manage dps timer"] =
+        creators["attumen the huntsman set dps timer"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
         // Moroes
@@ -166,7 +166,7 @@ private:
         return new AttumenTheHuntsmanHandlePhaseTwoAction(botAI);
     }
     static Action* attumen_the_huntsman_manage_dps_timer(PlayerbotAI* botAI) {
-        return new AttumenTheHuntsmanManageDpsTimerAction(botAI);
+        return new AttumenTheHuntsmanSetDpsTimerAction(botAI);
     }
 
     // Moroes
