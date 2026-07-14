@@ -249,7 +249,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
     return false;
 }
 
-bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
+bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActive()
 {
     if (!botAI->IsTank(bot) && !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
@@ -278,16 +278,16 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
     return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "prince malchezaar");
 }
 
-bool NightbaneBossEngagedByMainTankTrigger::IsActive()
+bool NightbaneBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!botAI->IsTank(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
 }
 
-bool NightbaneRangedBotsAreInCharredEarthTrigger::IsActive()
+bool NightbaneGroundPhaseEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
@@ -327,7 +327,7 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     return now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds;
 }
 
-bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()
+bool NightbaneShouldManageTimersAndTrackersTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "nightbane");
 }

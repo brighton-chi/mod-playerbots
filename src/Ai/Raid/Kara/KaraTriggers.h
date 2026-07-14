@@ -240,11 +240,11 @@ public:
     bool IsActive() override;
 };
 
-class NetherspiteNeedToManageTimersAndTrackersTrigger : public Trigger
+class NetherspiteShouldManageTimersAndTrackersTrigger : public Trigger
 {
 public:
-    NetherspiteNeedToManageTimersAndTrackersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "netherspite need to manage timers and trackers") {}
+    NetherspiteShouldManageTimersAndTrackersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "netherspite should manage timers and trackers") {}
     bool IsActive() override;
 };
 
@@ -272,19 +272,19 @@ public:
     bool IsActive() override;
 };
 
-class NightbaneBossEngagedByMainTankTrigger : public Trigger
+class NightbaneBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    NightbaneBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "nightbane boss engaged by main tank") {}
+    NightbaneBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "nightbane boss engaged by tanks") {}
     bool IsActive() override;
 };
 
-class NightbaneRangedBotsAreInCharredEarthTrigger : public Trigger
+class NightbaneGroundPhaseEngagedByRangedTrigger : public Trigger
 {
 public:
-    NightbaneRangedBotsAreInCharredEarthTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged bots are in charred earth") {}
+    NightbaneGroundPhaseEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "nightbane ground phase engaged by ranged") {}
     bool IsActive() override;
 };
 
@@ -304,11 +304,11 @@ public:
     bool IsActive() override;
 };
 
-class NightbaneNeedToManageTimersAndTrackersTrigger : public Trigger
+class NightbaneShouldManageTimersAndTrackersTrigger : public Trigger
 {
 public:
-    NightbaneNeedToManageTimersAndTrackersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "nightbane need to manage timers and trackers") {}
+    NightbaneShouldManageTimersAndTrackersTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "nightbane should manage timers and trackers") {}
     bool IsActive() override;
 };
 

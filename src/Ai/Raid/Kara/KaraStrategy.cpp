@@ -136,7 +136,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("netherspite boss is banished",
         { NextAction("netherspite banish phase avoid void zone", ACTION_EMERGENCY + 1) }
     ));
-    triggers.push_back(new TriggerNode("netherspite need to manage timers and trackers",
+    triggers.push_back(new TriggerNode("netherspite should manage timers and trackers",
         { NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10) }
     ));
 
@@ -152,11 +152,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Nightbane
-    triggers.push_back(new TriggerNode("nightbane boss engaged by main tank",
-        { NextAction("nightbane ground phase position boss", ACTION_RAID) }
+    triggers.push_back(new TriggerNode("nightbane boss engaged by tanks",
+        { NextAction("nightbane ground phase tanks position boss", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("nightbane ranged bots are in charred earth",
-        { NextAction("nightbane ground phase rotate ranged positions", ACTION_EMERGENCY + 1) }
+    triggers.push_back(new TriggerNode("nightbane ground phase engaged by ranged",
+        { NextAction("nightbane ground phase coordinate ranged movement", ACTION_EMERGENCY + 1) }
     ));
     triggers.push_back(new TriggerNode("nightbane pets ignore collision to chase flying boss",
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }
@@ -164,7 +164,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("nightbane boss is flying",
         { NextAction("nightbane flight phase movement", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("nightbane need to manage timers and trackers",
+    triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }
     ));
 }

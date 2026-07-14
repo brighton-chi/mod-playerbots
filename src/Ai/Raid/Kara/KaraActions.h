@@ -320,40 +320,24 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneGroundPhasePositionBossAction : public AttackAction
+class NightbaneGroundPhaseTanksPositionBossAction : public AttackAction
 {
 public:
-    NightbaneGroundPhasePositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "nightbane ground phase position boss") {}
+    NightbaneGroundPhaseTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "nightbane ground phase tanks position boss") {}
     bool Execute(Event event) override;
-    bool ResetTankStep()
-    {
-        if (_tankStep == 0)
-            return false;
-        _tankStep = 0;
-        return true;
-    }
-
-private:
-    uint8 _tankStep = 0;
 };
 
-class NightbaneGroundPhaseRotateRangedPositionsAction : public MovementAction
+class NightbaneGroundPhaseCoordinateRangedMovementAction : public MovementAction
 {
 public:
-    NightbaneGroundPhaseRotateRangedPositionsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane ground phase rotate ranged positions") {}
+    NightbaneGroundPhaseCoordinateRangedMovementAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane ground phase coordinate ranged movement") {}
     bool Execute(Event event) override;
-    bool ResetRangedStep()
-    {
-        if (_rangedStep == 0)
-            return false;
-        _rangedStep = 0;
-        return true;
-    }
 
 private:
-    uint8 _rangedStep = 0;
+    bool MoveRangedLeaderToSafeSpot();
+    bool StackOnRangedLeader(Player* rangedLeader);
 };
 
 class NightbaneControlPetAggressionAction : public Action

@@ -114,7 +114,7 @@ public:
         creators["netherspite boss is banished"] =
             &RaidKarazhanTriggerContext::netherspite_boss_is_banished;
 
-        creators["netherspite need to manage timers and trackers"] =
+        creators["netherspite should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::netherspite_need_to_manage_timers_and_trackers;
 
         // Prince Malchezaar
@@ -128,10 +128,10 @@ public:
             &RaidKarazhanTriggerContext::prince_malchezaar_boss_engaged_by_main_tank;
 
         // Nightbane
-        creators["nightbane boss engaged by main tank"] =
+        creators["nightbane boss engaged by tanks"] =
             &RaidKarazhanTriggerContext::nightbane_boss_engaged_by_main_tank;
 
-        creators["nightbane ranged bots are in charred earth"] =
+        creators["nightbane ground phase engaged by ranged"] =
             &RaidKarazhanTriggerContext::nightbane_ranged_bots_are_in_charred_earth;
 
         creators["nightbane pets ignore collision to chase flying boss"] =
@@ -140,7 +140,7 @@ public:
         creators["nightbane boss is flying"] =
             &RaidKarazhanTriggerContext::nightbane_boss_is_flying;
 
-        creators["nightbane need to manage timers and trackers"] =
+        creators["nightbane should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::nightbane_need_to_manage_timers_and_trackers;
     }
 
@@ -255,7 +255,7 @@ private:
         return new NetherspiteBossIsBanishedTrigger(botAI);
     }
     static Trigger* netherspite_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) {
-        return new NetherspiteNeedToManageTimersAndTrackersTrigger(botAI);
+        return new NetherspiteShouldManageTimersAndTrackersTrigger(botAI);
     }
 
     // Prince Malchezaar
@@ -271,10 +271,10 @@ private:
 
     // Nightbane
     static Trigger* nightbane_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new NightbaneBossEngagedByMainTankTrigger(botAI);
+        return new NightbaneBossEngagedByTanksTrigger(botAI);
     }
     static Trigger* nightbane_ranged_bots_are_in_charred_earth(PlayerbotAI* botAI) {
-        return new NightbaneRangedBotsAreInCharredEarthTrigger(botAI);
+        return new NightbaneGroundPhaseEngagedByRangedTrigger(botAI);
     }
     static Trigger* nightbane_pets_ignore_collision_to_chase_flying_boss(PlayerbotAI* botAI) {
         return new NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(botAI);
@@ -283,7 +283,7 @@ private:
         return new NightbaneBossIsFlyingTrigger(botAI);
     }
     static Trigger* nightbane_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) {
-        return new NightbaneNeedToManageTimersAndTrackersTrigger(botAI);
+        return new NightbaneShouldManageTimersAndTrackersTrigger(botAI);
     }
 };
 

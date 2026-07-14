@@ -433,8 +433,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<FleeAction*>(action))
+        dynamic_cast<CastDisengageAction*>(action))
     {
         return 0.0f;
     }

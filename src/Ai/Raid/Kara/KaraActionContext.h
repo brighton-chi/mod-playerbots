@@ -128,10 +128,10 @@ public:
             &RaidKarazhanActionContext::prince_malchezaar_main_tank_movement;
 
         // Nightbane
-        creators["nightbane ground phase position boss"] =
+        creators["nightbane ground phase tanks position boss"] =
             &RaidKarazhanActionContext::nightbane_ground_phase_position_boss;
 
-        creators["nightbane ground phase rotate ranged positions"] =
+        creators["nightbane ground phase coordinate ranged movement"] =
             &RaidKarazhanActionContext::nightbane_ground_phase_rotate_ranged_positions;
 
         creators["nightbane control pet aggression"] =
@@ -272,10 +272,10 @@ private:
 
     // Nightbane
     static Action* nightbane_ground_phase_position_boss(PlayerbotAI* botAI) {
-        return new NightbaneGroundPhasePositionBossAction(botAI);
+        return new NightbaneGroundPhaseTanksPositionBossAction(botAI);
     }
     static Action* nightbane_ground_phase_rotate_ranged_positions(PlayerbotAI* botAI) {
-        return new NightbaneGroundPhaseRotateRangedPositionsAction(botAI);
+        return new NightbaneGroundPhaseCoordinateRangedMovementAction(botAI);
     }
     static Action* nightbane_control_pet_aggression(PlayerbotAI* botAI) {
         return new NightbaneControlPetAggressionAction(botAI);
