@@ -28,7 +28,8 @@ Position const PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
 
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
-    if (Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_CHARMING_TOTEM))
+    constexpr uint32 searchRadius = 40.0f;
+    if (Unit* totem = FindNearestCreature(NPC_CHARMING_TOTEM, searchRadius, true))
         return MarkTargetWithSkull(bot, totem);
 
     return false;
