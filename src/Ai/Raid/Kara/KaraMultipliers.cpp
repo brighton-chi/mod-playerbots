@@ -93,7 +93,8 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
         return 1.0f;
 
-    if (!GetAttumenMounted(bot))
+    Unit* attumen = GetAttumenMounted(bot);
+    if (!attumen)
         return 1.0f;
 
     if (botAI->IsMainTank(bot))

@@ -101,6 +101,9 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
             target = manaWarp;
     }
 
+    if (!target)
+        return false;
+
     static const std::array<const char*, 8> spells =
     {
         "bash",
@@ -114,7 +117,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 
     for (const char* spell : spells)
     {
-        if (botAI->CanCastSpell(spell, manaWarp) && botAI->CastSpell(spell, manaWarp))
+        if (botAI->CanCastSpell(spell, target) && botAI->CastSpell(spell, target))
             return true;
     }
 
@@ -1274,19 +1277,14 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
 
 // The tank position is near the Southeastern area of the Master's Terrace
 // The tank moves Nightbane into position in two steps to try to get Nightbane to face sideways to the raid
-bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
-{
+// bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
+/* {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
         return false;
 
-    if (MarkTargetWithSkull(bot, nightbane))
-        return true;
-
     if (AI_VALUE(Unit*, "current target") != nightbane)
         return Attack(nightbane);
-
-    uint8 step = _tankStep;
 
     if (nightbane->GetVictim() != bot)
         return false;
@@ -1296,7 +1294,9 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
         { -11160.646f, -1932.773f, 91.473f },
         { -11173.530f, -1940.707f, 91.473f }
     };
+    uint8 step = _tankStep;
     Position const position = tankPositions[step];
+
     constexpr float maxDistance = 0.5f;
     float const distanceToTarget = bot->GetExactDist2d(position);
 
@@ -1311,13 +1311,76 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
     if (step == 0 && distanceToTarget <= maxDistance)
         _tankStep = 1;
 
-    /* if (step == 1 && distanceToTarget <= maxDistance)
+    //if (step == 1 && distanceToTarget <= maxDistance)
+    //{
+    //    float orientation = atan2(
+    //        nightbane->GetPositionY() - bot->GetPositionY(),
+    //        nightbane->GetPositionX() - bot->GetPositionX());
+    //    bot->SetFacingTo(orientation);
+    //}
+
+    return false;
+} */
+
+// Tank positions on the long arc of a circle such that Nightbane faces away from the raid
+bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
+{
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != nightbane)
+        return Attack(nightbane);
+
+    if (nightbane->GetVictim() != bot)
+        return false;
+
+    static Position const center = { -11126.015f, -1925.2711f, 91.460f };
+    static Position const arcA  = { -11115.958f, -1972.058f, 91.45689f };
+    static Position const arcB  = { -11077.5205f, -1913.3154f, 91.47126f };
+
+    float const radius = center.GetExactDist2d(arcA);
+
+    float const thetaA = atan2(arcA.GetPositionY() - center.GetPositionY(),
+                                arcA.GetPositionX() - center.GetPositionX());
+    float const thetaB = atan2(arcB.GetPositionY() - center.GetPositionY(),
+                                arcB.GetPositionX() - center.GetPositionX());
+
+    // CCW angular span from A to B
+    float deltaAB = thetaB - thetaA;
+    if (deltaAB < 0.0f) deltaAB += 2.0f * M_PI;
+
+    // Long arc: if the CCW span from A to B is less than π, the long arc goes CCW from B to A+2π
+    float arcStart, arcEnd;
+    if (deltaAB < M_PI)
     {
-        float orientation = atan2(
-            nightbane->GetPositionY() - bot->GetPositionY(),
-            nightbane->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
-    } */
+        arcStart = thetaB;
+        arcEnd = thetaA + 2.0f * M_PI;
+    }
+    else
+    {
+        arcStart = thetaA;
+        arcEnd = thetaB;
+    }
+
+    float thetaN = atan2(nightbane->GetPositionY() - center.GetPositionY(),
+                          nightbane->GetPositionX() - center.GetPositionX());
+
+    // Normalize into [arcStart, arcStart + 2π)
+    while (thetaN < arcStart) thetaN += 2.0f * M_PI;
+    while (thetaN >= arcStart + 2.0f * M_PI) thetaN -= 2.0f * M_PI;
+
+    float const thetaClamped = std::max(arcStart, std::min(arcEnd, thetaN));
+
+    float const destX = center.GetPositionX() + radius * cos(thetaClamped);
+    float const destY = center.GetPositionY() + radius * sin(thetaClamped);
+
+    if (bot->GetExactDist2d(destX, destY) > 0.5f)
+    {
+        return MoveTo(
+            KARAZHAN_MAP_ID, destX, destY, center.GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_FORCED, true, true);
+    }
 
     return false;
 }
@@ -1327,7 +1390,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 // Ranged positions are near the Northeastern door to the tower.
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
 {
-    constexpr float charredEarthSearchRadius = 40.0f;
+    /* constexpr float charredEarthSearchRadius = 40.0f;
     constexpr float charredEarthDangerRadius = 6.0f;
 
     std::list<WorldObject*> objs;
@@ -1336,7 +1399,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
     Cell::VisitObjects(bot, searcher, charredEarthSearchRadius);
 
-    auto isPositionHazardous = [&](Position const& pos) -> bool
+    auto isPositionInCharredEarth = [&](Position const& pos) -> bool
     {
         for (WorldObject* obj : objs)
         {
@@ -1356,15 +1419,15 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
     uint8 index = _rangedStep;
     static const Position rangedPositions[3] =
     {
-        /* { -11145.949f, -1970.927f, 91.473f },
-        { -11143.594f, -1954.981f, 91.473f },
-        { -11159.778f, -1961.031f, 91.473f } */
+        //{ -11145.949f, -1970.927f, 91.473f },
+        //{ -11143.594f, -1954.981f, 91.473f },
+        //{ -11159.778f, -1961.031f, 91.473f }
         { -11147.069f, -1967.857f, 91.471f },
         { -11145.763f, -1957.877f, 91.473f },
         { -11154.798f, -1959.948f, 91.471f }
     };
 
-    if (isPositionHazardous(rangedPositions[index]) &&
+    if (isPositionInCharredEarth(rangedPositions[index]) &&
         !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BELLOWING_ROAR)))
     {
         uint8 const originalIndex = index;
@@ -1372,7 +1435,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         for (uint8 i = 0; i < 3; i++)
         {
             index = (index + 1) % 3;
-            if (!isPositionHazardous(rangedPositions[index]))
+            if (!isPositionInCharredEarth(rangedPositions[index]))
             {
                 foundSafe = true;
                 break;
@@ -1392,6 +1455,46 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         return MoveTo(
             KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
             position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
+    } */
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* rangedLeader = nullptr;
+    Player* firstRanged = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || member->GetMapId() != KARAZHAN_MAP_ID ||
+            !member->IsAlive() || !botAI->IsRanged(member))
+        {
+            continue;
+        }
+
+        if (!firstRanged)
+            firstRanged = member;
+
+        if (group->IsAssistant(member->GetGUID()))
+        {
+            rangedLeader = member;
+            break;
+        }
+    }
+
+    if (!rangedLeader)
+        rangedLeader = firstRanged;
+
+    if (!rangedLeader)
+        return false;
+
+    if (bot->GetExactDist2d(rangedLeader) > 0.5f)
+    {
+        botAI->InterruptSpell();
+        return MoveTo(
+            KARAZHAN_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
+            rangedLeader->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -1430,9 +1533,6 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
         return false;
-
-    if (MarkTargetWithMoon(bot, nightbane))
-        return true;
 
     if (AI_VALUE(Unit*, "current target") == nightbane)
     {
@@ -1477,16 +1577,22 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         {
             Action* action = botAI->GetAiObjectContext()->GetAction(
                 "nightbane ground phase position boss");
-            if (action && static_cast<NightbaneGroundPhasePositionBossAction*>(action)->ResetTankStep())
+            if (action && static_cast<NightbaneGroundPhasePositionBossAction*>(
+                    action)->ResetTankStep())
+            {
                 didSomething = true;
+            }
         }
 
         if (botAI->IsRanged(bot))
         {
             Action* action = botAI->GetAiObjectContext()->GetAction(
                 "nightbane ground phase rotate ranged positions");
-            if (action && static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(action)->ResetRangedStep())
+            if (action && static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(
+                    action)->ResetRangedStep())
+            {
                 didSomething = true;
+            }
         }
 
         if (isMechanicTracker && nightbaneDpsWaitTimer.erase(instanceId) > 0)
@@ -1497,8 +1603,11 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     {
         Action* action = botAI->GetAiObjectContext()->GetAction(
             "nightbane flight phase movement");
-        if (action && static_cast<NightbaneFlightPhaseMovementAction*>(action)->ResetRainOfBonesHit())
+        if (action && static_cast<NightbaneFlightPhaseMovementAction*>(
+                action)->ResetRainOfBonesHit())
+        {
             didSomething = true;
+        }
 
         if (isMechanicTracker)
         {
@@ -1516,16 +1625,22 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         {
             Action* action = botAI->GetAiObjectContext()->GetAction(
                 "nightbane ground phase position boss");
-            if (action && static_cast<NightbaneGroundPhasePositionBossAction*>(action)->ResetTankStep())
+            if (action && static_cast<NightbaneGroundPhasePositionBossAction*>(
+                    action)->ResetTankStep())
+            {
                 didSomething = true;
+            }
         }
 
         if (botAI->IsRanged(bot))
         {
             Action* action = botAI->GetAiObjectContext()->GetAction(
                 "nightbane ground phase rotate ranged positions");
-            if (action && static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(action)->ResetRangedStep())
+            if (action && static_cast<NightbaneGroundPhaseRotateRangedPositionsAction*>(
+                    action)->ResetRangedStep())
+            {
                 didSomething = true;
+            }
         }
 
         if (isMechanicTracker)

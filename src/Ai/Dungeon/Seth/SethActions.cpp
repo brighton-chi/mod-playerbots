@@ -3,12 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-
-#include <array>
-
 #include "SethActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include <array>
 
 namespace
 {
@@ -29,7 +27,7 @@ Position const PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
-    if (Unit* totem = FindNearestCreature(NPC_CHARMING_TOTEM, searchRadius, true))
+    if (Unit* totem = bot->FindNearestCreature(NPC_CHARMING_TOTEM, searchRadius, true))
         return MarkTargetWithSkull(bot, totem);
 
     return false;

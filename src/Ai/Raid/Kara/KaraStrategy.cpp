@@ -5,7 +5,24 @@
  */
 
 #include "KaraStrategy.h"
+#include "AiObjectContext.h"
+#include "KaraHelpers.h"
 #include "KaraMultipliers.h"
+#include "PlayerbotAI.h"
+
+void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* nightbane =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "nightbane")->Get();
+    if (nightbane && nightbane->GetPositionZ() > KarazhanHelpers::NIGHTBANE_FLIGHT_Z)
+        exclusions.insert(nightbane->GetGUID());
+}
+
+void RaidKarazhanStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    AppendNightbaneFlightPhaseExclusions(botAI, exclusions);
+}
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
