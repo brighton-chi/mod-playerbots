@@ -1,13 +1,12 @@
-#include <array>
-
+#include "KaraActions.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
+#include <array>
 
 using namespace KarazhanHelpers;
 
@@ -41,6 +40,40 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
     }
 
     return erased;
+}
+
+bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() == CLASS_PRIEST)
+        return CastFearWardOnMainTank();
+    else // if (bot->getClass() == CLASS_SHAMAN)
+        return SetTremorTotem();
+}
+
+bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
+{
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank || !mainTank->IsAlive() || mainTank->HasAura(
+            static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
+    {
+        return false;
+    }
+
+    return botAI->CanCastSpell("fear ward", mainTank) &&
+        botAI->CastSpell("fear ward", mainTank);
+}
+
+bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
+{
+    if (AI_VALUE2(bool, "has totem", "tremor totem"))
+        return false;
+
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (nightbane && nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
+        return false;
+
+    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 // Trash
@@ -387,29 +420,18 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
         { -10913.391f, -1773.508f, 90.477f },
     };
 
-    while (bot->GetExactDist2d(
-        runPositions[_runIndex].GetPositionX(),
-        runPositions[_runIndex].GetPositionY()) < 1.0f)
-    {
-        _runIndex = (_runIndex + 1) % 4;
-    }
+    Position const& target = runPositions[_runIndex];
 
-    uint8 const index = _runIndex;
-    _runIndex = (_runIndex + 1) % 4;
+    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 1.0f)
+        _runIndex = (_runIndex + 1) % 4;
 
     botAI->InterruptSpell();
 
-    Position const position = runPositions[index];
+    Position const position = runPositions[_runIndex];
     return MoveTo(
         KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
         position.GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool BigBadWolfSetTremorTotemAction::Execute(Event /*event*/)
-{
-    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot) &&
-        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 // Romulo and Julianne
@@ -1289,17 +1311,8 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 // Ranged positions are near the Northeastern door to the tower.
 bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
 {
-    uint8 index = _rangedStep;
-
     constexpr float charredEarthSearchRadius = 40.0f;
     constexpr float charredEarthDangerRadius = 6.0f;
-
-    static const Position rangedPositions[3] =
-    {
-        { -11145.949f, -1970.927f, 91.473f },
-        { -11143.594f, -1954.981f, 91.473f },
-        { -11159.778f, -1961.031f, 91.473f }
-    };
 
     std::list<WorldObject*> objs;
     Acore::AllWorldObjectsInRange check(bot, charredEarthSearchRadius);
@@ -1324,6 +1337,17 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         return false;
     };
 
+    uint8 index = _rangedStep;
+    static const Position rangedPositions[3] =
+    {
+        /* { -11145.949f, -1970.927f, 91.473f },
+        { -11143.594f, -1954.981f, 91.473f },
+        { -11159.778f, -1961.031f, 91.473f } */
+        { -11147.069f, -1967.857f, 91.471f },
+        { -11145.763f, -1957.877f, 91.473f },
+        { -11154.798f, -1959.948f, 91.471f }
+    };
+
     if (isPositionHazardous(rangedPositions[index]) &&
         !bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BELLOWING_ROAR)))
     {
@@ -1346,7 +1370,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
     }
 
     Position const position = rangedPositions[index];
-    if (bot->GetExactDist2d(position) > 2.0f)
+    if (bot->GetExactDist2d(position) > 1.0f)
     {
         botAI->InterruptSpell();
         return MoveTo(
@@ -1354,16 +1378,6 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
             position.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-
-    return false;
-}
-
-// For countering Bellowing Roars during the ground phase
-bool NightbaneCastFearWardOnMainTankAction::Execute(Event /*event*/)
-{
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
-        return botAI->CastSpell("fear ward", mainTank);
 
     return false;
 }
@@ -1410,7 +1424,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
         botAI->InterruptSpell();
     }
 
-    if (!bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES)))
+    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES)))
         _rainOfBonesHit = true;
 
     Position const rainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };

@@ -11,6 +11,14 @@ public:
     bool IsActive() override;
 };
 
+class KarazhanEnemiesCastFearTrigger : public Trigger
+{
+public:
+    KarazhanEnemiesCastFearTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "karazhan enemies cast fear") {}
+    bool IsActive() override;
+};
+
 class ManaWarpIsAboutToExplodeTrigger : public Trigger
 {
 public:
@@ -96,14 +104,6 @@ class BigBadWolfBossIsChasingLittleRedRidingHoodTrigger : public Trigger
 public:
     BigBadWolfBossIsChasingLittleRedRidingHoodTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf boss is chasing little red riding hood") {}
-    bool IsActive() override;
-};
-
-class BigBadWolfCastsTerrifyingHowlTrigger : public Trigger
-{
-public:
-    BigBadWolfCastsTerrifyingHowlTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "big bad wolf casts terrifying howl") {}
     bool IsActive() override;
 };
 
@@ -279,14 +279,6 @@ class NightbaneRangedBotsAreInCharredEarthTrigger : public Trigger
 public:
     NightbaneRangedBotsAreInCharredEarthTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged bots are in charred earth") {}
-    bool IsActive() override;
-};
-
-class NightbaneMainTankIsSusceptibleToFearTrigger : public Trigger
-{
-public:
-    NightbaneMainTankIsSusceptibleToFearTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "nightbane main tank is susceptible to fear") {}
     bool IsActive() override;
 };
 

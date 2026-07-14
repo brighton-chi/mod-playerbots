@@ -1,12 +1,11 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
-#include <ctime>
-#include <unordered_map>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
 
 namespace KarazhanHelpers
 {

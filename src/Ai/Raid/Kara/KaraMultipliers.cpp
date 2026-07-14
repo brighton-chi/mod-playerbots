@@ -17,6 +17,32 @@
 
 using namespace KarazhanHelpers;
 
+float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+        return 0.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
+        AI_VALUE2(Unit*, "find target", "the big bad wolf"))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
@@ -116,25 +142,6 @@ float MaidenOfVirtueSetGroundingTotemMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
         dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
         dynamic_cast<CastWindfuryTotemAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float BigBadWolfSetTremorTotemMultiplier::GetValue(Action* action)
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
-        return 1.0f;
-
-    if (dynamic_cast<CastStrengthOfEarthTotemAction*>(action) ||
-        dynamic_cast<CastStoneskinTotemAction*>(action) ||
-        dynamic_cast<CastStoneclawTotemAction*>(action) ||
-        dynamic_cast<CastEarthbindTotemAction*>(action))
     {
         return 0.0f;
     }
@@ -431,7 +438,8 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 // Disable some movement actions that conflict with the strategies
 float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
         return 1.0f;
 
     if (dynamic_cast<CastBlinkBackAction*>(action) ||
@@ -443,6 +451,12 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z &&
+        dynamic_cast<ReachTargetAction*>(action))
     {
         return 0.0f;
     }

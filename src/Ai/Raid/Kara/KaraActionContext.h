@@ -13,6 +13,9 @@ public:
         creators["karazhan erase encounter states"] =
             &RaidKarazhanActionContext::karazhan_erase_encounter_states;
 
+        creators["karazhan cast fear protection spell"] =
+            &RaidKarazhanActionContext::karazhan_cast_fear_protection_spell;
+
         // Trash
         creators["mana warp stun creature before warp breach"] =
             &RaidKarazhanActionContext::mana_warp_stun_creature_before_warp_breach;
@@ -50,9 +53,6 @@ public:
 
         creators["big bad wolf run away from boss"] =
             &RaidKarazhanActionContext::big_bad_wolf_run_away_from_boss;
-
-        creators["big bad wolf set tremor totem"] =
-            &RaidKarazhanActionContext::big_bad_wolf_set_tremor_totem;
 
         // Romulo and Julianne
         creators["romulo and julianne mark target"] =
@@ -128,9 +128,6 @@ public:
         creators["nightbane ground phase rotate ranged positions"] =
             &RaidKarazhanActionContext::nightbane_ground_phase_rotate_ranged_positions;
 
-        creators["nightbane cast fear ward on main tank"] =
-            &RaidKarazhanActionContext::nightbane_cast_fear_ward_on_main_tank;
-
         creators["nightbane control pet aggression"] =
             &RaidKarazhanActionContext::nightbane_control_pet_aggression;
 
@@ -145,6 +142,9 @@ private:
     // General
     static Action* karazhan_erase_encounter_states(PlayerbotAI* botAI) {
         return new KarazhanEraseEncounterStatesAction(botAI);
+    }
+    static Action* karazhan_cast_fear_protection_spell(PlayerbotAI* botAI) {
+        return new KarazhanCastFearProtectionSpellAction(botAI);
     }
 
     // Trash
@@ -188,9 +188,6 @@ private:
     }
     static Action* big_bad_wolf_run_away_from_boss(PlayerbotAI* botAI) {
         return new BigBadWolfRunAwayFromBossAction(botAI);
-    }
-    static Action* big_bad_wolf_set_tremor_totem(PlayerbotAI* botAI) {
-        return new BigBadWolfSetTremorTotemAction(botAI);
     }
 
     // Romulo and Julianne
@@ -273,9 +270,6 @@ private:
     }
     static Action* nightbane_ground_phase_rotate_ranged_positions(PlayerbotAI* botAI) {
         return new NightbaneGroundPhaseRotateRangedPositionsAction(botAI);
-    }
-    static Action* nightbane_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
-        return new NightbaneCastFearWardOnMainTankAction(botAI);
     }
     static Action* nightbane_control_pet_aggression(PlayerbotAI* botAI) {
         return new NightbaneControlPetAggressionAction(botAI);

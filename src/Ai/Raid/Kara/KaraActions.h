@@ -13,6 +13,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class KarazhanCastFearProtectionSpellAction : public Action
+{
+public:
+    KarazhanCastFearProtectionSpellAction(
+        PlayerbotAI* botAI) : Action(botAI, "karazhan cast fear protection spell") {}
+    bool Execute(Event event) override;
+
+private:
+    bool CastFearWardOnMainTank();
+    bool SetTremorTotem();
+};
+
 class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
 {
 public:
@@ -112,14 +124,6 @@ public:
 
 private:
     uint8 _runIndex = 0;
-};
-
-class BigBadWolfSetTremorTotemAction : public Action
-{
-public:
-    BigBadWolfSetTremorTotemAction(
-        PlayerbotAI* botAI) : Action(botAI, "big bad wolf set tremor totem") {}
-    bool Execute(Event event) override;
 };
 
 class RomuloAndJulianneMarkTargetAction : public Action
@@ -344,14 +348,6 @@ public:
 
 private:
     uint8 _rangedStep = 0;
-};
-
-class NightbaneCastFearWardOnMainTankAction : public Action
-{
-public:
-    NightbaneCastFearWardOnMainTankAction(
-        PlayerbotAI* botAI) : Action(botAI, "nightbane cast fear ward on main tank") {}
-    bool Execute(Event event) override;
 };
 
 class NightbaneControlPetAggressionAction : public Action

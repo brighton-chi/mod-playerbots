@@ -1,6 +1,6 @@
 #include "KaraTriggers.h"
-#include "KaraHelpers.h"
 #include "KaraActions.h"
+#include "KaraHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -10,6 +10,16 @@ bool KarazhanBotIsNotInCombatTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
         !AI_VALUE2(bool, "combat", "self target");
+}
+
+bool KarazhanEnemiesCastFearTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_SHAMAN && bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "nightbane") ||
+        AI_VALUE2(Unit*, "find target", "spectral charger") ||
+        AI_VALUE2(Unit*, "find target", "the big bad wolf");
 }
 
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()
@@ -91,15 +101,6 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 {
     return bot->HasAura(
         static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
-}
-
-bool BigBadWolfCastsTerrifyingHowlTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
-        AI_VALUE2(Unit*, "find target", "the big bad wolf");
 }
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
@@ -295,19 +296,6 @@ bool NightbaneRangedBotsAreInCharredEarthTrigger::IsActive()
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
-}
-
-bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_PRIEST)
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    return mainTank && !mainTank->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD));
 }
 
 bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()

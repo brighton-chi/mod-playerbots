@@ -7,6 +7,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("karazhan bot is not in combat",
         { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 11) }
     ));
+    triggers.push_back(new TriggerNode("karazhan enemies cast fear",
+        { NextAction("karazhan cast fear protection spell", ACTION_RAID) }
+    ));
 
     // Trash
     triggers.push_back(new TriggerNode("mana warp is about to explode",
@@ -49,9 +52,6 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("big bad wolf boss engaged by tank",
         { NextAction("big bad wolf position boss", ACTION_RAID) }
-    ));
-    triggers.push_back(new TriggerNode("big bad wolf casts terrifying howl",
-        { NextAction("big bad wolf set tremor totem", ACTION_RAID) }
     ));
 
     // Romulo and Julianne
@@ -135,9 +135,6 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("nightbane ranged bots are in charred earth",
         { NextAction("nightbane ground phase rotate ranged positions", ACTION_EMERGENCY + 1) }
     ));
-    triggers.push_back(new TriggerNode("nightbane main tank is susceptible to fear",
-        { NextAction("nightbane cast fear ward on main tank", ACTION_RAID + 1) }
-    ));
     triggers.push_back(new TriggerNode("nightbane pets ignore collision to chase flying boss",
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }
     ));
@@ -151,12 +148,12 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new KarazhanSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
-    multipliers.push_back(new BigBadWolfSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDelayBloodlustAndHeroismMultiplier(botAI));

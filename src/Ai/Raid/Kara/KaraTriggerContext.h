@@ -13,6 +13,9 @@ public:
         creators["karazhan bot is not in combat"] =
             &RaidKarazhanTriggerContext::karazhan_bot_is_not_in_combat;
 
+        creators["karazhan enemies cast fear"] =
+            &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
+
         // Trash
         creators["mana warp is about to explode"] =
             &RaidKarazhanTriggerContext::mana_warp_is_about_to_explode;
@@ -50,9 +53,6 @@ public:
 
         creators["big bad wolf boss is chasing little red riding hood"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_boss_is_chasing_little_red_riding_hood;
-
-        creators["big bad wolf casts terrifying howl"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_casts_terrifying_howl;
 
         // Romulo and Julianne
         creators["romulo and julianne both bosses revived"] =
@@ -128,9 +128,6 @@ public:
         creators["nightbane ranged bots are in charred earth"] =
             &RaidKarazhanTriggerContext::nightbane_ranged_bots_are_in_charred_earth;
 
-        creators["nightbane main tank is susceptible to fear"] =
-            &RaidKarazhanTriggerContext::nightbane_main_tank_is_susceptible_to_fear;
-
         creators["nightbane pets ignore collision to chase flying boss"] =
             &RaidKarazhanTriggerContext::nightbane_pets_ignore_collision_to_chase_flying_boss;
 
@@ -145,6 +142,9 @@ private:
     // General
     static Trigger* karazhan_bot_is_not_in_combat(PlayerbotAI* botAI) {
         return new KarazhanBotIsNotInCombatTrigger(botAI);
+    }
+    static Trigger* karazhan_enemies_cast_fear(PlayerbotAI* botAI) {
+        return new KarazhanEnemiesCastFearTrigger(botAI);
     }
 
     // Trash
@@ -189,10 +189,6 @@ private:
     static Trigger* big_bad_wolf_boss_is_chasing_little_red_riding_hood(PlayerbotAI* botAI) {
         return new BigBadWolfBossIsChasingLittleRedRidingHoodTrigger(botAI);
     }
-    static Trigger* big_bad_wolf_casts_terrifying_howl(PlayerbotAI* botAI) {
-        return new BigBadWolfCastsTerrifyingHowlTrigger(botAI);
-    }
-
     // Romulo and Julianne
     static Trigger* romulo_and_julianne_both_bosses_revived(PlayerbotAI* botAI) {
         return new RomuloAndJulianneBothBossesRevivedTrigger(botAI);
@@ -273,9 +269,6 @@ private:
     }
     static Trigger* nightbane_ranged_bots_are_in_charred_earth(PlayerbotAI* botAI) {
         return new NightbaneRangedBotsAreInCharredEarthTrigger(botAI);
-    }
-    static Trigger* nightbane_main_tank_is_susceptible_to_fear(PlayerbotAI* botAI) {
-        return new NightbaneMainTankIsSusceptibleToFearTrigger(botAI);
     }
     static Trigger* nightbane_pets_ignore_collision_to_chase_flying_boss(PlayerbotAI* botAI) {
         return new NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(botAI);

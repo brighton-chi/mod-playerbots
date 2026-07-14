@@ -3,6 +3,14 @@
 
 #include "Multiplier.h"
 
+class KarazhanSetTremorTotemMultiplier : public Multiplier
+{
+public:
+    KarazhanSetTremorTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "karazhan set tremor totem") {}
+    virtual float GetValue(Action* action);
+};
+
 class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
@@ -112,14 +120,6 @@ class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
-class BigBadWolfSetTremorTotemMultiplier : public Multiplier
-{
-public:
-    BigBadWolfSetTremorTotemMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "big bad wolf set tremor totem") {}
     virtual float GetValue(Action* action);
 };
 
