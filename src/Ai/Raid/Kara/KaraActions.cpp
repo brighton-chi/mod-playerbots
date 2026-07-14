@@ -938,14 +938,15 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
     {
         float const bx = netherspite->GetPositionX();
         float const by = netherspite->GetPositionY();
-        float const dx = beam.portal->GetPositionX() - bx;
-        float const dy = beam.portal->GetPositionY() - by;
+        float dx = beam.portal->GetPositionX() - bx;
+        float dy = beam.portal->GetPositionY() - by;
         float const length = netherspite->GetExactDist2d(beam.portal);
 
         if (length == 0.0f)
             continue;
 
-        dx /= length; dy /= length;
+        float dx = dx / length;
+        float dy = dy / length;
         float botdx = x - bx, botdy = y - by;
         float distanceAlongBeam = (botdx * dx + botdy * dy);
         float beamX = bx + dx * distanceAlongBeam, beamY = by + dy * distanceAlongBeam;

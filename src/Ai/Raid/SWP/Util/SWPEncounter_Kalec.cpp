@@ -482,7 +482,7 @@ void AssignPlayerToGroup(
             PlayerbotAI::IsTank(member, true);
 
         groupHasDecurser[groupIndex] = groupHasDecurser[groupIndex] ||
-            IsKalecgosDecurser(GET_PLAYERBOT_AI(member), member);
+            IsKalecgosDecurser(member);
     }
 }
 
