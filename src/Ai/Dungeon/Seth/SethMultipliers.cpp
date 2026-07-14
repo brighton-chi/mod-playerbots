@@ -20,20 +20,20 @@ constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
 constexpr uint32 SPELL_SPELL_BOMB    = 40303;
 }
 
-float SethekkProphetUseTremorTotemMultiplier::GetValue(Action* action)
+float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "sethekk prophet"))
-        return 1.0f;
-
-    if (dynamic_cast<CastStrengthOfEarthTotemAction*>(action) ||
-        dynamic_cast<CastStoneskinTotemAction*>(action) ||
-        dynamic_cast<CastStoneclawTotemAction*>(action) ||
-        dynamic_cast<CastEarthbindTotemAction*>(action))
-    {
+    if (AI_VALUE2(Unit*, "find target", "sethekk prophet"))
         return 0.0f;
+
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 1.0f;
     }
 
     return 1.0f;
@@ -65,16 +65,16 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!dynamic_cast<CastHeroismAction*>(action) &&
-        !dynamic_cast<CastBloodlustAction*>(action))
-    {
-        return 1.0f;
-    }
-
     if (Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
         ikiss && ikiss->GetHealthPct() > 95.0f)
     {
         return 0.0f;
+    }
+
+    if (!dynamic_cast<CastHeroismAction*>(action) &&
+        !dynamic_cast<CastBloodlustAction*>(action))
+    {
+        return 1.0f;
     }
 
     return 1.0f;

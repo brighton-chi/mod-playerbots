@@ -39,7 +39,7 @@ void TbcDungeonSethekkHallsStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 
 void TbcDungeonSethekkHallsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new SethekkProphetUseTremorTotemMultiplier(botAI));
+    multipliers.push_back(new SethekkProphetSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new AnzuControlSpellCastingWithSpellBombMultiplier(botAI));
     multipliers.push_back(new TalonKingIkissDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new TalonKingIkissControlMovementMultiplier(botAI));
