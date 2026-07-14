@@ -82,7 +82,7 @@ public:
             &RaidKarazhanTriggerContext::the_curator_astral_flares_cast_arcing_sear;
 
         // Terestian Illhoof
-        creators["terestian illhoof need target priority"] =
+        creators["terestian illhoof should prioritize chains"] =
             &RaidKarazhanTriggerContext::terestian_illhoof_need_target_priority;
 
         // Shade of Aran
@@ -139,6 +139,9 @@ public:
 
         creators["nightbane boss is flying"] =
             &RaidKarazhanTriggerContext::nightbane_boss_is_flying;
+
+        creators["nightbane bot went out of bounds"] =
+            &RaidKarazhanTriggerContext::nightbane_bot_went_out_of_bounds;
 
         creators["nightbane should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::nightbane_need_to_manage_timers_and_trackers;
@@ -221,7 +224,7 @@ private:
 
     // Terestian Illhoof
     static Trigger* terestian_illhoof_need_target_priority(PlayerbotAI* botAI) {
-        return new TerestianIllhoofNeedTargetPriorityTrigger(botAI);
+        return new TerestianIllhoofShouldPrioritizeChainsTrigger(botAI);
     }
 
     // Shade of Aran
@@ -281,6 +284,9 @@ private:
     }
     static Trigger* nightbane_boss_is_flying(PlayerbotAI* botAI) {
         return new NightbaneBossIsFlyingTrigger(botAI);
+    }
+    static Trigger* nightbane_bot_went_out_of_bounds(PlayerbotAI* botAI) {
+        return new NightbaneBotWentOutOfBoundsTrigger(botAI);
     }
     static Trigger* nightbane_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) {
         return new NightbaneShouldManageTimersAndTrackersTrigger(botAI);

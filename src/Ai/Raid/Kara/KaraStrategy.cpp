@@ -102,7 +102,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Terestian Illhoof
-    triggers.push_back(new TriggerNode("terestian illhoof need target priority",
+    triggers.push_back(new TriggerNode("terestian illhoof should prioritize chains",
         { NextAction("terestian illhoof mark target", ACTION_RAID) }
     ));
 
@@ -163,6 +163,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
     triggers.push_back(new TriggerNode("nightbane boss is flying",
         { NextAction("nightbane flight phase movement", ACTION_RAID) }
+    ));
+    triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
+        { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 10) }
     ));
     triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }

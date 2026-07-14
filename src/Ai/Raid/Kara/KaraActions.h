@@ -366,6 +366,14 @@ private:
     bool _rainOfBonesHit = false;
 };
 
+class NightbaneTeleportBackToTerraceAction : public MovementAction
+{
+public:
+    NightbaneTeleportBackToTerraceAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane teleport back to terrace") {}
+    bool Execute(Event event) override;
+};
+
 class NightbaneManageTimersAndTrackersAction : public Action
 {
 public:

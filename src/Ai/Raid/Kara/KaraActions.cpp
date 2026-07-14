@@ -5,9 +5,6 @@
  */
 
 #include "KaraActions.h"
-#include "CellImpl.h"
-#include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
@@ -124,6 +121,8 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 
 // Attumen the Huntsman
 
+// Midnight's CombatReach is 1.6 yards
+// Unmounted Attumen's CombatReach is 1.5 yards
 bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -159,6 +158,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
     return false;
 }
 
+// Note: Mounted Attumen's CombatReach is legit 0 yards (???)
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
@@ -1093,6 +1093,8 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     return didSomething;
 }
 
+// Prince Malchezaar
+
 // Move away from the boss to avoid Shadow Nova when Enfeebled
 // Do not cross within Infernal Hellfire radius while doing so
 bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
@@ -1103,10 +1105,10 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
-    constexpr float minSafeBossDistance = 34.0f;
+    constexpr float minSafeBossDistance = 32.0f;
     constexpr float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
     constexpr float maxSafeBossDistance = 60.0f;
-    constexpr float safeInfernalDistance = 23.0f;
+    constexpr float safeInfernalDistance = 22.0f;
     constexpr float distIncrement = 0.5f;
     constexpr uint8 numAngles = 64;
 
@@ -1178,7 +1180,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
-    constexpr float safeInfernalDistance = 23.0f;
+    constexpr float safeInfernalDistance = 22.0f;
     constexpr float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
     constexpr float maxSafeBossDistance = 35.0f;
 
@@ -1276,6 +1278,9 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
 
     return false;
 }
+
+// Nightbane
+// CombatReach is 10.5 yards
 
 // The active tank position up against the balcony railing and moves along the railing to try to
 // keep Nightbane facing sideways to the raid
@@ -1402,25 +1407,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     constexpr float angleStep = M_PI / 16.0f;
     constexpr float distStep = 1.0f;
 
-    std::list<WorldObject*> objs;
-    Acore::AllWorldObjectsInRange check(bot, searchRadius);
-    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
-        bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
-    Cell::VisitObjects(bot, searcher, searchRadius);
-
-    std::vector<Position> charredEarths;
-    for (WorldObject* obj : objs)
-    {
-        if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
-            continue;
-
-        DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
-        if (dynObj->GetSpellId() == static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH))
-        {
-            charredEarths.emplace_back(
-                dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
-        }
-    }
+    std::vector<Position> charredEarths = GetCharredEarthPositions(bot);
 
     if (charredEarths.empty())
     {
@@ -1478,6 +1465,19 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
             }
 
             if (!safe || nightbane->GetExactDist2d(cx, cy) > maxBossDist)
+                continue;
+
+            float testX = cx;
+            float testY = cy;
+            float testZ = bot->GetPositionZ();
+            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+                    bot, bot->GetPositionX(), bot->GetPositionY(),
+                    bot->GetPositionZ(), testX, testY, testZ))
+            {
+                continue;
+            }
+
+            if (!nightbane->IsWithinLOS(cx, cy, bot->GetPositionZ()))
                 continue;
 
             float dx = cx - bx;
@@ -1561,7 +1561,16 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
     Position const destPos = _rainOfBonesHit ? rainOfBonesPosition : flightStackPosition;
 
-    if (bot->GetExactDist2d(destPos) > 2.0f)
+    constexpr float charredEarthSafeDist = 12.0f;
+    std::vector<Position> charredEarths = GetCharredEarthPositions(bot);
+
+    for (auto const& charredEarth : charredEarths)
+    {
+        if (charredEarth.GetExactDist2d(destPos) < charredEarthSafeDist)
+            return false;
+    }
+
+    if (bot->GetExactDist2d(destPos) > 0.5f)
     {
         botAI->InterruptSpell();
         return MoveTo(
@@ -1571,6 +1580,14 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
+{
+    Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
+    return bot->TeleportTo(
+        KARAZHAN_MAP_ID, flightStackPosition.GetPositionX(), flightStackPosition.GetPositionY(),
+        flightStackPosition.GetPositionZ(), bot->GetOrientation());
 }
 
 bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)

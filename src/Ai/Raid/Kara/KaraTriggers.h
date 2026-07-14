@@ -160,11 +160,11 @@ public:
     bool IsActive() override;
 };
 
-class TerestianIllhoofNeedTargetPriorityTrigger : public Trigger
+class TerestianIllhoofShouldPrioritizeChainsTrigger : public Trigger
 {
 public:
-    TerestianIllhoofNeedTargetPriorityTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "terestian illhoof need target priority") {}
+    TerestianIllhoofShouldPrioritizeChainsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "terestian illhoof should prioritize chains") {}
     bool IsActive() override;
 };
 
@@ -301,6 +301,14 @@ class NightbaneBossIsFlyingTrigger : public Trigger
 public:
     NightbaneBossIsFlyingTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "nightbane boss is flying") {}
+    bool IsActive() override;
+};
+
+class NightbaneBotWentOutOfBoundsTrigger : public Trigger
+{
+public:
+    NightbaneBotWentOutOfBoundsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "nightbane bot went out of bounds") {}
     bool IsActive() override;
 };
 

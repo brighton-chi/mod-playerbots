@@ -12,6 +12,8 @@
 
 using namespace KarazhanHelpers;
 
+// General
+
 bool KarazhanBotIsNotInCombatTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
@@ -28,6 +30,8 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "the big bad wolf");
 }
 
+// Trash
+
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER ||
@@ -38,6 +42,8 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 
     return AI_VALUE2(Unit*, "find target", "mana warp");
 }
+
+// Attumen the Huntsman
 
 // Midnight is still present as a separate (invisible) unit after Attumen mounts.
 // A Midnight threat list check will capture the entire encounter.
@@ -57,6 +63,8 @@ bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "midnight");
 }
 
+// Moroes
+
 bool MoroesBossEngagedByMainTankTrigger::IsActive()
 {
     return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "moroes");
@@ -67,6 +75,8 @@ bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
     return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "moroes");
 }
+
+// Maiden of Virtue
 
 bool MaidenOfVirtueBossEngagedByTanksTrigger::IsActive()
 {
@@ -87,6 +97,8 @@ bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
     return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
 }
 
+// The Big Bad Wolf
+
 bool BigBadWolfBossEngagedByTankTrigger::IsActive()
 {
     if (!botAI->IsTank(bot))
@@ -104,6 +116,8 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
+// Romulo and Julianne
+
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
@@ -111,6 +125,8 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
     return AI_VALUE2(Unit*, "find target", "romulo") && AI_VALUE2(Unit*, "find target", "julianne");
 }
+
+// The Wizard of Oz
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
@@ -141,6 +157,8 @@ bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
     return bot->getClass() == CLASS_MAGE && AI_VALUE2(Unit*, "find target", "strawman");
 }
 
+// The Curator
+
 bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
@@ -157,11 +175,15 @@ bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
     return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
 
-bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
+// Terestian Illhoof
+
+bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActive()
 {
     return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "terestian illhoof");
 }
+
+// Shade of Aran
 
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 {
@@ -194,6 +216,8 @@ bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
 
     return aran && !IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
+
+// Netherspite
 
 bool NetherspiteRedBeamIsActiveTrigger::IsActive()
 {
@@ -263,6 +287,8 @@ bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "netherspite");
 }
 
+// Prince Malchezaar
+
 bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE));
@@ -283,6 +309,8 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
     return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "prince malchezaar");
 }
+
+// Nightbane
 
 bool NightbaneBossEngagedByTanksTrigger::IsActive()
 {
@@ -331,6 +359,12 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     }
 
     return now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds;
+}
+
+bool NightbaneBotWentOutOfBoundsTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "nightbane") &&
+        bot->GetPositionZ() < NIGHTBANE_GROUND_Z - 5.0f;
 }
 
 bool NightbaneShouldManageTimersAndTrackersTrigger::IsActive()

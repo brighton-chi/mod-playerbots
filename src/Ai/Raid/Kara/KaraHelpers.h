@@ -87,7 +87,8 @@ enum class KarazhanNpcs : uint32
 };
 
 constexpr uint32 KARAZHAN_MAP_ID = 532;
-constexpr float NIGHTBANE_FLIGHT_Z = 95.0f;
+constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
+constexpr float NIGHTBANE_GROUND_Z = 91.460f;
 
 // Attumen the Huntsman
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
@@ -117,6 +118,7 @@ bool IsStraightPathSafe(
 bool TryFindSafePositionWithSafePath(
     Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
     float safeDistance, float maxSampleDist, float& outX, float& outY);
+std::vector<Position> GetCharredEarthPositions(Player* bot);
 
 }
 

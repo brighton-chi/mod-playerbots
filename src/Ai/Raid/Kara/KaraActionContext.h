@@ -140,6 +140,9 @@ public:
         creators["nightbane flight phase movement"] =
             &RaidKarazhanActionContext::nightbane_flight_phase_movement;
 
+        creators["nightbane teleport back to terrace"] =
+            &RaidKarazhanActionContext::nightbane_teleport_back_to_terrace;
+
         creators["nightbane manage timers and trackers"] =
             &RaidKarazhanActionContext::nightbane_manage_timers_and_trackers;
     }
@@ -282,6 +285,9 @@ private:
     }
     static Action* nightbane_flight_phase_movement(PlayerbotAI* botAI) {
         return new NightbaneFlightPhaseMovementAction(botAI);
+    }
+    static Action* nightbane_teleport_back_to_terrace(PlayerbotAI* botAI) {
+        return new NightbaneTeleportBackToTerraceAction(botAI);
     }
     static Action* nightbane_manage_timers_and_trackers(PlayerbotAI* botAI) {
         return new NightbaneManageTimersAndTrackersAction(botAI);

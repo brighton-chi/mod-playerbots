@@ -23,6 +23,8 @@
 
 using namespace KarazhanHelpers;
 
+// General
+
 float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -48,6 +50,8 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+// Attumen the Huntsman
 
 float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
@@ -117,7 +121,8 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Disables co +disperse and co +tank face
+// Maiden of Virtue
+
 float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "maiden of virtue"))
@@ -150,6 +155,8 @@ float MaidenOfVirtueSetGroundingTotemMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// The Curator
+
 float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "the curator"))
@@ -164,7 +171,6 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Disables co +disperse and co +tank face
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "the curator"))
@@ -197,6 +203,8 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+// Shade of Aran
 
 // Don't charge back in or move in any other way when running from Arcane Explosion
 float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
@@ -249,6 +257,8 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+// Netherspite
 
 float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 {
@@ -314,6 +324,8 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
      return 1.0f;
 }
 
+// Prince Malchezaar
+
 // Don't run back into Shadow Nova when Enfeebled
 float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 {
@@ -347,6 +359,8 @@ float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* actio
 
     return 1.0f;
 }
+
+// Nightbane
 
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
 // Pets also tend to pull adds from inside of the tower through the floor
@@ -433,7 +447,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action))
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<FleeAction*>(action))
     {
         return 0.0f;
     }
@@ -445,7 +460,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     }
 
     if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z &&
-        dynamic_cast<CastReachTargetSpellAction*>(action))
+        (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<ReachTargetAction*>(action)))
     {
         return 0.0f;
     }
