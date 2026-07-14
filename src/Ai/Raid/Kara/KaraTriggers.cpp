@@ -30,28 +30,25 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
 
 bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 {
-    Unit* manaWarp = AI_VALUE2(Unit*, "find target", "mana warp");
-    return manaWarp && manaWarp->GetHealthPct() < 15.0f;
+    if (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER ||
+        bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST)
+    {
+        return false;
+    }
+
+    return AI_VALUE2(Unit*, "find target", "mana warp");
 }
 
 // Midnight is still present as a separate (invisible) unit after Attumen mounts.
 // A Midnight threat list check will capture the entire encounter.
 bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
-        return false;
-
-    return !GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    return AI_VALUE2(Unit*, "find target", "midnight") && !GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
-        return false;
-
-    return GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    return AI_VALUE2(Unit*, "find target", "midnight") && GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
@@ -73,8 +70,7 @@ bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
 
 bool MaidenOfVirtueBossEngagedByTanksTrigger::IsActive()
 {
-    return botAI->IsTank(bot) &&
-        AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
 }
 
 bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActive()
@@ -105,8 +101,7 @@ bool BigBadWolfBossEngagedByTankTrigger::IsActive()
 
 bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 {
-    return bot->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
@@ -114,8 +109,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
     if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "romulo") &&
-        AI_VALUE2(Unit*, "find target", "julianne");
+    return AI_VALUE2(Unit*, "find target", "romulo") && AI_VALUE2(Unit*, "find target", "julianne");
 }
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
@@ -177,8 +171,7 @@ bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "shade of aran") &&
-        IsFlameWreathActive(bot);
+    return AI_VALUE2(Unit*, "find target", "shade of aran") && IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
@@ -282,8 +275,7 @@ bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 
 bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-        AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "prince malchezaar");
 }
 
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
@@ -332,8 +324,7 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
         return false;
     }
 
-    return now - nightbaneFlightPhaseStartTimer[instanceId] <
-        flightPhaseDurationSeconds;
+    return now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds;
 }
 
 bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()

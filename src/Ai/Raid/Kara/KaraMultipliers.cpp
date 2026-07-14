@@ -68,13 +68,10 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
         return 1.0f;
 
-    Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (!attumen)
+    if (!GetAttumenMounted(bot))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
+    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<AttumenTheHuntsmanHandlePhaseTwoAction*>(action))
     {
         return 0.0f;
@@ -96,9 +93,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
         return 1.0f;
 
-    Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (!attumen)
+    if (!GetAttumenMounted(bot))
         return 1.0f;
 
     if (botAI->IsMainTank(bot))
@@ -113,8 +108,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        (dynamic_cast<CastSpellAction*>(action) &&
-         !dynamic_cast<CastHealingSpellAction*>(action)))
+        (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }
@@ -197,11 +191,8 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastHeroismAction*>(action))
-    {
+    if (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action))
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -216,8 +207,7 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
     if (!IsCastingArcaneExplosion(aran))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
+    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<ShadeOfAranRunAwayFromArcaneExplosionAction*>(action))
     {
         return 0.0f;
@@ -242,8 +232,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     if (!IsFlameWreathActive(bot))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
+    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
     {
         return 0.0f;
@@ -316,8 +305,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     }
 
     if (dynamic_cast<AttackAction*>(action) ||
-        (dynamic_cast<CastSpellAction*>(action) &&
-         !dynamic_cast<CastHealingSpellAction*>(action)))
+        (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }
@@ -337,8 +325,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastReachTargetSpellAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
+    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
     {
         return 0.0f;
@@ -354,11 +341,8 @@ float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* actio
     if (!malchezaar || malchezaar->GetHealthPct() <= 30.0f)
         return 1.0f;
 
-    if (dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastHeroismAction*>(action))
-    {
+    if (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action))
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -411,8 +395,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        (dynamic_cast<CastSpellAction*>(action) &&
-         !dynamic_cast<CastHealingSpellAction*>(action)))
+        (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }

@@ -96,6 +96,7 @@ extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
+Unit* GetAttumenMounted(Player* bot);
 bool IsCastingArcaneExplosion(Unit* aran);
 bool IsFlameWreathActive(Player* bot);
 bool IsBanishPhase(Unit* netherspite);

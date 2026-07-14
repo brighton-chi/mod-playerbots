@@ -86,10 +86,20 @@ bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
 
 bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 {
-    Unit* manaWarp = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_MANA_WARP));
-    if (!manaWarp)
-        return false;
+    Unit* target = nullptr;
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> manaWarps;
+    bot->GetCreatureListWithEntryInGrid(
+        manaWarps, static_cast<uint32>(KarazhanNpcs::NPC_MANA_WARP), searchRadius);
+
+    for (Creature* manaWarp : manaWarps)
+    {
+        if (!manaWarp || !manaWarp->IsAlive() || manaWarp->GetHealthPct() > 15.0f)
+            continue;
+
+        if (!target || manaWarp->GetGUID() < target->GetGUID())
+            target = manaWarp;
+    }
 
     static const std::array<const char*, 8> spells =
     {
@@ -121,8 +131,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 
     if (botAI->IsAssistTank(bot))
     {
-        Unit* attumen = GetFirstAliveUnitByEntry(
-            botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN));
+        Unit* attumen = GetAttumenMounted(bot);
         return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
     }
 
@@ -151,8 +160,8 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
 
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
-    Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    constexpr uint32 searchRadius = 40.0f;
+    Unit* attumen = GetAttumenMounted(bot);
     if (!attumen)
         return false;
 
@@ -211,8 +220,9 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 // Reset timer for bots to pause DPS when Attumen mounts Midnight
 bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 {
-    if (GetFirstAliveUnitByEntry(
-            botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED)))
+    constexpr uint32 searchRadius = 40.0f;
+    if (bot->FindNearestCreature(
+            static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true))
     {
         uint32 const instanceId = bot->GetMap()->GetInstanceId();
         time_t const now = std::time(nullptr);

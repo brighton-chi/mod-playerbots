@@ -18,6 +18,13 @@ std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
+Unit* GetAttumenMounted(Player* bot)
+{
+    constexpr uint32 searchRadius = 50.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
+}
+
 bool IsCastingArcaneExplosion(Unit* aran)
 {
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
