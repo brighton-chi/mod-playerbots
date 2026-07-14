@@ -17,11 +17,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class SethekkProphetDropTremorTotemAction : public Action
+class SethekkProphetSetTremorTotemAction : public Action
 {
 public:
-    SethekkProphetDropTremorTotemAction(
-        PlayerbotAI* botAI) : Action(botAI, "sethekk prophet drop tremor totem") {}
+    SethekkProphetSetTremorTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "sethekk prophet set tremor totem") {}
     bool Execute(Event event) override;
 };
 

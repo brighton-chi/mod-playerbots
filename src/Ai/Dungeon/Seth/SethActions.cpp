@@ -34,7 +34,7 @@ bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/
     return false;
 }
 
-bool SethekkProphetDropTremorTotemAction::Execute(Event /*event*/)
+bool SethekkProphetSetTremorTotemAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell(SPELL_TREMOR_TOTEM, bot) &&
         botAI->CastSpell(SPELL_TREMOR_TOTEM, bot);
