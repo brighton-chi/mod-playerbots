@@ -419,7 +419,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
         return 0.0f;
 
     return 1.0f;
@@ -446,10 +446,26 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     }
 
     if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z &&
-        dynamic_cast<ReachTargetAction*>(action))
+        dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 0.0f;
     }
+
+    uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
+    time_t const now = std::time(nullptr);
+    constexpr uint8 flightPhaseDurationSeconds = 35;
+
+    if (nightbaneFlightPhaseStartTimer.find(instanceId) ==
+        nightbaneFlightPhaseStartTimer.end())
+    {
+        return 1.0f;
+    }
+
+    if (now - nightbaneFlightPhaseStartTimer[instanceId] >= flightPhaseDurationSeconds)
+        return 1.0f;
+
+    if (dynamic_cast<FollowAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

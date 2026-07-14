@@ -1335,23 +1335,24 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot)
         return false;
 
-    static Position const center = { -11126.015f, -1925.2711f, 91.460f };
-    static Position const arcA  = { -11115.958f, -1972.058f, 91.45689f };
-    static Position const arcB  = { -11077.5205f, -1913.3154f, 91.47126f };
+    static Position const domeCenter = { -11126.015f, -1925.2711f, 91.460f };
+    static Position const terraceEastEnd  = { -11115.958f, -1972.058f, 91.45689f };
+    static Position const terraceWestEnd  = { -11077.5205f, -1913.3154f, 91.47126f };
 
-    float const radius = center.GetExactDist2d(arcA);
+    float const radius = domeCenter.GetExactDist2d(terraceEastEnd);
 
-    float const thetaA = atan2(arcA.GetPositionY() - center.GetPositionY(),
-                                arcA.GetPositionX() - center.GetPositionX());
-    float const thetaB = atan2(arcB.GetPositionY() - center.GetPositionY(),
-                                arcB.GetPositionX() - center.GetPositionX());
+    float const thetaA = atan2(terraceEastEnd.GetPositionY() - domeCenter.GetPositionY(),
+                                terraceEastEnd.GetPositionX() - domeCenter.GetPositionX());
+    float const thetaB = atan2(terraceWestEnd.GetPositionY() - domeCenter.GetPositionY(),
+                                terraceWestEnd.GetPositionX() - domeCenter.GetPositionX());
 
     // CCW angular span from A to B
     float deltaAB = thetaB - thetaA;
     if (deltaAB < 0.0f) deltaAB += 2.0f * M_PI;
 
     // Long arc: if the CCW span from A to B is less than π, the long arc goes CCW from B to A+2π
-    float arcStart, arcEnd;
+    float arcStart = 0.0f;
+    float arcEnd = 0.0f;
     if (deltaAB < M_PI)
     {
         arcStart = thetaB;
@@ -1363,8 +1364,8 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
         arcEnd = thetaB;
     }
 
-    float thetaN = atan2(nightbane->GetPositionY() - center.GetPositionY(),
-                          nightbane->GetPositionX() - center.GetPositionX());
+    float thetaN = atan2(nightbane->GetPositionY() - domeCenter.GetPositionY(),
+                          nightbane->GetPositionX() - domeCenter.GetPositionX());
 
     // Normalize into [arcStart, arcStart + 2π)
     while (thetaN < arcStart) thetaN += 2.0f * M_PI;
@@ -1372,14 +1373,23 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 
     float const thetaClamped = std::max(arcStart, std::min(arcEnd, thetaN));
 
-    float const destX = center.GetPositionX() + radius * cos(thetaClamped);
-    float const destY = center.GetPositionY() + radius * sin(thetaClamped);
+    float const destX = domeCenter.GetPositionX() + radius * cos(thetaClamped);
+    float const destY = domeCenter.GetPositionY() + radius * sin(thetaClamped);
+    float const distanceToPosition = bot->GetExactDist2d(destX, destY);
 
-    if (bot->GetExactDist2d(destX, destY) > 0.5f)
+    if (distanceToPosition > 0.5f)
     {
+        float const dX = destX - bot->GetPositionX();
+        float const dY = destY - bot->GetPositionY();
+        float const moveDist = std::min(2.25f, distanceToPosition);
+        float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
+        float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+
+        bool backwards = nightbane->GetExactDist2d(destX, destY) >=
+            distanceToPosition ? true : false;
         return MoveTo(
-            KARAZHAN_MAP_ID, destX, destY, center.GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_FORCED, true, true);
+            KARAZHAN_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
     }
 
     return false;
@@ -1484,10 +1494,114 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
     }
 
     if (!rangedLeader)
-        rangedLeader = firstRanged;
+        rangedLeader = firstRanged ? firstRanged : bot;
 
     if (!rangedLeader)
         return false;
+
+    if (bot == rangedLeader)
+    {
+        Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+        if (!nightbane)
+            return false;
+
+        constexpr float searchRadius = 40.0f;
+        constexpr float safeDistance = 7.0f;
+        constexpr float maxBossDist = 35.0f;
+        constexpr float angleStep = M_PI / 16.0f;
+        constexpr float distStep = 1.0f;
+
+        std::list<WorldObject*> objs;
+        Acore::AllWorldObjectsInRange check(bot, searchRadius);
+        Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
+            bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+        Cell::VisitObjects(bot, searcher, searchRadius);
+
+        std::vector<Position> charredEarths;
+        for (WorldObject* obj : objs)
+        {
+            if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
+                continue;
+            DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
+            if (dynObj->GetSpellId() == static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH))
+                charredEarths.emplace_back(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
+        }
+
+        if (charredEarths.empty())
+            return false;
+
+        float const safeDistSq = safeDistance * safeDistance;
+        float const bx = bot->GetPositionX();
+        float const by = bot->GetPositionY();
+
+        bool inDanger = false;
+        for (auto const& ce : charredEarths)
+        {
+            float dx = bx - ce.GetPositionX();
+            float dy = by - ce.GetPositionY();
+            if (dx * dx + dy * dy < safeDistSq)
+            {
+                inDanger = true;
+                break;
+            }
+        }
+
+        if (!inDanger)
+            return false;
+
+        float const nx = nightbane->GetPositionX();
+        float const ny = nightbane->GetPositionY();
+        float bestDistSq = std::numeric_limits<float>::max();
+        float bestX = bx, bestY = by;
+        bool found = false;
+
+        for (float dist = distStep; dist <= maxBossDist; dist += distStep)
+        {
+            for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+            {
+                float cx = nx + cos(angle) * dist;
+                float cy = ny + sin(angle) * dist;
+
+                bool safe = true;
+                for (auto const& ce : charredEarths)
+                {
+                    float dx = cx - ce.GetPositionX();
+                    float dy = cy - ce.GetPositionY();
+                    if (dx * dx + dy * dy < safeDistSq)
+                    {
+                        safe = false;
+                        break;
+                    }
+                }
+                if (!safe)
+                    continue;
+
+                if (nightbane->GetExactDist2d(cx, cy) > maxBossDist)
+                    continue;
+
+                float dx = cx - bx;
+                float dy = cy - by;
+                float moveDistSq = dx * dx + dy * dy;
+                if (moveDistSq < bestDistSq)
+                {
+                    bestDistSq = moveDistSq;
+                    bestX = cx;
+                    bestY = cy;
+                    found = true;
+                }
+            }
+        }
+
+        if (found && bestDistSq > 0.25f)
+        {
+            botAI->InterruptSpell();
+            return MoveTo(
+                KARAZHAN_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false,
+                false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+
+        return false;
+    }
 
     if (bot->GetExactDist2d(rangedLeader) > 0.5f)
     {
