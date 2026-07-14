@@ -33,6 +33,9 @@ float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* ac
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 {
+    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+        return 1.0f;
+
     Unit* attumen = GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
     if (!attumen)
@@ -58,6 +61,9 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 // Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight
 float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
+    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+        return 1.0f;
+
     Unit* attumen = GetFirstAliveUnitByEntry(
         botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
     if (!attumen)

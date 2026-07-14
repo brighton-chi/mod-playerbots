@@ -254,7 +254,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         return MoveBossToStunnedHealer(healer);
 
     Position const tankPosition = { -10945.881f, -2103.782f, 92.712f };
-    float distanceToPosition = maiden->GetExactDist2d(tankPosition);
+    float distanceToPosition = bot->GetExactDist2d(tankPosition);
     if (distanceToPosition > 2.0f)
     {
         float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
