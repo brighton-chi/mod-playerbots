@@ -78,8 +78,8 @@ public:
         creators["the curator boss engaged by tanks"] =
             &RaidKarazhanTriggerContext::the_curator_boss_engaged_by_tanks;
 
-        creators["the curator astral flares cast arcing sear"] =
-            &RaidKarazhanTriggerContext::the_curator_astral_flares_cast_arcing_sear;
+        creators["the curator boss engaged by ranged"] =
+            &RaidKarazhanTriggerContext::the_curator_boss_engaged_by_ranged;
 
         // Terestian Illhoof
         creators["terestian illhoof should prioritize chains"] =
@@ -121,15 +121,15 @@ public:
         creators["prince malchezaar bot is enfeebled"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_bot_is_enfeebled;
 
-        creators["prince malchezaar infernals are spawned"] =
-            &RaidKarazhanTriggerContext::prince_malchezaar_infernals_are_spawned;
+        creators["prince malchezaar engaged by non-tanks"] =
+            &RaidKarazhanTriggerContext::prince_malchezaar_engaged_by_non_tanks;
 
-        creators["prince malchezaar boss engaged by main tank"] =
-            &RaidKarazhanTriggerContext::prince_malchezaar_boss_engaged_by_main_tank;
+        creators["prince malchezaar boss engaged by tanks"] =
+            &RaidKarazhanTriggerContext::prince_malchezaar_boss_engaged_by_tanks;
 
         // Nightbane
         creators["nightbane boss engaged by tanks"] =
-            &RaidKarazhanTriggerContext::nightbane_boss_engaged_by_main_tank;
+            &RaidKarazhanTriggerContext::nightbane_boss_engaged_by_tanks;
 
         creators["nightbane ground phase engaged by ranged"] =
             &RaidKarazhanTriggerContext::nightbane_ranged_bots_are_in_charred_earth;
@@ -218,8 +218,8 @@ private:
     static Trigger* the_curator_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new TheCuratorBossEngagedByTanksTrigger(botAI);
     }
-    static Trigger* the_curator_astral_flares_cast_arcing_sear(PlayerbotAI* botAI) {
-        return new TheCuratorBossAstralFlaresCastArcingSearTrigger(botAI);
+    static Trigger* the_curator_boss_engaged_by_ranged(PlayerbotAI* botAI) {
+        return new TheCuratorBossEngagedByRangedTrigger(botAI);
     }
 
     // Terestian Illhoof
@@ -265,15 +265,15 @@ private:
     static Trigger* prince_malchezaar_bot_is_enfeebled(PlayerbotAI* botAI) {
         return new PrinceMalchezaarBotIsEnfeebledTrigger(botAI);
     }
-    static Trigger* prince_malchezaar_infernals_are_spawned(PlayerbotAI* botAI) {
-        return new PrinceMalchezaarInfernalsAreSpawnedTrigger(botAI);
+    static Trigger* prince_malchezaar_engaged_by_non_tanks(PlayerbotAI* botAI) {
+        return new PrinceMalchezaarEngagedByNonTanksTrigger(botAI);
     }
-    static Trigger* prince_malchezaar_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new PrinceMalchezaarBossEngagedByMainTankTrigger(botAI);
+    static Trigger* prince_malchezaar_boss_engaged_by_tanks(PlayerbotAI* botAI) {
+        return new PrinceMalchezaarBossEngagedByTanksTrigger(botAI);
     }
 
     // Nightbane
-    static Trigger* nightbane_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
+    static Trigger* nightbane_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new NightbaneBossEngagedByTanksTrigger(botAI);
     }
     static Trigger* nightbane_ranged_bots_are_in_charred_earth(PlayerbotAI* botAI) {

@@ -152,11 +152,11 @@ public:
     bool IsActive() override;
 };
 
-class TheCuratorBossAstralFlaresCastArcingSearTrigger : public Trigger
+class TheCuratorBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    TheCuratorBossAstralFlaresCastArcingSearTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "the curator astral flares cast arcing sear") {}
+    TheCuratorBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "the curator boss engaged by ranged") {}
     bool IsActive() override;
 };
 
@@ -256,19 +256,19 @@ public:
     bool IsActive() override;
 };
 
-class PrinceMalchezaarInfernalsAreSpawnedTrigger : public Trigger
+class PrinceMalchezaarEngagedByNonTanksTrigger : public Trigger
 {
 public:
-    PrinceMalchezaarInfernalsAreSpawnedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "prince malchezaar infernals are spawned") {}
+    PrinceMalchezaarEngagedByNonTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "prince malchezaar engaged by non-tanks") {}
     bool IsActive() override;
 };
 
-class PrinceMalchezaarBossEngagedByMainTankTrigger : public Trigger
+class PrinceMalchezaarBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    PrinceMalchezaarBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "prince malchezaar boss engaged by main tank") {}
+    PrinceMalchezaarBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "prince malchezaar boss engaged by tanks") {}
     bool IsActive() override;
 };
 

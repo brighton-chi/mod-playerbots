@@ -92,15 +92,14 @@ constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 
 // Attumen the Huntsman
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+Unit* GetAttumenMounted(Player* bot);
+
+// Shade of Aran
+bool IsAranCastingArcaneExplosion(Unit* aran);
+bool IsFlameWreathActive(Player* bot);
+
 // Netherspite
 extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-// Nightbane
-extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-
-Unit* GetAttumenMounted(Player* bot);
-bool IsCastingArcaneExplosion(Unit* aran);
-bool IsFlameWreathActive(Player* bot);
 bool IsBanishPhase(Unit* netherspite);
 std::vector<Player*> GetRedBlockers(Player* bot);
 std::vector<Player*> GetBlueBlockers(Player* bot);
@@ -111,6 +110,8 @@ bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float 
 bool FindBeamPosition(
     Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
     float idealDistance, Position& outPos);
+
+// Prince Malchezaar
 std::vector<Unit*> GetSpawnedInfernals(Player* bot);
 bool IsStraightPathSafe(
     float startX, float startY, float targetX, float targetY,
@@ -118,6 +119,10 @@ bool IsStraightPathSafe(
 bool TryFindSafePositionWithSafePath(
     Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
     float safeDistance, float maxSampleDist, float& outX, float& outY);
+
+// Nightbane
+extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 std::vector<Position> GetCharredEarthPositions(Player* bot);
 
 }

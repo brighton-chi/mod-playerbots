@@ -15,11 +15,6 @@ namespace KarazhanHelpers
 
 // Attumen the Huntsman
 std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
-// Netherspite
-std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-// Nightbane
-std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
 Unit* GetAttumenMounted(Player* bot)
 {
@@ -28,7 +23,9 @@ Unit* GetAttumenMounted(Player* bot)
         static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
 }
 
-bool IsCastingArcaneExplosion(Unit* aran)
+// Shade of Aran
+
+bool IsAranCastingArcaneExplosion(Unit* aran)
 {
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
         static_cast<uint32>(KarazhanSpells::SPELL_ARCANE_EXPLOSION));
@@ -63,6 +60,10 @@ bool IsFlameWreathActive(Player* bot)
 
     return false;
 }
+
+// Netherspite
+
+std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 
 bool IsBanishPhase(Unit* netherspite)
 {
@@ -327,6 +328,8 @@ bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float h
     return true;
 }
 
+// Prince Malchezaar
+
 std::vector<Unit*> GetSpawnedInfernals(Player* bot)
 {
     std::vector<Unit*> infernals;
@@ -436,6 +439,11 @@ bool TryFindSafePositionWithSafePath(
 
     return false;
 }
+
+// Nightbane
+
+std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
 std::vector<Position> GetCharredEarthPositions(Player* bot)
 {

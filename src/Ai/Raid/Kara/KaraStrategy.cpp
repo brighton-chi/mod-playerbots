@@ -63,7 +63,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("maiden of virtue tank position boss", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("maiden of virtue holy wrath deals chain damage",
-        { NextAction("maiden of virtue position ranged", ACTION_RAID + 1) }
+        { NextAction("maiden of virtue position ranged between pillars", ACTION_RAID + 1) }
     ));
     triggers.push_back(new TriggerNode("maiden of virtue grounding totem consumes holy fire",
         { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }
@@ -71,7 +71,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // The Big Bad Wolf
     triggers.push_back(new TriggerNode("big bad wolf boss is chasing little red riding hood",
-        { NextAction("big bad wolf run away from boss", ACTION_EMERGENCY + 6) }
+        { NextAction("big bad wolf little red riding hood run away", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("big bad wolf boss engaged by tank",
         { NextAction("big bad wolf position boss", ACTION_RAID) }
@@ -97,8 +97,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the curator boss engaged by tanks",
         { NextAction("the curator position boss", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("the curator astral flares cast arcing sear",
-        { NextAction("the curator spread ranged", ACTION_RAID) }
+    triggers.push_back(new TriggerNode("the curator boss engaged by ranged",
+        { NextAction("the curator spread ranged to mitigate arcane sear", ACTION_RAID) }
     ));
 
     // Terestian Illhoof
@@ -142,13 +142,13 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Prince Malchezaar
     triggers.push_back(new TriggerNode("prince malchezaar bot is enfeebled",
-        { NextAction("prince malchezaar enfeebled avoid hazard", ACTION_EMERGENCY + 6) }
+        { NextAction("prince malchezaar enfeebled bot avoid hazard", ACTION_EMERGENCY + 6) }
     ));
-    triggers.push_back(new TriggerNode("prince malchezaar infernals are spawned",
-        { NextAction("prince malchezaar non tank avoid infernal", ACTION_EMERGENCY + 1) }
+    triggers.push_back(new TriggerNode("prince malchezaar engaged by non-tanks",
+        { NextAction("prince malchezaar non-tank avoid infernal", ACTION_EMERGENCY + 1) }
     ));
-    triggers.push_back(new TriggerNode("prince malchezaar boss engaged by main tank",
-        { NextAction("prince malchezaar main tank movement", ACTION_EMERGENCY + 6) }
+    triggers.push_back(new TriggerNode("prince malchezaar boss engaged by tanks",
+        { NextAction("prince malchezaar tanks position boss", ACTION_EMERGENCY + 6) }
     ));
 
     // Nightbane
@@ -162,7 +162,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }
     ));
     triggers.push_back(new TriggerNode("nightbane boss is flying",
-        { NextAction("nightbane flight phase movement", ACTION_RAID) }
+        { NextAction("nightbane flight phase stack and move together", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
         { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 10) }

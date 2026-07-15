@@ -47,8 +47,8 @@ public:
         creators["maiden of virtue tank position boss"] =
             &RaidKarazhanActionContext::maiden_of_virtue_tank_position_boss;
 
-        creators["maiden of virtue position ranged"] =
-            &RaidKarazhanActionContext::maiden_of_virtue_position_ranged;
+        creators["maiden of virtue position ranged between pillars"] =
+            &RaidKarazhanActionContext::maiden_of_virtue_position_ranged_between_pillars;
 
         creators["maiden of virtue set grounding totem"] =
             &RaidKarazhanActionContext::maiden_of_virtue_set_grounding_totem;
@@ -57,8 +57,8 @@ public:
         creators["big bad wolf position boss"] =
             &RaidKarazhanActionContext::big_bad_wolf_position_boss;
 
-        creators["big bad wolf run away from boss"] =
-            &RaidKarazhanActionContext::big_bad_wolf_run_away_from_boss;
+        creators["big bad wolf little red riding hood run away"] =
+            &RaidKarazhanActionContext::big_bad_wolf_little_red_riding_hood_run_away;
 
         // Romulo and Julianne
         creators["romulo and julianne mark target"] =
@@ -118,14 +118,14 @@ public:
             &RaidKarazhanActionContext::netherspite_manage_timers_and_trackers;
 
         // Prince Malchezaar
-        creators["prince malchezaar enfeebled avoid hazard"] =
-            &RaidKarazhanActionContext::prince_malchezaar_enfeebled_avoid_hazard;
+        creators["prince malchezaar enfeebled bot avoid hazard"] =
+            &RaidKarazhanActionContext::prince_malchezaar_enfeebled_bot_avoid_hazard;
 
-        creators["prince malchezaar non tank avoid infernal"] =
+        creators["prince malchezaar non-tank avoid infernal"] =
             &RaidKarazhanActionContext::prince_malchezaar_non_tank_avoid_infernal;
 
-        creators["prince malchezaar main tank movement"] =
-            &RaidKarazhanActionContext::prince_malchezaar_main_tank_movement;
+        creators["prince malchezaar tanks position boss"] =
+            &RaidKarazhanActionContext::prince_malchezaar_tanks_position_boss;
 
         // Nightbane
         creators["nightbane ground phase tanks position boss"] =
@@ -137,8 +137,8 @@ public:
         creators["nightbane control pet aggression"] =
             &RaidKarazhanActionContext::nightbane_control_pet_aggression;
 
-        creators["nightbane flight phase movement"] =
-            &RaidKarazhanActionContext::nightbane_flight_phase_movement;
+        creators["nightbane flight phase stack and move together"] =
+            &RaidKarazhanActionContext::nightbane_flight_phase_stack_and_move_together;
 
         creators["nightbane teleport back to terrace"] =
             &RaidKarazhanActionContext::nightbane_teleport_back_to_terrace;
@@ -184,8 +184,8 @@ private:
     static Action* maiden_of_virtue_tank_position_boss(PlayerbotAI* botAI) {
         return new MaidenOfVirtueTankPositionBossAction(botAI);
     }
-    static Action* maiden_of_virtue_position_ranged(PlayerbotAI* botAI) {
-        return new MaidenOfVirtuePositionRangedAction(botAI);
+    static Action* maiden_of_virtue_position_ranged_between_pillars(PlayerbotAI* botAI) {
+        return new MaidenOfVirtuePositionRangedBetweenPillarsAction(botAI);
     }
     static Action* maiden_of_virtue_set_grounding_totem(PlayerbotAI* botAI) {
         return new MaidenOfVirtueSetGroundingTotemAction(botAI);
@@ -195,8 +195,8 @@ private:
     static Action* big_bad_wolf_position_boss(PlayerbotAI* botAI) {
         return new BigBadWolfPositionBossAction(botAI);
     }
-    static Action* big_bad_wolf_run_away_from_boss(PlayerbotAI* botAI) {
-        return new BigBadWolfRunAwayFromBossAction(botAI);
+    static Action* big_bad_wolf_little_red_riding_hood_run_away(PlayerbotAI* botAI) {
+        return new BigBadWolfLittleRedRidingHoodRunAwayAction(botAI);
     }
 
     // Romulo and Julianne
@@ -263,14 +263,14 @@ private:
     }
 
     // Prince Malchezaar
-    static Action* prince_malchezaar_enfeebled_avoid_hazard(PlayerbotAI* botAI) {
-        return new PrinceMalchezaarEnfeebledAvoidHazardAction(botAI);
+    static Action* prince_malchezaar_enfeebled_bot_avoid_hazard(PlayerbotAI* botAI) {
+        return new PrinceMalchezaarEnfeebledBotAvoidHazardAction(botAI);
     }
     static Action* prince_malchezaar_non_tank_avoid_infernal(PlayerbotAI* botAI) {
         return new PrinceMalchezaarNonTankAvoidInfernalAction(botAI);
     }
-    static Action* prince_malchezaar_main_tank_movement(PlayerbotAI* botAI) {
-        return new PrinceMalchezaarMainTankMovementAction(botAI);
+    static Action* prince_malchezaar_tanks_position_boss(PlayerbotAI* botAI) {
+        return new PrinceMalchezaarTanksPositionBossAction(botAI);
     }
 
     // Nightbane
@@ -283,8 +283,8 @@ private:
     static Action* nightbane_control_pet_aggression(PlayerbotAI* botAI) {
         return new NightbaneControlPetAggressionAction(botAI);
     }
-    static Action* nightbane_flight_phase_movement(PlayerbotAI* botAI) {
-        return new NightbaneFlightPhaseMovementAction(botAI);
+    static Action* nightbane_flight_phase_stack_and_move_together(PlayerbotAI* botAI) {
+        return new NightbaneFlightPhaseStackAndMoveTogetherAction(botAI);
     }
     static Action* nightbane_teleport_back_to_terrace(PlayerbotAI* botAI) {
         return new NightbaneTeleportBackToTerraceAction(botAI);

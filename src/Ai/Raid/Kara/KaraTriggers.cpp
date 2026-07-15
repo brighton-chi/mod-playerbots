@@ -170,7 +170,7 @@ bool TheCuratorBossEngagedByTanksTrigger::IsActive()
     return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
 
-bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
+bool TheCuratorBossEngagedByRangedTrigger::IsActive()
 {
     return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
@@ -188,7 +188,7 @@ bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActive()
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActive()
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    return aran && IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
+    return aran && IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
@@ -214,7 +214,7 @@ bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
     if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BLIZZARD)))
         return false;
 
-    return aran && !IsCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
+    return aran && !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 // Netherspite
@@ -294,20 +294,28 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE));
 }
 
-bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
+bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActive()
 {
-    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
         return false;
 
     if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE)))
         return false;
 
-    return !botAI->IsMainTank(bot);
+    if (botAI->IsMainTank(bot) || (botAI->IsTank(bot) && malchezaar->GetVictim() == bot))
+        return false;
+
+    return true;
 }
 
-bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
+bool PrinceMalchezaarBossEngagedByTanksTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
+        return false;
+
+    return botAI->IsMainTank(bot) || (botAI->IsTank(bot) && malchezaar->GetVictim() == bot);
 }
 
 // Nightbane

@@ -5,14 +5,14 @@
  */
 
 #include "KaraMultipliers.h"
-#include "KaraActions.h"
-#include "KaraHelpers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
+#include "KaraActions.h"
+#include "KaraHelpers.h"
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
@@ -229,7 +229,7 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
     if (!aran)
         return 1.0f;
 
-    if (!IsCastingArcaneExplosion(aran))
+    if (!IsAranCastingArcaneExplosion(aran))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
@@ -355,7 +355,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
+        !dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
     {
         return 0.0f;
     }

@@ -243,7 +243,6 @@ bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Mark targets with skull in the recommended kill order
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
     static const std::array<const char*, 6> moroesGuests =
@@ -267,7 +266,6 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
 
 // Maiden of Virtue
 
-// Tank the boss in the center of the room
 bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
@@ -319,7 +317,6 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Move to healers after Repentance to break the stun
 bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* healer)
 {
     constexpr float endDistance = 6.0;
@@ -333,8 +330,7 @@ bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* healer)
     }
 }
 
-// Spread out ranged DPS between the pillars
-bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
+bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -392,7 +388,6 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 
 // The Big Bad Wolf
 
-// Tank the boss at the front left corner of the stage
 bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
     Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
@@ -425,7 +420,7 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 }
 
 // Run away, little girl, run away
-bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
+bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
 {
     static const Position runPositions[4] =
     {
@@ -451,7 +446,6 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
 
 // Romulo and Julianne
 
-// Keep the couple within 10% HP of each other
 bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 {
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
@@ -488,7 +482,6 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 
 // The Wizard of Oz
 
-// Mark targets with skull in the recommended kill order
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
     static const std::array<const char*, 6> ozTargets =
@@ -510,7 +503,6 @@ bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
     return false;
 }
 
-// Mages spam Scorch on Strawman to disorient him
 bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
@@ -530,8 +522,6 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event /*event*/)
     return false;
 }
 
-// Tank the boss in the center of the hallway near the Guardian's Library
-// Main tank and off tank will attack the boss; others will focus on Astral Flares
 bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -563,7 +553,6 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-// Spread out ranged DPS to avoid Arcing Sear damage
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 5.0f;
@@ -575,7 +564,6 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 // Terestian Illhoof
 
-// Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
     static const std::array<const char*, 3> illhoofTargets =
@@ -596,7 +584,6 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 
 // Shade of Aran
 
-// Run to the edge of the room to avoid Arcane Explosion
 bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
@@ -648,73 +635,10 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
     return false;
 }
 
-// Don't get closer than 11 yards to Aran to avoid counterspell
-// Don't get farther than 15 yards from Aran to avoid getting stuck in alcoves
+// Reasoning: get too close, get Counterspelled;
+// get too far, get stuck in alcoves when running away from Blizzard
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
-    /* Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    if (!aran)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    constexpr float minDistFromBoss = 11.0f;
-    constexpr float maxDistFromBoss = 15.0f;
-    constexpr float ringIncrement = M_PI / 8;
-    constexpr float distIncrement = 0.5f;
-    constexpr float minDistFromPlayers = 3.0f;
-
-    float bestX = 0.0f;
-    float bestY = 0.0f;
-    float bestMoveDist = std::numeric_limits<float>::max();
-    bool found = false;
-
-    for (float dist = minDistFromBoss; dist <= maxDistFromBoss; dist += distIncrement)
-    {
-        for (float angle = 0; angle < 2 * M_PI; angle += ringIncrement)
-        {
-            float x = aran->GetPositionX() + std::cos(angle) * dist;
-            float y = aran->GetPositionY() + std::sin(angle) * dist;
-
-            bool tooClose = false;
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || member == bot || !member->IsAlive())
-                    continue;
-
-                if (member->GetExactDist2d(x, y) < minDistFromPlayers)
-                {
-                    tooClose = true;
-                    break;
-                }
-            }
-
-            if (tooClose)
-                continue;
-
-            float moveDist = bot->GetExactDist2d(x, y);
-            if (moveDist < bestMoveDist)
-            {
-                bestMoveDist = moveDist;
-                bestX = x;
-                bestY = y;
-                found = true;
-            }
-        }
-    }
-
-    if (found && bestMoveDist > 0.5f)
-    {
-        return MoveTo(
-            KARAZHAN_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    return false; */
-
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
         return false;
@@ -734,7 +658,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 
 // Netherspite
 
-// One tank bot per phase will dance in and out of the red beam (5 seconds in, 5 seconds out)
+// The red beam dance (5 seconds in, 5 seconds out)
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -914,7 +838,6 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     return false;
 }
 
-// All bots not currently blocking a beam will avoid beams and void zones
 bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -1105,9 +1028,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
 // Prince Malchezaar
 
-// Move away from the boss to avoid Shadow Nova when Enfeebled
-// Do not cross within Infernal Hellfire radius while doing so
-bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
+bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     if (!malchezaar)
@@ -1180,8 +1101,6 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
     return false;
 }
 
-// Move away from infernals while staying within range of the boss
-// Prioritize finding a safe path to the new location, but will fallback to just finding a safe location if needed
 bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -1235,9 +1154,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     return false;
 }
 
-// This is similar to the non-tank avoid infernal action, but the movement is based on the bot's location
-// And the safe distance from infernals is larger to give melee more room to maneuver
-bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
+bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     if (!malchezaar)
@@ -1292,8 +1209,6 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
 // Nightbane
 // CombatReach is 10.5 yards
 
-// The active tank position up against the balcony railing and moves along the railing to try to
-// keep Nightbane facing sideways to the raid
 bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1526,7 +1441,6 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::StackOnRangedLeader(Pla
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// Put pets on passive during the flight phase so they don't try to chase Nightbane off the map
 bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -1552,7 +1466,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 // 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
 // 2. Once Rain of Bones hits, the whole party moves to a new stack position
 // This lasts for the first 35 seconds of the flight phase, after which Nightbane begins landing
-bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
+bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
@@ -1621,6 +1535,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     return false;
 }
 
+// Failsafe in case bots fall through the world or off the terrace
 bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
 {
     Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
@@ -1645,7 +1560,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     {
         Action* action = botAI->GetAiObjectContext()->GetAction(
             "nightbane flight phase movement");
-        if (action && static_cast<NightbaneFlightPhaseMovementAction*>(
+        if (action && static_cast<NightbaneFlightPhaseStackAndMoveTogetherAction*>(
                 action)->ResetRainOfBonesHit())
         {
             didSomething = true;

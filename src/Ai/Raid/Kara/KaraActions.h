@@ -97,11 +97,11 @@ private:
     bool MoveBossToStunnedHealer(Unit* healer);
 };
 
-class MaidenOfVirtuePositionRangedAction : public MovementAction
+class MaidenOfVirtuePositionRangedBetweenPillarsAction : public MovementAction
 {
 public:
-    MaidenOfVirtuePositionRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "maiden of virtue position ranged") {}
+    MaidenOfVirtuePositionRangedBetweenPillarsAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "maiden of virtue position ranged between pillars") {}
     bool Execute(Event event) override;
 };
 
@@ -121,11 +121,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class BigBadWolfRunAwayFromBossAction : public MovementAction
+class BigBadWolfLittleRedRidingHoodRunAwayAction : public MovementAction
 {
 public:
-    BigBadWolfRunAwayFromBossAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "big bad wolf run away from boss") {}
+    BigBadWolfLittleRedRidingHoodRunAwayAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "big bad wolf little red riding hood run away") {}
     bool Execute(Event event) override;
 
 private:
@@ -310,11 +310,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class PrinceMalchezaarEnfeebledAvoidHazardAction : public MovementAction
+class PrinceMalchezaarEnfeebledBotAvoidHazardAction : public MovementAction
 {
 public:
-    PrinceMalchezaarEnfeebledAvoidHazardAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "prince malchezaar enfeebled avoid hazard") {}
+    PrinceMalchezaarEnfeebledBotAvoidHazardAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "prince malchezaar enfeebled bot avoid hazard") {}
     bool Execute(Event event) override;
 };
 
@@ -326,11 +326,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class PrinceMalchezaarMainTankMovementAction : public AttackAction
+class PrinceMalchezaarTanksPositionBossAction : public AttackAction
 {
 public:
-    PrinceMalchezaarMainTankMovementAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "prince malchezaar main tank movement") {}
+    PrinceMalchezaarTanksPositionBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "prince malchezaar tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -362,11 +362,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneFlightPhaseMovementAction : public MovementAction
+class NightbaneFlightPhaseStackAndMoveTogetherAction : public MovementAction
 {
 public:
-    NightbaneFlightPhaseMovementAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane flight phase movement") {}
+    NightbaneFlightPhaseStackAndMoveTogetherAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane flight phase stack and move together") {}
     bool Execute(Event event) override;
     bool ResetRainOfBonesHit()
     {
