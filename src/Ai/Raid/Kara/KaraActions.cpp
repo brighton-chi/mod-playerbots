@@ -1063,14 +1063,25 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
             didSomething = true;
 
-        if (botAI->IsTank(bot))
+        Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
+        if (redAction &&
+            static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
         {
-            Action* action = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
-            if (action &&
-                static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState())
-            {
-                didSomething = true;
-            }
+            didSomething = true;
+        }
+
+        Action* blueAction = botAI->GetAiObjectContext()->GetAction("netherspite block blue beam");
+        if (blueAction &&
+            static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
+        {
+            didSomething = true;
+        }
+
+        Action* greenAction = botAI->GetAiObjectContext()->GetAction("netherspite block green beam");
+        if (greenAction &&
+            static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
+        {
+            didSomething = true;
         }
     }
     else
@@ -1078,12 +1089,11 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.try_emplace(instanceId, now).second)
             didSomething = true;
 
-        if (botAI->IsTank(bot) &&
-            bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
+        if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
         {
-            Action* action = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
-            if (action &&
-                static_cast<NetherspiteBlockRedBeamAction*>(action)->ResetRedBeamState(now))
+            Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
+            if (redAction &&
+                static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState(now))
             {
                 didSomething = true;
             }

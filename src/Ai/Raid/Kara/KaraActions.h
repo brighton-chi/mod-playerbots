@@ -248,6 +248,13 @@ public:
     NetherspiteBlockBlueBeamAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block blue beam") {}
     bool Execute(Event event) override;
+    bool ResetBlueBeamState()
+    {
+        if (!_wasBlockingBlueBeam)
+            return false;
+        _wasBlockingBlueBeam = false;
+        return true;
+    }
 
 private:
     bool _wasBlockingBlueBeam = false;
@@ -259,6 +266,13 @@ public:
     NetherspiteBlockGreenBeamAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block green beam") {}
     bool Execute(Event event) override;
+    bool ResetGreenBeamState()
+    {
+        if (!_wasBlockingGreenBeam)
+            return false;
+        _wasBlockingGreenBeam = false;
+        return true;
+    }
 
 private:
     bool _wasBlockingGreenBeam = false;
