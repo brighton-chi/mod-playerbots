@@ -81,6 +81,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
+{
+public:
+    TerestianIllhoofDontDotFiendishImpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "terestian illhoof don't dot fiendish imps multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
 {
 public:

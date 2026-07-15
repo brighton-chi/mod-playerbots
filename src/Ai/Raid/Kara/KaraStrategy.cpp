@@ -183,6 +183,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new TerestianIllhoofDontDotFiendishImpsMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionRunAwayMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));

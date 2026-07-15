@@ -204,6 +204,22 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Terestian Illhoof
+float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
+{
+    Unit* imp = AI_VALUE2(Unit*, "find target", "fiendish imp");
+    if (!imp)
+        return 1.0f;
+
+    if (AI_VALUE(Unit*, "current target") == imp &&
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    {
+        return 0.0f;
+    }
+
+     return 1.0f;
+}
+
 // Shade of Aran
 
 // Don't charge back in or move in any other way when running from Arcane Explosion
