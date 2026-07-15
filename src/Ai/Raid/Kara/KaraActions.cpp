@@ -99,7 +99,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    static const std::array<const char*, 8> spells =
+    static const std::array<const char*, 7> spells =
     {
         "bash",
         "concussion blow",
@@ -1296,7 +1296,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot)
         return false;
 
-    Position const domeCenter =      { -11126.015f, -1925.271f, 91.460f };
+    Position const domeCenter =      { -11126.015f, -1925.271f, 91.473f };
     Position const terraceEastEnd  = { -11115.958f, -1972.058f, 91.457f };
     Position const terraceWestEnd  = { -11077.521f, -1913.315f, 91.471f };
 
@@ -1557,18 +1557,47 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES)))
         _rainOfBonesHit = true;
 
-    Position const rainOfBonesPosition = { -11165.233f, -1911.123f, 91.473f };
-    Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
-    Position const destPos = _rainOfBonesHit ? rainOfBonesPosition : flightStackPosition;
+    Position const rainOfBonesPositions[2] =
+    {
+        { -11166.516f, -1901.405f, 91.473f },  // primary
+        { -11158.752f, -1909.394f, 91.473f }   // backup in case of charred earth
+    };
+    Position const flightStackPositions[2] =
+    {
+        { -11156.233f, -1888.353f, 91.473f },  // primary
+        { -11149.115f, -1897.154f, 91.473f }   // backup in case of charred earth
+    };
+
+    auto const& posArray = _rainOfBonesHit ? rainOfBonesPositions : flightStackPositions;
+    Position destPos;
+    bool foundSafe = false;
 
     constexpr float charredEarthSafeDist = 12.0f;
     std::vector<Position> charredEarths = GetCharredEarthPositions(bot);
 
-    for (auto const& charredEarth : charredEarths)
+    for (uint8 i = 0; i < 2; i++)
     {
-        if (charredEarth.GetExactDist2d(destPos) < charredEarthSafeDist)
-            return false;
+        destPos = posArray[i];
+
+        bool inCharredEarth = false;
+        for (auto const& charredEarth : charredEarths)
+        {
+            if (charredEarth.GetExactDist2d(destPos) < charredEarthSafeDist)
+            {
+                inCharredEarth = true;
+                break;
+            }
+        }
+
+        if (!inCharredEarth)
+        {
+            foundSafe = true;
+            break;
+        }
     }
+
+    if (!foundSafe)
+        return false;
 
     if (bot->GetExactDist2d(destPos) > 0.5f)
     {

@@ -88,7 +88,7 @@ enum class KarazhanNpcs : uint32
 
 constexpr uint32 KARAZHAN_MAP_ID = 532;
 constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
-constexpr float NIGHTBANE_GROUND_Z = 91.460f;
+constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 
 // Attumen the Huntsman
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
