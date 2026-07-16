@@ -70,7 +70,7 @@ bool TalonKingIkissBossCastingArcaneExplosionTrigger::IsActive()
 {
     // Arcane Bubble is put up 1s before casting Arcane Explosion
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && ikiss->HasAura(SPELL_ARCANE_BUBBLE) && bot->IsWithinLOSInMap(ikiss);
+    return ikiss && ikiss->HasAura(SPELL_ARCANE_BUBBLE) /*&& bot->IsWithinLOSInMap(ikiss)*/;
 }
 
 bool TalonKingIkissBossOutOfLosTrigger::IsActive()
