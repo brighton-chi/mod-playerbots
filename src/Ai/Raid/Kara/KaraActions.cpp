@@ -29,12 +29,6 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
             erased = true;
         }
 
-        if (!AI_VALUE2(Unit*, "find target", "netherspite") &&
-            netherspiteDpsWaitTimer.erase(instanceId) > 0)
-        {
-            erased = true;
-        }
-
         if (!AI_VALUE2(Unit*, "find target", "nightbane"))
         {
             if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
