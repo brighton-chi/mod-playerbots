@@ -16,8 +16,7 @@ using namespace KarazhanHelpers;
 
 bool KarazhanBotIsNotInCombatTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
-        !AI_VALUE2(bool, "combat", "self target");
+    return bot->GetMapId() == KARAZHAN_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 bool KarazhanEnemiesCastFearTrigger::IsActive()

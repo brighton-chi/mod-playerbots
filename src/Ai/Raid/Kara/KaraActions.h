@@ -127,6 +127,13 @@ public:
     BigBadWolfLittleRedRidingHoodRunAwayAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "big bad wolf little red riding hood run away") {}
     bool Execute(Event event) override;
+    bool ResetRunIndex()
+    {
+        if (!_runIndex)
+            return false;
+        _runIndex = 0;
+        return true;
+    }
 
 private:
     uint8 _runIndex = 0;

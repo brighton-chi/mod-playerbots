@@ -18,26 +18,68 @@ using namespace KarazhanHelpers;
 bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
     bool erased = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "midnight") &&
-        attumenDpsWaitTimer.erase(instanceId) > 0)
+    if (isMechanicTracker)
     {
-        erased = true;
+        if (!AI_VALUE2(Unit*, "find target", "midnight") &&
+            attumenDpsWaitTimer.erase(instanceId) > 0)
+        {
+            erased = true;
+        }
+
+        if (!AI_VALUE2(Unit*, "find target", "netherspite") &&
+            netherspiteDpsWaitTimer.erase(instanceId) > 0)
+        {
+            erased = true;
+        }
+
+        if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+        {
+            if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
+                erased = true;
+            if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
+                erased = true;
+        }
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "netherspite") &&
-        netherspiteDpsWaitTimer.erase(instanceId) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
     {
-        erased = true;
+        Action* wolfAction = botAI->GetAiObjectContext()->GetAction(
+            "big bad wolf little red riding hood run away");
+        if (wolfAction &&
+            static_cast<BigBadWolfLittleRedRidingHoodRunAwayAction*>(wolfAction)->ResetRunIndex())
+        {
+            erased = true;
+        }
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+    if (!AI_VALUE2(Unit*, "find target", "netherspite"))
     {
-        if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
+        if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
             erased = true;
-        if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
+
+        Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
+        if (redAction &&
+            static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
+        {
             erased = true;
+        }
+
+        Action* blueAction = botAI->GetAiObjectContext()->GetAction("netherspite block blue beam");
+        if (blueAction &&
+            static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
+        {
+            erased = true;
+        }
+
+        Action* greenAction = botAI->GetAiObjectContext()->GetAction("netherspite block green beam");
+        if (greenAction &&
+            static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
+        {
+            erased = true;
+        }
     }
 
     return erased;
@@ -1559,13 +1601,13 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
     bool didSomething = false;
 
-    // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
+    // Ground Phase: Erase flight phase timer and Rain of Bones tracker and start DPS wait timer
     if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
         Action* action = botAI->GetAiObjectContext()->GetAction(
-            "nightbane flight phase movement");
-        if (action && static_cast<NightbaneFlightPhaseStackAndMoveTogetherAction*>(
-                action)->ResetRainOfBonesHit())
+            "nightbane flight phase stack and move together");
+        if (action &&
+            static_cast<NightbaneFlightPhaseStackAndMoveTogetherAction*>(action)->ResetRainOfBonesHit())
         {
             didSomething = true;
         }
@@ -1578,7 +1620,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
                 didSomething = true;
         }
     }
-    // Erase DPS wait timer and start flight phase timer at beginning of flight phase
+    // Flight Phase: Erase DPS wait timer and start flight phase timer
     else if (isMechanicTracker)
     {
         if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
