@@ -12,7 +12,6 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
-#include "RtiTargetValue.h"
 
 using namespace SunwellHelpers;
 
@@ -62,7 +61,28 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
+        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
+        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
+    {
+        return false;
+    }
+
+    std::vector<Unit*> hands;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            hands.push_back(unit);
+        }
+    }
+
+    if (hands.empty())
         return false;
 
     if (botAI->IsTank(bot))
@@ -82,24 +102,27 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
         if (myIndex >= tanks.size())
             return false;
 
-        std::vector<Unit*> hands;
-        auto const& attackers =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+        auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
+        ObjectGuid& assignedGuid = assignments[myIndex];
 
-        for (ObjectGuid const guid : attackers)
+        if (!assignedGuid.IsEmpty())
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() &&
-                unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+            bool alive = false;
+            for (Unit* hand : hands)
             {
-                hands.push_back(unit);
+                if (hand->GetGUID() == assignedGuid)
+                {
+                    alive = true;
+                    break;
+                }
             }
+            if (!alive)
+                assignedGuid = ObjectGuid::Empty;
         }
 
-        AssignHandsToTanks(hands, myIndex);
+        if (assignedGuid.IsEmpty() && myIndex < hands.size())
+            assignedGuid = hands[myIndex]->GetGUID();
 
-        ObjectGuid const assignedGuid =
-            kiljaedenHandTankAssignments[bot->GetInstanceId()][myIndex];
         if (assignedGuid.IsEmpty())
             return false;
 
@@ -123,8 +146,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                 if (!otherTank || !otherTank->IsAlive())
                     continue;
 
-                ObjectGuid const otherGuid =
-                    kiljaedenHandTankAssignments[bot->GetInstanceId()][i];
+                ObjectGuid const otherGuid = assignments[i];
                 if (otherGuid.IsEmpty())
                     continue;
 
@@ -137,62 +159,21 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                     return MoveAway(otherTank, minTankDistance - distFromTank, true);
             }
         }
-
-        return false;
     }
-
-    if (botAI->IsDps(bot))
-        return DpsAttackPriorityTargets();
-
-    return false;
-}
-
-void KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::AssignHandsToTanks(
-    std::vector<Unit*> const& hands, size_t const myIndex)
-{
-    std::vector<uint8> const rtiIndices = {
-        RtiTargetValue::starIndex,
-        RtiTargetValue::circleIndex,
-        RtiTargetValue::diamondIndex
-    };
-    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
-
-    auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
-    ObjectGuid& assignedGuid = assignments[myIndex];
-
-    if (!assignedGuid.IsEmpty())
+    else
     {
+        Unit* focusHand = hands[0];
         for (Unit* hand : hands)
         {
-            if (hand->GetGUID() == assignedGuid)
-                return;
+            if (hand->GetGUID() < focusHand->GetGUID())
+                focusHand = hand;
         }
 
-        assignedGuid = ObjectGuid::Empty;
-        return;
-    }
+        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID))
+            MarkTargetWithSkull(bot, focusHand);
 
-    if (myIndex < hands.size())
-    {
-        Unit* hand = hands[myIndex];
-        assignedGuid = hand->GetGUID();
-
-        if (MarkTargetWithIcon(bot, hand, rtiIndices[myIndex]))
-            return;
-
-        SetRtiTarget(botAI, rtiNames[myIndex], hand);
-    }
-}
-
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::DpsAttackPriorityTargets()
-{
-    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
-
-    for (std::string const& rtiName : rtiNames)
-    {
-        Unit* hand = AI_VALUE2(Unit*, "rti target", rtiName);
-        if (hand && AI_VALUE(Unit*, "current target") != hand)
-            return Attack(hand);
+        if (AI_VALUE(Unit*, "current target") != focusHand)
+            return Attack(focusHand);
     }
 
     return false;

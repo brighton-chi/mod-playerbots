@@ -910,8 +910,12 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
+        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
+        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
+    {
         return 1.0f;
+    }
 
     if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
