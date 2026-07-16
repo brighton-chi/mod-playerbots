@@ -158,7 +158,6 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
     return false;
 }
 
-// Note: Mounted Attumen's CombatReach is legit 0 yards (???)
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
@@ -200,6 +199,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
+// Mounted Attumen's CombatReach is 0 yards
 bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 {
     float const distanceBehind = bot->getClass() == CLASS_HUNTER? 8.0f : 2.0f;
@@ -265,6 +265,7 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
 }
 
 // Maiden of Virtue
+// CombatReach is 4.8 yards
 
 bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 {
@@ -387,6 +388,7 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 }
 
 // The Big Bad Wolf
+// CombatReach is 0 yards
 
 bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
@@ -657,6 +659,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 }
 
 // Netherspite
+// CombatReach is 18 yards
 
 // The red beam dance (5 seconds in, 5 seconds out)
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
@@ -1027,6 +1030,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 }
 
 // Prince Malchezaar
+// CombatReach is 4 yards
 
 bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 {
