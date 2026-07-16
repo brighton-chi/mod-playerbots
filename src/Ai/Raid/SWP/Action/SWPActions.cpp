@@ -73,8 +73,7 @@ bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
             erased = true;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru") &&
-        !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
             erased = true;
