@@ -165,22 +165,22 @@ bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
 {
     Position const pillarCenter = PILLAR_CENTER;
     float const botAngle = pillarCenter.GetAngle(bot);
+    float const distToPillar = bot->GetExactDist2d(pillarCenter);
 
-    return MoveToPillar(pillarCenter, botAngle) || MoveAroundPillar(pillarCenter, botAngle);
+    return MoveToPillar(pillarCenter, botAngle, distToPillar) ||
+        MoveAroundPillar(pillarCenter, botAngle, distToPillar);
 }
 
 bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
-    Position const& pillarCenter, float botAngle)
+    Position const& pillarCenter, float botAngle, float distToPillar)
 {
-    constexpr float circleRadiusMin = 10.0f;
-    constexpr float circleRadiusMax = 12.0f;
-    float const distToPillar = bot->GetExactDist2d(pillarCenter);
+    constexpr float circleRadiusAcceptMin = 10.0f;
+    constexpr float circleRadiusAcceptMax = 13.0f;
 
-    if (distToPillar >= circleRadiusMin && distToPillar <= circleRadiusMax)
+    if (distToPillar >= circleRadiusAcceptMin && distToPillar <= circleRadiusAcceptMax)
         return false;
 
-    float const targetRadius =
-        distToPillar < circleRadiusMin ? circleRadiusMin : circleRadiusMax;
+    float const targetRadius = distToPillar < circleRadiusAcceptMin ? 11.0f : 12.0f;
     float const moveX = pillarCenter.GetPositionX() + targetRadius * cos(botAngle);
     float const moveY = pillarCenter.GetPositionY() + targetRadius * sin(botAngle);
 
@@ -191,36 +191,22 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
 }
 
 bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
-    Position const& pillarCenter, float botAngle)
+    Position const& pillarCenter, float botAngle, float distToPillar)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
         return false;
 
-    constexpr float circleRadiusMin = 10.0f;
-    constexpr float circleRadiusMax = 12.0f;
-    constexpr float angularStep = M_PI / 16.0f;
-
-    float const radius = std::clamp(
-        bot->GetExactDist2d(pillarCenter), circleRadiusMin, circleRadiusMax);
     float const destAngle = pillarCenter.GetAngle(ikiss) + M_PI;
+    float const destX = pillarCenter.GetPositionX() + distToPillar * cos(destAngle);
+    float const destY = pillarCenter.GetPositionY() + distToPillar * sin(destAngle);
 
-    float const destX = pillarCenter.GetPositionX() + radius * cos(destAngle);
-    float const destY = pillarCenter.GetPositionY() + radius * sin(destAngle);
-
-    if (bot->GetExactDist2d(destX, destY) < 2.0f)
+    if (bot->GetExactDist2d(destX, destY) < 1.0f)
         return false;
-
-    float const delta = Position::NormalizeOrientation(destAngle - botAngle);
-    float const direction = (delta > 0.0f && delta < M_PI) ? 1.0f : -1.0f;
-    float const targetAngle = botAngle + direction * angularStep;
-
-    float const moveX = pillarCenter.GetPositionX() + radius * cos(targetAngle);
-    float const moveY = pillarCenter.GetPositionY() + radius * sin(targetAngle);
 
     botAI->InterruptSpell();
     return MoveTo(
-        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        SETHEKK_HALLS_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -231,12 +217,11 @@ bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
         return false;
 
     Position const pillarCenter = PILLAR_CENTER;
-    constexpr float angularStep = M_PI / 16.0f;
+    constexpr float angularStep = M_PI / 8.0f;
 
     float const botAngle = pillarCenter.GetAngle(bot);
     float const targetAngle = pillarCenter.GetAngle(ikiss);
     float const radius = bot->GetExactDist2d(pillarCenter);
-
     float const delta = Position::NormalizeOrientation(targetAngle - botAngle);
 
     if (fabs(delta) < angularStep)

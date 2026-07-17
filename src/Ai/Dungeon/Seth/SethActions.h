@@ -76,8 +76,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToPillar(Position const& pillarCenter, float botAngle);
-    bool MoveAroundPillar(Position const& pillarCenter, float botAngle);
+    bool MoveToPillar(Position const& pillarCenter, float botAngle, float distToPillar);
+    bool MoveAroundPillar(Position const& pillarCenter, float botAngle, float distToPillar);
 };
 
 class TalonKingIkissMoveToWithinLosAction : public MovementAction
