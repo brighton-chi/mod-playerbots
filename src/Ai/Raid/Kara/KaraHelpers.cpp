@@ -83,9 +83,8 @@ std::vector<Player*> GetRedBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsTank(member) ||
-            !GET_PLAYERBOT_AI(member) || member->HasAura(
-                static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_RED)))
+        if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
+            member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_RED)))
         {
             continue;
         }
@@ -388,7 +387,6 @@ bool TryFindSafePositionWithSafePath(
     float const originX = origin.GetPositionX();
     float const originY = origin.GetPositionY();
 
-    // Try with safe-path requirement first, fall back to position-only
     for (bool requireSafePath : { true, false })
     {
         float bestMoveDist = std::numeric_limits<float>::max();
@@ -459,10 +457,13 @@ std::vector<Position> GetCharredEarthPositions(Player* bot)
     {
         if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
             continue;
+
         DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
         if (dynObj->GetSpellId() == static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH))
+        {
             charredEarths.emplace_back(
                 dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
+        }
     }
 
     return charredEarths;

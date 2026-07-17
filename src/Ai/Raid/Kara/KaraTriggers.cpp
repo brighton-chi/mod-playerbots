@@ -213,7 +213,7 @@ bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
     if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BLIZZARD)))
         return false;
 
-    return aran && !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
+    return !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 // Netherspite
@@ -280,9 +280,6 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) && !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
-        return false;
-
     return AI_VALUE2(Unit*, "find target", "netherspite");
 }
 
