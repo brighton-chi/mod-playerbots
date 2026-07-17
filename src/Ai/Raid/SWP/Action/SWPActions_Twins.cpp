@@ -189,11 +189,11 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             index = safeIndex;
             _alythessTankStep = index;
             Position const newPosition = GetAlythessTankPosition(alythess, index);
-            float const newDistToPosition = bot->GetExactDist2d(newPosition);
+            // float const newDistToPosition = bot->GetExactDist2d(newPosition);
 
-            if (newDistToPosition > maxDistance)
+            if (bot->GetExactDist2d(newPosition) > maxDistance)
             {
-                float const dX = newPosition.GetPositionX() - bot->GetPositionX();
+                /* float const dX = newPosition.GetPositionX() - bot->GetPositionX();
                 float const dY = newPosition.GetPositionY() - bot->GetPositionY();
                 float const moveDist = std::min(3.5f, newDistToPosition);
                 float const moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
@@ -201,12 +201,16 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
                 return MoveTo(
                     SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                    false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                    false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
+                return MoveTo(
+                    SUNWELL_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
+                    newPosition.GetPositionZ(), false, false, false, false,
+                    MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
         else if (distToPosition > maxDistance)
         {
-            float const dX = position.GetPositionX() - bot->GetPositionX();
+            /* float const dX = position.GetPositionX() - bot->GetPositionX();
             float const dY = position.GetPositionY() - bot->GetPositionY();
             float const moveDist = std::min(3.5f, distToPosition);
             float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
@@ -214,7 +218,11 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
             return MoveTo(
                 SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+                false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
+            return MoveTo(
+                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                position.GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
