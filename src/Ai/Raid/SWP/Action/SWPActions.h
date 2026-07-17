@@ -73,6 +73,13 @@ public:
     KalecgosDisperseRangedAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kalecgos disperse ranged") {}
     bool Execute(Event event) override;
+    bool ResetInitialRangedPositionReached()
+    {
+        if (!_initialRangedPositionReached)
+            return false;
+        _initialRangedPositionReached = false;
+        return true;
+    }
 
 private:
     bool _initialRangedPositionReached = false;
@@ -118,6 +125,13 @@ public:
     BrutallusTanksHandleBossAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "brutallus tanks handle boss") {}
     bool Execute(Event event) override;
+    bool ResetInitialPositionReached()
+    {
+        if (!_mainTankInitialPositionReached)
+            return false;
+        _mainTankInitialPositionReached = false;
+        return true;
+    }
 
 private:
     bool _mainTankInitialPositionReached = false;
@@ -290,6 +304,13 @@ public:
     EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "eredar twins first assist tank move out of blaze") {}
     bool Execute(Event event) override;
+    bool ResetAlythessTankStep()
+    {
+        if (!_alythessTankStep)
+            return false;
+        _alythessTankStep = 0;
+        return true;
+    }
 
 private:
     uint8 _alythessTankStep = 0;

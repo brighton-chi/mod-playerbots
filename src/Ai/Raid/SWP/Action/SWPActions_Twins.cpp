@@ -140,10 +140,6 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     if (!alythess)
         return false;
 
-    uint8 index = _alythessTankStep;
-    if (index >= ALYTHESS_TANK_POSITION_COUNT || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
-        index = 0;
-
     if (AI_VALUE(Unit*, "current target") != alythess)
         return Attack(alythess);
 
@@ -166,6 +162,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return false;
     };
 
+    uint8 index = _alythessTankStep;
+
     if (!IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, index)))
     {
         uint8 safeIndex = index;
@@ -177,7 +175,6 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     }
 
     Position const position = GetAlythessTankPosition(alythess, index);
-
     constexpr float maxDistance = 1.0f;
     float const distToPosition = bot->GetExactDist2d(position);
 
