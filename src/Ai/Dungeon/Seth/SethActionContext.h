@@ -6,8 +6,8 @@
 #ifndef PLAYERBOTS_SETHACTIONCONTEXT_H
 #define PLAYERBOTS_SETHACTIONCONTEXT_H
 
-#include "SethActions.h"
 #include "NamedObjectContext.h"
+#include "SethActions.h"
 
 class TbcDungeonSethekkHallsActionContext : public NamedObjectContext<Action>
 {

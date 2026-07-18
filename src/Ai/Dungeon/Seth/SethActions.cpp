@@ -6,37 +6,27 @@
 #include "SethActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SethData.h"
 #include <array>
 
-namespace
-{
-constexpr uint32 SETHEKK_HALLS_MAP_ID       = 556;
-constexpr uint32 SPELL_TREMOR_TOTEM         = 8143;
-constexpr uint32 SPELL_BANISH_ANZU          = 42354;
-constexpr uint32 SPELL_REJUVENATION_RANK_1  = 774;
-constexpr uint32 REJUVENATION_SPELL_ICON_ID = 64;
-constexpr uint32 NPC_CHARMING_TOTEM         = 20343;
-constexpr uint32 NPC_HAWK_SPIRIT            = 23134;
-constexpr uint32 NPC_FALCON_SPIRIT          = 23135;
-constexpr uint32 NPC_EAGLE_SPIRIT           = 23136;
-
-Position const PILLAR_CENTER   = { 23.730f, 309.230f };
-Position const PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
-}
+using namespace SethData;
 
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
-    if (Unit* totem = bot->FindNearestCreature(NPC_CHARMING_TOTEM, searchRadius, true))
+    if (Unit* totem = bot->FindNearestCreature(
+            static_cast<uint32>(SethNpcs::NPC_CHARMING_TOTEM), searchRadius, true))
+    {
         return MarkTargetWithSkull(bot, totem);
+    }
 
     return false;
 }
 
 bool SethekkProphetSetTremorTotemAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(SPELL_TREMOR_TOTEM, bot) &&
-        botAI->CastSpell(SPELL_TREMOR_TOTEM, bot);
+    return botAI->CanCastSpell(static_cast<uint32>(SethSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(SethSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
@@ -46,7 +36,7 @@ bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
         "syth frost elemental",
         "syth shadow elemental",
         "syth arcane elemental",
-        "syth fire elemental"
+        "syth fire elemental",
     };
 
     for (auto const& name : elementals)
@@ -64,7 +54,7 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event /*event*/)
     if (!anzu)
         return false;
 
-    if (anzu->HasAura(SPELL_BANISH_ANZU))
+    if (anzu->HasAura(static_cast<uint32>(SethSpells::SPELL_BANISH_ANZU)))
         return MarkTargetWithMoon(bot, anzu);
 
     return MarkTargetWithSkull(bot, anzu);
@@ -77,7 +67,11 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     Creature* targetSpirit = nullptr;
 
     std::array<uint32, 3> const spiritEntries =
-        { NPC_FALCON_SPIRIT, NPC_HAWK_SPIRIT, NPC_EAGLE_SPIRIT };
+    {
+        static_cast<uint32>(SethNpcs::NPC_FALCON_SPIRIT),
+        static_cast<uint32>(SethNpcs::NPC_HAWK_SPIRIT),
+        static_cast<uint32>(SethNpcs::NPC_EAGLE_SPIRIT),
+    };
 
     for (uint32 entry : spiritEntries)
     {
@@ -93,8 +87,14 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     if (!targetSpirit)
         return false;
 
-    return botAI->CanCastSpell(SPELL_REJUVENATION_RANK_1, targetSpirit) &&
-        botAI->CastSpell(SPELL_REJUVENATION_RANK_1, targetSpirit);
+    if (!botAI->CanCastSpell(
+            static_cast<uint32>(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit))
+    {
+        return false;
+    }
+
+    return botAI->CastSpell(
+        static_cast<uint32>(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit);
 }
 
 bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)

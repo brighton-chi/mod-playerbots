@@ -12,13 +12,10 @@
 #include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "SethActions.h"
+#include "SethData.h"
 #include "ShamanActions.h"
 
-namespace
-{
-constexpr uint32 SPELL_ARCANE_BUBBLE = 9438;
-constexpr uint32 SPELL_SPELL_BOMB    = 40303;
-}
+using namespace SethData;
 
 float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
 {
@@ -44,7 +41,7 @@ float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
     if (bot->getPowerType() != POWER_MANA || botAI->IsTank(bot))
         return 1.0f;
 
-    if (!bot->HasAura(SPELL_SPELL_BOMB))
+    if (!bot->HasAura(static_cast<uint32>(SethSpells::SPELL_SPELL_BOMB)))
         return 1.0f;
 
     if (botAI->IsDps(bot) && dynamic_cast<CastSpellAction*>(action))
@@ -100,7 +97,7 @@ float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (ikiss->HasAura(SPELL_ARCANE_BUBBLE))
+    if (ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE)))
     {
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;

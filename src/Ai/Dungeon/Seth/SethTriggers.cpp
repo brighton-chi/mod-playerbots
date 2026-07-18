@@ -6,12 +6,9 @@
 #include "SethTriggers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SethData.h"
 
-namespace
-{
-constexpr uint32 SETHEKK_HALLS_MAP_ID = 556;
-constexpr uint32 SPELL_ARCANE_BUBBLE  = 9438;
-}
+using namespace SethData;
 
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 {
@@ -24,8 +21,8 @@ bool SethekkProphetCastsFearTrigger::IsActive()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return !AI_VALUE2(bool, "has totem", "tremor totem") &&
-        AI_VALUE2(Unit*, "find target", "sethekk prophet");
+    return AI_VALUE2(Unit*, "find target", "sethekk prophet") &&
+        !AI_VALUE2(bool, "has totem", "tremor totem");
 }
 
 bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
@@ -39,7 +36,7 @@ bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
 
 bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "anzu");
+    return AI_VALUE2(Unit*, "find target", "anzu");
 }
 
 bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
@@ -63,18 +60,20 @@ bool TalonKingIkissRangedPrepareForArcaneExplosionTrigger::IsActive()
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && !ikiss->HasAura(SPELL_ARCANE_BUBBLE) && bot->IsWithinLOSInMap(ikiss);
+    return ikiss && !ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE)) &&
+        bot->IsWithinLOSInMap(ikiss);
 }
 
 bool TalonKingIkissBossCastingArcaneExplosionTrigger::IsActive()
 {
     // Arcane Bubble is put up 1s before casting Arcane Explosion
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && ikiss->HasAura(SPELL_ARCANE_BUBBLE);
+    return ikiss && ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE));
 }
 
 bool TalonKingIkissBossOutOfLosTrigger::IsActive()
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && !ikiss->HasAura(SPELL_ARCANE_BUBBLE) && !bot->IsWithinLOSInMap(ikiss);
+    return ikiss && !ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE)) &&
+        !bot->IsWithinLOSInMap(ikiss);
 }
