@@ -143,7 +143,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
         "kidney shot",
         "maim",
         "shadowfury",
-        "shockwave"
+        "shockwave",
     };
 
     for (const char* spell : spells)
@@ -288,7 +288,7 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
         "lady keira berrybuck",
         "baron rafe dreuger",
         "lord robin daris",
-        "lord crispin ference"
+        "lord crispin ference",
     };
 
     for (const char* name : moroesGuests)
@@ -529,7 +529,7 @@ bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
         "roar",
         "strawman",
         "tinhead",
-        "the crone"
+        "the crone",
     };
 
     for (const char* name : ozTargets)
@@ -608,7 +608,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
     {
         "demon chains",
         "kil'rek",
-        "terestian illhoof"
+        "terestian illhoof",
     };
 
     for (const char* name : illhoofTargets)
@@ -1261,7 +1261,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot)
         return false;
 
-    Position const domeCenter =      { -11126.015f, -1925.271f, 91.473f };
+    Position const domeCenter      = { -11126.015f, -1925.271f, 91.473f };
     Position const terraceEastEnd  = { -11115.958f, -1972.058f, 91.457f };
     Position const terraceWestEnd  = { -11077.521f, -1913.315f, 91.471f };
 
@@ -1524,12 +1524,12 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
     Position const rainOfBonesPositions[2] =
     {
         { -11166.516f, -1901.405f, 91.473f },  // primary
-        { -11158.752f, -1909.394f, 91.473f }   // backup in case of charred earth
+        { -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
     };
     Position const flightStackPositions[2] =
     {
         { -11156.233f, -1888.353f, 91.473f },  // primary
-        { -11149.115f, -1897.154f, 91.473f }   // backup in case of charred earth
+        { -11149.115f, -1897.154f, 91.473f },  // backup in case of charred earth
     };
 
     auto const& posArray = _rainOfBonesHit ? rainOfBonesPositions : flightStackPositions;
