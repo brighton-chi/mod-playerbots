@@ -20,11 +20,11 @@ void RestoShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Totem Triggers
     triggers.push_back(new TriggerNode("call of the elements", { NextAction("call of the elements", 60.0f) }));
     triggers.push_back(new TriggerNode("low health", { NextAction("stoneclaw totem", 40.0f) }));
-    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana tide totem", ACTION_HIGH + 5) }));
+    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana tide totem", 25.0f) }));
 
     // Healing Triggers
-    triggers.push_back(new TriggerNode("group heal setting", { NextAction("riptide on party", 27.0f),
-                                                               NextAction("chain heal on party", 26.0f) }));
+    triggers.push_back(new TriggerNode("chain heal", { NextAction("riptide on party", 27.0f),
+                                                       NextAction("chain heal on party", 26.0f) }));
 
     triggers.push_back(new TriggerNode("party member critical health", { NextAction("riptide on party", 25.0f),
                                                                          NextAction("healing wave on party", 24.0f),
@@ -41,7 +41,7 @@ void RestoShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("party member almost full health", { NextAction("riptide on party", 12.0f),
                                                                             NextAction("lesser healing wave on party", 11.0f) }));
 
-    triggers.push_back(new TriggerNode("earth shield on main tank", { NextAction("earth shield on main tank", ACTION_HIGH + 7) }));
+    triggers.push_back(new TriggerNode("earth shield on main tank", { NextAction("earth shield on main tank", 28.0f) }));
 
     // Dispel Triggers
     triggers.push_back(new TriggerNode("party member cleanse spirit poison", { NextAction("cleanse spirit poison on party", ACTION_DISPEL + 2) }));
@@ -50,7 +50,7 @@ void RestoShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Range/Mana Triggers
     triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", ACTION_MOVE + 9) }));
-    triggers.push_back(new TriggerNode("party member to heal out of spell range", { NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 1) }));
+    triggers.push_back(new TriggerNode("party member to heal out of spell range", { NextAction("reach party member to heal", 31.0f) }));
     triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 19.5f) }));
 }
 

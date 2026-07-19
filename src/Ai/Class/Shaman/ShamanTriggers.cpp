@@ -14,6 +14,7 @@
 #include "Creature.h"
 #include "Unit.h"
 #include <ctime>
+#include <vector>
 
 bool MainHandWeaponNoImbueTrigger::IsActive()
 {
@@ -470,4 +471,51 @@ bool SetTotemTrigger::IsActive()
        return true;
 
    return false;
+}
+
+bool ChainHealTrigger::IsActive()
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    std::vector<Player*> eligible;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+            continue;
+
+        if (member->GetDistance(bot) >= sPlayerbotAIConfig.sightDistance)
+            continue;
+
+        float const pct =
+            (static_cast<float>(member->GetHealth()) / member->GetMaxHealth()) * 100.0f;
+        if (pct >= sPlayerbotAIConfig.mediumHealth)
+            continue;
+
+        eligible.push_back(member);
+    }
+
+    if (eligible.size() < 3)
+        return false;
+
+    constexpr uint8 chainDistance = 12.5f;
+    for (size_t i = 0; i < eligible.size(); ++i)
+    {
+        uint8 clusterCount = 1; // count the anchor itself
+        for (size_t j = 0; j < eligible.size(); ++j)
+        {
+            if (i == j)
+                continue;
+
+            if (eligible[i]->GetDistance(eligible[j]) <= chainDistance)
+                ++clusterCount;
+        }
+
+        if (clusterCount >= 3)
+            return true;
+    }
+
+    return false;
 }
