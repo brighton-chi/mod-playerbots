@@ -3,8 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <ctime>
-
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
@@ -34,6 +32,7 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <ctime>
 
 using namespace SunwellHelpers;
 

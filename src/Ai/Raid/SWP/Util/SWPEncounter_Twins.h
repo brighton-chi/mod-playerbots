@@ -6,13 +6,12 @@
 #ifndef PLAYERBOTS_SWPENCOUNTERTWINS_H
 #define PLAYERBOTS_SWPENCOUNTERTWINS_H
 
-#include <array>
-#include <ctime>
-#include <unordered_map>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <array>
+#include <ctime>
+#include <unordered_map>
 
 class Player;
 class PlayerbotAI;

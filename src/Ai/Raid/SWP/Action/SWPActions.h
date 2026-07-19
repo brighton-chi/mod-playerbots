@@ -6,12 +6,11 @@
 #ifndef PLAYERBOTS_SWPACTIONS_H
 #define PLAYERBOTS_SWPACTIONS_H
 
-#include <limits>
-#include <vector>
-
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include <limits>
+#include <vector>
 
 // General
 

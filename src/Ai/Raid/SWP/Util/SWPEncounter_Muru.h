@@ -6,12 +6,11 @@
 #ifndef PLAYERBOTS_SWPENCOUNTERMURU_H
 #define PLAYERBOTS_SWPENCOUNTERMURU_H
 
-#include <unordered_map>
-#include <vector>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <unordered_map>
+#include <vector>
 
 class Creature;
 class Player;

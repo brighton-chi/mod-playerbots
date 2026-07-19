@@ -4,11 +4,11 @@
  */
 
 #include "SWPStrategy.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "AiObjectContext.h"
-#include "PlayerbotAI.h"
 #include "SWPMultipliers.h"
 
 namespace

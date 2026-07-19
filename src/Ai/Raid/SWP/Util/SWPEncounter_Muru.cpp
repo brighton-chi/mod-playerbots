@@ -3,13 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <algorithm>
-#include <list>
-
 #include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include <algorithm>
+#include <list>
 
 // M'uru goes invisible during the Entropius phase but remains on player threat lists
 

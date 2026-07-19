@@ -6,8 +6,8 @@
 #ifndef PLAYERBOTS_SWPTRIGGERCONTEXT_H
 #define PLAYERBOTS_SWPTRIGGERCONTEXT_H
 
-#include "SWPTriggers.h"
 #include "NamedObjectContext.h"
+#include "SWPTriggers.h"
 
 class RaidSunwellTriggerContext : public NamedObjectContext<Trigger>
 {

@@ -4,14 +4,14 @@
  */
 
 #include "SWPTriggers.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace SunwellHelpers;
 
@@ -226,6 +226,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
         auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
         if (stateItr != felmystEncounterStates.end())
             stateItr->second.encapsulateOccurredThisGroundPhase = false;
+
         return false;
     }
 
@@ -249,6 +250,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
         auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
         if (stateItr != felmystEncounterStates.end())
             stateItr->second.encapsulateOccurredThisGroundPhase = false;
+
         return false;
     }
 

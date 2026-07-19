@@ -3,14 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <array>
-#include <cmath>
-
 #include "SWPActions.h"
 #include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "Timer.h"
+#include <array>
+#include <cmath>
 
 using namespace SunwellHelpers;
 
@@ -47,24 +46,24 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != felmyst)
         return Attack(felmyst);
 
-    if (felmyst->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
+    if (felmyst->GetVictim() != bot || bot->GetHealthPct() < 50.0f)
+        return false;
+
+    Position const position = GetFelmystMainTankGroundPosition(bot);
+    float const distToPosition = bot->GetExactDist2d(
+        position.GetPositionX(), position.GetPositionY());
+
+    if (distToPosition > 2.0f)
     {
-        Position const position = GetFelmystMainTankGroundPosition(bot);
-        float const distToPosition = bot->GetExactDist2d(
-            position.GetPositionX(), position.GetPositionY());
+        float const dX = position.GetPositionX() - bot->GetPositionX();
+        float const dY = position.GetPositionY() - bot->GetPositionY();
+        float const moveDist = std::min(2.25f, distToPosition);
+        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        if (distToPosition > 2.0f)
-        {
-            float const dX = position.GetPositionX() - bot->GetPositionX();
-            float const dY = position.GetPositionY() - bot->GetPositionY();
-            float const moveDist = std::min(2.25f, distToPosition);
-            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(
-                SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
+        return MoveTo(
+            SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
     }
 
     return false;
@@ -207,15 +206,15 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
         static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true);
 
     Unit* hazard = nearestTrail ? nearestTrail : nearestVapor;
-    if (hazard)
+    if (!hazard)
+        return false;
+
+    constexpr float safeDistFromVapor = 15.0f;
+    float const currentDistance = bot->GetDistance2d(hazard);
+    if (currentDistance < safeDistFromVapor)
     {
-        constexpr float safeDistFromVapor = 15.0f;
-        float const currentDistance = bot->GetDistance2d(hazard);
-        if (currentDistance < safeDistFromVapor)
-        {
-            botAI->InterruptSpell();
-            return MoveAway(hazard, safeDistFromVapor - currentDistance);
-        }
+        botAI->InterruptSpell();
+        return MoveAway(hazard, safeDistFromVapor - currentDistance);
     }
 
     return false;
@@ -278,9 +277,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     for (uint8 index = 0; index < destinationCount; ++index)
     {
         Position const destination = destinations[index];
-        if (lastMove.priority != MovementPriority::MOVEMENT_FORCED ||
-            lastMove.lastMoveToMapId != SUNWELL_MAP_ID ||
-            Position(
+        if (Position(
                 lastMove.lastMoveToX, lastMove.lastMoveToY,
                 lastMove.lastMoveToZ).GetExactDist(destination) >
             FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
@@ -345,7 +342,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     constexpr uint32 stuckTimeoutMs = 1500;
 
     Position const FELMYST_STUCK_CRATE_POSITION = { 1484.443f, 591.337f, 23.391f };
-    Position const FELMYST_ON_CRATE_POSITION = { 1482.181f, 591.253f, 24.545f };
+    Position const FELMYST_ON_CRATE_POSITION    = { 1482.181f, 591.253f, 24.545f };
 
     if (bot->GetExactDist2d(
             FELMYST_STUCK_CRATE_POSITION.GetPositionX(),

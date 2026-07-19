@@ -3,9 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <list>
-
 #include "SWPActions.h"
+#include "CreatureAI.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -13,9 +14,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "CreatureAI.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include <list>
 
 using namespace SunwellHelpers;
 

@@ -3,13 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <algorithm>
-
 #include "SWPActions.h"
 #include "SWPEncounter_Kalec.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"
+#include <algorithm>
 
 using namespace SunwellHelpers;
 

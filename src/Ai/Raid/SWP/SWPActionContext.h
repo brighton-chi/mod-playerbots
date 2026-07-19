@@ -6,8 +6,8 @@
 #ifndef PLAYERBOTS_SWPACTIONCONTEXT_H
 #define PLAYERBOTS_SWPACTIONCONTEXT_H
 
-#include "SWPActions.h"
 #include "NamedObjectContext.h"
+#include "SWPActions.h"
 
 class RaidSunwellActionContext : public NamedObjectContext<Action>
 {

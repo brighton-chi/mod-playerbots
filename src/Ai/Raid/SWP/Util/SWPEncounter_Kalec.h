@@ -6,13 +6,12 @@
 #ifndef PLAYERBOTS_SWPENCOUNTERKALEC_H
 #define PLAYERBOTS_SWPENCOUNTERKALEC_H
 
-#include <array>
-#include <limits>
-#include <unordered_map>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <array>
+#include <limits>
+#include <unordered_map>
 
 class Player;
 class PlayerbotAI;
@@ -41,10 +40,12 @@ struct KalecgosEncounterState
     ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
     ObjectGuid currentTankGuid = ObjectGuid::Empty;
     ObjectGuid activeRiftOutgoingTankGuid = ObjectGuid::Empty;
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankPortalRotationGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankPortalRotationGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
     std::unordered_map<ObjectGuid, uint8> playerToGroup;

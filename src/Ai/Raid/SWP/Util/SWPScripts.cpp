@@ -3,9 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <unordered_set>
-#include <vector>
-
+#include "ObjectAccessor.h"
+#include "Playerbots.h"
+#include "Player.h"
+#include "ScriptMgr.h"
+#include "Spell.h"
 #include "SWPData.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -13,11 +15,8 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "ObjectAccessor.h"
-#include "Playerbots.h"
-#include "Player.h"
-#include "ScriptMgr.h"
-#include "Spell.h"
+#include <unordered_set>
+#include <vector>
 
 using namespace SunwellHelpers;
 
