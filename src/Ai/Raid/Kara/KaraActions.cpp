@@ -1376,7 +1376,8 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     constexpr float angleStep = M_PI / 16.0f;
     constexpr float distStep = 1.0f;
 
-    std::vector<Position> charredEarths = GetCharredEarthPositions(bot);
+    std::vector<Position> charredEarths = GetDynamicObjectPositions(
+        bot, searchRadius, static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH));
 
     if (charredEarths.empty())
     {
@@ -1540,8 +1541,10 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
     Position destPos;
     bool foundSafe = false;
 
+    constexpr float searchRadius = 40.0f;
     constexpr float charredEarthSafeDist = 12.0f;
-    std::vector<Position> charredEarths = GetCharredEarthPositions(bot);
+    std::vector<Position> charredEarths = GetDynamicObjectPositions(
+        bot, searchRadius, static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH));
 
     for (uint8 i = 0; i < 2; i++)
     {
