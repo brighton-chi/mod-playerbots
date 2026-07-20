@@ -129,9 +129,12 @@ bool KalecgosHumanoidKalecTanksSathrovarrTrigger::IsActive()
 
 bool KalecgosBotsDontObserveGravityTrigger::IsActive()
 {
-    constexpr float KALECGOS_SPECTRAL_REALM_Z_OFFSET = 3.0f;
-    return IsInSpectralRealm(bot) &&
-        bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + KALECGOS_SPECTRAL_REALM_Z_OFFSET;
+    if (!IsInSpectralRealm(bot))
+        return false;
+
+    constexpr float verticalOffset = 5.0f;
+    return bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + verticalOffset ||
+        bot->GetPositionZ() < KALECGOS_SPECTRAL_REALM_Z - verticalOffset;
 }
 
 // Brutallus
@@ -193,11 +196,14 @@ bool FelmystPullingBossTrigger::IsActive()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || felmyst->IsFlying())
+    if (!felmyst)
         return false;
 
-    if (felmyst->GetHealthPct() > 95.0f)
+    if (felmyst->GetHealthPct() > 90.0f)
         return true;
+
+    if (felmyst->IsFlying())
+        return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && felmyst->GetVictim() != mainTank)

@@ -352,6 +352,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     }
     else if (felmyst->IsFlying())
     {
+        Unit* actionTarget = action->GetTarget();
+        if (actionTarget && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
+
         auto& state = felmystEncounterStates[instanceId];
         state.landingDpsWaitTimer = 0;
         state.landingTouchdownTimer = 0;
@@ -367,7 +371,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (!state.landingTouchdownTimer)
         state.landingTouchdownTimer = now;
 
-    if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
+    if (botAI->IsMainTank(bot))
+        return 1.0f;
+
+    if (dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
         return 1.0f;
 
     if ((now - state.landingTouchdownTimer) >= groundedDpsWaitSeconds)
