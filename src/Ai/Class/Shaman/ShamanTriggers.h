@@ -258,14 +258,6 @@ public:
     EarthShieldOnMainTankTrigger(PlayerbotAI* botAI) : BuffOnMainTankTrigger(botAI, "earth shield", false) {}
 };
 
-class ChainHealTrigger : public Trigger
-{
-public:
-    ChainHealTrigger(PlayerbotAI* botAI) : Trigger(botAI, "chain heal") {}
-
-    bool IsActive() override;
-};
-
 // Totem Triggers
 
 class TotemTrigger : public Trigger
