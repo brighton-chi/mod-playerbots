@@ -27,9 +27,7 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
         if (orbUser)
         {
-            std::map<std::string, std::string> placeholders = {
-                { "%bot", orbUser->GetName() }
-            };
+            std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "kiljaeden_designated_dragon_orb_user",
                 "%bot is the first assistant and the designated dragon orb user!",
@@ -463,6 +461,7 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
         return false;
 
+    botAI->InterruptSpell();
     return MoveTo(
         SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
         position.GetPositionZ(), false, false, false, false,

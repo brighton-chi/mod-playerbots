@@ -734,6 +734,9 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (!muru)
         return 1.0f;
 
+    if (AI_VALUE(Unit*, "current target") == muru)
+        context->GetValue<bool>("neglect threat")->Set(true);
+
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         dynamic_cast<DpsAssistAction*>(action))
     {
@@ -748,9 +751,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
-
-    if (AI_VALUE(Unit*, "current target") == muru)
-        context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel") &&

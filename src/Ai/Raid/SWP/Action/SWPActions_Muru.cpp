@@ -250,13 +250,6 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
         if (!unit || !unit->IsAlive())
             return false;
 
-        /* constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isOtherRanged && isMuruPhase &&
-            bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
-        {
-            return false;
-        } */
-
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
@@ -507,28 +500,28 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     if (voidSentinel->GetVictim() != bot)
         return false;
 
-    Position const* tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
+    Position const& tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
     float const distToPosition = bot->GetExactDist2d(
-        tankPosition->GetPositionX(), tankPosition->GetPositionY());
+        tankPosition.GetPositionX(), tankPosition.GetPositionY());
 
     if (distToPosition > 2.0f)
     {
-        float const dX = tankPosition->GetPositionX() - bot->GetPositionX();
-        float const dY = tankPosition->GetPositionY() - bot->GetPositionY();
+        float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
+        float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
         float const moveDist = std::min(2.25f, distToPosition);
         float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
         float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, tankPosition->GetPositionZ(), false, false,
+            SUNWELL_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
             false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
     }
 
     return false;
 }
 
-Position const* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
-    Unit* voidSentinel) const
+Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
+    Unit* voidSentinel)
 {
     auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
     auto assignmentItr = assignments.find(voidSentinel->GetGUID());
@@ -546,9 +539,8 @@ Position const* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
         assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
     }
 
-    Position const north = MURU_VOID_SENTINEL_N_TANK_POSITION;
-    Position const east = MURU_VOID_SENTINEL_E_TANK_POSITION;
-    return assignmentItr->second == 0 ? &north : &east;
+    return assignmentItr->second == 0 ?
+        MURU_VOID_SENTINEL_N_TANK_POSITION : MURU_VOID_SENTINEL_E_TANK_POSITION;
 }
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
