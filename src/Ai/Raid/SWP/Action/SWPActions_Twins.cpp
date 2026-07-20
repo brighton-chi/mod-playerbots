@@ -189,19 +189,9 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         index = safeIndex;
         _alythessTankStep = index;
         Position const newPosition = GetAlythessTankPosition(alythess, index);
-        // float const newDistToPosition = bot->GetExactDist2d(newPosition);
 
         if (bot->GetExactDist2d(newPosition) > maxDistance)
         {
-            /* float const dX = newPosition.GetPositionX() - bot->GetPositionX();
-            float const dY = newPosition.GetPositionY() - bot->GetPositionY();
-            float const moveDist = std::min(3.5f, newDistToPosition);
-            float const moveX = bot->GetPositionX() + (dX / newDistToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / newDistToPosition) * moveDist;
-
-            return MoveTo(
-                SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
             return MoveTo(
                 SUNWELL_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
                 newPosition.GetPositionZ(), false, false, false, false,
@@ -210,15 +200,6 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     }
     else if (distToPosition > maxDistance)
     {
-        /* float const dX = position.GetPositionX() - bot->GetPositionX();
-        float const dY = position.GetPositionY() - bot->GetPositionY();
-        float const moveDist = std::min(3.5f, distToPosition);
-        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-        return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, false); */
         return MoveTo(
             SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
             position.GetPositionZ(), false, false, false, false,
