@@ -133,7 +133,11 @@ bool TradeStatusAction::Execute(Event event)
 void TradeStatusAction::BeginTrade()
 {
     Player* trader = bot->GetTrader();
-    if (!trader || GET_PLAYERBOT_AI(bot->GetTrader()))
+    if (!trader)
+        return;
+
+    PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
+    if (traderBotAI && !traderBotAI->IsRealPlayer())
         return;
 
     WorldPacket p;
@@ -163,24 +167,28 @@ bool TradeStatusAction::CheckTrade()
     if (!bot->GetTradeData() || !trader || !trader->GetTradeData())
         return false;
 
-    if (!botAI->HasActivePlayerMaster() && GET_PLAYERBOT_AI(bot->GetTrader()))
+    PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
+    if (traderBotAI && traderBotAI->IsRealPlayer() && botAI->GetMaster() == trader)
+        return true;
+
+    if (!botAI->HasActivePlayerMaster() && traderBotAI)
     {
-        for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
-        {
-            Item* item = bot->GetTradeData()->GetItem((TradeSlots)slot);
-            if (item)
-                break;
-        }
         bool isGettingItem = false;
+        bool hasItems = false;
         for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
         {
-            Item* item = trader->GetTradeData()->GetItem((TradeSlots)slot);
-            if (item)
+            if (trader->GetTradeData()->GetItem((TradeSlots)slot))
             {
                 isGettingItem = true;
+                hasItems = true;
                 break;
             }
+            if (bot->GetTradeData()->GetItem((TradeSlots)slot))
+                hasItems = true;
         }
+
+        if (!hasItems)
+            return false;
 
         if (isGettingItem)
         {
@@ -197,7 +205,7 @@ bool TradeStatusAction::CheckTrade()
                              {{"%player", chat->FormatWorldobject(bot->GetTrader())}}),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
         }
-        return isGettingItem;
+        return true;
     }
     if (!bot->GetSession())
     {
