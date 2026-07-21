@@ -1,15 +1,14 @@
 /*
 * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
-* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
-* or (at your option) any later version.
+* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONCONTEXT_H
-#define _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONCONTEXT_H
+#ifndef PLAYERBOTS_HFRACTIONCONTEXT_H
+#define PLAYERBOTS_HRACTIONCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Action.h"
-#include "HRActions.h"
+#include "HFRActions.h"
 
 class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action>
 {
@@ -36,28 +35,41 @@ public:
         // Vazruden
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsActionContext::vazruden_tank_position_boss;
+
+        creators["vazruden mark boss"] =
+            &TbcDungeonHellfireRampartsActionContext::vazruden_mark_boss;
     }
 private:
     // Watchkeeper Gargolmar
-    static Action* gargolmar_mark_hellfire_watchers(
-        PlayerbotAI* botAI) { return new GargolmarMarkHellfireWatchersAction(botAI); }
+    static Action* gargolmar_mark_hellfire_watchers(PlayerbotAI* botAI) {
+        return new GargolmarMarkHellfireWatchersAction(botAI);
+    }
 
     // Omor the Unscarred
-    static Action* omor_treachery_aura_flee_from_players(
-        PlayerbotAI* botAI) { return new OmorTreacheryAuraFleeFromPlayersAction(botAI); }
+    static Action* omor_treachery_aura_flee_from_players(PlayerbotAI* botAI) {
+        return new OmorTreacheryAuraFleeFromPlayersAction(botAI);
+    }
 
-    static Action* omor_ranged_spread(
-        PlayerbotAI* botAI) { return new OmorRangedSpreadAction(botAI); }
+    static Action* omor_ranged_spread(PlayerbotAI* botAI) {
+        return new OmorRangedSpreadAction(botAI);
+    }
 
-    static Action* omor_mark_fiendish_hound(
-        PlayerbotAI* botAI) { return new OmorMarkFiendishHoundAction(botAI); }
+    static Action* omor_mark_fiendish_hound(PlayerbotAI* botAI) {
+        return new OmorMarkFiendishHoundAction(botAI);
+    }
 
-    static Action* omor_treachery_aura_flee_from_tank(
-        PlayerbotAI* botAI) { return new OmorTreacheryAuraFleeFromTankAction(botAI); }
+    static Action* omor_treachery_aura_flee_from_tank(PlayerbotAI* botAI) {
+        return new OmorTreacheryAuraFleeFromTankAction(botAI);
+    }
 
     // Vazruden
-    static Action* vazruden_tank_position_boss(
-        PlayerbotAI* botAI) { return new VazrudenTankPositionBossAction(botAI); }
+    static Action* vazruden_tank_position_boss(PlayerbotAI* botAI) {
+        return new VazrudenTankPositionBossAction(botAI);
+    }
+
+    static Action* vazruden_mark_boss(PlayerbotAI* botAI) {
+        return new VazrudenMarkBossAction(botAI);
+    }
 
 };
 

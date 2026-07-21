@@ -1,15 +1,14 @@
 /*
 * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
-* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
-* or (at your option) any later version.
+* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#include "HRMultipliers.h"
-#include "HRActions.h"
-#include "HRTriggers.h"
+#include "HFRMultipliers.h"
+#include "HFRActions.h"
+#include "HFRTriggers.h"
+#include "ChooseTargetActions.h"
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
-#include "FollowActions.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
@@ -50,6 +49,30 @@ float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action)))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+// Vazruden
+
+float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
+{
+    if (!botAI->IsTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "vazruden"))
+        return 1.0f;
+
+    if (Unit* nazan = AI_VALUE2(Unit*, "find target", "nazan"))
+    {
+        if (Creature* nazanCreature = nazan->ToCreature())
+        {
+            if (!nazanCreature->CanFly())
+                return 1.0f;
+        }
+    }
+
+    if (bot->GetVictim() != nullptr &&
+        dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;

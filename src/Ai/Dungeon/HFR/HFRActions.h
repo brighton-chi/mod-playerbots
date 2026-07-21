@@ -1,16 +1,14 @@
 /*
 * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
-* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
-* or (at your option) any later version.
+* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONS_H
-#define _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONS_H
+#ifndef PLAYERBOTS_HFRACTIONS_H
+#define PLAYERBOTS_HFRACTIONS_H
 
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "Action.h"
-#include "HRTriggers.h"
 
 // Watchkeeper Gargolmar
 
@@ -63,6 +61,14 @@ class VazrudenTankPositionBossAction : public AttackAction
 public:
     VazrudenTankPositionBossAction(
         PlayerbotAI* botAI, std::string const name = "vazruden tank position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class VazrudenMarkBossAction : public Action
+{
+public:
+    VazrudenMarkBossAction(
+        PlayerbotAI* botAI, std::string const name = "vazruden mark boss") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

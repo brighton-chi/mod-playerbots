@@ -2,7 +2,7 @@
 #define PLAYERBOTS_TBCDUNGEONTRIGGERCONTEXT_H
 
 #include "ACTriggerContext.h"
-#include "HRTriggerContext.h"
+#include "HFRTriggerContext.h"
 #include "SethTriggerContext.h"
 
 #endif

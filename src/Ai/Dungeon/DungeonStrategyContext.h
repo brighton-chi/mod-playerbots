@@ -2,7 +2,7 @@
 #define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
 #include "Strategy.h"
-#include "HRStrategy.h"
+#include "HFRStrategy.h"
 #include "ACStrategy.h"
 #include "SethStrategy.h"
 #include "UKStrategy.h"
@@ -47,7 +47,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             // ...
 
             // Burning Crusade
-            creators["tbc-hr"] = &DungeonStrategyContext::tbc_hr;           // Hellfire Citadel: Hellfire Ramparts
+            creators["tbc-hfr"] = &DungeonStrategyContext::tbc_hfr;           // Hellfire Citadel: Hellfire Ramparts
             creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
             creators["tbc-seth"] = &DungeonStrategyContext::tbc_seth;       // Auchindoun: Sethekk Halls
             // Wrath of the Lich King
@@ -64,12 +64,12 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-up"] = &DungeonStrategyContext::wotlk_up;       // Utgarde Pinnacle
             creators["wotlk-cos"] = &DungeonStrategyContext::wotlk_cos;     // The Culling of Stratholme
             creators["wotlk-toc"] = &DungeonStrategyContext::wotlk_toc;     // Trial of the Champion
-            creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
+            // creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
             creators["wotlk-pos"] = &DungeonStrategyContext::wotlk_pos;     // Pit of Saron
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
     private:
-        static Strategy* tbc_hr(PlayerbotAI* botAI) { return new TbcDungeonHellfireRampartsStrategy(botAI); }
+        static Strategy* tbc_hfr(PlayerbotAI* botAI) { return new TbcDungeonHellfireRampartsStrategy(botAI); }
         static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
         static Strategy* tbc_seth(PlayerbotAI* botAI) { return new TbcDungeonSethekkHallsStrategy(botAI); }
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
@@ -87,7 +87,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonFoSStrategy(botAI); }
         static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonPoSStrategy(botAI); }
         static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonToCStrategy(botAI); }
-        static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
+        // static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonHoRStrategy(botAI); }
 };
 
 #endif
