@@ -22,15 +22,15 @@ float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "sethekk prophet"))
-        return 0.0f;
-
-    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
-        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
-        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
-        !dynamic_cast<CastEarthbindTotemAction*>(action))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "sethekk prophet"))
         return 1.0f;
+
+    if (dynamic_cast<CastStrengthOfEarthTotemAction*>(action) ||
+        dynamic_cast<CastStoneskinTotemAction*>(action) ||
+        dynamic_cast<CastStoneclawTotemAction*>(action) ||
+        dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 0.0f;
     }
 
     return 1.0f;
