@@ -58,8 +58,15 @@ bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "midnight");
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+        return false;
+
+    constexpr uint32 searchRadius = 40.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true));
 }
 
 // Moroes
@@ -132,19 +139,18 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
     if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
-    static const std::array<const char*, 6> ozTargets =
+    static const std::array<const char*, 5> ozTargets =
     {
         "dorothee",
         "tito",
         "roar",
         "strawman",
         "tinhead",
-        "the crone"
     };
 
     for (const char* name : ozTargets)
     {
-        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+        if (AI_VALUE2(Unit*, "find target", name))
             return true;
     }
 
@@ -367,8 +373,9 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
 
 bool NightbaneBotWentOutOfBoundsTrigger::IsActive()
 {
+    constexpr float outOfBoundsLeeway = 5.0f;
     return AI_VALUE2(Unit*, "find target", "nightbane") &&
-        bot->GetPositionZ() < NIGHTBANE_GROUND_Z - 5.0f;
+        bot->GetPositionZ() < NIGHTBANE_GROUND_Z - outOfBoundsLeeway;
 }
 
 bool NightbaneShouldManageTimersAndTrackersTrigger::IsActive()
