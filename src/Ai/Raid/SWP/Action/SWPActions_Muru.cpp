@@ -53,10 +53,11 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
-    if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
-        return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!entropius || AI_VALUE(Unit*, "current target") == entropius)
+        return false;
 
-    return false;
+    return Attack(entropius);
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
@@ -177,34 +178,32 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     Unit* target = ResolveMuruDpsTarget(currentTarget);
+    if (!target)
+        return false;
 
-    if (target && target->GetEntry() ==
-            static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
+    if (target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
-        if (bot->getClass() == CLASS_ROGUE && !botAI->GetAura("dismantle", target) &&
-            botAI->CanCastSpell("dismantle", target))
+        if (bot->getClass() == CLASS_ROGUE &&
+            botAI->CanCastSpell("dismantle", target) && botAI->CastSpell("dismantle", target))
         {
-            return botAI->CastSpell("dismantle", target);
+            return true;
         }
 
-        if (bot->getClass() == CLASS_WARRIOR && !botAI->GetAura("disarm", target) &&
-            botAI->CanCastSpell("disarm", target))
+        if (bot->getClass() == CLASS_WARRIOR &&
+            botAI->CanCastSpell("disarm", target) && botAI->CastSpell("disarm", target))
         {
-            return botAI->CastSpell("disarm", target);
+            return true;
         }
     }
 
-    if (target)
-    {
-        bool needsAttack = false;
-        if (botAI->IsMelee(bot))
-            needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
-        else
-            needsAttack = currentTarget != target;
+    bool needsAttack = false;
+    if (botAI->IsMelee(bot))
+        needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
+    else
+        needsAttack = currentTarget != target;
 
-        if (needsAttack)
-            return Attack(target);
-    }
+    if (needsAttack)
+        return Attack(target);
 
     return false;
 }
@@ -504,20 +503,18 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     float const distToPosition = bot->GetExactDist2d(
         tankPosition.GetPositionX(), tankPosition.GetPositionY());
 
-    if (distToPosition > 2.0f)
-    {
-        float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
-        float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
-        float const moveDist = std::min(2.25f, distToPosition);
-        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    if (distToPosition < 2.0f)
+        return false;
 
-        return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
+    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
+    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const moveDist = std::min(2.25f, distToPosition);
+    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
@@ -724,10 +721,8 @@ bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
     if (!voidSpawn)
         return false;
 
-    if (botAI->CanCastSpell("enslave demon", voidSpawn))
-        return botAI->CastSpell("enslave demon", voidSpawn);
-
-    return false;
+    return botAI->CanCastSpell("enslave demon", voidSpawn) &&
+        botAI->CastSpell("enslave demon", voidSpawn);
 }
 
 Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const

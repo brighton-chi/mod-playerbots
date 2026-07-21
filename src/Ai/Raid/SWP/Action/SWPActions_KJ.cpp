@@ -18,37 +18,35 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
     auto const stateItr = kiljaedenEncounterStates.find(instanceId);
 
-    if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
+    if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
+        return false;
+
+    kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
+
+    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
+    std::string text;
+
+    if (orbUser)
     {
-        kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
-
-        Player* orbUser = GetKiljaedenDragonOrbUser(bot);
-        std::string text;
-
-        if (orbUser)
-        {
-            std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "kiljaeden_designated_dragon_orb_user",
-                "%bot is the first assistant and the designated dragon orb user!",
-                placeholders);
-        }
-        else
-        {
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "kiljaeden_no_designated_dragon_orb_user",
-                "No bot has been assigned as the designated dragon orb user, "
-                "and therefore a player must control the dragons. "
-                "If you would like a bot to use the dragon orbs, "
-                "please set the assistant flag for a bot.",
-                {}
-            );
-        }
-
-        return botAI->SayToRaid(text);
+        std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "kiljaeden_designated_dragon_orb_user",
+            "%bot is the first assistant and the designated dragon orb user!",
+            placeholders);
+    }
+    else
+    {
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "kiljaeden_no_designated_dragon_orb_user",
+            "No bot has been assigned as the designated dragon orb user, "
+            "and therefore a player must control the dragons. "
+            "If you would like a bot to use the dragon orbs, "
+            "please set the assistant flag for a bot.",
+            {}
+        );
     }
 
-    return false;
+    return botAI->SayToRaid(text);
 }
 
 
@@ -271,9 +269,8 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
@@ -289,9 +286,8 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
@@ -397,9 +393,8 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const

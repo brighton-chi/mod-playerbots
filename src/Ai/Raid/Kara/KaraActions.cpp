@@ -1105,7 +1105,7 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
     }
 
     if (!found)
-        return false
+        return false;
 
     botAI->InterruptSpell();
     return MoveTo(

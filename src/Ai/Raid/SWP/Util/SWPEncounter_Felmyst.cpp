@@ -1067,10 +1067,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
         return false;
     };
 
-    if (tryAnchors(true, true) || tryAnchors(false, true) || tryAnchors(false, false))
-        return true;
-
-    return false;
+    return tryAnchors(true, true) || tryAnchors(false, true) || tryAnchors(false, false);
 }
 
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptionState& state)

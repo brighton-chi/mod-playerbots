@@ -66,7 +66,7 @@ bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 
     constexpr uint32 searchRadius = 40.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true));
+        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
 }
 
 // Moroes

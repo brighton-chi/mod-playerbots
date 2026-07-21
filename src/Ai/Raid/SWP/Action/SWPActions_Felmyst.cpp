@@ -53,20 +53,18 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float const distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
-    if (distToPosition > 2.0f)
-    {
-        float const dX = position.GetPositionX() - bot->GetPositionX();
-        float const dY = position.GetPositionY() - bot->GetPositionY();
-        float const moveDist = std::min(2.25f, distToPosition);
-        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    if (distToPosition < 2.0f)
+        return false;
 
-        return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const moveDist = std::min(2.25f, distToPosition);
+    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
@@ -101,15 +99,12 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.25f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.25f)
+        return false;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
@@ -188,13 +183,10 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
 bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 {
-    if (Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
-        gasNovaTarget && botAI->CanCastSpell("mass dispel", gasNovaTarget))
-    {
-        return botAI->CastSpell("mass dispel", gasNovaTarget);
-    }
-
-    return false;
+    Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
+    return gasNovaTarget &&
+        botAI->CanCastSpell("mass dispel", gasNovaTarget) &&
+        botAI->CastSpell("mass dispel", gasNovaTarget);
 }
 
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
@@ -211,13 +203,11 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 
     constexpr float safeDistFromVapor = 15.0f;
     float const currentDistance = bot->GetDistance2d(hazard);
-    if (currentDistance < safeDistFromVapor)
-    {
-        botAI->InterruptSpell();
-        return MoveAway(hazard, safeDistFromVapor - currentDistance);
-    }
+    if (currentDistance > safeDistFromVapor)
+        return false;
 
-    return false;
+    botAI->InterruptSpell();
+    return MoveAway(hazard, safeDistFromVapor - currentDistance);
 }
 
 bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
@@ -400,11 +390,8 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
         return false;
 
     Player* charmedPlayer = GetFelmystCharmedTarget(bot, felmyst);
-    if (!charmedPlayer)
+    if (!charmedPlayer || AI_VALUE(Unit*, "current target") == charmedPlayer)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != charmedPlayer)
-        return Attack(charmedPlayer);
-
-    return false;
+    return Attack(charmedPlayer);
 }

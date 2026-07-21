@@ -117,20 +117,18 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     float const distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
-    if (distToPosition > 2.0f)
-    {
-        float const dX = position.GetPositionX() - bot->GetPositionX();
-        float const dY = position.GetPositionY() - bot->GetPositionY();
-        float const moveDist = std::min(2.25f, distToPosition);
-        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    if (distToPosition < 2.0f)
+        return false;
 
-        return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const moveDist = std::min(2.25f, distToPosition);
+    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
