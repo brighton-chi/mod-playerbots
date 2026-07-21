@@ -3,13 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "SWPEncounter_Brut.h"
+#include "Playerbots.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <vector>
-
-#include "SWPEncounter_Brut.h"
-#include "Playerbots.h"
 
 namespace SunwellHelpers
 {
@@ -271,7 +270,8 @@ bool TryGetBrutallusRangedPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    const BrutallusRangedSlotInfo slotInfo = {
+    const BrutallusRangedSlotInfo slotInfo =
+    {
         rangedIndex % 2 == 0,
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
@@ -305,22 +305,22 @@ bool TryGetBrutallusBurnPadPosition(
         return false;
 
     static constexpr float degreeToRadian = M_PI / 180.0f;
-    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS>
-        burnPadAngleOffsets = {
-            70.0f * degreeToRadian,
-            83.3f * degreeToRadian,
-            96.7f * degreeToRadian,
-            110.0f * degreeToRadian,
-            130.0f * degreeToRadian,
-            143.3f * degreeToRadian,
-            156.7f * degreeToRadian,
-            170.0f * degreeToRadian
-        };
+    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS> burnPadAngleOffsets =
+    {
+        70.0f * degreeToRadian,
+        83.3f * degreeToRadian,
+        96.7f * degreeToRadian,
+        110.0f * degreeToRadian,
+        130.0f * degreeToRadian,
+        143.3f * degreeToRadian,
+        156.7f * degreeToRadian,
+        170.0f * degreeToRadian
+    };
 
-    float const mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
-    float const angle =
-        Position::NormalizeOrientation(mainTankAngle + burnPadAngleOffsets[padIndex]);
+    float const mainTankAngle = GetBrutallusTankAngle(
+        brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    float const angle = Position::NormalizeOrientation(
+        mainTankAngle + burnPadAngleOffsets[padIndex]);
 
     position = GetBrutallusPositionAtAngle(bot, brutallus, angle, radius);
     return true;

@@ -3,12 +3,12 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <cmath>
-
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include <array>
+#include <cmath>
 
 using namespace SunwellHelpers;
 
@@ -40,9 +40,6 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!brutallus)
         return false;
 
-    if (brutallus->GetHealthPct() > 99.0f)
-        _mainTankInitialPositionReached = false;
-
     if (AI_VALUE(Unit*, "current target") != brutallus)
         return Attack(brutallus);
 
@@ -60,7 +57,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
     if (mainTank == bot)
     {
-        Position const position = {
+        Position const position =
+        {
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(),
             bot->GetPositionZ()
@@ -139,15 +137,12 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, true,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+        return false;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
@@ -160,11 +155,12 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         uint8 slotCount;
     };
 
-    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts = {{
+    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts =
+    {{
         { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
         { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
         { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
-        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS }
+        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
     }};
 
     uint8 totalMeleeSlots = 0;
@@ -287,6 +283,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         float const currentAngle = Position::NormalizeOrientation(std::atan2(
             bot->GetPositionY() - brutallus->GetPositionY(),
             bot->GetPositionX() - brutallus->GetPositionX()));
+
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
@@ -371,15 +368,12 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, true,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+        return false;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusHandleBurnAction::Execute(Event /*event*/)
@@ -391,7 +385,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (RemoveBurnWithCooldown(bot))
         return true;
 
-    if (botAI->IsMelee(bot) || !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+    if (botAI->IsMelee(bot))
         return false;
 
     ObjectGuid const guid = bot->GetGUID();

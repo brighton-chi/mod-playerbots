@@ -6,8 +6,8 @@
 #ifndef PLAYERBOTS_SETHTRIGGERCONTEXT_H
 #define PLAYERBOTS_SETHTRIGGERCONTEXT_H
 
-#include "SethTriggers.h"
 #include "NamedObjectContext.h"
+#include "SethTriggers.h"
 
 class TbcDungeonSethekkHallsTriggerContext : public NamedObjectContext<Trigger>
 {

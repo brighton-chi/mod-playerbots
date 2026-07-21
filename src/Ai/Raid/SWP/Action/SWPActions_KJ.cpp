@@ -3,16 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <array>
-#include <map>
-#include <vector>
-
 #include "SWPActions.h"
 #include "SWPEncounter_KJ.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
-#include "RtiTargetValue.h"
+#include <map>
+#include <vector>
 
 using namespace SunwellHelpers;
 
@@ -21,39 +18,35 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
     auto const stateItr = kiljaedenEncounterStates.find(instanceId);
 
-    if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
+    if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
+        return false;
+
+    kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
+
+    Player* orbUser = GetKiljaedenDragonOrbUser(bot);
+    std::string text;
+
+    if (orbUser)
     {
-        kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
-
-        Player* orbUser = GetKiljaedenDragonOrbUser(bot);
-        std::string text;
-
-        if (orbUser)
-        {
-            std::map<std::string, std::string> placeholders = {
-                { "%bot", orbUser->GetName() }
-            };
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "kiljaeden_designated_dragon_orb_user",
-                "%bot is the first assistant and the designated dragon orb user!",
-                placeholders);
-        }
-        else
-        {
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "kiljaeden_no_designated_dragon_orb_user",
-                "No bot has been assigned as the designated dragon orb user, "
-                "and therefore a player must control the dragons. "
-                "If you would like a bot to use the dragon orbs, "
-                "please set the assistant flag for a bot.",
-                {}
-            );
-        }
-
-        return botAI->SayToRaid(text);
+        std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "kiljaeden_designated_dragon_orb_user",
+            "%bot is the first assistant and the designated dragon orb user!",
+            placeholders);
+    }
+    else
+    {
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "kiljaeden_no_designated_dragon_orb_user",
+            "No bot has been assigned as the designated dragon orb user, "
+            "and therefore a player must control the dragons. "
+            "If you would like a bot to use the dragon orbs, "
+            "please set the assistant flag for a bot.",
+            {}
+        );
     }
 
-    return false;
+    return botAI->SayToRaid(text);
 }
 
 
@@ -62,7 +55,28 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
+        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
+        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
+    {
+        return false;
+    }
+
+    std::vector<Unit*> hands;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        {
+            hands.push_back(unit);
+        }
+    }
+
+    if (hands.empty())
         return false;
 
     if (botAI->IsTank(bot))
@@ -82,24 +96,27 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
         if (myIndex >= tanks.size())
             return false;
 
-        std::vector<Unit*> hands;
-        auto const& attackers =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+        auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
+        ObjectGuid& assignedGuid = assignments[myIndex];
 
-        for (ObjectGuid const guid : attackers)
+        if (!assignedGuid.IsEmpty())
         {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() &&
-                unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+            bool alive = false;
+            for (Unit* hand : hands)
             {
-                hands.push_back(unit);
+                if (hand->GetGUID() == assignedGuid)
+                {
+                    alive = true;
+                    break;
+                }
             }
+            if (!alive)
+                assignedGuid = ObjectGuid::Empty;
         }
 
-        AssignHandsToTanks(hands, myIndex);
+        if (assignedGuid.IsEmpty() && myIndex < hands.size())
+            assignedGuid = hands[myIndex]->GetGUID();
 
-        ObjectGuid const assignedGuid =
-            kiljaedenHandTankAssignments[bot->GetInstanceId()][myIndex];
         if (assignedGuid.IsEmpty())
             return false;
 
@@ -123,8 +140,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                 if (!otherTank || !otherTank->IsAlive())
                     continue;
 
-                ObjectGuid const otherGuid =
-                    kiljaedenHandTankAssignments[bot->GetInstanceId()][i];
+                ObjectGuid const otherGuid = assignments[i];
                 if (otherGuid.IsEmpty())
                     continue;
 
@@ -137,62 +153,21 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                     return MoveAway(otherTank, minTankDistance - distFromTank, true);
             }
         }
-
-        return false;
     }
-
-    if (botAI->IsDps(bot))
-        return DpsAttackPriorityTargets();
-
-    return false;
-}
-
-void KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::AssignHandsToTanks(
-    std::vector<Unit*> const& hands, size_t const myIndex)
-{
-    std::vector<uint8> const rtiIndices = {
-        RtiTargetValue::starIndex,
-        RtiTargetValue::circleIndex,
-        RtiTargetValue::diamondIndex
-    };
-    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
-
-    auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
-    ObjectGuid& assignedGuid = assignments[myIndex];
-
-    if (!assignedGuid.IsEmpty())
+    else
     {
+        Unit* focusHand = hands[0];
         for (Unit* hand : hands)
         {
-            if (hand->GetGUID() == assignedGuid)
-                return;
+            if (hand->GetGUID() < focusHand->GetGUID())
+                focusHand = hand;
         }
 
-        assignedGuid = ObjectGuid::Empty;
-        return;
-    }
+        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID))
+            MarkTargetWithSkull(bot, focusHand);
 
-    if (myIndex < hands.size())
-    {
-        Unit* hand = hands[myIndex];
-        assignedGuid = hand->GetGUID();
-
-        if (MarkTargetWithIcon(bot, hand, rtiIndices[myIndex]))
-            return;
-
-        SetRtiTarget(botAI, rtiNames[myIndex], hand);
-    }
-}
-
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::DpsAttackPriorityTargets()
-{
-    std::vector<std::string> const rtiNames = { "star", "circle", "diamond" };
-
-    for (std::string const& rtiName : rtiNames)
-    {
-        Unit* hand = AI_VALUE2(Unit*, "rti target", rtiName);
-        if (hand && AI_VALUE(Unit*, "current target") != hand)
-            return Attack(hand);
+        if (AI_VALUE(Unit*, "current target") != focusHand)
+            return Attack(focusHand);
     }
 
     return false;
@@ -290,15 +265,12 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
     Position const position = KILJAEDEN_TANK_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+        return false;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
@@ -314,9 +286,8 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
@@ -422,9 +393,8 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
@@ -483,15 +453,14 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
     Position const position = KILJAEDEN_DARKNESS_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+        return false;
 
-    return false;
+    botAI->InterruptSpell();
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        position.GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
@@ -647,15 +616,18 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
         return false;
     }
 
-    if (darknessSpell->GetCastTimeRemaining() < 4000) // Cast Shield of the Blue at 4s remaining
+    if (darknessSpell->GetCastTimeRemaining() < 4500)
     {
         return CastKiljaedenDragonSpell(
             dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
     }
     else if (CastKiljaedenDragonSpell(
-                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)) ||
-             CastKiljaedenDragonSpell(
-                 dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
+        dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
+    {
+        return true;
+    }
+    else if (CastKiljaedenDragonSpell(
+        dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
     {
         return true;
     }

@@ -3,8 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <ctime>
-
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
 #include "SWPEncounter_Brut.h"
@@ -34,6 +32,7 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <ctime>
 
 using namespace SunwellHelpers;
 
@@ -353,6 +352,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     }
     else if (felmyst->IsFlying())
     {
+        Unit* actionTarget = action->GetTarget();
+        if (actionTarget && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
+
         auto& state = felmystEncounterStates[instanceId];
         state.landingDpsWaitTimer = 0;
         state.landingTouchdownTimer = 0;
@@ -368,7 +371,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (!state.landingTouchdownTimer)
         state.landingTouchdownTimer = now;
 
-    if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
+    if (botAI->IsMainTank(bot))
+        return 1.0f;
+
+    if (dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
         return 1.0f;
 
     if ((now - state.landingTouchdownTimer) >= groundedDpsWaitSeconds)
@@ -728,6 +734,9 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (!muru)
         return 1.0f;
 
+    if (AI_VALUE(Unit*, "current target") == muru)
+        context->GetValue<bool>("neglect threat")->Set(true);
+
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         dynamic_cast<DpsAssistAction*>(action))
     {
@@ -742,9 +751,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
-
-    if (AI_VALUE(Unit*, "current target") == muru)
-        context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel") &&
@@ -910,8 +916,12 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
+        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
+        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
+    {
         return 1.0f;
+    }
 
     if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;

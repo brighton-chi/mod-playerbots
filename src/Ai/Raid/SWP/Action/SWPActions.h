@@ -6,12 +6,11 @@
 #ifndef PLAYERBOTS_SWPACTIONS_H
 #define PLAYERBOTS_SWPACTIONS_H
 
-#include <limits>
-#include <vector>
-
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include <limits>
+#include <vector>
 
 // General
 
@@ -73,6 +72,13 @@ public:
     KalecgosDisperseRangedAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kalecgos disperse ranged") {}
     bool Execute(Event event) override;
+    bool ResetInitialRangedPositionReached()
+    {
+        if (!_initialRangedPositionReached)
+            return false;
+        _initialRangedPositionReached = false;
+        return true;
+    }
 
 private:
     bool _initialRangedPositionReached = false;
@@ -118,6 +124,13 @@ public:
     BrutallusTanksHandleBossAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "brutallus tanks handle boss") {}
     bool Execute(Event event) override;
+    bool ResetInitialPositionReached()
+    {
+        if (!_mainTankInitialPositionReached)
+            return false;
+        _mainTankInitialPositionReached = false;
+        return true;
+    }
 
 private:
     bool _mainTankInitialPositionReached = false;
@@ -290,6 +303,13 @@ public:
     EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "eredar twins first assist tank move out of blaze") {}
     bool Execute(Event event) override;
+    bool ResetAlythessTankStep()
+    {
+        if (!_alythessTankStep)
+            return false;
+        _alythessTankStep = 0;
+        return true;
+    }
 
 private:
     uint8 _alythessTankStep = 0;
@@ -411,7 +431,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position const* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
+    Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 };
 
 class MuruSecondAssistTankGuardRangedAction : public MovementAction
@@ -508,10 +528,6 @@ public:
     KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
-
-private:
-    void AssignHandsToTanks(std::vector<Unit*> const& hands, size_t myIndex);
-    bool DpsAttackPriorityTargets();
 };
 
 class KiljaedenStunHandsOfTheDeceiverAction : public Action

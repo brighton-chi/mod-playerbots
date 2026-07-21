@@ -3,8 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <list>
-
 #include "SWPEncounter_Twins.h"
 #include "AiObjectContext.h"
 #include "CellImpl.h"
@@ -14,6 +12,7 @@
 #include "Playerbots.h"
 #include "Spell.h"
 #include "ThreatManager.h"
+#include <list>
 
 namespace SunwellHelpers
 {

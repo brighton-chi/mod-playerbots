@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 
@@ -6,20 +12,25 @@ namespace KarazhanHelpers
 
 // Attumen the Huntsman
 std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
-// Netherspite
-std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-// Nightbane
-std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
-bool IsCastingArcaneExplosion(Unit* aran)
+Unit* GetAttumenMounted(Player* bot)
+{
+    constexpr uint32 searchRadius = 50.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
+}
+
+// Shade of Aran
+
+bool IsAranCastingArcaneExplosion(Unit* aran)
 {
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
         static_cast<uint32>(KarazhanSpells::SPELL_ARCANE_EXPLOSION));
 }
 
-bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
+bool IsFlameWreathActive(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Unit* aran =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
     Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
@@ -47,6 +58,10 @@ bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
+// Netherspite
+
+std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+
 bool IsBanishPhase(Unit* netherspite)
 {
     return netherspite && netherspite->HasAura(
@@ -54,8 +69,9 @@ bool IsBanishPhase(Unit* netherspite)
 }
 
 // Red beam blockers: tank bots, no Nether Exhaustion Red
-std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetRedBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -64,9 +80,8 @@ std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsTank(member) ||
-            !GET_PLAYERBOT_AI(member) || member->HasAura(
-                static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_RED)))
+        if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
+            member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_RED)))
         {
             continue;
         }
@@ -79,8 +94,9 @@ std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
 
 // Blue beam blockers: DPS bots, excluding Warrior/Rogue/DK
 // no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
-std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetBlueBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -113,8 +129,9 @@ std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
 // Green beam blockers:
 // (1) Prioritize Rogues and non-tank Warrior and DK bots, no Nether Exhaustion Green
 // (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
-std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
+std::vector<Player*> GetGreenBlockers(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -155,14 +172,14 @@ std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
     return greenBlockers;
 }
 
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot)
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
 {
     static ObjectGuid currentRedBlocker;
     static ObjectGuid currentGreenBlocker;
     static ObjectGuid currentBlueBlocker;
 
     Player* redBlocker = nullptr;
-    std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
+    std::vector<Player*> redBlockers = GetRedBlockers(bot);
     if (!redBlockers.empty())
     {
         auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
@@ -184,7 +201,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     }
 
     Player* greenBlocker = nullptr;
-    std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
+    std::vector<Player*> greenBlockers = GetGreenBlockers(bot);
     if (!greenBlockers.empty())
     {
         auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
@@ -206,7 +223,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     }
 
     Player* blueBlocker = nullptr;
-    std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
+    std::vector<Player*> blueBlockers = GetBlueBlockers(bot);
     if (!blueBlockers.empty())
     {
         auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
@@ -230,7 +247,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI,
     return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
 }
 
-std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot)
+std::vector<Unit*> GetAllVoidZones(Player* bot)
 {
     std::vector<Unit*> voidZones;
     std::list<Creature*> creatureList;
@@ -307,6 +324,8 @@ bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float h
     return true;
 }
 
+// Prince Malchezaar
+
 std::vector<Unit*> GetSpawnedInfernals(Player* bot)
 {
     std::vector<Unit*> infernals;
@@ -365,7 +384,6 @@ bool TryFindSafePositionWithSafePath(
     float const originX = origin.GetPositionX();
     float const originY = origin.GetPositionY();
 
-    // Try with safe-path requirement first, fall back to position-only
     for (bool requireSafePath : { true, false })
     {
         float bestMoveDist = std::numeric_limits<float>::max();
@@ -416,5 +434,10 @@ bool TryFindSafePositionWithSafePath(
 
     return false;
 }
+
+// Nightbane
+
+std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
 }

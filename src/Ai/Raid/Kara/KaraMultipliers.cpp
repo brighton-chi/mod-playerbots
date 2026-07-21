@@ -1,12 +1,18 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "KaraMultipliers.h"
-#include "KaraActions.h"
-#include "KaraHelpers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
+#include "KaraActions.h"
+#include "KaraHelpers.h"
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
@@ -17,6 +23,36 @@
 
 using namespace KarazhanHelpers;
 
+// General
+
+float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+        return 0.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
+        AI_VALUE2(Unit*, "find target", "the big bad wolf"))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+// Attumen the Huntsman
+
 float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
@@ -25,17 +61,21 @@ float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* ac
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<DpsAssistAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 {
-    Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
-    if (!attumen)
+    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+        return 1.0f;
+
+    if (!GetAttumenMounted(bot))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -58,8 +98,10 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 // Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight
 float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
-    Unit* attumen = GetFirstAliveUnitByEntry(
-        botAI, static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED));
+    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+        return 1.0f;
+
+    Unit* attumen = GetAttumenMounted(bot);
     if (!attumen)
         return 1.0f;
 
@@ -84,7 +126,8 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Disables co +disperse and co +tank face
+// Maiden of Virtue
+
 float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "maiden of virtue"))
@@ -98,6 +141,26 @@ float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValue(Action* actio
 
     return 1.0f;
 }
+
+float MaidenOfVirtueSetGroundingTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "maiden of virtue"))
+        return 1.0f;
+
+    if (dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<CastWindfuryTotemAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+// The Curator
 
 float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
 {
@@ -113,7 +176,6 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Disables co +disperse and co +tank face
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "the curator"))
@@ -150,6 +212,24 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Terestian Illhoof
+float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
+{
+    Unit* imp = AI_VALUE2(Unit*, "find target", "fiendish imp");
+    if (!imp)
+        return 1.0f;
+
+    if (AI_VALUE(Unit*, "current target") == imp &&
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    {
+        return 0.0f;
+    }
+
+     return 1.0f;
+}
+
+// Shade of Aran
+
 // Don't charge back in or move in any other way when running from Arcane Explosion
 float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
 {
@@ -157,7 +237,7 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
     if (!aran)
         return 1.0f;
 
-    if (!IsCastingArcaneExplosion(aran))
+    if (!IsAranCastingArcaneExplosion(aran))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -183,7 +263,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "shade of aran"))
         return 1.0f;
 
-    if (!IsFlameWreathActive(botAI, bot))
+    if (!IsFlameWreathActive(bot))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
@@ -204,13 +284,15 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Netherspite
+
 float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
+    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
 
     if (bot == redBlocker &&
         dynamic_cast<CombatFormationMoveAction*>(action))
@@ -269,6 +351,8 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
      return 1.0f;
 }
 
+// Prince Malchezaar
+
 // Don't run back into Shadow Nova when Enfeebled
 float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 {
@@ -283,7 +367,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
+        !dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
     {
         return 0.0f;
     }
@@ -306,6 +390,8 @@ float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* actio
 
     return 1.0f;
 }
+
+// Nightbane
 
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
 // Pets also tend to pull adds from inside of the tower through the floor
@@ -379,7 +465,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
         return 0.0f;
 
     return 1.0f;
@@ -388,7 +474,8 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 // Disable some movement actions that conflict with the strategies
 float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    if (!nightbane)
         return 1.0f;
 
     if (dynamic_cast<CastBlinkBackAction*>(action) ||
@@ -403,6 +490,29 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z &&
+        (dynamic_cast<CastReachTargetSpellAction*>(action) ||
+         dynamic_cast<ReachTargetAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
+    time_t const now = std::time(nullptr);
+    constexpr uint8 flightPhaseDurationSeconds = 35;
+
+    if (nightbaneFlightPhaseStartTimer.find(instanceId) ==
+        nightbaneFlightPhaseStartTimer.end())
+    {
+        return 1.0f;
+    }
+
+    if (now - nightbaneFlightPhaseStartTimer[instanceId] >= flightPhaseDurationSeconds)
+        return 1.0f;
+
+    if (dynamic_cast<FollowAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }

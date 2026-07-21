@@ -1,12 +1,17 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
-
-#include <ctime>
-#include <unordered_map>
 
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <ctime>
+#include <unordered_map>
 
 namespace KarazhanHelpers
 {
@@ -25,6 +30,7 @@ enum class KarazhanSpells : uint32
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST          = 30004,
     SPELL_FLAME_WREATH_AURA          = 29946,
+    SPELL_BLIZZARD                   = 29951,
     SPELL_ARCANE_EXPLOSION           = 29973,
 
     // Netherspite
@@ -45,11 +51,12 @@ enum class KarazhanSpells : uint32
     SPELL_BELLOWING_ROAR             = 36922,
     SPELL_RAIN_OF_BONES              = 37091,
 
-    // Warlock
-    SPELL_WARLOCK_BANISH             = 18647,
-
     // Priest
-    SPELL_FEAR_WARD                  =  6346,
+    SPELL_FEAR_WARD                  = 6346,
+
+    // Shaman
+    SPELL_TREMOR_TOTEM               = 8143,
+    SPELL_GROUNDING_TOTEM            = 8177,
 };
 
 enum class KarazhanNpcs : uint32
@@ -80,28 +87,31 @@ enum class KarazhanNpcs : uint32
 };
 
 constexpr uint32 KARAZHAN_MAP_ID = 532;
-constexpr float NIGHTBANE_FLIGHT_Z = 95.0f;
+constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
+constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 
 // Attumen the Huntsman
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+Unit* GetAttumenMounted(Player* bot);
+
+// Shade of Aran
+bool IsAranCastingArcaneExplosion(Unit* aran);
+bool IsFlameWreathActive(Player* bot);
+
 // Netherspite
 extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-// Nightbane
-extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-
-bool IsCastingArcaneExplosion(Unit* aran);
-bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
 bool IsBanishPhase(Unit* netherspite);
-std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
-std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
+std::vector<Player*> GetRedBlockers(Player* bot);
+std::vector<Player*> GetBlueBlockers(Player* bot);
+std::vector<Player*> GetGreenBlockers(Player* bot);
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot);
+std::vector<Unit*> GetAllVoidZones(Player* bot);
 bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
 bool FindBeamPosition(
     Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
     float idealDistance, Position& outPos);
+
+// Prince Malchezaar
 std::vector<Unit*> GetSpawnedInfernals(Player* bot);
 bool IsStraightPathSafe(
     float startX, float startY, float targetX, float targetY,
@@ -109,6 +119,11 @@ bool IsStraightPathSafe(
 bool TryFindSafePositionWithSafePath(
     Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
     float safeDistance, float maxSampleDist, float& outX, float& outY);
+
+// Nightbane
+extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+std::vector<Position> GetCharredEarthPositions(Player* bot);
 
 }
 

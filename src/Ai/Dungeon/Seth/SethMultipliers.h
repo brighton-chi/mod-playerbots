@@ -8,11 +8,11 @@
 
 #include "Multiplier.h"
 
-class SethekkProphetUseTremorTotemMultiplier : public Multiplier
+class SethekkProphetSetTremorTotemMultiplier : public Multiplier
 {
 public:
-    SethekkProphetUseTremorTotemMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "sethekk prophet use tremor totem") {}
+    SethekkProphetSetTremorTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "sethekk prophet set tremor totem") {}
     virtual float GetValue(Action* action);
 };
 

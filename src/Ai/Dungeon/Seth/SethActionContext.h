@@ -6,8 +6,8 @@
 #ifndef PLAYERBOTS_SETHACTIONCONTEXT_H
 #define PLAYERBOTS_SETHACTIONCONTEXT_H
 
-#include "SethActions.h"
 #include "NamedObjectContext.h"
+#include "SethActions.h"
 
 class TbcDungeonSethekkHallsActionContext : public NamedObjectContext<Action>
 {
@@ -17,8 +17,8 @@ public:
         creators["time-lost controller mark charming totem with skull"] =
             &TbcDungeonSethekkHallsActionContext::time_lost_controller_mark_charming_totem_with_skull;
 
-        creators["sethekk prophet drop tremor totem"] =
-            &TbcDungeonSethekkHallsActionContext::sethekk_prophet_drop_tremor_totem;
+        creators["sethekk prophet set tremor totem"] =
+            &TbcDungeonSethekkHallsActionContext::sethekk_prophet_set_tremor_totem;
 
         creators["darkweaver syth mark elementals with skull"] =
             &TbcDungeonSethekkHallsActionContext::darkweaver_syth_mark_elementals_with_skull;
@@ -45,8 +45,8 @@ private:
     static Action* time_lost_controller_mark_charming_totem_with_skull(PlayerbotAI* botAI) {
         return new TimeLostControllerMarkCharmingTotemWithSkullAction(botAI);
     }
-    static Action* sethekk_prophet_drop_tremor_totem(PlayerbotAI* botAI) {
-        return new SethekkProphetDropTremorTotemAction(botAI);
+    static Action* sethekk_prophet_set_tremor_totem(PlayerbotAI* botAI) {
+        return new SethekkProphetSetTremorTotemAction(botAI);
     }
     static Action* darkweaver_syth_mark_elementals_with_skull(PlayerbotAI* botAI) {
         return new DarkweaverSythMarkElementalsWithSkullAction(botAI);

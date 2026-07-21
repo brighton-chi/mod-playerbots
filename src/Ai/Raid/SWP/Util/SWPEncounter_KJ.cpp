@@ -3,15 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <algorithm>
-#include <cmath>
-#include <unordered_set>
-#include <unordered_map>
-
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include <algorithm>
+#include <cmath>
+#include <unordered_set>
 
 namespace SunwellHelpers
 {

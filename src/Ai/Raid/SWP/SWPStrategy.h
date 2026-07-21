@@ -12,10 +12,8 @@ class RaidSunwellStrategy : public Strategy
 {
 public:
     RaidSunwellStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
-    bool HasTargetExclusions() const override { return true; }
     std::string const getName() override { return "sunwell"; }
-
+    bool HasTargetExclusions() const override { return true; }
     void AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;

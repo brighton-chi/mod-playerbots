@@ -1,7 +1,21 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_KARAMULTIPLIERS_H
 #define PLAYERBOTS_KARAMULTIPLIERS_H
 
 #include "Multiplier.h"
+
+class KarazhanSetTremorTotemMultiplier : public Multiplier
+{
+public:
+    KarazhanSetTremorTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "karazhan set tremor totem") {}
+    virtual float GetValue(Action* action);
+};
 
 class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 {
@@ -35,6 +49,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class MaidenOfVirtueSetGroundingTotemMultiplier : public Multiplier
+{
+public:
+    MaidenOfVirtueSetGroundingTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue set grounding totem multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
 public:
@@ -56,6 +78,14 @@ class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     TheCuratorDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
+{
+public:
+    TerestianIllhoofDontDotFiendishImpsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "terestian illhoof don't dot fiendish imps multiplier") {}
     virtual float GetValue(Action* action);
 };
 

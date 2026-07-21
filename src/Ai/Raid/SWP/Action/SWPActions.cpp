@@ -3,9 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <list>
-
 #include "SWPActions.h"
+#include "CreatureAI.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -13,9 +14,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "CreatureAI.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include <list>
 
 using namespace SunwellHelpers;
 
@@ -24,17 +23,30 @@ bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
     bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    bool const isRanged = botAI->IsRanged(bot);
+    bool const isTank = botAI->IsTank(bot);
 
-    bool erased = false;
+    bool didSomething = false;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
         if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
 
         if (kalecgosRealmStates.erase(guid) > 0)
-            erased = true;
+            didSomething = true;
+
+        if (isRanged)
+        {
+            Action* kalecAction = botAI->GetAiObjectContext()->GetAction(
+                "kalecgos disperse ranged");
+            if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
+                    kalecAction)->ResetInitialRangedPositionReached())
+            {
+                didSomething = true;
+            }
+        }
     }
 
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
@@ -42,63 +54,84 @@ bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
         if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
         {
             bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
-            erased = true;
+            didSomething = true;
         }
 
         if (botAI->IsRanged(bot) && brutallusRangedBurnStates.erase(guid) > 0)
-            erased = true;
+            didSomething = true;
 
         if (botAI->IsRanged(bot) && ReleaseBrutallusBurnPad(bot))
-            erased = true;
+            didSomething = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
 
         if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
+
+        if (isTank)
+        {
+            Action* brutallusAction = botAI->GetAiObjectContext()->GetAction(
+                "brutallus tanks handle boss");
+            if (brutallusAction && static_cast<BrutallusTanksHandleBossAction*>(
+                    brutallusAction)->ResetInitialPositionReached())
+            {
+                didSomething = true;
+            }
+        }
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst") &&
         felmystEncounterStates.erase(instanceId) > 0)
     {
-        erased = true;
+        didSomething = true;
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
 
         if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru") &&
-        !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (isTank && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    {
+        Action* twinsAction = botAI->GetAiObjectContext()->GetAction(
+            "eredar twins first assist tank move out of blaze");
+        if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
+                twinsAction)->ResetAlythessTankStep())
+        {
+            didSomething = true;
+        }
+    }
+
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru"))
     {
         if (muruDarknessStates.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
 
         if (muruVoidSentinelTankAssignments.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
         kiljaedenEncounterStates.erase(instanceId) > 0)
     {
-        erased = true;
+        didSomething = true;
     }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
         if (ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
-            erased = true;
+            didSomething = true;
 
         if (kiljaedenHandTankAssignments.erase(instanceId) > 0)
-            erased = true;
+            didSomething = true;
     }
 
-    return erased;
+    return didSomething;
 }
 
 bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
@@ -167,8 +200,5 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM)))
         bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM));
 
-    if (botAI->CanCastSpell("smite", target))
-        return botAI->CastSpell("smite", target);
-
-    return false;
+    return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }

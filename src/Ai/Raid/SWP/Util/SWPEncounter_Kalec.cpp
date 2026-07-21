@@ -3,16 +3,15 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <algorithm>
-#include <map>
-#include <vector>
-
 #include "SWPEncounter_Kalec.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 #include "Timer.h"
+#include <algorithm>
+#include <map>
+#include <vector>
 
 namespace SunwellHelpers
 {
@@ -118,8 +117,8 @@ void AnnounceKalecgosTankTransition(
 std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedKalecgosTankAssignmentGuids(
     Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
 
@@ -127,6 +126,7 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedKalecgosTankAssignmentGui
     if (!group)
         return tankGuids;
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -147,7 +147,8 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedKalecgosTankAssignmentGui
 std::array<ObjectGuid, KALECGOS_TANK_COUNT> BuildInitialKalecgosTankPortalRotationGuids(
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& tankAssignmentGuids)
 {
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
     uint8 nextIndex = 0;
@@ -182,7 +183,8 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildKalecgosTankPortalRotationGui
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& existingRotationGuids,
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& tankAssignmentGuids)
 {
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
     uint8 nextIndex = 0;
@@ -290,10 +292,14 @@ Player* GetFirstKalecgosSurfaceTankInPortalRotation(
 bool ShouldKalecgosCurrentTankHandOff(KalecgosEncounterState const& state)
 {
     ObjectGuid const currentTankGuid = state.currentTankGuid;
-    return currentTankGuid != ObjectGuid::Empty &&
-           (currentTankGuid == state.activeRiftOutgoingTankGuid ||
-            (currentTankGuid == state.blastedPlayerGuid &&
-             HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid)));
+    if (currentTankGuid == ObjectGuid::Empty)
+        return false;
+
+    if (currentTankGuid == state.activeRiftOutgoingTankGuid)
+        return true;
+
+    return currentTankGuid == state.blastedPlayerGuid &&
+        HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid);
 }
 
 Player* GetKalecgosSurfaceTankAfterCurrentHandOff(
@@ -388,7 +394,8 @@ void AdvanceKalecgosTankPortalRotation(KalecgosEncounterState& state, ObjectGuid
     if (!HasKalecgosTankAssignment(state.tankAssignmentGuids, tankGuid))
         return;
 
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
     uint8 nextIndex = 0;
@@ -464,8 +471,7 @@ uint8 ResolveKalecgosActiveRiftGroup(Group* group, const KalecgosEncounterState&
 }
 
 void AssignPlayerToGroup(
-    KalecgosEncounterState& state,
-    std::array<size_t, KALECGOS_GROUP_COUNT>& groupSizes,
+    KalecgosEncounterState& state, std::array<size_t, KALECGOS_GROUP_COUNT>& groupSizes,
     std::array<bool, KALECGOS_GROUP_COUNT>& groupHasTank,
     std::array<bool, KALECGOS_GROUP_COUNT>& groupHasDecurser,
     Player* member, uint8 groupIndex)
@@ -751,8 +757,7 @@ void RecordKalecgosSpectralBlastTarget(Player* bot)
             return;
 
         AnnounceKalecgosTankTransition(
-            botAI,
-            "kalecgos_tank_sent_to_spectral_realm",
+            botAI, "kalecgos_tank_sent_to_spectral_realm",
             "Tank %tank has been sent to the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", bot->GetName()},
@@ -766,8 +771,7 @@ void RecordKalecgosSpectralBlastTarget(Player* bot)
         outgoingTank && currentTank)
     {
         AnnounceKalecgosTankTransition(
-            botAI,
-            "kalecgos_tank_should_enter_spectral_realm",
+            botAI, "kalecgos_tank_should_enter_spectral_realm",
             "Tank %tank should enter the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", outgoingTank->GetName()},

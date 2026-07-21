@@ -17,11 +17,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class SethekkProphetDropTremorTotemAction : public Action
+class SethekkProphetSetTremorTotemAction : public Action
 {
 public:
-    SethekkProphetDropTremorTotemAction(
-        PlayerbotAI* botAI) : Action(botAI, "sethekk prophet drop tremor totem") {}
+    SethekkProphetSetTremorTotemAction(
+        PlayerbotAI* botAI) : Action(botAI, "sethekk prophet set tremor totem") {}
     bool Execute(Event event) override;
 };
 
@@ -76,8 +76,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToPillar(Position const& pillarCenter, float botAngle);
-    bool MoveAroundPillar(Position const& pillarCenter, float botAngle);
+    bool MoveToPillar(Position const& pillarCenter, float botAngle, float distToPillar);
+    bool MoveAroundPillar(Position const& pillarCenter, float botAngle, float distToPillar);
 };
 
 class TalonKingIkissMoveToWithinLosAction : public MovementAction

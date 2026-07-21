@@ -3,39 +3,42 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "SWPEncounter_Felmyst.h"
+#include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
 #include <vector>
-
-#include "SWPEncounter_Felmyst.h"
-#include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 namespace SunwellHelpers
 {
 
 // Note: Felmyst's CombatReach is 10.0f
 
-std::array<Position, 3> const FELMYST_TANK_POSITIONS = {{
+std::array<Position, 3> const FELMYST_TANK_POSITIONS =
+{{
     { 1460.145f, 598.290f, 21.869f },
     { 1480.587f, 636.805f, 21.713f },
     { 1479.524f, 584.069f, 23.231f },
 }};
 
-std::array<Position, 3> const FELMYST_FOG_LEFT_LANES = {{
+std::array<Position, 3> const FELMYST_FOG_LEFT_LANES =
+{{
     { 1494.745f, 704.000f, 50.085f, 4.747f },
     { 1469.923f, 703.239f, 50.086f, 4.747f },
     { 1446.515f, 701.518f, 50.085f, 4.747f },
 }};
 
-std::array<Position, 3> const FELMYST_FOG_RIGHT_LANES = {{
+std::array<Position, 3> const FELMYST_FOG_RIGHT_LANES =
+{{
     { 1492.820f, 515.668f, 50.083f, 1.449f },
     { 1466.732f, 515.595f, 50.572f, 1.449f },
     { 1441.640f, 520.520f, 50.083f, 1.449f },
 }};
 
-std::array<std::array<Position, 3>, 3> const FELMYST_FOG_SAFE_SPOTS = {{
+std::array<std::array<Position, 3>, 3> const FELMYST_FOG_SAFE_SPOTS =
+{{
     {{ // Top lane safe spots
         { 1466.877f, 562.297f, 22.231f },
         { 1466.718f, 602.838f, 22.834f },
@@ -71,7 +74,8 @@ constexpr uint8 FELMYST_DEMONIC_VAPOR_LEFT_SIDE = 0x1;
 constexpr uint8 FELMYST_DEMONIC_VAPOR_RIGHT_SIDE = 0x2;
 
 // Use the fog-lane X bands projected onto each grounded side landing.
-std::array<FelmystDemonicVaporAnchor, 6> const FELMYST_DEMONIC_VAPOR_KITE_ANCHORS = {{
+std::array<FelmystDemonicVaporAnchor, 6> const FELMYST_DEMONIC_VAPOR_KITE_ANCHORS =
+{{
     {
         { 1492.820f, FELMYST_RIGHT_LANDING_POSITION.GetPositionY(),
           FELMYST_RIGHT_LANDING_POSITION.GetPositionZ() },
@@ -104,7 +108,8 @@ std::array<FelmystDemonicVaporAnchor, 6> const FELMYST_DEMONIC_VAPOR_KITE_ANCHOR
     }
 }};
 
-std::array<Position, 3> const FELMYST_DEMONIC_VAPOR_LANE_REFERENCES = {{
+std::array<Position, 3> const FELMYST_DEMONIC_VAPOR_LANE_REFERENCES =
+{{
     { 1493.783f, 609.834f, 50.084f },
     { 1468.328f, 609.417f, 50.329f },
     { 1444.078f, 611.019f, 50.084f },
@@ -460,8 +465,7 @@ std::array<FelmystFogLane, 3> GetFelmystDemonicVaporLanePriority(FelmystFogLane 
     }
 }
 
-void PushUniqueFelmystDemonicVaporAnchor(
-    std::vector<uint8>& anchorIndices, uint8 anchorIndex)
+void PushUniqueFelmystDemonicVaporAnchor(std::vector<uint8>& anchorIndices, uint8 anchorIndex)
 {
     if (std::find(anchorIndices.begin(), anchorIndices.end(), anchorIndex) == anchorIndices.end())
         anchorIndices.push_back(anchorIndex);
@@ -904,14 +908,15 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane)
     FelmystFogPassState& tracker = felmystEncounterStates[instanceId].fogPass;
     uint32 const now = getMSTime();
     constexpr uint32 thirdPassWindowMs = 10000;
+
     const FelmystFogLocation currentLocation = GetFelmystCurrentFogLocation(felmyst);
     const FelmystFogLane currentLane = GetFelmystFogLaneFromLocation(currentLocation);
-
     const FelmystFogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
     const FelmystFogLocation previousDestinationLocation = tracker.lastDestinationLocation;
-    const FelmystFogLane previousDestinationLane =
-        GetFelmystFogLaneFromLocation(previousDestinationLocation);
+    const FelmystFogLane previousDestinationLane = GetFelmystFogLaneFromLocation(
+        previousDestinationLocation);
+
     bool const isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
 
@@ -1062,10 +1067,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
         return false;
     };
 
-    if (tryAnchors(true, true) || tryAnchors(false, true) || tryAnchors(false, false))
-        return true;
-
-    return false;
+    return tryAnchors(true, true) || tryAnchors(false, true) || tryAnchors(false, false);
 }
 
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptionState& state)
@@ -1091,10 +1093,12 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptio
 
     FelmystFogOfCorruptionState& tracker = felmystEncounterStates[instanceId].fogOfCorruption;
     bool const hasTracker = tracker.phase != FelmystFogPhase::None;
+
     const FelmystFogLocation currentLocation = GetFelmystCurrentFogLocation(felmyst);
     const FelmystFogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
     const FelmystFogLane currentLane = GetFelmystFogLaneFromLocation(currentLocation);
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
+
     bool const isSweeping = felmyst->HasAura(
         static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
 

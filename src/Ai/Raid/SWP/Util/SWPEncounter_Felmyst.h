@@ -6,14 +6,13 @@
 #ifndef PLAYERBOTS_SWPENCOUNTERFELMYST_H
 #define PLAYERBOTS_SWPENCOUNTERFELMYST_H
 
+#include "ObjectGuid.h"
+#include "Position.h"
+#include "SWPData.h"
 #include <array>
 #include <ctime>
 #include <limits>
 #include <unordered_map>
-
-#include "ObjectGuid.h"
-#include "Position.h"
-#include "SWPData.h"
 
 class Creature;
 class Player;

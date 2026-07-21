@@ -3,12 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <list>
-#include <vector>
-
 #include "SWPActions.h"
 #include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
@@ -16,6 +10,11 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <list>
+#include <vector>
 
 using namespace SunwellHelpers;
 
@@ -54,10 +53,11 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
-    if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
-        return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (!entropius || AI_VALUE(Unit*, "current target") == entropius)
+        return false;
 
-    return false;
+    return Attack(entropius);
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
@@ -178,34 +178,32 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     Unit* target = ResolveMuruDpsTarget(currentTarget);
+    if (!target)
+        return false;
 
-    if (target && target->GetEntry() ==
-            static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
+    if (target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
-        if (bot->getClass() == CLASS_ROGUE && !botAI->GetAura("dismantle", target) &&
-            botAI->CanCastSpell("dismantle", target))
+        if (bot->getClass() == CLASS_ROGUE &&
+            botAI->CanCastSpell("dismantle", target) && botAI->CastSpell("dismantle", target))
         {
-            return botAI->CastSpell("dismantle", target);
+            return true;
         }
 
-        if (bot->getClass() == CLASS_WARRIOR && !botAI->GetAura("disarm", target) &&
-            botAI->CanCastSpell("disarm", target))
+        if (bot->getClass() == CLASS_WARRIOR &&
+            botAI->CanCastSpell("disarm", target) && botAI->CastSpell("disarm", target))
         {
-            return botAI->CastSpell("disarm", target);
+            return true;
         }
     }
 
-    if (target)
-    {
-        bool needsAttack = false;
-        if (botAI->IsMelee(bot))
-            needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
-        else
-            needsAttack = currentTarget != target;
+    bool needsAttack = false;
+    if (botAI->IsMelee(bot))
+        needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
+    else
+        needsAttack = currentTarget != target;
 
-        if (needsAttack)
-            return Attack(target);
-    }
+    if (needsAttack)
+        return Attack(target);
 
     return false;
 }
@@ -251,13 +249,6 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
         if (!unit || !unit->IsAlive())
             return false;
 
-        /* constexpr float rangedInitialPhaseTargetDistance = 30.0f;
-        if (isOtherRanged && isMuruPhase &&
-            bot->GetExactDist2d(unit) > rangedInitialPhaseTargetDistance)
-        {
-            return false;
-        } */
-
         switch (unit->GetEntry())
         {
             case static_cast<uint32>(SunwellNpcs::NPC_MURU):
@@ -290,14 +281,16 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     std::vector<std::pair<uint32, Unit*>> priorityTargets;
     if (isShadowPriest)
     {
-        priorityTargets = {
+        priorityTargets =
+        {
             { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
             { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
         };
     }
     else if (isOtherRanged)
     {
-        priorityTargets = {
+        priorityTargets =
+        {
             { static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), voidSentinel },
             { static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), voidSpawn },
             { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
@@ -308,7 +301,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     }
     else
     {
-        priorityTargets = {
+        priorityTargets =
+        {
             { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
             { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
             { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
@@ -496,44 +490,36 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     if (!voidSentinel)
         return false;
 
-    Position const* tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
-    if (!tankPosition)
-        return false;
-
-    if (voidSentinel->GetVictim() == bot)
-    {
-        float const distToPosition = bot->GetExactDist2d(
-            tankPosition->GetPositionX(), tankPosition->GetPositionY());
-
-        if (distToPosition > 2.0f)
-        {
-            float const dX = tankPosition->GetPositionX() - bot->GetPositionX();
-            float const dY = tankPosition->GetPositionY() - bot->GetPositionY();
-            float const moveDist = std::min(2.25f, distToPosition);
-            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(
-                SUNWELL_MAP_ID, moveX, moveY, tankPosition->GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-    }
-
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE(Unit*, "current target") != voidSentinel)
     {
         return Attack(voidSentinel);
     }
 
-    return false;
+    if (voidSentinel->GetVictim() != bot)
+        return false;
+
+    Position const& tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
+    float const distToPosition = bot->GetExactDist2d(
+        tankPosition.GetPositionX(), tankPosition.GetPositionY());
+
+    if (distToPosition < 2.0f)
+        return false;
+
+    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
+    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const moveDist = std::min(2.25f, distToPosition);
+    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+    return MoveTo(
+        SUNWELL_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
-Position const* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
-    Unit* voidSentinel) const
+Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
+    Unit* voidSentinel)
 {
-    if (!voidSentinel)
-        return nullptr;
-
     auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
     auto assignmentItr = assignments.find(voidSentinel->GetGUID());
     if (assignmentItr == assignments.end())
@@ -550,23 +536,20 @@ Position const* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
         assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
     }
 
-    Position const north = MURU_VOID_SENTINEL_N_TANK_POSITION;
-    Position const east = MURU_VOID_SENTINEL_E_TANK_POSITION;
-    return assignmentItr->second == 0 ? &north : &east;
+    return assignmentItr->second == 0 ?
+        MURU_VOID_SENTINEL_N_TANK_POSITION : MURU_VOID_SENTINEL_E_TANK_POSITION;
 }
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
     Position const position = MURU_ENTRANCE_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-    {
-        return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 1.0f)
+        return false;
 
-    return false;
+    return MoveTo(
+        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        position.GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
@@ -738,10 +721,8 @@ bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
     if (!voidSpawn)
         return false;
 
-    if (botAI->CanCastSpell("enslave demon", voidSpawn))
-        return botAI->CastSpell("enslave demon", voidSpawn);
-
-    return false;
+    return botAI->CanCastSpell("enslave demon", voidSpawn) &&
+        botAI->CastSpell("enslave demon", voidSpawn);
 }
 
 Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
@@ -866,7 +847,8 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget() cons
     if (!validMuru || validMuru->GetHealth() <= 1 || TryGetMuruDarknessActiveState(bot, validMuru))
         validMuru = nullptr;
 
-    std::array<Unit*, 5> priorities = {
+    std::array<Unit*, 5> priorities =
+    {
         furyMage, berserker, voidSentinel, validMuru, targets.entropius
     };
 

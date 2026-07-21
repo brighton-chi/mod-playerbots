@@ -1,11 +1,37 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "KaraStrategy.h"
+#include "AiObjectContext.h"
+#include "KaraHelpers.h"
 #include "KaraMultipliers.h"
+#include "PlayerbotAI.h"
+
+void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* nightbane =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "nightbane")->Get();
+    if (nightbane && nightbane->GetPositionZ() > KarazhanHelpers::NIGHTBANE_FLIGHT_Z)
+        exclusions.insert(nightbane->GetGUID());
+}
+
+void RaidKarazhanStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    AppendNightbaneFlightPhaseExclusions(botAI, exclusions);
+}
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("karazhan bot is not in combat",
-        { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 11) }
+        { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 10) }
+    ));
+    triggers.push_back(new TriggerNode("karazhan enemies cast fear",
+        { NextAction("karazhan cast fear protection spell", ACTION_RAID) }
     ));
 
     // Trash
@@ -21,7 +47,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("attumen the huntsman handle phase two", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("attumen the huntsman boss wipes aggro when mounting",
-        { NextAction("attumen the huntsman manage dps timer", ACTION_RAID + 1) }
+        { NextAction("attumen the huntsman set dps timer", ACTION_EMERGENCY + 10) }
     ));
 
     // Moroes
@@ -37,12 +63,15 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("maiden of virtue tank position boss", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("maiden of virtue holy wrath deals chain damage",
-        { NextAction("maiden of virtue position ranged", ACTION_RAID) }
+        { NextAction("maiden of virtue position ranged between pillars", ACTION_RAID + 1) }
+    ));
+    triggers.push_back(new TriggerNode("maiden of virtue grounding totem consumes holy fire",
+        { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }
     ));
 
     // The Big Bad Wolf
     triggers.push_back(new TriggerNode("big bad wolf boss is chasing little red riding hood",
-        { NextAction("big bad wolf run away from boss", ACTION_EMERGENCY + 6) }
+        { NextAction("big bad wolf little red riding hood run away", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("big bad wolf boss engaged by tank",
         { NextAction("big bad wolf position boss", ACTION_RAID) }
@@ -68,12 +97,12 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the curator boss engaged by tanks",
         { NextAction("the curator position boss", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("the curator astral flares cast arcing sear",
-        { NextAction("the curator spread ranged", ACTION_RAID) }
+    triggers.push_back(new TriggerNode("the curator boss engaged by ranged",
+        { NextAction("the curator spread ranged to mitigate arcane sear", ACTION_RAID) }
     ));
 
     // Terestian Illhoof
-    triggers.push_back(new TriggerNode("terestian illhoof need target priority",
+    triggers.push_back(new TriggerNode("terestian illhoof should prioritize chains",
         { NextAction("terestian illhoof mark target", ACTION_RAID) }
     ));
 
@@ -87,7 +116,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shade of aran conjured elementals summoned",
         { NextAction("shade of aran mark conjured elemental", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("shade of aran boss uses counterspell and blizzard",
+    triggers.push_back(new TriggerNode("shade of aran boss casts counterspell nearby",
         { NextAction("shade of aran ranged maintain distance", ACTION_RAID + 1) }
     ));
 
@@ -107,51 +136,54 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("netherspite boss is banished",
         { NextAction("netherspite banish phase avoid void zone", ACTION_EMERGENCY + 1) }
     ));
-    triggers.push_back(new TriggerNode("netherspite need to manage timers and trackers",
+    triggers.push_back(new TriggerNode("netherspite should manage timers and trackers",
         { NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10) }
     ));
 
     // Prince Malchezaar
     triggers.push_back(new TriggerNode("prince malchezaar bot is enfeebled",
-        { NextAction("prince malchezaar enfeebled avoid hazard", ACTION_EMERGENCY + 6) }
+        { NextAction("prince malchezaar enfeebled bot avoid hazard", ACTION_EMERGENCY + 6) }
     ));
-    triggers.push_back(new TriggerNode("prince malchezaar infernals are spawned",
-        { NextAction("prince malchezaar non tank avoid infernal", ACTION_EMERGENCY + 1) }
+    triggers.push_back(new TriggerNode("prince malchezaar engaged by non-tanks",
+        { NextAction("prince malchezaar non-tank avoid infernal", ACTION_EMERGENCY + 1) }
     ));
-    triggers.push_back(new TriggerNode("prince malchezaar boss engaged by main tank",
-        { NextAction("prince malchezaar main tank movement", ACTION_EMERGENCY + 6) }
+    triggers.push_back(new TriggerNode("prince malchezaar boss engaged by tanks",
+        { NextAction("prince malchezaar tanks position boss", ACTION_EMERGENCY + 6) }
     ));
 
     // Nightbane
-    triggers.push_back(new TriggerNode("nightbane boss engaged by main tank",
-        { NextAction("nightbane ground phase position boss", ACTION_RAID) }
+    triggers.push_back(new TriggerNode("nightbane boss engaged by tanks",
+        { NextAction("nightbane ground phase tanks position boss", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("nightbane ranged bots are in charred earth",
-        { NextAction("nightbane ground phase rotate ranged positions", ACTION_EMERGENCY + 1) }
-    ));
-    triggers.push_back(new TriggerNode("nightbane main tank is susceptible to fear",
-        { NextAction("nightbane cast fear ward on main tank", ACTION_RAID + 1) }
+    triggers.push_back(new TriggerNode("nightbane ground phase engaged by ranged",
+        { NextAction("nightbane ground phase coordinate ranged movement", ACTION_EMERGENCY + 1) }
     ));
     triggers.push_back(new TriggerNode("nightbane pets ignore collision to chase flying boss",
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }
     ));
     triggers.push_back(new TriggerNode("nightbane boss is flying",
-        { NextAction("nightbane flight phase movement", ACTION_RAID) }
+        { NextAction("nightbane flight phase stack and move together", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("nightbane need to manage timers and trackers",
+    triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
+        { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 10) }
+    ));
+    triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }
     ));
 }
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    multipliers.push_back(new KarazhanSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new TerestianIllhoofDontDotFiendishImpsMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionRunAwayMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));

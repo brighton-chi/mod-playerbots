@@ -6,11 +6,10 @@
 #ifndef PLAYERBOTS_SWPENCOUNTERBRUT_H
 #define PLAYERBOTS_SWPENCOUNTERBRUT_H
 
-#include <unordered_map>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <unordered_map>
 
 class Player;
 class PlayerbotAI;
