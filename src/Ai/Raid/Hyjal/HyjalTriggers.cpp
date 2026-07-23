@@ -11,7 +11,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
-using namespace HyjalSummitHelpers;
+using namespace HyjalHelpers;
 
 // General
 
@@ -197,7 +197,7 @@ bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
         return false;
 
     return bot->HasAura(
-        static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL));
+        static_cast<uint32>(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
 // Azgalor
@@ -241,7 +241,7 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     return azgalor && azgalor->GetVictim() != bot &&
-           !bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM));
+           !bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM));
 }
 
 bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
@@ -251,7 +251,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor || azgalor->GetVictim() == bot ||
-        bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
+        bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
         return false;
 
     return IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
@@ -259,7 +259,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM));
+    return bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM));
 }
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
@@ -279,7 +279,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
         // Trigger for second assist tank only if first assist tank has Doom
         Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
         if (firstAssistTank &&
-            !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
+            !firstAssistTank->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
             return false;
 
         return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
@@ -343,7 +343,7 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
     // If I don't make an exception, bots actually refuse to enter the
     // Doomfire even when feared
     return !bot->HasAura(
-        static_cast<uint32>(HyjalSummitSpells::SPELL_ARCHIMONDE_FEAR));
+        static_cast<uint32>(HyjalSpells::SPELL_ARCHIMONDE_FEAR));
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
@@ -353,6 +353,6 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         return false;
 
     return bot->GetHealthPct() < 40.0f &&
-           (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE)) ||
-            bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE_DOT)));
+           (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE)) ||
+            bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE_DOT)));
 }

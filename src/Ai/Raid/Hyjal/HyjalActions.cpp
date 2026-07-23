@@ -10,7 +10,7 @@
 #include "RaidBossHelpers.h"
 #include "Timer.h"
 
-using namespace HyjalSummitHelpers;
+using namespace HyjalHelpers;
 
 // General
 
@@ -84,7 +84,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", winterchill))
         return botAI->CastSpell("steady shot", winterchill);
 
@@ -233,7 +233,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", mainTank))
             return botAI->CastSpell("misdirection", mainTank);
 
-        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
             botAI->CanCastSpell("steady shot", anetheron))
             return botAI->CastSpell("steady shot", anetheron);
     }
@@ -248,7 +248,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", firstAssistTank))
             return botAI->CastSpell("misdirection", firstAssistTank);
 
-        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
             botAI->CanCastSpell("steady shot", infernal))
             return botAI->CastSpell("steady shot", infernal);
     }
@@ -491,7 +491,7 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", kazrogal))
         return botAI->CastSpell("steady shot", kazrogal);
 
@@ -645,7 +645,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
             break;
 
         case CLASS_MAGE:
-            if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+            if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MARK_OF_KAZROGAL)) &&
                 bot->GetPower(POWER_MANA) <= 1200 && botAI->CanCastSpell("ice block", bot) &&
                 botAI->CastSpell("ice block", bot))
             {
@@ -654,7 +654,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
             break;
 
         case CLASS_PALADIN:
-            if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+            if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MARK_OF_KAZROGAL)) &&
                 bot->GetPower(POWER_MANA) <= 1200 && botAI->CanCastSpell("divine shield", bot) &&
                 botAI->CastSpell("divine shield", bot))
             {
@@ -721,7 +721,7 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", azgalor))
         return botAI->CastSpell("steady shot", azgalor);
 
@@ -1002,7 +1002,7 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", archimonde))
         return botAI->CastSpell("steady shot", archimonde);
 
@@ -1053,11 +1053,11 @@ bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || mainTank->HasAura(SPELL_FEAR_WARD))
+    if (!mainTank || mainTank->HasAura(static_cast<uint32>(HyjalSpells::SPELL_FEAR_WARD)))
         return false;
 
-    return botAI->CanCastSpell(SPELL_FEAR_WARD, mainTank) &&
-           botAI->CastSpell(SPELL_FEAR_WARD, mainTank);
+    return botAI->CanCastSpell(static_cast<uint32>(HyjalSpells::SPELL_FEAR_WARD), mainTank) &&
+           botAI->CastSpell(static_cast<uint32>(HyjalSpells::SPELL_FEAR_WARD), mainTank);
 }
 
 bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()
@@ -1096,7 +1096,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
         {
             Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
             if (spell && spell->m_spellInfo->Id ==
-                static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
+                static_cast<uint32>(HyjalSpells::SPELL_AIR_BURST))
             {
                 Unit* spellTarget = spell->m_targets.GetUnitTarget();
                 if ((spellTarget == mainTank || spellTarget == bot) &&

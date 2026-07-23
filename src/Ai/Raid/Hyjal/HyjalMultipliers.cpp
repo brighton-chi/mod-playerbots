@@ -18,7 +18,7 @@
 #include "ShamanActions.h"
 #include "WarriorActions.h"
 
-using namespace HyjalSummitHelpers;
+using namespace HyjalHelpers;
 
 // Without this multiplier, Bloodlust/Heroism will not be available for
 // bosses because it will be used on cooldown during trash waves
@@ -232,7 +232,7 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 
 float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
+    if (!bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&

@@ -15,7 +15,7 @@
 #include "Spell.h"
 #include "Timer.h"
 
-using namespace HyjalSummitHelpers;
+using namespace HyjalHelpers;
 
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
@@ -60,7 +60,7 @@ public:
 
     void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
     {
-        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSummitSpells::SPELL_RAIN_OF_FIRE))
+        if (dynobj->GetSpellId() != static_cast<uint32>(HyjalSpells::SPELL_RAIN_OF_FIRE))
             return;
 
         uint32 instanceId = dynobj->GetMap()->GetInstanceId();
@@ -108,7 +108,7 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNpcs::NPC_DOOMFIRE))
+        if (creature->GetEntry() != static_cast<uint32>(HyjalNpcs::NPC_DOOMFIRE))
             return;
 
         uint32 now = getMSTime();
@@ -156,7 +156,7 @@ public:
 
     void OnCreatureRemoveWorld(Creature* creature) override
     {
-        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNpcs::NPC_DOOMFIRE))
+        if (creature->GetEntry() != static_cast<uint32>(HyjalNpcs::NPC_DOOMFIRE))
             return;
 
         doomfireLastSampleTime.erase(creature->GetGUID());
@@ -175,7 +175,7 @@ public:
         if (!spell || !caster || !spellInfo)
             return;
 
-        if (spellInfo->Id != static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
+        if (spellInfo->Id != static_cast<uint32>(HyjalSpells::SPELL_AIR_BURST))
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
