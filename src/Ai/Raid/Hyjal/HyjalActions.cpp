@@ -1053,10 +1053,11 @@ bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
-        return botAI->CastSpell("fear ward", mainTank);
+    if (!mainTank || mainTank->HasAura(SPELL_FEAR_WARD))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell(SPELL_FEAR_WARD, mainTank) &&
+           botAI->CastSpell(SPELL_FEAR_WARD, mainTank);
 }
 
 bool ArchimondeCastFearImmunitySpellAction::UseTremorTotemStrategy()

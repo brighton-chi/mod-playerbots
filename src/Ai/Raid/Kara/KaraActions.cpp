@@ -90,14 +90,11 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || !mainTank->IsAlive() ||
-        mainTank->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
-    {
+    if (!mainTank || mainTank->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
         return false;
-    }
 
-    return botAI->CanCastSpell("fear ward", mainTank) &&
-        botAI->CastSpell("fear ward", mainTank);
+    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD), mainTank) &&
+        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD), mainTank);
 }
 
 bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
