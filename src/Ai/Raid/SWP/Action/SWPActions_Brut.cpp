@@ -379,7 +379,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (!brutallus)
         return false;
 
-    if (RemoveBurnWithCooldown(bot))
+    if (RemoveBurnWithCooldown())
         return true;
 
     if (botAI->IsMelee(bot))
@@ -490,7 +490,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     return false;
 }
 
-bool BrutallusHandleBurnAction::RemoveBurnWithCooldown(Player* bot)
+bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
 {
     switch (bot->getClass())
     {

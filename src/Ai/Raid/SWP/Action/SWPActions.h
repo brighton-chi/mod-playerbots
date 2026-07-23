@@ -165,7 +165,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RemoveBurnWithCooldown(Player* bot);
+    bool RemoveBurnWithCooldown();
 };
 
 // Felmyst
@@ -403,8 +403,7 @@ public:
 private:
     Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
     Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, uint32 entry,
-        std::vector<Unit*> const& candidates) const;
+        Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const;
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action

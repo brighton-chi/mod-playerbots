@@ -1327,7 +1327,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     constexpr float safeDistance = 12.0f;
     constexpr float minBossDist = 15.0f;
     constexpr float maxBossDist = 35.0f;
-    constexpr float angleStep = M_PI / 16.0f;
+    constexpr float angleStep = M_PI / 18.0f;
     constexpr float distStep = 1.0f;
 
     std::vector<Position> charredEarths = GetDynamicObjectPositions(
