@@ -145,7 +145,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
-        NextAction("sunwell plateau erase encounter states", ACTION_EMERGENCY + 11) }));
+        NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {
         NextAction("sunwell plateau remove protective aura", ACTION_EMERGENCY) }));

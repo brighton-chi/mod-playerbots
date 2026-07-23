@@ -18,7 +18,7 @@
 
 using namespace SwpHelpers;
 
-bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
+bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();

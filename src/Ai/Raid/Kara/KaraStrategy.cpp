@@ -28,7 +28,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("karazhan bot is not in combat",
-        { NextAction("karazhan erase encounter states", ACTION_EMERGENCY + 10) }
+        { NextAction("karazhan reset encounter states", ACTION_EMERGENCY + 10) }
     ));
     triggers.push_back(new TriggerNode("karazhan enemies cast fear",
         { NextAction("karazhan cast fear protection spell", ACTION_RAID) }

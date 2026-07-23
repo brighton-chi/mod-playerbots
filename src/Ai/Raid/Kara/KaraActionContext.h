@@ -16,8 +16,8 @@ public:
     RaidKarazhanActionContext()
     {
         // General
-        creators["karazhan erase encounter states"] =
-            &RaidKarazhanActionContext::karazhan_erase_encounter_states;
+        creators["karazhan reset encounter states"] =
+            &RaidKarazhanActionContext::karazhan_reset_encounter_states;
 
         creators["karazhan cast fear protection spell"] =
             &RaidKarazhanActionContext::karazhan_cast_fear_protection_spell;
@@ -149,8 +149,8 @@ public:
 
 private:
     // General
-    static Action* karazhan_erase_encounter_states(PlayerbotAI* botAI) {
-        return new KarazhanEraseEncounterStatesAction(botAI);
+    static Action* karazhan_reset_encounter_states(PlayerbotAI* botAI) {
+        return new KarazhanResetEncounterStatesAction(botAI);
     }
     static Action* karazhan_cast_fear_protection_spell(PlayerbotAI* botAI) {
         return new KarazhanCastFearProtectionSpellAction(botAI);

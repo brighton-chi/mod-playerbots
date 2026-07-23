@@ -15,8 +15,8 @@ public:
     RaidSunwellActionContext()
     {
         // General
-        creators["sunwell plateau erase encounter states"] =
-            &RaidSunwellActionContext::sunwell_plateau_erase_encounter_states;
+        creators["sunwell plateau reset encounter states"] =
+            &RaidSunwellActionContext::sunwell_plateau_reset_encounter_states;
 
         creators["sunwell plateau remove protective aura"] =
             &RaidSunwellActionContext::sunwell_plateau_remove_protective_aura;
@@ -214,8 +214,8 @@ public:
 
 private:
     // General
-    static Action* sunwell_plateau_erase_encounter_states(PlayerbotAI* botAI) {
-        return new SunwellPlateauEraseEncounterStatesAction(botAI);
+    static Action* sunwell_plateau_reset_encounter_states(PlayerbotAI* botAI) {
+        return new SunwellPlateauResetEncounterStatesAction(botAI);
     }
     static Action* sunwell_plateau_remove_protective_aura(PlayerbotAI* botAI) {
         return new SunwellPlateauRemoveProtectiveAuraAction(botAI);

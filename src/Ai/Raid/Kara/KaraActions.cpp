@@ -15,26 +15,27 @@ using namespace KaraHelpers;
 
 // General
 
-bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
+bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
-    bool erased = false;
+    bool reset = false;
 
     if (isMechanicTracker)
     {
         if (!AI_VALUE2(Unit*, "find target", "midnight") &&
             attumenDpsWaitTimer.erase(instanceId) > 0)
         {
-            erased = true;
+            reset = true;
         }
 
         if (!AI_VALUE2(Unit*, "find target", "nightbane"))
         {
             if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
-                erased = true;
+                reset = true;
+
             if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
-                erased = true;
+                reset = true;
         }
     }
 
@@ -45,38 +46,38 @@ bool KarazhanEraseEncounterStatesAction::Execute(Event /*event*/)
         if (wolfAction &&
             static_cast<BigBadWolfLittleRedRidingHoodRunAwayAction*>(wolfAction)->ResetRunIndex())
         {
-            erased = true;
+            reset = true;
         }
     }
 
     if (!AI_VALUE2(Unit*, "find target", "netherspite"))
     {
         if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
+            reset = true;
 
         Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
         if (redAction &&
             static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
         {
-            erased = true;
+            reset = true;
         }
 
         Action* blueAction = botAI->GetAiObjectContext()->GetAction("netherspite block blue beam");
         if (blueAction &&
             static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
         {
-            erased = true;
+            reset = true;
         }
 
         Action* greenAction = botAI->GetAiObjectContext()->GetAction("netherspite block green beam");
         if (greenAction &&
             static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
         {
-            erased = true;
+            reset = true;
         }
     }
 
-    return erased;
+    return reset;
 }
 
 bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
@@ -309,7 +310,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Unit* healer = nullptr;
+    Player* healer = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -342,7 +343,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
-bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Unit* healer)
+bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Player* healer)
 {
     constexpr float endDistance = 6.0;
     float const angle = healer->GetOrientation();

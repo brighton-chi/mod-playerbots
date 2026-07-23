@@ -11,11 +11,11 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-class KarazhanEraseEncounterStatesAction : public Action
+class KarazhanResetEncounterStatesAction : public Action
 {
 public:
-    KarazhanEraseEncounterStatesAction(
-        PlayerbotAI* botAI) : Action(botAI, "karazhan erase encounter states") {}
+    KarazhanResetEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "karazhan reset encounter states") {}
     bool Execute(Event event) override;
 };
 
@@ -94,7 +94,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveBossToStunnedHealer(Unit* healer);
+    bool MoveBossToStunnedHealer(Player* healer);
 };
 
 class MaidenOfVirtuePositionRangedBetweenPillarsAction : public MovementAction

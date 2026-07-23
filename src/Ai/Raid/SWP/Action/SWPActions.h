@@ -14,11 +14,11 @@
 
 // General
 
-class SunwellPlateauEraseEncounterStatesAction : public Action
+class SunwellPlateauResetEncounterStatesAction : public Action
 {
 public:
-    SunwellPlateauEraseEncounterStatesAction(
-        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau erase encounter states") {}
+    SunwellPlateauResetEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau reset encounter states") {}
     bool Execute(Event event) override;
 };
 
