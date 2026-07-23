@@ -14,7 +14,7 @@
 namespace
 {
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
@@ -39,7 +39,7 @@ void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_DARK_FIEND))
             exclusions.insert(guid);
     }
 }
@@ -56,11 +56,8 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker || attacker->GetEntry() ==
-                static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
-        {
+        if (!attacker || attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL))
             continue;
-        }
 
         if (guid == muru->GetGUID())
         {
@@ -93,7 +90,7 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_SHIELD_ORB))
             exclusions.insert(guid);
     }
 }
@@ -108,7 +105,7 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (!attacker ||
-            attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+            attacker->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_SINISTER_REFLECTION))
         {
             continue;
         }

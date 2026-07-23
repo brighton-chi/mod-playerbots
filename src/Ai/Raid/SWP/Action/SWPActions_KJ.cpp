@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
@@ -69,11 +69,8 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() &&
-            unit->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
-        {
+        if (unit && unit->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
             hands.push_back(unit);
-        }
     }
 
     if (hands.empty())
@@ -184,8 +181,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     for (ObjectGuid const guid : attackers)
     {
         Unit* hand = botAI->GetUnit(guid);
-        if (!hand || !hand->IsAlive() || hand->GetHealthPct() <= 20.0f ||
-            hand->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_HAND_OF_THE_DECEIVER))
+        if (!hand || hand->GetHealthPct() <= 20.0f ||
+            hand->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         {
             continue;
         }
@@ -556,13 +553,12 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
 
     // Design choice: End drake control after phase changes
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
-        kiljaeden->FindCurrentSpellBySpellId(
-            static_cast<uint32>(SunwellSpells::SPELL_SHADOW_SPIKE)))
+        kiljaeden->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_SHADOW_SPIKE)))
     {
         if (HasKiljaedenDragonAura(bot))
         {
             bot->RemoveAura(
-                static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+                static_cast<uint32>(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
             return true;
         }
 
@@ -583,7 +579,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     Unit* kiljaeden, Unit* dragon)
 {
     Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
-        static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+        static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
     if (!darknessSpell)
         return false;
 
@@ -619,15 +615,15 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     if (darknessSpell->GetCastTimeRemaining() < 4500)
     {
         return CastKiljaedenDragonSpell(
-            dragon, static_cast<uint32>(SunwellSpells::SPELL_SHIELD_OF_THE_BLUE));
+            dragon, static_cast<uint32>(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
     }
     else if (CastKiljaedenDragonSpell(
-        dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE)))
+        dragon, static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE)))
     {
         return true;
     }
     else if (CastKiljaedenDragonSpell(
-        dragon, static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
+        dragon, static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
     {
         return true;
     }
@@ -647,9 +643,9 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
     Player* target = nullptr;
 
     constexpr uint32 hasteSpellId =
-        static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE);
+        static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
     constexpr uint32 revitalizeSpellId =
-        static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE);
+        static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
     if (!dragon->HasSpellCooldown(hasteSpellId))
     {

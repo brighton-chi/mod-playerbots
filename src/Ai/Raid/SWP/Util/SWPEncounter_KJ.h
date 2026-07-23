@@ -16,7 +16,7 @@ class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 struct KiljaedenRangedBotAssignment

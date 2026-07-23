@@ -18,7 +18,7 @@
 #include <unordered_set>
 #include <vector>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
 {
@@ -223,7 +223,7 @@ static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
 
     Spell* currentSpell = alythess->GetCurrentSpell(CURRENT_GENERIC_SPELL);
     if (!currentSpell || !currentSpell->m_spellInfo ||
-        currentSpell->m_spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
+        currentSpell->m_spellInfo->Id != static_cast<uint32>(SwpSpells::SPELL_CONFLAGRATION))
     {
         return;
     }
@@ -249,9 +249,9 @@ public:
     {
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
-            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
+            case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
+            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
+            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
                 break;
 
             default:
@@ -264,17 +264,17 @@ public:
 
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_BLAST_PORTAL):
+            case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
                     RecordKalecgosSpectralBlastTarget(player);
                 break;
 
-            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_SPECTRAL):
+            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
                 if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
                     RecordKalecgosSpectralRealmEnter(player);
                 break;
 
-            case static_cast<uint32>(SunwellSpells::SPELL_TELEPORT_NORMAL_REALM):
+            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
                 if (FindFirstSunwellCombatBotInGroup(player))
                     UpdateKalecgosRealmState(player, false, getMSTime());
                 break;
@@ -292,7 +292,7 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE))
+        if (spellInfo->Id != static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE))
             return;
 
         if (Player* target = GetFirstPlayerSpellTarget(spell, caster))
@@ -307,10 +307,10 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION) ||
-            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_TOP) ||
-            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
-            spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_FELMYST_STRAFE_BOTTOM))
+        if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FOG_OF_CORRUPTION) ||
+            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_TOP) ||
+            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
+            spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_FELMYST_STRAFE_BOTTOM))
         {
             Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
             Player* groupReference = targetPlayer;
@@ -353,14 +353,14 @@ public:
 
         switch (spellInfo->Id)
         {
-            case static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE):
+            case static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE):
                 if (!FindFirstSunwellCombatBotInGroup(target))
                     return;
 
                 RecordFelmystIncomingEncapsulateTarget(target);
                 break;
 
-            case static_cast<uint32>(SunwellSpells::SPELL_SUMMON_DEMONIC_VAPOR):
+            case static_cast<uint32>(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR):
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
                     botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
                 {
@@ -382,8 +382,8 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (caster->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS) ||
-            spellInfo->Id != static_cast<uint32>(SunwellSpells::SPELL_CONFLAGRATION))
+        if (caster->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS) ||
+            spellInfo->Id != static_cast<uint32>(SwpSpells::SPELL_CONFLAGRATION))
         {
             return;
         }
@@ -404,7 +404,7 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
+        if (spellInfo->Id == static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
         {
             Map::PlayerList const& players = caster->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -440,12 +440,12 @@ public:
 
         switch (creature->GetEntry())
         {
-            case static_cast<uint32>(SunwellNpcs::NPC_FELMYST):
+            case static_cast<uint32>(SwpNpcs::NPC_FELMYST):
                 RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
                 RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+            case static_cast<uint32>(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
                 TrackIncomingEredarTwinsConflagration(creature);
                 RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
                 break;
@@ -465,7 +465,7 @@ public:
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
         if (!creature ||
-            creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_ARMAGEDDON_TARGET))
+            creature->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_ARMAGEDDON_TARGET))
         {
             return;
         }
@@ -508,7 +508,7 @@ public:
     void OnCreatureRemoveWorld(Creature* creature) override
     {
         if (!creature ||
-            creature->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_ARMAGEDDON_TARGET))
+            creature->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_ARMAGEDDON_TARGET))
         {
             return;
         }

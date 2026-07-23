@@ -11,7 +11,7 @@
 #include <list>
 #include <vector>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Felmyst's CombatReach is 10.0f
@@ -136,7 +136,7 @@ Creature* GetTrackedFelmyst(Player* bot)
     constexpr float searchRadius = 250.0f;
     std::list<Creature*> felmysts;
     bot->GetCreatureListWithEntryInGrid(
-        felmysts, static_cast<uint32>(SunwellNpcs::NPC_FELMYST), searchRadius);
+        felmysts, static_cast<uint32>(SwpNpcs::NPC_FELMYST), searchRadius);
 
     Creature* nearestFelmyst = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
@@ -503,7 +503,7 @@ std::vector<Unit*> GetFelmystDemonicVaporHazards(Player* bot)
             if (!creature || !creature->IsAlive())
                 continue;
 
-            if (entry == static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR) &&
+            if (entry == static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR) &&
                 creature->GetSummonerGUID() == bot->GetGUID())
             {
                 continue;
@@ -513,8 +513,8 @@ std::vector<Unit*> GetFelmystDemonicVaporHazards(Player* bot)
         }
     };
 
-    addHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR));
-    addHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
+    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
     return hazards;
 }
 
@@ -855,7 +855,7 @@ Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot)
     constexpr float searchRadius = 50.0f;
     std::list<Creature*> vapors;
     bot->GetCreatureListWithEntryInGrid(
-        vapors, static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius);
+        vapors, static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR), searchRadius);
 
     for (Creature* creature : vapors)
     {
@@ -918,7 +918,7 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FelmystFogLane& lane)
         previousDestinationLocation);
 
     bool const isSweeping = felmyst->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+        static_cast<uint32>(SwpSpells::SPELL_FELMYST_SPEED_BURST));
 
     if (isSweeping)
     {
@@ -1100,7 +1100,7 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptio
     const FelmystFogLane destinationLane = GetFelmystFogLaneFromLocation(destinationLocation);
 
     bool const isSweeping = felmyst->HasAura(
-        static_cast<uint32>(SunwellSpells::SPELL_FELMYST_SPEED_BURST));
+        static_cast<uint32>(SwpSpells::SPELL_FELMYST_SPEED_BURST));
 
     if (currentLane != FelmystFogLane::None)
     {
@@ -1193,8 +1193,8 @@ bool TryGetFelmystFogSafeDestinations(
         }
     };
 
-    addVaporHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR));
-    addVaporHazards(static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+    addVaporHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
+    addVaporHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
 
     auto const isSafeSpotBlockedByVapor = [&](Position const& safeSpot)
     {
@@ -1285,7 +1285,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
         }
 
         if (incomingTarget &&
-            incomingTarget->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
+            incomingTarget->HasAura(static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE)))
         {
             incomingState.auraObserved = true;
             felmystEncounterStates[bot->GetInstanceId()].encapsulateOccurredThisGroundPhase = true;
@@ -1305,7 +1305,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() ||
-            !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_ENCAPSULATE)))
+            !member->HasAura(static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE)))
         {
             continue;
         }
@@ -1342,7 +1342,7 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_GAS_NOVA)))
+        if (!member || !member->HasAura(static_cast<uint32>(SwpSpells::SPELL_GAS_NOVA)))
             continue;
 
         float distance = bot->GetDistance(member);
@@ -1378,11 +1378,8 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
             continue;
         }
 
-        if (!member->HasAura(
-                static_cast<uint32>(SunwellSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
-        {
+        if (!member->HasAura(static_cast<uint32>(SwpSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
             continue;
-        }
 
         bool const isMelee = botAI->IsMelee(bot);
 

@@ -16,7 +16,7 @@
 class Player;
 class PlayerbotAI;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 constexpr uint8 KALECGOS_TANK_COUNT = 3;

@@ -8,10 +8,10 @@
 
 #include "Common.h"
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
-enum class SunwellSpells : uint32
+enum class SwpSpells : uint32
 {
     // Trash - Apocalypse Guard
     SPELL_INFERNAL_DEFENSE             = 46287,
@@ -80,7 +80,7 @@ enum class SunwellSpells : uint32
     SPELL_METAMORPHOSIS                = 47241,
 };
 
-enum class SunwellNpcs : uint32
+enum class SwpNpcs : uint32
 {
     // Trash
     NPC_APOCALYPSE_GUARD         = 25593,
@@ -116,7 +116,7 @@ enum class SunwellNpcs : uint32
     NPC_ARMAGEDDON_TARGET        = 25735,
 };
 
-enum class SunwellObjects : uint32
+enum class SwpObjects : uint32
 {
     // Kalecgos
     GO_SPECTRAL_RIFT = 187055,

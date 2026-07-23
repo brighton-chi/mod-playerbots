@@ -16,7 +16,7 @@
 #include "SWPEncounter_Twins.h"
 #include <list>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
 {
@@ -51,9 +51,9 @@ bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(Unit*, "find target", "brutallus"))
     {
-        if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
+        if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)))
         {
-            bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_BURN));
+            bot->RemoveAura(static_cast<uint32>(SwpSpells::SPELL_BURN));
             didSomething = true;
         }
 
@@ -138,12 +138,12 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_MAGE)
     {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_ICE_BLOCK));
+        bot->RemoveAura(static_cast<uint32>(SwpSpells::SPELL_ICE_BLOCK));
         return true;
     }
     else if (bot->getClass() == CLASS_PALADIN)
     {
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_DIVINE_SHIELD));
+        bot->RemoveAura(static_cast<uint32>(SwpSpells::SPELL_DIVINE_SHIELD));
         return true;
     }
 
@@ -154,7 +154,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 25.0f;
     Unit* volatileFiend = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
+        static_cast<uint32>(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
     if (!volatileFiend)
         return false;
 
@@ -183,12 +183,12 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     constexpr float searchRadius = 40.0f;
     std::list<Creature*> apocalypseGuards;
     bot->GetCreatureListWithEntryInGrid(
-        apocalypseGuards, static_cast<uint32>(SunwellNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
+        apocalypseGuards, static_cast<uint32>(SwpNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
 
     for (Creature* apocalypseGuard : apocalypseGuards)
     {
         if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
-            !apocalypseGuard->HasAura(static_cast<uint32>(SunwellSpells::SPELL_INFERNAL_DEFENSE)))
+            !apocalypseGuard->HasAura(static_cast<uint32>(SwpSpells::SPELL_INFERNAL_DEFENSE)))
         {
             continue;
         }
@@ -197,8 +197,8 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
             target = apocalypseGuard;
     }
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM)))
-        bot->RemoveAura(static_cast<uint32>(SunwellSpells::SPELL_SHADOWFORM));
+    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_SHADOWFORM)))
+        bot->RemoveAura(static_cast<uint32>(SwpSpells::SPELL_SHADOWFORM));
 
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }

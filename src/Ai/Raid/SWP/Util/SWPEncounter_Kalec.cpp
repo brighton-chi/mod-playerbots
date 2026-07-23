@@ -13,7 +13,7 @@
 #include <map>
 #include <vector>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f
@@ -522,12 +522,12 @@ uint8 GetLeastFilledGroup(
 
 bool IsExhausted(Player* bot)
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_EXHAUSTION));
+    return bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));
 }
 
 bool IsInSpectralRealm(Player* bot)
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM));
+    return bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_REALM));
 }
 
 bool IsKalecgosDecurser(Player* bot)

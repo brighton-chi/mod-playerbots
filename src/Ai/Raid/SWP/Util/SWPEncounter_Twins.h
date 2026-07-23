@@ -17,7 +17,7 @@ class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;

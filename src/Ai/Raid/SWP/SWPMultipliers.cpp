@@ -34,7 +34,7 @@
 #include "WipeAction.h"
 #include <ctime>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 namespace
 {
@@ -101,13 +101,9 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
     if (!target)
         return 1.0f;
 
-    Aura* aura = target->GetAura(
-        static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
+    Aura* aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
     if (!aura)
-    {
-        aura = target->GetAura(
-            static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
-    }
+        aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
 
     if (!aura || aura->GetDuration() < 15000) // 15 seconds remaining
         return 1.0f;
@@ -267,7 +263,7 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
+        if (member && member->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)) &&
             botAI->IsMelee(member) && !botAI->IsMainTank(member) &&
             !botAI->IsAssistTankOfIndex(member, 0, true))
         {
@@ -745,7 +741,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
+        static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
     if (voidSpawn && AI_VALUE(Unit*, "current target") == voidSpawn &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {

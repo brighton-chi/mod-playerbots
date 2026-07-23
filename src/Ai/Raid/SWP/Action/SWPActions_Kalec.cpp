@@ -10,7 +10,7 @@
 #include "TargetValue.h"
 #include <algorithm>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool KalecgosTankPositionBossAction::Execute(Event event)
 {
@@ -79,7 +79,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 75.0f;
     GameObject* rift = bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+        static_cast<uint32>(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
     if (!rift)
         return false;
 
@@ -165,7 +165,7 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 20.0f;
     Unit* kalec = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
+        static_cast<uint32>(SwpNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
 
     if (!kalec || sathrovarr->GetVictim() != kalec)
         return false;

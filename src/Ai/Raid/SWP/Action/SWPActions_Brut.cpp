@@ -10,7 +10,7 @@
 #include <array>
 #include <cmath>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -25,7 +25,7 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", brutallus))
     {
         return botAI->CastSpell("steady shot", brutallus);
@@ -49,11 +49,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!mainTank || !assistTank)
         return false;
 
-    Aura* mainTankAura = mainTank->GetAura(
-        static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
-
-    Aura* assistTankAura = assistTank->GetAura(
-        static_cast<uint32>(SunwellSpells::SPELL_METEOR_SLASH));
+    Aura* mainTankAura = mainTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
+    Aura* assistTankAura = assistTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
 
     if (mainTank == bot)
     {

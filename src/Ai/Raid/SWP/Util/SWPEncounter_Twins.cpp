@@ -14,7 +14,7 @@
 #include "ThreatManager.h"
 #include <list>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Alythess and Sacrolash each have a CombatReach of 2.5f
@@ -152,7 +152,7 @@ bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
 
     for (GameObject* go : targets)
     {
-        if (!go || go->GetEntry() != static_cast<uint32>(SunwellObjects::GO_BLAZE))
+        if (!go || go->GetEntry() != static_cast<uint32>(SwpObjects::GO_BLAZE))
             continue;
 
         if (go->GetExactDist2d(
@@ -174,7 +174,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_BLAZE), blazeObjectRadius);
+        static_cast<uint32>(SwpObjects::GO_BLAZE), blazeObjectRadius);
 
     if (!blazeObject)
     {

@@ -11,7 +11,7 @@
 #include <array>
 #include <cmath>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -26,7 +26,7 @@ bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", felmyst))
     {
         return botAI->CastSpell("steady shot", felmyst);
@@ -193,9 +193,9 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 20.0f;
     Unit* nearestTrail = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
+        static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL), searchRadius, true);
     Unit* nearestVapor = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DEMONIC_VAPOR), searchRadius, true);
+        static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR), searchRadius, true);
 
     Unit* hazard = nearestTrail ? nearestTrail : nearestVapor;
     if (!hazard)

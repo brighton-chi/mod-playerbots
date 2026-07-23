@@ -19,7 +19,7 @@ class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 enum class FelmystFogLane : uint8

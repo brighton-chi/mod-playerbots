@@ -11,7 +11,7 @@
 #include <cmath>
 #include <unordered_set>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Kil'jaeden's CombatReach is 15.0f
@@ -73,11 +73,11 @@ uint32 GetKiljaedenDragonAppliedAuraSpell(uint32 spellId)
 {
     switch (spellId)
     {
-        case static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE):
-            return static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE);
+        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE):
+            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
 
-        case static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE):
-            return static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE);
+        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE):
+            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
         default:
             return 0;
@@ -142,10 +142,10 @@ Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 
 uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 {
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_1),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_2),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_3),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_4)
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_1),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_2),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_3),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_4),
 };
 
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
@@ -509,7 +509,7 @@ bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(
-            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+            static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)
@@ -562,14 +562,14 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 
 bool HasKiljaedenDragonAura(Player* bot)
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    return bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
     if (!dragon || !dragon->IsAlive() ||
-        dragon->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
+        dragon->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
     {
         return nullptr;
     }

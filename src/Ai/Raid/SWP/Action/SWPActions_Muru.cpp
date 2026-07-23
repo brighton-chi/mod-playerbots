@@ -16,7 +16,7 @@
 #include <list>
 #include <vector>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {
@@ -42,7 +42,7 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", targetTank))
         return botAI->CastSpell("misdirection", targetTank);
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", targetEnemy))
     {
         return botAI->CastSpell("steady shot", targetEnemy);
@@ -181,7 +181,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    if (target->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER))
+    if (target->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
         if (bot->getClass() == CLASS_ROGUE &&
             botAI->CanCastSpell("dismantle", target) && botAI->CastSpell("dismantle", target))
@@ -226,13 +226,13 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(currentTarget, static_cast<uint32>(
-        SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+        SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
     Unit* voidSpawn = SelectMuruEncounterTarget(currentTarget, static_cast<uint32>(
-        SunwellNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
+        SwpNpcs::NPC_VOID_SPAWN), targets.voidSpawns);
     Unit* furyMage = SelectMuruEncounterTarget(currentTarget, static_cast<uint32>(
-        SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
+        SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
     Unit* berserker = SelectMuruEncounterTarget(currentTarget, static_cast<uint32>(
-        SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+        SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
 
     Player* voidSentinelVictim = nullptr;
     if (voidSentinel && voidSentinel->IsAlive())
@@ -251,22 +251,22 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 
         switch (unit->GetEntry())
         {
-            case static_cast<uint32>(SunwellNpcs::NPC_MURU):
+            case static_cast<uint32>(SwpNpcs::NPC_MURU):
                 if (darknessActive && !isOtherRanged && !isShadowPriest)
                     return false;
                 return unit->GetHealth() > 1;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
+            case static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS):
                 return true;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
+            case static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL):
                 return isOtherRanged && voidSentinelHasTankAggro;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
+            case static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN):
                 return isOtherRanged;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE):
-            case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
+            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
+            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
                 if (isShadowPriest)
                     return false;
                 if (isOtherRanged)
@@ -283,31 +283,31 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     {
         priorityTargets =
         {
-            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
-            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
+            { static_cast<uint32>(SwpNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS), entropius }
         };
     }
     else if (isOtherRanged)
     {
         priorityTargets =
         {
-            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), voidSentinel },
-            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), voidSpawn },
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
-            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
-            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius }
+            { static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL), voidSentinel },
+            { static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN), voidSpawn },
+            { static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+            { static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+            { static_cast<uint32>(SwpNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS), entropius }
         };
     }
     else
     {
         priorityTargets =
         {
-            { static_cast<uint32>(SunwellNpcs::NPC_MURU), muru },
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
-            { static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
-            { static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), voidSpawn },
-            { static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS), entropius },
+            { static_cast<uint32>(SwpNpcs::NPC_MURU), muru },
+            { static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), furyMage },
+            { static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), berserker },
+            { static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN), voidSpawn },
+            { static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS), entropius },
         };
     }
 
@@ -401,7 +401,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     constexpr float searchRadius = 50.0f;
     std::list<Creature*> darkFiends;
     bot->GetCreatureListWithEntryInGrid(
-        darkFiends, static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND), searchRadius);
+        darkFiends, static_cast<uint32>(SwpNpcs::NPC_DARK_FIEND), searchRadius);
 
     if (isMuruPhase)
     {
@@ -456,7 +456,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
     constexpr float searchDistance = 15.0f;
     Creature* darkness = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_DARKNESS), searchDistance, true);
+        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
 
     if (darkFiend)
         hazard = darkFiend;
@@ -729,7 +729,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
 {
     Unit* voidSpawn = bot->GetCharm();
     if (!voidSpawn || !voidSpawn->IsAlive() ||
-        voidSpawn->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN))
+        voidSpawn->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN))
     {
         return nullptr;
     }
@@ -787,7 +787,7 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
 
-    constexpr uint32 volleySpellId = static_cast<uint32>(SunwellSpells::SPELL_SHADOW_BOLT_VOLLEY);
+    constexpr uint32 volleySpellId = static_cast<uint32>(SwpSpells::SPELL_SHADOW_BOLT_VOLLEY);
     if (voidSpawn->HasSpellCooldown(volleySpellId))
         return commandedAttack;
 
@@ -837,11 +837,11 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget() cons
     };
 
     Unit* furyMage = selectEncounterTarget(
-        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
+        static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages);
     Unit* berserker = selectEncounterTarget(
-        static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
+        static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers);
     Unit* voidSentinel = selectEncounterTarget(
-        static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
+        static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
 
     Unit* validMuru = targets.muru;
     if (!validMuru || validMuru->GetHealth() <= 1 || TryGetMuruDarknessActiveState(bot, validMuru))
