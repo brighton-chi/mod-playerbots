@@ -114,7 +114,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarShouldManagePhaseTrackerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, TK_MAP_ID) && AI_VALUE2(Unit*, "find target", "al'ar");
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
 // Void Reaver
@@ -366,7 +366,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, TK_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

@@ -23,7 +23,7 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     // RIGHT NOW ONLY MECHANIC TRACKER IS NEEDED, TBD WHETHER CHANGES ARE NEEDED
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, TK_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(bot, TK_MAP_ID);
     bool reset = false;
 
     if (!AI_VALUE2(Unit*, "find target", "alar"))

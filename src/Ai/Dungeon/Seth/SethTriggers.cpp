@@ -12,7 +12,7 @@ using namespace SethData;
 
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SETHEKK_HALLS_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SETHEKK_HALLS_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "time-lost controller");
 }
 
@@ -27,7 +27,7 @@ bool SethekkProphetCastsFearTrigger::IsActive()
 
 bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, SETHEKK_HALLS_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, SETHEKK_HALLS_MAP_ID))
         return false;
 
     Unit* syth = AI_VALUE2(Unit*, "find target", "darkweaver syth");

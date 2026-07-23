@@ -15,7 +15,7 @@ bool MarkTargetWithCross(Player* bot, Unit* target);
 bool MarkTargetWithMoon(Player* bot, Unit* target);
 bool ClearTargetIcon(Player* bot, uint8 iconId);
 void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId);
+bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);

@@ -46,7 +46,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("attumen the huntsman phase two active",
         { NextAction("attumen the huntsman handle phase two", ACTION_RAID) }
     ));
-    triggers.push_back(new TriggerNode("attumen the huntsman boss wipes aggro when mounting",
+    triggers.push_back(new TriggerNode("attumen the huntsman phase transition",
         { NextAction("attumen the huntsman set dps timer", ACTION_EMERGENCY + 10) }
     ));
 

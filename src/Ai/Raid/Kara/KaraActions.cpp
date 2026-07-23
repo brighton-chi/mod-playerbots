@@ -18,7 +18,7 @@ using namespace KaraHelpers;
 bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool reset = false;
 
     if (isMechanicTracker)
@@ -985,7 +985,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     uint32 const instanceId = netherspite->GetMap()->GetInstanceId();
     time_t const now = std::time(nullptr);
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
 
     if (IsBanishPhase(netherspite))
@@ -1546,7 +1546,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
     time_t const now = std::time(nullptr);
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
 
     // Ground Phase: Erase flight phase timer and Rain of Bones tracker and start DPS wait timer

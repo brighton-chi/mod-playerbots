@@ -20,13 +20,8 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (!watcher)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID) &&
-        MarkTargetWithSkull(bot, watcher))
-    {
+    if (IsMechanicTrackerBot(bot, HFR_MAP_ID) && MarkTargetWithSkull(bot, watcher))
         return true;
-    }
-
-    SetRtiTarget(botAI, "skull", watcher);
 
     return false;
 }
@@ -66,13 +61,8 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     if (!hound)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID) &&
-        MarkTargetWithSkull(bot, hound))
-    {
+    if (IsMechanicTrackerBot(bot, HFR_MAP_ID) && MarkTargetWithSkull(bot, hound))
         return true;
-    }
-
-    SetRtiTarget(botAI, "skull", hound);
 
     return false;
 }
@@ -138,13 +128,8 @@ bool VazrudenMarkBossAction::Execute(Event /*event*/)
     if (!vaz)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID) &&
-        MarkTargetWithSkull(bot, vaz))
-    {
+    if (IsMechanicTrackerBot(bot, HFR_MAP_ID) && MarkTargetWithSkull(bot, vaz))
         return true;
-    }
-
-    SetRtiTarget(botAI, "skull", vaz);
 
     return false;
 }

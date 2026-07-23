@@ -670,7 +670,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 bool KiljaedenEncounterHasBegunTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SWP_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SWP_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 

@@ -309,7 +309,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
 {
     if (Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS))
     {
-        if (IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+        if (IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
             MarkTargetWithSkull(bot, waterElemental))
         {
             return true;
@@ -322,7 +322,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
     }
     else if (Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS))
     {
-        if (IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID) &&
+        if (IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
             MarkTargetWithSkull(bot, natureElemental))
         {
             return true;

@@ -33,8 +33,8 @@ public:
         creators["attumen the huntsman phase two active"] =
             &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_two_active;
 
-        creators["attumen the huntsman boss wipes aggro when mounting"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_boss_wipes_aggro_when_mounting;
+        creators["attumen the huntsman phase transition"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_transition;
 
         // Moroes
         creators["moroes boss engaged by main tank"] =
@@ -168,8 +168,8 @@ private:
     static Trigger* attumen_the_huntsman_phase_two_active(PlayerbotAI* botAI) {
         return new AttumenTheHuntsmanPhaseTwoActiveTrigger(botAI);
     }
-    static Trigger* attumen_the_huntsman_boss_wipes_aggro_when_mounting(PlayerbotAI* botAI) {
-        return new AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger(botAI);
+    static Trigger* attumen_the_huntsman_phase_transition(PlayerbotAI* botAI) {
+        return new AttumenTheHuntsmanPhaseTransitionTrigger(botAI);
     }
 
     // Moroes

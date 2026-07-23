@@ -49,11 +49,11 @@ public:
     bool IsActive() override;
 };
 
-class AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger : public Trigger
+class AttumenTheHuntsmanPhaseTransitionTrigger : public Trigger
 {
 public:
-    AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman boss wipes aggro when mounting") {}
+    AttumenTheHuntsmanPhaseTransitionTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "attumen the huntsman phase transition") {}
     bool IsActive() override;
 };
 

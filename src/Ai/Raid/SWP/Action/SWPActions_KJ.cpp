@@ -160,8 +160,8 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                 focusHand = hand;
         }
 
-        if (IsMechanicTrackerBot(botAI, bot, SWP_MAP_ID))
-            MarkTargetWithSkull(bot, focusHand);
+        if (IsMechanicTrackerBot(bot, SWP_MAP_ID) && MarkTargetWithSkull(bot, focusHand))
+            return true;
 
         if (AI_VALUE(Unit*, "current target") != focusHand)
             return Attack(focusHand);

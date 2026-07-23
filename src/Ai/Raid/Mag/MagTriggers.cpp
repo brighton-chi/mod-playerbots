@@ -115,7 +115,7 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, MAGTHERIDON_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 

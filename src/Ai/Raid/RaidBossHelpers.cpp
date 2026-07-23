@@ -98,13 +98,10 @@ void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     }
 }
 
-// Return the first alive dps bot in the specified instance map for purposes of assigning
+// Return the first alive bot in the specified instance map for purposes of assigning
 // a single bot to manage associative containers, mark targets, etc.
-bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId)
+bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -113,7 +110,7 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
-            !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }

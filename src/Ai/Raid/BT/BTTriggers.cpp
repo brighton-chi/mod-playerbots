@@ -160,7 +160,7 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
 
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "supremus");
 }
 
@@ -328,7 +328,7 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
@@ -563,7 +563,7 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
@@ -809,7 +809,7 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
 
 bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -820,7 +820,7 @@ bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
 // The strategy simply cannot work without doing this
 bool IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
