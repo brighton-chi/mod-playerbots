@@ -7,14 +7,18 @@
 #ifndef PLAYERBOTS_TKTRIGGERCONTEXT_H
 #define PLAYERBOTS_TKTRIGGERCONTEXT_H
 
-#include "TKTriggers.h"
 #include "NamedObjectContext.h"
+#include "TKTriggers.h"
 
 class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 {
 public:
     RaidTempestKeepTriggerContext()
     {
+        // General
+        creators["tempest keep bot is not in combat"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
+
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
@@ -44,8 +48,8 @@ public:
         creators["al'ar phase 2 encounter is at room center"] =
             &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
 
-        creators["al'ar strategy changes between phases"] =
-            &RaidTempestKeepTriggerContext::alar_strategy_changes_between_phases;
+        creators["al'ar should manage phase tracker"] =
+            &RaidTempestKeepTriggerContext::alar_should_manage_phase_tracker;
 
         // Void Reaver
         creators["void reaver boss casts pounding"] =
@@ -54,18 +58,15 @@ public:
         creators["void reaver knock away reduces tank aggro"] =
             &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
 
-        creators["void reaver boss launches arcane orbs"] =
-            &RaidTempestKeepTriggerContext::void_reaver_boss_launches_arcane_orbs;
+        creators["void reaver ranged should spread"] =
+            &RaidTempestKeepTriggerContext::void_reaver_ranged_should_spread;
 
         creators["void reaver arcane orb is incoming"] =
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
 
-        creators["void reaver bot is not in combat"] =
-            &RaidTempestKeepTriggerContext::void_reaver_bot_is_not_in_combat;
-
         // High Astromancer Solarian
-        creators["high astromancer solarian boss casts wrath of the astromancer"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_wrath_of_the_astromancer;
+        creators["high astromancer solarian should leave escape path"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_leave_escape_path;
 
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
@@ -142,6 +143,11 @@ public:
     }
 
 private:
+    // General
+    static Trigger* tempest_keep_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new TempestKeepBotIsNotInCombatTrigger(botAI);
+    }
+
     // Trash
     static Trigger* crimson_hand_centurion_casts_arcane_volley(PlayerbotAI* botAI) {
         return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI);
@@ -172,8 +178,8 @@ private:
     static Trigger* alar_phase_2_encounter_is_at_room_center(PlayerbotAI* botAI) {
         return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI);
     }
-    static Trigger* alar_strategy_changes_between_phases(PlayerbotAI* botAI) {
-        return new AlarStrategyChangesBetweenPhasesTrigger(botAI);
+    static Trigger* alar_should_manage_phase_tracker(PlayerbotAI* botAI) {
+        return new AlarShouldManagePhaseTrackerTrigger(botAI);
     }
 
     // Void Reaver
@@ -183,19 +189,16 @@ private:
     static Trigger* void_reaver_knock_away_reduces_tank_aggro(PlayerbotAI* botAI) {
         return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI);
     }
-    static Trigger* void_reaver_boss_launches_arcane_orbs(PlayerbotAI* botAI) {
-        return new VoidReaverBossLaunchesArcaneOrbsTrigger(botAI);
+    static Trigger* void_reaver_ranged_should_spread(PlayerbotAI* botAI) {
+        return new VoidReaverRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* void_reaver_arcane_orb_is_incoming(PlayerbotAI* botAI) {
         return new VoidReaverArcaneOrbIsIncomingTrigger(botAI);
     }
-    static Trigger* void_reaver_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new VoidReaverBotIsNotInCombatTrigger(botAI);
-    }
 
     // High Astromancer Solarian
-    static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(botAI);
+    static Trigger* high_astromancer_solarian_should_leave_escape_path(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianShouldLeaveEscapePathTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);

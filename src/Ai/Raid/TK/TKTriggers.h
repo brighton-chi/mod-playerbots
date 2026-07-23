@@ -11,6 +11,14 @@
 
 // General
 
+class TempestKeepBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    TempestKeepBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep bot is not in combat") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger
@@ -87,11 +95,11 @@ public:
     bool IsActive() override;
 };
 
-class AlarStrategyChangesBetweenPhasesTrigger : public Trigger
+class AlarShouldManagePhaseTrackerTrigger : public Trigger
 {
 public:
-    AlarStrategyChangesBetweenPhasesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar strategy changes between phases") {}
+    AlarShouldManagePhaseTrackerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "al'ar should manage phase tracker") {}
     bool IsActive() override;
 };
 
@@ -113,11 +121,11 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverBossLaunchesArcaneOrbsTrigger : public Trigger
+class VoidReaverRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    VoidReaverBossLaunchesArcaneOrbsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver boss launches arcane orbs") {}
+    VoidReaverRangedShouldSpreadTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver ranged should spread") {}
     bool IsActive() override;
 };
 
@@ -129,21 +137,13 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    VoidReaverBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver bot is not in combat") {}
-    bool IsActive() override;
-};
-
 // High Astromancer Solarian
 
-class HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger : public Trigger
+class HighAstromancerSolarianShouldLeaveEscapePathTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss casts wrath of the astromancer") {}
+    HighAstromancerSolarianShouldLeaveEscapePathTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian should leave escape path") {}
     bool IsActive() override;
 };
 

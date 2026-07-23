@@ -7,14 +7,18 @@
 #ifndef PLAYERBOTS_TKACTIONCONTEXT_H
 #define PLAYERBOTS_TKACTIONCONTEXT_H
 
-#include "TKActions.h"
 #include "NamedObjectContext.h"
+#include "TKActions.h"
 
 class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 {
 public:
     RaidTempestKeepActionContext()
     {
+        // General
+        creators["tempest keep reset encounter states"] =
+            &RaidTempestKeepActionContext::tempest_keep_reset_encounter_states;
+
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -63,18 +67,15 @@ public:
         creators["void reaver use aggro dump ability"] =
             &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
-        creators["void reaver spread ranged"] =
-            &RaidTempestKeepActionContext::void_reaver_spread_ranged;
+        creators["void reaver spread ranged in circle"] =
+            &RaidTempestKeepActionContext::void_reaver_spread_ranged_in_circle;
 
         creators["void reaver avoid arcane orb"] =
             &RaidTempestKeepActionContext::void_reaver_avoid_arcane_orb;
 
-        creators["void reaver erase trackers"] =
-            &RaidTempestKeepActionContext::void_reaver_erase_trackers;
-
         // High Astromancer Solarian
-        creators["high astromancer solarian ranged leave space for melee"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_ranged_leave_space_for_melee;
+        creators["high astromancer solarian position ranged"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_position_ranged;
 
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
@@ -154,6 +155,11 @@ public:
     }
 
 private:
+    // General
+    static Action* tempest_keep_reset_encounter_states(PlayerbotAI* botAI) {
+        return new TempestKeepResetEncounterStatesAction(botAI);
+    }
+
     // Trash
     static Action* crimson_hand_centurion_cast_polymorph(PlayerbotAI* botAI) {
         return new CrimsonHandCenturionCastPolymorphAction(botAI);
@@ -204,19 +210,16 @@ private:
     static Action* void_reaver_use_aggro_dump_ability(PlayerbotAI* botAI) {
         return new VoidReaverUseAggroDumpAbilityAction(botAI);
     }
-    static Action* void_reaver_spread_ranged(PlayerbotAI* botAI) {
-        return new VoidReaverSpreadRangedAction(botAI);
+    static Action* void_reaver_spread_ranged_in_circle(PlayerbotAI* botAI) {
+        return new VoidReaverSpreadRangedInCircleAction(botAI);
     }
     static Action* void_reaver_avoid_arcane_orb(PlayerbotAI* botAI) {
         return new VoidReaverAvoidArcaneOrbAction(botAI);
     }
-    static Action* void_reaver_erase_trackers(PlayerbotAI* botAI) {
-        return new VoidReaverEraseTrackersAction(botAI);
-    }
 
     // High Astromancer Solarian
-    static Action* high_astromancer_solarian_ranged_leave_space_for_melee(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianRangedLeaveSpaceForMeleeAction(botAI);
+    static Action* high_astromancer_solarian_position_ranged(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianPositionRangedAction(botAI);
     }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI);

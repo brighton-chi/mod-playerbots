@@ -63,11 +63,11 @@ public:
 
 // High Astromancer Solarian
 
-class HighAstromancerSolarianDisableTankAssistMultiplier : public Multiplier
+class HighAstromancerSolarianDisableMeleeTargetingMultiplier : public Multiplier
 {
 public:
-    HighAstromancerSolarianDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian disable tank assist multiplier") {}
+    HighAstromancerSolarianDisableMeleeTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian disable melee targeting multiplier") {}
     virtual float GetValue(Action* action);
 };
 

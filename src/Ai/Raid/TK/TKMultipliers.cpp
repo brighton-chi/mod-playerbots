@@ -5,9 +5,6 @@
  */
 
 #include "TKMultipliers.h"
-#include "TKActions.h"
-#include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -20,6 +17,9 @@
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "TKActions.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
@@ -28,10 +28,7 @@
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
-        return 1.0f;
-
-    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
     if (dynamic_cast<ReachTargetAction*>(action) ||
@@ -39,11 +36,13 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action))
+    {
         return 0.0f;
+    }
 
-    if (botAI->IsDps(bot) &&
+    /* if (!botAI->IsDps(bot) &
         dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
+        return 0.0f; */
 
     return 1.0f;
 }
@@ -56,10 +55,11 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<TankFaceAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
+    {
         return 0.0f;
+    }
 
-    if (dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -67,10 +67,10 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
 
 float AlarDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
+    if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (!botAI->IsTank(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "al'ar"))
@@ -95,25 +95,29 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) &&
         !dynamic_cast<AlarAvoidFlamePatchesAndDiveBombsAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
 
 float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(SPELL_MELT_ARMOR))
-        return 1.0f;
-
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || AI_VALUE(Unit*, "current target") != alar)
+        return 1.0f;
+
+    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_MELT_ARMOR)))
         return 1.0f;
 
     if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -127,7 +131,9 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -137,39 +143,46 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || astromancer->HasAura(SPELL_SOLARIAN_TRANSFORM))
+    if (!astromancer || astromancer->HasAura(
+            static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
+    {
         return 1.0f;
+    }
 
     if (botAI->IsRanged(bot) &&
         (dynamic_cast<CombatFormationMoveAction*>(action) ||
          dynamic_cast<FleeAction*>(action) ||
          dynamic_cast<CastBlinkBackAction*>(action) ||
          dynamic_cast<CastDisengageAction*>(action)))
+    {
         return 0.0f;
+    }
 
-    if (!bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
+    if (!HasWrathOfTheAstromancer(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action)))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
 
-float HighAstromancerSolarianDisableTankAssistMultiplier::GetValue(Action* action)
+float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* action)
 {
-    if (bot->GetVictim() == nullptr)
+    if (!botAI->IsMelee(bot))
         return 1.0f;
 
-    if (!botAI->IsTank(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "solarium priest"))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -190,7 +203,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
         return 1.0f;
 
-    const time_t now = std::time(nullptr);
+    time_t const now = std::time(nullptr);
     constexpr uint8 dpsWaitSeconds = 10;
 
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
@@ -203,13 +216,15 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         auto isAdvisorActive = [](Unit* advisor)
         {
             return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-                   !advisor->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
+                !IsFeigningDeath(advisor);
         };
 
         if ((isAdvisorActive(sanguinar) && botAI->IsMainTank(bot)) ||
             (isAdvisorActive(telonicus) && botAI->IsAssistTankOfIndex(bot, 0, true)) ||
             (isAdvisorActive(capernian) && (botAI->IsMainTank(bot) || GetCapernianTank(bot) == bot)))
+        {
             return 1.0f;
+        }
 
         bool shouldHoldDps =
             (isAdvisorActive(sanguinar) && !botAI->IsMainTank(bot)) ||
@@ -220,7 +235,9 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             (dynamic_cast<AttackAction*>(action) ||
              (dynamic_cast<CastSpellAction*>(action) &&
               !dynamic_cast<CastHealingSpellAction*>(action))))
+        {
             return 0.0f;
+        }
     }
 
     return 1.0f;
@@ -240,13 +257,14 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred || thaladred->GetVictim() != bot ||
-        thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+    if (!thaladred || thaladred->GetVictim() != bot || IsFeigningDeath(thaladred))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -282,13 +300,17 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+        IsFeigningDeath(capernian))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -348,8 +370,7 @@ float KaelthasSunstriderDisableAdvisorTankAssistMultiplier::GetValue(Action* act
     if (!kaelAI)
         return 1.0f;
 
-    if (kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR &&
-        kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+    if (kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR && kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
@@ -417,7 +438,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(SPELL_GRAVITY_LAPSE))
+    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&
