@@ -1275,9 +1275,9 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
-
     bool backwards = nightbane->GetExactDist2d(destX, destY) >=
         distanceToPosition ? true : false;
+
     return MoveTo(
         KARAZHAN_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
