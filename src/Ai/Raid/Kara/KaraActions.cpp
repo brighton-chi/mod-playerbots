@@ -11,7 +11,7 @@
 #include "RaidBossHelpers.h"
 #include <array>
 
-using namespace KarazhanHelpers;
+using namespace KaraHelpers;
 
 // General
 
@@ -90,11 +90,11 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || mainTank->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD)))
+    if (!mainTank || mainTank->HasAura(static_cast<uint32>(KaraSpells::SPELL_FEAR_WARD)))
         return false;
 
-    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD), mainTank) &&
-        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_FEAR_WARD), mainTank);
+    return botAI->CanCastSpell(static_cast<uint32>(KaraSpells::SPELL_FEAR_WARD), mainTank) &&
+        botAI->CastSpell(static_cast<uint32>(KaraSpells::SPELL_FEAR_WARD), mainTank);
 }
 
 bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
@@ -106,8 +106,8 @@ bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
     if (nightbane && nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return false;
 
-    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot) &&
-        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_TREMOR_TOTEM), bot);
+    return botAI->CanCastSpell(static_cast<uint32>(KaraSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(KaraSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 // Trash
@@ -118,7 +118,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
     constexpr float searchRadius = 40.0f;
     std::list<Creature*> manaWarps;
     bot->GetCreatureListWithEntryInGrid(
-        manaWarps, static_cast<uint32>(KarazhanNpcs::NPC_MANA_WARP), searchRadius);
+        manaWarps, static_cast<uint32>(KaraNpcs::NPC_MANA_WARP), searchRadius);
 
     for (Creature* manaWarp : manaWarps)
     {
@@ -132,7 +132,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    static const std::array<const char*, 7> spells =
+    static std::array<const char*, 7> const spells =
     {
         "bash",
         "concussion blow",
@@ -271,7 +271,7 @@ bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
 
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 6> moroesGuests =
+    static std::array<const char*, 6> const moroesGuests =
     {
         "baroness dorothea millstipe",
         "lady catriona von'indi",
@@ -314,7 +314,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
-            !member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_REPENTANCE)))
+            !member->HasAura(static_cast<uint32>(KaraSpells::SPELL_REPENTANCE)))
         {
             continue;
         }
@@ -403,8 +403,8 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
 
 bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(static_cast<uint32>(KarazhanSpells::SPELL_GROUNDING_TOTEM), bot) &&
-        botAI->CastSpell(static_cast<uint32>(KarazhanSpells::SPELL_GROUNDING_TOTEM), bot);
+    return botAI->CanCastSpell(static_cast<uint32>(KaraSpells::SPELL_GROUNDING_TOTEM), bot) &&
+        botAI->CastSpell(static_cast<uint32>(KaraSpells::SPELL_GROUNDING_TOTEM), bot);
 }
 
 // The Big Bad Wolf
@@ -504,7 +504,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 5> ozTargets =
+    static std::array<const char*, 5> const ozTargets =
     {
         "dorothee",
         "tito",
@@ -578,7 +578,7 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 3> illhoofTargets =
+    static std::array<const char*, 3> const illhoofTargets =
     {
         "demon chains",
         "kil'rek",
@@ -629,7 +629,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
     constexpr float searchRadius = 75.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_CONJURED_ELEMENTAL), searchRadius);
+        creatureList, static_cast<uint32>(KaraNpcs::NPC_CONJURED_ELEMENTAL), searchRadius);
 
     for (Creature* elemental : creatureList)
     {
@@ -676,7 +676,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 150.0f;
     Unit* redPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
     if (!redPortal)
         return false;
 
@@ -745,7 +745,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 150.0f;
     Unit* bluePortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
     if (!bluePortal)
         return false;
 
@@ -803,7 +803,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 150.0f;
     Unit* greenPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
     if (!greenPortal)
         return false;
 
@@ -866,17 +866,17 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     constexpr float searchRadius = 150.0f;
 
     Unit* redPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
     if (redPortal)
         beams.push_back({redPortal, 0.0f, netherspite->GetExactDist2d(redPortal)});
 
     Unit* bluePortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
     if (bluePortal)
         beams.push_back({bluePortal, 0.0f, netherspite->GetExactDist2d(bluePortal)});
 
     Unit* greenPortal = bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
     if (greenPortal)
         beams.push_back({greenPortal, 0.0f, netherspite->GetExactDist2d(greenPortal)});
 
@@ -970,7 +970,7 @@ bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
     constexpr float safeDistance = 4.0f;
     for (Unit* vz : voidZones)
     {
-        if (vz->GetEntry() == static_cast<uint32>(KarazhanNpcs::NPC_VOID_ZONE) &&
+        if (vz->GetEntry() == static_cast<uint32>(KaraNpcs::NPC_VOID_ZONE) &&
             bot->GetExactDist2d(vz) < safeDistance)
         {
             return FleePosition(vz->GetPosition(), safeDistance);
@@ -1022,7 +1022,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.try_emplace(instanceId, now).second)
             didSomething = true;
 
-        if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RED_BEAM_DEBUFF)))
+        if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RED_BEAM_DEBUFF)))
         {
             Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
             if (redAction &&
@@ -1331,7 +1331,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     constexpr float distStep = 1.0f;
 
     std::vector<Position> charredEarths = GetDynamicObjectPositions(
-        bot, searchRadius, static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH));
+        bot, searchRadius, static_cast<uint32>(KaraSpells::SPELL_CHARRED_EARTH));
 
     if (charredEarths.empty())
     {
@@ -1476,7 +1476,7 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
         botAI->InterruptSpell();
     }
 
-    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_RAIN_OF_BONES)))
+    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RAIN_OF_BONES)))
         _rainOfBonesHit = true;
 
     Position const rainOfBonesPositions[2] =
@@ -1497,7 +1497,7 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
     constexpr float searchRadius = 40.0f;
     constexpr float charredEarthSafeDist = 12.0f;
     std::vector<Position> charredEarths = GetDynamicObjectPositions(
-        bot, searchRadius, static_cast<uint32>(KarazhanSpells::SPELL_CHARRED_EARTH));
+        bot, searchRadius, static_cast<uint32>(KaraSpells::SPELL_CHARRED_EARTH));
 
     for (uint8 i = 0; i < 2; i++)
     {

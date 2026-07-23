@@ -10,7 +10,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
-using namespace KarazhanHelpers;
+using namespace KaraHelpers;
 
 // General
 
@@ -66,7 +66,7 @@ bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 
     constexpr uint32 searchRadius = 40.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
+        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
 }
 
 // Moroes
@@ -113,13 +113,12 @@ bool BigBadWolfBossEngagedByTankTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
         return false;
 
-    return !bot->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    return !bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
 bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    return bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
 // Romulo and Julianne
@@ -139,7 +138,7 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
     if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
         return false;
 
-    static const std::array<const char*, 5> ozTargets =
+    static std::array<const char*, 5> const ozTargets =
     {
         "dorothee",
         "tito",
@@ -216,7 +215,7 @@ bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
     if (!aran)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_BLIZZARD)))
+    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_BLIZZARD)))
         return false;
 
     return !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
@@ -232,7 +231,7 @@ bool NetherspiteRedBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_RED_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
 }
 
 bool NetherspiteBlueBeamIsActiveTrigger::IsActive()
@@ -243,7 +242,7 @@ bool NetherspiteBlueBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_BLUE_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
 }
 
 bool NetherspiteGreenBeamIsActiveTrigger::IsActive()
@@ -254,7 +253,7 @@ bool NetherspiteGreenBeamIsActiveTrigger::IsActive()
 
     constexpr float searchRadius = 150.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_GREEN_PORTAL), searchRadius);
+        static_cast<uint32>(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
 }
 
 bool NetherspiteBotIsNotBeamBlockerTrigger::IsActive()
@@ -293,7 +292,7 @@ bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActive()
 
 bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE));
+    return bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE));
 }
 
 bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActive()
@@ -302,7 +301,7 @@ bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActive()
     if (!malchezaar)
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE)))
+    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
         return false;
 
     if (botAI->IsMainTank(bot) || (botAI->IsTank(bot) && malchezaar->GetVictim() == bot))

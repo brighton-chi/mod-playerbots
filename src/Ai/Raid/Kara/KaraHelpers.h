@@ -13,10 +13,10 @@
 #include <ctime>
 #include <unordered_map>
 
-namespace KarazhanHelpers
+namespace KaraHelpers
 {
 
-enum class KarazhanSpells : uint32
+enum class KaraSpells : uint32
 {
     // Maiden of Virtue
     SPELL_REPENTANCE                 = 29511,
@@ -59,7 +59,7 @@ enum class KarazhanSpells : uint32
     SPELL_GROUNDING_TOTEM            = 8177,
 };
 
-enum class KarazhanNpcs : uint32
+enum class KaraNpcs : uint32
 {
     // Trash
     NPC_MANA_WARP                    = 16530,

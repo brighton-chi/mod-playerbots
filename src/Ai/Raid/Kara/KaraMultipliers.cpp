@@ -21,7 +21,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 
-using namespace KarazhanHelpers;
+using namespace KaraHelpers;
 
 // General
 
@@ -197,11 +197,8 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
-    if (!curator || curator->HasAura(
-            static_cast<uint32>(KarazhanSpells::SPELL_CURATOR_EVOCATION)))
-    {
+    if (!curator || curator->HasAura(static_cast<uint32>(KaraSpells::SPELL_CURATOR_EVOCATION)))
         return 1.0f;
-    }
 
     if (dynamic_cast<CastBloodlustAction*>(action) ||
         dynamic_cast<CastHeroismAction*>(action))
@@ -359,7 +356,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_ENFEEBLE)))
+    if (!bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action))

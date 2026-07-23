@@ -14,7 +14,7 @@ void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusion
 {
     Unit* nightbane =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "nightbane")->Get();
-    if (nightbane && nightbane->GetPositionZ() > KarazhanHelpers::NIGHTBANE_FLIGHT_Z)
+    if (nightbane && nightbane->GetPositionZ() > KaraHelpers::NIGHTBANE_FLIGHT_Z)
         exclusions.insert(nightbane->GetGUID());
 }
 

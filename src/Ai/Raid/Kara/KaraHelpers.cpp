@@ -7,7 +7,7 @@
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 
-namespace KarazhanHelpers
+namespace KaraHelpers
 {
 
 // Attumen the Huntsman
@@ -17,7 +17,7 @@ Unit* GetAttumenMounted(Player* bot)
 {
     constexpr uint32 searchRadius = 50.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KarazhanNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
+        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
 }
 
 // Shade of Aran
@@ -25,7 +25,7 @@ Unit* GetAttumenMounted(Player* bot)
 bool IsAranCastingArcaneExplosion(Unit* aran)
 {
     return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
-        static_cast<uint32>(KarazhanSpells::SPELL_ARCANE_EXPLOSION));
+        static_cast<uint32>(KaraSpells::SPELL_ARCANE_EXPLOSION));
 }
 
 bool IsFlameWreathActive(Player* bot)
@@ -37,7 +37,7 @@ bool IsFlameWreathActive(Player* bot)
 
     if (currentSpell && currentSpell->m_spellInfo &&
         currentSpell->m_spellInfo->Id ==
-            static_cast<uint32>(KarazhanSpells::SPELL_FLAME_WREATH_CAST))
+            static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_CAST))
     {
         return true;
     }
@@ -50,7 +50,7 @@ bool IsFlameWreathActive(Player* bot)
             if (!member || !member->IsAlive())
                 continue;
 
-            if (member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_FLAME_WREATH_AURA)))
+            if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_AURA)))
                 return true;
         }
     }
@@ -65,7 +65,7 @@ std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
 bool IsBanishPhase(Unit* netherspite)
 {
     return netherspite && netherspite->HasAura(
-        static_cast<uint32>(KarazhanSpells::SPELL_NETHERSPITE_BANISHED));
+        static_cast<uint32>(KaraSpells::SPELL_NETHERSPITE_BANISHED));
 }
 
 // Red beam blockers: tank bots, no Nether Exhaustion Red
@@ -81,7 +81,7 @@ std::vector<Player*> GetRedBlockers(Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
-            member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_RED)))
+            member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_RED)))
         {
             continue;
         }
@@ -114,11 +114,11 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
             continue;
         }
 
-        if (member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
+        if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
             continue;
 
         Aura* blueBuff = member->GetAura(
-            static_cast<uint32>(KarazhanSpells::SPELL_BLUE_BEAM_DEBUFF));
+            static_cast<uint32>(KaraSpells::SPELL_BLUE_BEAM_DEBUFF));
         if (!blueBuff || blueBuff->GetStackAmount() < 25)
             blueBlockers.push_back(member);
     }
@@ -150,7 +150,7 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
             continue;
         }
 
-        if (!member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
             greenBlockers.push_back(member);
     }
 
@@ -161,8 +161,8 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
             continue;
 
         Aura* greenBuff = member->GetAura(
-            static_cast<uint32>(KarazhanSpells::SPELL_GREEN_BEAM_DEBUFF));
-        if (!member->HasAura(static_cast<uint32>(KarazhanSpells::SPELL_NETHER_EXHAUSTION_GREEN)) &&
+            static_cast<uint32>(KaraSpells::SPELL_GREEN_BEAM_DEBUFF));
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)) &&
             (!greenBuff || greenBuff->GetStackAmount() < 25))
         {
             greenBlockers.push_back(member);
@@ -254,7 +254,7 @@ std::vector<Unit*> GetAllVoidZones(Player* bot)
     constexpr float searchRadius = 30.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_VOID_ZONE), searchRadius);
+        creatureList, static_cast<uint32>(KaraNpcs::NPC_VOID_ZONE), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -333,7 +333,7 @@ std::vector<Unit*> GetSpawnedInfernals(Player* bot)
     constexpr float searchRadius = 100.0f;
 
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(KarazhanNpcs::NPC_NETHERSPITE_INFERNAL), searchRadius);
+        creatureList, static_cast<uint32>(KaraNpcs::NPC_NETHERSPITE_INFERNAL), searchRadius);
 
     for (Creature* creature : creatureList)
     {
