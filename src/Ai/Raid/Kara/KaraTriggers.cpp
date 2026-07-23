@@ -16,7 +16,7 @@ using namespace KaraHelpers;
 
 bool KarazhanBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == KARAZHAN_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    return bot->GetMapId() == KARA_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 bool KarazhanEnemiesCastFearTrigger::IsActive()
@@ -58,7 +58,7 @@ bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+    if (!IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
@@ -78,7 +78,7 @@ bool MoroesBossEngagedByMainTankTrigger::IsActive()
 
 bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+    return IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "moroes");
 }
 
@@ -125,7 +125,7 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+    if (!IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "romulo") && AI_VALUE2(Unit*, "find target", "julianne");
@@ -135,7 +135,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID))
+    if (!IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID))
         return false;
 
     static std::array<const char*, 5> const ozTargets =
@@ -165,7 +165,7 @@ bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
 
 bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+    return IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "astral flare");
 }
 
@@ -183,7 +183,7 @@ bool TheCuratorBossEngagedByRangedTrigger::IsActive()
 
 bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+    return IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "terestian illhoof");
 }
 
@@ -202,7 +202,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID) &&
+    return IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "conjured elemental");
 }
 

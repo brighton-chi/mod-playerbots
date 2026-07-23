@@ -38,7 +38,7 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == referencePlayer || member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || member == referencePlayer || member->GetMapId() != SWP_MAP_ID)
             continue;
 
         if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
@@ -72,8 +72,8 @@ static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePla
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == referencePlayer || IsInSpectralRealm(member) ||
-            member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || member == referencePlayer || member->GetMapId() != SWP_MAP_ID ||
+            IsInSpectralRealm(member))
         {
             continue;
         }

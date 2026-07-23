@@ -525,11 +525,8 @@ float GetFelmystMinDistanceToOtherPlayers(Player* bot, float x, float y)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* member = it->GetSource();
-        if (!member || member == bot || !member->IsAlive() ||
-            member->GetMapId() != SUNWELL_MAP_ID)
-        {
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID)
             continue;
-        }
 
         float const distance = std::hypot(x - member->GetPositionX(), y - member->GetPositionY());
         if (distance < minDistance)
@@ -578,11 +575,8 @@ bool IsFelmystDemonicVaporPathSafe(
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* member = it->GetSource();
-            if (!member || member == bot || !member->IsAlive() ||
-                member->GetMapId() != SUNWELL_MAP_ID)
-            {
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID)
                 continue;
-            }
 
             if (std::hypot(checkX - member->GetPositionX(), checkY - member->GetPositionY()) <
                 playerPathClearance)
@@ -1372,11 +1366,8 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() ||
-            member->GetMapId() != SUNWELL_MAP_ID)
-        {
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID)
             continue;
-        }
 
         if (!member->HasAura(static_cast<uint32>(SwpSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
             continue;

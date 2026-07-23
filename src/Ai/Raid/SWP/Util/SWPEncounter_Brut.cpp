@@ -180,7 +180,7 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& p
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || member->GetMapId() != SWP_MAP_ID)
             continue;
 
         if (!botAI->IsMelee(member) ||
@@ -202,7 +202,7 @@ void EnsureBrutallusRangedAssignments(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+    if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
 
     auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
@@ -238,7 +238,7 @@ void EnsureBrutallusRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member))
             continue;
 
         if (assignments.find(member->GetGUID()) != assignments.end())

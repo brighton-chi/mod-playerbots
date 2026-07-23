@@ -160,7 +160,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                 focusHand = hand;
         }
 
-        if (IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID))
+        if (IsMechanicTrackerBot(botAI, bot, SWP_MAP_ID))
             MarkTargetWithSkull(bot, focusHand);
 
         if (AI_VALUE(Unit*, "current target") != focusHand)
@@ -266,7 +266,7 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -283,7 +283,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -299,7 +299,7 @@ bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !botAI->IsMelee(member) || member->GetMapId() != SUNWELL_MAP_ID ||
+        if (!member || !botAI->IsMelee(member) || member->GetMapId() != SWP_MAP_ID ||
             !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
         {
             continue;
@@ -390,7 +390,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -455,9 +455,8 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
@@ -507,7 +506,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
                 return true;
 
             return MoveTo(
-                SUNWELL_MAP_ID, closestInUseOrb->GetPositionX(), closestInUseOrb->GetPositionY(),
+                SWP_MAP_ID, closestInUseOrb->GetPositionX(), closestInUseOrb->GetPositionY(),
                 closestInUseOrb->GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -531,8 +530,8 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     float const destY = closestOrb->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, destX, destY, closestOrb->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, closestOrb->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // There is an issue with the root packets that causes bots to get stuck with

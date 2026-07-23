@@ -22,7 +22,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SWP_MAP_ID);
     bool const isRanged = botAI->IsRanged(bot);
     bool const isTank = botAI->IsTank(bot);
 

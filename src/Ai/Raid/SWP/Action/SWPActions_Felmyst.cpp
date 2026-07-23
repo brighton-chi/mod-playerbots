@@ -63,7 +63,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -80,7 +80,7 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
         return false;
 
     return MoveInside(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_COMBAT);
 }
 
@@ -103,7 +103,7 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -142,9 +142,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
             return false;
 
         return MoveInside(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), FELMYST_RANGED_GROUP_RADIUS,
-            MovementPriority::MOVEMENT_FORCED);
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_FORCED);
     };
 
     if (targetStack == FelmystGroundStack::Left || targetStack == FelmystGroundStack::Right)
@@ -226,7 +225,7 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distToDestination) * moveDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, moveX, moveY, destination.GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, destination.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -304,7 +303,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 
         Position const destination = destinations[bestIndex];
         return MoveTo(
-            SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+            SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
             destination.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -313,7 +312,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     {
         Position const destination = destinations[index];
         if (MoveTo(
-                SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+                SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
                 destination.GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false))
         {
@@ -369,7 +368,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     _fogCrateStuckSampleMs = 0;
     botAI->InterruptSpell();
     return bot->TeleportTo(
-        SUNWELL_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),
+        SWP_MAP_ID, FELMYST_ON_CRATE_POSITION.GetPositionX(),
         FELMYST_ON_CRATE_POSITION.GetPositionY(),
         FELMYST_ON_CRATE_POSITION.GetPositionZ(), bot->GetOrientation());
 }

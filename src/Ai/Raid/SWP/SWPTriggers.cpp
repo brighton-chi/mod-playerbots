@@ -19,7 +19,7 @@ using namespace SwpHelpers;
 
 bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == SUNWELL_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    return bot->GetMapId() == SWP_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
@@ -670,7 +670,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
 
 bool KiljaedenEncounterHasBegunTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID) &&
+    return IsMechanicTrackerBot(botAI, bot, SWP_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 

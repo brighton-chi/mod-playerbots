@@ -70,7 +70,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         Position const position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 2.0f;
         return MoveInside(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
             position.GetPositionZ(), rangedGroupRadius, MovementPriority::MOVEMENT_COMBAT);
     }
 
@@ -102,7 +102,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
         }
 
         return MoveInside(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
             position.GetPositionZ(), arrivalDistance, MovementPriority::MOVEMENT_COMBAT);
     }
 
@@ -125,7 +125,7 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -482,7 +482,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         bot->GetExactDist2d(waitPosition.GetPositionX(), waitPosition.GetPositionY()) > 3.0f)
     {
         return MoveTo(
-            SUNWELL_MAP_ID, waitPosition.GetPositionX(), waitPosition.GetPositionY(),
+            SWP_MAP_ID, waitPosition.GetPositionX(), waitPosition.GetPositionY(),
             waitPosition.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
@@ -513,7 +513,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -547,9 +547,8 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
@@ -592,7 +591,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
             constexpr float arrivalDistance = 1.0f;
 
             return MoveInside(
-                SUNWELL_MAP_ID, holdingPosition.GetPositionX(), holdingPosition.GetPositionY(),
+                SWP_MAP_ID, holdingPosition.GetPositionX(), holdingPosition.GetPositionY(),
                 holdingPosition.GetPositionZ(), arrivalDistance, MovementPriority::MOVEMENT_FORCED);
         }
 
@@ -607,7 +606,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     {
         constexpr float stackArrivalDistance = 3.0f;
         return MoveInside(
-            SUNWELL_MAP_ID, MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY(),
+            SWP_MAP_ID, MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY(),
             MURU_STACK_POSITION.GetPositionZ(), stackArrivalDistance,
             MovementPriority::MOVEMENT_FORCED);
     }

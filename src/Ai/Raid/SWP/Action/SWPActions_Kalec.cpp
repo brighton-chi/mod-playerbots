@@ -41,7 +41,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
         float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
         return MoveTo(
-            SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
             false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
@@ -95,8 +95,8 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     float const destY = rift->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, destX, destY, rift->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
@@ -114,7 +114,7 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
         }
 
         return MoveInside(
-            SUNWELL_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
+            SWP_MAP_ID, initialPos.GetPositionX(), initialPos.GetPositionY(),
             initialPos.GetPositionZ(), initialRangedRadius, MovementPriority::MOVEMENT_COMBAT);
     }
 
@@ -175,13 +175,13 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
     return bot->TeleportTo(
-        SUNWELL_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
+        SWP_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
         KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
 }

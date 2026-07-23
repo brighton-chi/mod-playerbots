@@ -86,7 +86,7 @@ enum class KaraNpcs : uint32
     NPC_NETHERSPITE_INFERNAL         = 17646,
 };
 
-constexpr uint32 KARAZHAN_MAP_ID = 532;
+constexpr uint32 KARA_MAP_ID = 532;
 constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 

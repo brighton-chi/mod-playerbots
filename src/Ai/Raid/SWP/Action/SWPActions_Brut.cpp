@@ -77,7 +77,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(
-                SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                 false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
@@ -105,7 +105,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -138,7 +138,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -287,7 +287,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, true,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -318,7 +318,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, true,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -347,7 +347,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, true,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -369,7 +369,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -425,7 +425,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
+                SWP_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
                 stepPosition.GetPositionZ(), false, false, false, true,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -456,7 +456,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, true,
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
@@ -480,9 +480,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, true,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;

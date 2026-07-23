@@ -24,14 +24,13 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
     if (distanceToJumpPos > arrivalDistance)
     {
         return MoveTo(
-            SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
-            jumpPos.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            SWP_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(), jumpPos.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
         return JumpTo(
-            SUNWELL_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
+            SWP_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
             landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 }
@@ -127,7 +126,7 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
     return MoveTo(
-        SUNWELL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -186,22 +185,20 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
         index = safeIndex;
         _alythessTankStep = index;
-        Position const newPosition = GetAlythessTankPosition(alythess, index);
+        Position const newPos = GetAlythessTankPosition(alythess, index);
 
-        if (bot->GetExactDist2d(newPosition) > maxDistance)
+        if (bot->GetExactDist2d(newPos) > maxDistance)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, newPosition.GetPositionX(), newPosition.GetPositionY(),
-                newPosition.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
+                SWP_MAP_ID, newPos.GetPositionX(), newPos.GetPositionY(), newPos.GetPositionZ(),
+                false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
     else if (distToPosition > maxDistance)
     {
         return MoveTo(
-            SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -217,7 +214,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -238,14 +235,13 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
         if (distanceToJumpPos > arrivalDistance)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(),
-                jumpPos.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false);
+                SWP_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(), jumpPos.GetPositionZ(),
+                false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
         {
             return JumpTo(
-                SUNWELL_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
+                SWP_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
                 landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
         }
     }
@@ -267,9 +263,8 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
@@ -349,7 +344,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
             return MoveTo(
-                SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                 position.GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }

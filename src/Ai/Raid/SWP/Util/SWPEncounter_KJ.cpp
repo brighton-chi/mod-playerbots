@@ -65,8 +65,8 @@ uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 bool IsKiljaedenDragonGroupTarget(Player* bot, Player* member)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    return member && member->IsAlive() && member != bot && !botAI->IsTank(member) &&
-        member->GetMapId() == SUNWELL_MAP_ID;
+    return member && member->IsAlive() && member != bot &&
+        member->GetMapId() == SWP_MAP_ID && !botAI->IsTank(member);
 }
 
 uint32 GetKiljaedenDragonAppliedAuraSpell(uint32 spellId)
@@ -247,7 +247,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+    if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
@@ -262,8 +262,8 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID &&
-                GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
+            found = member->GetMapId() == SWP_MAP_ID &&
+                botAI->IsRanged(member) && GET_PLAYERBOT_AI(member);
 
             break;
         }
@@ -302,7 +302,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member) ||
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -377,8 +377,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member) ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
@@ -521,8 +521,8 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-            member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
@@ -676,8 +676,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot ||
-            member->GetMapId() != SUNWELL_MAP_ID ||
+        if (!member || !member->IsAlive() || member == bot || member->GetMapId() != SWP_MAP_ID ||
             HasKiljaedenDragonApplicableAura(member, spellId))
         {
             continue;

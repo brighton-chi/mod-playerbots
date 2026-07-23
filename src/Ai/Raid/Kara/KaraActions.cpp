@@ -18,7 +18,7 @@ using namespace KaraHelpers;
 bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
     bool reset = false;
 
     if (isMechanicTracker)
@@ -229,7 +229,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -245,7 +245,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
         return false;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, rearX, rearY, attumen->GetPositionZ(), false, false,
+        KARA_MAP_ID, rearX, rearY, attumen->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -339,7 +339,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -351,7 +351,7 @@ bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Player* heale
     float const targetY = healer->GetPositionY() + std::sin(angle) * endDistance;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, targetX, targetY, healer->GetPositionZ(), false, false,
+        KARA_MAP_ID, targetX, targetY, healer->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -398,7 +398,7 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -436,7 +436,7 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -460,9 +460,8 @@ bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Romulo and Julianne
@@ -564,7 +563,7 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -714,9 +713,8 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     if (!_lastBeamMoveSideways)
     {
         return MoveTo(
-            KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(),
-            bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
@@ -732,7 +730,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         float const sideY = beamPos.GetPositionY() + perpDy * 3.0f;
 
         return MoveTo(
-            KARAZHAN_MAP_ID, sideX, sideY, bot->GetPositionZ(), false, false, false, false,
+            KARA_MAP_ID, sideX, sideY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 }
@@ -786,9 +784,8 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     {
         botAI->InterruptSpell();
         return MoveTo(
-            KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(),
-            bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -843,9 +840,8 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     {
         botAI->InterruptSpell();
         return MoveTo(
-            KARAZHAN_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(),
-            bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -927,7 +923,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, bestCandidate.GetPositionX(), bestCandidate.GetPositionY(),
+        KARA_MAP_ID, bestCandidate.GetPositionX(), bestCandidate.GetPositionY(),
         bestCandidate.GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
@@ -989,7 +985,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     uint32 const instanceId = netherspite->GetMap()->GetInstanceId();
     time_t const now = std::time(nullptr);
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
     bool didSomething = false;
 
     if (IsBanishPhase(netherspite))
@@ -1107,7 +1103,7 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
+        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1156,8 +1152,8 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
@@ -1204,8 +1200,8 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 // Nightbane
@@ -1277,7 +1273,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
         distanceToPosition ? true : false;
 
     return MoveTo(
-        KARAZHAN_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
+        KARA_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
@@ -1293,7 +1289,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::Execute(Event /*event*/
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != KARAZHAN_MAP_ID ||
+        if (!member || member->GetMapId() != KARA_MAP_ID ||
             !member->IsAlive() || !botAI->IsRanged(member))
         {
             continue;
@@ -1424,7 +1420,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false,
+        KARA_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1435,7 +1431,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::StackOnRangedLeader(Pla
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
+        KARA_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
         rangedLeader->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -1529,7 +1525,7 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveTo(
-        KARAZHAN_MAP_ID, destPos.GetPositionX(), destPos.GetPositionY(), destPos.GetPositionZ(),
+        KARA_MAP_ID, destPos.GetPositionX(), destPos.GetPositionY(), destPos.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1538,7 +1534,7 @@ bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
 {
     Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
     return bot->TeleportTo(
-        KARAZHAN_MAP_ID, flightStackPosition.GetPositionX(), flightStackPosition.GetPositionY(),
+        KARA_MAP_ID, flightStackPosition.GetPositionX(), flightStackPosition.GetPositionY(),
         flightStackPosition.GetPositionZ(), bot->GetOrientation());
 }
 
@@ -1550,7 +1546,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
     time_t const now = std::time(nullptr);
-    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID);
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, KARA_MAP_ID);
     bool didSomething = false;
 
     // Ground Phase: Erase flight phase timer and Rain of Bones tracker and start DPS wait timer
