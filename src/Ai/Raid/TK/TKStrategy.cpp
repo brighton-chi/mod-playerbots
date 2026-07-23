@@ -145,9 +145,9 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Alar <Phoenix God>
     multipliers.push_back(new AlarMoveBetweenPlatformsMultiplier(botAI));
     multipliers.push_back(new AlarDisableDisperseMultiplier(botAI));
-    multipliers.push_back(new AlarDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new AlarDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
-    multipliers.push_back(new AlarPhase2NoTankingIfArmorMeltedMultiplier(botAI));
+    multipliers.push_back(new AlarDontTauntBossIfArmorMeltedMultiplier(botAI));
 
     // Void Reaver
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));

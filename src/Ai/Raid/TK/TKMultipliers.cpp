@@ -65,7 +65,7 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AlarDisableTankAssistMultiplier::GetValue(Action* action)
+float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot))
         return 1.0f;
@@ -102,7 +102,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AlarPhase2NoTankingIfArmorMeltedMultiplier::GetValue(Action* action)
+float AlarDontTauntBossIfArmorMeltedMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || AI_VALUE(Unit*, "current target") != alar)

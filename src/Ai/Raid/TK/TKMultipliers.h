@@ -15,7 +15,7 @@ class AlarMoveBetweenPlatformsMultiplier : public Multiplier
 {
 public:
     AlarMoveBetweenPlatformsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar move between platforms multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar move between platforms") {}
     virtual float GetValue(Action* action);
 };
 
@@ -23,15 +23,15 @@ class AlarDisableDisperseMultiplier : public Multiplier
 {
 public:
     AlarDisableDisperseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable disperse multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable disperse") {}
     virtual float GetValue(Action* action);
 };
 
-class AlarDisableTankAssistMultiplier : public Multiplier
+class AlarDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
-    AlarDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable tank assist multiplier") {}
+    AlarDisableAutomaticTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable automatic targeting") {}
     virtual float GetValue(Action* action);
 };
 
@@ -39,15 +39,15 @@ class AlarStayAwayFromRebirthMultiplier : public Multiplier
 {
 public:
     AlarStayAwayFromRebirthMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar stay away from rebirth multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar stay away from rebirth") {}
     virtual float GetValue(Action* action);
 };
 
-class AlarPhase2NoTankingIfArmorMeltedMultiplier : public Multiplier
+class AlarDontTauntBossIfArmorMeltedMultiplier : public Multiplier
 {
 public:
-    AlarPhase2NoTankingIfArmorMeltedMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar phase 2 no tanking if armor melted multiplier") {}
+    AlarDontTauntBossIfArmorMeltedMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar don't taunt boss if armor melted") {}
     virtual float GetValue(Action* action);
 };
 
@@ -57,7 +57,7 @@ class VoidReaverMaintainPositionsMultiplier : public Multiplier
 {
 public:
     VoidReaverMaintainPositionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "void reaver maintain positions multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "void reaver maintain positions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -67,7 +67,7 @@ class HighAstromancerSolarianDisableMeleeTargetingMultiplier : public Multiplier
 {
 public:
     HighAstromancerSolarianDisableMeleeTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian disable melee targeting multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian disable melee targeting") {}
     virtual float GetValue(Action* action);
 };
 
@@ -75,7 +75,7 @@ class HighAstromancerSolarianMaintainPositionMultiplier : public Multiplier
 {
 public:
     HighAstromancerSolarianMaintainPositionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian maintain position multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian maintain position") {}
     virtual float GetValue(Action* action);
 };
 
@@ -85,7 +85,7 @@ class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider wait for dps multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -93,7 +93,7 @@ class KaelthasSunstriderKiteThaladredMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderKiteThaladredMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider kite thaladred") {}
     virtual float GetValue(Action* action);
 };
 
@@ -101,7 +101,7 @@ class KaelthasSunstriderControlMisdirectionMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderControlMisdirectionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider control misdirection multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider control misdirection") {}
     virtual float GetValue(Action* action);
 };
 
@@ -109,7 +109,7 @@ class KaelthasSunstriderKeepDistanceFromCapernianMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderKeepDistanceFromCapernianMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider keep distance from capernian multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider keep distance from capernian") {}
     virtual float GetValue(Action* action);
 };
 
@@ -117,7 +117,7 @@ class KaelthasSunstriderManageWeaponTankingMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderManageWeaponTankingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider manage weapon tanking multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider manage weapon tanking") {}
     virtual float GetValue(Action* action);
 };
 
@@ -125,7 +125,7 @@ class KaelthasSunstriderDisableAdvisorTankAssistMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderDisableAdvisorTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable advisor tank assist multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable advisor tank assist") {}
     virtual float GetValue(Action* action);
 };
 
@@ -133,7 +133,7 @@ class KaelthasSunstriderDisableDisperseMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderDisableDisperseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable disperse multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable disperse") {}
     virtual float GetValue(Action* action);
 };
 
@@ -141,7 +141,7 @@ class KaelthasSunstriderDelayCooldownsMultiplier : public Multiplier
 {
 public:
     KaelthasSunstriderDelayCooldownsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider delay cooldowns multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider delay cooldowns") {}
     virtual float GetValue(Action* action);
 };
 
@@ -149,7 +149,7 @@ class KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier : public Multipli
 {
 public:
     KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider stay spread during gravity lapse multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider stay spread during gravity lapse") {}
     virtual float GetValue(Action* action);
 };
 

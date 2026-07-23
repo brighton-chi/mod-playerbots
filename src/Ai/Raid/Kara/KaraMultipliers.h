@@ -21,7 +21,7 @@ class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
     AttumenTheHuntsmanDisableAutomaticTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable automatic targeting multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable automatic targeting") {}
     virtual float GetValue(Action* action);
 };
 
@@ -29,7 +29,7 @@ class AttumenTheHuntsmanStayStackedMultiplier : public Multiplier
 {
 public:
     AttumenTheHuntsmanStayStackedMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman stay stacked multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman stay stacked") {}
     virtual float GetValue(Action* action);
 };
 
@@ -37,7 +37,7 @@ class AttumenTheHuntsmanWaitForDpsMultiplier : public Multiplier
 {
 public:
     AttumenTheHuntsmanWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -45,7 +45,7 @@ class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
     MaidenOfVirtueDisableCombatFormationMoveMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue disable combat formation move multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue disable combat formation move") {}
     virtual float GetValue(Action* action);
 };
 
@@ -53,7 +53,7 @@ class MaidenOfVirtueSetGroundingTotemMultiplier : public Multiplier
 {
 public:
     MaidenOfVirtueSetGroundingTotemMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue set grounding totem multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue set grounding totem") {}
     virtual float GetValue(Action* action);
 };
 
@@ -61,7 +61,7 @@ class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
 public:
     TheCuratorDisableTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable tank assist multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable tank assist") {}
     virtual float GetValue(Action* action);
 };
 
@@ -69,7 +69,7 @@ class TheCuratorDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
     TheCuratorDisableCombatFormationMoveMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable combat formation move multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable combat formation move") {}
     virtual float GetValue(Action* action);
 };
 
@@ -77,7 +77,7 @@ class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     TheCuratorDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "the curator delay bloodlust and heroism multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "the curator delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -85,7 +85,7 @@ class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
 {
 public:
     TerestianIllhoofDontDotFiendishImpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "terestian illhoof don't dot fiendish imps multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "terestian illhoof don't dot fiendish imps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -93,7 +93,7 @@ class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
 {
 public:
     ShadeOfAranArcaneExplosionRunAwayMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion run away multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion run away") {}
     virtual float GetValue(Action* action);
 };
 
@@ -101,7 +101,7 @@ class ShadeOfAranFlameWreathDisableMovementMultiplier : public Multiplier
 {
 public:
     ShadeOfAranFlameWreathDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran flame wreath disable movement multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran flame wreath disable movement") {}
     virtual float GetValue(Action* action);
 };
 
@@ -109,7 +109,7 @@ class NetherspiteKeepBlockingBeamMultiplier : public Multiplier
 {
 public:
     NetherspiteKeepBlockingBeamMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "netherspite keep blocking beam multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "netherspite keep blocking beam") {}
     virtual float GetValue(Action* action);
 };
 
@@ -117,7 +117,7 @@ class NetherspiteWaitForDpsMultiplier : public Multiplier
 {
 public:
     NetherspiteWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -125,7 +125,7 @@ class PrinceMalchezaarEnfeebleKeepDistanceMultiplier : public Multiplier
 {
 public:
     PrinceMalchezaarEnfeebleKeepDistanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance") {}
     virtual float GetValue(Action* action);
 };
 
@@ -133,7 +133,7 @@ class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
     PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism") {}
     virtual float GetValue(Action* action);
 };
 
@@ -141,7 +141,7 @@ class NightbaneDisablePetsMultiplier : public Multiplier
 {
 public:
     NightbaneDisablePetsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable pets multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable pets") {}
     virtual float GetValue(Action* action);
 };
 
@@ -149,7 +149,7 @@ class NightbaneWaitForDpsMultiplier : public Multiplier
 {
 public:
     NightbaneWaitForDpsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps") {}
     virtual float GetValue(Action* action);
 };
 
@@ -157,7 +157,7 @@ class NightbaneDisableAvoidAoeMultiplier : public Multiplier
 {
 public:
     NightbaneDisableAvoidAoeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable avoid aoe multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable avoid aoe") {}
     virtual float GetValue(Action* action);
 };
 
@@ -165,7 +165,7 @@ class NightbaneDisableMovementMultiplier : public Multiplier
 {
 public:
     NightbaneDisableMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable movement multiplier") {}
+        PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable movement") {}
     virtual float GetValue(Action* action);
 };
 

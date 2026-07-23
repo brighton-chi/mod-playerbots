@@ -288,7 +288,7 @@ std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
         }
     }
 
-    return { firstEmber, secondEmber };
+    return {firstEmber, secondEmber};
 }
 
 Player* GetSecondEmberTank(PlayerbotAI* botAI)
