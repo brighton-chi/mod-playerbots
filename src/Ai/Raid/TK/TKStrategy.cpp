@@ -42,8 +42,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 2),
         NextAction("al'ar avoid flame patches and dive bombs", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("al'ar phase 2 encounter is at room center", {
-        NextAction("al'ar return to room center", ACTION_RAID) }));
+    // triggers.push_back(new TriggerNode("al'ar phase 2 encounter is at room center", {
+    //     NextAction("al'ar return to room center", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("al'ar should manage phase tracker", {
         NextAction("al'ar manage phase tracker", ACTION_EMERGENCY + 10) }));

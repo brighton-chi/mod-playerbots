@@ -31,14 +31,19 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
-    if (dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<TankFaceAction*>(action) ||
+    if (dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action))
     {
         return 0.0f;
     }
+
+    if (botAI->IsAssistTankOfIndex(bot, 1, false))
+        return 1.0f;
+
+    if (dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
 
     /* if (!botAI->IsDps(bot) &
         dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -49,7 +54,8 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 
 float AlarDisableDisperseMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -59,7 +65,13 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
+    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return 1.0f;
+
+    if (botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<FollowAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -67,16 +79,13 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
 
 float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
         return 1.0f;
 
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
-        return 1.0f;
-
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -85,16 +94,22 @@ float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
-    Creature* alarCreature = alar->ToCreature();
-    if (!alarCreature || alarCreature->GetReactState() != REACT_PASSIVE)
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
+    {
+        Creature* alarCreature = alar->ToCreature();
+        if (!alarCreature || alarCreature->GetReactState() != REACT_PASSIVE)
+            return 1.0f;
+    }
+    else if (alar->GetHealthPct() > 5.0f)
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action) &&
-        !dynamic_cast<AlarAvoidFlamePatchesAndDiveBombsAction*>(action))
+        !dynamic_cast<AlarMoveAwayFromRebirthAction*>(action))
     {
         return 0.0f;
     }
@@ -176,10 +191,10 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
     if (!botAI->IsMelee(bot))
         return 1.0f;
 
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    if (!AI_VALUE2(Unit*, "find target", "solarium priest"))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "solarium priest"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))

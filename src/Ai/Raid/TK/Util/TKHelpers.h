@@ -23,6 +23,7 @@ enum class TkSpells : uint32
     SPELL_ARCANE_FLURRY             = 37268,
 
     // Al'ar
+    SPELL_MODEL_INVISIBILITY        = 24401, // "Test Pet Passive" spell (AC hack used for Al'ar)
     SPELL_REBIRTH_PHASE2            = 34342,
     SPELL_REBIRTH_DIVE              = 35369,
     SPELL_MELT_ARMOR                = 35410,
@@ -93,6 +94,7 @@ enum class TkItems : uint32
 
 // General
 constexpr uint32 TK_MAP_ID = 550;
+std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
 Position FindSafestNearbyPosition(
@@ -136,8 +138,7 @@ extern std::unordered_map<uint32, bool> isAlarInPhase2;
 int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
 void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position ground);
-std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI);
-Player* GetSecondEmberTank(PlayerbotAI* botAI);
+Player* GetSecondEmberTank(Player* bot);
 
 // Void Reaver
 struct ArcaneOrbData

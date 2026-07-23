@@ -15,6 +15,28 @@ namespace TkHelpers
 
 // General
 
+std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
+{
+    Unit* lowest = nullptr;
+    Unit* highest = nullptr;
+
+    for (auto const& guid :
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == entry)
+        {
+            if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
+                lowest = unit;
+
+            if (!highest || unit->GetGUID().GetRawValue() > highest->GetGUID().GetRawValue())
+                highest = unit;
+        }
+    }
+
+    return {lowest, highest};
+}
+
 Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -265,36 +287,12 @@ void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Positio
     ground = GROUND_POSITIONS[closestPlatform];
 }
 
-std::pair<Unit*, Unit*> GetFirstTwoEmbersOfAlar(PlayerbotAI* botAI)
+Player* GetSecondEmberTank(Player* bot)
 {
-    Unit* firstEmber = nullptr;
-    Unit* secondEmber = nullptr;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
-    for (auto const& guid :
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
-        {
-            if (!firstEmber)
-            {
-                firstEmber = unit;
-            }
-            else if (!secondEmber)
-            {
-                secondEmber = unit;
-                break;
-            }
-        }
-    }
-
-    return {firstEmber, secondEmber};
-}
-
-Player* GetSecondEmberTank(PlayerbotAI* botAI)
-{
-    Player* mainTank = GetGroupMainTank(botAI, botAI->GetBot());
-    Player* assistTank = GetGroupAssistTank(botAI, botAI->GetBot(), 0);
     if (!mainTank || !assistTank)
         return nullptr;
 

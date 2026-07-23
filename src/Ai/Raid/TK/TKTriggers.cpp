@@ -16,7 +16,7 @@ using namespace TkHelpers;
 // General
 bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash
@@ -51,7 +51,8 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    return locationIndex != POINT_QUILL_OR_DIVE_IDX && locationIndex != POINT_MIDDLE_IDX;
+    return locationIndex != LOCATION_NONE && locationIndex != POINT_QUILL_OR_DIVE_IDX &&
+        locationIndex != POINT_MIDDLE_IDX;
 }
 
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
@@ -78,14 +79,10 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!alar || alar->GetHealthPct() > 5.0f)
         return false;
 
-    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
-        return false;
-
-    Creature* alarCreature = alar->ToCreature();
-    return alarCreature && alarCreature->GetReactState() == REACT_PASSIVE;
+    return !isAlarInPhase2[alar->GetMap()->GetInstanceId()];
 }
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()

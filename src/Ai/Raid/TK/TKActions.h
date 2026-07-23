@@ -51,10 +51,6 @@ public:
     AlarBossTanksMoveBetweenPlatformsAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "al'ar boss tanks move between platforms") {}
     bool Execute(Event event) override;
-
-private:
-    bool PositionMainTank(Unit* alar, int8 locationIndex);
-    bool PositionAssistTank(Unit* alar, int8 locationIndex);
 };
 
 class AlarMeleeDpsMoveBetweenPlatformsAction : public AttackAction
@@ -82,7 +78,7 @@ public:
 
 private:
     bool HandlePhase1Embers(Unit* alar);
-    bool HandlePhase2Embers();
+    bool HandlePhase2Embers(Event const& event);
 };
 
 class AlarRangedDpsPrioritizeEmbersAction : public AttackAction
@@ -225,7 +221,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    std::pair<Unit*, Unit*> GetSolariumPriests();
     std::vector<Player*> GetMeleeBots();
     Unit* AssignSolariumPriestsToBots(
         std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers);
