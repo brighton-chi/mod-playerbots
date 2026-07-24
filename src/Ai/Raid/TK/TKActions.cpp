@@ -640,7 +640,7 @@ bool VoidReaverSpreadRangedInCircleAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (_hasReachedVoidReaverPosition)
+    if (!_hasReachedVoidReaverPosition)
     {
         int healerCount = 0, rangedDpsCount = 0;
         int healerIndex = GetHealerIndex(group, healerCount);
@@ -766,8 +766,8 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
         {
             activeOrbs.push_back(orb.destination);
             if (!inDanger && bot->GetExactDist2d(
-                    orb.destination.GetPositionX(), orb.destination.GetPositionY()) <
-                orbSafeDistance)
+                    orb.destination.GetPositionX(),
+                    orb.destination.GetPositionY()) < orbSafeDistance)
             {
                 inDanger = true;
             }
