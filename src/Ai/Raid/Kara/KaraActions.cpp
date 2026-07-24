@@ -504,16 +504,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    static std::array<const char*, 5> const ozTargets =
-    {
-        "dorothee",
-        "tito",
-        "roar",
-        "strawman",
-        "tinhead",
-    };
-
-    for (const char* name : ozTargets)
+    for (const char* name : GetOzTargets())
     {
         if (Unit* target = AI_VALUE2(Unit*, "find target", name))
             return MarkTargetWithSkull(bot, target);

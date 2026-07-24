@@ -10,6 +10,7 @@
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <array>
 #include <ctime>
 #include <unordered_map>
 
@@ -93,6 +94,9 @@ constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 // Attumen the Huntsman
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
 Unit* GetAttumenMounted(Player* bot);
+
+// Wizard of Oz
+std::array<const char*, 5> const& GetOzTargets();
 
 // Shade of Aran
 bool IsAranCastingArcaneExplosion(Unit* aran);

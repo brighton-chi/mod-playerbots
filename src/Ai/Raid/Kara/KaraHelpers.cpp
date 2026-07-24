@@ -20,6 +20,22 @@ Unit* GetAttumenMounted(Player* bot)
         static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
 }
 
+// Wizard of Oz
+
+std::array<const char*, 5> const& GetOzTargets()
+{
+    static std::array<const char*, 5> const targets =
+    {
+        "dorothee",
+        "tito",
+        "roar",
+        "strawman",
+        "tinhead",
+    };
+
+    return targets;
+}
+
 // Shade of Aran
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
