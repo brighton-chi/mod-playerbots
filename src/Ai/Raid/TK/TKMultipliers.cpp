@@ -34,16 +34,11 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action))
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action))
     {
         return 0.0f;
     }
-
-    if (botAI->IsAssistTankOfIndex(bot, 1, false))
-        return 1.0f;
-
-    if (dynamic_cast<ReachTargetAction*>(action))
-        return 0.0f;
 
     /* if (!botAI->IsDps(bot) &
         dynamic_cast<CastReachTargetSpellAction*>(action))

@@ -5,7 +5,28 @@
  */
 
 #include "TKStrategy.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
 #include "TKMultipliers.h"
+
+void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+        return;
+
+    if (Unit* ember =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "ember of al'ar")->Get())
+    {
+        exclusions.insert(ember->GetGUID());
+    }
+}
+
+void RaidTempestKeepStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    AppendEmberOfAlarMeleeDpsExclusions(botAI, exclusions);
+}
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

@@ -248,6 +248,13 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     if (AI_VALUE(Unit*, "current target") != ember)
         return Attack(ember);
 
+    if (!bot->IsWithinMeleeRange(ember))
+    {
+        return MoveTo(
+            TK_MAP_ID, ember->GetPositionX(), ember->GetPositionY(), ember->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
     if (ember->GetVictim() != bot)
         return false;
 
@@ -562,7 +569,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
     bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
         alar->FindCurrentSpellBySpellId(static_cast<uint32>(TkSpells::SPELL_REBIRTH_PHASE2));
 
-    if (lastRebirthState[instanceId] && !rebirthActive)
+    if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
     {
         isAlarInPhase2[instanceId] = true;
         return true;
