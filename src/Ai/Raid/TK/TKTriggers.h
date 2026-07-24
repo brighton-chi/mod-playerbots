@@ -121,11 +121,11 @@ public:
     bool IsActive() override;
 };
 
-class VoidReaverRangedShouldSpreadTrigger : public Trigger
+class VoidReaverRangedShouldStandBackTrigger : public Trigger
 {
 public:
-    VoidReaverRangedShouldSpreadTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "void reaver ranged should spread") {}
+    VoidReaverRangedShouldStandBackTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "void reaver ranged should stand back") {}
     bool IsActive() override;
 };
 

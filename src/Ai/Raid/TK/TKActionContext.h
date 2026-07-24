@@ -67,8 +67,8 @@ public:
         creators["void reaver use aggro dump ability"] =
             &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
-        creators["void reaver spread ranged in circle"] =
-            &RaidTempestKeepActionContext::void_reaver_spread_ranged_in_circle;
+        creators["void reaver keep ranged in goldilocks zone"] =
+            &RaidTempestKeepActionContext::void_reaver_keep_ranged_in_goldilocks_zone;
 
         creators["void reaver avoid arcane orb"] =
             &RaidTempestKeepActionContext::void_reaver_avoid_arcane_orb;
@@ -210,8 +210,8 @@ private:
     static Action* void_reaver_use_aggro_dump_ability(PlayerbotAI* botAI) {
         return new VoidReaverUseAggroDumpAbilityAction(botAI);
     }
-    static Action* void_reaver_spread_ranged_in_circle(PlayerbotAI* botAI) {
-        return new VoidReaverSpreadRangedInCircleAction(botAI);
+    static Action* void_reaver_keep_ranged_in_goldilocks_zone(PlayerbotAI* botAI) {
+        return new VoidReaverKeepRangedInGoldilocksZoneAction(botAI);
     }
     static Action* void_reaver_avoid_arcane_orb(PlayerbotAI* botAI) {
         return new VoidReaverAvoidArcaneOrbAction(botAI);

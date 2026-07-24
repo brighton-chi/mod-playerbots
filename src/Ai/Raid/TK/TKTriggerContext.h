@@ -58,8 +58,8 @@ public:
         creators["void reaver knock away reduces tank aggro"] =
             &RaidTempestKeepTriggerContext::void_reaver_knock_away_reduces_tank_aggro;
 
-        creators["void reaver ranged should spread"] =
-            &RaidTempestKeepTriggerContext::void_reaver_ranged_should_spread;
+        creators["void reaver ranged should stand back"] =
+            &RaidTempestKeepTriggerContext::void_reaver_ranged_should_stand_back;
 
         creators["void reaver arcane orb is incoming"] =
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
@@ -189,8 +189,8 @@ private:
     static Trigger* void_reaver_knock_away_reduces_tank_aggro(PlayerbotAI* botAI) {
         return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI);
     }
-    static Trigger* void_reaver_ranged_should_spread(PlayerbotAI* botAI) {
-        return new VoidReaverRangedShouldSpreadTrigger(botAI);
+    static Trigger* void_reaver_ranged_should_stand_back(PlayerbotAI* botAI) {
+        return new VoidReaverRangedShouldStandBackTrigger(botAI);
     }
     static Trigger* void_reaver_arcane_orb_is_incoming(PlayerbotAI* botAI) {
         return new VoidReaverArcaneOrbIsIncomingTrigger(botAI);

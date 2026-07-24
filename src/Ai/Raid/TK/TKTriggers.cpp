@@ -140,13 +140,35 @@ bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
     return voidReaver && voidReaver->GetVictim() == bot;
 }
 
-bool VoidReaverRangedShouldSpreadTrigger::IsActive()
+bool VoidReaverRangedShouldStandBackTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    return voidReaver && voidReaver->GetVictim() != bot;
+    if (!voidReaver || voidReaver->GetVictim() == bot)
+        return false;
+
+    auto const orbIt = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    if (orbIt == voidReaverArcaneOrbs.end())
+        return true;
+
+    uint32 const now = getMSTime();
+    constexpr uint32 orbDuration = 7000;
+    constexpr float orbSafeDistance = 30.0f;
+
+    for (auto const& orb : orbIt->second)
+    {
+        if (getMSTimeDiff(orb.castTime, now) <= orbDuration &&
+            bot->GetExactDist2d(
+                orb.destination.GetPositionX(),
+                orb.destination.GetPositionY()) < orbSafeDistance)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
@@ -162,13 +184,13 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
-    uint32 currentTime = getMSTime();
+    uint32 const now = getMSTime();
     constexpr uint32 orbDuration = 7000;
     constexpr float safeDistance = 22.0f;
 
     for (auto const& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration && bot->GetExactDist2d(
+        if (getMSTimeDiff(orb.castTime, now) <= orbDuration && bot->GetExactDist2d(
                 orb.destination.GetPositionX(), orb.destination.GetPositionY()) < safeDistance)
         {
             return true;
@@ -534,5 +556,7 @@ bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
 
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE));
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
+    // return bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE));
 }

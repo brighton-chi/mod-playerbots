@@ -33,17 +33,10 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
             reset = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+    if (!AI_VALUE2(Unit*, "find target", "void reaver") &&
+        voidReaverArcaneOrbs.erase(instanceId) > 0)
     {
-        if (voidReaverArcaneOrbs.erase(instanceId) > 0)
-            reset = true;
-
-        Action* action = botAI->GetAiObjectContext()->GetAction("void reaver spread ranged");
-        if (action &&
-            static_cast<VoidReaverSpreadRangedInCircleAction*>(action)->ResetReachedRangedPosition())
-        {
-            reset = true;
-        }
+        reset = true;
     }
 
     return reset;
@@ -630,117 +623,23 @@ bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)
     return false;
 }
 
-bool VoidReaverSpreadRangedInCircleAction::Execute(Event /*event*/)
+bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
+    constexpr float minDistFromBoss = 22.0f;
+    constexpr uint32 minInterval = 0;
+    if (bot->GetDistance2d(voidReaver) < minDistFromBoss)
+        return FleePosition(voidReaver->GetPosition(), minDistFromBoss, minInterval);
 
-    if (!_hasReachedVoidReaverPosition)
-    {
-        int healerCount = 0, rangedDpsCount = 0;
-        int healerIndex = GetHealerIndex(group, healerCount);
-        int rangedDpsIndex = GetRangedDpsIndex(group, rangedDpsCount);
-
-        // Void Reaver's CombatReach is 15 yards
-        constexpr float radius = 45.0f;
-        float targetX = 0.0f;
-        float targetY = 0.0f;
-
-        if (healerIndex != -1 && healerCount > 0)
-        {
-            float angle = 2 * M_PI * healerIndex / healerCount;
-            targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
-            targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
-        }
-        else if (rangedDpsIndex != -1 && rangedDpsCount > 0)
-        {
-            float angle = 2 * M_PI * rangedDpsIndex / rangedDpsCount;
-            if (healerCount > 0)
-                angle += M_PI / rangedDpsCount;
-
-            targetX = voidReaver->GetPositionX() + radius * std::cos(angle);
-            targetY = voidReaver->GetPositionY() + radius * std::sin(angle);
-        }
-
-        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
-        {
-            return MoveTo(
-                TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else
-        {
-            _hasReachedVoidReaverPosition = true;
-        }
-    }
-    else
-    {
-        auto const orbIt = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
-        if (orbIt != voidReaverArcaneOrbs.end())
-        {
-            uint32 const currentTime = getMSTime();
-            constexpr uint32 orbDuration = 7000;
-            constexpr float orbSafeDistance = 30.0f;
-
-            for (auto const& orb : orbIt->second)
-            {
-                if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration &&
-                    bot->GetExactDist2d(
-                        orb.destination.GetPositionX(),
-                        orb.destination.GetPositionY()) < orbSafeDistance)
-                {
-                    return false;
-                }
-            }
-        }
-
-        // No incoming arcane orbs within 30 yards
-        constexpr float safeDistance = 20.0f;
-        constexpr uint32 minInterval = 1000;
-        if (bot->GetDistance2d(voidReaver) < safeDistance)
-            return FleePosition(voidReaver->GetPosition(), safeDistance, minInterval);
-    }
+    // Small spread to discourage clumping when avoiding orbs
+    constexpr float minDistFromPlayer = 3.0f;
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer))
+        return FleePosition(nearestPlayer->GetPosition(), minDistFromPlayer);
 
     return false;
-}
-
-int VoidReaverSpreadRangedInCircleAction::GetHealerIndex(Group* group, int& healerCount)
-{
-    std::vector<Player*> healers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsHeal(member))
-            continue;
-
-        healers.push_back(member);
-    }
-
-    healerCount = healers.size();
-    auto it = std::find(healers.begin(), healers.end(), bot);
-    return (it != healers.end()) ? std::distance(healers.begin(), it) : -1;
-}
-
-int VoidReaverSpreadRangedInCircleAction::GetRangedDpsIndex(Group* group, int& rangedDpsCount)
-{
-    std::vector<Player*> rangedDps;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsRangedDps(member))
-            continue;
-
-        rangedDps.push_back(member);
-    }
-
-    rangedDpsCount = rangedDps.size();
-    auto it = std::find(rangedDps.begin(), rangedDps.end(), bot);
-    return (it != rangedDps.end()) ? std::distance(rangedDps.begin(), it) : -1;
 }
 
 bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
@@ -753,45 +652,34 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
-    uint32 currentTime = getMSTime();
+    uint32 const now = getMSTime();
     constexpr uint32 orbDuration = 7000;
     constexpr float orbSafeDistance = 22.0f;
 
-    // Collect active orbs and check if any are with 22 yards
     std::vector<Position> activeOrbs;
     bool inDanger = false;
     for (auto const& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
+        if (getMSTimeDiff(orb.castTime, now) > orbDuration)
+            continue;
+
+        activeOrbs.push_back(orb.destination);
+        if (!inDanger && bot->GetExactDist2d(
+                orb.destination.GetPositionX(),
+                orb.destination.GetPositionY()) < orbSafeDistance)
         {
-            activeOrbs.push_back(orb.destination);
-            if (!inDanger && bot->GetExactDist2d(
-                    orb.destination.GetPositionX(),
-                    orb.destination.GetPositionY()) < orbSafeDistance)
-            {
-                inDanger = true;
-            }
+            inDanger = true;
         }
     }
-
-    // Clean expired orbs
-    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-        [currentTime](ArcaneOrbData const& orb) {
-            return getMSTimeDiff(orb.castTime, currentTime) > orbDuration;
-        }), it->second.end());
 
     if (!inDanger)
         return false;
 
-    // Search radially from bot for the shortest move that satisfies:
-    // 1. >= orbSafeDistance from all active orbs
-    // 2. >= minDistFromBoss (20 yd) GetDistance2d from Void Reaver
-    // 3. <= maxDistFromBoss (28 yd) GetDistance2d from Void Reaver
     constexpr float searchStep = M_PI / 12.0f;
-    constexpr float minSearchDist = 2.0f;
+    constexpr float minSearchDist = 1.0f;
     constexpr float maxSearchDist = 40.0f;
-    constexpr float searchDistStep = 2.0f;
-    constexpr float minDistFromBoss = 20.0f;
+    constexpr float searchDistStep = 1.0f;
+    constexpr float minDistFromBoss = 22.0f;
     constexpr float maxDistFromBoss = 28.0f;
 
     std::vector<Position> bestCandidates;
@@ -848,55 +736,9 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
             false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // Fallback: flee from closest orb
-    return FleePosition(activeOrbs[0], orbSafeDistance, 0);
-}
-
-/*
-// Previous simple-flee version
-bool VoidReaverAvoidArcaneOrbAction::Execute(Event event)
-{
-    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    if (!voidReaver)
-        return false;
-
-    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
-    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
-        return false;
-
-    uint32 currentTime = getMSTime();
-    constexpr uint32 orbDuration = 7000;
-    constexpr float safeDistance = 22.0f;
-    bool shouldFlee = false;
-    Position fleeDest;
-
-    for (auto const& orb : it->second)
-    {
-        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration)
-        {
-            if (bot->GetExactDist2d(
-                    orb.destination.GetPositionX(), orb.destination.GetPositionY()) < safeDistance)
-            {
-                shouldFlee = true;
-                fleeDest = orb.destination;
-                break;
-            }
-        }
-    }
-
-    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-        [currentTime](ArcaneOrbData const& orb) {
-            return getMSTimeDiff(orb.castTime, currentTime) > orbDuration;
-        }), it->second.end());
-
-    if (!shouldFlee)
-        return false;
-
     constexpr uint32 minInterval = 0;
-    botAI->InterruptSpell();
-    return FleePosition(fleeDest, safeDistance, minInterval);
+    return FleePosition(activeOrbs[0], orbSafeDistance, minInterval);
 }
-*/
 
 // High Astromancer Solarian
 

@@ -33,17 +33,17 @@ public:
             return;
 
         auto& orbs = voidReaverArcaneOrbs[caster->GetMap()->GetInstanceId()];
-        uint32 currentTime = getMSTime();
+        uint32 const now = getMSTime();
 
         ArcaneOrbData orbData;
         orbData.destination = target->GetPosition();
-        orbData.castTime = currentTime;
+        orbData.castTime = now;
 
         orbs.push_back(orbData);
 
         orbs.erase(std::remove_if(orbs.begin(), orbs.end(),
-            [currentTime](ArcaneOrbData const& orb) {
-                return getMSTimeDiff(orb.castTime, currentTime) > 5000;
+            [now](ArcaneOrbData const& orb) {
+                return getMSTimeDiff(orb.castTime, now) > 5000;
             }), orbs.end());
     }
 };

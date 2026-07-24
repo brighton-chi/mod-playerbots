@@ -76,8 +76,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("void reaver knock away reduces tank aggro", {
         NextAction("void reaver use aggro dump ability", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("void reaver ranged should spread", {
-        NextAction("void reaver spread ranged in circle", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("void reaver ranged should stand back", {
+        NextAction("void reaver keep ranged in goldilocks zone", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("void reaver arcane orb is incoming", {
         NextAction("void reaver avoid arcane orb", ACTION_EMERGENCY + 1) }));

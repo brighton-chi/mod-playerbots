@@ -159,24 +159,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class VoidReaverSpreadRangedInCircleAction : public MovementAction
+class VoidReaverKeepRangedInGoldilocksZoneAction : public MovementAction
 {
 public:
-    VoidReaverSpreadRangedInCircleAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "void reaver spread ranged in circle") {}
+    VoidReaverKeepRangedInGoldilocksZoneAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "void reaver keep ranged in goldilocks zone") {}
     bool Execute(Event event) override;
-    bool ResetReachedRangedPosition()
-    {
-        if (!_hasReachedVoidReaverPosition)
-            return false;
-        _hasReachedVoidReaverPosition = false;
-        return true;
-    }
-
-private:
-    int GetHealerIndex(Group* group, int& healerCount);
-    int GetRangedDpsIndex(Group* group, int& rangedDpsCount);
-    bool _hasReachedVoidReaverPosition = false;
 };
 
 class VoidReaverAvoidArcaneOrbAction : public MovementAction
