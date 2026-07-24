@@ -139,11 +139,11 @@ public:
 
 // High Astromancer Solarian
 
-class HighAstromancerSolarianShouldLeaveEscapePathTrigger : public Trigger
+class HighAstromancerSolarianEngagedByRangedTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianShouldLeaveEscapePathTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian should leave escape path") {}
+    HighAstromancerSolarianEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian engaged by ranged") {}
     bool IsActive() override;
 };
 
@@ -152,14 +152,6 @@ class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public Trigger
 public:
     HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian bot has wrath of the astromancer") {}
-    bool IsActive() override;
-};
-
-class HighAstromancerSolarianBossHasVanishedTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianBossHasVanishedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss has vanished") {}
     bool IsActive() override;
 };
 

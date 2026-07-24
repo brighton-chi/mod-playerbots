@@ -315,8 +315,30 @@ std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 // High Astromancer Solarian
 bool HasWrathOfTheAstromancer(Player* bot)
 {
-    return bot && bot->HasAura(
-        static_cast<uint32>(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
+    return bot->HasAura(static_cast<uint32>(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
+}
+
+Player* GetRangedLeader(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != TK_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || HasWrathOfTheAstromancer(bot))
+        {
+            continue;
+        }
+
+        if (botAI->IsRanged(member))
+            return member;
+    }
+
+    return nullptr;
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>

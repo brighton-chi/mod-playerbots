@@ -83,14 +83,11 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("void reaver avoid arcane orb", ACTION_EMERGENCY + 1) }));
 
     // High Astromancer Solarian
-    triggers.push_back(new TriggerNode("high astromancer solarian should leave escape path", {
+    triggers.push_back(new TriggerNode("high astromancer solarian engaged by ranged", {
         NextAction("high astromancer solarian position ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
         NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
-
-    triggers.push_back(new TriggerNode("high astromancer solarian boss has vanished", {
-        NextAction("high astromancer solarian stack for aoe", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID) }));

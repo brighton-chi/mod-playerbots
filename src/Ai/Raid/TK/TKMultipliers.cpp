@@ -40,10 +40,6 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    /* if (!botAI->IsDps(bot) &
-        dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f; */
-
     return 1.0f;
 }
 
@@ -162,11 +158,15 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
         return 1.0f;
     }
 
-    if (botAI->IsRanged(bot) &&
-        (dynamic_cast<CombatFormationMoveAction*>(action) ||
-         dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<CastBlinkBackAction*>(action) ||
-         dynamic_cast<CastDisengageAction*>(action)))
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action))
     {
         return 0.0f;
     }
@@ -176,6 +176,7 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) &&
+         !dynamic_cast<AttackAction*>(action) &&
          !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action)))
     {
         return 0.0f;

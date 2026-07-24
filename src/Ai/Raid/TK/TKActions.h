@@ -183,6 +183,9 @@ public:
     HighAstromancerSolarianPositionRangedAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian position ranged") {}
     bool Execute(Event event) override;
+
+private:
+    bool StackOnRangedLeader();
 };
 
 class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
@@ -190,14 +193,6 @@ class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
 public:
     HighAstromancerSolarianMoveAwayFromGroupAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian move away from group") {}
-    bool Execute(Event event) override;
-};
-
-class HighAstromancerSolarianStackForAoeAction : public MovementAction
-{
-public:
-    HighAstromancerSolarianStackForAoeAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian stack for aoe") {}
     bool Execute(Event event) override;
 };
 

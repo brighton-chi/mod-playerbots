@@ -21,6 +21,14 @@ using namespace TkHelpers;
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
+    // Some weird bug with Solarian applies this aura to players
+    // It doesn't seem to have any effect, but it should be removed anyway
+    if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_SELECT_TRUE_BEAM )))
+        bot->RemoveAura(static_cast<uint32>(TkSpells::SPELL_SELECT_TRUE_BEAM));
+
+    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
+        return false;
+
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     bool reset = false;
 
@@ -323,7 +331,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
     if (ember)
     {
         constexpr float safeDistance = 15.0f;
-        const float currentDistance = bot->GetDistance2d(ember);
+        float const currentDistance = bot->GetDistance2d(ember);
         if (currentDistance < safeDistance)
         {
             botAI->InterruptSpell();
@@ -433,8 +441,8 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     }
     else
     {
-        float currentDistance = bot->GetDistance2d(alar);
         constexpr float safeDistance = 20.0f;
+        float const currentDistance = bot->GetDistance2d(alar);
         if (currentDistance < safeDistance)
             return MoveAway(alar, safeDistance - currentDistance);
     }
@@ -506,8 +514,8 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         (alar->HasUnitState(UNIT_STATE_CASTING) &&
          alar->FindCurrentSpellBySpellId(static_cast<uint32>(TkSpells::SPELL_REBIRTH_DIVE))))
     {
-        float currentDistance = bot->GetDistance2d(alar);
         constexpr float safeDistance = 20.0f;
+        float const currentDistance = bot->GetDistance2d(alar);
         if (currentDistance < safeDistance)
         {
             botAI->InterruptSpell();
@@ -634,7 +642,10 @@ bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(voidReaver) < minDistFromBoss)
         return FleePosition(voidReaver->GetPosition(), minDistFromBoss, minInterval);
 
-    // Small spread to discourage clumping when avoiding orbs
+    if (voidReaver->GetHealthPct() > 90.0f)
+        return false;
+
+    // Maintain small spread after pull to discourage clumping when avoiding orbs
     constexpr float minDistFromPlayer = 3.0f;
     if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), minDistFromPlayer);
@@ -679,8 +690,8 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     constexpr float minSearchDist = 1.0f;
     constexpr float maxSearchDist = 40.0f;
     constexpr float searchDistStep = 1.0f;
-    constexpr float minDistFromBoss = 22.0f;
-    constexpr float maxDistFromBoss = 28.0f;
+    constexpr float minDistFromBoss = 20.5f;
+    constexpr float maxDistFromBoss = 28.5f;
 
     std::vector<Position> bestCandidates;
     float bestMoveDist = std::numeric_limits<float>::max();
@@ -748,12 +759,36 @@ bool HighAstromancerSolarianPositionRangedAction::Execute(Event /*event*/)
     if (!astromancer)
         return false;
 
-    float currentDistance = bot->GetExactDist2d(astromancer);
-    constexpr float minDistance = 20.0f;
-    if (currentDistance < minDistance)
-        return MoveAway(astromancer, minDistance - currentDistance);
+    Creature* astromancerCreature = astromancer->ToCreature();
+    if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
+    {
+        // Move away only when Solarian is visible
+        constexpr float minDistance = 10.0f;
+        float const currentDistance = bot->GetDistance2d(astromancer);
+        if (currentDistance < minDistance)
+            return MoveAway(astromancer, minDistance - currentDistance);
+    }
 
-    return false;
+    return StackOnRangedLeader();
+}
+
+bool HighAstromancerSolarianPositionRangedAction::StackOnRangedLeader()
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* rangedLeader = GetRangedLeader(bot);
+    if (!rangedLeader || bot == rangedLeader)
+        return false;
+
+    if (bot->GetExactDist2d(rangedLeader) < 5.0f)
+        return false;
+
+    return MoveTo(
+        TK_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
+        rangedLeader->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
@@ -764,32 +799,6 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 
     botAI->InterruptSpell();
     return MoveFromGroup(safeDistance);
-}
-
-bool HighAstromancerSolarianStackForAoeAction::Execute(Event /*event*/)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* stackTarget = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsRanged(member))
-        {
-            stackTarget = member;
-            break;
-        }
-    }
-
-    if (!stackTarget || bot == stackTarget || bot->GetExactDist2d(stackTarget) < 5.0f)
-        return false;
-
-    return MoveTo(
-        TK_MAP_ID, stackTarget->GetPositionX(), stackTarget->GetPositionY(),
-        stackTarget->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Split melee into two groups, one on each Solarium Priest
@@ -1693,10 +1702,12 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(3.5f, distToPosition);
     float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    bool backwards = kaelthas->GetExactDist2d(
+        position.GetPositionX(), position.GetPositionY()) >= distToPosition ? true : false;
 
     return MoveTo(
         TK_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
@@ -1782,8 +1793,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 {
     if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
     {
-        float currentDistance = bot->GetExactDist2d(phoenix);
         constexpr float safeDistance = 12.0f;
+        float const currentDistance = bot->GetExactDist2d(phoenix);
         if (currentDistance < safeDistance)
             return MoveAway(phoenix, safeDistance - currentDistance);
     }
@@ -1802,7 +1813,6 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
         constexpr float searchRadius = 75.0f;
         Unit* phoenixEgg = bot->FindNearestCreature(
             static_cast<uint32>(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
-
         if (phoenixEgg && AI_VALUE(Unit*, "current target") != phoenixEgg)
             return Attack(phoenixEgg);
     }

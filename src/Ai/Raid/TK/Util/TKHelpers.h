@@ -32,6 +32,7 @@ enum class TkSpells : uint32
     SPELL_ARCANE_ORB                = 34172,
 
     // High Astromancer Solarian
+    SPELL_SELECT_TRUE_BEAM          = 33365,
     SPELL_SOLARIAN_TRANSFORM        = 39117,
     SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
 
@@ -150,6 +151,7 @@ extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOr
 
 // High Astromancer Solarian
 bool HasWrathOfTheAstromancer(Player* bot);
+Player* GetRangedLeader(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 extern Position const SANGUINAR_TANK_POSITION;

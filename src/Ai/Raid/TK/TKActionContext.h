@@ -80,9 +80,6 @@ public:
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
 
-        creators["high astromancer solarian stack for aoe"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_for_aoe;
-
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
 
@@ -223,9 +220,6 @@ private:
     }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI);
-    }
-    static Action* high_astromancer_solarian_stack_for_aoe(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianStackForAoeAction(botAI);
     }
     static Action* high_astromancer_solarian_target_solarium_priests(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI);

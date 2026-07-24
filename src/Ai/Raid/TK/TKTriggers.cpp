@@ -16,7 +16,7 @@ using namespace TkHelpers;
 // General
 bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, TK_MAP_ID) && !AI_VALUE2(bool, "combat", "self target");
+    return bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash
@@ -202,7 +202,7 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
 
 // High Astromancer Solarian
 
-bool HighAstromancerSolarianShouldLeaveEscapePathTrigger::IsActive()
+bool HighAstromancerSolarianEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
         return false;
@@ -218,19 +218,6 @@ bool HighAstromancerSolarianShouldLeaveEscapePathTrigger::IsActive()
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
 {
     return HasWrathOfTheAstromancer(bot);
-}
-
-bool HighAstromancerSolarianBossHasVanishedTrigger::IsActive()
-{
-    if (HasWrathOfTheAstromancer(bot))
-        return false;
-
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer)
-        return false;
-
-    Creature* astromancerCreature = astromancer->ToCreature();
-    return astromancerCreature && astromancerCreature->GetReactState() == REACT_PASSIVE;
 }
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()

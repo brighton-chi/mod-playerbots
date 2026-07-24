@@ -65,14 +65,11 @@ public:
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
 
         // High Astromancer Solarian
-        creators["high astromancer solarian should leave escape path"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_leave_escape_path;
+        creators["high astromancer solarian engaged by ranged"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_ranged;
 
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
-
-        creators["high astromancer solarian boss has vanished"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_has_vanished;
 
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
@@ -197,14 +194,11 @@ private:
     }
 
     // High Astromancer Solarian
-    static Trigger* high_astromancer_solarian_should_leave_escape_path(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianShouldLeaveEscapePathTrigger(botAI);
+    static Trigger* high_astromancer_solarian_engaged_by_ranged(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianEngagedByRangedTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);
-    }
-    static Trigger* high_astromancer_solarian_boss_has_vanished(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianBossHasVanishedTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI);
