@@ -80,11 +80,11 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()) ||
-        !botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-    {
+    if (!botAI->IsMelee(botAI->GetBot()))
         return;
-    }
+
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
+        return;
 
     for (ObjectGuid const guid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
