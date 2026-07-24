@@ -37,13 +37,13 @@ std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
     return {lowest, highest};
 }
 
-Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
+Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Unit* nearestPlayer = nullptr;
     float nearestDistance = radius;
 

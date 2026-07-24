@@ -95,7 +95,7 @@ enum class TkItems : uint32
 // General
 constexpr uint32 TK_MAP_ID = 550;
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
-Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
+Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
 Position FindSafestNearbyPosition(
     Player* bot, std::vector<Unit*> const& hazards,
