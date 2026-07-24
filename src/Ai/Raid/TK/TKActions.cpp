@@ -1021,8 +1021,8 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     if (!thaladred)
         return false;
 
-    float currentDistance = bot->GetDistance2d(thaladred);
     constexpr float safeDistance = 15.0f;
+    float const currentDistance = bot->GetDistance2d(thaladred);
     if (currentDistance < safeDistance)
         return MoveAway(thaladred, safeDistance - currentDistance);
 
@@ -1040,8 +1040,11 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
+            GET_PLAYERBOT_AI(member))
+        {
             hunters.push_back(member);
+        }
 
         if (hunters.size() >= 3)
             break;
@@ -1072,11 +1075,11 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
         tankTarget = GetGroupAssistTank(botAI, bot, 0);
     }
 
-    if (!advisorTarget ||
-        advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        advisorTarget->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) ||
-        IsFeigningDeath(advisorTarget))
+    if (!advisorTarget || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        advisorTarget->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) || IsFeigningDeath(advisorTarget))
+    {
         return false;
+    }
 
     if (!tankTarget || !tankTarget->IsAlive())
         return false;
@@ -1086,7 +1089,9 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
 
     if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", advisorTarget))
+    {
         return botAI->CastSpell("steady shot", advisorTarget);
+    }
 
     return false;
 }
@@ -1197,7 +1202,8 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
     return false;
 }
 
-bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian)
+bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
+    boss_kaelthas* kaelAI, Unit* capernian)
 {
     if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
     {

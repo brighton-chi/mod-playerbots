@@ -230,19 +230,22 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred || thaladred->GetVictim() != bot)
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
     if (!kaelAI)
         return false;
 
-    return !(botAI->IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS);
+    if (botAI->IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+        return false;
+
+    return true;
 }
 
 bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
@@ -255,8 +258,11 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-           kaelAI->GetPhase() == PHASE_ALL_ADVISORS);
+    if (!kaelAI)
+        return false;
+
+    return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
+        kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
@@ -283,8 +289,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         return false;
 
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_TRANSITION ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+        kaelAI->GetPhase() == PHASE_TRANSITION || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
@@ -330,26 +335,24 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
     if (!kaelthas)
         return false;
 
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+        return false;
+
     if (!AI_VALUE2(Unit*, "find target", "master engineer telonicus") &&
         !AI_VALUE2(Unit*, "find target", "lord sanguinar"))
     {
         return false;
     }
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
-        return false;
-
-    return botAI->IsAssistHealOfIndex(bot, 0, true) ||
-           botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true) ||
-           (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true) ||
+        botAI->IsAssistHealOfIndex(bot, 0, true) ||
+        (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) ||
-        botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -357,8 +360,10 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-           kaelAI->GetPhase() == PHASE_ALL_ADVISORS);
+    if (!kaelAI)
+        return false;
+
+    return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
@@ -376,21 +381,20 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS;
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_WEAPONS)
+        return false;
+
+    return !botAI->IsMainTank(bot);
 }
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "devastation");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "devastation");
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
@@ -400,8 +404,10 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI ||
-        (kaelAI->GetPhase() != PHASE_WEAPONS && kaelAI->GetPhase() != PHASE_ALL_ADVISORS))
+    if (!kaelAI)
+        return false;
+
+    if (kaelAI->GetPhase() != PHASE_WEAPONS && kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return false;
 
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
@@ -413,12 +419,21 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
 {
+    if (botAI->IsHeal(bot))
+        return false;
+
+    if (botAI->IsMelee(bot) && botAI->IsDps(bot))
+        return false;
+
     if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
-    return bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
-           bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
-           bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
+    bool HasUsableLegendaryWeapon =
+        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
+        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
+        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
+
+    return HasUsableLegendaryWeapon;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
@@ -430,9 +445,9 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (!map)
         return false;
 
-    constexpr uint32 KAELTHAS_DB_GUID = 158218;
+    constexpr uint32 kaelthasDbGuid = 158218;
     auto const& creatureStore = map->GetCreatureBySpawnIdStore();
-    auto it = creatureStore.find(KAELTHAS_DB_GUID);
+    auto it = creatureStore.find(kaelthasDbGuid);
     if (it == creatureStore.end())
         return false;
 
@@ -444,13 +459,12 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     {
         EQUIPMENT_SLOT_MAINHAND,
         EQUIPMENT_SLOT_OFFHAND,
-        EQUIPMENT_SLOT_RANGED
+        EQUIPMENT_SLOT_RANGED,
     };
 
     for (uint8 slot : weaponSlots)
     {
-        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) &&
-            HasEquippableItemForSlot(bot, slot))
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) && HasEquippableItemForSlot(bot, slot))
             return true;
     }
 
@@ -477,11 +491,14 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "phoenix") ||
-           AI_VALUE2(Unit*, "find target", "phoenix egg");
+        AI_VALUE2(Unit*, "find target", "phoenix egg");
 }
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 {
+    if (botAI->IsCaster(bot))
+        return false;
+
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
@@ -492,17 +509,18 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     if (!bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_INFINITY_BLADE), 1, true))
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-            if (member->HasAura(static_cast<uint32>(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
-                return true;
-        }
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(static_cast<uint32>(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
+            return true;
     }
 
     return false;
