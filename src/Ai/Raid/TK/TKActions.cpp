@@ -526,7 +526,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
     }
 
     constexpr float safeDistance = 10.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
     {
         float const currentDistance = bot->GetDistance2d(nearestPlayer);
         return MoveAway(nearestPlayer, safeDistance - currentDistance);
@@ -636,7 +636,7 @@ bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
 
     // Small spread to discourage clumping when avoiding orbs
     constexpr float minDistFromPlayer = 3.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), minDistFromPlayer);
 
     return false;
@@ -1053,7 +1053,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 
         constexpr float safeDistance = 6.0f;
         constexpr uint32 minInterval = 1000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
     }
 

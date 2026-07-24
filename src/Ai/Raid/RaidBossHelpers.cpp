@@ -202,26 +202,27 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 }
 
 // Return the nearest alive player (human or bot) within the specified radius
-// Distance is measured by GetDistance2d(), which takes into account hitboxes (1.5y)
-Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+// Distance is measured by GetExactDist2d(), which does not into account hitboxes (1.5y)
+Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
-    Unit* nearestPlayer = nullptr;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
 
-            float distance = bot->GetDistance2d(member);
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestPlayer = member;
-            }
+        float distance = bot->GetDistance2d(member);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestPlayer = member;
         }
     }
 

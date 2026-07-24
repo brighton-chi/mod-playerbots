@@ -352,7 +352,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
     else
     {
         constexpr float safeDistance = 10.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
             float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
             if (distanceToPlayer < safeDistance)

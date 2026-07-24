@@ -44,12 +44,10 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 // ranged spread out 15 yards from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
-    const float minDistance = 15.0f;
+    constexpr float minDistance = 15.0f;
 
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-    {
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
-    }
 
     return false;
 }

@@ -127,7 +127,7 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
     {
         constexpr uint32 minInterval = 1000;
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);

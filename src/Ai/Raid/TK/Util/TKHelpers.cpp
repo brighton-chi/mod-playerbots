@@ -44,7 +44,7 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
         return nullptr;
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Unit* nearestPlayer = nullptr;
+    Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
     for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
