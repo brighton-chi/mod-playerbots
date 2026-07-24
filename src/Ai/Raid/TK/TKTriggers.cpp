@@ -135,9 +135,9 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
     if (orbIt == voidReaverArcaneOrbs.end())
         return true;
 
-    uint32 const now = getMSTime();
     constexpr uint32 orbDuration = 7000;
     constexpr float orbSafeDistance = 30.0f;
+    uint32 const now = getMSTime();
 
     for (auto const& orb : orbIt->second)
     {

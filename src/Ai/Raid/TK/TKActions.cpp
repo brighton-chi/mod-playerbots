@@ -64,7 +64,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
     {
         if (!centurion || !centurion->IsAlive() ||
             !centurion->HasAura(static_cast<uint32>(TkSpells::SPELL_ARCANE_FLURRY)) ||
-            !botAI->HasAura("polymorph", centurion))
+            botAI->HasAura("polymorph", centurion))
         {
             continue;
         }
@@ -76,7 +76,11 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    return botAI->CanCastSpell("polymorph", target) && botAI->CastSpell("polymorph", target);
+    if (!botAI->CanCastSpell("polymorph", target))
+        return false;
+
+    botAI->InterruptSpell();
+    return botAI->CastSpell("polymorph", target);
 }
 
 // Al'ar <Phoenix God>
@@ -647,9 +651,9 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
-    uint32 const now = getMSTime();
     constexpr uint32 orbDuration = 7000;
     constexpr float orbSafeDistance = 22.0f;
+    uint32 const now = getMSTime();
 
     std::vector<Position> activeOrbs;
     bool inDanger = false;
@@ -740,7 +744,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
 bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (astromancer && AI_VALUE2(Unit*, "current target") != astromancer)
+    if (astromancer && AI_VALUE(Unit*, "current target") != astromancer)
         return Attack(astromancer);
 
     return false;

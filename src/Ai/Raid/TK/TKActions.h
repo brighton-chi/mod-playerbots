@@ -175,7 +175,7 @@ public:
     HighAstromancerSolarianMainTankPickUpBossAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "high astromancer solarian main tank pick up boss") {}
     bool Execute(Event event) override;
-}
+};
 
 class HighAstromancerSolarianStackOnRangedLeaderAction : public MovementAction
 {
