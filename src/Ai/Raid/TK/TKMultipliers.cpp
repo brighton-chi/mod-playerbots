@@ -164,12 +164,14 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
         return 0.0f;
     }
 
-    if (dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
+    if (dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action))
     {
         return 0.0f;
     }
+
+    if (bot->getClass() != CLASS_HUNTER && dynamic_cast<FleeAction*>(action))
+        return 0.0f;
 
     if (!HasWrathOfTheAstromancer(bot))
         return 1.0f;

@@ -54,9 +54,6 @@ public:
         creators["al'ar avoid flame patches and dive bombs"] =
             &RaidTempestKeepActionContext::alar_avoid_flame_patches_and_dive_bombs;
 
-        creators["al'ar return to room center"] =
-            &RaidTempestKeepActionContext::alar_return_to_room_center;
-
         creators["al'ar manage phase tracker"] =
             &RaidTempestKeepActionContext::alar_manage_phase_tracker;
 
@@ -77,8 +74,8 @@ public:
         creators["high astromancer solarian main tank pick up boss"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_main_tank_pick_up_boss;
 
-        creators["high astromancer solarian position ranged"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_position_ranged;
+        creators["high astromancer solarian stack on ranged leader"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_on_ranged_leader;
 
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
@@ -196,9 +193,6 @@ private:
     static Action* alar_avoid_flame_patches_and_dive_bombs(PlayerbotAI* botAI) {
         return new AlarAvoidFlamePatchesAndDiveBombsAction(botAI);
     }
-    static Action* alar_return_to_room_center(PlayerbotAI* botAI) {
-        return new AlarReturnToRoomCenterAction(botAI);
-    }
     static Action* alar_manage_phase_tracker(PlayerbotAI* botAI) {
         return new AlarManagePhaseTrackerAction(botAI);
     }
@@ -221,8 +215,8 @@ private:
     static Action* high_astromancer_solarian_main_tank_pick_up_boss(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMainTankPickUpBossAction(botAI);
     }
-    static Action* high_astromancer_solarian_position_ranged(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianPositionRangedAction(botAI);
+    static Action* high_astromancer_solarian_stack_on_ranged_leader(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianStackOnRangedLeaderAction(botAI);
     }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI);

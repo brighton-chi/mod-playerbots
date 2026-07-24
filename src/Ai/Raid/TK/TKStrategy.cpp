@@ -68,9 +68,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 2),
         NextAction("al'ar avoid flame patches and dive bombs", ACTION_EMERGENCY + 1) }));
 
-    // triggers.push_back(new TriggerNode("al'ar phase 2 encounter is at room center", {
-    //     NextAction("al'ar return to room center", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("al'ar should manage phase tracker", {
         NextAction("al'ar manage phase tracker", ACTION_EMERGENCY + 10) }));
 
@@ -91,14 +88,14 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian engaged by main tank", {
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("high astromancer solarian engaged by ranged", {
+    triggers.push_back(new TriggerNode("high astromancer solarian should position bots", {
         NextAction("high astromancer solarian position ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
         NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
-        NextAction("high astromancer solarian target solarium priests", ACTION_RAID) }));
+        NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream", {
         NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 1) }));

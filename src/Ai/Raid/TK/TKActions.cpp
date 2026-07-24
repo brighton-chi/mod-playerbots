@@ -288,7 +288,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 // the main tank or first assist tank (whichever is not tanking Al'ar)
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 {
-    auto [firstEmber, secondEmber] = GetTargetUnitPair(
+    auto const& [firstEmber, secondEmber] = GetTargetUnitPair(
         botAI, static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR));
 
     Unit* ember = nullptr;
@@ -319,7 +319,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 
 bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
-    auto [firstEmber, secondEmber] = GetTargetUnitPair(
+    auto const& [firstEmber, secondEmber] = GetTargetUnitPair(
         botAI, static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR));
 
     Unit* ember = nullptr;
@@ -543,22 +543,6 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
     return false;
 }
 
-// For Phase 2, ensure that bots don't get too far away and become inactive
-bool AlarReturnToRoomCenterAction::Execute(Event /*event*/)
-{
-    constexpr float distFromCenter = 45.0f;
-    Position const center = ALAR_ROOM_CENTER;
-    if (AI_VALUE(Unit*, "current target") == nullptr &&
-        bot->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) > distFromCenter)
-    {
-        return MoveInside(
-            TK_MAP_ID, center.GetPositionX(), center.GetPositionY(),
-            center.GetPositionZ(), distFromCenter - 5.0f, MovementPriority::MOVEMENT_COMBAT);
-    }
-
-    return false;
-}
-
 bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -762,26 +746,7 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HighAstromancerSolarianPositionRangedAction::Execute(Event /*event*/)
-{
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer)
-        return false;
-
-    Creature* astromancerCreature = astromancer->ToCreature();
-    if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
-    {
-        // Move away only when Solarian is visible
-        constexpr float minDistance = 8.0f;
-        float const currentDistance = bot->GetDistance2d(astromancer);
-        if (currentDistance < minDistance)
-            return MoveAway(astromancer, minDistance - currentDistance);
-    }
-
-    return StackOnRangedLeader();
-}
-
-bool HighAstromancerSolarianPositionRangedAction::StackOnRangedLeader()
+bool HighAstromancerSolarianStackOnRangedLeaderAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -810,14 +775,23 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
     return MoveFromGroup(safeDistance);
 }
 
-// Split melee into two groups, one on each Solarium Priest
 bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/)
 {
-    auto priestsPair = GetTargetUnitPair(botAI, static_cast<uint32>(TkNpcs::NPC_SOLARIUM_PRIEST));
+    auto const& priestsPair =
+        GetTargetUnitPair(botAI, static_cast<uint32>(TkNpcs::NPC_SOLARIUM_PRIEST));
     if (!priestsPair.first || !priestsPair.second)
         return false;
 
-    Unit* targetPriest = AssignSolariumPriestsToBots(priestsPair, GetMeleeBots());
+    if (botAI->IsRanged(bot) && !AI_VALUE2(Unit*, "find target", "solarium agent"))
+    {
+        if (AI_VALUE(Unit*, "current target") != priestsPair.first)
+            return Attack(priestsPair.first);
+
+        return false;
+    }
+
+    // Split melee into two groups, one on each Solarium Priest
+    Unit* targetPriest = AssignSolariumPriestsToMeleeBots(priestsPair, GetMeleeBots());
     if (!targetPriest)
         return false;
 
@@ -847,7 +821,7 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
     return meleeMembers;
 }
 
-Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsToBots(
+Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsToMeleeBots(
     std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers)
 {
     if (!priestsPair.first || !priestsPair.second || meleeMembers.empty())

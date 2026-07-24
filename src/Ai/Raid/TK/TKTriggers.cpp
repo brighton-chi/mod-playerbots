@@ -91,24 +91,6 @@ bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
     return alar && isAlarInPhase2[alar->GetMap()->GetInstanceId()];
 }
 
-bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
-{
-    if (bot->GetVictim())
-        return false;
-
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || !isAlarInPhase2[alar->GetMap()->GetInstanceId()])
-        return false;
-
-    Creature* alarCreature = alar->ToCreature();
-    if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
-        return false;
-
-    Position dest;
-    return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
-        GetAlarDestinationLocationIndex(alar, dest) != POINT_QUILL_OR_DIVE_IDX;
-}
-
 bool AlarShouldManagePhaseTrackerTrigger::IsActive()
 {
     return IsMechanicTrackerBot(bot, TK_MAP_ID) && AI_VALUE2(Unit*, "find target", "al'ar");
@@ -215,17 +197,31 @@ bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
     return astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE;
 }
 
-bool HighAstromancerSolarianEngagedByRangedTrigger::IsActive()
+bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer || astromancer->HasAura(
+        static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
+    {
         return false;
+    }
 
     if (HasWrathOfTheAstromancer(bot))
         return false;
 
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    return astromancer && !astromancer->HasAura(
-        static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM));
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    if (botAI->IsMelee(bot))
+    {
+        Creature* astromancerCreature = astromancer->ToCreature();
+        if (astromancerCreature && astromancerCreature->GetReactState() == REACT_PASSIVE)
+            return true;
+
+        return false;
+    }
+
+    return !AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()

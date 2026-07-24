@@ -87,14 +87,6 @@ public:
     bool IsActive() override;
 };
 
-class AlarPhase2EncounterIsAtRoomCenterTrigger : public Trigger
-{
-public:
-    AlarPhase2EncounterIsAtRoomCenterTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "al'ar phase 2 encounter is at room center") {}
-    bool IsActive() override;
-};
-
 class AlarShouldManagePhaseTrackerTrigger : public Trigger
 {
 public:
@@ -147,11 +139,11 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianEngagedByRangedTrigger : public Trigger
+class HighAstromancerSolarianShouldPositionBotsTrigger : public Trigger
 {
 public:
-    HighAstromancerSolarianEngagedByRangedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian engaged by ranged") {}
+    HighAstromancerSolarianShouldPositionBotsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian should position bots") {}
     bool IsActive() override;
 };
 

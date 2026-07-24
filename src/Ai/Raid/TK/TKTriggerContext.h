@@ -45,9 +45,6 @@ public:
         creators["al'ar everything is on fire in phase 2"] =
             &RaidTempestKeepTriggerContext::alar_everything_is_on_fire_in_phase_2;
 
-        creators["al'ar phase 2 encounter is at room center"] =
-            &RaidTempestKeepTriggerContext::alar_phase_2_encounter_is_at_room_center;
-
         creators["al'ar should manage phase tracker"] =
             &RaidTempestKeepTriggerContext::alar_should_manage_phase_tracker;
 
@@ -68,8 +65,8 @@ public:
         creators["high astromancer solarian engaged by main tank"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_main_tank;
 
-        creators["high astromancer solarian engaged by ranged"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_ranged;
+        creators["high astromancer solarian should position bots"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_position_bots;
 
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
@@ -175,9 +172,6 @@ private:
     static Trigger* alar_everything_is_on_fire_in_phase_2(PlayerbotAI* botAI) {
         return new AlarEverythingIsOnFireInPhase2Trigger(botAI);
     }
-    static Trigger* alar_phase_2_encounter_is_at_room_center(PlayerbotAI* botAI) {
-        return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI);
-    }
     static Trigger* alar_should_manage_phase_tracker(PlayerbotAI* botAI) {
         return new AlarShouldManagePhaseTrackerTrigger(botAI);
     }
@@ -200,8 +194,8 @@ private:
     static Trigger* high_astromancer_solarian_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianEngagedByMainTankTrigger(botAI);
     }
-    static Trigger* high_astromancer_solarian_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianEngagedByRangedTrigger(botAI);
+    static Trigger* high_astromancer_solarian_should_position_bots(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianShouldPositionBotsTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);

@@ -125,14 +125,6 @@ private:
     bool HandleDiveBomb(Unit* alar);
 };
 
-class AlarReturnToRoomCenterAction : public MovementAction
-{
-public:
-    AlarReturnToRoomCenterAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "al'ar return to room center") {}
-    bool Execute(Event event) override;
-};
-
 class AlarManagePhaseTrackerAction : public Action
 {
 public:
@@ -185,15 +177,12 @@ public:
     bool Execute(Event event) override;
 }
 
-class HighAstromancerSolarianPositionRangedAction : public AttackAction
+class HighAstromancerSolarianStackOnRangedLeaderAction : public MovementAction
 {
 public:
-    HighAstromancerSolarianPositionRangedAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "high astromancer solarian position ranged") {}
+    HighAstromancerSolarianStackOnRangedLeaderAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian stack on ranged leader") {}
     bool Execute(Event event) override;
-
-private:
-    bool StackOnRangedLeader();
 };
 
 class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
@@ -213,7 +202,7 @@ public:
 
 private:
     std::vector<Player*> GetMeleeBots();
-    Unit* AssignSolariumPriestsToBots(
+    Unit* AssignSolariumPriestsToMeleeBots(
         std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers);
 };
 
