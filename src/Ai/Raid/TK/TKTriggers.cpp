@@ -202,6 +202,19 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
 
 // High Astromancer Solarian
 
+bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
+        return false;
+
+    Creature* astromancerCreature = astromancer->ToCreature();
+    return astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE;
+}
+
 bool HighAstromancerSolarianEngagedByRangedTrigger::IsActive()
 {
     if (!botAI->IsRanged(bot))
@@ -222,7 +235,10 @@ bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
 
 bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActive()
 {
-    return botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "solarium priest");
+    if (!botAI->IsMelee(bot) || botAI->IsMainTank(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
 bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()

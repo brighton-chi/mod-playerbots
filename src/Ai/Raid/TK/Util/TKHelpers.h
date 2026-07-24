@@ -148,6 +148,7 @@ struct ArcaneOrbData
     uint32 castTime;
 };
 extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
+extern Position const VOID_REAVER_TANK_POSITION;
 
 // High Astromancer Solarian
 bool HasWrathOfTheAstromancer(Player* bot);

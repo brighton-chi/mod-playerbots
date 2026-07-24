@@ -177,11 +177,19 @@ public:
 
 // High Astromancer Solarian
 
-class HighAstromancerSolarianPositionRangedAction : public MovementAction
+class HighAstromancerSolarianMainTankPickUpBossAction : public AttackAction
+{
+public:
+    HighAstromancerSolarianMainTankPickUpBossAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "high astromancer solarian main tank pick up boss") {}
+    bool Execute(Event event) override;
+}
+
+class HighAstromancerSolarianPositionRangedAction : public AttackAction
 {
 public:
     HighAstromancerSolarianPositionRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian position ranged") {}
+        PlayerbotAI* botAI) : AttackAction(botAI, "high astromancer solarian position ranged") {}
     bool Execute(Event event) override;
 
 private:

@@ -311,6 +311,7 @@ Player* GetSecondEmberTank(Player* bot)
 // Void Reaver
 
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
+Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
 
 // High Astromancer Solarian
 bool HasWrathOfTheAstromancer(Player* bot)

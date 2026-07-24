@@ -7,7 +7,10 @@
 #include "TKStrategy.h"
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
+#include "TKHelpers.h"
 #include "TKMultipliers.h"
+
+using namespace TkHelpers;
 
 void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
@@ -15,10 +18,12 @@ void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions
     if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
         return;
 
-    if (Unit* ember =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "ember of al'ar")->Get())
+    for (auto const& guid :
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
-        exclusions.insert(ember->GetGUID());
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
+            exclusions.insert(unit->GetGUID());
     }
 }
 
@@ -83,6 +88,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("void reaver avoid arcane orb", ACTION_EMERGENCY + 1) }));
 
     // High Astromancer Solarian
+    triggers.push_back(new TriggerNode("high astromancer solarian engaged by main tank", {
+        NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("high astromancer solarian engaged by ranged", {
         NextAction("high astromancer solarian position ranged", ACTION_RAID) }));
 

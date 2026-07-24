@@ -139,6 +139,14 @@ public:
 
 // High Astromancer Solarian
 
+class HighAstromancerSolarianEngagedByMainTankTrigger : public Trigger
+{
+public:
+    HighAstromancerSolarianEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian engaged by main tank") {}
+    bool IsActive() override;
+};
+
 class HighAstromancerSolarianEngagedByRangedTrigger : public Trigger
 {
 public:

@@ -74,6 +74,9 @@ public:
             &RaidTempestKeepActionContext::void_reaver_avoid_arcane_orb;
 
         // High Astromancer Solarian
+        creators["high astromancer solarian main tank pick up boss"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_main_tank_pick_up_boss;
+
         creators["high astromancer solarian position ranged"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_position_ranged;
 
@@ -215,6 +218,9 @@ private:
     }
 
     // High Astromancer Solarian
+    static Action* high_astromancer_solarian_main_tank_pick_up_boss(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianMainTankPickUpBossAction(botAI);
+    }
     static Action* high_astromancer_solarian_position_ranged(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianPositionRangedAction(botAI);
     }

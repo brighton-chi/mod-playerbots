@@ -589,7 +589,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    Position const position = { 423.845f, 371.733f, 14.897f };
+    Position const position = VOID_REAVER_TANK_POSITION;
     float const distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -753,6 +753,15 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
 
 // High Astromancer Solarian
 
+bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
+{
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (astromancer && AI_VALUE2(Unit*, "current target") != astromancer)
+        return Attack(astromancer);
+
+    return false;
+}
+
 bool HighAstromancerSolarianPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
@@ -763,7 +772,7 @@ bool HighAstromancerSolarianPositionRangedAction::Execute(Event /*event*/)
     if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
     {
         // Move away only when Solarian is visible
-        constexpr float minDistance = 10.0f;
+        constexpr float minDistance = 8.0f;
         float const currentDistance = bot->GetDistance2d(astromancer);
         if (currentDistance < minDistance)
             return MoveAway(astromancer, minDistance - currentDistance);
@@ -828,7 +837,10 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMelee(member) && GET_PLAYERBOT_AI(member))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+            continue;
+
+        if (botAI->IsMelee(member) && !botAI->IsMainTank(member))
             meleeMembers.push_back(member);
     }
 

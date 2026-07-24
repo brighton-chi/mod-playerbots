@@ -65,6 +65,9 @@ public:
             &RaidTempestKeepTriggerContext::void_reaver_arcane_orb_is_incoming;
 
         // High Astromancer Solarian
+        creators["high astromancer solarian engaged by main tank"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_main_tank;
+
         creators["high astromancer solarian engaged by ranged"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_ranged;
 
@@ -194,6 +197,9 @@ private:
     }
 
     // High Astromancer Solarian
+    static Trigger* high_astromancer_solarian_engaged_by_main_tank(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianEngagedByMainTankTrigger(botAI);
+    }
     static Trigger* high_astromancer_solarian_engaged_by_ranged(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianEngagedByRangedTrigger(botAI);
     }

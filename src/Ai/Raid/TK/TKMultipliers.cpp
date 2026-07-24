@@ -190,13 +190,26 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
     if (!botAI->IsMelee(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "solarium priest"))
+    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
+    if (!astromancer)
         return 1.0f;
 
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
+    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
+        return 1.0f;
+
+    if (botAI->IsMainTank(bot))
+    {
+        Creature* astromancerCreature = astromancer->ToCreature();
+        if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
+            return 0.0f;
+
+        return 1.0f;
+    }
+
+    if (AI_VALUE2(Unit*, "find target", "solarium priest"))
         return 0.0f;
 
     return 1.0f;
