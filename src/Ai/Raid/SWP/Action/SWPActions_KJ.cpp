@@ -63,14 +63,14 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     }
 
     std::vector<Unit*> hands;
-    auto const& attackers =
+    auto const& targets =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (ObjectGuid const guid : attackers)
+    for (ObjectGuid const targetGuid : targets)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
-            hands.push_back(unit);
+        Unit* target = botAI->GetUnit(targetGuid);
+        if (target && target->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+            hands.push_back(target);
     }
 
     if (hands.empty())
@@ -175,25 +175,25 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (bot->getClass() == CLASS_SHAMAN || bot->getClass() == CLASS_MAGE)
         return false;
 
-    auto const& attackers =
+    auto const& targets =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (ObjectGuid const guid : attackers)
+    for (ObjectGuid const targetGuid : targets)
     {
-        Unit* hand = botAI->GetUnit(guid);
-        if (!hand || hand->GetHealthPct() <= 20.0f ||
-            hand->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+        Unit* target = botAI->GetUnit(targetGuid);
+        if (!target || target->GetHealthPct() <= 20.0f ||
+            target->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
         {
             continue;
         }
 
-        if (hand->HasUnitState(UNIT_STATE_STUNNED) || hand->HasSilenceAura())
+        if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura())
             continue;
 
-        if (CastStunOnHand(hand))
+        if (CastStunOnHand(target))
             return true;
 
-        if (CastSilenceOnHand(hand))
+        if (CastSilenceOnHand(target))
             return true;
     }
 
