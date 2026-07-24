@@ -386,10 +386,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_WEAPONS)
-        return false;
-
-    return !botAI->IsMainTank(bot);
+    return kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS;
 }
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
@@ -487,7 +484,7 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (botAI->IsTank(bot) && kaelthas->GetVictim() == bot)
+    if (botAI->IsMainTank(bot) || kaelthas->GetVictim() == bot)
         return false;
 
     return AI_VALUE2(Unit*, "find target", "phoenix") ||

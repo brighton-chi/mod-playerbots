@@ -133,8 +133,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider raid member is mind controlled", {
         NextAction("kael'thas sunstrider break mind control", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider boss is casting pyroblast", {
-        NextAction("kael'thas sunstrider break through shock barrier", ACTION_EMERGENCY + 7) }));
+    // triggers.push_back(new TriggerNode("kael'thas sunstrider boss is casting pyroblast", {
+    //    NextAction("kael'thas sunstrider break through shock barrier", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider boss is manipulating gravity", {
         NextAction("kael'thas sunstrider spread out in midair", ACTION_EMERGENCY + 1) }));
@@ -162,7 +162,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKeepDistanceFromCapernianMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageWeaponTankingMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDisableAdvisorTankAssistMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderManageAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));

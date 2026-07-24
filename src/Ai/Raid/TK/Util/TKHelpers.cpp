@@ -271,7 +271,7 @@ int8 GetAlarCurrentLocationIndex(Unit* alar)
     return locationIndex;
 }
 
-void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Position ground)
+void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Position& ground)
 {
     float minDist = std::numeric_limits<float>::max();
     closestPlatform = -1;

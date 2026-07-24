@@ -362,8 +362,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
-    if (dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastTauntAction*>(action) ||
+    if (dynamic_cast<CastTauntAction*>(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastThunderClapAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
@@ -384,11 +383,8 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KaelthasSunstriderDisableAdvisorTankAssistMultiplier::GetValue(Action* action)
+float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
-        return 1.0f;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return 1.0f;
@@ -397,14 +393,20 @@ float KaelthasSunstriderDisableAdvisorTankAssistMultiplier::GetValue(Action* act
     if (!kaelAI)
         return 1.0f;
 
-    if (kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR && kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    if (dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    {
+        if (botAI->IsMainTank(bot))
+            return 0.0f;
+
+        if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+            return 0.0f;
+    }
 
     return 1.0f;
 }

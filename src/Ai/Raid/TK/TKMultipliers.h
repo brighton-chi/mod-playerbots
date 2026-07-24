@@ -121,11 +121,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class KaelthasSunstriderDisableAdvisorTankAssistMultiplier : public Multiplier
+class KaelthasSunstriderManageAutomaticTargetingMultiplier : public Multiplier
 {
 public:
-    KaelthasSunstriderDisableAdvisorTankAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider disable advisor tank assist") {}
+    KaelthasSunstriderManageAutomaticTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider manage automatic targeting") {}
     virtual float GetValue(Action* action);
 };
 

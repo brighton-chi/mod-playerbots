@@ -137,7 +137,7 @@ extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
-void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position ground);
+void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position& ground);
 Player* GetSecondEmberTank(Player* bot);
 
 // Void Reaver
