@@ -65,9 +65,8 @@ uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
 
 bool IsKiljaedenDragonGroupTarget(Player* bot, Player* member)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return member && member->IsAlive() && member != bot &&
-        member->GetMapId() == SWP_MAP_ID && !botAI->IsTank(member);
+        member->GetMapId() == SWP_MAP_ID && !PlayerbotAI::IsTank(member);
 }
 
 uint32 GetKiljaedenDragonAppliedAuraSpell(uint32 spellId)
@@ -235,23 +234,25 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     }
 
     float const angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
-    float const angle =
-        Position::NormalizeOrientation(KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-    float const positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
-    float const positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+    float const angle = Position::NormalizeOrientation(
+        KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
 
-    position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
+    Position const& center = KILJAEDEN_CENTER_POSITION;
+    float const positionX = center.GetPositionX() + std::cos(angle) * radius;
+    float const positionY = center.GetPositionY() + std::sin(angle) * radius;
+
+    position = Position{ positionX, positionY, center.GetPositionZ() };
     return true;
 }
 
 void EnsureKiljaedenRangedAssignments(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -336,7 +337,6 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
 
 void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     struct CandidateSlotScore
     {
         uint8 slotIndex = 0;
@@ -374,6 +374,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     auto const& armageddons = armageddonItr->second.armageddons;
     auto const& canonicalAssignments = canonicalItr->second.rangedAssignments;
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     std::vector<KiljaedenRangedBotAssignment> rangedBots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -590,7 +591,6 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
 
 Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!dragon)
         return nullptr;
 

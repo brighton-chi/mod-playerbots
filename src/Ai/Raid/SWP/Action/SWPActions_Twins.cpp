@@ -339,16 +339,15 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 
     if (AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        Position const position = botAI->IsRanged(bot) ?
+        Position const& position = botAI->IsRanged(bot) ?
             EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-        {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 1.0f)
+            return false;
+
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
@@ -356,11 +355,11 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
             float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
-            if (distanceToPlayer < safeDistance)
-            {
-                botAI->InterruptSpell();
-                return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
-            }
+            if (distanceToPlayer >= safeDistance)
+                return false
+
+            botAI->InterruptSpell();
+            return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
         }
     }
 
@@ -378,7 +377,7 @@ bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 10.0f;
-    if (bot->GetDistance2d(victim) > safeDistance)
+    if (bot->GetDistance2d(victim) >= safeDistance)
         return false;
 
     botAI->InterruptSpell();

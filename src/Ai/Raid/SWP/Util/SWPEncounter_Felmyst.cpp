@@ -132,44 +132,19 @@ void ResetFelmystDemonicVaporFlightState(uint32 instanceId)
     stateItr->second.demonicVaporFirstRegionIndex = 0;
 }
 
-Creature* GetTrackedFelmyst(Player* bot)
-{
-    constexpr float searchRadius = 250.0f;
-    std::list<Creature*> felmysts;
-    bot->GetCreatureListWithEntryInGrid(
-        felmysts, static_cast<uint32>(SwpNpcs::NPC_FELMYST), searchRadius);
-
-    Creature* nearestFelmyst = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-
-    for (Creature* felmyst : felmysts)
-    {
-        if (!felmyst || !felmyst->IsAlive())
-            continue;
-
-        float const distance = bot->GetDistance2d(felmyst);
-        if (distance < nearestDistance)
-        {
-            nearestFelmyst = felmyst;
-            nearestDistance = distance;
-        }
-    }
-
-    return nearestFelmyst;
-}
-
 void ResetFelmystDemonicVaporFlightStateIfGrounded(Player* bot)
 {
-    Creature* felmyst = GetTrackedFelmyst(bot);
+    constexpr float searchRadius = 250.0f;
+    Creature* felmyst = bot->FindNearestCreature(
+        static_cast<uint32>(SwpNpcs::NPC_FELMYST), searchRadius, true);
+
     if (!felmyst || !felmyst->IsFlying())
         ResetFelmystDemonicVaporFlightState(bot->GetInstanceId());
 }
 
 bool TryGetFelmystGroundStackCenter(
-    Player* bot, Unit* felmyst, FelmystGroundStack stack,
-    float& positionX, float& positionY)
+    Player* bot, Unit* felmyst, FelmystGroundStack stack, float& positionX, float& positionY)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!felmyst)
         return false;
 
@@ -373,7 +348,7 @@ FelmystFogLane GetNearestFelmystDemonicVaporLane(Player* bot)
 
     for (uint8 laneIndex = 0; laneIndex < FELMYST_DEMONIC_VAPOR_LANE_REFERENCES.size(); ++laneIndex)
     {
-        Position const reference = FELMYST_DEMONIC_VAPOR_LANE_REFERENCES[laneIndex];
+        Position const& reference = FELMYST_DEMONIC_VAPOR_LANE_REFERENCES[laneIndex];
         float const distance = bot->GetExactDist2d(
             reference.GetPositionX(), reference.GetPositionY());
         if (distance < bestDistance)
@@ -439,7 +414,7 @@ uint8 SelectPreferredFelmystDemonicVaporSide(Player* bot, FelmystFogLane lane, u
         if (anchor.lane != lane)
             continue;
 
-        Position const anchorPos = FELMYST_DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
+        Position const& anchorPos = FELMYST_DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
         float const distance = bot->GetExactDist2d(
             anchorPos.GetPositionX(), anchorPos.GetPositionY());
 
@@ -478,8 +453,7 @@ void AppendFelmystDemonicVaporAnchorsForSide(
     auto const lanePriority = GetFelmystDemonicVaporLanePriority(preferredLane);
     for (FelmystFogLane lane : lanePriority)
     {
-        for (uint8 anchorIndex = 0;
-             anchorIndex < FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size();
+        for (uint8 anchorIndex = 0; anchorIndex < FELMYST_DEMONIC_VAPOR_KITE_ANCHORS.size();
              ++anchorIndex)
         {
             FelmystDemonicVaporAnchor const& anchor =
@@ -635,8 +609,8 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
         return false;
     }
 
-    Position const candidate(destinationX, destinationY, destinationZ, bot->GetOrientation());
-    Position const origin(
+    Position const& candidate(destinationX, destinationY, destinationZ, bot->GetOrientation());
+    Position const& origin(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
     if (requireSafePath && !IsFelmystDemonicVaporPathSafe(bot, origin, candidate, hazards))
         return false;
@@ -715,8 +689,8 @@ bool TryGetFelmystGroundStackPosition(
     if (!TryGetFelmystGroundStackCenter(bot, felmyst, stack, destinationX, destinationY))
         return false;
 
-    float destinationZ =
-        bot->GetMapWaterOrGroundLevel(destinationX, destinationY, bot->GetPositionZ());
+    float destinationZ = bot->GetMapWaterOrGroundLevel(
+        destinationX, destinationY, bot->GetPositionZ());
 
     if (destinationZ <= INVALID_HEIGHT)
         destinationZ = bot->GetPositionZ();
@@ -757,14 +731,12 @@ FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit
 
 float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Position const defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
+    Position const& defaultTankPosition = GetFelmystMainTankGroundPosition(bot);
     float frontX = defaultTankPosition.GetPositionX();
     float frontY = defaultTankPosition.GetPositionY();
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && mainTank->IsAlive() &&
-        mainTank->GetMapId() == felmyst->GetMapId())
+    Player* mainTank = GetGroupMainTank(GET_PLAYERBOT_AI(bot), bot);
+    if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
     {
         frontX = mainTank->GetPositionX();
         frontY = mainTank->GetPositionY();
@@ -780,11 +752,11 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
 
 void EnsureFelmystRangedAssignments(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return;
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     auto& assignments = felmystEncounterStates[bot->GetInstanceId()].rangedAssignments;
     std::vector<Player*> healers;
     std::vector<Player*> rangedDamage;
@@ -1212,15 +1184,15 @@ bool TryGetFelmystFogSafeDestinations(
     std::sort(candidateOrder.begin(), candidateOrder.end(),
         [&](uint8 leftIndex, uint8 rightIndex)
         {
-            Position const left = safeSpots[leftIndex];
-            Position const right = safeSpots[rightIndex];
+            Position const& left = safeSpots[leftIndex];
+            Position const& right = safeSpots[rightIndex];
             return bot->GetExactDist2d(left.GetPositionX(), left.GetPositionY()) <
                    bot->GetExactDist2d(right.GetPositionX(), right.GetPositionY());
         });
 
     for (uint8 candidateIndex : candidateOrder)
     {
-        Position const safeSpot = safeSpots[candidateIndex];
+        Position const& safeSpot = safeSpots[candidateIndex];
         if (isSafeSpotBlockedByVapor(safeSpot))
             continue;
 
@@ -1353,7 +1325,6 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
 
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!felmyst)
         return nullptr;
 
@@ -1361,6 +1332,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     if (!group)
         return nullptr;
 
+    bool const isMelee = PlayerbotAI::IsMelee(bot);
     Player* lowestHpTarget = nullptr;
     uint32 lowestHp = std::numeric_limits<uint32>::max();
 
@@ -1372,8 +1344,6 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
 
         if (!member->HasAura(static_cast<uint32>(SwpSpells::SPELL_FOG_OF_CORRUPTION_CHARM)))
             continue;
-
-        bool const isMelee = botAI->IsMelee(bot);
 
         if (isMelee && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;

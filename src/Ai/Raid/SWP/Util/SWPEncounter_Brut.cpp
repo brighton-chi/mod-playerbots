@@ -155,7 +155,6 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
 
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& positionIndex)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -177,6 +176,7 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& p
     }
 
     positionIndex = 0;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -184,8 +184,8 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& p
         if (!member || member->GetMapId() != SWP_MAP_ID)
             continue;
 
-        if (!botAI->IsMelee(member) ||
-            botAI->IsMainTank(member) || botAI->IsAssistTankOfIndex(member, 0, true))
+        if (!botAI->IsMelee(member) || botAI->IsMainTank(member) ||
+            botAI->IsAssistTankOfIndex(member, 0, true))
         {
             continue;
         }
@@ -201,7 +201,6 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& p
 
 void EnsureBrutallusRangedAssignments(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
@@ -233,6 +232,7 @@ void EnsureBrutallusRangedAssignments(Player* bot)
         return true;
     };
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     std::vector<Player*> healers;
     std::vector<Player*> rangedDamage;
 

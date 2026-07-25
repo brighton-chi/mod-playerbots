@@ -478,7 +478,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
-    Position const waitPosition = MURU_STACK_POSITION;
+    Position const& waitPosition = MURU_STACK_POSITION;
     if (!voidSentinel &&
         bot->GetExactDist2d(waitPosition.GetPositionX(), waitPosition.GetPositionY()) > 3.0f)
     {

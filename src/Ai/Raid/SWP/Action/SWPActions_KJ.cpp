@@ -450,7 +450,7 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    Position const position = KILJAEDEN_DARKNESS_POSITION;
+    Position const& position = KILJAEDEN_DARKNESS_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
         return false;
 

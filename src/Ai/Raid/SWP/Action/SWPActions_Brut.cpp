@@ -55,13 +55,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
     if (mainTank == bot)
     {
-        Position const position =
-        {
-            BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
-            BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(),
-            bot->GetPositionZ()
-        };
-
+        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
         float const distToPosition = bot->GetExactDist2d(
             position.GetPositionX(), position.GetPositionY());
 
