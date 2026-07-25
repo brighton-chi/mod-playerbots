@@ -394,6 +394,20 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+        return 1.0f;
+
+    if (dynamic_cast<EquipUpgradeAction*>(action) ||
+        dynamic_cast<EquipUpgradesPacketAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* action)
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

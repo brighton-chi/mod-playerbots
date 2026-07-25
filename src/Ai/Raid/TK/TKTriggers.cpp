@@ -459,6 +459,9 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TK_MAP_ID)
         return false;
 
+    if (AI_VALUE2(bool, "combat", "self target"))
+        return false;
+
     Map* map = bot->GetMap();
     if (!map)
         return false;

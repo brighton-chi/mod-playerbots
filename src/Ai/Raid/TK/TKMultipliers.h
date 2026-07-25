@@ -121,6 +121,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderSuppressEquipUpgradeMultiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderSuppressEquipUpgradeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider suppress equip upgrade") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderManageAutomaticTargetingMultiplier : public Multiplier
 {
 public:

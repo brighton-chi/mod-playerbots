@@ -155,6 +155,8 @@ bool HasWrathOfTheAstromancer(Player* bot);
 Player* GetRangedLeader(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
+constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
+constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
 extern Position const SANGUINAR_TANK_POSITION;
 extern Position const SANGUINAR_WAITING_POSITION;
 extern Position const TELONICUS_TANK_POSITION;

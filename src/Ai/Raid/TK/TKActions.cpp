@@ -7,11 +7,13 @@
 #include "TKActions.h"
 #include "AiFactory.h"
 #include "EquipAction.h"
+#include "ItemPackets.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
 
@@ -1469,14 +1471,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         {
             if (bot->HasItemCount(static_cast<uint32>(weapon.itemId), 1, false))
             {
-                EquipAction* equipAction =
-                    dynamic_cast<EquipAction*>(botAI->GetAiObjectContext()->GetAction("equip"));
-                if (equipAction)
-                {
-                    ItemIds ids;
-                    ids.insert(static_cast<uint32>(weapon.itemId));
-                    equipAction->EquipItems(ids);
-                }
+                EquipLegendaryWeapon(static_cast<uint32>(weapon.itemId));
                 continue;
             }
 
@@ -1500,7 +1495,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
             return botAI->IsHeal(bot);
 
         // Fury Warriors could use the axe, but their DPS is terrible at appropriate gear levels
-        // So IMO they're better off looting only the dagger to MH it and break MCs
+        // So they're better off looting only the dagger to break MCs
         // Plus dual wielding 1H is better dps than Titan Grip at 70 anyway
         case TkNpcs::NPC_DEVASTATION:
             return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
@@ -1512,8 +1507,9 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
                 (bot->getClass() == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT) ||
                 (bot->getClass() == CLASS_WARRIOR && tab != WARRIOR_TAB_ARMS);
 
+        // Sub will probably also want to use the Sword, but the spec is currently unimplemented
         case TkNpcs::NPC_WARP_SLICER:
-            return (bot->getClass() == CLASS_ROGUE && tab != ROGUE_TAB_ASSASSINATION) ||
+            return (bot->getClass() == CLASS_ROGUE && tab == ROGUE_TAB_COMBAT) ||
                 (botAI->IsTank(bot) &&
                  (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_PALADIN));
 
@@ -1568,6 +1564,190 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
     WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
     *packet << weaponIndex;
     bot->GetSession()->QueuePacket(packet);
+
+    return true;
+}
+
+bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 itemId)
+{
+    // Find the legendary item in inventory
+    Item* legendaryItem = nullptr;
+    for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (item && item->GetEntry() == itemId)
+        {
+            legendaryItem = item;
+            break;
+        }
+
+    }
+    if (!legendaryItem)
+    {
+        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        {
+            if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+            {
+                for (uint32 slot = 0; slot < pBag->GetBagSize(); ++slot)
+                {
+                    Item* item = bot->GetItemByPos(bag, slot);
+                    if (item && item->GetEntry() == itemId)
+                    {
+                        legendaryItem = item;
+                        break;
+                    }
+                }
+            }
+            if (legendaryItem)
+                break;
+        }
+    }
+
+    if (!legendaryItem)
+        return false;
+
+    ItemTemplate const* proto = legendaryItem->GetTemplate();
+    if (!proto)
+        return false;
+
+    if (proto->InventoryType == INVTYPE_NON_EQUIP)
+        return false;
+
+    // Determine the equip slot for this weapon type
+    uint8 dstSlot;
+    if (proto->InventoryType == INVTYPE_RANGED)
+    {
+        dstSlot = EQUIPMENT_SLOT_RANGED;
+    }
+    else if (proto->InventoryType == INVTYPE_SHIELD ||
+        proto->InventoryType == INVTYPE_WEAPONOFFHAND)
+    {
+        dstSlot = EQUIPMENT_SLOT_OFFHAND;
+    }
+    else
+    {
+        dstSlot = EQUIPMENT_SLOT_MAINHAND;
+
+        // Infinity Blade prefers OH when MH already holds a legendary
+        // (combat rogues: Warp Slicer MH, Infinity Blade OH)
+        if (itemId == static_cast<uint32>(TkItems::ITEM_INFINITY_BLADE) && bot->CanDualWield())
+        {
+            if (Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+            {
+                uint32 mhEntry = mhItem->GetEntry();
+                if (mhEntry >= ITEM_LEGENDARY_WEAPON_MIN && mhEntry <= ITEM_LEGENDARY_WEAPON_MAX &&
+                    mhEntry != itemId)
+                {
+                    dstSlot = EQUIPMENT_SLOT_OFFHAND;
+                }
+            }
+        }
+    }
+
+    // Check if the legendary is already equipped in the correct slot
+    Item* alreadyEquipped = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, dstSlot);
+    if (alreadyEquipped && alreadyEquipped->GetEntry() == itemId)
+        return false;
+
+    // If targeting OH but a 2H in MH is blocking it, unequip the 2H first
+    if (dstSlot == EQUIPMENT_SLOT_OFFHAND && !alreadyEquipped)
+    {
+        Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+        if (mhItem && mhItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
+            bot->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND, true);
+    }
+
+    // Unequip current item from the target slot to make room
+    bool ohCleared = false;
+    if (alreadyEquipped)
+    {
+        bool const newIs2H = proto->InventoryType == INVTYPE_2HWEAPON;
+        bool const oldIs2H = alreadyEquipped->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
+        bool const newIsShieldOrHoldable =
+            proto->InventoryType == INVTYPE_SHIELD || proto->InventoryType == INVTYPE_HOLDABLE;
+
+        // Unequip OH if it exists and will be blocked: 2H→1H or 1H→2H
+        if ((oldIs2H && !newIs2H && !newIsShieldOrHoldable) || (!oldIs2H && newIs2H))
+        {
+            Item* ohItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (ohItem)
+                ohCleared = true;
+            bot->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+        }
+
+        bot->RemoveItem(INVENTORY_SLOT_BAG_0, dstSlot, true);
+    }
+
+    // Equip the legendary using auto-equip packet
+    WorldPacket packet(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
+    packet << legendaryItem->GetGUID() << dstSlot;
+
+    WorldPackets::Item::AutoEquipItemSlot nicePacket(std::move(packet));
+    nicePacket.Read();
+    bot->GetSession()->HandleAutoEquipItemSlotOpcode(nicePacket);
+
+    // After a 2H→1H swap left OH empty, try to equip the best offhand from inventory
+    if (ohCleared && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+    {
+        StatsWeightCalculator calculator(bot);
+        calculator.SetItemSetBonus(false);
+        calculator.SetOverflowPenalty(false);
+
+        Item* bestOH = nullptr;
+        float bestScore = 0.0f;
+
+        auto const scanSlots = [&](uint8 bag, uint8 start, uint8 end)
+        {
+            for (uint8 slot = start; slot < end; ++slot)
+            {
+                Item* item = bot->GetItemByPos(bag, slot);
+                if (!item || item == legendaryItem)
+                    continue;
+
+                ItemTemplate const* itemProto = item->GetTemplate();
+                if (!itemProto)
+                    continue;
+
+                uint8 const invType = itemProto->InventoryType;
+                if (invType != INVTYPE_WEAPONOFFHAND && invType != INVTYPE_SHIELD &&
+                    invType != INVTYPE_HOLDABLE && invType != INVTYPE_WEAPON)
+                {
+                    continue;
+                }
+
+                if (invType == INVTYPE_WEAPONMAINHAND)
+                    continue;
+
+                if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
+                    continue;
+
+                float const score = calculator.CalculateItem(
+                    itemProto->ItemId, item->GetItemRandomPropertyId());
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestOH = item;
+                }
+            }
+        };
+
+        scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
+        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        {
+            if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+                scanSlots(bag, 0, pBag->GetBagSize());
+        }
+
+        if (bestOH)
+        {
+            WorldPacket ohPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
+            ohPacket << bestOH->GetGUID() << uint8(EQUIPMENT_SLOT_OFFHAND);
+
+            WorldPackets::Item::AutoEquipItemSlot ohNicePacket(std::move(ohPacket));
+            ohNicePacket.Read();
+            bot->GetSession()->HandleAutoEquipItemSlotOpcode(ohNicePacket);
+        }
+    }
 
     return true;
 }

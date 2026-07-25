@@ -331,6 +331,7 @@ private:
     };
     bool ShouldBotLootWeapon(TkNpcs weaponEntry);
     bool LootWeapon(uint32 weaponEntry, uint32 itemId);
+    bool EquipLegendaryWeapon(uint32 itemId);
 };
 
 class KaelthasSunstriderUseLegendaryWeaponsAction : public Action
