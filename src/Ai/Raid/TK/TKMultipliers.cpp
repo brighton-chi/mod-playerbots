@@ -340,6 +340,9 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
         return 1.0f;
     }
 
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
+
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
@@ -430,8 +433,11 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
         if (botAI->IsMainTank(bot))
             return 0.0f;
 
-        if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+        if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
+            kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+        {
             return 0.0f;
+        }
     }
 
     return 1.0f;

@@ -1570,17 +1570,32 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 itemId)
 {
-    // Find the legendary item in inventory
+    // Find the legendary item — check equipped slots first (it may have been swapped
+    // to a wrong slot by a previous EquipLegendaryWeapon call), then backpack and bags
     Item* legendaryItem = nullptr;
-    for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+    auto const checkSlot = [&](uint8 bag, uint8 slot)
     {
-        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        Item* item = bot->GetItemByPos(bag, slot);
         if (item && item->GetEntry() == itemId)
         {
             legendaryItem = item;
-            break;
+            return true;
         }
+        return false;
+    };
 
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (checkSlot(INVENTORY_SLOT_BAG_0, slot))
+            break;
+    }
+    if (!legendaryItem)
+    {
+        for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+        {
+            if (checkSlot(INVENTORY_SLOT_BAG_0, slot))
+                break;
+        }
     }
     if (!legendaryItem)
     {
@@ -1590,12 +1605,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
             {
                 for (uint32 slot = 0; slot < pBag->GetBagSize(); ++slot)
                 {
-                    Item* item = bot->GetItemByPos(bag, slot);
-                    if (item && item->GetEntry() == itemId)
-                    {
-                        legendaryItem = item;
+                    if (checkSlot(bag, slot))
                         break;
-                    }
                 }
             }
             if (legendaryItem)
@@ -1649,103 +1660,122 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     if (alreadyEquipped && alreadyEquipped->GetEntry() == itemId)
         return false;
 
-    // If targeting OH but a 2H in MH is blocking it, unequip the 2H first
-    if (dstSlot == EQUIPMENT_SLOT_OFFHAND && !alreadyEquipped)
+    // If a 2H in MH is blocking the target OH slot, swap the 2H to inventory first
+    bool ohCleared = false;
+    if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
         Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
         if (mhItem && mhItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
-            bot->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND, true);
-    }
-
-    // Unequip current item from the target slot to make room
-    bool ohCleared = false;
-    if (alreadyEquipped)
-    {
-        bool const newIs2H = proto->InventoryType == INVTYPE_2HWEAPON;
-        bool const oldIs2H = alreadyEquipped->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
-        bool const newIsShieldOrHoldable =
-            proto->InventoryType == INVTYPE_SHIELD || proto->InventoryType == INVTYPE_HOLDABLE;
-
-        // Unequip OH if it exists and will be blocked: 2H→1H or 1H→2H
-        if ((oldIs2H && !newIs2H && !newIsShieldOrHoldable) || (!oldIs2H && newIs2H))
         {
-            Item* ohItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if (ohItem)
-                ohCleared = true;
-            bot->RemoveItem(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND, true);
+            uint16 const mhPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_MAINHAND;
+            uint16 const srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
+            bot->SwapItem(mhPos, srcPos);
+            ohCleared = true;
+            return true;  // legendary is now in MH; next tick will route it to OH if applicable
         }
-
-        bot->RemoveItem(INVENTORY_SLOT_BAG_0, dstSlot, true);
     }
 
-    // Equip the legendary using auto-equip packet
-    WorldPacket packet(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
-    packet << legendaryItem->GetGUID() << dstSlot;
+    // Build src position — legendary may be in inventory or in the wrong equipped slot
+    uint16 srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
+    uint16 const dstPos = (INVENTORY_SLOT_BAG_0 << 8) | dstSlot;
 
-    WorldPackets::Item::AutoEquipItemSlot nicePacket(std::move(packet));
-    nicePacket.Read();
-    bot->GetSession()->HandleAutoEquipItemSlotOpcode(nicePacket);
-
-    // After a 2H→1H swap left OH empty, try to equip the best offhand from inventory
-    if (ohCleared && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+    // If target slot is empty, just move the legendary there from wherever it is
+    if (!alreadyEquipped)
     {
-        StatsWeightCalculator calculator(bot);
-        calculator.SetItemSetBonus(false);
-        calculator.SetOverflowPenalty(false);
+        bot->SwapItem(srcPos, dstPos);
+        return true;
+    }
 
-        Item* bestOH = nullptr;
-        float bestScore = 0.0f;
+    // Target slot has a different item — swap them
+    bool const oldIs2H = alreadyEquipped->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
+    bool const newIs2H = proto->InventoryType == INVTYPE_2HWEAPON;
 
-        auto const scanSlots = [&](uint8 bag, uint8 start, uint8 end)
+    bot->SwapItem(srcPos, dstPos);
+
+    // If a 2H→1H or 1H→2H swap also affects OH, move the OH item to backpack
+    if ((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
+        (!oldIs2H && newIs2H))
+    {
+        if (Item* ohItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         {
-            for (uint8 slot = start; slot < end; ++slot)
+            uint16 const ohPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_OFFHAND;
+            for (uint8 bpSlot = INVENTORY_SLOT_ITEM_START; bpSlot < INVENTORY_SLOT_ITEM_END; ++bpSlot)
             {
-                Item* item = bot->GetItemByPos(bag, slot);
-                if (!item || item == legendaryItem)
-                    continue;
-
-                ItemTemplate const* itemProto = item->GetTemplate();
-                if (!itemProto)
-                    continue;
-
-                uint8 const invType = itemProto->InventoryType;
-                if (invType != INVTYPE_WEAPONOFFHAND && invType != INVTYPE_SHIELD &&
-                    invType != INVTYPE_HOLDABLE && invType != INVTYPE_WEAPON)
+                if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bpSlot))
                 {
-                    continue;
-                }
-
-                if (invType == INVTYPE_WEAPONMAINHAND)
-                    continue;
-
-                if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
-                    continue;
-
-                float const score = calculator.CalculateItem(
-                    itemProto->ItemId, item->GetItemRandomPropertyId());
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestOH = item;
+                    bot->SwapItem(ohPos, (INVENTORY_SLOT_BAG_0 << 8) | bpSlot);
+                    ohCleared = true;
+                    break;
                 }
             }
-        };
-
-        scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
-        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
-        {
-            if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
-                scanSlots(bag, 0, pBag->GetBagSize());
         }
+    }
 
-        if (bestOH)
+    // After a 2H→1H swap left OH empty, try to equip the best offhand from inventory.
+    // Skip if MH is now a 2H (server rejects OH equip with IsTwoHandUsed).
+    if (ohCleared && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+    {
+        Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+        if (!mhItem || mhItem->GetTemplate()->InventoryType != INVTYPE_2HWEAPON)
         {
-            WorldPacket ohPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
-            ohPacket << bestOH->GetGUID() << uint8(EQUIPMENT_SLOT_OFFHAND);
+            StatsWeightCalculator calculator(bot);
+            calculator.SetItemSetBonus(false);
+            calculator.SetOverflowPenalty(false);
 
-            WorldPackets::Item::AutoEquipItemSlot ohNicePacket(std::move(ohPacket));
-            ohNicePacket.Read();
-            bot->GetSession()->HandleAutoEquipItemSlotOpcode(ohNicePacket);
+            Item* bestOH = nullptr;
+            float bestScore = 0.0f;
+
+            auto const scanSlots = [&](uint8 bag, uint8 start, uint8 end)
+            {
+                for (uint8 slot = start; slot < end; ++slot)
+                {
+                    Item* item = bot->GetItemByPos(bag, slot);
+                    if (!item || item == legendaryItem)
+                        continue;
+
+                    ItemTemplate const* itemProto = item->GetTemplate();
+                    if (!itemProto)
+                        continue;
+
+                    uint8 const invType = itemProto->InventoryType;
+                    if (invType != INVTYPE_WEAPONOFFHAND && invType != INVTYPE_SHIELD &&
+                        invType != INVTYPE_HOLDABLE && invType != INVTYPE_WEAPON)
+                    {
+                        continue;
+                    }
+
+                    if (invType == INVTYPE_WEAPONMAINHAND)
+                        continue;
+
+                    if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
+                        continue;
+
+                    float const score = calculator.CalculateItem(
+                        itemProto->ItemId, item->GetItemRandomPropertyId());
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        bestOH = item;
+                    }
+                }
+            };
+
+            scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
+            for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+            {
+                if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+                    scanSlots(bag, 0, pBag->GetBagSize());
+            }
+
+            if (bestOH)
+            {
+                WorldPacket ohPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
+                ohPacket << bestOH->GetGUID() << uint8(EQUIPMENT_SLOT_OFFHAND);
+
+                WorldPackets::Item::AutoEquipItemSlot ohNicePacket(std::move(ohPacket));
+                ohNicePacket.Read();
+                bot->GetSession()->HandleAutoEquipItemSlotOpcode(ohNicePacket);
+            }
         }
     }
 
