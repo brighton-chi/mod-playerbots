@@ -133,10 +133,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM);
-    if (totem && MarkTargetWithSkull(bot, totem))
-        return true;
-
-     return false;
+    return totem && MarkTargetWithSkull(bot, totem);
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -309,11 +306,8 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
 {
     if (Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS))
     {
-        if (IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
-            MarkTargetWithSkull(bot, waterElemental))
-        {
+        if (MarkTargetWithSkull(bot, waterElemental))
             return true;
-        }
 
         SetRtiTarget(botAI, "skull", waterElemental);
 
@@ -322,11 +316,8 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
     }
     else if (Unit* natureElemental = GetFirstAliveUnitByEntry(botAI, NPC_TAINTED_SPAWN_OF_HYDROSS))
     {
-        if (IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
-            MarkTargetWithSkull(bot, natureElemental))
-        {
+        if (MarkTargetWithSkull(bot, natureElemental))
             return true;
-        }
 
         SetRtiTarget(botAI, "skull", natureElemental);
 

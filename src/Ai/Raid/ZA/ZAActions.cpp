@@ -372,13 +372,8 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
     if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
     {
-        if (MarkTargetWithSkull(bot, hatcherLow))
-            return true;
-
-        if (MarkTargetWithMoon(bot, hatcherHigh))
-            return true;
-
-        SetRtiTarget(botAI, "skull", hatcherLow);
+        return MarkTargetWithMoon(bot, hatcherHigh) ||
+               MarkTargetWithSkull(bot, hatcherLow);
     }
 
     return false;

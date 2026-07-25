@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "RaidBossHelpers.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
@@ -201,8 +207,8 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     return nullptr;
 }
 
-// Return the nearest alive player (human or bot) within the specified radius
-// Distance is measured by GetExactDist2d(), which does not into account hitboxes (1.5y)
+// Return the nearest alive player (human or bot) within the specified radius. Distance is
+// measured by GetExactDist2d(), which does not take into account player hitboxes (1.5y).
 Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
     Group* group = bot->GetGroup();
@@ -218,7 +224,7 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
         if (!member || !member->IsAlive() || member == bot)
             continue;
 
-        float distance = bot->GetDistance2d(member);
+        float distance = bot->GetExactDist2d(member);
         if (distance < nearestDistance)
         {
             nearestDistance = distance;

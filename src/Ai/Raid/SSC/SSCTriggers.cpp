@@ -19,7 +19,7 @@ using namespace SerpentShrineCavernHelpers;
 // General
 bool SerpentShrineCavernBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return bot->GetMapId() == SSC_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash Mobs
