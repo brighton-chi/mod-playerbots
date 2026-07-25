@@ -1293,7 +1293,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    const uint32 instanceId = kaelthas->GetMap()->GetInstanceId();
+    uint32 const instanceId = kaelthas->GetMap()->GetInstanceId();
 
     static std::array<char const*, 3> const advisorNames =
     {
