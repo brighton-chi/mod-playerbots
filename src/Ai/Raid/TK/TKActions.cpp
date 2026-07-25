@@ -955,7 +955,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != sanguinar)
         return Attack(sanguinar);
 
-    if (sanguinar->GetVictim() != bot)
+    if (sanguinar->GetVictim() != bot || !bot->IsWithinMeleeRange(sanguinar))
         return false;
 
     Position const& position = SANGUINAR_TANK_POSITION;
@@ -1163,7 +1163,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
     if (AI_VALUE(Unit*, "current target") != telonicus)
         return Attack(telonicus);
 
-    if (telonicus->GetVictim() != bot)
+    if (telonicus->GetVictim() != bot || !bot->IsWithinMeleeRange(telonicus))
         return false;
 
     Position const& position = TELONICUS_TANK_POSITION;
