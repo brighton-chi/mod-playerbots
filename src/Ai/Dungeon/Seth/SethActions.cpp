@@ -169,7 +169,7 @@ bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
     float const distToPillar = bot->GetExactDist2d(pillarCenter);
 
     return MoveToPillar(pillarCenter, botAngle, distToPillar) ||
-        MoveAroundPillar(pillarCenter, botAngle, distToPillar);
+        MoveAroundPillar(pillarCenter, distToPillar);
 }
 
 bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
@@ -192,7 +192,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
 }
 
 bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
-    Position const& pillarCenter, float botAngle, float distToPillar)
+    Position const& pillarCenter, float distToPillar)
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
     if (!ikiss)
