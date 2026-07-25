@@ -193,7 +193,7 @@ public:
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
             if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
-                !ShouldInterruptForArchimondeAirBurst(botAI, player, target))
+                !ShouldInterruptForArchimondeAirBurst(botAI, target))
             {
                 continue;
             }

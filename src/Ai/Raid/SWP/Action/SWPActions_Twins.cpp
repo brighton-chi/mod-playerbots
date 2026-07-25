@@ -356,7 +356,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         {
             float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
             if (distanceToPlayer >= safeDistance)
-                return false
+                return false;
 
             botAI->InterruptSpell();
             return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);

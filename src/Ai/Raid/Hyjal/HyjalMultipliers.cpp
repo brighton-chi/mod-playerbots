@@ -118,7 +118,7 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    if (bot->GetState() == BOT_STATE_NON_COMBAT)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))

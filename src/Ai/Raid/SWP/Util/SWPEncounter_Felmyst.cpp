@@ -609,8 +609,8 @@ bool TryGetFelmystDemonicVaporAnchorDestination(
         return false;
     }
 
-    Position const& candidate(destinationX, destinationY, destinationZ, bot->GetOrientation());
-    Position const& origin(
+    Position const candidate(destinationX, destinationY, destinationZ, bot->GetOrientation());
+    Position const origin(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
     if (requireSafePath && !IsFelmystDemonicVaporPathSafe(bot, origin, candidate, hazards))
         return false;
