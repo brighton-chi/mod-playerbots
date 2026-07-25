@@ -14,7 +14,7 @@ using namespace SwpHelpers;
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    Position const jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
+    Position const& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
     Position const landingPos = GetEredarTwinsP2MeleeStackPosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
@@ -112,7 +112,7 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     if (sacrolash->GetVictim() != bot || !bot->IsWithinMeleeRange(sacrolash))
         return false;
 
-    Position const position = SACROLASH_TANK_POSITION;
+    Position const& position = SACROLASH_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
@@ -209,7 +209,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (sacrolash && sacrolash->GetVictim() != bot)
     {
-        Position const position = EREDAR_TWINS_P1_RANGED_POSITION;
+        Position const& position = EREDAR_TWINS_P1_RANGED_POSITION;
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
         {
@@ -225,7 +225,7 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
         Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        Position const jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
+        Position const& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
         Position const landingPos = GetEredarTwinsP2RangedStackPosition(alythess);
 
         constexpr float arrivalDistance = 2.0f;

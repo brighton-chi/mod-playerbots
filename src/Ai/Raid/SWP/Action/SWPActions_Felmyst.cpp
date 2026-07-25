@@ -265,7 +265,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     bool trackedDestinationFound = false;
     for (uint8 index = 0; index < destinationCount; ++index)
     {
-        Position const destination = destinations[index];
+        Position const& destination = destinations[index];
         if (Position(
                 lastMove.lastMoveToX, lastMove.lastMoveToY,
                 lastMove.lastMoveToZ).GetExactDist(destination) >
@@ -290,7 +290,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         float bestDistance = std::numeric_limits<float>::max();
         for (uint8 index = 0; index < destinationCount; ++index)
         {
-            Position const destination = destinations[index];
+            Position const& destination = destinations[index];
             float const distanceToFelmyst = felmyst->GetExactDist2d(
                 destination.GetPositionX(), destination.GetPositionY());
 
@@ -301,7 +301,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
             }
         }
 
-        Position const destination = destinations[bestIndex];
+        Position const& destination = destinations[bestIndex];
         return MoveTo(
             SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
             destination.GetPositionZ(), false, false, false, false,
@@ -310,7 +310,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 
     for (uint8 index = 0; index < destinationCount; ++index)
     {
-        Position const destination = destinations[index];
+        Position const& destination = destinations[index];
         if (MoveTo(
                 SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
                 destination.GetPositionZ(), false, false, false, false,

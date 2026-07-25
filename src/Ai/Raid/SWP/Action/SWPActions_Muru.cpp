@@ -67,7 +67,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     {
         _entropiusInitialRangedPositionReached = false;
 
-        Position const position = MURU_STACK_POSITION;
+        Position const& position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 2.0f;
         return MoveInside(
             SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
