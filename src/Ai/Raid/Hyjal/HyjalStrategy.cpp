@@ -15,48 +15,48 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Rage Winterchill
     triggers.push_back(new TriggerNode("rage winterchill pulling boss", {
-        NextAction("rage winterchill misdirect boss to main tank", ACTION_RAID + 2) }));
+        NextAction("rage winterchill misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("rage winterchill boss engaged by main tank", {
-        NextAction("rage winterchill main tank position boss", ACTION_RAID + 1) }));
+        NextAction("rage winterchill main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill boss casts death and decay on ranged", {
-        NextAction("rage winterchill spread ranged in circle", ACTION_RAID + 1) }));
+        NextAction("rage winterchill spread ranged in circle", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill melee is standing in death and decay", {
         NextAction("rage winterchill melee get out of death and decay", ACTION_EMERGENCY + 1) }));
 
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss or infernal", {
-        NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 3) }));
+        NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("anetheron boss engaged by main tank", {
-        NextAction("anetheron main tank position boss", ACTION_RAID + 1) }));
+        NextAction("anetheron main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("anetheron boss casts carrion swarm", {
-        NextAction("anetheron spread ranged in circle", ACTION_RAID + 2) }));
+        NextAction("anetheron spread ranged in circle", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal", {
-        NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 2) }));
+        NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
         NextAction("anetheron first assist tank pick up infernals", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals continue to spawn", {
-        NextAction("anetheron assign dps priority", ACTION_RAID + 1) }));
+        NextAction("anetheron assign dps priority", ACTION_RAID) }));
 
     // Kaz'rogal
     triggers.push_back(new TriggerNode("kaz'rogal pulling boss", {
-        NextAction("kaz'rogal misdirect boss to main tank", ACTION_RAID + 2) }));
+        NextAction("kaz'rogal misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal boss engaged by main tank", {
-        NextAction("kaz'rogal main tank position boss", ACTION_RAID + 1) }));
+        NextAction("kaz'rogal main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal boss engaged by assist tanks", {
-        NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID + 1) }));
+        NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal low mana bots need escape path", {
-        NextAction("kaz'rogal spread ranged in arc", ACTION_RAID + 1) }));
+        NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
         NextAction("kaz'rogal low mana bot take defensive measures", ACTION_EMERGENCY + 1) }));
@@ -66,16 +66,16 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
-        NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 3) }));
+        NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor boss engaged by main tank", {
-        NextAction("azgalor main tank position boss", ACTION_RAID + 1) }));
+        NextAction("azgalor main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("azgalor main tank is positioning boss", {
         NextAction("azgalor wait at safe position", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
-        NextAction("azgalor disperse ranged", ACTION_RAID + 2) }));
+        NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
         NextAction("azgalor melee get out of fire and swap targets", ACTION_EMERGENCY + 2) }));
@@ -84,23 +84,23 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
-        NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
+        NextAction("azgalor first assist tank position doomguard", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards must die", {
-        NextAction("azgalor ranged dps prioritize doomguards", ACTION_RAID + 1) }));
+        NextAction("azgalor ranged dps prioritize doomguards", ACTION_RAID) }));
 
     // Archimonde
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
-        NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 2) }));
+        NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss engaged by main tank", {
-        NextAction("archimonde move boss to initial position", ACTION_RAID + 2) }));
+        NextAction("archimonde move boss to initial position", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
-        NextAction("archimonde cast fear immunity spell", ACTION_RAID + 2) }));
+        NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
-        NextAction("archimonde spread to avoid air burst", ACTION_RAID + 1) }));
+        NextAction("archimonde spread to avoid air burst", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
