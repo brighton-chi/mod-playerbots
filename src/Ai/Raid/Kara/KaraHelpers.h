@@ -92,11 +92,23 @@ constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 
 // Attumen the Huntsman
+extern Position const ATTUMEN_TANK_POSITION;
 extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
 Unit* GetAttumenMounted(Player* bot);
 
+// Maiden of Virtue
+extern Position const MAIDEN_OF_VIRTUE_TANK_POSITION;
+extern Position const MAIDEN_OF_VIRTUE_RANGED_POSITIONS[8];
+
+// The Big Bad Wolf
+extern Position const BIG_BAD_WOLF_TANK_POSITION;
+extern Position const BIG_BAD_WOLF_RUN_POSITIONS[4];
+
 // Wizard of Oz
 std::array<const char*, 5> const& GetOzTargets();
+
+// The Curator
+extern Position const THE_CURATOR_TANK_POSITION;
 
 // Shade of Aran
 bool IsAranCastingArcaneExplosion(Unit* aran);
@@ -125,9 +137,14 @@ bool TryFindSafePositionWithSafePath(
     float safeDistance, float maxSampleDist, float& outX, float& outY);
 
 // Nightbane
+extern Position const TERRACE_DOME_CENTER;
+extern Position const TERRACE_EAST_END;
+extern Position const TERRACE_WEST_END;
+extern Position const NIGHTBANE_FLIGHT_STACK_POSITIONS[2];
+extern Position const NIGHTBANE_RAIN_OF_BONES_POSITIONS[2];
+extern Position const NIGHTBANE_TELEPORT_POSITION;
 extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-std::vector<Position> GetCharredEarthPositions(Player* bot);
 
 }
 

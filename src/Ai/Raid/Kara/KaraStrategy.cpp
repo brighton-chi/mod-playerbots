@@ -122,16 +122,16 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Netherspite
     triggers.push_back(new TriggerNode("netherspite red beam is active",
-        { NextAction("netherspite block red beam", ACTION_EMERGENCY + 8) }
+        { NextAction("netherspite block red beam", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("netherspite blue beam is active",
-        { NextAction("netherspite block blue beam", ACTION_EMERGENCY + 8) }
+        { NextAction("netherspite block blue beam", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("netherspite green beam is active",
-        { NextAction("netherspite block green beam", ACTION_EMERGENCY + 8) }
+        { NextAction("netherspite block green beam", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("netherspite bot is not beam blocker",
-        { NextAction("netherspite avoid beam and void zone", ACTION_EMERGENCY + 7) }
+        { NextAction("netherspite avoid beam and void zone", ACTION_EMERGENCY + 6) }
     ));
     triggers.push_back(new TriggerNode("netherspite boss is banished",
         { NextAction("netherspite banish phase avoid void zone", ACTION_EMERGENCY + 1) }
@@ -165,7 +165,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane flight phase stack and move together", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
-        { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 10) }
+        { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 9) }
     ));
     triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }

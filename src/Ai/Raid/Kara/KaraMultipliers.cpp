@@ -449,18 +449,17 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 
 // The "avoid aoe" strategy must be disabled for the main tank
 // Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
-// It is also disabled for all bots during the flight phase
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane)
+    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z) // TEST NOT DISABLE DURING FLIGHT
         return 1.0f;
 
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
-        return 0.0f;
+    // if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
+    //     return 0.0f;
 
     if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
         return 0.0f;
@@ -468,7 +467,6 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Disable some movement actions that conflict with the strategies
 float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");

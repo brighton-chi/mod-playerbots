@@ -213,23 +213,23 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     if (attumen->GetVictim() != bot)
         return false;
 
-    Position const tankPosition = { -11123.762f, -1926.619f, 49.215f };
-    float const distanceToPosition = bot->GetExactDist2d(tankPosition);
+    Position const& position = ATTUMEN_TANK_POSITION;
+    float const distanceToPosition = bot->GetExactDist2d(position);
 
     if (distanceToPosition < 2.0f || !bot->IsWithinLOS(
-            tankPosition.GetPositionX(), tankPosition.GetPositionY(), tankPosition.GetPositionZ()))
+            position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
     {
         return false;
     }
 
-    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
-    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -327,19 +327,19 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (healer)
         return MoveBossToStunnedHealer(healer);
 
-    Position const tankPosition = { -10945.881f, -2103.782f, 92.712f };
-    float distanceToPosition = bot->GetExactDist2d(tankPosition);
+    Position const& position = MAIDEN_OF_VIRTUE_TANK_POSITION;
+    float distanceToPosition = bot->GetExactDist2d(position);
     if (distanceToPosition < 2.0f)
         return false;
 
-    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
-    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -361,18 +361,6 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    static const Position rangedPositions[8] =
-    {
-        { -10931.178f, -2116.580f, 92.179f },
-        { -10925.828f, -2102.425f, 92.180f },
-        { -10933.089f, -2088.502f, 92.180f },
-        { -10947.590f, -2082.815f, 92.180f },
-        { -10960.912f, -2090.437f, 92.179f },
-        { -10966.017f, -2105.288f, 92.175f },
-        { -10959.242f, -2119.617f, 92.180f },
-        { -10944.495f, -2123.857f, 92.180f },
-    };
-
     constexpr uint8 maxIndex = 7;
     uint8 index = 0;
 
@@ -393,7 +381,7 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
         index++;
     }
 
-    Position const position = rangedPositions[index];
+    Position const& position = MAIDEN_OF_VIRTUE_RANGED_POSITIONS[index];
     if (bot->GetExactDist2d(position) < 2.0f)
         return false;
 
@@ -423,40 +411,32 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
     if (wolf->GetVictim() != bot)
         return false;
 
-    Position const tankPosition = { -10913.391f, -1773.508f, 90.477f };
-    float const distanceToPosition = bot->GetExactDist2d(tankPosition);
+    Position const& position = BIG_BAD_WOLF_TANK_POSITION;
+    float const distanceToPosition = bot->GetExactDist2d(position);
 
     if (distanceToPosition < 2.0f)
         return false;
 
-    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
-    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 // Run away, little girl, run away
 bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
 {
-    static const Position runPositions[4] =
-    {
-        { -10875.456f, -1779.036f, 90.477f },
-        { -10872.281f, -1751.638f, 90.477f },
-        { -10910.492f, -1747.401f, 90.477f },
-        { -10913.391f, -1773.508f, 90.477f },
-    };
-
-    Position const& target = runPositions[_runIndex];
+    Position const& target = BIG_BAD_WOLF_RUN_POSITIONS[_runIndex];
 
     if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 1.0f)
         _runIndex = (_runIndex + 1) % 4;
 
-    Position const position = runPositions[_runIndex];
+    Position const& position = BIG_BAD_WOLF_RUN_POSITIONS[_runIndex];
 
     botAI->InterruptSpell();
     return MoveTo(
@@ -541,20 +521,20 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     if (curator->GetVictim() != bot)
         return false;
 
-    Position const tankPosition = { -11139.463f, -1884.645f, 165.765f };
-    float const distanceToPosition = bot->GetExactDist2d(tankPosition);
+    Position const& position = THE_CURATOR_TANK_POSITION;
+    float const distanceToPosition = bot->GetExactDist2d(position);
 
     if (distanceToPosition < 2.0f)
         return false;
 
-    float const dX = tankPosition.GetPositionX() - bot->GetPositionX();
-    float const dY = tankPosition.GetPositionY() - bot->GetPositionY();
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, tankPosition.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
@@ -690,7 +670,8 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "netherspite_beam_blocking_red", "%player is moving to block the red beam!", placeholders);
+            "netherspite_beam_blocking_red", "%player is moving to block the red beam!",
+            placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
     }
     _wasBlockingRedBeam = true;
@@ -1210,17 +1191,17 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot)
         return false;
 
-    Position const domeCenter      = { -11126.015f, -1925.271f, 91.473f };
-    Position const terraceEastEnd  = { -11115.958f, -1972.058f, 91.457f };
-    Position const terraceWestEnd  = { -11077.521f, -1913.315f, 91.471f };
+    Position const& domeCenter = TERRACE_DOME_CENTER;
+    Position const& eastEnd = TERRACE_EAST_END;
+    Position const& westEnd = TERRACE_WEST_END;
 
-    float const radius = domeCenter.GetExactDist2d(terraceEastEnd);
+    float const radius = domeCenter.GetExactDist2d(eastEnd);
     float const thetaA = atan2(
-        terraceEastEnd.GetPositionY() - domeCenter.GetPositionY(),
-        terraceEastEnd.GetPositionX() - domeCenter.GetPositionX());
+        eastEnd.GetPositionY() - domeCenter.GetPositionY(),
+        eastEnd.GetPositionX() - domeCenter.GetPositionX());
     float const thetaB = atan2(
-        terraceWestEnd.GetPositionY() - domeCenter.GetPositionY(),
-        terraceWestEnd.GetPositionX() - domeCenter.GetPositionX());
+        westEnd.GetPositionY() - domeCenter.GetPositionY(),
+        westEnd.GetPositionX() - domeCenter.GetPositionX());
 
     float deltaAB = thetaB - thetaA;
     if (deltaAB < 0.0f) deltaAB += 2.0f * M_PI;
@@ -1467,18 +1448,8 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
     if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RAIN_OF_BONES)))
         _rainOfBonesHit = true;
 
-    Position const rainOfBonesPositions[2] =
-    {
-        { -11166.516f, -1901.405f, 91.473f },  // primary
-        { -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
-    };
-    Position const flightStackPositions[2] =
-    {
-        { -11156.233f, -1888.353f, 91.473f },  // primary
-        { -11149.115f, -1897.154f, 91.473f },  // backup in case of charred earth
-    };
-
-    auto const& posArray = _rainOfBonesHit ? rainOfBonesPositions : flightStackPositions;
+    auto const& posArray = _rainOfBonesHit ?
+        NIGHTBANE_RAIN_OF_BONES_POSITIONS : NIGHTBANE_FLIGHT_STACK_POSITIONS;
     Position destPos;
     bool foundSafe = false;
 
@@ -1523,10 +1494,10 @@ bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
 // Failsafe in case bots fall through the world or off the terrace
 bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
 {
-    Position const flightStackPosition = { -11159.555f, -1893.526f, 91.473f };
+    Position const& position = NIGHTBANE_TELEPORT_POSITION;
     return bot->TeleportTo(
-        KARA_MAP_ID, flightStackPosition.GetPositionX(), flightStackPosition.GetPositionY(),
-        flightStackPosition.GetPositionZ(), bot->GetOrientation());
+        KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        position.GetPositionZ(), bot->GetOrientation());
 }
 
 bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)

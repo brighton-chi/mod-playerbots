@@ -11,6 +11,8 @@ namespace KaraHelpers
 {
 
 // Attumen the Huntsman
+
+Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
 
 Unit* GetAttumenMounted(Player* bot)
@@ -19,6 +21,32 @@ Unit* GetAttumenMounted(Player* bot)
     return bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
 }
+
+// Maiden of Virtue
+
+Position const MAIDEN_OF_VIRTUE_TANK_POSITION = { -10945.881f, -2103.782f, 92.712f };
+Position const MAIDEN_OF_VIRTUE_RANGED_POSITIONS[8] =
+{
+    { -10931.178f, -2116.580f, 92.179f },
+    { -10925.828f, -2102.425f, 92.180f },
+    { -10933.089f, -2088.502f, 92.180f },
+    { -10947.590f, -2082.815f, 92.180f },
+    { -10960.912f, -2090.437f, 92.179f },
+    { -10966.017f, -2105.288f, 92.175f },
+    { -10959.242f, -2119.617f, 92.180f },
+    { -10944.495f, -2123.857f, 92.180f },
+};
+
+// The Big Bad Wolf
+
+Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
+Position const BIG_BAD_WOLF_RUN_POSITIONS[4] =
+{
+    { -10875.456f, -1779.036f, 90.477f },
+    { -10872.281f, -1751.638f, 90.477f },
+    { -10910.492f, -1747.401f, 90.477f },
+    { -10913.391f, -1773.508f, 90.477f },
+};
 
 // Wizard of Oz
 
@@ -35,6 +63,10 @@ std::array<const char*, 5> const& GetOzTargets()
 
     return targets;
 }
+
+// The Curator
+
+Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Shade of Aran
 
@@ -453,6 +485,20 @@ bool TryFindSafePositionWithSafePath(
 
 // Nightbane
 
+Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
+Position const TERRACE_EAST_END    = { -11115.958f, -1972.058f, 91.457f };
+Position const TERRACE_WEST_END    = { -11077.521f, -1913.315f, 91.471f };
+Position const NIGHTBANE_FLIGHT_STACK_POSITIONS[2] =
+{
+    { -11156.233f, -1888.353f, 91.473f },  // primary
+    { -11149.115f, -1897.154f, 91.473f },  // backup in case of charred earth
+};
+Position const NIGHTBANE_RAIN_OF_BONES_POSITIONS[2] =
+{
+    { -11166.516f, -1901.405f, 91.473f },  // primary
+    { -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
+};
+Position const NIGHTBANE_TELEPORT_POSITION = { -11159.555f, -1893.526f, 91.473f };
 std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
 
