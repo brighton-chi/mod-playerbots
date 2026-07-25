@@ -1293,6 +1293,8 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
+    const uint32 instanceId = kaelthas->GetMap()->GetInstanceId();
+
     static std::array<char const*, 3> const advisorNames =
     {
         "grand astromancer capernian",
@@ -1300,6 +1302,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
         "lord sanguinar",
     };
 
+    bool advisorAtFullHp = false;
     for (char const* name : advisorNames)
     {
         Unit* advisor = AI_VALUE2(Unit*, "find target", name);
@@ -1309,10 +1312,24 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
         if (advisor->GetHealth() == advisor->GetMaxHealth() &&
             !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         {
-            time_t const now = std::time(nullptr);
-            advisorDpsWaitTimer.insert_or_assign(kaelthas->GetMap()->GetInstanceId(), now);
-            return true;
+            advisorAtFullHp = true;
+            break;
         }
+    }
+
+    if (advisorAtFullHp)
+    {
+        if (!advisorDpsWaitTimer.count(instanceId))
+            advisorDpsWaitTimer[instanceId] = -1;
+
+        return false;
+    }
+
+    auto it = advisorDpsWaitTimer.find(instanceId);
+    if (it != advisorDpsWaitTimer.end() && it->second == -1)
+    {
+        it->second = std::time(nullptr);
+        return true;
     }
 
     return false;

@@ -236,8 +236,14 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     constexpr uint8 dpsWaitSeconds = 10;
 
     auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
-    if (it != advisorDpsWaitTimer.end() && (now - it->second) >= dpsWaitSeconds)
-        return 1.0f;
+    if (it != advisorDpsWaitTimer.end())
+    {
+        // Sentinel (-1): advisor at full HP, don't expire yet
+        // Real timestamp: check if countdown elapsed
+        if (it->second != -1 && (now - it->second) >= dpsWaitSeconds)
+            return 1.0f;
+        // Otherwise fall through to per-advisor exemptions below (tank gets through)
+    }
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -436,7 +442,8 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
