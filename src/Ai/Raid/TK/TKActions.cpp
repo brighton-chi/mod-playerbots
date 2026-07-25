@@ -1188,42 +1188,16 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
 
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
 {
-    bool hasRole = false;
     Position position;
-    if (botAI->IsAssistHealOfIndex(bot, 0, true))
-    {
+    if (botAI->IsAssistHealOfIndex(bot, 0, false))
         position = ADVISOR_HEAL_POSITION;
-        hasRole = true;
-    }
     else if (botAI->IsMainTank(bot))
-    {
-        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-        if (sanguinar && sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-        {
-            position = SANGUINAR_WAITING_POSITION;
-            hasRole = true;
-        }
-    }
-    else if (botAI->IsAssistTankOfIndex(bot, 0, true))
-    {
-        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        if (telonicus && telonicus->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-        {
-            position = TELONICUS_WAITING_POSITION;
-            hasRole = true;
-        }
-    }
+        position = SANGUINAR_WAITING_POSITION;
+    else if (botAI->IsAssistTankOfIndex(bot, 0, false))
+        position = TELONICUS_WAITING_POSITION;
     else if (GetCapernianTank(bot) == bot)
-    {
-        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-        if (capernian && capernian->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-        {
-            position = CAPERNIAN_WAITING_POSITION;
-            hasRole = true;
-        }
-    }
-
-    if (!hasRole)
+        position = CAPERNIAN_WAITING_POSITION;
+    else
         return false;
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 2.0f)
@@ -1349,7 +1323,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     bool isMechanicTracker = IsMechanicTrackerBot(bot, TK_MAP_ID);
 
     // Priority 0: Everybody other than the main tank needs to stay away from the axe
-    // But this applies to assist tanks only after they get aggro on the mace, dagger, or sword
+    // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
     Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
     Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
@@ -1391,33 +1365,33 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
     {
         target = longbow;
-        if (MarkTargetWithSkull(bot, longbow))
+        if (isMechanicTracker && MarkTargetWithSkull(bot, longbow))
             return true;
     }
-    // Priority 4: Devastation - ranged only
-    else if (axe && botAI->IsRangedDps(bot))
-    {
-        target = axe;
-    }
-    // Priority 5: Warp Slicer
+    // Priority 4: Warp Slicer
     else if (sword)
     {
         target = sword;
-        if (isMechanicTracker && !axe && MarkTargetWithSkull(bot, sword))
+        if (isMechanicTracker && MarkTargetWithSkull(bot, sword))
             return true;
     }
-    // Priority 6: Infinity Blades
+    // Priority 5: Infinity Blades
     else if (dagger)
     {
         target = dagger;
-        if (isMechanicTracker && !axe && MarkTargetWithSkull(bot, dagger))
+        if (isMechanicTracker && MarkTargetWithSkull(bot, dagger))
             return true;
+    }
+    // Priority 6: Devastation - ranged only
+    else if (axe && botAI->IsRangedDps(bot))
+    {
+        target = axe;
     }
     // Priority 7: Phaseshift Bulwark
     else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
     {
         target = shield;
-        if (isMechanicTracker && !axe && MarkTargetWithSkull(bot, shield))
+        if (MarkTargetWithSkull(bot, shield))
             return true;
     }
 
@@ -1441,6 +1415,9 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
 
     if (AI_VALUE(Unit*, "current target") != axe)
         return Attack(axe);
+
+    if (MarkTargetWithCross(bot, axe))
+        return true;
 
     if (axe->GetVictim() != bot)
         return false;
@@ -1471,6 +1448,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         {
             if (bot->HasItemCount(static_cast<uint32>(weapon.itemId), 1, false))
             {
+                botAI->InterruptSpell();
                 EquipLegendaryWeapon(static_cast<uint32>(weapon.itemId));
                 continue;
             }

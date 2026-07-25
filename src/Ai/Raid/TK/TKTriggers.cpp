@@ -212,7 +212,7 @@ bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
     if (botAI->IsMainTank(bot))
         return false;
 
-    if (botAI->IsMelee(bot))
+    if (botAI->IsMelee(bot) || botAI->IsHeal(bot))
     {
         Creature* astromancerCreature = astromancer->ToCreature();
         if (astromancerCreature && astromancerCreature->GetReactState() == REACT_PASSIVE)
@@ -315,17 +315,12 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
 
 bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_WARLOCK)
+    if (bot->getClass() != CLASS_WARLOCK || GetCapernianTank(bot) != bot)
         return false;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        IsFeigningDeath(capernian))
-    {
-        return false;
-    }
-
-    return GetCapernianTank(bot) == bot;
+    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !IsFeigningDeath(capernian);
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
@@ -337,7 +332,10 @@ bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActiv
         return false;
     }
 
-    return GetCapernianTank(bot) != bot;
+    if (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot)
+        return false;
+
+    return true;
 }
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
@@ -360,21 +358,24 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
     if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "master engineer telonicus") &&
-        !AI_VALUE2(Unit*, "find target", "lord sanguinar"))
-    {
+    // Proxy for revival/Kael talk phase (can pick any advisor here)
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
-    }
 
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true) ||
-        botAI->IsAssistHealOfIndex(bot, 0, true) ||
+    return botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, false) ||
+        botAI->IsAssistHealOfIndex(bot, 0, false) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, false))
+    {
         return false;
+    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)

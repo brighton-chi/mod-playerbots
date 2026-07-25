@@ -355,7 +355,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
 
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!botAI->IsMainTank(bot))
         return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -363,16 +363,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
         return 1.0f;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
-        return 1.0f;
-
-    if (kaelAI->GetPhase() != PHASE_WEAPONS && dynamic_cast<TankFaceAction*>(action))
-        return 0.0f;
-
-    if (!botAI->IsMainTank(bot))
-        return 1.0f;
-
-    if (kaelAI->GetPhase() != PHASE_WEAPONS)
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_WEAPONS)
         return 1.0f;
 
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
@@ -455,6 +446,45 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() == PHASE_WEAPONS)
+        return 1.0f;
+
+    if (dynamic_cast<TankFaceAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
+{
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+        return 1.0f;
+
+    // Proxy for revival/Kael talk phase (can pick any advisor here)
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<KaelthasSunstriderHandleAdvisorRolesInPhase3Action*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (botAI->IsMainTank(bot) ||
+        botAI->IsAssistTankOfIndex(bot, 0, false) ||
+        botAI->IsAssistHealOfIndex(bot, 0, false) ||
+        (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot))
+    {
+        return 0.0f;
+    }
+
     return 1.0f;
 }
 
@@ -466,10 +496,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
-        return 1.0f;
-
-    if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS || kaelAI->GetPhase() == PHASE_FINAL)
+    if (!kaelAI || kaelAI->GetPhase() == PHASE_ALL_ADVISORS || kaelAI->GetPhase() == PHASE_FINAL)
         return 1.0f;
 
     if (bot->getClass() == CLASS_SHAMAN &&

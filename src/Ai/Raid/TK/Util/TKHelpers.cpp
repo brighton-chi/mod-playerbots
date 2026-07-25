@@ -335,7 +335,7 @@ Player* GetRangedLeader(Player* bot)
             continue;
         }
 
-        if (botAI->IsRanged(member))
+        if (botAI->IsRangedDps(member))
             return member;
     }
 

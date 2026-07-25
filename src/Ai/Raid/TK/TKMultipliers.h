@@ -145,6 +145,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class KaelthasSunstriderPrepareForPhase3Multiplier : public Multiplier
+{
+public:
+    KaelthasSunstriderPrepareForPhase3Multiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kael'thas sunstrider prepare for phase 3") {}
+    virtual float GetValue(Action* action);
+};
+
 class KaelthasSunstriderDelayCooldownsMultiplier : public Multiplier
 {
 public:
