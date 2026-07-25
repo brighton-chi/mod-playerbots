@@ -17,8 +17,7 @@ using namespace HyjalHelpers;
 
 bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == HYJAL_SUMMIT_MAP_ID &&
-           !AI_VALUE2(bool, "combat", "self target");
+    return bot->GetMapId() == HYJAL_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Rage Winterchill
@@ -34,14 +33,12 @@ bool RageWinterchillPullingBossTrigger::IsActive()
 
 bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "rage winterchill");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 bool RageWinterchillBossCastsDeathAndDecayOnRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) &&
-           AI_VALUE2(Unit*, "find target", "rage winterchill");
+    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
 bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
@@ -63,8 +60,7 @@ bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
 
 bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_HUNTER &&
-           AI_VALUE2(Unit*, "find target", "anetheron");
+    return bot->getClass() == CLASS_HUNTER && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossEngagedByMainTankTrigger::IsActive()
@@ -87,7 +83,10 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron || botAI->IsMainTank(bot))
+    if (!anetheron)
+        return false;
+
+    if (botAI->IsMainTank(bot))
         return false;
 
     return GetInfernoTarget(anetheron) == bot;
@@ -96,7 +95,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
     return botAI->IsAssistTankOfIndex(bot, 0, true) &&
-           AI_VALUE2(Unit*, "find target", "towering infernal");
+        AI_VALUE2(Unit*, "find target", "towering infernal");
 }
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
@@ -164,7 +163,9 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
         return false;
+    }
 
     uint8 tab = AiFactory::GetPlayerSpecTab(bot);
     if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
@@ -176,8 +177,7 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (botAI->HasAnyAuraOf(bot, "ice block", "divine shield", nullptr))
         return false;
 
-    if (isBelowManaThreshold.count(bot->GetGUID()) ||
-        bot->GetPower(POWER_MANA) <= 3200)
+    if (isBelowManaThreshold.count(bot->GetGUID()) || bot->GetPower(POWER_MANA) <= 3200)
         return true;
 
     return false;
@@ -195,10 +195,11 @@ bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
         (botAI->HasAura("shadow resistance aura", bot) ||
          botAI->HasAura("prayer of shadow protection", bot) ||
          botAI->HasAura("shadow protection", bot)))
+    {
         return false;
+    }
 
-    return bot->HasAura(
-        static_cast<uint32>(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+    return bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
 // Azgalor
@@ -232,27 +233,31 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 
     TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
     return tankState == TankPositionState::Unknown ||
-           tankState == TankPositionState::MovingToTransition;
+        tankState == TankPositionState::MovingToTransition;
 }
 
 bool AzgalorBossEngagedByRangedTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot))
+    if (!botAI->IsRanged(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    return azgalor && azgalor->GetVictim() != bot &&
-           !bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM));
+    if (!azgalor || azgalor->GetVictim() == bot)
+        return false;
+
+    return !bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM));
 }
 
 bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
 {
-    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
+    if (!botAI->IsMelee(bot) || botAI->IsTank(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetVictim() == bot ||
-        bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
+    if (!azgalor || azgalor->GetVictim() == bot)
+        return false;
+
+    if (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
         return false;
 
     return IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
@@ -265,26 +270,29 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (!botAI->IsAssistTank(bot))
         return false;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        return false;
+
+    if (botAI->IsAssistTankOfIndex(bot, 0, false))
     {
         return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-               AnyGroupMemberHasDoom(bot);
+            AnyGroupMemberHasDoom(bot);
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 1, true))
+    if (botAI->IsAssistTankOfIndex(bot, 1, false))
     {
         // Trigger for second assist tank only if first assist tank has Doom
         Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
         if (firstAssistTank &&
             !firstAssistTank->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
+        {
             return false;
+        }
 
-        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-               AnyGroupMemberHasDoom(bot);
+        return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
     }
 
     return false;
@@ -317,8 +325,7 @@ bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PRIEST &&
-        bot->getClass() != CLASS_SHAMAN)
+    if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
@@ -328,8 +335,7 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
 bool ArchimondeBossCastsAirBurstTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() <= 10.0f ||
-        archimonde->GetVictim() == bot)
+    if (!archimonde || archimonde->GetHealthPct() <= 10.0f || archimonde->GetVictim() == bot)
         return false;
 
     return !botAI->IsMainTank(bot);
@@ -341,19 +347,19 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
     if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
         return false;
 
-    // If I don't make an exception, bots actually refuse to enter the
-    // Doomfire even when feared
-    return !bot->HasAura(
-        static_cast<uint32>(HyjalSpells::SPELL_ARCHIMONDE_FEAR));
+    // If I don't make an exception, bots refuse to enter the // Doomfire even when feared
+    return !bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_ARCHIMONDE_FEAR));
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_ROGUE &&
         bot->getClass() != CLASS_PALADIN)
+    {
         return false;
+    }
 
     return bot->GetHealthPct() < 40.0f &&
-           (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE)) ||
-            bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE_DOT)));
+        (bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE)) ||
+         bot->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE_DOT)));
 }

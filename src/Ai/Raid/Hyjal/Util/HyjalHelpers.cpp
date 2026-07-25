@@ -19,13 +19,13 @@ bool GetGroundedStepPosition(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
-    const float distance = bot->GetExactDist2d(destinationX, destinationY);
+    float const distance = bot->GetExactDist2d(destinationX, destinationY);
     if (distance <= 0.0f)
         return false;
 
-    const float stepDistance = std::min(moveDist, distance);
-    const float deltaX = destinationX - bot->GetPositionX();
-    const float deltaY = destinationY - bot->GetPositionY();
+    float const stepDistance = std::min(moveDist, distance);
+    float const deltaX = destinationX - bot->GetPositionX();
+    float const deltaY = destinationY - bot->GetPositionY();
     stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
     stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
     stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
@@ -83,8 +83,8 @@ DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
     if (instanceIt == deathAndDecayPosition.end())
         return nullptr;
 
-    const uint32 now = getMSTime();
-    const uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+    uint32 const now = getMSTime();
+    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
     if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
     {
         deathAndDecayPosition.erase(instanceIt);
@@ -99,14 +99,14 @@ DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
 
 bool IsInDeathAndDecay(Player* bot, float radius)
 {
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
     Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSpells::SPELL_DEATH_AND_DECAY));
     if (aura)
     {
         DynamicObject* dynObj = aura->GetDynobjOwner();
         if (dynObj && dynObj->IsInWorld())
         {
-            const uint32 now = getMSTime();
+            uint32 const now = getMSTime();
             auto instanceIt = deathAndDecayPosition.find(instanceId);
             if (instanceIt == deathAndDecayPosition.end() ||
                 getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
@@ -148,12 +148,12 @@ Player* GetInfernoTarget(Unit* anetheron)
     return nullptr;
 }
 
-const Position& GetClosestInfernalTankPosition(Player* bot)
+Position const& GetClosestInfernalTankPosition(Player* bot)
 {
-    const Position& east = ANETHERON_E_INFERNAL_POSITION;
-    const Position& west = ANETHERON_W_INFERNAL_POSITION;
-    return (bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
-            bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY())) ? east : west;
+    Position const& east = ANETHERON_E_INFERNAL_POSITION;
+    Position const& west = ANETHERON_W_INFERNAL_POSITION;
+    return bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
+        bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY()) ? east : west;
 }
 
 // Kaz'rogal
@@ -190,8 +190,8 @@ RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
     if (instanceIt == rainOfFirePosition.end())
         return nullptr;
 
-    const uint32 now = getMSTime();
-    const uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+    uint32 const now = getMSTime();
+    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
     if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
     {
         rainOfFirePosition.erase(instanceIt);
@@ -228,15 +228,15 @@ bool IsInRainOfFire(Player* bot, float radius)
 
 bool AnyGroupMemberHasDoom(Player* bot)
 {
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member &&
-                member->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
-                return true;
-        }
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
+            return true;
     }
 
     return false;
@@ -256,7 +256,7 @@ AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
         return nullptr;
 
     constexpr uint32 airBurstReactionWindow = 2000;
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)
     {
         archimondeAirBurstTargets.erase(instanceIt);

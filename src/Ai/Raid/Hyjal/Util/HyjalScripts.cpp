@@ -35,19 +35,21 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* bot, Player* target)
+static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* target)
 {
     if (!target)
         return false;
 
+    Player* bot = botAI->GetBot();
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank || bot == mainTank)
         return false;
 
-    float distanceToMainTank = bot->GetExactDist2d(mainTank);
+    if (target != mainTank && target != bot)
+        return false;
 
-    return (target == mainTank || target == bot) &&
-           distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
+    float const distanceToMainTank = bot->GetDistance2d(mainTank);
+    return distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
 }
 
 // Records the active Rain of Fire dynamic object so that melee bots can avoid it by running
@@ -172,9 +174,6 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!spell || !caster || !spellInfo)
-            return;
-
         if (spellInfo->Id != static_cast<uint32>(HyjalSpells::SPELL_AIR_BURST))
             return;
 

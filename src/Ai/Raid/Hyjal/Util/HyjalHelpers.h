@@ -60,7 +60,7 @@ enum class TankPositionState : uint8
 };
 
 // General
-constexpr uint32 HYJAL_SUMMIT_MAP_ID = 534;
+constexpr uint32 HYJAL_MAP_ID = 534;
 struct RangedGroups
 {
     std::vector<Player*> healers;
@@ -94,7 +94,7 @@ extern const Position ANETHERON_E_INFERNAL_POSITION;
 extern const Position ANETHERON_W_INFERNAL_POSITION;
 extern std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 Player* GetInfernoTarget(Unit* anetheron);
-const Position& GetClosestInfernalTankPosition(Player* bot);
+Position const& GetClosestInfernalTankPosition(Player* bot);
 
 // Kaz'rogal
 extern const Position KAZROGAL_TANK_TRANSITION_POSITION;
