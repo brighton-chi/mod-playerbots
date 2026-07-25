@@ -147,7 +147,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
             TANK_PLATFORM_NW : TANK_PLATFORM_E;
     }
 
-    Position const target = PLATFORM_POSITIONS[platformIdx];
+    Position const& target = PLATFORM_POSITIONS[platformIdx];
     if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 5.0f)
         return false;
 
@@ -178,7 +178,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    Position const target = PLATFORM_POSITIONS[locationIndex];
+    Position const& target = PLATFORM_POSITIONS[locationIndex];
     if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 5.0f)
         return false;
 
@@ -205,7 +205,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    Position const position = GROUND_POSITIONS[locationIndex];
+    Position const& position = GROUND_POSITIONS[locationIndex];
     if (isRanged)
     {
         constexpr float distFromTarget = 8.0f;
@@ -272,8 +272,8 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    Position const position = GROUND_POSITIONS[locationIndex];
-    Position const center = ALAR_POINT_MIDDLE;
+    Position const& position = GROUND_POSITIONS[locationIndex];
+    Position const& center = ALAR_POINT_MIDDLE;
     float dx = center.GetPositionX() - position.GetPositionX();
     float dy = center.GetPositionY() - position.GetPositionY();
     float distToCenter = position.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
@@ -579,7 +579,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    Position const position = VOID_REAVER_TANK_POSITION;
+    Position const& position = VOID_REAVER_TANK_POSITION;
     float const distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -958,7 +958,7 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
     if (sanguinar->GetVictim() != bot)
         return false;
 
-    Position const position = SANGUINAR_TANK_POSITION;
+    Position const& position = SANGUINAR_TANK_POSITION;
     float const distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -1166,7 +1166,7 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
     if (telonicus->GetVictim() != bot)
         return false;
 
-    Position const position = TELONICUS_TANK_POSITION;
+    Position const& position = TELONICUS_TANK_POSITION;
     float const distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
