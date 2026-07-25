@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "SethActions.h"
@@ -109,9 +110,9 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
     if (_hasReachedPillarPosition == true)
         return false;
 
-    Position const position = PILLAR_POSITION;
-    float const distToPosition = bot->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY());
+    Position const& position = PILLAR_POSITION;
+    float const distToPosition =
+        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
     if (distToPosition > 2.0f)
     {
@@ -163,7 +164,7 @@ bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
 
 bool TalonKingIkissLosArcaneExplosionAction::Execute(Event event)
 {
-    Position const pillarCenter = PILLAR_CENTER;
+    Position const& pillarCenter = PILLAR_CENTER;
     float const botAngle = pillarCenter.GetAngle(bot);
     float const distToPillar = bot->GetExactDist2d(pillarCenter);
 
@@ -216,7 +217,7 @@ bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
     if (!ikiss)
         return false;
 
-    Position const pillarCenter = PILLAR_CENTER;
+    Position const& pillarCenter = PILLAR_CENTER;
     constexpr float angularStep = M_PI / 8.0f;
 
     float const botAngle = pillarCenter.GetAngle(bot);
