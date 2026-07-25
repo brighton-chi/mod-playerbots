@@ -89,7 +89,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian should position bots", {
-        NextAction("high astromancer solarian position ranged", ACTION_RAID) }));
+        NextAction("high astromancer solarian stack on ranged leader", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
         NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
