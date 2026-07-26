@@ -369,11 +369,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneFlightPhaseStackAndMoveTogetherAction : public MovementAction
+class NightbaneFlightPhaseStackAndMoveAction : public MovementAction
 {
 public:
-    NightbaneFlightPhaseStackAndMoveTogetherAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane flight phase stack and move together") {}
+    NightbaneFlightPhaseStackAndMoveAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "nightbane flight phase stack and move") {}
     bool Execute(Event event) override;
     bool ResetRainOfBonesHit()
     {

@@ -156,11 +156,8 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
         if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
             continue;
 
-        if (member->getClass() == CLASS_WARRIOR || member->getClass() == CLASS_ROGUE ||
-            member->getClass() == CLASS_DEATH_KNIGHT)
-        {
+        if (member->getPowerType() != POWER_MANA)
             continue;
-        }
 
         if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
             continue;
@@ -192,11 +189,8 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
         if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
             continue;
 
-        if (member->getClass() != CLASS_WARRIOR && member->getClass() != CLASS_ROGUE &&
-            member->getClass() != CLASS_DEATH_KNIGHT)
-        {
+        if (member->getPowerType() == POWER_MANA)
             continue;
-        }
 
         if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
             greenBlockers.push_back(member);

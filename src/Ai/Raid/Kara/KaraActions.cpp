@@ -55,21 +55,24 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
             reset = true;
 
-        Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
+        Action* redAction = botAI->GetAiObjectContext()->GetAction(
+            "netherspite block red beam");
         if (redAction &&
             static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState())
         {
             reset = true;
         }
 
-        Action* blueAction = botAI->GetAiObjectContext()->GetAction("netherspite block blue beam");
+        Action* blueAction = botAI->GetAiObjectContext()->GetAction(
+            "netherspite block blue beam");
         if (blueAction &&
             static_cast<NetherspiteBlockBlueBeamAction*>(blueAction)->ResetBlueBeamState())
         {
             reset = true;
         }
 
-        Action* greenAction = botAI->GetAiObjectContext()->GetAction("netherspite block green beam");
+        Action* greenAction = botAI->GetAiObjectContext()->GetAction(
+            "netherspite block green beam");
         if (greenAction &&
             static_cast<NetherspiteBlockGreenBeamAction*>(greenAction)->ResetGreenBeamState())
         {
@@ -233,7 +236,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
-// Mounted Attumen's CombatReach is 0 yards
+// Mounted Attumen's CombatReach is 0 [sic] yards
 bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 {
     float const distanceBehind = bot->getClass() == CLASS_HUNTER? 8.0f : 2.0f;
@@ -397,7 +400,7 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 }
 
 // The Big Bad Wolf
-// CombatReach is 0 yards
+// CombatReach is 0 [sic] yards
 
 bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
@@ -614,8 +617,6 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
     return false;
 }
 
-// Reasoning: get too close, get Counterspelled;
-// get too far, get stuck in alcoves when running away from Blizzard
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
@@ -707,7 +708,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     }
 }
 
-// Two non-Rogue/Warrior DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
+// Two mana-user DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
 bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -764,7 +765,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
 }
 
 // Two healer bots will block the green beam for each phase (swap at 25 debuff stacks)
-// OR one rogue or DPS warrior bot will block the green beam for an entire phase
+// OR one non-mana-user dps bot will block the green beam for an entire phase
 bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -1433,7 +1434,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 // 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
 // 2. Once Rain of Bones hits, the whole party moves to a new stack position
 // This lasts for the first 35 seconds of the flight phase, after which Nightbane begins landing
-bool NightbaneFlightPhaseStackAndMoveTogetherAction::Execute(Event /*event*/)
+bool NightbaneFlightPhaseStackAndMoveAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
@@ -1515,9 +1516,9 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
     {
         Action* action = botAI->GetAiObjectContext()->GetAction(
-            "nightbane flight phase stack and move together");
+            "nightbane flight phase stack and move");
         if (action &&
-            static_cast<NightbaneFlightPhaseStackAndMoveTogetherAction*>(action)->ResetRainOfBonesHit())
+            static_cast<NightbaneFlightPhaseStackAndMoveAction*>(action)->ResetRainOfBonesHit())
         {
             didSomething = true;
         }

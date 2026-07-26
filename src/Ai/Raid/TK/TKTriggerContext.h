@@ -132,9 +132,6 @@ public:
         creators["kael'thas sunstrider phoenixes and eggs are spawning"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phoenixes_and_eggs_are_spawning;
 
-        creators["kael'thas sunstrider boss is casting pyroblast"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_casting_pyroblast;
-
         creators["kael'thas sunstrider boss is manipulating gravity"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_manipulating_gravity;
     }
@@ -261,9 +258,6 @@ private:
     }
     static Trigger* kaelthas_sunstrider_phoenixes_and_eggs_are_spawning(PlayerbotAI* botAI) {
         return new KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(botAI);
-    }
-    static Trigger* kaelthas_sunstrider_boss_is_casting_pyroblast(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBossIsCastingPyroblastTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI);

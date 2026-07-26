@@ -317,14 +317,6 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderBossIsCastingPyroblastTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderBossIsCastingPyroblastTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider boss is casting pyroblast") {}
-    bool IsActive() override;
-};
-
 class KaelthasSunstriderBossIsManipulatingGravityTrigger : public Trigger
 {
 public:

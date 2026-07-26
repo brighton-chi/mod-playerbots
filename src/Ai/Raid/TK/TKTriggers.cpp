@@ -548,15 +548,6 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     return false;
 }
 
-bool KaelthasSunstriderBossIsCastingPyroblastTrigger::IsActive()
-{
-    if (!botAI->IsDps(bot))
-        return false;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && kaelthas->HasAura(static_cast<uint32>(TkSpells::SPELL_SHOCK_BARRIER));
-}
-
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");

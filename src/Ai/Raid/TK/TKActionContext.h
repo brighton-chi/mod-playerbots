@@ -144,9 +144,6 @@ public:
         creators["kael'thas sunstrider break mind control"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control;
 
-        creators["kael'thas sunstrider break through shock barrier"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_break_through_shock_barrier;
-
         creators["kael'thas sunstrider spread out in midair"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_out_in_midair;
     }
@@ -285,9 +282,6 @@ private:
     }
     static Action* kaelthas_sunstrider_break_mind_control(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBreakMindControlAction(botAI);
-    }
-    static Action* kaelthas_sunstrider_break_through_shock_barrier(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBreakThroughShockBarrierAction(botAI);
     }
     static Action* kaelthas_sunstrider_spread_out_in_midair(PlayerbotAI* botAI) {
         return new KaelthasSunstriderSpreadOutInMidairAction(botAI);

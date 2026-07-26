@@ -40,31 +40,43 @@ using namespace SwpHelpers;
 namespace
 {
 
-bool IsDpsCooldownAction(Action* action)
+bool IsDpsCooldownAction(Action* action, PlayerbotAI* botAI)
 {
     return dynamic_cast<CastHeroismAction*>(action) ||
-           dynamic_cast<CastBloodlustAction*>(action) ||
-           dynamic_cast<CastMetamorphosisAction*>(action) ||
-           dynamic_cast<CastAdrenalineRushAction*>(action) ||
-           dynamic_cast<CastBladeFlurryAction*>(action) ||
-           dynamic_cast<CastIcyVeinsAction*>(action) ||
-           dynamic_cast<CastColdSnapAction*>(action) ||
-           dynamic_cast<CastArcanePowerAction*>(action) ||
-           dynamic_cast<CastPresenceOfMindAction*>(action) ||
-           dynamic_cast<CastCombustionAction*>(action) ||
-           dynamic_cast<CastRapidFireAction*>(action) ||
-           dynamic_cast<CastReadinessAction*>(action) ||
-           dynamic_cast<CastAvengingWrathAction*>(action) ||
-           dynamic_cast<CastElementalMasteryAction*>(action) ||
-           dynamic_cast<CastFeralSpiritAction*>(action) ||
-           dynamic_cast<CastFireElementalTotemAction*>(action) ||
-           dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-           dynamic_cast<CastForceOfNatureAction*>(action) ||
-           dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-           dynamic_cast<CastSummonGargoyleAction*>(action) ||
-           dynamic_cast<CastBerserkingAction*>(action) ||
-           dynamic_cast<CastBloodFuryAction*>(action) ||
-           (dynamic_cast<UseTrinketAction*>(action) && botAI->IsDps(bot))
+        dynamic_cast<CastBloodlustAction*>(action) ||
+        dynamic_cast<CastMetamorphosisAction*>(action) ||
+        dynamic_cast<CastAdrenalineRushAction*>(action) ||
+        dynamic_cast<CastBladeFlurryAction*>(action) ||
+        dynamic_cast<CastIcyVeinsAction*>(action) ||
+        dynamic_cast<CastColdSnapAction*>(action) ||
+        dynamic_cast<CastArcanePowerAction*>(action) ||
+        dynamic_cast<CastPresenceOfMindAction*>(action) ||
+        dynamic_cast<CastCombustionAction*>(action) ||
+        dynamic_cast<CastRapidFireAction*>(action) ||
+        dynamic_cast<CastReadinessAction*>(action) ||
+        dynamic_cast<CastAvengingWrathAction*>(action) ||
+        dynamic_cast<CastElementalMasteryAction*>(action) ||
+        dynamic_cast<CastFeralSpiritAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
+        dynamic_cast<CastForceOfNatureAction*>(action) ||
+        dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
+        dynamic_cast<CastSummonGargoyleAction*>(action) ||
+        dynamic_cast<CastBerserkingAction*>(action) ||
+        dynamic_cast<CastBloodFuryAction*>(action) ||
+        (dynamic_cast<UseTrinketAction*>(action) && botAI->IsDps(botAI->GetBot()));
+}
+
+bool IsTauntAction(Action* action)
+{
+    return dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastChallengingShoutAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastChallengingRoarAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastRighteousDefenseAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action) ||
+        dynamic_cast<CastDeathGripAction*>(action);
 }
 
 }
@@ -132,7 +144,7 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
     }
 
     if (IsInSpectralRealm(bot))
-        return 0.0f
+        return 0.0f;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (kalecgos && !kalecgos->IsFriendlyTo(bot))
@@ -143,14 +155,8 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
 
 float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<CastTauntAction*>(action) &&
-        !dynamic_cast<CastGrowlAction*>(action) &&
-        !dynamic_cast<CastHandOfReckoningAction*>(action) &&
-        !dynamic_cast<CastRighteousDefenseAction*>(action) &&
-        !dynamic_cast<CastDarkCommandAction*>(action))
-    {
+    if (!IsTauntAction(action))
         return 1.0f;
-    }
 
     if (IsInSpectralRealm(bot) || !AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
@@ -185,7 +191,7 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action))
+    if (!IsDpsCooldownAction(action, botAI))
         return 1.0f;
 
     if (!IsInSpectralRealm(bot) && AI_VALUE2(Unit*, "find target", "kalecgos"))
@@ -212,13 +218,13 @@ float BrutallusControlMisdirectionMultiplier::GetValue(Action* action)
 
 float BrutallusControlMovementMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<ReachTargetAction*>(action) &&
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action))
+        !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<CastDisengageAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action))
     {
         return 1.0f;
     }
@@ -261,14 +267,8 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
 
 float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<CastTauntAction*>(action) &&
-        !dynamic_cast<CastGrowlAction*>(action) &&
-        !dynamic_cast<CastHandOfReckoningAction*>(action) &&
-        !dynamic_cast<CastRighteousDefenseAction*>(action) &&
-        !dynamic_cast<CastDarkCommandAction*>(action))
-    {
+    if (!IsTauntAction(action))
         return 1.0f;
-    }
 
     if (AI_VALUE2(Unit*, "find target", "brutallus"))
         return 0.0f;
@@ -278,7 +278,7 @@ float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 
 float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action))
+    if (!IsDpsCooldownAction(action, botAI))
         return 1.0f;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
@@ -293,9 +293,9 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 float FelmystControlMovementMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action))
+        !dynamic_cast<CastBlinkBackAction*>(action))
     {
         return 1.0f;
     }
@@ -339,8 +339,8 @@ float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
     if (dynamic_cast<FelmystRunAwayFromEncapsulatedPlayerAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<MovementAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
@@ -432,8 +432,8 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
     if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<MovementAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
@@ -499,7 +499,7 @@ float FelmystDontDotAddsMultiplier::GetValue(Action* action)
 
 float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action))
+    if (!IsDpsCooldownAction(action, botAI))
         return 1.0f;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -621,17 +621,17 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
     bool const isAlwaysBlocked =
         dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
-        dynamic_cast<FleeAction*>(action);
+        dynamic_cast<CastKillingSpreeAction*>(action);
 
     bool const isTankAvoidAoe =
         botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
 
     bool const isReachAction =
-        dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action);
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action);
 
     if (!isAlwaysBlocked && !isTankAvoidAoe && !isReachAction)
         return 1.0f;
@@ -692,7 +692,7 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
 
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action))
+    if (!IsDpsCooldownAction(action, botAI))
         return 1.0f;
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
@@ -763,15 +763,15 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     bool const isBlockedMovement =
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action);
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action);
 
     bool const isReachAction =
-        dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action);
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action);
 
     if (!isBlockedMovement && !isReachAction)
         return 1.0f;
@@ -825,7 +825,8 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
     bool const isLustSpell = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) ||
          dynamic_cast<CastBloodlustAction*>(action));
-    bool const isDpsCooldown = IsDpsCooldownAction(action);
+
+    bool const isDpsCooldown = IsDpsCooldownAction(action, botAI);
 
     if (!isLustSpell && !isDpsCooldown)
         return 1.0f;
@@ -857,7 +858,8 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     bool const isLustSpell = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) ||
          dynamic_cast<CastBloodlustAction*>(action));
-    bool const isDpsCooldown = IsDpsCooldownAction(action);
+
+    bool const isDpsCooldown = IsDpsCooldownAction(action, botAI);
 
     if (!isLustSpell && !isDpsCooldown)
         return 1.0f;
@@ -889,22 +891,16 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    bool const isTakeAggroSpell =
+    bool const isHighAggroAction =
+        IsTauntAction(action) ||
         dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastSwipeBearAction*>(action) ||
-        dynamic_cast<CastChallengingRoarAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastRighteousDefenseAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathAndDecayAction*>(action) ||
         dynamic_cast<CastBloodBoilAction*>(action);
 
-    if (!isTakeAggroSpell && !dynamic_cast<CombatFormationMoveAction*>(action) &&
+    if (!isHighAggroAction && !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<TankAssistAction*>(action) && dynamic_cast<DpsAssistAction*>(action))
     {
         return 1.0f;
@@ -933,14 +929,13 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 {
     bool const isMainTankAssist =
         botAI->GetState() == BOT_STATE_COMBAT && botAI->IsMainTank(bot) &&
-        dynamic_cast<TankAssistAction*>(action)
+        dynamic_cast<TankAssistAction*>(action);
 
     if (!isMainTankAssist &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<DrinkAction*>(action))
+        !dynamic_cast<CastDisengageAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action))
     {
         return 1.0f;
     }

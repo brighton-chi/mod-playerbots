@@ -215,7 +215,7 @@ bool FelmystPullingBossTrigger::IsActive()
 
 bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
 {
-    if (!botAI->isMainTank(bot))
+    if (!botAI->IsMainTank(bot))
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
