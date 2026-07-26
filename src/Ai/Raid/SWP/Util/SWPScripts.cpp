@@ -266,12 +266,12 @@ public:
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-                if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
+                if (FindFirstSunwellSurfaceCombatBotInGroup(player))
                     RecordKalecgosSpectralBlastTarget(player);
                 break;
 
             case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
-                if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
+                if (FindFirstSunwellCombatBotInGroup(player))
                     RecordKalecgosSpectralRealmEnter(player);
                 break;
 

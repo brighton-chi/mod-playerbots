@@ -113,7 +113,11 @@ bool ShouldHoldTwinThreat(
         if (!threatRef || !threatRef->IsAvailable())
             continue;
 
-        Player* threatPlayer = threatRef->GetVictim()->ToPlayer();
+        Unit* victim = threatRef->GetVictim();
+        if (!victim)
+            continue;
+
+        Player* threatPlayer = victim->ToPlayer();
         if (!threatPlayer || !threatPlayer->IsAlive())
             continue;
 
