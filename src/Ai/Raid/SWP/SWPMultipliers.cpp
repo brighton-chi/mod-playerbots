@@ -114,7 +114,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kalecgos") && !IsInSpectralRealm(bot))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
 
     Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_CURSE);
@@ -143,9 +143,6 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (IsInSpectralRealm(bot))
-        return 0.0f;
-
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (kalecgos && !kalecgos->IsFriendlyTo(bot))
         return 0.0f;
@@ -158,7 +155,10 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (!IsTauntAction(action))
         return 1.0f;
 
-    if (IsInSpectralRealm(bot) || !AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+        return 1.0f;
+
+    if (IsInSpectralRealm(bot))
         return 1.0f;
 
     if (GetKalecgosCurrentTank(bot) != bot)
@@ -194,7 +194,10 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
     if (!IsDpsCooldownAction(action, botAI))
         return 1.0f;
 
-    if (!IsInSpectralRealm(bot) && AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+        return 1.0f;
+
+    if (!IsInSpectralRealm(bot))
         return 0.0f;
 
     return 1.0f;
