@@ -149,7 +149,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }
     ));
     triggers.push_back(new TriggerNode("nightbane boss is flying",
-        { NextAction("nightbane flight phase stack and move together", ACTION_RAID) }
+        { NextAction("nightbane flight phase stack and move", ACTION_RAID) }
     ));
     triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
         { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 9) }
