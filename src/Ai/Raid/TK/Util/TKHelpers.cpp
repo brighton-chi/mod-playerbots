@@ -43,14 +43,13 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     if (!group)
         return nullptr;
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
     for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot || botAI->IsTank(member))
+        if (!member || !member->IsAlive() || member == bot || PlayerbotAI::IsTank(member))
             continue;
 
         float distance = bot->GetExactDist2d(member);
@@ -325,7 +324,6 @@ Player* GetRangedLeader(Player* bot)
     if (!group)
         return nullptr;
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -335,7 +333,7 @@ Player* GetRangedLeader(Player* bot)
             continue;
         }
 
-        if (botAI->IsRangedDps(member))
+        if (PlayerbotAI::IsRangedDps(member))
             return member;
     }
 

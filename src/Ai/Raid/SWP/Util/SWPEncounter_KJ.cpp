@@ -251,7 +251,6 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -264,7 +263,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
                 continue;
 
             found = member->GetMapId() == SWP_MAP_ID &&
-                botAI->IsRanged(member) && GET_PLAYERBOT_AI(member);
+                PlayerbotAI::IsRanged(member) && GET_PLAYERBOT_AI(member);
 
             break;
         }
@@ -303,7 +302,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member) ||
+        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -312,7 +311,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
         if (assignments.find(member->GetGUID()) != assignments.end())
             continue;
 
-        if (botAI->IsHeal(member))
+        if (PlayerbotAI::IsHeal(member))
             healers.push_back(member);
         else
             rangedDamage.push_back(member);

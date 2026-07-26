@@ -119,7 +119,6 @@ bool IsBanishPhase(Unit* netherspite)
 // Red beam blockers: tank bots, no Nether Exhaustion Red
 std::vector<Player*> GetRedBlockers(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -128,13 +127,14 @@ std::vector<Player*> GetRedBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
-            member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_RED)))
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
 
-        redBlockers.push_back(member);
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_RED)))
+            redBlockers.push_back(member);
     }
 
     return redBlockers;
@@ -144,7 +144,6 @@ std::vector<Player*> GetRedBlockers(Player* bot)
 // no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
 std::vector<Player*> GetBlueBlockers(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -153,11 +152,11 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsDps(member) || member->getPowerType() != POWER_MANA)
+        {
             continue;
-
-        if (member->getPowerType() != POWER_MANA)
-            continue;
+        }
 
         if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
             continue;
@@ -176,7 +175,6 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
 // (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
 std::vector<Player*> GetGreenBlockers(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Group* group = bot->GetGroup();
     if (!group)
         return {};
@@ -186,11 +184,11 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsDps(member) || member->getPowerType() == POWER_MANA)
+        {
             continue;
-
-        if (member->getPowerType() == POWER_MANA)
-            continue;
+        }
 
         if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
             greenBlockers.push_back(member);
@@ -199,7 +197,7 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !botAI->IsHeal(member))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member))
             continue;
 
         Aura* greenBuff = member->GetAura(
