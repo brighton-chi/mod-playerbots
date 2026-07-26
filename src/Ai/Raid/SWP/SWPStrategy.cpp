@@ -19,8 +19,7 @@ using namespace SwpHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot))
+    if (!botAI->IsMelee(botAI->GetBot()))
         return;
 
     Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
