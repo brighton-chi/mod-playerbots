@@ -7,43 +7,9 @@
 #include "TKStrategy.h"
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "TKHelpers.h"
 #include "TKMultipliers.h"
-
-using namespace TkHelpers;
-
-void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
-        return;
-
-    for (auto const& guid :
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
-            exclusions.insert(unit->GetGUID());
-    }
-}
-
-void AppendKaelthasDevastationMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
-        return;
-
-    Unit* axe = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "devastation")->Get();
-    if (axe)
-        exclusions.insert(axe->GetGUID());
-}
-
-void RaidTempestKeepStrategy::AppendTargetExclusions(
-    GuidSet& exclusions, TargetValueExclusionType type)
-{
-    AppendEmberOfAlarMeleeDpsExclusions(botAI, exclusions);
-    AppendKaelthasDevastationMeleeDpsExclusions(botAI, exclusions);
-}
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -200,4 +166,41 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
+}
+
+namespace
+
+{
+
+using namespace TkHelpers;
+
+void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (Unit* axe = AI_VALUE2(Unit*, "find target", "devastation"))
+        exclusions.insert(axe->GetGUID());
+}
+
+void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
+            exclusions.insert(unit->GetGUID());
+    }
+}
+
+} // end anonymous namespace
+
+void RaidTempestKeepStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType /*type*/)
+{
+    Player* bot = botAI->GetBot();
+    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+        return;
+
+    AppendKaelthasDevastationExclusions(botAI, exclusions);
+    AppendEmberOfAlarExclusions(botAI, exclusions);
 }
