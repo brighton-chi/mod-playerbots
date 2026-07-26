@@ -1081,12 +1081,9 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FelmystFogOfCorruptio
 
     if (isSweeping)
     {
-        FelmystFogLane selectedLane = currentLane !=
-            FelmystFogLane::None ? currentLane : tracker.lane;
-        if (selectedLane == FelmystFogLane::None)
+        if (tracker.lane == FelmystFogLane::None)
             return false;
 
-        tracker.lane = selectedLane;
         tracker.phase = FelmystFogPhase::Sweep;
         tracker.expireMs = now + fogRecoveryGraceMs;
         state = tracker;

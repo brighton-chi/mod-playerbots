@@ -10,7 +10,6 @@
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
-#include <unordered_set>
 
 namespace SwpHelpers
 {

@@ -893,7 +893,6 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
 
     bool const isHighAggroAction =
         IsTauntAction(action) ||
-        dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
         dynamic_cast<CastSwipeBearAction*>(action) ||
@@ -901,7 +900,7 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
         dynamic_cast<CastBloodBoilAction*>(action);
 
     if (!isHighAggroAction && !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<TankAssistAction*>(action) && dynamic_cast<DpsAssistAction*>(action))
+        !dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
     {
         return 1.0f;
     }
