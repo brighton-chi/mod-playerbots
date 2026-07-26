@@ -392,14 +392,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderBreakThroughShockBarrierAction : public AttackAction
-{
-public:
-    KaelthasSunstriderBreakThroughShockBarrierAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "kael'thas sunstrider break through shock barrier") {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderSpreadOutInMidairAction : public MovementAction
 {
 public:

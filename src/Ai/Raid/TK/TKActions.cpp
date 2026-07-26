@@ -371,13 +371,11 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED);
     }
 
-    constexpr float distAlarTankFromPos = 5.0f;
-    constexpr float distEmberTankFromPos = 25.0f;
-    constexpr float distMeleeDpsFromPos = 5.0f;
+    constexpr float distMeleeFromPos = 5.0f;
     constexpr float distRangedFromPos = 10.0f;
 
     if (botAI->IsMainTank(bot) && bot->GetExactDist2d(
-        ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) > distAlarTankFromPos)
+        ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) > distMeleeFromPos)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY(),
@@ -385,7 +383,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (botAI->IsAssistTankOfIndex(bot, 0, true) && bot->GetExactDist2d(
-        ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) > distAlarTankFromPos)
+        ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) > distMeleeFromPos)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY(),
@@ -393,19 +391,19 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (botAI->IsAssistTankOfIndex(bot, 1, false) && bot->GetExactDist2d(
-        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distEmberTankFromPos)
+        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distMeleeFromPos)
     {
-        return MoveInside(
+        return MoveTo(
             TK_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
-            ALAR_POINT_MIDDLE.GetPositionZ(), distEmberTankFromPos,
-            MovementPriority::MOVEMENT_FORCED);
+            ALAR_POINT_MIDDLE.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else if (botAI->IsMelee(bot) && bot->GetExactDist2d(
-        ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > distMeleeDpsFromPos)
+        ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > distMeleeFromPos)
     {
         return MoveInside(
             TK_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
-            ALAR_ROOM_S_CENTER.GetPositionZ(), distMeleeDpsFromPos,
+            ALAR_ROOM_S_CENTER.GetPositionZ(), distMeleeFromPos,
             MovementPriority::MOVEMENT_FORCED);
     }
     else if (bot->GetExactDist2d( // Ranged
@@ -433,7 +431,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // Per above, ranged/tanks wait until Al'ar actually "dies"; melee dps jumps off at 5% health
+    // Per above, ranged/tanks wait until Al'ar actually "dies," while melee dps jumps off at 5% HP
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         int8 closestPlatform;
@@ -572,6 +570,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 }
 
 // Void Reaver
+// CombatReach is 15 yards
 
 bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -627,9 +626,9 @@ bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    constexpr float minDistFromBoss = 22.0f;
+    constexpr float minDistFromBoss = 38.5f; // 22.0f GetDistance2d()
     constexpr uint32 minInterval = 0;
-    if (bot->GetDistance2d(voidReaver) < minDistFromBoss)
+    if (bot->GetExactDist2d(voidReaver) < minDistFromBoss)
         return FleePosition(voidReaver->GetPosition(), minDistFromBoss, minInterval);
 
     if (voidReaver->GetHealthPct() > 90.0f)
@@ -873,10 +872,11 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 15.0f;
     float const currentDistance = bot->GetDistance2d(thaladred);
-    if (currentDistance < safeDistance)
-        return MoveAway(thaladred, safeDistance - currentDistance);
+    if (currentDistance > safeDistance)
+        return false;
 
-    return false;
+    botAI->InterruptSpell();
+    return MoveAway(thaladred, safeDistance - currentDistance);
 }
 
 // Misdirect order: (1) Capernian, (2) Telonicus, (3) Capernian (again for good measure)
@@ -1056,10 +1056,9 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         constexpr uint32 minInterval = 1000;
         if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
-    }
 
-    if (kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
         return false;
+    }
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -1223,8 +1222,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (!kaelAI)
         return false;
 
-    bool isActiveCapernianTank =
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS && GetCapernianTank(bot) == bot;
+    bool const isPhase3 = kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+    bool const isActiveCapernianTank = isPhase3 && GetCapernianTank(bot) == bot;
 
     Unit* target = nullptr;
 
@@ -1234,6 +1233,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         !IsFeigningDeath(thaladred))
     {
         target = thaladred;
+        if (isPhase3 && MarkTargetWithSkull(bot, thaladred))
+            return true;
     }
 
     // Target priority 2: Capernian for ranged only (excluding debuff hunter)
@@ -1242,6 +1243,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         !IsFeigningDeath(capernian) && botAI->IsRangedDps(bot) && !IsDebuffHunter(bot))
     {
         target = capernian;
+        if (isPhase3 && MarkTargetWithCross(bot, capernian))
+            return true;
     }
 
     // Target priority 3: Sanguinar (debuff hunter and melee move here after Thaladred)
@@ -1250,6 +1253,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         !IsFeigningDeath(sanguinar))
     {
         target = sanguinar;
+        if (isPhase3 && MarkTargetWithSkull(bot, sanguinar))
+            return true;
     }
 
     // Target priority 4: Telonicus
@@ -1258,6 +1263,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         !IsFeigningDeath(telonicus))
     {
         target = telonicus;
+        if (isPhase3 && MarkTargetWithSkull(bot, telonicus))
+            return true;
     }
 
     if (!target)
@@ -1319,9 +1326,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 
     if (advisorAtFullHp)
     {
-        if (!advisorDpsWaitTimer.count(instanceId))
-            advisorDpsWaitTimer[instanceId] = -1;
-
+        advisorDpsWaitTimer[instanceId] = -1;
         return false;
     }
 
@@ -1403,6 +1408,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     else if (axe && botAI->IsRangedDps(bot))
     {
         target = axe;
+        if (MarkTargetWithCross(bot, axe))
+            return true;
     }
     // Priority 7: Phaseshift Bulwark
     else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
@@ -1465,7 +1472,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         {
             if (bot->HasItemCount(static_cast<uint32>(weapon.itemId), 1, false))
             {
-                botAI->InterruptSpell();
                 EquipLegendaryWeapon(static_cast<uint32>(weapon.itemId));
                 continue;
             }
@@ -1620,7 +1626,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         return false;
 
     // Determine the equip slot for this weapon type
-    uint8 dstSlot;
+    uint8 dstSlot = EQUIPMENT_SLOT_MAINHAND;
+
     if (proto->InventoryType == INVTYPE_RANGED)
     {
         dstSlot = EQUIPMENT_SLOT_RANGED;
@@ -1630,22 +1637,19 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     {
         dstSlot = EQUIPMENT_SLOT_OFFHAND;
     }
-    else
-    {
-        dstSlot = EQUIPMENT_SLOT_MAINHAND;
 
-        // Infinity Blade prefers OH when MH already holds a legendary
-        // (combat rogues: Warp Slicer MH, Infinity Blade OH)
-        if (itemId == static_cast<uint32>(TkItems::ITEM_INFINITY_BLADE) && bot->CanDualWield())
+    // Infinity Blade prefers OH when MH already holds a legendary
+    // (combat rogues: Warp Slicer MH, Infinity Blade OH)
+    if (dstSlot == EQUIPMENT_SLOT_MAINHAND &&
+        itemId == static_cast<uint32>(TkItems::ITEM_INFINITY_BLADE) && bot->CanDualWield())
+    {
+        if (Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
         {
-            if (Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+            uint32 mhEntry = mhItem->GetEntry();
+            if (mhEntry >= ITEM_LEGENDARY_WEAPON_MIN && mhEntry <= ITEM_LEGENDARY_WEAPON_MAX &&
+                mhEntry != itemId)
             {
-                uint32 mhEntry = mhItem->GetEntry();
-                if (mhEntry >= ITEM_LEGENDARY_WEAPON_MIN && mhEntry <= ITEM_LEGENDARY_WEAPON_MAX &&
-                    mhEntry != itemId)
-                {
-                    dstSlot = EQUIPMENT_SLOT_OFFHAND;
-                }
+                dstSlot = EQUIPMENT_SLOT_OFFHAND;
             }
         }
     }
@@ -1654,6 +1658,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     Item* alreadyEquipped = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, dstSlot);
     if (alreadyEquipped && alreadyEquipped->GetEntry() == itemId)
         return false;
+
+    botAI->InterruptSpell();
 
     // If a 2H in MH is blocking the target OH slot, swap the 2H to inventory first
     bool ohCleared = false;
@@ -1688,90 +1694,88 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     bot->SwapItem(srcPos, dstPos);
 
     // If a 2H→1H or 1H→2H swap also affects OH, move the OH item to backpack
-    if ((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
-        (!oldIs2H && newIs2H))
+    if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
+         (!oldIs2H && newIs2H)) &&
+        bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
-        if (Item* ohItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+        uint16 const ohPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_OFFHAND;
+        for (uint8 bpSlot = INVENTORY_SLOT_ITEM_START; bpSlot < INVENTORY_SLOT_ITEM_END; ++bpSlot)
         {
-            uint16 const ohPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_OFFHAND;
-            for (uint8 bpSlot = INVENTORY_SLOT_ITEM_START; bpSlot < INVENTORY_SLOT_ITEM_END; ++bpSlot)
+            if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bpSlot))
             {
-                if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bpSlot))
-                {
-                    bot->SwapItem(ohPos, (INVENTORY_SLOT_BAG_0 << 8) | bpSlot);
-                    ohCleared = true;
-                    break;
-                }
+                bot->SwapItem(ohPos, (INVENTORY_SLOT_BAG_0 << 8) | bpSlot);
+                ohCleared = true;
+                break;
             }
         }
     }
 
     // After a 2H→1H swap left OH empty, try to equip the best offhand from inventory.
     // Skip if MH is now a 2H (server rejects OH equip with IsTwoHandUsed).
-    if (ohCleared && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+    if (!ohCleared || bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+        return true;
+
+    Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    if (mhItem && mhItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
+        return true;
+
+    StatsWeightCalculator calculator(bot);
+    calculator.SetItemSetBonus(false);
+    calculator.SetOverflowPenalty(false);
+
+    Item* bestOH = nullptr;
+    float bestScore = 0.0f;
+
+    auto const scanSlots = [&](uint8 bag, uint8 start, uint8 end)
     {
-        Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-        if (!mhItem || mhItem->GetTemplate()->InventoryType != INVTYPE_2HWEAPON)
+        for (uint8 slot = start; slot < end; ++slot)
         {
-            StatsWeightCalculator calculator(bot);
-            calculator.SetItemSetBonus(false);
-            calculator.SetOverflowPenalty(false);
+            Item* item = bot->GetItemByPos(bag, slot);
+            if (!item || item == legendaryItem)
+                continue;
 
-            Item* bestOH = nullptr;
-            float bestScore = 0.0f;
+            ItemTemplate const* itemProto = item->GetTemplate();
+            if (!itemProto)
+                continue;
 
-            auto const scanSlots = [&](uint8 bag, uint8 start, uint8 end)
+            uint8 const invType = itemProto->InventoryType;
+            if (invType != INVTYPE_WEAPONOFFHAND && invType != INVTYPE_SHIELD &&
+                invType != INVTYPE_HOLDABLE && invType != INVTYPE_WEAPON)
             {
-                for (uint8 slot = start; slot < end; ++slot)
-                {
-                    Item* item = bot->GetItemByPos(bag, slot);
-                    if (!item || item == legendaryItem)
-                        continue;
-
-                    ItemTemplate const* itemProto = item->GetTemplate();
-                    if (!itemProto)
-                        continue;
-
-                    uint8 const invType = itemProto->InventoryType;
-                    if (invType != INVTYPE_WEAPONOFFHAND && invType != INVTYPE_SHIELD &&
-                        invType != INVTYPE_HOLDABLE && invType != INVTYPE_WEAPON)
-                    {
-                        continue;
-                    }
-
-                    if (invType == INVTYPE_WEAPONMAINHAND)
-                        continue;
-
-                    if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
-                        continue;
-
-                    float const score = calculator.CalculateItem(
-                        itemProto->ItemId, item->GetItemRandomPropertyId());
-                    if (score > bestScore)
-                    {
-                        bestScore = score;
-                        bestOH = item;
-                    }
-                }
-            };
-
-            scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
-            for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
-            {
-                if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
-                    scanSlots(bag, 0, pBag->GetBagSize());
+                continue;
             }
 
-            if (bestOH)
-            {
-                WorldPacket ohPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
-                ohPacket << bestOH->GetGUID() << uint8(EQUIPMENT_SLOT_OFFHAND);
+            if (invType == INVTYPE_WEAPONMAINHAND)
+                continue;
 
-                WorldPackets::Item::AutoEquipItemSlot ohNicePacket(std::move(ohPacket));
-                ohNicePacket.Read();
-                bot->GetSession()->HandleAutoEquipItemSlotOpcode(ohNicePacket);
+            if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
+                continue;
+
+            float const score = calculator.CalculateItem(
+                itemProto->ItemId, item->GetItemRandomPropertyId());
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestOH = item;
             }
         }
+    };
+
+    scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
+    for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+    {
+        if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+            scanSlots(bag, 0, pBag->GetBagSize());
+    }
+
+    if (bestOH)
+    {
+        WorldPacket ohPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
+        ohPacket << bestOH->GetGUID() << uint8(EQUIPMENT_SLOT_OFFHAND);
+
+        WorldPackets::Item::AutoEquipItemSlot ohNicePacket(std::move(ohPacket));
+        ohNicePacket.Read();
+        bot->GetSession()->HandleAutoEquipItemSlotOpcode(ohNicePacket);
     }
 
     return true;
@@ -1988,8 +1992,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 {
     if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
     {
-        constexpr float safeDistance = 12.0f;
-        float const currentDistance = bot->GetExactDist2d(phoenix);
+        constexpr float safeDistance = 10.0f;
+        float const currentDistance = bot->GetDistance2d(phoenix);
         if (currentDistance < safeDistance)
             return MoveAway(phoenix, safeDistance - currentDistance);
     }
@@ -2076,60 +2080,31 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
     return false;
 }
 
-// Shock Barrier needs to be #1 focus, even if there is a Phoenix Egg up
-bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event /*event*/)
-{
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
-    if (!kaelthas->HasAura(static_cast<uint32>(TkSpells::SPELL_SHOCK_BARRIER)))
-    {
-        static std::array<char const*, 8> const spells =
-        {
-            "bash",
-            "counterspell",
-            "kick",
-            "mind freeze",
-            "pummel",
-            "shield bash",
-            "silencing shot",
-            "wind shear",
-        };
-        for (char const* spell : spells)
-        {
-            if (botAI->CanCastSpell(spell, kaelthas))
-                return botAI->CastSpell(spell, kaelthas);
-        }
-    }
-    else if (AI_VALUE(Unit*, "current target") != kaelthas)
-    {
-        return Attack(kaelthas);
-    }
-
-    return false;
-}
-
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
-    // EXPERIMENTAL
-    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)))
+    // Help bots that get stuck in midair after Gravity Lapse
+    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)) &&
+        bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
     {
-        if (bot->GetPositionZ() > 55.0f)
-        {
-            return bot->TeleportTo(
-                TK_MAP_ID, bot->GetPositionX(), bot->GetPositionY(), 49.0f, bot->GetOrientation());
-        }
+        float const x = bot->GetPositionX();
+        float const y = bot->GetPositionY();
+        float groundZ = bot->GetPositionZ();
+        bot->UpdateAllowedPositionZ(x, y, groundZ);
 
-        return false;
+        bot->GetMotionMaster()->MoveFall();
+        bot->SetFallInformation(0, bot->GetPositionZ());
+        MovementInfo fallInfo = bot->m_movementInfo;
+        fallInfo.pos.Relocate(x, y, groundZ);
+        bot->HandleFall(fallInfo);
+        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+        return true;
     }
-    // EXPERIMENTAL
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    constexpr float minSpreadDistance = 16.0f;
+    constexpr float minSpreadDistance = 17.0f;
     std::vector<Player*> nearbyPlayers;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {

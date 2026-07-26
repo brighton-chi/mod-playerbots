@@ -27,10 +27,22 @@ void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions
     }
 }
 
+void AppendKaelthasDevastationMeleeDpsExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+        return;
+
+    Unit* axe = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "devastation")->Get();
+    if (axe)
+        exclusions.insert(axe->GetGUID());
+}
+
 void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType type)
 {
     AppendEmberOfAlarMeleeDpsExclusions(botAI, exclusions);
+    AppendKaelthasDevastationMeleeDpsExclusions(botAI, exclusions);
 }
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -156,11 +168,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider raid member is mind controlled", {
         NextAction("kael'thas sunstrider break mind control", ACTION_EMERGENCY + 1) }));
 
-    // triggers.push_back(new TriggerNode("kael'thas sunstrider boss is casting pyroblast", {
-    //    NextAction("kael'thas sunstrider break through shock barrier", ACTION_EMERGENCY + 7) }));
-
     triggers.push_back(new TriggerNode("kael'thas sunstrider boss is manipulating gravity", {
-        NextAction("kael'thas sunstrider spread out in midair", ACTION_EMERGENCY + 1) }));
+        NextAction("kael'thas sunstrider spread out in midair", ACTION_RAID + 1) }));
 }
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
