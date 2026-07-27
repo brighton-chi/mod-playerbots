@@ -308,9 +308,8 @@ FogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
     if (!felmyst)
         return FogLocation::None;
 
-    constexpr float matchDistance = 2.0f;
     return GetFogLocationFromPosition(
-        felmyst->GetPositionX(), felmyst->GetPositionY(), matchDistance);
+        felmyst->GetPositionX(), felmyst->GetPositionY(), FELMYST_FOG_LOCATION_MATCH_DISTANCE);
 }
 
 FogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
@@ -319,20 +318,18 @@ FogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
     if (!TryGetFelmystMovementDestination(felmyst, destination))
         return FogLocation::None;
 
-    constexpr float matchDistance = 2.0f;
     return GetFogLocationFromPosition(
-        destination.GetPositionX(), destination.GetPositionY(), matchDistance);
+        destination.GetPositionX(), destination.GetPositionY(), FELMYST_FOG_LOCATION_MATCH_DISTANCE);
 }
 
 bool IsNearFelmystLandingPosition(Position const& destination)
 {
-    constexpr float matchDistance = 2.0f;
     bool const nearRight = destination.GetExactDist2d(
         RIGHT_LANDING_POSITION.GetPositionX(),
-        RIGHT_LANDING_POSITION.GetPositionY()) <= matchDistance;
+        RIGHT_LANDING_POSITION.GetPositionY()) <= FELMYST_FOG_LOCATION_MATCH_DISTANCE;
     bool const nearLeft = destination.GetExactDist2d(
         LEFT_LANDING_POSITION.GetPositionX(),
-        LEFT_LANDING_POSITION.GetPositionY()) <= matchDistance;
+        LEFT_LANDING_POSITION.GetPositionY()) <= FELMYST_FOG_LOCATION_MATCH_DISTANCE;
 
     return nearRight || nearLeft;
 }
@@ -1045,7 +1042,7 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     TryGetFelmystPostThirdPassWindow(felmyst, ignoredPostThirdPassLane);
 
     FogOfCorruptionState& tracker = felmystEncounterStates[instanceId].fogOfCorruption;
-    bool const hasTracker = tracker.phase != FelmystFogPhase::None;
+    bool const hasTracker = tracker.phase != FogPhase::None;
 
     const FogLocation currentLocation = GetFelmystCurrentFogLocation(felmyst);
     const FogLocation destinationLocation = GetFelmystDestinationFogLocation(felmyst);
@@ -1059,7 +1056,7 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     {
         constexpr uint32 fogWindupGraceMs = 7000;
         tracker.lane = currentLane;
-        tracker.phase = FelmystFogPhase::Windup;
+        tracker.phase = FogPhase::Windup;
         tracker.expireMs = now + fogWindupGraceMs;
         state = tracker;
         return true;
@@ -1070,14 +1067,14 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
         if (tracker.lane == FogLane::None)
             return false;
 
-        tracker.phase = FelmystFogPhase::Sweep;
+        tracker.phase = FogPhase::Sweep;
         tracker.expireMs = now + fogRecoveryGraceMs;
         state = tracker;
         return true;
     }
 
     if (hasTracker && tracker.expireMs > now && tracker.lane != FogLane::None &&
-        tracker.phase == FelmystFogPhase::Windup &&
+        tracker.phase == FogPhase::Windup &&
         !IsFogSideLocation(currentLocation) && !IsFogSideLocation(destinationLocation))
     {
         state = tracker;
@@ -1085,11 +1082,11 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     }
 
     if (hasTracker && tracker.expireMs > now && tracker.lane != FogLane::None &&
-        (tracker.phase == FelmystFogPhase::Sweep ||
-         tracker.phase == FelmystFogPhase::Recovery ||
+        (tracker.phase == FogPhase::Sweep ||
+         tracker.phase == FogPhase::Recovery ||
          IsFogSideLocation(currentLocation) || IsFogSideLocation(destinationLocation)))
     {
-        tracker.phase = FelmystFogPhase::Recovery;
+        tracker.phase = FogPhase::Recovery;
         state = tracker;
         return true;
     }
@@ -1104,7 +1101,7 @@ bool TryGetActiveFogOfCorruptionState(
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, state))
         return false;
 
-    if (state.phase == FelmystFogPhase::Recovery)
+    if (state.phase == FogPhase::Recovery)
         return false;
 
     float safeSpotDistance = std::numeric_limits<float>::max();

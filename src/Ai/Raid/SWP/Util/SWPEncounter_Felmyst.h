@@ -99,6 +99,7 @@ struct FelmystEncounterState
 };
 
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
+constexpr float FELMYST_FOG_LOCATION_MATCH_DISTANCE = 2.0f;
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
