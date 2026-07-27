@@ -136,8 +136,8 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(
         if (!felmyst || !felmyst->IsFlying())
             continue;
 
-        FelmystFogOfCorruptionState fogState;
-        if (!TryGetActiveFelmystFogOfCorruptionState(player, felmyst, fogState))
+        FogOfCorruptionState fogState;
+        if (!TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
             continue;
 
         std::array<Position, 3> destinations;
@@ -178,8 +178,9 @@ static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmy
         if (!encapsulateTarget)
             continue;
 
+        constexpr float encapsulateSafeDistance = 20.0f;
         if (player != encapsulateTarget &&
-            player->GetExactDist2d(encapsulateTarget) > FELMYST_ENCAPSULATE_SAFE_DISTANCE)
+            player->GetExactDist2d(encapsulateTarget) > encapsulateSafeDistance)
         {
             continue;
         }
@@ -237,7 +238,7 @@ static void TrackIncomingEredarTwinsConflagration(Creature* alythess)
     if (!target || !FindFirstSunwellCombatBotInGroup(target))
         return;
 
-    RecordEredarTwinsIncomingConflagrationTarget(target);
+    RecordIncomingEredarTwinsConflagrationTarget(target);
 }
 
 class KalecgosSpellListenerScript : public AllSpellScript
@@ -267,12 +268,12 @@ public:
         {
             case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
-                    RecordKalecgosSpectralBlastTarget(player, botAI);
+                    RecordSpectralBlastTarget(player, botAI);
                 break;
 
             case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
                 if (FindFirstSunwellCombatBotInGroup(player))
-                    RecordKalecgosSpectralRealmEnter(player);
+                    RecordSpectralRealmEnter(player);
                 break;
 
             case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
@@ -393,7 +394,7 @@ public:
         if (!target || !FindFirstSunwellCombatBotInGroup(target))
             return;
 
-        RecordEredarTwinsIncomingConflagrationTarget(target);
+        RecordIncomingEredarTwinsConflagrationTarget(target);
     }
 };
 

@@ -244,10 +244,10 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return false;
     }
 
-    FelmystFogOfCorruptionState fogState;
+    FogOfCorruptionState fogState;
     bool const hasActiveFog =
-        TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
-    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+        TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
+    FogLane thirdPassLane = FogLane::None;
     bool const shouldRepositionAfterThirdPass = !hasActiveFog &&
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
