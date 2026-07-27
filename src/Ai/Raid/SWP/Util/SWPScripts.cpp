@@ -52,43 +52,6 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     return nullptr;
 }
 
-static PlayerbotAI* FindFirstSunwellSurfaceCombatBotInGroup(Player* referencePlayer)
-{
-    if (!referencePlayer)
-        return nullptr;
-
-    if (!IsInSpectralRealm(referencePlayer))
-    {
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(referencePlayer);
-            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-        {
-            return botAI;
-        }
-    }
-
-    Group* group = referencePlayer->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == referencePlayer || member->GetMapId() != SWP_MAP_ID ||
-            IsInSpectralRealm(member))
-        {
-            continue;
-        }
-
-        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(member);
-            botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-        {
-            return botAI;
-        }
-    }
-
-    return nullptr;
-}
-
 static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
@@ -249,17 +212,6 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        switch (spellInfo->Id)
-        {
-            case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
-            case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
-                break;
-
-            default:
-                return;
-        }
-
         Player* player = caster->ToPlayer();
         if (!player)
             return;
@@ -267,7 +219,7 @@ public:
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-                if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
+                if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralBlastTarget(player, botAI);
                 break;
 
