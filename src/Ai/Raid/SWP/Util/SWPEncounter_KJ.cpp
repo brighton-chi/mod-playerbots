@@ -139,7 +139,7 @@ Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
 Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 
-uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
+std::array<uint32, 4> const KILJAEDEN_DRAGON_ORB_ENTRIES =
 {
     static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_1),
     static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_2),

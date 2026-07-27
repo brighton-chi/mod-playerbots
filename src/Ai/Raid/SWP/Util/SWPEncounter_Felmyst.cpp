@@ -785,14 +785,13 @@ void EnsureFelmystRangedAssignments(Player* bot)
 
     for (uint32 index = 0; index < healers.size(); ++index)
     {
-        const FelmystGroundStack stack = static_cast<FelmystGroundStack>(index % 3);
+        auto const stack = static_cast<FelmystGroundStack>(index % 3);
         assignments[healers[index]->GetGUID()] = static_cast<uint8>(stack);
     }
 
     for (uint32 index = 0; index < rangedDamage.size(); ++index)
     {
-        const FelmystGroundStack stack =
-            index % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right;
+        auto const stack = index % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right;
         assignments[rangedDamage[index]->GetGUID()] = static_cast<uint8>(stack);
     }
 }
