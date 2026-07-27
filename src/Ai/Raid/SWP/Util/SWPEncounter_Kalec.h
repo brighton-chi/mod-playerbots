@@ -65,7 +65,7 @@ void EnsureKalecgosGroupAssignments(Player* bot);
 Player* GetKalecgosCurrentTank(Player* bot);
 Player* GetKalecgosReplacementTank(Player* bot);
 bool ShouldEnterKalecgosSpectralRift(Player* bot);
-void RecordKalecgosSpectralBlastTarget(Player* player);
+void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
 void RecordKalecgosSpectralRealmEnter(Player* player);
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp);
 

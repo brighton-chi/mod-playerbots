@@ -737,7 +737,7 @@ bool ShouldEnterKalecgosSpectralRift(Player* bot)
     return state.blastedPlayerGuid != bot->GetGUID();
 }
 
-void RecordKalecgosSpectralBlastTarget(Player* player)
+void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
 {
     Group* group = player->GetGroup();
     if (!group || player->GetMapId() != SWP_MAP_ID)
@@ -752,17 +752,6 @@ void RecordKalecgosSpectralBlastTarget(Player* player)
     state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
     AssignKalecgosTankTargetsForActiveRift(player, group, state);
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-    if (!botAI)
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && (botAI = GET_PLAYERBOT_AI(member)))
-                break;
-        }
-    }
-
     Player* currentTank = GetKalecgosBlastAnnouncementCurrentTank(group, state);
 
     if (HasKalecgosTankAssignment(state.tankAssignmentGuids, player->GetGUID()))
@@ -771,7 +760,7 @@ void RecordKalecgosSpectralBlastTarget(Player* player)
             return;
 
         AnnounceKalecgosTankTransition(
-            botAI, "kalecgos_tank_sent_to_spectral_realm",
+            announcerAI, "kalecgos_tank_sent_to_spectral_realm",
             "Tank %tank has been sent to the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", player->GetName()},
@@ -785,7 +774,7 @@ void RecordKalecgosSpectralBlastTarget(Player* player)
         outgoingTank && currentTank)
     {
         AnnounceKalecgosTankTransition(
-            botAI, "kalecgos_tank_should_enter_spectral_realm",
+            announcerAI, "kalecgos_tank_should_enter_spectral_realm",
             "Tank %tank should enter the Spectral Realm. The active Kalecgos tank is %current.",
             {
                 {"%tank", outgoingTank->GetName()},

@@ -266,8 +266,8 @@ public:
         switch (spellInfo->Id)
         {
             case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
-                if (FindFirstSunwellSurfaceCombatBotInGroup(player))
-                    RecordKalecgosSpectralBlastTarget(player);
+                if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
+                    RecordKalecgosSpectralBlastTarget(player, botAI);
                 break;
 
             case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
