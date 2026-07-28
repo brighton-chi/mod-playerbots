@@ -177,17 +177,13 @@ std::array<Position, 4> const PLATFORM_POSITIONS =
     ALAR_PLATFORM_2,
     ALAR_PLATFORM_3,
 };
-Position const ALAR_GROUND_0 = { 336.439f,  48.181f, -2.389f }; // Ground counterpart to West Platform
-Position const ALAR_GROUND_1 = { 379.122f,  25.146f, -2.385f }; // Ground counterpart to Northwest Platform
-Position const ALAR_GROUND_2 = { 378.583f, -27.481f, -2.385f }; // Ground counterpart to Northeast Platform
-Position const ALAR_GROUND_3 = { 331.631f, -49.716f, -2.389f }; // Ground counterpart to East Platform
 std::array<Position, 4> const GROUND_POSITIONS =
-{
-    ALAR_GROUND_0,
-    ALAR_GROUND_1,
-    ALAR_GROUND_2,
-    ALAR_GROUND_3,
-};
+{{
+    { 336.439f,  48.181f, -2.389f }, // Ground counterpart to West Platform
+    { 379.122f,  25.146f, -2.385f }, // Ground counterpart to Northwest Platform
+    { 378.583f, -27.481f, -2.385f }, // Ground counterpart to Northeast Platform
+    { 331.631f, -49.716f, -2.389f }, // Ground counterpart to East Platform
+}};
 Position const ALAR_ROOM_CENTER =         { 330.611f,  -2.540f, -2.389f };
 Position const ALAR_POINT_QUILL_OR_DIVE = { 332.000f,   0.010f, 43.000f };
 Position const ALAR_POINT_MIDDLE =        { 331.000f,   0.010f, -2.380f };

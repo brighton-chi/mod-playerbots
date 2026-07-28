@@ -23,22 +23,36 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
+namespace
+{
+
+bool IsSingleTargetTaunt(Action* action)
+{
+    return dynamic_cast<CastTauntAction*>(action) ||
+        dynamic_cast<CastGrowlAction*>(action) ||
+        dynamic_cast<CastHandOfReckoningAction*>(action) ||
+        dynamic_cast<CastDarkCommandAction*>(action) ||
+        dynamic_cast<CastDeathGripAction*>(action);
+}
+
+}
+
 // Al'ar <Phoenix God>
 
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
-        return 1.0f;
-
-    if (dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action))
+    if (!dynamic_cast<TankFaceAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action) &&
+        !dynamic_cast<CastDisengageAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
+
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (alar && !isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return 0.0f;
 
     return 1.0f;
 }
@@ -73,13 +87,13 @@ float AlarDisableDisperseMultiplier::GetValue(Action* action)
 
 float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "al'ar"))
-        return 1.0f;
-
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
+    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
+        return 1.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "al'ar"))
         return 0.0f;
 
     return 1.0f;
@@ -113,20 +127,15 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 
 float AlarDontTauntBossIfArmorMeltedMultiplier::GetValue(Action* action)
 {
+    if (!IsSingleTargetTaunt(action))
+        return 1.0f;
+
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar || AI_VALUE(Unit*, "current target") != alar)
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_MELT_ARMOR)))
-        return 1.0f;
-
-    if (dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action))
-    {
+    if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_MELT_ARMOR)))
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -373,18 +382,15 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
-    if (dynamic_cast<CastTauntAction*>(action) ||
+    if (IsSingleTargetTaunt(action) ||
         dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastThunderClapAction*>(action) ||
         dynamic_cast<CastShockwaveAction*>(action) ||
         dynamic_cast<CastCleaveAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
         dynamic_cast<CastSwipeBearAction*>(action) ||
         dynamic_cast<CastChallengingRoarAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
         dynamic_cast<CastAvengersShieldAction*>(action) ||
         dynamic_cast<CastConsecrationAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathAndDecayAction*>(action) ||
         dynamic_cast<CastPestilenceAction*>(action) ||
         dynamic_cast<CastBloodBoilAction*>(action))
@@ -397,14 +403,14 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 1.0f;
-
-    if (dynamic_cast<EquipUpgradeAction*>(action) ||
-        dynamic_cast<EquipUpgradesPacketAction*>(action))
+    if (!dynamic_cast<EquipUpgradeAction*>(action) &&
+        !dynamic_cast<EquipUpgradesPacketAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
+
+    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -545,15 +551,17 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
-    {
+    if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 0.0f;
-    }
 
     return 1.0f;
 }
