@@ -30,6 +30,9 @@ public:
             &RaidSunwellTriggerContext::apocalypse_guard_protected_by_infernal_defense;
 
         // Kalecgos
+        creators["kalecgos should communicate boss health"] =
+            &RaidSunwellTriggerContext::kalecgos_should_communicate_boss_health;
+
         creators["kalecgos boss engaged by tank"] =
             &RaidSunwellTriggerContext::kalecgos_boss_engaged_by_tank;
 
@@ -231,6 +234,9 @@ private:
     }
 
     // Kalecgos
+    static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI) {
+        return new KalecgosShouldCommunicateBossHealthTrigger(botAI);
+    }
     static Trigger* kalecgos_boss_engaged_by_tank(PlayerbotAI* botAI) {
         return new KalecgosBossEngagedByTankTrigger(botAI);
     }

@@ -13,6 +13,52 @@
 
 using namespace SwpHelpers;
 
+bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
+{
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos)
+        return false;
+
+    auto const stateItr = kalecgosEncounterStates.find(bot->GetInstanceId());
+    if (stateItr == kalecgosEncounterStates.end())
+        return false;
+
+    KalecgosEncounterState& state = stateItr->second;
+    std::string text;
+
+    if (!IsInSpectralRealm(bot))
+    {
+        if (state.surfaceHealthAnnounced)
+            return false;
+
+        state.surfaceHealthAnnounced = true;
+
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "kalecgos_below_twenty_percent_health",
+            "Kalecgos's health is at 20%!"
+            {});
+    }
+    else
+    {
+        if (state.spectralHealthAnnounced)
+            return false;
+
+        Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+        if (!sathrovarr)
+            return false;
+
+        state.spectralHealthAnnounced = true;
+
+        text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "sathrovarr_health_when_kalecgos_below_twenty_percent_health",
+            "Sathrovarr's health is at %sathrovarrHealth%! "
+            "Don't forget that we need to defeat them at about the same time!"
+            {"%sathrovarrHealth", std::to_string(static_cast<uint32>(sathrovarr->GetHealthPct()))});
+    }
+
+    return botAI->SayToRaid(text);
+}
+
 bool KalecgosTankPositionBossAction::Execute(Event event)
 {
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");

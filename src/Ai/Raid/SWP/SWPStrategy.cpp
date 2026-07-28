@@ -30,6 +30,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("apocalypse guard attack with holy magic", ACTION_RAID) }));
 
     // Kalecgos
+    triggers.push_back(new TriggerNode("kalecgos should communicate boss health", {
+        NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
         NextAction("kalecgos tank position boss", ACTION_RAID) }));
 
@@ -40,7 +43,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kalecgos disperse ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
-        NextAction("kalecgos remove arcane buffet", ACTION_RAID + 1) }));
+        NextAction("kalecgos remove arcane buffet", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos humanoid kalec tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID) }));

@@ -51,6 +51,14 @@ public:
 
 // Kalecgos
 
+class KalecgosAnnounceBossHealthAction : public Action
+{
+public:
+    KalecgosAnnounceBossHealthAction(
+        PlayerbotAI* botAI) : Action(botAI, "kalecgos announce boss health") {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosTankPositionBossAction : public AttackAction
 {
 public:

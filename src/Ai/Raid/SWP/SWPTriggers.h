@@ -47,6 +47,14 @@ public:
 
 // Kalecgos
 
+class KalecgosShouldCommunicateBossHealthTrigger : Trigger
+{
+public:
+    KalecgosShouldCommunicateBossHealthTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos should communicate boss health") {}
+    bool IsActive() override;
+};
+
 class KalecgosBossEngagedByTankTrigger : public Trigger
 {
 public:

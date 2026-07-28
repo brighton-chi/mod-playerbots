@@ -62,6 +62,41 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 
 // Kalecgos
 
+bool KalecgosShouldCommunicateBossHealthTrigger::IsActive()
+{
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->GetHealthPct() >= 20.0f)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* spectralBot = nullptr;
+    Player* surfaceBot = nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
+            !GET_PLAYERBOT_AI(member))
+        {
+            continue;
+        }
+
+        if (!spectralBot && IsInSpectralRealm(member))
+            spectralBot = member;
+
+        if (!surfaceBot && !IsInSpectralRealm(member))
+            surfaceBot = member;
+
+        if (spectralBot && surfaceBot)
+            break;
+    }
+
+    return bot == spectralBot || bot == surfaceBot;
+}
+
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
