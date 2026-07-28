@@ -98,11 +98,11 @@ Unit* GetAttumenMounted(Player* bot);
 
 // Maiden of Virtue
 extern Position const MAIDEN_OF_VIRTUE_TANK_POSITION;
-extern Position const MAIDEN_OF_VIRTUE_RANGED_POSITIONS[8];
+extern std::array<Position, 8> const MAIDEN_OF_VIRTUE_RANGED_POSITIONS;
 
 // The Big Bad Wolf
 extern Position const BIG_BAD_WOLF_TANK_POSITION;
-extern Position const BIG_BAD_WOLF_RUN_POSITIONS[4];
+extern std::array<Position, 4> const BIG_BAD_WOLF_RUN_POSITIONS;
 
 // Wizard of Oz
 std::array<const char*, 5> const& GetOzTargets();
@@ -140,8 +140,8 @@ bool TryFindSafePositionWithSafePath(
 extern Position const TERRACE_DOME_CENTER;
 extern Position const TERRACE_EAST_END;
 extern Position const TERRACE_WEST_END;
-extern Position const NIGHTBANE_FLIGHT_STACK_POSITIONS[2];
-extern Position const NIGHTBANE_RAIN_OF_BONES_POSITIONS[2];
+extern std::array<Position, 2> const NIGHTBANE_FLIGHT_STACK_POSITIONS;
+extern std::array<Position, 2> const NIGHTBANE_RAIN_OF_BONES_POSITIONS;
 extern Position const NIGHTBANE_TELEPORT_POSITION;
 extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
 extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;

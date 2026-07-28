@@ -184,20 +184,19 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
     if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
-    if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
-    {
-        constexpr float safeDistance = 8.0f;
-        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (nearestPlayer && attumen->GetDistance2d(nearestPlayer) < safeDistance)
-            return MoveFromGroup(safeDistance);
-    }
+    if (attumen->GetVictim() != bot || midnight->GetVictim() == bot)
+        return false;
+
+    constexpr float safeDistance = 8.0f;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    if (nearestPlayer && attumen->GetDistance2d(nearestPlayer) < safeDistance)
+        return MoveFromGroup(safeDistance);
 
     return false;
 }
 
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
-    constexpr uint32 searchRadius = 40.0f;
     Unit* attumen = GetAttumenMounted(bot);
     if (!attumen)
         return false;
@@ -459,8 +458,8 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
     if (!julianne)
         return false;
 
-    Unit* target = nullptr;
     constexpr float maxPctDifference = 10.0f;
+    Unit* target = nullptr;
 
     if (julianne->GetHealthPct() + maxPctDifference < romulo->GetHealthPct() ||
         julianne->GetHealthPct() < 1.0f)
@@ -832,8 +831,8 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     bool const nearVoidZone = !IsSafePosition(
         bot->GetPositionX(), bot->GetPositionY(), voidZones, hazardRadius);
 
-    std::vector<BeamAvoid> beams;
     constexpr float searchRadius = 150.0f;
+    std::vector<BeamAvoid> beams;
 
     Unit* redPortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
@@ -856,16 +855,16 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!nearVoidZone && !nearBeam)
         return false;
 
-    constexpr float maxSearchDist = 30.0f;
     constexpr float stepAngle = M_PI/18.0f;
+    constexpr float maxSearchDist = 30.0f;
     constexpr float stepDist = 0.5f;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
 
     Position bestCandidate;
     float bestDistSq = std::numeric_limits<float>::max();
     bool found = false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
 
     for (float angle = 0; angle < 2 * M_PI; angle += stepAngle)
     {
@@ -1090,7 +1089,6 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
     constexpr float safeInfernalDistance = 22.0f;
     constexpr float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
-    constexpr float maxSafeBossDistance = 35.0f;
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
@@ -1113,8 +1111,10 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     if (!nearInfernal)
         return false;
 
+    constexpr float maxSafeBossDistance = 35.0f;
     float bestDestX = bx;
     float bestDestY = by;
+
     bool found = TryFindSafePositionWithSafePath(
         bot, Position(bx, by, bot->GetPositionZ()),
         Position(malchezaarX, malchezaarY, malchezaar->GetPositionZ()),
@@ -1142,7 +1142,6 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
 
     constexpr float safeInfernalDistance = 30.0f;
     constexpr float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
-    constexpr float maxSampleDist = 75.0f;
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
@@ -1163,8 +1162,10 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
     if (!nearInfernal)
         return false;
 
+    constexpr float maxSampleDist = 75.0f;
     float bestDestX = bx;
     float bestDestY = by;
+
     bool found = TryFindSafePositionWithSafePath(
         bot, Position(bx, by, bot->GetPositionZ()), Position(bx, by, bot->GetPositionZ()),
         infernals, safeInfernalDistance, maxSampleDist, bestDestX, bestDestY);
@@ -1294,11 +1295,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
         return false;
 
     constexpr float searchRadius = 40.0f;
-    constexpr float safeDistance = 12.0f;
     constexpr float minBossDist = 15.0f;
-    constexpr float maxBossDist = 35.0f;
-    constexpr float angleStep = M_PI / 18.0f;
-    constexpr float distStep = 1.0f;
 
     std::vector<Position> charredEarths = GetDynamicObjectPositions(
         bot, searchRadius, static_cast<uint32>(KaraSpells::SPELL_CHARRED_EARTH));
@@ -1315,6 +1312,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
         return false;
     }
 
+    constexpr float safeDistance = 12.0f;
     float const safeDistSq = safeDistance * safeDistance;
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
@@ -1334,10 +1332,15 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     if (!inDanger)
         return false;
 
+    constexpr float maxBossDist = 35.0f;
+    constexpr float distStep = 1.0f;
+    constexpr float angleStep = M_PI / 18.0f;
+
     float const nx = nightbane->GetPositionX();
     float const ny = nightbane->GetPositionY();
     float bestDistSq = std::numeric_limits<float>::max();
-    float bestX = bx, bestY = by;
+    float bestX = bx;
+    float bestY = by;
     bool found = false;
 
     for (float dist = minBossDist; dist <= maxBossDist; dist += distStep)
