@@ -166,7 +166,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
     if (!midnight)
         return false;
 
-    if (botAI->IsAssistTank(bot))
+    if (PlayerbotAI::IsAssistTank(bot))
     {
         Unit* attumen = GetAttumenMounted(bot);
         return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
@@ -204,8 +204,11 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
-    if ((botAI->IsTank(bot) && attumen->GetVictim() == bot) || botAI->IsMainTank(bot))
+    if ((PlayerbotAI::IsTank(bot) && attumen->GetVictim() == bot) ||
+        PlayerbotAI::IsMainTank(bot))
+    {
         return CurrentTankPositionAttumen(attumen);
+    }
 
     return StackBehindAttumen(attumen);
 }
@@ -316,7 +319,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsHeal(member) ||
             !member->HasAura(static_cast<uint32>(KaraSpells::SPELL_REPENTANCE)))
         {
             continue;
@@ -369,7 +372,7 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
+        if (!member || !PlayerbotAI::IsRanged(member))
             continue;
 
         if (member == bot)
@@ -748,7 +751,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingBlueBeam = true;
 
-    float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
+    float idealDistance = PlayerbotAI::IsRanged(bot) ? 25.0f : 18.0f;
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     Position beamPos;
 
@@ -1264,7 +1267,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::Execute(Event /*event*/
     {
         Player* member = ref->GetSource();
         if (!member || member->GetMapId() != KARA_MAP_ID ||
-            !member->IsAlive() || !botAI->IsRanged(member))
+            !member->IsAlive() || !PlayerbotAI::IsRanged(member))
         {
             continue;
         }

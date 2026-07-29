@@ -73,7 +73,7 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActive()
 
 bool MoroesBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "moroes");
+    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "moroes");
 }
 
 bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
@@ -85,7 +85,7 @@ bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
 
 bool MaidenOfVirtueBossEngagedByTanksTrigger::IsActive()
 {
-    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
 }
 
 bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActive()
@@ -99,14 +99,14 @@ bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActive()
 
 bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
 }
 
 // The Big Bad Wolf
 
 bool BigBadWolfBossEngagedByTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
@@ -161,12 +161,12 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
-    return botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "the curator");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
 
 bool TheCuratorBossEngagedByRangedTrigger::IsActive()
 {
-    return botAI->IsRanged(bot) && AI_VALUE2(Unit*, "find target", "the curator");
+    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "the curator");
 }
 
 // Terestian Illhoof
@@ -198,7 +198,7 @@ bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 
 bool ShadeOfAranBossCastsCounterspellNearbyTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
@@ -294,8 +294,11 @@ bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActive()
     if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
         return false;
 
-    if (botAI->IsMainTank(bot) || (botAI->IsTank(bot) && malchezaar->GetVictim() == bot))
+    if ((PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot) ||
+        PlayerbotAI::IsMainTank(bot))
+    {
         return false;
+    }
 
     return true;
 }
@@ -306,14 +309,15 @@ bool PrinceMalchezaarBossEngagedByTanksTrigger::IsActive()
     if (!malchezaar)
         return false;
 
-    return botAI->IsMainTank(bot) || (botAI->IsTank(bot) && malchezaar->GetVictim() == bot);
+    return (PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot) ||
+        PlayerbotAI::IsMainTank(bot);
 }
 
 // Nightbane
 
 bool NightbaneBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -322,7 +326,7 @@ bool NightbaneBossEngagedByTanksTrigger::IsActive()
 
 bool NightbaneGroundPhaseEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");

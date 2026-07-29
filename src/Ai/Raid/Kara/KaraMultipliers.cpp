@@ -114,7 +114,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!attumen)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -328,7 +328,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -439,7 +439,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -466,7 +466,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     // if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     //     return 0.0f;
 
-    if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
+    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsRanged(bot))
         return 0.0f;
 
     return 1.0f;
