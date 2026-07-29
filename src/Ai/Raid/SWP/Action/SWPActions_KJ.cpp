@@ -465,7 +465,7 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    Position& const darknessPosition = KILJAEDEN_DARKNESS_POSITION;
+    Position const& darknessPosition = KILJAEDEN_DARKNESS_POSITION;
     float destX = darknessPosition.GetPositionX();
     float destY = darknessPosition.GetPositionY();
 

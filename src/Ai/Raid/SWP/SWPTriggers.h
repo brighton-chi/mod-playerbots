@@ -47,7 +47,7 @@ public:
 
 // Kalecgos
 
-class KalecgosShouldCommunicateBossHealthTrigger : Trigger
+class KalecgosShouldCommunicateBossHealthTrigger : public Trigger
 {
 public:
     KalecgosShouldCommunicateBossHealthTrigger(

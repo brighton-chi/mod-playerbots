@@ -238,10 +238,10 @@ private:
 
     // Kalecgos
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI) {
-        return new KalecgosTankPositionBossAction(botAI);
+        return new KalecgosAnnounceBossHealthAction(botAI);
     }
     static Action* kalecgos_tank_position_boss(PlayerbotAI* botAI) {
-        return new KalecgosAnnounceBossHealthAction(botAI);
+        return new KalecgosTankPositionBossAction(botAI);
     }
     static Action* kalecgos_enter_spectral_rift(PlayerbotAI* botAI) {
         return new KalecgosEnterSpectralRiftAction(botAI);

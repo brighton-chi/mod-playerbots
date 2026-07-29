@@ -7,9 +7,11 @@
 #include "SWPActions.h"
 #include "SWPEncounter_Kalec.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"
 #include <algorithm>
+#include <map>
 
 using namespace SwpHelpers;
 
@@ -35,7 +37,7 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "kalecgos_below_twenty_percent_health",
-            "Kalecgos's health is at 20%!"
+            "Kalecgos's health is at 20%!",
             {});
     }
     else
@@ -52,8 +54,9 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "sathrovarr_health_when_kalecgos_below_twenty_percent_health",
             "Sathrovarr's health is at %sathrovarrHealth%! "
-            "Don't forget that we need to defeat them at about the same time!"
-            {"%sathrovarrHealth", std::to_string(static_cast<uint32>(sathrovarr->GetHealthPct()))});
+            "Don't forget that we need to defeat them at about the same time!",
+            std::map<std::string, std::string>{
+                {"%sathrovarrHealth", std::to_string(static_cast<uint32>(sathrovarr->GetHealthPct()))}});
     }
 
     return botAI->SayToRaid(text);
