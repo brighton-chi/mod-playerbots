@@ -96,6 +96,7 @@ struct FelmystEncounterState
     FogPassState fogPass;
     time_t landingDpsWaitTimer = 0;
     time_t landingTouchdownTimer = 0;
+    ObjectGuid flightCoordinatorGuid = ObjectGuid::Empty;
 };
 
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
@@ -127,6 +128,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);
+Player* GetFelmystFlightCoordinator(Player* player);
 
 }
 

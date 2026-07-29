@@ -89,8 +89,8 @@ public:
         creators["felmyst player has gas nova"] =
             &RaidSunwellTriggerContext::felmyst_player_has_gas_nova;
 
-        creators["felmyst demonic vapor trails are active"] =
-            &RaidSunwellTriggerContext::felmyst_demonic_vapor_trails_are_active;
+        creators["felmyst should avoid demonic vapor trails"] =
+            &RaidSunwellTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
 
         creators["felmyst bot is demonic vapor target"] =
             &RaidSunwellTriggerContext::felmyst_bot_is_demonic_vapor_target;
@@ -295,8 +295,8 @@ private:
     static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI) {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
     }
-    static Trigger* felmyst_demonic_vapor_trails_are_active(PlayerbotAI* botAI) {
-        return new FelmystDemonicVaporTrailsAreActiveTrigger(botAI);
+    static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI) {
+        return new FelmystShouldAvoidDemonicVaporTrailsTrigger(botAI);
     }
     static Trigger* felmyst_bot_is_demonic_vapor_target(PlayerbotAI* botAI) {
         return new FelmystBotIsDemonicVaporTargetTrigger(botAI);

@@ -1339,4 +1339,53 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     return lowestHpTarget;
 }
 
+Player* GetFelmystFlightCoordinator(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return nullptr;
+
+    FelmystEncounterState& state = felmystEncounterStates[player->GetInstanceId()];
+
+    auto const isEligible = [](Player* member) -> bool
+    {
+        return member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
+            !GetFelmystDemonicVaporSummonedByBot(member);
+    };
+
+    // Keep the current coordinator if still eligible
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->GetGUID() == state.flightCoordinatorGuid)
+            return isEligible(member) ? member : nullptr;
+    }
+
+    state.flightCoordinatorGuid = ObjectGuid::Empty;
+
+    // Find a new coordinator
+    Player* fallbackBot = nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!isEligible(member))
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()))
+        {
+            state.flightCoordinatorGuid = member->GetGUID();
+            return member;
+        }
+
+        if (!fallbackBot && GET_PLAYERBOT_AI(member))
+            fallbackBot = member;
+    }
+
+    if (fallbackBot)
+        state.flightCoordinatorGuid = fallbackBot->GetGUID();
+
+    return fallbackBot;
+}
+
 }

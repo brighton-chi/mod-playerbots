@@ -346,7 +346,7 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
     return GetFelmystGasNovaDispelTarget(bot);
 }
 
-bool FelmystDemonicVaporTrailsAreActiveTrigger::IsActive()
+bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || !felmyst->IsFlying())

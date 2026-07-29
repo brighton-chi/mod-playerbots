@@ -203,11 +203,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystDemonicVaporTrailsAreActiveTrigger : public Trigger
+class FelmystShouldAvoidDemonicVaporTrailsTrigger : public Trigger
 {
 public:
-    FelmystDemonicVaporTrailsAreActiveTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst demonic vapor trails are active") {}
+    FelmystShouldAvoidDemonicVaporTrailsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst should avoid demonic vapor trails") {}
     bool IsActive() override;
 };
 

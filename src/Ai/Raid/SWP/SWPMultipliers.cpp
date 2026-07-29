@@ -435,8 +435,9 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
     if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    // Test suppression of reaching target by stacking on one bot
+    if (!dynamic_cast<MovementAction*>(action) /* &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) */)
     {
         return 1.0f;
     }
