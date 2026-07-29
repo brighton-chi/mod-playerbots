@@ -153,6 +153,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // High Astromancer Solarian
     multipliers.push_back(new HighAstromancerSolarianDisableMeleeTargetingMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new HighAstromancerSolarianWrathStayAwayMultiplier(botAI));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
@@ -198,7 +199,7 @@ void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+    if (!PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsDps(bot))
         return;
 
     AppendKaelthasDevastationExclusions(botAI, exclusions);

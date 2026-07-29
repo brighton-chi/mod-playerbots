@@ -79,6 +79,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class HighAstromancerSolarianWrathStayAwayMultiplier : public Multiplier
+{
+public:
+    HighAstromancerSolarianWrathStayAwayMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian wrath stay away") {}
+    float GetValue(Action* action) override;
+};
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderWaitForDpsMultiplier : public Multiplier
