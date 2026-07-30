@@ -1339,7 +1339,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     return lowestHpTarget;
 }
 
-Player* GetFelmystFlightCoordinator(Player* player)
+Player* GetFelmystFlightLeader(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
@@ -1353,17 +1353,21 @@ Player* GetFelmystFlightCoordinator(Player* player)
             !GetFelmystDemonicVaporSummonedByBot(member);
     };
 
-    // Keep the current coordinator if still eligible
+    // Keep the current flight leader if still eligible
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetGUID() == state.flightCoordinatorGuid)
-            return isEligible(member) ? member : nullptr;
+        if (member && member->GetGUID() == state.flightLeaderGuid)
+        {
+            if (isEligible(member))
+                return member;
+            break;
+        }
     }
 
-    state.flightCoordinatorGuid = ObjectGuid::Empty;
+    state.flightLeaderGuid = ObjectGuid::Empty;
 
-    // Find a new coordinator
+    // Find a new flight leader
     Player* fallbackBot = nullptr;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -1374,7 +1378,7 @@ Player* GetFelmystFlightCoordinator(Player* player)
 
         if (group->IsAssistant(member->GetGUID()))
         {
-            state.flightCoordinatorGuid = member->GetGUID();
+            state.flightLeaderGuid = member->GetGUID();
             return member;
         }
 
@@ -1383,7 +1387,7 @@ Player* GetFelmystFlightCoordinator(Player* player)
     }
 
     if (fallbackBot)
-        state.flightCoordinatorGuid = fallbackBot->GetGUID();
+        state.flightLeaderGuid = fallbackBot->GetGUID();
 
     return fallbackBot;
 }

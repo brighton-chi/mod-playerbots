@@ -430,14 +430,14 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
+// alternative below to test suppression of reaching target by stacking on one bot
+/* float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
         return 1.0f;
 
-    // Test suppression of reaching target by stacking on one bot
-    if (!dynamic_cast<MovementAction*>(action) /* &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) */)
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
@@ -451,6 +451,28 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (IsFelmystDemonicVaporHeadNearBot(bot))
+        return 0.0f;
+
+    return 1.0f;
+} */
+
+float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
+{
+    if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return 1.0f;
+
+    FogOfCorruptionState fogState;
+    if (!TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
         return 0.0f;
 
     return 1.0f;

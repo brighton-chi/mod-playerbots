@@ -195,14 +195,12 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
-    Player* coordinator = GetFelmystFlightCoordinator(bot);
+    Player* leader = GetFelmystFlightLeader(bot);
 
-    // Coordinator marks itself with diamond
-    if (coordinator == bot && MarkTargetWithDiamond(bot, coordinator))
+    if (leader == bot && MarkTargetWithDiamond(bot, leader))
         return true;
 
-    // Coordinator avoids hazards; fallback if no coordinator exists
-    if (coordinator == bot || !coordinator)
+    if (leader == bot || !leader)
     {
         constexpr float searchRadius = 20.0f;
         Unit* nearestTrail = bot->FindNearestCreature(
@@ -223,20 +221,19 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
         return MoveAway(hazard, safeDistFromVapor - currentDistance);
     }
 
-    // Non-coordinator: move toward coordinator
     constexpr float followDist = 2.0f;
-    float const currentDistance = bot->GetDistance2d(coordinator);
+    float const currentDistance = bot->GetDistance2d(leader);
     if (currentDistance <= followDist)
         return false;
 
-    float const dX = coordinator->GetPositionX() - bot->GetPositionX();
-    float const dY = coordinator->GetPositionY() - bot->GetPositionY();
+    float const dX = leader->GetPositionX() - bot->GetPositionX();
+    float const dY = leader->GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(3.5f, currentDistance);
     float const moveX = bot->GetPositionX() + (dX / currentDistance) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / currentDistance) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, coordinator->GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, leader->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 

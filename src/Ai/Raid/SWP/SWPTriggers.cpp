@@ -275,6 +275,11 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
+    // On initial landing, let MT get aggro before trying to line up
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (mainTank && felmyst->GetVictim() != mainTank && felmyst->GetHealthPct() > 90.0f)
+        return false;
+
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
