@@ -11,7 +11,6 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <list>
@@ -437,9 +436,9 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
     Unit* hazard = nullptr;
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    constexpr float searchDistance = 20.0f;
+    constexpr float searchRadius = 20.0f;
     Creature* darkness = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
+        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchRadius, true);
 
     if (darkFiend)
         hazard = darkFiend;
@@ -602,7 +601,7 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
 
     constexpr float searchRadius = 30.0f;
     Creature* singularity = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchDistance, true);
+        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
 
     float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;
     float const currentDistance = bot->GetExactDist2d(singularity);
