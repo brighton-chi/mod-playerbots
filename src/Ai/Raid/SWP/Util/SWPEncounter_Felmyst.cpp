@@ -449,34 +449,7 @@ void AppendDemonicVaporAnchorsForSide(
     }
 }
 
-std::vector<Unit*> GetDemonicVaporHazards(Player* bot)
-{
-    std::vector<Unit*> hazards;
-    constexpr float searchRadius = 75.0f;
 
-    auto const addHazards = [&](uint32 entry)
-    {
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
-        for (Creature* creature : creatures)
-        {
-            if (!creature || !creature->IsAlive())
-                continue;
-
-            if (entry == static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR) &&
-                creature->GetSummonerGUID() == bot->GetGUID())
-            {
-                continue;
-            }
-
-            hazards.push_back(creature);
-        }
-    };
-
-    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
-    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
-    return hazards;
-}
 
 float GetMinDistanceToOtherPlayers(Player* bot, float x, float y)
 {
@@ -496,10 +469,10 @@ float GetMinDistanceToOtherPlayers(Player* bot, float x, float y)
     return minDistance;
 }
 
-float GetMinDistanceToHazards(float x, float y, std::vector<Unit*> const& hazards)
+float GetMinDistanceToHazards(float x, float y, std::vector<Creature*> const& hazards)
 {
     float minDistance = std::numeric_limits<float>::max();
-    for (Unit* hazard : hazards)
+    for (Creature* hazard : hazards)
     {
         if (!hazard)
             continue;
@@ -513,7 +486,7 @@ float GetMinDistanceToHazards(float x, float y, std::vector<Unit*> const& hazard
 }
 
 bool IsDemonicVaporPathSafe(
-    Player* bot, Position const& start, Position const& target, std::vector<Unit*> const& hazards)
+    Player* bot, Position const& start, Position const& target, std::vector<Creature*> const& hazards)
 {
     constexpr float pathStepSize = 2.0f;
     constexpr float playerPathClearance = 7.0f;
@@ -546,7 +519,7 @@ bool IsDemonicVaporPathSafe(
             }
         }
 
-        for (Unit* hazard : hazards)
+        for (Creature* hazard : hazards)
         {
             if (!hazard)
                 continue;
@@ -563,7 +536,7 @@ bool IsDemonicVaporPathSafe(
 }
 
 bool TryGetDemonicVaporAnchorDestination(
-    Player* bot, uint8 anchorIndex, std::vector<Unit*> const& hazards,
+    Player* bot, uint8 anchorIndex, std::vector<Creature*> const& hazards,
     bool requireSafePath, bool requireSafeEndpoint, Position& destination)
 {
     if (anchorIndex >= DEMONIC_VAPOR_KITE_ANCHORS.size())
@@ -644,6 +617,35 @@ bool TryGetFelmystDemonicVaporStepDestination(
 }
 
 } // end anonymous namespace
+
+std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
+{
+    std::vector<Creature*> hazards;
+    constexpr float searchRadius = 100.0f;
+
+    auto const addHazards = [&](uint32 entry)
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
+        for (Creature* creature : creatures)
+        {
+            if (!creature || !creature->IsAlive())
+                continue;
+
+            if (entry == static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR) &&
+                creature->GetSummonerGUID() == bot->GetGUID())
+            {
+                continue;
+            }
+
+            hazards.push_back(creature);
+        }
+    };
+
+    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
+    addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+    return hazards;
+}
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot)
 {
@@ -986,7 +988,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
             AppendDemonicVaporAnchorsForSide(preferredAnchors, preferredLane, alternateSide);
     }
 
-    std::vector<Unit*> const hazards = GetDemonicVaporHazards(bot);
+    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
     auto const tryAnchors = [&](bool requireSafePath, bool requireSafeEndpoint)
     {
         for (uint8 anchorIndex : preferredAnchors)
@@ -1125,21 +1127,7 @@ bool TryGetFelmystFogSafeDestinations(
 
     auto const& safeSpots = FOG_SAFE_SPOTS[laneIndex];
     std::array<uint8, 3> candidateOrder = { 0, 1, 2 };
-    std::list<Creature*> vaporHazards;
-    auto const addVaporHazards = [&](uint32 entry)
-    {
-        constexpr float searchRadius = 150.0f;
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
-        for (Creature* creature : creatures)
-        {
-            if (creature && creature->IsAlive())
-                vaporHazards.push_back(creature);
-        }
-    };
-
-    addVaporHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
-    addVaporHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+    std::vector<Creature*> const vaporHazards = GetDemonicVaporHazards(bot);
 
     auto const isSafeSpotBlockedByVapor = [&](Position const& safeSpot)
     {

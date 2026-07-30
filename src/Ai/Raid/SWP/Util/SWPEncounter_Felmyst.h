@@ -14,6 +14,7 @@
 #include <ctime>
 #include <limits>
 #include <unordered_map>
+#include <vector>
 
 class Creature;
 class Player;
@@ -113,6 +114,7 @@ void EnsureFelmystRangedAssignments(Player* bot);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
+std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
 bool TryGetFelmystFogSafeDestinations(

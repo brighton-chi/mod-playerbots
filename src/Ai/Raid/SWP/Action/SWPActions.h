@@ -244,6 +244,10 @@ public:
     FelmystAvoidDemonicVaporAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "felmyst avoid demonic vapor") {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveAwayFromVapor();
+    bool MoveToFlightLeader(Player* leader);
 };
 
 class FelmystKiteDemonicVaporAction : public MovementAction

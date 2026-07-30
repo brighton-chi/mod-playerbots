@@ -201,65 +201,88 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
         return true;
 
     if (leader == bot || !leader)
+        return MoveAwayFromVapor();
+
+    return MoveToFlightLeader(leader);
+}
+
+bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
+{
+    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
+
+    constexpr float hazardRadius = 10.0f;
+    bool inDanger = false;
+    for (Creature* hazard : hazards)
     {
-        std::vector<Unit*> const hazards = GetDemonicVaporHazards(bot);
-
-        constexpr float safeDistFromVapor = 10.0f;
-        bool inDanger = false;
-        for (Unit* hazard : hazards)
+        if (hazard && bot->GetDistance2d(hazard) < hazardRadius)
         {
-            if (hazard && bot->GetDistance2d(hazard) < safeDistFromVapor)
-            {
-                inDanger = true;
-                break;
-            }
+            inDanger = true;
+            break;
         }
-
-        if (!inDanger)
-            return false;
-
-        constexpr float searchStep = M_PI / 12.0f;
-        constexpr float searchDistance = 30.0f;
-        float bestAngle = 0.0f;
-        float bestMinDist = 0.0f;
-
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float const targetX = bot->GetPositionX() + searchDistance * std::cos(angle);
-            float const targetY = bot->GetPositionY() + searchDistance * std::sin(angle);
-
-            float minDistToHazard = std::numeric_limits<float>::max();
-            for (Unit* hazard : hazards)
-            {
-                if (!hazard)
-                    continue;
-
-                float const dist = hazard->GetDistance2d(targetX, targetY);
-                if (dist < minDistToHazard)
-                    minDistToHazard = dist;
-            }
-
-            if (minDistToHazard > bestMinDist)
-            {
-                bestMinDist = minDistToHazard;
-                bestAngle = angle;
-            }
-        }
-
-        float destX = bot->GetPositionX() + searchDistance * std::cos(bestAngle);
-        float destY = bot->GetPositionY() + searchDistance * std::sin(bestAngle);
-        float destZ = bot->GetPositionZ();
-        bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-            destX, destY, destZ, false);
-
-        botAI->InterruptSpell();
-        return MoveTo(
-            SWP_MAP_ID, destX, destY, destZ, false, false,
-            false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
+    if (!inDanger)
+        return false;
+
+    constexpr float maxSearchRadius = 40.0f;
+    constexpr float searchStep = M_PI / 8.0f;
+    constexpr float distanceStep = 1.0f;
+
+    Position bestPos;
+    float minMoveDistance = std::numeric_limits<float>::max();
+    bool foundSafe = false;
+
+    for (float distance = 0.0f; distance <= maxSearchRadius; distance += distanceStep)
+    {
+        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        {
+            float x = bot->GetPositionX() + distance * std::cos(angle);
+            float y = bot->GetPositionY() + distance * std::sin(angle);
+
+            bool isSafe = true;
+            for (Creature* hazard : hazards)
+            {
+                if (hazard && hazard->GetDistance2d(x, y) < hazardRadius)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+
+            if (!isSafe)
+                continue;
+
+            float z = bot->GetPositionZ();
+            bot->GetMap()->CheckCollisionAndGetValidCoords(
+                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                x, y, z, false);
+
+            float const moveDistance = bot->GetExactDist2d(x, y);
+            if (!foundSafe || moveDistance < minMoveDistance)
+            {
+                bestPos = Position(x, y, z);
+                minMoveDistance = moveDistance;
+                foundSafe = true;
+            }
+        }
+
+        if (foundSafe)
+            break;
+    }
+
+    if (!foundSafe)
+        return false;
+
+    botAI->InterruptSpell();
+    return MoveTo(
+        SWP_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
+{
     constexpr float followDist = 2.0f;
+    constexpr float tooFarDist = 5.0f;
     float const currentDistance = bot->GetDistance2d(leader);
     if (currentDistance <= followDist)
         return false;
@@ -270,8 +293,15 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
     float const moveX = bot->GetPositionX() + (dX / currentDistance) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / currentDistance) * moveDist;
 
+    float moveZ = bot->GetMapWaterOrGroundLevel(moveX, moveY, bot->GetPositionZ());
+    if (moveZ <= INVALID_HEIGHT)
+        moveZ = bot->GetPositionZ();
+
+    if (currentDistance > tooFarDist)
+        botAI->InterruptSpell();
+
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, leader->GetPositionZ(), false, false,
+        SWP_MAP_ID, moveX, moveY, moveZ, false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
