@@ -126,30 +126,18 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
-            continue;
-
-        rangedMembers.push_back(member);
+        if (member && member->GetMapId() == SWP_MAP_ID && PlayerbotAI::IsRanged(member))
+            rangedMembers.push_back(member);
     }
 
     if (rangedMembers.empty())
         return false;
 
-    std::sort(rangedMembers.begin(), rangedMembers.end(),
-        [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
-
-    size_t slotIndex = rangedMembers.size();
-    for (size_t index = 0; index < rangedMembers.size(); ++index)
-    {
-        if (rangedMembers[index] == bot)
-        {
-            slotIndex = index;
-            break;
-        }
-    }
-
-    if (slotIndex >= rangedMembers.size())
+    auto const it = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+    if (it == rangedMembers.end())
         return false;
+
+    size_t const slotIndex = std::distance(rangedMembers.begin(), it);
 
     constexpr float spreadRadius = 25.0f;
     float const anchorAngle = std::atan2(
@@ -159,19 +147,10 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
         2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
     float const angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
 
-    float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
-    float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
+    float const destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
+    float const destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
 
-    float destinationZ = bot->GetMapWaterOrGroundLevel(
-        destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ());
-    if (destinationZ <= INVALID_HEIGHT)
-        destinationZ = MURU_CENTER_POSITION.GetPositionZ();
-
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        destinationX, destinationY, destinationZ, false);
-
-    position = Position{ destinationX, destinationY, destinationZ };
+    position = Position{ destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ() };
     return true;
 }
 
