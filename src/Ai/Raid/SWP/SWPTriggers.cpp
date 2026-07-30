@@ -617,7 +617,7 @@ bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
     if (AI_VALUE2(Unit*, "find target", "dark fiend"))
         return true;
 
-    constexpr float searchDistance = 15.0f;
+    constexpr float searchDistance = 20.0f;
     return bot->FindNearestCreature(
         static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
 }
@@ -640,12 +640,9 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
     if (!entropius)
         return false;
 
-    Creature* singularity = GetNearestMuruSingularity(bot);
-    if (!singularity)
-        return false;
-
-    float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
-    return bot->GetExactDist2d(singularity) < safeDistance;
+    constexpr float searchRadius = 30.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchDistance, true);
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()

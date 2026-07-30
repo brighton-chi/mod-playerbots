@@ -458,7 +458,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
     Unit* hazard = nullptr;
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    constexpr float searchDistance = 15.0f;
+    constexpr float searchDistance = 20.0f;
     Creature* darkness = bot->FindNearestCreature(
         static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
 
@@ -469,7 +469,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     else
         return false;
 
-    constexpr float safeDistance = 10.0f;
+    constexpr float safeDistance = 15.0f;
     float const distFromHazard = bot->GetDistance2d(hazard);
     if (distFromHazard > safeDistance)
         return false;
@@ -621,11 +621,11 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    Creature* singularity = GetNearestMuruSingularity(bot);
-    if (!singularity)
-        return false;
+    constexpr float searchRadius = 30.0f;
+    Creature* singularity = bot->FindNearestCreature(
+        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchDistance, true);
 
-    float const safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
+    float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;
     float const currentDistance = bot->GetExactDist2d(singularity);
     if (currentDistance >= safeDistance)
         return false;
