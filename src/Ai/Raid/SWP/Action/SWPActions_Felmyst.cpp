@@ -434,8 +434,7 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
     uint32 const instanceId = felmyst->GetMap()->GetInstanceId();
     auto& state = felmystEncounterStates[instanceId];
 
-    Position landingDestination;
-    if (felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination))
+    if (felmyst->IsFlying() && IsFelmystLanding(felmyst))
     {
         if (state.landingDpsWaitTimer)
             return false;

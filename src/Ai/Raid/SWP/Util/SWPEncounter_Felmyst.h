@@ -118,7 +118,7 @@ bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination
 bool TryGetFelmystFogSafeDestinations(
     Player* bot, FogLane dangerLane, std::array<Position, 3>& destinations,
     uint8& destinationCount);
-bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination);
+bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState& state);

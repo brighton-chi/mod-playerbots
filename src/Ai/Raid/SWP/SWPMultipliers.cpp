@@ -458,11 +458,9 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 
 float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
-        return 1.0f;
-
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action))
     {
         return 1.0f;
     }
@@ -472,10 +470,13 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FogOfCorruptionState fogState;
-    if (!TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
-        return 0.0f;
+    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
+        return 1.0f;
 
-    return 1.0f;
+    if (IsFelmystLanding(felmyst))
+        return 1.0f;
+
+    return 0.0f;
 }
 
 float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)

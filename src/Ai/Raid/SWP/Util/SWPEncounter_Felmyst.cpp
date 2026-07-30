@@ -825,8 +825,9 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
     return vapor && bot->GetDistance2d(vapor) <= kiteDistanceThreshold;
 }
 
-bool TryGetFelmystLandingDestination(Unit* felmyst, Position& destination)
+bool IsFelmystLanding(Unit* felmyst)
 {
+    Position destination;
     if (!TryGetFelmystMovementDestination(felmyst, destination))
         return false;
 
@@ -847,8 +848,7 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
         return false;
     }
 
-    Position landingDestination;
-    if (TryGetFelmystLandingDestination(felmyst, landingDestination))
+    if (IsFelmystLanding(felmyst))
     {
         felmystEncounterStates[instanceId].fogPass = FogPassState{};
         return false;
