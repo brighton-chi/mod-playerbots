@@ -228,8 +228,6 @@ bool IsPastFogThreshold(Player* bot, FogLane dangerLane)
     Position const& a = threshold.a;
     Position const& b = threshold.b;
 
-    // Cross product to determine which side of line AB the bot is on.
-    // Positive = left of the directed segment A→B.
     float const cross = (b.GetPositionX() - a.GetPositionX()) *
         (bot->GetPositionY() - a.GetPositionY()) -
         (b.GetPositionY() - a.GetPositionY()) *
@@ -288,7 +286,7 @@ FogLocation GetFogLocationFromPosition(float positionX, float positionY, float m
     return bestLocation;
 }
 
-bool TryGetFelmystMovementDestination(Unit* felmyst, Position& destination)
+bool TryGetFelmystFlightDestination(Unit* felmyst, Position& destination)
 {
     if (!felmyst)
         return false;
@@ -310,27 +308,27 @@ FogLocation GetFelmystCurrentFogLocation(Unit* felmyst)
         return FogLocation::None;
 
     return GetFogLocationFromPosition(
-        felmyst->GetPositionX(), felmyst->GetPositionY(), FELMYST_FOG_LOCATION_MATCH_DISTANCE);
+        felmyst->GetPositionX(), felmyst->GetPositionY(), FELMYST_LOCATION_MATCH_DISTANCE);
 }
 
 FogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
 {
     Position destination;
-    if (!TryGetFelmystMovementDestination(felmyst, destination))
+    if (!TryGetFelmystFlightDestination(felmyst, destination))
         return FogLocation::None;
 
     return GetFogLocationFromPosition(
-        destination.GetPositionX(), destination.GetPositionY(), FELMYST_FOG_LOCATION_MATCH_DISTANCE);
+        destination.GetPositionX(), destination.GetPositionY(), FELMYST_LOCATION_MATCH_DISTANCE);
 }
 
 bool IsNearFelmystLandingPosition(Position const& destination)
 {
     bool const nearRight = destination.GetExactDist2d(
         RIGHT_LANDING_POSITION.GetPositionX(),
-        RIGHT_LANDING_POSITION.GetPositionY()) <= FELMYST_FOG_LOCATION_MATCH_DISTANCE;
+        RIGHT_LANDING_POSITION.GetPositionY()) <= FELMYST_LOCATION_MATCH_DISTANCE;
     bool const nearLeft = destination.GetExactDist2d(
         LEFT_LANDING_POSITION.GetPositionX(),
-        LEFT_LANDING_POSITION.GetPositionY()) <= FELMYST_FOG_LOCATION_MATCH_DISTANCE;
+        LEFT_LANDING_POSITION.GetPositionY()) <= FELMYST_LOCATION_MATCH_DISTANCE;
 
     return nearRight || nearLeft;
 }
@@ -630,7 +628,8 @@ Position ClosestPointOnSegment(Position const& p, Position const& segA, Position
         ((p.GetPositionX() - segA.GetPositionX()) * abX +
          (p.GetPositionY() - segA.GetPositionY()) * abY) / lenSq, 0.0f, 1.0f);
 
-    return Position(segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
+    return Position(
+        segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
 }
 
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
@@ -720,9 +719,11 @@ bool TryGetFelmystFogSafeDestination(
     constexpr float maxClearance = 30.0f;
     constexpr float clearanceStep = 3.0f;
 
-    for (float clearance = minThresholdClearance;
-         clearance <= maxClearance; clearance += clearanceStep)
+    uint32 const clearanceStepCount =
+        static_cast<uint32>((maxClearance - minThresholdClearance) / clearanceStep);
+    for (uint32 step = 0; step <= clearanceStepCount; ++step)
     {
+        float const clearance = minThresholdClearance + static_cast<float>(step) * clearanceStep;
         float x = bestProjection.GetPositionX() + unitX * clearance;
         float y = bestProjection.GetPositionY() + unitY * clearance;
 
@@ -937,7 +938,7 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
 bool IsFelmystLanding(Unit* felmyst)
 {
     Position destination;
-    if (!TryGetFelmystMovementDestination(felmyst, destination))
+    if (!TryGetFelmystFlightDestination(felmyst, destination))
         return false;
 
     return IsNearFelmystLandingPosition(destination);
@@ -1024,7 +1025,7 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
         return false;
 
     Position destination;
-    if (!TryGetFelmystMovementDestination(felmyst, destination))
+    if (!TryGetFelmystFlightDestination(felmyst, destination))
         return true;
 
     return !IsNearFelmystLandingPosition(destination);

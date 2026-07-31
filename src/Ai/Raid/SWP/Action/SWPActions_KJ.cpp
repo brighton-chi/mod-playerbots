@@ -469,9 +469,8 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     float destX = darknessPosition.GetPositionX();
     float destY = darknessPosition.GetPositionY();
 
-    // Bots with Fire Bloom wait away from the darkness stack spot until
-    // the darkness cast is about to finish (4500ms, same threshold for
-    // the bot dragon to cast Shield of the Blue).
+    // Bots with Fire Bloom wait away from the darkness stack spot until the darkness cast is
+    // about to finish (4500ms, same threshold for the bot dragon to cast Shield of the Blue).
     if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_FIRE_BLOOM)))
     {
         Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");

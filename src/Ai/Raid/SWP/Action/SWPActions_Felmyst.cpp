@@ -250,8 +250,10 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    for (float distance = 0.0f; distance <= maxSearchRadius; distance += distanceStep)
+    uint32 const stepCount = static_cast<uint32>(maxSearchRadius / distanceStep);
+    for (uint32 step = 0; step <= stepCount; ++step)
     {
+        float const distance = static_cast<float>(step) * distanceStep;
         for (float angle : angles)
         {
             float x = bot->GetPositionX() + distance * std::cos(angle);
@@ -405,7 +407,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
     if (Position(
             lastMove.lastMoveToX, lastMove.lastMoveToY,
-            lastMove.lastMoveToZ).GetExactDist(destination) > FELMYST_FOG_LOCATION_MATCH_DISTANCE)
+            lastMove.lastMoveToZ).GetExactDist(destination) > FELMYST_LOCATION_MATCH_DISTANCE)
     {
         _fogCrateStuckSampleMs = 0;
     }
@@ -454,7 +456,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
         destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 
     if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >
-        FELMYST_FOG_LOCATION_MATCH_DISTANCE)
+        FELMYST_LOCATION_MATCH_DISTANCE)
     {
         _fogCrateStuckDestination = destination;
         _fogCrateStuckNearestDistance = distanceToDestination;
