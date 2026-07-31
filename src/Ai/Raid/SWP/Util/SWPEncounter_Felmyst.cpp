@@ -43,7 +43,7 @@ std::array<Position, 3> const FOG_RIGHT_LANES =
     { 1441.640f, 520.520f, 50.083f, 1.449f },
 }};
 
-std::array<std::array<Position, 3>, 3> const FOG_SAFE_SPOTS =
+/* std::array<std::array<Position, 3>, 3> const FOG_SAFE_SPOTS =
 {{
     {{ // Top lane safe spots
         { 1466.877f, 562.297f, 22.231f },
@@ -59,6 +59,34 @@ std::array<std::array<Position, 3>, 3> const FOG_SAFE_SPOTS =
         { 1484.481f, 568.884f, 23.328f },
         { 1484.491f, 602.682f, 24.015f },
         { 1484.395f, 635.028f, 22.242f },
+    }}
+}}; */
+
+std::array<std::array<Position, 6>, 3> const FOG_SAFE_SPOTS =
+{{
+    {{ // Top lane safe spots
+        { 1467.322f, 655.269f, 20.170f },
+        { 1468.450f, 637.741f, 20.897f },
+        { 1465.101f, 618.071f, 21.368f },
+        { 1462.359f, 599.504f, 22.229f },
+        { 1463.683f, 577.138f, 21.835f },
+        { 1468.725f, 558.494f, 22.458f },
+    }},
+    {{ // Middle lane safe spots
+        { 1494.895f, 661.228f, 22.604f },
+        { 1499.607f, 638.222f, 24.579f },
+        { 1493.175f, 614.212f, 25.194f },
+        { 1501.565f, 588.636f, 25.400f },
+        { 1496.199f, 564.008f, 24.948f },
+        { 1504.004f, 545.260f, 27.650f },
+    }},
+    {{ // Bottom lane safe spots
+        { 1478.739f, 650.460f, 20.871f },
+        { 1483.443f, 632.724f, 22.460f },
+        { 1473.202f, 614.844f, 23.000f },
+        { 1486.792f, 596.200f, 23.908f },
+        { 1468.754f, 577.071f, 21.911f },
+        { 1476.006f, 558.670f, 23.271f },
     }}
 }};
 
@@ -1126,7 +1154,7 @@ bool TryGetFelmystFogSafeDestinations(
         return false;
 
     auto const& safeSpots = FOG_SAFE_SPOTS[laneIndex];
-    std::array<uint8, 3> candidateOrder = { 0, 1, 2 };
+    std::array<uint8, 6> candidateOrder = { 0, 1, 2, 3, 4, 5 };
     std::vector<Creature*> const vaporHazards = GetDemonicVaporHazards(bot);
 
     auto const isSafeSpotBlockedByVapor = [&](Position const& safeSpot)

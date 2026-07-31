@@ -225,8 +225,8 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
         return false;
 
     constexpr float maxSearchRadius = 40.0f;
-    constexpr float searchStep = M_PI / 8.0f;
     constexpr float distanceStep = 1.0f;
+    float const angles[] = { 0.0f, static_cast<float>(M_PI) };   // north, south (WoW)
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -234,7 +234,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 
     for (float distance = 0.0f; distance <= maxSearchRadius; distance += distanceStep)
     {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        for (float angle : angles)
         {
             float x = bot->GetPositionX() + distance * std::cos(angle);
             float y = bot->GetPositionY() + distance * std::sin(angle);
