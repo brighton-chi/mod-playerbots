@@ -409,20 +409,16 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 
     if (isFogLaneMove)
     {
-        std::array<Position, 3> destinations;
-        uint8 destinationCount = 0;
-        bool canRelocate = TryGetFelmystFogSafeDestinations(
-            bot, activeLane, destinations, destinationCount);
+        Position ignored;
+        bool canRelocate = TryGetFelmystFogSafeDestination(bot, activeLane, ignored);
         return canRelocate ? 1.0f : 0.0f;
     }
 
     // DPS spell — blocked when in active danger and can relocate
     if (needsFogAvoidance)
     {
-        std::array<Position, 3> destinations;
-        uint8 destinationCount = 0;
-        bool canRelocate = TryGetFelmystFogSafeDestinations(
-            bot, dangerousFogState.lane, destinations, destinationCount);
+        Position ignored;
+        bool canRelocate = TryGetFelmystFogSafeDestination(bot, dangerousFogState.lane, ignored);
         if (canRelocate)
             return 0.0f;
     }
@@ -456,7 +452,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     return 1.0f;
 } */
 
-float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
+float FelmystPrioritizeDemonicVaporAvoidanceMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<ReachTargetAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&

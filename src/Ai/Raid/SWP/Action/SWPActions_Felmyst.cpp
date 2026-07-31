@@ -10,7 +10,6 @@
 #include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
 #include "Timer.h"
-#include <array>
 #include <cmath>
 
 using namespace SwpHelpers;
@@ -98,11 +97,8 @@ bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
         return false;
 
     Position position;
-    if (!TryGetFelmystGroundStackPosition(
-            bot, felmyst, FelmystGroundStack::Melee, position))
-    {
+    if (!TryGetFelmystGroundStackPosition(bot, felmyst, FelmystGroundStack::Melee, position))
         return false;
-    }
 
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.25f)
         return false;
@@ -200,7 +196,15 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
     if (leader == bot && MarkTargetWithDiamond(bot, leader))
         return true;
 
-    if (leader == bot || !leader)
+    if (!leader)
+    {
+        LOG_DEBUG("playerbots",
+            "[FelmystAvoidDemonicVapor] {} no flight leader found, falling back to MoveAwayFromVapor",
+            bot->GetName());
+        return MoveAwayFromVapor();
+    }
+
+    if (leader == bot)
         return MoveAwayFromVapor();
 
     return MoveToFlightLeader(leader);
@@ -210,7 +214,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 {
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
 
-    constexpr float hazardRadius = 10.0f;
+    constexpr float hazardRadius = 15.0f;
     bool inDanger = false;
     for (Creature* hazard : hazards)
     {
@@ -226,7 +230,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 
     constexpr float maxSearchRadius = 40.0f;
     constexpr float distanceStep = 1.0f;
-    float const angles[] = { 0.0f, static_cast<float>(M_PI) };   // north, south (WoW)
+    float const angles[] = { 0.0f, static_cast<float>(M_PI) }; // north, south
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -271,7 +275,12 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
     }
 
     if (!foundSafe)
+    {
+        LOG_DEBUG("playerbots",
+            "[FelmystAvoidDemonicVapor] {} MoveAwayFromVapor failed — no safe position in {}yd",
+            bot->GetName(), maxSearchRadius);
         return false;
+    }
 
     botAI->InterruptSpell();
     return MoveTo(
@@ -282,27 +291,45 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
 {
     constexpr float followDist = 2.0f;
-    constexpr float tooFarDist = 5.0f;
     float const currentDistance = bot->GetDistance2d(leader);
     if (currentDistance <= followDist)
+    {
+        LOG_DEBUG("playerbots",
+            "[FelmystAvoidDemonicVapor] {} already at leader {} ({:.1f}yd <= {:.1f}yd)",
+            bot->GetName(), leader->GetName(), currentDistance, followDist);
         return false;
+    }
 
     float const dX = leader->GetPositionX() - bot->GetPositionX();
     float const dY = leader->GetPositionY() - bot->GetPositionY();
-    float const moveDist = std::min(3.5f, currentDistance);
+    float const dZ = leader->GetPositionZ() - bot->GetPositionZ();
+    float const moveDist = std::min(10.0f, currentDistance);
     float const moveX = bot->GetPositionX() + (dX / currentDistance) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / currentDistance) * moveDist;
+    float const moveZ = bot->GetPositionZ() + (dZ / currentDistance) * moveDist;
 
-    float moveZ = bot->GetMapWaterOrGroundLevel(moveX, moveY, bot->GetPositionZ());
-    if (moveZ <= INVALID_HEIGHT)
-        moveZ = bot->GetPositionZ();
+    botAI->InterruptSpell();
 
-    if (currentDistance > tooFarDist)
-        botAI->InterruptSpell();
+    // 1) Try exact leader position
+    if (MoveTo(
+            SWP_MAP_ID, leader->GetPositionX(), leader->GetPositionY(), leader->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false))
+    {
+        return true;
+    }
 
+    // 2) Try leader XY with bot's own Z
+    if (MoveTo(
+            SWP_MAP_ID, leader->GetPositionX(), leader->GetPositionY(), bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false))
+    {
+        return true;
+    }
+
+    // 3) Try an incremental step toward the leader with linearly interpolated Z.
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, moveZ, false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
@@ -337,8 +364,8 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     }
 
     FogOfCorruptionState fogState;
-    bool const hasActiveFog =
-        TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
+    bool const hasActiveFog = TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
+
     FogLane thirdPassLane = FogLane::None;
     bool const shouldRepositionAfterThirdPass = !hasActiveFog &&
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
@@ -349,74 +376,33 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return false;
     }
 
-    std::array<Position, 3> destinations;
-    uint8 destinationCount = 0;
-    if (!TryGetFelmystFogSafeDestinations(
+    Position destination;
+    Position const referencePoint(
+        felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+    if (!TryGetFelmystFogSafeDestination(
             bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
-            destinations, destinationCount))
+            destination, shouldRepositionAfterThirdPass ? &referencePoint : nullptr))
     {
         _fogCrateStuckSampleMs = 0;
         return false;
     }
 
     LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
-    bool trackedDestinationFound = false;
-    for (uint8 index = 0; index < destinationCount; ++index)
+    if (Position(
+            lastMove.lastMoveToX, lastMove.lastMoveToY,
+            lastMove.lastMoveToZ).GetExactDist(destination) > FELMYST_FOG_LOCATION_MATCH_DISTANCE)
     {
-        Position const& destination = destinations[index];
-        if (Position(
-                lastMove.lastMoveToX, lastMove.lastMoveToY,
-                lastMove.lastMoveToZ).GetExactDist(destination) >
-            FELMYST_FOG_LOCATION_MATCH_DISTANCE)
-        {
-            continue;
-        }
-
-        trackedDestinationFound = true;
-        if (TryTeleportStuckBotOntoCrate(destination))
-            return true;
-
-        break;
-    }
-
-    if (!trackedDestinationFound)
         _fogCrateStuckSampleMs = 0;
-
-    if (shouldRepositionAfterThirdPass)
+    }
+    else if (TryTeleportStuckBotOntoCrate(destination))
     {
-        uint8 bestIndex = 0;
-        float bestDistance = std::numeric_limits<float>::max();
-        for (uint8 index = 0; index < destinationCount; ++index)
-        {
-            Position const& destination = destinations[index];
-            float const distanceToFelmyst = felmyst->GetExactDist2d(
-                destination.GetPositionX(), destination.GetPositionY());
-
-            if (distanceToFelmyst < bestDistance)
-            {
-                bestDistance = distanceToFelmyst;
-                bestIndex = index;
-            }
-        }
-
-        Position const& destination = destinations[bestIndex];
-        return MoveTo(
-            SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-            destination.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+        return true;
     }
 
-    for (uint8 index = 0; index < destinationCount; ++index)
-    {
-        Position const& destination = destinations[index];
-        if (MoveTo(
-                SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-                destination.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false))
-        {
-            return true;
-        }
-    }
+    return MoveTo(
+        SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+        destination.GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 
     return false;
 }

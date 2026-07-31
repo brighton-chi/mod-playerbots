@@ -103,13 +103,9 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(
         if (!TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
             continue;
 
-        std::array<Position, 3> destinations;
-        uint8 destinationCount = 0;
-        if (!TryGetFelmystFogSafeDestinations(
-                player, fogState.lane, destinations, destinationCount))
-        {
+        Position ignored;
+        if (!TryGetFelmystFogSafeDestination(player, fogState.lane, ignored))
             continue;
-        }
 
         botAI->RequestSpellInterrupt();
     }

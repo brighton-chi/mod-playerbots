@@ -100,6 +100,12 @@ struct FelmystEncounterState
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
 
+struct FogSafeThreshold
+{
+    Position a, b;
+    bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
+};
+
 constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 constexpr float FELMYST_FOG_LOCATION_MATCH_DISTANCE = 2.0f;
 
@@ -117,9 +123,9 @@ bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
 bool TryGetFelmystDemonicVaporKiteDestination(Player* bot, Position& destination);
-bool TryGetFelmystFogSafeDestinations(
-    Player* bot, FogLane dangerLane, std::array<Position, 3>& destinations,
-    uint8& destinationCount);
+bool TryGetFelmystFogSafeDestination(
+    Player* bot, FogLane dangerLane, Position& destination,
+    Position const* referencePoint = nullptr);
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);

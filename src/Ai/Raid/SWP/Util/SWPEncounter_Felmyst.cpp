@@ -43,51 +43,23 @@ std::array<Position, 3> const FOG_RIGHT_LANES =
     { 1441.640f, 520.520f, 50.083f, 1.449f },
 }};
 
-/* std::array<std::array<Position, 3>, 3> const FOG_SAFE_SPOTS =
+std::array<FogSafeThreshold, 3> const FOG_SAFE_THRESHOLDS =
 {{
-    {{ // Top lane safe spots
-        { 1466.877f, 562.297f, 22.231f },
-        { 1466.718f, 602.838f, 22.834f },
-        { 1466.896f, 641.309f, 20.496f },
-    }},
-    {{ // Middle lane safe spots
-        { 1500.352f, 570.684f, 24.830f },
-        { 1500.372f, 602.543f, 26.305f },
-        { 1500.275f, 639.854f, 24.744f },
-    }},
-    {{ // Bottom lane safe spots
-        { 1484.481f, 568.884f, 23.328f },
-        { 1484.491f, 602.682f, 24.015f },
-        { 1484.395f, 635.028f, 22.242f },
-    }}
-}}; */
-
-std::array<std::array<Position, 6>, 3> const FOG_SAFE_SPOTS =
-{{
-    {{ // Top lane safe spots
-        { 1467.322f, 655.269f, 20.170f },
-        { 1468.450f, 637.741f, 20.897f },
-        { 1465.101f, 618.071f, 21.368f },
-        { 1462.359f, 599.504f, 22.229f },
-        { 1463.683f, 577.138f, 21.835f },
-        { 1468.725f, 558.494f, 22.458f },
-    }},
-    {{ // Middle lane safe spots
-        { 1494.895f, 661.228f, 22.604f },
-        { 1499.607f, 638.222f, 24.579f },
-        { 1493.175f, 614.212f, 25.194f },
-        { 1501.565f, 588.636f, 25.400f },
-        { 1496.199f, 564.008f, 24.948f },
-        { 1504.004f, 545.260f, 27.650f },
-    }},
-    {{ // Bottom lane safe spots
-        { 1478.739f, 650.460f, 20.871f },
-        { 1483.443f, 632.724f, 22.460f },
-        { 1473.202f, 614.844f, 23.000f },
-        { 1486.792f, 596.200f, 23.908f },
-        { 1468.754f, 577.071f, 21.911f },
-        { 1476.006f, 558.670f, 23.271f },
-    }}
+    { // Top lane safe threshold (west→east: safe = south)
+        { 1470.122f, 660.345f, 20.462f },
+        { 1470.358f, 560.042f, 22.635f },
+        false,
+    },
+    { // Middle lane safe threshold (west→east: safe = north)
+        { 1498.880f, 675.159f, 22.511f },
+        { 1497.864f, 546.197f, 26.351f },
+        true,
+    },
+    { // Bottom lane safe threshold (west→east: safe = north)
+        { 1477.381f, 659.824f, 21.051f },
+        { 1477.397f, 555.516f, 23.968f },
+        true,
+    }
 }};
 
 Position const FOG_LEFT_SIDE =  { 1469.064f, 729.585f, 59.824f, 4.677f };
@@ -243,27 +215,28 @@ bool IsFogSideLocation(FogLocation location)
     return location == FogLocation::LeftSide || location == FogLocation::RightSide;
 }
 
-bool IsNearFogSafeSpot(Player* bot, FogLane dangerLane, float& closestDistance)
+bool IsPastFogThreshold(Player* bot, FogLane dangerLane)
 {
-    closestDistance = std::numeric_limits<float>::max();
     if (dangerLane == FogLane::None)
         return false;
 
     uint8 const laneIndex = static_cast<uint8>(dangerLane);
-    if (laneIndex >= FOG_SAFE_SPOTS.size())
+    if (laneIndex >= FOG_SAFE_THRESHOLDS.size())
         return false;
 
-    for (Position const& safeSpot : FOG_SAFE_SPOTS[laneIndex])
-    {
-        float const distance = bot->GetExactDist2d(
-            safeSpot.GetPositionX(), safeSpot.GetPositionY());
+    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[laneIndex];
+    Position const& a = threshold.a;
+    Position const& b = threshold.b;
 
-        if (distance < closestDistance)
-            closestDistance = distance;
-    }
+    // Cross product to determine which side of line AB the bot is on.
+    // Positive = left of the directed segment A→B.
+    float const cross = (b.GetPositionX() - a.GetPositionX()) *
+        (bot->GetPositionY() - a.GetPositionY()) -
+        (b.GetPositionY() - a.GetPositionY()) *
+        (bot->GetPositionX() - a.GetPositionX());
 
-    constexpr float safeSpotArrivalDistance = 8.0f;
-    return closestDistance <= safeSpotArrivalDistance;
+    bool const botIsLeft = cross > 0.0f;
+    return botIsLeft == threshold.safeSideIsNorth;
 }
 
 FogLocation GetFogLocationFromPosition(float positionX, float positionY, float matchDistance)
@@ -646,6 +619,22 @@ bool TryGetFelmystDemonicVaporStepDestination(
 
 } // end anonymous namespace
 
+// Helpers with external linkage — called from actions, scripts, multipliers.
+
+Position ClosestPointOnSegment(Position const& p, Position const& segA, Position const& segB)
+{
+    float const abX = segB.GetPositionX() - segA.GetPositionX();
+    float const abY = segB.GetPositionY() - segA.GetPositionY();
+    float const lenSq = abX * abX + abY * abY;
+    if (lenSq <= 0.0f)
+        return segA;
+
+    float const t = std::clamp(
+        ((p.GetPositionX() - segA.GetPositionX()) * abX +
+         (p.GetPositionY() - segA.GetPositionY()) * abY) / lenSq, 0.0f, 1.0f);
+    return Position(segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
+}
+
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
 {
     std::vector<Creature*> hazards;
@@ -673,6 +662,100 @@ std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
     addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR));
     addHazards(static_cast<uint32>(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
     return hazards;
+}
+
+bool TryGetFelmystFogSafeDestination(
+    Player* bot, FogLane dangerLane, Position& destination, Position const* referencePoint)
+{
+    if (dangerLane == FogLane::None)
+        return false;
+
+    uint8 const dangerIndex = static_cast<uint8>(dangerLane);
+    if (dangerIndex >= FOG_SAFE_THRESHOLDS.size())
+        return false;
+
+    Position const projectFrom = referencePoint ? *referencePoint :
+        Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+
+    // Third-pass: use the threshold matching the completed lane directly.
+    // Active fog: pick the closest non-danger threshold.
+    uint8 bestThresholdIndex = dangerIndex;
+    Position bestProjection;
+
+    if (referencePoint)
+    {
+        // Use the exact threshold for the completed sweep lane.
+        bestThresholdIndex = dangerIndex;
+        bestProjection = ClosestPointOnSegment(
+            projectFrom,
+            FOG_SAFE_THRESHOLDS[dangerIndex].a,
+            FOG_SAFE_THRESHOLDS[dangerIndex].b);
+    }
+    else
+    {
+        // Active fog: use the threshold matching the danger lane — its safe
+        // side points away from the fog corridor. Other thresholds may still
+        // be inside the fog range and offer no escape.
+        bestThresholdIndex = dangerIndex;
+        bestProjection = ClosestPointOnSegment(
+            projectFrom,
+            FOG_SAFE_THRESHOLDS[dangerIndex].a,
+            FOG_SAFE_THRESHOLDS[dangerIndex].b);
+    }
+
+    FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[bestThresholdIndex];
+
+    // Offset past the threshold toward the safe side.
+    // For west→east segments: north = +X, south = -X.
+    float const perpX = threshold.safeSideIsNorth ?
+        -(threshold.b.GetPositionY() - threshold.a.GetPositionY()) :
+         (threshold.b.GetPositionY() - threshold.a.GetPositionY());
+    float const perpY = threshold.safeSideIsNorth ?
+        (threshold.b.GetPositionX() - threshold.a.GetPositionX()) :
+        -(threshold.b.GetPositionX() - threshold.a.GetPositionX());
+    float const perpLen = std::hypot(perpX, perpY);
+    if (perpLen <= 0.0f)
+        return false;
+
+    constexpr float minThresholdClearance = 3.0f;
+    float const unitX = perpX / perpLen;
+    float const unitY = perpY / perpLen;
+
+    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
+    constexpr float hazardRadius = 10.0f;
+    constexpr float maxClearance = 30.0f;
+    constexpr float clearanceStep = 3.0f;
+
+    for (float clearance = minThresholdClearance;
+         clearance <= maxClearance; clearance += clearanceStep)
+    {
+        float x = bestProjection.GetPositionX() + unitX * clearance;
+        float y = bestProjection.GetPositionY() + unitY * clearance;
+
+        bool blocked = false;
+        for (Creature* hazard : hazards)
+        {
+            if (hazard && hazard->GetDistance2d(x, y) < hazardRadius)
+            {
+                blocked = true;
+                break;
+            }
+        }
+
+        if (!blocked)
+        {
+            float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+            if (z <= INVALID_HEIGHT)
+                z = bot->GetPositionZ();
+            bot->GetMap()->CheckCollisionAndGetValidCoords(
+                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+                x, y, z, false);
+            destination = Position(x, y, z);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot)
@@ -1134,76 +1217,10 @@ bool TryGetActiveFogOfCorruptionState(
     if (state.phase == FogPhase::Recovery)
         return false;
 
-    float safeSpotDistance = std::numeric_limits<float>::max();
-    if (IsNearFogSafeSpot(bot, state.lane, safeSpotDistance))
+    if (IsPastFogThreshold(bot, state.lane))
         return false;
 
     return state.lane != FogLane::None;
-}
-
-bool TryGetFelmystFogSafeDestinations(
-    Player* bot, FogLane dangerLane, std::array<Position, 3>& destinations,
-    uint8& destinationCount)
-{
-    destinationCount = 0;
-    if (dangerLane == FogLane::None)
-        return false;
-
-    uint8 const laneIndex = static_cast<uint8>(dangerLane);
-    if (laneIndex >= FOG_SAFE_SPOTS.size())
-        return false;
-
-    auto const& safeSpots = FOG_SAFE_SPOTS[laneIndex];
-    std::array<uint8, 6> candidateOrder = { 0, 1, 2, 3, 4, 5 };
-    std::vector<Creature*> const vaporHazards = GetDemonicVaporHazards(bot);
-
-    auto const isSafeSpotBlockedByVapor = [&](Position const& safeSpot)
-    {
-        constexpr float safeDistanceFromVapor = 10.0f;
-        for (Creature* hazard : vaporHazards)
-        {
-            if (!hazard)
-                continue;
-
-            if (hazard->GetExactDist2d(
-                    safeSpot.GetPositionX(), safeSpot.GetPositionY()) < safeDistanceFromVapor)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-    std::sort(candidateOrder.begin(), candidateOrder.end(),
-        [&](uint8 leftIndex, uint8 rightIndex)
-        {
-            Position const& left = safeSpots[leftIndex];
-            Position const& right = safeSpots[rightIndex];
-            return bot->GetExactDist2d(left.GetPositionX(), left.GetPositionY()) <
-                   bot->GetExactDist2d(right.GetPositionX(), right.GetPositionY());
-        });
-
-    for (uint8 candidateIndex : candidateOrder)
-    {
-        Position const& safeSpot = safeSpots[candidateIndex];
-        if (isSafeSpotBlockedByVapor(safeSpot))
-            continue;
-
-        float destinationX = safeSpot.GetPositionX();
-        float destinationY = safeSpot.GetPositionY();
-        float destinationZ = safeSpot.GetPositionZ();
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-                destinationX, destinationY, destinationZ, false))
-        {
-            continue;
-        }
-
-        destinations[destinationCount++] = Position{ destinationX, destinationY, destinationZ };
-    }
-
-    return destinationCount > 0;
 }
 
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
