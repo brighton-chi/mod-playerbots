@@ -203,16 +203,17 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
         AnnounceFlightLeader(leader);
     }
 
-    if (!leader)
+    if (!leader || leader == bot)
         return MoveAwayFromVapor();
 
-    if (leader == bot)
-        return MoveAwayFromVapor();
+    constexpr float farDistance = 20.0f;
+    if (bot->GetDistance2d(leader) > farDistance && MoveAwayFromVapor(true))
+        return true;
 
     return MoveToFlightLeader(leader);
 }
 
-bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
+bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
 {
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
 
@@ -232,7 +233,18 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 
     constexpr float maxSearchRadius = 40.0f;
     constexpr float distanceStep = 1.0f;
-    float const angles[] = { 0.0f, static_cast<float>(M_PI) }; // north, south
+
+    std::vector<float> angles;
+    if (unrestricted)
+    {
+        for (int i = 0; i < 8; ++i)
+            angles.push_back(static_cast<float>(i) * (2.0f * static_cast<float>(M_PI) / 8.0f));
+    }
+    else
+    {
+        angles.push_back(0.0f);
+        angles.push_back(static_cast<float>(M_PI));
+    }
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();

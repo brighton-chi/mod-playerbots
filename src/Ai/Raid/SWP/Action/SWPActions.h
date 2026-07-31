@@ -247,7 +247,7 @@ public:
 
 private:
     void AnnounceFlightLeader(Player* leader);
-    bool MoveAwayFromVapor();
+    bool MoveAwayFromVapor(bool unrestricted = false);
     bool MoveToFlightLeader(Player* leader);
 
     ObjectGuid _announcedFlightLeaderGuid;
