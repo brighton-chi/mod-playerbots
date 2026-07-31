@@ -414,6 +414,19 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
+    // Try CCing skeletons in place before first pass move
+    if (bot->getClass() == CLASS_MAGE &&
+        botAI->CanCastSpell("frost nova", bot) && botAI->CastSpell("frost nova", bot))
+    {
+        return true;
+    }
+
+    if (bot->getClass() == CLASS_HUNTER &&
+        botAI->CanCastSpell("frost trap", bot) && botAI->CastSpell("frost trap", bot))
+    {
+        return true;
+    }
+
     return MoveTo(
         SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
         destination.GetPositionZ(), false, false, false, false,
