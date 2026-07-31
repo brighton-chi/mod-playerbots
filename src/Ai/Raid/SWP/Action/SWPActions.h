@@ -246,8 +246,11 @@ public:
     bool Execute(Event event) override;
 
 private:
+    void AnnounceFlightLeader(Player* leader);
     bool MoveAwayFromVapor();
     bool MoveToFlightLeader(Player* leader);
+
+    ObjectGuid _announcedFlightLeaderGuid;
 };
 
 class FelmystKiteDemonicVaporAction : public MovementAction

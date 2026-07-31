@@ -7,6 +7,7 @@
 #include "SWPActions.h"
 #include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
 #include "Timer.h"
@@ -196,13 +197,14 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
     if (leader == bot && MarkTargetWithDiamond(bot, leader))
         return true;
 
-    if (!leader)
+    if (leader && leader->GetGUID() != _announcedFlightLeaderGuid)
     {
-        LOG_DEBUG("playerbots",
-            "[FelmystAvoidDemonicVapor] {} no flight leader found, falling back to MoveAwayFromVapor",
-            bot->GetName());
-        return MoveAwayFromVapor();
+        _announcedFlightLeaderGuid = leader->GetGUID();
+        AnnounceFlightLeader(leader);
     }
+
+    if (!leader)
+        return MoveAwayFromVapor();
 
     if (leader == bot)
         return MoveAwayFromVapor();
@@ -214,7 +216,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
 {
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
 
-    constexpr float hazardRadius = 15.0f;
+    constexpr float hazardRadius = 13.5f;
     bool inDanger = false;
     for (Creature* hazard : hazards)
     {
@@ -275,12 +277,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor()
     }
 
     if (!foundSafe)
-    {
-        LOG_DEBUG("playerbots",
-            "[FelmystAvoidDemonicVapor] {} MoveAwayFromVapor failed — no safe position in {}yd",
-            bot->GetName(), maxSearchRadius);
         return false;
-    }
 
     botAI->InterruptSpell();
     return MoveTo(
@@ -293,12 +290,7 @@ bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
     constexpr float followDist = 2.0f;
     float const currentDistance = bot->GetDistance2d(leader);
     if (currentDistance <= followDist)
-    {
-        LOG_DEBUG("playerbots",
-            "[FelmystAvoidDemonicVapor] {} already at leader {} ({:.1f}yd <= {:.1f}yd)",
-            bot->GetName(), leader->GetName(), currentDistance, followDist);
         return false;
-    }
 
     float const dX = leader->GetPositionX() - bot->GetPositionX();
     float const dY = leader->GetPositionY() - bot->GetPositionY();
@@ -330,6 +322,17 @@ bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+void FelmystAvoidDemonicVaporAction::AnnounceFlightLeader(Player* leader)
+{
+    std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "felmyst_flight_leader",
+        "[NAME] is now the flight phase leader. Everybody needs to stack on [NAME] "
+        "during the flight phase.",
+        std::map<std::string, std::string>{{"[NAME]", leader->GetName()}});
+
+    botAI->SayToRaid(text);
 }
 
 bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
@@ -443,7 +446,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
         return false;
     }
 
-    constexpr uint32 stuckTimeoutMs = 1500;
+    constexpr uint32 stuckTimeoutMs = 1000;
 
     if (getMSTimeDiff(_fogCrateStuckSampleMs, now) < stuckTimeoutMs)
         return false;

@@ -450,8 +450,6 @@ void AppendDemonicVaporAnchorsForSide(
     }
 }
 
-
-
 float GetMinDistanceToOtherPlayers(Player* bot, float x, float y)
 {
     float minDistance = std::numeric_limits<float>::max();
@@ -487,7 +485,8 @@ float GetMinDistanceToHazards(float x, float y, std::vector<Creature*> const& ha
 }
 
 bool IsDemonicVaporPathSafe(
-    Player* bot, Position const& start, Position const& target, std::vector<Creature*> const& hazards)
+    Player* bot, Position const& start, Position const& target,
+    std::vector<Creature*> const& hazards)
 {
     constexpr float pathStepSize = 2.0f;
     constexpr float playerPathClearance = 7.0f;
@@ -619,8 +618,6 @@ bool TryGetFelmystDemonicVaporStepDestination(
 
 } // end anonymous namespace
 
-// Helpers with external linkage — called from actions, scripts, multipliers.
-
 Position ClosestPointOnSegment(Position const& p, Position const& segA, Position const& segB)
 {
     float const abX = segB.GetPositionX() - segA.GetPositionX();
@@ -632,6 +629,7 @@ Position ClosestPointOnSegment(Position const& p, Position const& segA, Position
     float const t = std::clamp(
         ((p.GetPositionX() - segA.GetPositionX()) * abX +
          (p.GetPositionY() - segA.GetPositionY()) * abY) / lenSq, 0.0f, 1.0f);
+
     return Position(segA.GetPositionX() + t * abX, segA.GetPositionY() + t * abY, segA.GetPositionZ());
 }
 
@@ -687,9 +685,7 @@ bool TryGetFelmystFogSafeDestination(
         // Use the exact threshold for the completed sweep lane.
         bestThresholdIndex = dangerIndex;
         bestProjection = ClosestPointOnSegment(
-            projectFrom,
-            FOG_SAFE_THRESHOLDS[dangerIndex].a,
-            FOG_SAFE_THRESHOLDS[dangerIndex].b);
+            projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
     }
     else
     {
@@ -698,9 +694,7 @@ bool TryGetFelmystFogSafeDestination(
         // be inside the fog range and offer no escape.
         bestThresholdIndex = dangerIndex;
         bestProjection = ClosestPointOnSegment(
-            projectFrom,
-            FOG_SAFE_THRESHOLDS[dangerIndex].a,
-            FOG_SAFE_THRESHOLDS[dangerIndex].b);
+            projectFrom, FOG_SAFE_THRESHOLDS[dangerIndex].a, FOG_SAFE_THRESHOLDS[dangerIndex].b);
     }
 
     FogSafeThreshold const& threshold = FOG_SAFE_THRESHOLDS[bestThresholdIndex];
@@ -747,9 +741,11 @@ bool TryGetFelmystFogSafeDestination(
             float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
             if (z <= INVALID_HEIGHT)
                 z = bot->GetPositionZ();
+
             bot->GetMap()->CheckCollisionAndGetValidCoords(
                 bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
                 x, y, z, false);
+
             destination = Position(x, y, z);
             return true;
         }
