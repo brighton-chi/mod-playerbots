@@ -229,10 +229,11 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+    bool const backwards = attumen->GetExactDist2d(destX, destY) >= distanceToPosition;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Mounted Attumen's CombatReach is 0 [sic] yards
@@ -330,15 +331,16 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+    bool const backwards = maiden->GetExactDist2d(destX, destY) >= distanceToPosition;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Player* healer)
 {
-    constexpr float endDistance = 6.0;
+    constexpr float endDistance = 6.0f;
     float const angle = healer->GetOrientation();
     float const targetX = healer->GetPositionX() + std::cos(angle) * endDistance;
     float const targetY = healer->GetPositionY() + std::sin(angle) * endDistance;
@@ -415,10 +417,11 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+    bool const backwards = wolf->GetExactDist2d(destX, destY) >= distanceToPosition;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Run away, little girl, run away
@@ -525,10 +528,11 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
+    bool const backwards = curator->GetExactDist2d(destX, destY) >= distanceToPosition;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
@@ -1100,7 +1104,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
 
-    constexpr float maxDistanceFromBoss = 35.0f;
+    constexpr float maxDistanceFromBoss = 33.0f;
     float bestDestX = bx;
     float bestDestY = by;
 
@@ -1149,9 +1153,12 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
     if (!found)
         return false;
 
+    bool const backwards = malchezaar->GetExactDist2d(bestDestX, bestDestY) >=
+        bot->GetExactDist2d(bestDestX, bestDestY);
+
     return MoveTo(
         KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Nightbane
@@ -1220,8 +1227,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     float const moveDist = std::min(2.25f, distanceToPosition);
     float const moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
-    bool backwards = nightbane->GetExactDist2d(destX, destY) >=
-        distanceToPosition ? true : false;
+    bool const backwards = nightbane->GetExactDist2d(destX, destY) >= distanceToPosition;
 
     return MoveTo(
         KARA_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
