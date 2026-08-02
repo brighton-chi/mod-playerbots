@@ -57,19 +57,11 @@ public:
     bool IsActive() override;
 };
 
-class MoroesBossEngagedByMainTankTrigger : public Trigger
+class MoroesShouldPrioritizeAddsTrigger : public Trigger
 {
 public:
-    MoroesBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "moroes boss engaged by main tank") {}
-    bool IsActive() override;
-};
-
-class MoroesDpsShouldPrioritizeAddsTrigger : public Trigger
-{
-public:
-    MoroesDpsShouldPrioritizeAddsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "moroes dps should prioritize adds") {}
+    MoroesShouldPrioritizeAddsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "moroes should prioritize adds") {}
     bool IsActive() override;
 };
 

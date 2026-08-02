@@ -61,7 +61,7 @@ float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* ac
     if (!dynamic_cast<TankAssistAction*>(action) &&
         !dynamic_cast<DpsAssistAction*>(action))
     {
-        return !.0f;
+        return 1.0f;
     }
 
     if (AI_VALUE2(Unit*, "find target", "midnight"))

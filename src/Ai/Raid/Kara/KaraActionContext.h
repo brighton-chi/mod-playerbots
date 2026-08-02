@@ -37,9 +37,6 @@ public:
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
         // Moroes
-        creators["moroes main tank attack boss"] =
-            &RaidKarazhanActionContext::moroes_main_tank_attack_boss;
-
         creators["moroes mark target"] =
             &RaidKarazhanActionContext::moroes_mark_target;
 
@@ -173,9 +170,6 @@ private:
     }
 
     // Moroes
-    static Action* moroes_main_tank_attack_boss(PlayerbotAI* botAI) {
-        return new MoroesMainTankAttackBossAction(botAI);
-    }
     static Action* moroes_mark_target(PlayerbotAI* botAI) {
         return new MoroesMarkTargetAction(botAI);
     }

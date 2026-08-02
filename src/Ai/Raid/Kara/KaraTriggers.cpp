@@ -71,12 +71,7 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActive()
 
 // Moroes
 
-bool MoroesBossEngagedByMainTankTrigger::IsActive()
-{
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "moroes");
-}
-
-bool MoroesDpsShouldPrioritizeAddsTrigger::IsActive()
+bool MoroesShouldPrioritizeAddsTrigger::IsActive()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID) && AI_VALUE2(Unit*, "find target", "moroes");
 }

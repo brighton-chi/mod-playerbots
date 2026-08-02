@@ -38,10 +38,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Moroes
-    triggers.push_back(new TriggerNode("moroes boss engaged by main tank",
-        { NextAction("moroes main tank attack boss", ACTION_RAID) }
-    ));
-    triggers.push_back(new TriggerNode("moroes dps should prioritize adds",
+    triggers.push_back(new TriggerNode("moroes should prioritize adds",
         { NextAction("moroes mark target", ACTION_RAID) }
     ));
 

@@ -70,14 +70,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class MoroesMainTankAttackBossAction : public AttackAction
-{
-public:
-    MoroesMainTankAttackBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "moroes main tank attack boss") {}
-    bool Execute(Event event) override;
-};
-
 class MoroesMarkTargetAction : public Action
 {
 public:

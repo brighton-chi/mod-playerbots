@@ -168,7 +168,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 
     if (PlayerbotAI::IsAssistTank(bot))
     {
-        Unit* attumen = GetAttumenMounted(bot);
+        Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
         return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
     }
 
@@ -197,18 +197,15 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
 
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
-    Unit* attumen = GetAttumenMounted(bot);
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
     if (!attumen)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
-    if ((PlayerbotAI::IsTank(bot) && attumen->GetVictim() == bot) ||
-        PlayerbotAI::IsMainTank(bot))
-    {
+    if (PlayerbotAI::IsTank(bot))
         return CurrentTankPositionAttumen(attumen);
-    }
 
     return StackBehindAttumen(attumen);
 }
@@ -265,15 +262,6 @@ bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
 }
 
 // Moroes
-
-bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
-{
-    Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
-    if (!moroes || AI_VALUE(Unit*, "current target") == moroes)
-        return false;
-
-    return Attack(moroes);
-}
 
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
