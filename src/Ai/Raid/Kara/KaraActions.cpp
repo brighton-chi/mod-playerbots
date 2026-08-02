@@ -1086,29 +1086,18 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     if (!malchezaar)
         return false;
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
-
     constexpr float safeInfernalDistance = 22.0f;
-    constexpr float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
+
+    if (!bot->FindNearestCreature(
+            static_cast<uint32>(KaraNpcs::NPC_NETHERSPITE_INFERNAL), safeInfernalDistance, true))
+    {
+        return false;
+    }
+
+    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
-
-    bool nearInfernal = false;
-    for (Unit* infernal : infernals)
-    {
-        float const dx = bx - infernal->GetPositionX();
-        float const dy = by - infernal->GetPositionY();
-        float const infernalDistSq = dx*dx + dy*dy;
-        if (infernalDistSq < safeInfernalDistanceSq)
-        {
-            nearInfernal = true;
-            break;
-        }
-    }
-
-    if (!nearInfernal)
-        return false;
 
     constexpr float maxDistanceFromBoss = 35.0f;
     float bestDestX = bx;
@@ -1136,29 +1125,18 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != malchezaar)
         return Attack(malchezaar);
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
-
     constexpr float safeInfernalDistance = 30.0f;
-    constexpr float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
+
+    if (!bot->FindNearestCreature(
+            static_cast<uint32>(KaraNpcs::NPC_NETHERSPITE_INFERNAL), safeInfernalDistance, true))
+    {
+        return false;
+    }
+
+    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
-
-    bool nearInfernal = false;
-    for (Unit* infernal : infernals)
-    {
-        float const dx = bx - infernal->GetPositionX();
-        float const dy = by - infernal->GetPositionY();
-        float const infernalDistSq = dx*dx + dy*dy;
-        if (infernalDistSq < safeInfernalDistanceSq)
-        {
-            nearInfernal = true;
-            break;
-        }
-    }
-
-    if (!nearInfernal)
-        return false;
 
     constexpr float maxSampleDist = 75.0f;
     float bestDestX = bx;
