@@ -79,7 +79,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     {
         float maxMoveDist = kalecgos->GetVictim() == bot ? 2.25f : 3.5f;
         float const moveDist = std::min(maxMoveDist, distToPosition);
-        bool backwards = kalecgos->GetVictim() == bot;
+        bool const backwards = kalecgos->GetVictim() == bot;
 
         float const dX = position.GetPositionX() - bot->GetPositionX();
         float const dY = position.GetPositionY() - bot->GetPositionY();
