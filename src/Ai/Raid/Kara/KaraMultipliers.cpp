@@ -283,13 +283,17 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 
 float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 {
-    bool const isDisperseAction = dynamic_cast<CombatFormationMoveAction*>(action);
-    bool const isReachTargetSpell = dynamic_cast<ReachTargetAction*>(action);
-    bool const isBlockedAction =
-        isDisperseAction || isReachTargetSpell ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
+    bool const isReachTargetAction =
+        dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
+
+    bool const isBlockedAction =
+        isReachTargetAction ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action);
 
     if (!isBlockedAction)
         return 1.0f;
@@ -300,13 +304,10 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
 
-    if (bot == redBlocker && isDisperseAction)
+    if (bot == greenBlocker || bot == blueBlocker)
         return 0.0f;
 
-    if (bot == blueBlocker && (isDisperseAction || isReachTargetSpell))
-        return 0.0f;
-
-    if (bot == greenBlocker && isBlockedAction)
+    if (bot == redBlocker && !isReachTargetAction)
         return 0.0f;
 
     return 1.0f;
@@ -324,11 +325,11 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite || IsBanishPhase(netherspite))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot))
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -357,9 +358,6 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-
-    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
-        return 1.0f;
 
     if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
         return 0.0f;
@@ -452,21 +450,16 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The "avoid aoe" strategy must be disabled for the main tank
-// Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z) // TEST NOT DISABLING AOE DURING FLIGHT
+    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
-    // if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
-    //     return 0.0f;
-
-    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsRanged(bot))
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsMainTank(bot))
         return 0.0f;
 
     return 1.0f;

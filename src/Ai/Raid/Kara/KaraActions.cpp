@@ -749,7 +749,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    float const idealDistance = PlayerbotAI::IsRanged(bot) ? 26.0f : 18.0f;
+    float const idealDistance = bot->getClass() == CLASS_HUNTER ? 25.0f : 18.0f;
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     Position beamPos;
 
