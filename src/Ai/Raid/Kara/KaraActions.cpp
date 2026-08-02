@@ -827,25 +827,42 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
         bot->GetPositionX(), bot->GetPositionY(), voidZones, hazardRadius);
 
     constexpr float searchRadius = 150.0f;
+    float const nsX = netherspite->GetPositionX();
+    float const nsY = netherspite->GetPositionY();
     std::vector<BeamAvoid> beams;
 
     Unit* redPortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
     if (redPortal)
-        beams.push_back({redPortal, 0.0f, netherspite->GetExactDist2d(redPortal)});
+    {
+        float const len = netherspite->GetExactDist2d(redPortal);
+        beams.push_back({0.0f, len,
+            len > 0.0f ? (redPortal->GetPositionX() - nsX) / len : 0.0f,
+            len > 0.0f ? (redPortal->GetPositionY() - nsY) / len : 0.0f});
+    }
 
     Unit* bluePortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
     if (bluePortal)
-        beams.push_back({bluePortal, 0.0f, netherspite->GetExactDist2d(bluePortal)});
+    {
+        float const len = netherspite->GetExactDist2d(bluePortal);
+        beams.push_back({0.0f, len,
+            len > 0.0f ? (bluePortal->GetPositionX() - nsX) / len : 0.0f,
+            len > 0.0f ? (bluePortal->GetPositionY() - nsY) / len : 0.0f});
+    }
 
     Unit* greenPortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
     if (greenPortal)
-        beams.push_back({greenPortal, 0.0f, netherspite->GetExactDist2d(greenPortal)});
+    {
+        float const len = netherspite->GetExactDist2d(greenPortal);
+        beams.push_back({0.0f, len,
+            len > 0.0f ? (greenPortal->GetPositionX() - nsX) / len : 0.0f,
+            len > 0.0f ? (greenPortal->GetPositionY() - nsY) / len : 0.0f});
+    }
 
     bool const nearBeam = !IsAwayFromBeams(
-        bot->GetPositionX(), bot->GetPositionY(), beams, netherspite);
+        bot->GetPositionX(), bot->GetPositionY(), nsX, nsY, beams);
 
     if (!nearVoidZone && !nearBeam)
         return false;
@@ -872,8 +889,10 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
             float cy = botY + std::sin(angle) * dist;
 
             if (!IsSafePosition(cx, cy, voidZones, hazardRadius) ||
-                !IsAwayFromBeams(cx, cy, beams, netherspite))
+                !IsAwayFromBeams(cx, cy, nsX, nsY, beams))
+            {
                 continue;
+            }
 
             float dx = cx - botX;
             float dy = cy - botY;
@@ -899,26 +918,19 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 }
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
-     float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite)
+     float x, float y, float bx, float by, const std::vector<BeamAvoid>& beams)
 {
     for (auto const& beam : beams)
     {
-        float const bx = netherspite->GetPositionX();
-        float const by = netherspite->GetPositionY();
-        float dx = beam.portal->GetPositionX() - bx;
-        float dy = beam.portal->GetPositionY() - by;
-        float const length = netherspite->GetExactDist2d(beam.portal);
-
-        if (length == 0.0f)
+        if (beam.maxDist == 0.0f)
             continue;
 
-        dx /= length;
-        dy /= length;
-        float botdx = x - bx;
-        float botdy = y - by;
-        float distanceAlongBeam = (botdx * dx + botdy * dy);
-        float beamX = bx + dx * distanceAlongBeam, beamY = by + dy * distanceAlongBeam;
-        float distToBeamSq = (x - beamX) * (x - beamX) + (y - beamY) * (y - beamY);
+        float const botdx = x - bx;
+        float const botdy = y - by;
+        float const distanceAlongBeam = (botdx * beam.dirX + botdy * beam.dirY);
+        float const beamX = bx + beam.dirX * distanceAlongBeam;
+        float const beamY = by + beam.dirY * distanceAlongBeam;
+        float const distToBeamSq = (x - beamX) * (x - beamX) + (y - beamY) * (y - beamY);
 
         constexpr float minDistFromBeamSq = 25.0f;
         if (distToBeamSq < minDistFromBeamSq && distanceAlongBeam > beam.minDist &&
@@ -1098,14 +1110,13 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
     if (!nearInfernal)
         return false;
 
-    constexpr float maxSafeBossDistance = 35.0f;
+    constexpr float maxDistanceFromBoss = 35.0f;
     float bestDestX = bx;
     float bestDestY = by;
 
     bool found = TryFindSafePositionWithSafePath(
-        bot, Position(bx, by, bot->GetPositionZ()),
-        Position(malchezaar->GetPositionX(), malchezaar->GetPositionY(), malchezaar->GetPositionZ()),
-        infernals, safeInfernalDistance, maxSafeBossDistance, bestDestX, bestDestY);
+        bot, bx, by, malchezaar->GetPositionX(), malchezaar->GetPositionY(),
+        infernals, safeInfernalDistance, maxDistanceFromBoss, bestDestX, bestDestY);
 
     if (!found)
         return false;
@@ -1154,8 +1165,7 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
     float bestDestY = by;
 
     bool found = TryFindSafePositionWithSafePath(
-        bot, Position(bx, by, bot->GetPositionZ()), Position(bx, by, bot->GetPositionZ()),
-        infernals, safeInfernalDistance, maxSampleDist, bestDestX, bestDestY);
+        bot, bx, by, bx, by, infernals, safeInfernalDistance, maxSampleDist, bestDestX, bestDestY);
 
     if (!found)
         return false;

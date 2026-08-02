@@ -10,6 +10,20 @@
 namespace KaraHelpers
 {
 
+// General
+
+bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+{
+    for (Unit* hazard : hazards)
+    {
+        float dist = hazard->GetDistance2d(x, y);
+        if (dist < hazardRadius)
+            return false;
+    }
+
+    return true;
+}
+
 // Attumen the Huntsman
 
 Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
@@ -19,7 +33,7 @@ Unit* GetAttumenMounted(Player* bot)
 {
     constexpr uint32 searchRadius = 50.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED), searchRadius, true);
+        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
 }
 
 // Maiden of Virtue
@@ -197,8 +211,11 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member))
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsHeal(member))
+        {
             continue;
+        }
 
         Aura* greenBuff = member->GetAura(
             static_cast<uint32>(KaraSpells::SPELL_GREEN_BEAM_DEBUFF));
@@ -306,31 +323,29 @@ std::vector<Unit*> GetAllVoidZones(Player* bot)
 }
 
 bool FindBeamPosition(
-    Unit* boss, Unit* portal, std::vector<Unit*> const& voidZones,
+    Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
     float idealDistance, Position& outPos)
 {
-    constexpr float voidZoneRadius = 4.0f;
-    constexpr float searchMinDist = 18.0f;
-    constexpr float searchMaxDist = 30.0f;
-    constexpr float searchStep = 0.5f;
-    constexpr float initialBestDist = 150.0f;
-    constexpr uint8 numSteps = 24;
-
-    float bx = boss->GetPositionX();
-    float by = boss->GetPositionY();
+    float bx = netherspite->GetPositionX();
+    float by = netherspite->GetPositionY();
     float px = portal->GetPositionX();
     float py = portal->GetPositionY();
 
     float dx = px - bx;
     float dy = py - by;
-    float length = boss->GetExactDist2d(px, py);
+    float length = netherspite->GetExactDist2d(px, py);
     if (length == 0.0f)
         return false;
+
+    constexpr float voidZoneRadius = 4.0f;
+    constexpr float searchMinDist = 18.0f;
+    constexpr float searchStep = 0.5f;
+    constexpr uint8 numSteps = 24;
 
     dx /= length;
     dy /= length;
 
-    float bestDist = initialBestDist;
+    float bestDist = std::numeric_limits<float>::max();
     bool found = false;
 
     for (uint8 i = 0; i <= numSteps; ++i)
@@ -338,7 +353,7 @@ bool FindBeamPosition(
         float const dist = searchMinDist + i * searchStep;
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
-        float candidateZ = boss->GetPositionZ();
+        float candidateZ = netherspite->GetPositionZ();
         if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
             continue;
 
@@ -352,18 +367,6 @@ bool FindBeamPosition(
     }
 
     return found;
-}
-
-bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
-{
-    for (Unit* hazard : hazards)
-    {
-        float dist = hazard->GetDistance2d(x, y);
-        if (dist < hazardRadius)
-            return false;
-    }
-
-    return true;
 }
 
 // Prince Malchezaar
@@ -389,14 +392,13 @@ std::vector<Unit*> GetSpawnedInfernals(Player* bot)
 bool IsStraightPathSafe(
     float sx, float sy, float tx, float ty, std::vector<Unit*> const& hazards, float hazardRadius)
 {
-    constexpr float stepSize = 0.5f;
-
     float const totalDistX = tx - sx;
     float const totalDistY = ty - sy;
     float const totalDist = sqrt(totalDistX * totalDistX + totalDistY * totalDistY);
     if (totalDist == 0.0f)
         return true;
 
+    constexpr float stepSize = 0.5f;
     int const numSteps = static_cast<int>(totalDist / stepSize);
     for (int i = 0; i <= numSteps; ++i)
     {
@@ -417,16 +419,12 @@ bool IsStraightPathSafe(
 }
 
 bool TryFindSafePositionWithSafePath(
-    Player* bot, Position const& origin, Position const& center, std::vector<Unit*> const& hazards,
-    float safeDistance, float maxSampleDist, float& outX, float& outY)
+    Player* bot, float originX, float originY, float centerX, float centerY,
+    std::vector<Unit*> const& hazards, float safeDistance, float maxSampleDist,
+    float& outX, float& outY)
 {
     constexpr uint8 numAngles = 64;
     constexpr float stepSize = 0.5f;
-
-    float const centerX = center.GetPositionX();
-    float const centerY = center.GetPositionY();
-    float const originX = origin.GetPositionX();
-    float const originY = origin.GetPositionY();
 
     for (bool requireSafePath : { true, false })
     {

@@ -64,9 +64,7 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "midnight"))
         return false;
 
-    constexpr uint32 searchRadius = 40.0f;
-    return bot->FindNearestCreature(
-        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
+    return GetAttumenMounted(bot);
 }
 
 // Moroes
