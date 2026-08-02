@@ -225,13 +225,14 @@ public:
     NetherspiteBlockRedBeamAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block red beam") {}
     bool Execute(Event event) override;
-    bool ResetRedBeamState(time_t initialMoveTimer = 0)
+    bool ResetRedBeamState()
     {
-        if (_redBeamMoveTimer == initialMoveTimer && !_lastBeamMoveSideways && !_wasBlockingRedBeam)
+        if (!_redBeamTimerWasSet)
             return false;
-        _redBeamMoveTimer = initialMoveTimer;
+        _redBeamMoveTimer = 0;
         _lastBeamMoveSideways = false;
         _wasBlockingRedBeam = false;
+        _redBeamTimerWasSet = false;
         return true;
     }
 
@@ -239,6 +240,7 @@ private:
     time_t _redBeamMoveTimer = 0;
     bool _lastBeamMoveSideways = false;
     bool _wasBlockingRedBeam = false;
+    bool _redBeamTimerWasSet = false;
 };
 
 class NetherspiteBlockBlueBeamAction : public MovementAction

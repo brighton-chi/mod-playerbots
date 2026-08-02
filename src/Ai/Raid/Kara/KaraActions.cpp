@@ -613,9 +613,9 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     if (!aran)
         return false;
 
-    constexpr float minDistance = 11.0f;
+    constexpr float minDistance = 10.0f;
     constexpr float maxDistance = 15.0f;
-    float const distanceToBoss = bot->GetExactDist2d(aran);
+    float const distanceToBoss = bot->GetDistance2d(aran);
 
     if (distanceToBoss > maxDistance)
         return MoveTo(aran, maxDistance, MovementPriority::MOVEMENT_COMBAT);
@@ -632,10 +632,6 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 // The red beam dance (5 seconds in, 5 seconds out)
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite)
-        return false;
-
     constexpr float searchRadius = 150.0f;
     Unit* redPortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_RED_PORTAL), searchRadius);
@@ -643,21 +639,31 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         return false;
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-    bool isBlockingNow = (bot == redBlocker);
-    bool wasBlocking = _wasBlockingRedBeam;
 
-    constexpr float idealDistance = 18.0f;
-    std::vector<Unit*> voidZones;
-    Position beamPos;
-    FindBeamPosition(netherspite, redPortal, voidZones, idealDistance, beamPos);
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
 
-    if (!isBlockingNow)
+    if (bot != redBlocker)
     {
         _wasBlockingRedBeam = false;
+        _redBeamTimerWasSet = false;
         return false;
     }
 
-    if (!wasBlocking)
+    if (!bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RED_BEAM_DEBUFF)))
+    {
+        _redBeamTimerWasSet = false;
+        return false;
+    }
+
+    if (!_redBeamTimerWasSet)
+    {
+        _redBeamMoveTimer = std::time(nullptr);
+        _redBeamTimerWasSet = true;
+    }
+
+    if (!_wasBlockingRedBeam)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -673,38 +679,39 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         _lastBeamMoveSideways = !_lastBeamMoveSideways;
         _redBeamMoveTimer = std::time(nullptr);
     }
+
+    constexpr float idealDistance = 18.0f;
+    std::vector<Unit*> voidZones;
+    Position beamPos;
+    if (!FindBeamPosition(netherspite, redPortal, voidZones, idealDistance, beamPos))
+        return false;
+
     if (!_lastBeamMoveSideways)
     {
         return MoveTo(
             KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else
-    {
-        float const length = netherspite->GetExactDist2d(redPortal);
-        if (length == 0.0f)
-            return false;
 
-        float const dx = (redPortal->GetPositionX() - netherspite->GetPositionX()) / length;
-        float const dy = (redPortal->GetPositionY() - netherspite->GetPositionY()) / length;
-        float const perpDx = -dy;
-        float const perpDy = dx;
-        float const sideX = beamPos.GetPositionX() + perpDx * 3.0f;
-        float const sideY = beamPos.GetPositionY() + perpDy * 3.0f;
+    float const length = netherspite->GetExactDist2d(redPortal);
+    if (length == 0.0f)
+        return false;
 
-        return MoveTo(
-            KARA_MAP_ID, sideX, sideY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    float const dx = (redPortal->GetPositionX() - netherspite->GetPositionX()) / length;
+    float const dy = (redPortal->GetPositionY() - netherspite->GetPositionY()) / length;
+    float const perpDx = -dy;
+    float const perpDy = dx;
+    float const sideX = beamPos.GetPositionX() + perpDx * 3.0f;
+    float const sideY = beamPos.GetPositionY() + perpDy * 3.0f;
+
+    return MoveTo(
+        KARA_MAP_ID, sideX, sideY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Two mana-user DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
 bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite)
-        return false;
-
     constexpr float searchRadius = 150.0f;
     Unit* bluePortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
@@ -712,12 +719,10 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         return false;
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-    bool isBlockingNow = (bot == blueBlocker);
-    bool wasBlocking = _wasBlockingBlueBeam;
 
-    if (!isBlockingNow)
+    if (bot != blueBlocker)
     {
-        if (wasBlocking)
+        if (_wasBlockingBlueBeam)
         {
             std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
             std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -729,7 +734,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (!wasBlocking)
+    if (!_wasBlockingBlueBeam)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -739,29 +744,27 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingBlueBeam = true;
 
-    float idealDistance = PlayerbotAI::IsRanged(bot) ? 25.0f : 18.0f;
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
+
+    float const idealDistance = PlayerbotAI::IsRanged(bot) ? 26.0f : 18.0f;
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     Position beamPos;
 
-    if (FindBeamPosition(netherspite, bluePortal, voidZones, idealDistance, beamPos))
-    {
-        botAI->InterruptSpell();
-        return MoveTo(
-            KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    if (!FindBeamPosition(netherspite, bluePortal, voidZones, idealDistance, beamPos))
+        return false;
 
-    return false;
+    botAI->InterruptSpell();
+    return MoveTo(
+        KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Two healer bots will block the green beam for each phase (swap at 25 debuff stacks)
 // OR one non-mana-user dps bot will block the green beam for an entire phase
 bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite)
-        return false;
-
     constexpr float searchRadius = 150.0f;
     Unit* greenPortal = bot->FindNearestCreature(
         static_cast<uint32>(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
@@ -769,12 +772,10 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         return false;
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-    bool isBlockingNow = (bot == greenBlocker);
-    bool wasBlocking = _wasBlockingGreenBeam;
 
-    if (!isBlockingNow)
+    if (bot != greenBlocker)
     {
-        if (wasBlocking)
+        if (_wasBlockingGreenBeam)
         {
             std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
             std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -786,7 +787,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (!wasBlocking)
+    if (!_wasBlockingGreenBeam)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -796,18 +797,21 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingGreenBeam = true;
 
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
+
+    float const idealDistance = PlayerbotAI::IsRanged(bot) ? 26.0f : 18.0f;
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     Position beamPos;
 
-    if (FindBeamPosition(netherspite, greenPortal, voidZones, 18.0f, beamPos))
-    {
-        botAI->InterruptSpell();
-        return MoveTo(
-            KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    if (!FindBeamPosition(netherspite, greenPortal, voidZones, idealDistance, beamPos))
+        return false;
 
-    return false;
+    botAI->InterruptSpell();
+    return MoveTo(
+        KARA_MAP_ID, beamPos.GetPositionX(), beamPos.GetPositionY(), bot->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
@@ -846,9 +850,10 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!nearVoidZone && !nearBeam)
         return false;
 
-    constexpr float stepAngle = M_PI/18.0f;
+    constexpr uint8 numAngles = 36;
     constexpr float maxSearchDist = 30.0f;
     constexpr float stepDist = 0.5f;
+    constexpr uint8 numDists = 56;
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -857,10 +862,12 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     float bestDistSq = std::numeric_limits<float>::max();
     bool found = false;
 
-    for (float angle = 0; angle < 2 * M_PI; angle += stepAngle)
+    for (uint8 i = 0; i < numAngles; ++i)
     {
-        for (float dist = 2.0f; dist <= maxSearchDist; dist += stepDist)
+        float const angle = i * M_PI / 18.0f;
+        for (uint8 j = 0; j <= numDists; ++j)
         {
+            float const dist = 2.0f + j * stepDist;
             float cx = botX + std::cos(angle) * dist;
             float cy = botY + std::sin(angle) * dist;
 
@@ -907,7 +914,8 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
 
         dx /= length;
         dy /= length;
-        float botdx = x - bx, botdy = y - by;
+        float botdx = x - bx;
+        float botdy = y - by;
         float distanceAlongBeam = (botdx * dx + botdy * dy);
         float beamX = bx + dx * distanceAlongBeam, beamY = by + dy * distanceAlongBeam;
         float distToBeamSq = (x - beamX) * (x - beamX) + (y - beamY) * (y - beamY);
@@ -977,20 +985,9 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
             didSomething = true;
         }
     }
-    else
+    else if (isMechanicTracker && netherspiteDpsWaitTimer.try_emplace(instanceId, now).second)
     {
-        if (isMechanicTracker && netherspiteDpsWaitTimer.try_emplace(instanceId, now).second)
-            didSomething = true;
-
-        if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RED_BEAM_DEBUFF)))
-        {
-            Action* redAction = botAI->GetAiObjectContext()->GetAction("netherspite block red beam");
-            if (redAction &&
-                static_cast<NetherspiteBlockRedBeamAction*>(redAction)->ResetRedBeamState(now))
-            {
-                didSomething = true;
-            }
-        }
+        didSomething = true;
     }
 
     return didSomething;
@@ -1023,14 +1020,18 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
     float bestDestY = 0.0f;
     bool found = false;
 
+    constexpr float distIncrement = 0.5f;
+    constexpr uint8 numDists = 56;
+
     for (int i = 0; i < numAngles; ++i)
     {
-        float angle = (2 * M_PI * i) / numAngles;
-        float dx = std::cos(angle);
-        float dy = std::sin(angle);
+        float const angle = (2 * M_PI * i) / numAngles;
+        float const dx = std::cos(angle);
+        float const dy = std::sin(angle);
 
-        for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += distIncrement)
+        for (uint8 j = 0; j <= numDists; ++j)
         {
+            float const dist = minSafeBossDistance + j * distIncrement;
             float destX = malchezaarX + dx * dist;
             float destY = malchezaarY + dy * dist;
             float destZ = bot->GetPositionZ();
@@ -1325,7 +1326,8 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
 
     constexpr float maxBossDist = 35.0f;
     constexpr float distStep = 1.0f;
-    constexpr float angleStep = M_PI / 18.0f;
+    constexpr uint8 numDists = 20;
+    constexpr uint8 numAngles = 36;
 
     float const nx = nightbane->GetPositionX();
     float const ny = nightbane->GetPositionY();
@@ -1334,10 +1336,12 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     float bestY = by;
     bool found = false;
 
-    for (float dist = minBossDist; dist <= maxBossDist; dist += distStep)
+    for (uint8 i = 0; i <= numDists; ++i)
     {
-        for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+        float const dist = minBossDist + i * distStep;
+        for (uint8 j = 0; j < numAngles; ++j)
         {
+            float const angle = j * M_PI / 18.0f;
             float cx = nx + cos(angle) * dist;
             float cy = ny + sin(angle) * dist;
 
@@ -1521,6 +1525,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         {
             if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
                 didSomething = true;
+
             if (nightbaneDpsWaitTimer.try_emplace(instanceId, now).second)
                 didSomething = true;
         }
@@ -1530,6 +1535,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     {
         if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
             didSomething = true;
+
         if (nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now).second)
             didSomething = true;
     }

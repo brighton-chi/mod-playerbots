@@ -314,6 +314,7 @@ bool FindBeamPosition(
     constexpr float searchMaxDist = 30.0f;
     constexpr float searchStep = 0.5f;
     constexpr float initialBestDist = 150.0f;
+    constexpr uint8 numSteps = 24;
 
     float bx = boss->GetPositionX();
     float by = boss->GetPositionY();
@@ -332,8 +333,9 @@ bool FindBeamPosition(
     float bestDist = initialBestDist;
     bool found = false;
 
-    for (float dist = searchMinDist; dist <= searchMaxDist; dist += searchStep)
+    for (uint8 i = 0; i <= numSteps; ++i)
     {
+        float const dist = searchMinDist + i * searchStep;
         float candidateX = bx + dx * dist;
         float candidateY = by + dy * dist;
         float candidateZ = boss->GetPositionZ();
@@ -395,9 +397,11 @@ bool IsStraightPathSafe(
     if (totalDist == 0.0f)
         return true;
 
-    for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
+    int const numSteps = static_cast<int>(totalDist / stepSize);
+    for (int i = 0; i <= numSteps; ++i)
     {
-        float t = checkDist / totalDist;
+        float const checkDist = i * stepSize;
+        float const t = (totalDist > 0.0f) ? checkDist / totalDist : 0.0f;
         float checkX = sx + totalDistX * t;
         float checkY = sy + totalDistY * t;
         for (Unit* hazard : hazards)
@@ -435,8 +439,10 @@ bool TryFindSafePositionWithSafePath(
             float dx = cos(angle);
             float dy = sin(angle);
 
-            for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
+            int const numSteps = static_cast<int>(maxSampleDist / stepSize);
+            for (int j = 1; j <= numSteps; ++j)
             {
+                float const dist = j * stepSize;
                 float destX = centerX + dx * dist;
                 float destY = centerY + dy * dist;
                 float destZ = bot->GetPositionZ();
