@@ -853,7 +853,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     constexpr uint8 numAngles = 36;
     constexpr float maxSearchDist = 30.0f;
     constexpr float stepDist = 0.5f;
-    constexpr uint8 numDists = 56;
+    constexpr uint8 numSteps = 56;
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -865,7 +865,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     for (uint8 i = 0; i < numAngles; ++i)
     {
         float const angle = i * M_PI / 18.0f;
-        for (uint8 j = 0; j <= numDists; ++j)
+        for (uint8 j = 0; j <= numSteps; ++j)
         {
             float const dist = 2.0f + j * stepDist;
             float cx = botX + std::cos(angle) * dist;
@@ -1004,12 +1004,10 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 
     std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
 
-    constexpr float minSafeBossDistance = 32.0f;
-    constexpr float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
-    constexpr float maxSafeBossDistance = 60.0f;
-    constexpr float safeInfernalDistance = 22.0f;
-    constexpr float distIncrement = 0.5f;
     constexpr uint8 numAngles = 64;
+    constexpr float minSafeBossDistance = 32.0f;
+    constexpr float distIncrement = 0.5f;
+    constexpr uint8 numSteps = 56;
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
@@ -1020,16 +1018,13 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
     float bestDestY = 0.0f;
     bool found = false;
 
-    constexpr float distIncrement = 0.5f;
-    constexpr uint8 numDists = 56;
-
     for (int i = 0; i < numAngles; ++i)
     {
         float const angle = (2 * M_PI * i) / numAngles;
         float const dx = std::cos(angle);
         float const dy = std::sin(angle);
 
-        for (uint8 j = 0; j <= numDists; ++j)
+        for (uint8 j = 0; j <= numSteps; ++j)
         {
             float const dist = minSafeBossDistance + j * distIncrement;
             float destX = malchezaarX + dx * dist;
@@ -1043,14 +1038,16 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 
             float ddx = destX - malchezaarX;
             float ddy = destY - malchezaarY;
-            float distFromBossSq = ddx*ddx + ddy*ddy;
-            if (distFromBossSq < minSafeBossDistanceSq)
+
+            constexpr float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
+            if (ddx*ddx + ddy*ddy < minSafeBossDistanceSq)
                 continue;
 
             float mdx = destX - bx;
             float mdy = destY - by;
             float moveDistSq = mdx*mdx + mdy*mdy;
 
+            constexpr float safeInfernalDistance = 22.0f;
             if (IsStraightPathSafe(bx, by, destX, destY, infernals, safeInfernalDistance) &&
                 moveDistSq < bestMoveDistSq)
             {
@@ -1084,8 +1081,6 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
-    float const malchezaarX = malchezaar->GetPositionX();
-    float const malchezaarY = malchezaar->GetPositionY();
 
     bool nearInfernal = false;
     for (Unit* infernal : infernals)
@@ -1109,7 +1104,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
     bool found = TryFindSafePositionWithSafePath(
         bot, Position(bx, by, bot->GetPositionZ()),
-        Position(malchezaarX, malchezaarY, malchezaar->GetPositionZ()),
+        Position(malchezaar->GetPositionX(), malchezaar->GetPositionY(), malchezaar->GetPositionZ()),
         infernals, safeInfernalDistance, maxSafeBossDistance, bestDestX, bestDestY);
 
     if (!found)
@@ -1198,7 +1193,8 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
         westEnd.GetPositionX() - domeCenter.GetPositionX());
 
     float deltaAB = thetaB - thetaA;
-    if (deltaAB < 0.0f) deltaAB += 2.0f * M_PI;
+    if (deltaAB < 0.0f)
+        deltaAB += 2.0f * M_PI;
 
     float arcStart = 0.0f;
     float arcEnd = 0.0f;
@@ -1326,7 +1322,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
 
     constexpr float maxBossDist = 35.0f;
     constexpr float distStep = 1.0f;
-    constexpr uint8 numDists = 20;
+    constexpr uint8 numSteps = 20;
     constexpr uint8 numAngles = 36;
 
     float const nx = nightbane->GetPositionX();
@@ -1336,7 +1332,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeS
     float bestY = by;
     bool found = false;
 
-    for (uint8 i = 0; i <= numDists; ++i)
+    for (uint8 i = 0; i <= numSteps; ++i)
     {
         float const dist = minBossDist + i * distStep;
         for (uint8 j = 0; j < numAngles; ++j)

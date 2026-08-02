@@ -430,7 +430,7 @@ bool TryFindSafePositionWithSafePath(
 
     for (bool requireSafePath : { true, false })
     {
-        float bestMoveDist = std::numeric_limits<float>::max();
+        float bestMoveDistSq = std::numeric_limits<float>::max();
         bool found = false;
 
         for (int i = 0; i < numAngles; ++i)
@@ -463,10 +463,10 @@ bool TryFindSafePositionWithSafePath(
 
                 float const ddx = destX - originX;
                 float const ddy = destY - originY;
-                float const moveDist = sqrt(ddx*ddx + ddy*ddy);
-                if (moveDist < bestMoveDist)
+                float const moveDistSq = ddx*ddx + ddy*ddy;
+                if (moveDistSq < bestMoveDistSq)
                 {
-                    bestMoveDist = moveDist;
+                    bestMoveDistSq = moveDistSq;
                     outX = destX;
                     outY = destY;
                     found = true;
