@@ -640,10 +640,6 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite)
-        return false;
-
     if (bot != redBlocker)
     {
         _wasBlockingRedBeam = false;
@@ -651,16 +647,17 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (!bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RED_BEAM_DEBUFF)))
+    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_RED_BEAM_DEBUFF)))
+    {
+        if (!_redBeamTimerWasSet)
+        {
+            _redBeamMoveTimer = std::time(nullptr);
+            _redBeamTimerWasSet = true;
+        }
+    }
+    else
     {
         _redBeamTimerWasSet = false;
-        return false;
-    }
-
-    if (!_redBeamTimerWasSet)
-    {
-        _redBeamMoveTimer = std::time(nullptr);
-        _redBeamTimerWasSet = true;
     }
 
     if (!_wasBlockingRedBeam)
@@ -674,11 +671,15 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     _wasBlockingRedBeam = true;
 
     constexpr uint8 intervalSecs = 5;
-    if (std::time(nullptr) - _redBeamMoveTimer >= intervalSecs)
+    if (_redBeamTimerWasSet && std::time(nullptr) - _redBeamMoveTimer >= intervalSecs)
     {
         _lastBeamMoveSideways = !_lastBeamMoveSideways;
         _redBeamMoveTimer = std::time(nullptr);
     }
+
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite)
+        return false;
 
     constexpr float idealDistance = 18.0f;
     std::vector<Unit*> voidZones;
@@ -801,7 +802,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    float const idealDistance = PlayerbotAI::IsRanged(bot) ? 26.0f : 18.0f;
+    float const idealDistance = 18.0f;
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     Position beamPos;
 
