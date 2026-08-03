@@ -8,6 +8,7 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "TKHelpers.h"
 #include "TKMultipliers.h"
 
@@ -188,7 +189,7 @@ void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
+        if (unit && unit->GetEntry() == Id(TkNpcs::NPC_EMBER_OF_ALAR))
             exclusions.insert(unit->GetGUID());
     }
 }

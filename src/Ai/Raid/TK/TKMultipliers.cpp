@@ -15,6 +15,7 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "TKActions.h"
@@ -138,7 +139,7 @@ float AlarDontTauntBossIfArmorMeltedMultiplier::GetValue(Action* action)
     if (!alar || AI_VALUE(Unit*, "current target") != alar)
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_MELT_ARMOR)))
+    if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)))
         return 0.0f;
 
     return 1.0f;
@@ -176,11 +177,8 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
     }
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (astromancer && !astromancer->HasAura(
-            static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-    {
+    if (astromancer && !astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -200,11 +198,8 @@ float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
     }
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || astromancer->HasAura(
-            static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-    {
+    if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
         return 1.0f;
-    }
 
     if (HasWrathOfTheAstromancer(bot))
         return 0.0f;
@@ -232,12 +227,11 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
         Creature* astromancerCreature = astromancer->ToCreature();
         if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
             return 0.0f;
-
-        return 1.0f;
     }
-
-    if (AI_VALUE2(Unit*, "find target", "solarium priest"))
+    else if (AI_VALUE2(Unit*, "find target", "solarium priest"))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -582,7 +576,7 @@ float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action*
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 0.0f;
 
     return 1.0f;

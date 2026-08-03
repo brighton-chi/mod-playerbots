@@ -6,6 +6,7 @@
 
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
@@ -21,7 +22,7 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id != static_cast<uint32>(TkSpells::SPELL_ARCANE_ORB))
+        if (spellInfo->Id != Id(TkSpells::SPELL_ARCANE_ORB))
             return;
 
         std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();

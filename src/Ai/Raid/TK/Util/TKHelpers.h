@@ -94,7 +94,7 @@ enum class TkItems : uint32
 };
 
 // General
-constexpr uint32 TK_MAP_ID = 550;
+inline constexpr uint32 TK_MAP_ID = 550;
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
@@ -116,20 +116,30 @@ enum AlarLocationIndex
     POINT_MIDDLE_IDX,
     LOCATION_NONE = -1
 };
-constexpr float ALAR_BALCONY_Z = 17.0f;
-extern Position const ALAR_PLATFORM_0;
-extern Position const ALAR_PLATFORM_1;
-extern Position const ALAR_PLATFORM_2;
-extern Position const ALAR_PLATFORM_3;
-extern std::array<Position, 4> const PLATFORM_POSITIONS;
-extern std::array<Position, 4> const GROUND_POSITIONS;
-extern Position const ALAR_ROOM_CENTER;
-extern Position const ALAR_POINT_QUILL_OR_DIVE;
-extern Position const ALAR_POINT_MIDDLE;
-extern Position const ALAR_SE_RAMP_BASE;
-extern Position const ALAR_SW_RAMP_BASE;
-extern Position const ALAR_ROOM_S_CENTER;
-constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
+inline constexpr float ALAR_BALCONY_Z = 17.0f;
+inline Position const ALAR_PLATFORM_0 = { 335.638f,  59.4879f, 17.9319f }; // West Platform
+inline Position const ALAR_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest Platform
+inline Position const ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
+inline Position const ALAR_PLATFORM_3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
+inline std::array const PLATFORM_POSITIONS = {
+    ALAR_PLATFORM_0,
+    ALAR_PLATFORM_1,
+    ALAR_PLATFORM_2,
+    ALAR_PLATFORM_3,
+};
+inline std::array const GROUND_POSITIONS = {
+    Position{ 336.439f,  48.181f, -2.389f }, // Ground West
+    Position{ 379.122f,  25.146f, -2.385f }, // Ground Northwest
+    Position{ 378.583f, -27.481f, -2.385f }, // Ground Northeast
+    Position{ 331.631f, -49.716f, -2.389f }, // Ground East
+};
+inline Position const ALAR_ROOM_CENTER         = { 330.611f,  -2.540f, -2.389f };
+inline Position const ALAR_POINT_QUILL_OR_DIVE = { 332.000f,   0.010f, 43.000f };
+inline Position const ALAR_POINT_MIDDLE        = { 331.000f,   0.010f, -2.380f };
+inline Position const ALAR_SE_RAMP_BASE        = { 281.064f, -36.590f, -2.389f };
+inline Position const ALAR_SW_RAMP_BASE        = { 281.064f,  36.590f, -2.389f };
+inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f };
+inline constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
 extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest);
@@ -144,22 +154,22 @@ struct ArcaneOrbData
     uint32 castTime;
 };
 extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
-extern Position const VOID_REAVER_TANK_POSITION;
+inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
 
 // High Astromancer Solarian
 bool HasWrathOfTheAstromancer(Player* bot);
 Player* GetRangedLeader(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
-constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
-constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
-extern Position const SANGUINAR_TANK_POSITION;
-extern Position const SANGUINAR_WAITING_POSITION;
-extern Position const TELONICUS_TANK_POSITION;
-extern Position const TELONICUS_WAITING_POSITION;
-extern Position const CAPERNIAN_WAITING_POSITION;
-extern Position const ADVISOR_HEAL_POSITION;
-extern Position const KAELTHAS_TANK_POSITION;
+inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
+inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
+inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
+inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
+inline Position const TELONICUS_TANK_POSITION    = { 773.717f,  44.091f, 46.780f };
+inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
+inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
+inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
+inline Position const KAELTHAS_TANK_POSITION     = { 799.390f,  -0.837f, 48.729f };
 extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 Player* GetCapernianTank(Player* bot);
 bool IsDebuffHunter(Player* bot);

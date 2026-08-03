@@ -51,7 +51,8 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    return locationIndex != LOCATION_NONE && locationIndex != POINT_QUILL_OR_DIVE_IDX &&
+    return locationIndex != LOCATION_NONE &&
+        locationIndex != POINT_QUILL_OR_DIVE_IDX &&
         locationIndex != POINT_MIDDLE_IDX;
 }
 
@@ -79,10 +80,8 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || alar->GetHealthPct() > 5.0f)
-        return false;
-
-    return !isAlarInPhase2[alar->GetMap()->GetInstanceId()];
+    return alar && alar->GetHealthPct() <= 5.0f &&
+        !isAlarInPhase2[alar->GetMap()->GetInstanceId()];
 }
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
@@ -100,11 +99,7 @@ bool AlarShouldManagePhaseTrackerTrigger::IsActive()
 
 bool VoidReaverBossCastsPoundingTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsTank(bot))
-        return false;
-
-    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
-    return voidReaver && voidReaver->GetVictim() == bot;
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "void reaver");
 }
 
 bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
@@ -141,10 +136,8 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
 
     for (auto const& orb : orbIt->second)
     {
-        if (getMSTimeDiff(orb.castTime, now) <= orbDuration &&
-            bot->GetExactDist2d(
-                orb.destination.GetPositionX(),
-                orb.destination.GetPositionY()) < orbSafeDistance)
+        if (getMSTimeDiff(orb.castTime, now) <= orbDuration && bot->GetExactDist2d(
+                orb.destination.GetPositionX(), orb.destination.GetPositionY()) < orbSafeDistance)
         {
             return false;
         }
@@ -201,7 +194,7 @@ bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
     if (!astromancer || astromancer->HasAura(
-        static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
+        Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
     {
         return false;
     }
@@ -243,8 +236,7 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
         return false;
 
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    return astromancer && astromancer->HasAura(
-        static_cast<uint32>(TkSpells::SPELL_SOLARIAN_TRANSFORM));
+    return astromancer && astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM));
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
@@ -282,8 +274,7 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
     if (!kaelAI)
         return false;
 
-    return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+    return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
@@ -310,7 +301,8 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         return false;
 
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_TRANSITION || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+        kaelAI->GetPhase() == PHASE_TRANSITION ||
+        kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
@@ -448,9 +440,9 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
         return false;
 
     bool HasUsableLegendaryWeapon =
-        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
-        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
-        bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
+        bot->HasItemCount(Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
+        bot->HasItemCount(Id(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
+        bot->HasItemCount(Id(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
 
     return HasUsableLegendaryWeapon;
 }
@@ -477,8 +469,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (!kaelthas || bot->GetExactDist2d(kaelthas) > 150.0f)
         return false;
 
-    std::array<uint8, 3> const weaponSlots =
-    {
+    static constexpr std::array weaponSlots = {
         EQUIPMENT_SLOT_MAINHAND,
         EQUIPMENT_SLOT_OFFHAND,
         EQUIPMENT_SLOT_RANGED,
@@ -528,7 +519,7 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot) && kaelthas->GetVictim() == bot)
         return false;
 
-    if (!bot->HasItemCount(static_cast<uint32>(TkItems::ITEM_INFINITY_BLADE), 1, true))
+    if (!bot->HasItemCount(Id(TkItems::ITEM_INFINITY_BLADE), 1, true))
         return false;
 
     Group* group = bot->GetGroup();
@@ -541,7 +532,7 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
         if (!member || !member->IsAlive())
             continue;
 
-        if (member->HasAura(static_cast<uint32>(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
+        if (member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
             return true;
     }
 
@@ -552,5 +543,5 @@ bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
-    // return bot->HasAura(static_cast<uint32>(TkSpells::SPELL_GRAVITY_LAPSE));
+    // return bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
 }
