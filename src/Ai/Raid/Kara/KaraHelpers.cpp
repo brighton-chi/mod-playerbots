@@ -326,14 +326,14 @@ bool FindBeamPosition(
     Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
     float idealDistance, Position& outPos)
 {
-    float bx = netherspite->GetPositionX();
-    float by = netherspite->GetPositionY();
-    float px = portal->GetPositionX();
-    float py = portal->GetPositionY();
+    float bossX = netherspite->GetPositionX();
+    float bossY = netherspite->GetPositionY();
+    float portalX = portal->GetPositionX();
+    float portalY = portal->GetPositionY();
 
-    float dx = px - bx;
-    float dy = py - by;
-    float length = netherspite->GetExactDist2d(px, py);
+    float dx = portalX - bossX;
+    float dy = portalY - bossY;
+    float length = netherspite->GetExactDist2d(portalX, portalY);
     if (length == 0.0f)
         return false;
 
@@ -351,8 +351,8 @@ bool FindBeamPosition(
     for (uint8 i = 0; i <= numSteps; ++i)
     {
         float const dist = searchMinDist + i * searchStep;
-        float candidateX = bx + dx * dist;
-        float candidateY = by + dy * dist;
+        float candidateX = bossX + dx * dist;
+        float candidateY = bossY + dy * dist;
         float candidateZ = netherspite->GetPositionZ();
         if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
             continue;
@@ -426,6 +426,7 @@ bool TryFindSafePositionWithSafePath(
     constexpr uint8 numAngles = 64;
     constexpr float stepSize = 0.5f;
 
+    // Attempt to find a safe path, but take any path to a safe position if no safe path is found
     for (bool requireSafePath : { true, false })
     {
         float bestMoveDistSq = std::numeric_limits<float>::max();
@@ -459,9 +460,9 @@ bool TryFindSafePositionWithSafePath(
                         continue;
                 }
 
-                float const ddx = destX - originX;
-                float const ddy = destY - originY;
-                float const moveDistSq = ddx*ddx + ddy*ddy;
+                float const toDestX = destX - originX;
+                float const toDestY = destY - originY;
+                float const moveDistSq = toDestX*toDestX + toDestY*toDestY;
                 if (moveDistSq < bestMoveDistSq)
                 {
                     bestMoveDistSq = moveDistSq;

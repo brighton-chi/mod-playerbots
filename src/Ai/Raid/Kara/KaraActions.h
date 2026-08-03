@@ -294,7 +294,8 @@ private:
         float dirX;
         float dirY;
     };
-    bool IsAwayFromBeams(float x, float y, float bx, float by, const std::vector<BeamAvoid>& beams);
+    bool IsAwayFromBeams(
+        float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction
