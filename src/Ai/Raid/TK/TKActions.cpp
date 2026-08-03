@@ -148,7 +148,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
     }
 
     Position const& target = PLATFORM_POSITIONS[platformIdx];
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 5.0f)
+    if (bot->GetExactDist2d(target) < 5.0f)
         return false;
 
     return MoveTo(
@@ -180,7 +180,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
     }
 
     Position const& target = PLATFORM_POSITIONS[locationIndex];
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 5.0f)
+    if (bot->GetExactDist2d(target) < 5.0f)
         return false;
 
     return MoveTo(
@@ -210,7 +210,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     if (isRanged)
     {
         constexpr float distFromTarget = 8.0f;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > distFromTarget)
+        if (bot->GetExactDist2d(position) > distFromTarget)
         {
             return MoveInside(
                 TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -220,7 +220,7 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     else if (isEmberTank && !AI_VALUE2(Unit*, "find target", "ember of al'ar"))
     {
         constexpr float distFromTarget = 20.0f;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > distFromTarget)
+        if (bot->GetExactDist2d(position) > distFromTarget)
         {
             return MoveInside(
                 TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -277,7 +277,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     Position const& center = ALAR_POINT_MIDDLE;
     float dx = center.GetPositionX() - position.GetPositionX();
     float dy = center.GetPositionY() - position.GetPositionY();
-    float distToCenter = position.GetExactDist2d(center.GetPositionX(), center.GetPositionY());
+    float distToCenter = position.GetExactDist2d(center);
 
     constexpr float moveDist = 26.0f;
     float targetX = position.GetPositionX() + (dx / distToCenter) * moveDist;
@@ -580,19 +580,16 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = VOID_REAVER_TANK_POSITION;
-    float const distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
-
+    float const distToPosition = bot->GetExactDist2d(position);
     if (distToPosition < 2.0f)
         return false;
 
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - bot->GetPositionX();
+    float const toPosY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(3.5f, distToPosition);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-    bool const backwards = voidReaver->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY()) >= distToPosition;
+    float const moveX = bot->GetPositionX() + (toPosX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (toPosY / distToPosition) * moveDist;
+    bool const backwards = voidReaver->GetExactDist2d(position) >= distToPosition;
 
     return MoveTo(
         TK_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
@@ -961,18 +958,17 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 
     Position const& position = SANGUINAR_TANK_POSITION;
     float const distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        bot->GetExactDist2d(position);
 
     if (distToPosition < 2.0f)
         return false;
 
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - bot->GetPositionX();
+    float const toPosY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(3.5f, distToPosition);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-    bool const backwards = sanguinar->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY()) >= distToPosition;
+    float const moveX = bot->GetPositionX() + (toPosX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (toPosY / distToPosition) * moveDist;
+    bool const backwards = sanguinar->GetExactDist2d(position) >= distToPosition;
 
     return MoveTo(
         TK_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
@@ -1168,18 +1164,17 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
 
     Position const& position = TELONICUS_TANK_POSITION;
     float const distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+        bot->GetExactDist2d(position);
 
     if (distToPosition < 2.0f)
         return false;
 
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - bot->GetPositionX();
+    float const toPosY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(3.5f, distToPosition);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-    bool const backwards = telonicus->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY()) >= distToPosition;
+    float const moveX = bot->GetPositionX() + (toPosX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (toPosY / distToPosition) * moveDist;
+    bool const backwards = telonicus->GetExactDist2d(position) >= distToPosition;
 
     return MoveTo(
         TK_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false, false, false,
@@ -1200,7 +1195,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
     else
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 2.0f)
+    if (bot->GetExactDist2d(position) < 2.0f)
         return false;
 
     return MoveTo(
@@ -1892,19 +1887,17 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const position = KAELTHAS_TANK_POSITION;
-    float const distToPosition =
-        bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    float const distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition < 4.0f)
         return false;
 
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - bot->GetPositionX();
+    float const toPosY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(3.5f, distToPosition);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-    bool const backwards = kaelthas->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY()) >= distToPosition;
+    float const moveX = bot->GetPositionX() + (toPosX / distToPosition) * moveDist;
+    float const moveY = bot->GetPositionY() + (toPosY / distToPosition) * moveDist;
+    bool const backwards = kaelthas->GetExactDist2d(position) >= distToPosition;
 
     return MoveTo(
         TK_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
