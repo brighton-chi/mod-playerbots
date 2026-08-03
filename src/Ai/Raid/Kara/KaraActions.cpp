@@ -217,7 +217,6 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
 
     Position const& position = ATTUMEN_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
-
     if (distToPosition < 2.0f || !bot->IsWithinLOS(
             position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
     {

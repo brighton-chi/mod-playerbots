@@ -141,6 +141,7 @@ std::vector<Player*> GetRedBlockers(Player* bot)
         return {};
 
     std::vector<Player*> redBlockers;
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -166,6 +167,7 @@ std::vector<Player*> GetBlueBlockers(Player* bot)
         return {};
 
     std::vector<Player*> blueBlockers;
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -239,7 +241,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     static ObjectGuid currentBlueBlocker;
 
     Player* redBlocker = nullptr;
-    std::vector<Player*> redBlockers = GetRedBlockers(bot);
+    auto redBlockers = GetRedBlockers(bot);
     if (!redBlockers.empty())
     {
         auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
@@ -261,7 +263,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     }
 
     Player* greenBlocker = nullptr;
-    std::vector<Player*> greenBlockers = GetGreenBlockers(bot);
+    auto greenBlockers = GetGreenBlockers(bot);
     if (!greenBlockers.empty())
     {
         auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
@@ -283,7 +285,7 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     }
 
     Player* blueBlocker = nullptr;
-    std::vector<Player*> blueBlockers = GetBlueBlockers(bot);
+    auto blueBlockers = GetBlueBlockers(bot);
     if (!blueBlockers.empty())
     {
         auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
