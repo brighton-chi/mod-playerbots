@@ -93,28 +93,31 @@ bool IsAranCastingArcaneExplosion(Unit* aran)
 bool IsFlameWreathActive(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Unit* aran =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
-    Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
+    AiObjectContext* context = botAI->GetAiObjectContext();
 
-    if (currentSpell && currentSpell->m_spellInfo &&
-        currentSpell->m_spellInfo->Id ==
+    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
+        return false;
+
+    Spell* currentSpell = aran->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id ==
             static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_CAST))
     {
         return true;
     }
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
 
-            if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_AURA)))
-                return true;
-        }
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_AURA)))
+            return true;
     }
 
     return false;
