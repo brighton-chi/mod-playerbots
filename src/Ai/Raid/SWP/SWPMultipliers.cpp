@@ -121,9 +121,9 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
     if (!target)
         return 1.0f;
 
-    Aura* aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
+    Aura* aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
     if (!aura)
-        aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
+        aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
 
     if (aura && aura->GetDuration() >= 15000) // 15 seconds remaining
         return 0.0f;
@@ -257,8 +257,10 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)) &&
-            PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsMainTank(member) &&
+        if (!member || !member->HasAura(Id(SwpSpells::SPELL_BURN)))
+            continue;
+
+        if (PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsMainTank(member) &&
             !PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
         {
             return 0.0f;
@@ -689,8 +691,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     }
 
     constexpr float searchRadius = 40.0f;
-    Unit* voidSpawn = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
+    Unit* voidSpawn = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
     if (isCastDotOnAddSpell && voidSpawn && AI_VALUE(Unit*, "current target") == voidSpawn)
         return 0.0f;
 

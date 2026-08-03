@@ -21,10 +21,10 @@ class PlayerbotAI;
 namespace SwpHelpers
 {
 
-constexpr uint8 KALECGOS_TANK_COUNT = 3;
-constexpr uint8 KALECGOS_GROUP_COUNT = 4;
-constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
-constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
+inline constexpr uint8 KALECGOS_TANK_COUNT = 3;
+inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
+inline constexpr uint8 KALECGOS_INVALID_GROUP = std::numeric_limits<uint8>::max();
+inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
 
 struct KalecgosRealmState
 {

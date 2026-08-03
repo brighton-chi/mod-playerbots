@@ -27,12 +27,12 @@ bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_MAGE)
     {
-        if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_ICE_BLOCK)))
+        if (bot->HasAura(Id(SwpSpells::SPELL_ICE_BLOCK)))
             return true;
     }
     else if (bot->getClass() == CLASS_PALADIN && !PlayerbotAI::IsHeal(bot))
     {
-        if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_DIVINE_SHIELD)))
+        if (bot->HasAura(Id(SwpSpells::SPELL_DIVINE_SHIELD)))
             return true;
     }
 
@@ -45,7 +45,7 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
     constexpr float searchRadius = 25.0f;
     Unit* volatileFiend = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
+        Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
 
     if (!volatileFiend)
         return false;
@@ -119,8 +119,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
         return false;
 
     constexpr float searchRadius = 75.0f;
-    return bot->FindNearestGameObject(
-        static_cast<uint32>(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+    return bot->FindNearestGameObject(Id(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
 }
 
 bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
@@ -150,8 +149,7 @@ bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot) || IsInSpectralRealm(bot))
         return false;
 
-    Aura* arcaneBuffet = bot->GetAura(
-        static_cast<uint32>(SwpSpells::SPELL_ARCANE_BUFFET));
+    Aura* arcaneBuffet = bot->GetAura(Id(SwpSpells::SPELL_ARCANE_BUFFET));
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
@@ -206,7 +204,7 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)))
+    if (bot->HasAura(Id(SwpSpells::SPELL_BURN)))
         return false;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
@@ -215,7 +213,7 @@ bool BrutallusBossEngagedByRangedTrigger::IsActive()
 
 bool BrutallusBotIsBurningTrigger::IsActive()
 {
-    if (!bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)))
+    if (!bot->HasAura(Id(SwpSpells::SPELL_BURN)))
         return false;
 
     return !PlayerbotAI::IsMainTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -312,7 +310,7 @@ bool FelmystBotIsEncapsulatedTrigger::IsActive()
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
         return false;
 
-    if (!bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_ENCAPSULATE)))
+    if (!bot->HasAura(Id(SwpSpells::SPELL_ENCAPSULATE)))
         return false;
 
     return !PlayerbotAI::IsMainTank(bot);
@@ -502,13 +500,11 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Aura* flameSear = bot->GetAura(
-        static_cast<uint32>(SwpSpells::SPELL_FLAME_SEAR));
+    Aura* flameSear = bot->GetAura(Id(SwpSpells::SPELL_FLAME_SEAR));
     if (!flameSear || flameSear->GetDuration() > 2000)
         return false;
 
-    Aura* flameTouched = bot->GetAura(
-        static_cast<uint32>(SwpSpells::SPELL_FLAME_TOUCHED));
+    Aura* flameTouched = bot->GetAura(Id(SwpSpells::SPELL_FLAME_TOUCHED));
     return flameTouched && flameTouched->GetStackAmount() >= 5;
 }
 
@@ -618,8 +614,7 @@ bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
         return true;
 
     constexpr float searchRadius = 20.0f;
-    return bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchRadius, true);
+    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARKNESS), searchRadius, true);
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()
@@ -641,8 +636,7 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
         return false;
 
     constexpr float searchRadius = 30.0f;
-    return bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
+    return bot->FindNearestCreature(Id(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
@@ -655,8 +649,7 @@ bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
     }
 
     Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    return berserker && berserker->HasAura(
-        static_cast<uint32>(SwpSpells::SPELL_FLURRY));
+    return berserker && berserker->HasAura(Id(SwpSpells::SPELL_FLURRY));
 }
 
 bool MuruFuryMageCastingFelFireballTrigger::IsActive()
@@ -669,7 +662,7 @@ bool MuruFuryMageCastingFelFireballTrigger::IsActive()
 
     Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
     return furyMage && furyMage->HasUnitState(UNIT_STATE_CASTING) &&
-        furyMage->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_FEL_FIREBALL));
+        furyMage->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_FEL_FIREBALL));
 }
 
 bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
@@ -678,8 +671,7 @@ bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
         return false;
 
     Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
-    return furyMage && furyMage->HasAura(
-        static_cast<uint32>(SwpSpells::SPELL_SPELL_FURY));
+    return furyMage && furyMage->HasAura(Id(SwpSpells::SPELL_SPELL_FURY));
 }
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
@@ -699,14 +691,11 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Unit* charm = bot->GetCharm();
-    if (!charm || !charm->IsAlive() ||
-        charm->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
         return false;
-    }
 
-    return AI_VALUE2(Unit*, "find target", "m'uru");
+    Unit* charm = bot->GetCharm();
+    return charm && charm->IsAlive() && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN);
 }
 
 // Kil'jaeden <The Deceiver>
@@ -742,8 +731,7 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
 
     constexpr float searchRadius = 100.0f;
     if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-        bot->FindNearestCreature(
-            static_cast<uint32>(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+        bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
     {
         return false;
     }
@@ -767,8 +755,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     {
         constexpr float searchRadius = 50.0f;
         if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-            bot->FindNearestCreature(
-                static_cast<uint32>(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+            bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
         {
             return false;
         }
@@ -789,8 +776,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
     }
 
-    // Let the demo lock go AoE down the reflections
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_METAMORPHOSIS)))
+    if (bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
         return false;
 
     return true;
@@ -807,7 +793,7 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_FIRE_BLOOM)))
+    if (!bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");

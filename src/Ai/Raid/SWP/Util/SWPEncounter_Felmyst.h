@@ -106,8 +106,8 @@ struct FogSafeThreshold
     bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
 };
 
-constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
-constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
+inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
+inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 

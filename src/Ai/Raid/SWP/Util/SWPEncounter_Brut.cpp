@@ -304,9 +304,8 @@ bool TryGetBrutallusBurnPadPosition(
     if (!TryGetBurnPadIndex(bot, rangedIndex, padIndex))
         return false;
 
-    static constexpr float degreeToRadian = M_PI / 180.0f;
-    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS> burnPadAngleOffsets =
-    {
+    constexpr float degreeToRadian = M_PI / 180.0f;
+    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS> burnPadAngleOffsets = {
         70.0f * degreeToRadian,
         83.3f * degreeToRadian,
         96.7f * degreeToRadian,

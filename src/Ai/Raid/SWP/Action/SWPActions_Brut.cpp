@@ -26,7 +26,7 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", brutallus))
     {
         return botAI->CastSpell("steady shot", brutallus);
@@ -50,8 +50,8 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!mainTank || !assistTank)
         return false;
 
-    Aura* mainTankAura = mainTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
-    Aura* assistTankAura = assistTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
+    Aura* mainTankAura = mainTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
+    Aura* assistTankAura = assistTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
 
     if (mainTank == bot)
     {
@@ -106,7 +106,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
-        if (bot->GetExactDist2d(position) < 2.0f)
+        if (bot->GetExactDist2d(position) <= 2.0f)
             return false;
 
         return MoveTo(
@@ -135,7 +135,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    if (bot->GetExactDist2d(position) < 0.5f)
+    if (bot->GetExactDist2d(position) <= 0.5f)
         return false;
 
     return MoveTo(
@@ -152,8 +152,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         uint8 slotCount;
     };
 
-    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts =
-    {{
+    static constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts = {{
         { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
         { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
         { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
@@ -215,7 +214,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         float const midpointY =
             (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
 
-        if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
+        if (brutallus->GetExactDist2d(midpointX, midpointY) <= 0.1f)
         {
             float assistAngleDelta =
                 Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
@@ -324,10 +323,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         }
 
         if (bot->GetExactDist2d(returnTargetPosition) <= 1.0f)
-        {
-            brutallusRangedBurnStates[guid] =
-                BrutallusRangedBurnState::ReturningToNormalPosition;
-        }
+            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormalPosition;
 
         return false;
     }
@@ -460,9 +456,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         }
 
         if (bot->GetExactDist2d(padIngressPosition) <= 1.0f)
-        {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
-        }
 
         return false;
     }

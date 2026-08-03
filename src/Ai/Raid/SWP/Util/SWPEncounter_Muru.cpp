@@ -39,8 +39,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     uint32 const now = getMSTime();
     MuruDarknessState& state = muruDarknessStates[instanceId];
 
-    if (Aura* darknessPreEffect = muru->GetAura(
-            static_cast<uint32>(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
+    if (Aura* darknessPreEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
     {
         int32 remainingPreEffectMs = darknessPreEffect->GetDuration();
         if (remainingPreEffectMs < 0)
@@ -59,7 +58,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     }
 
     if (muru->HasUnitState(UNIT_STATE_CASTING) &&
-        muru->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_DARKNESS)))
+        muru->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_DARKNESS)))
     {
         uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
@@ -101,27 +100,27 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 
         switch (unit->GetEntry())
         {
-            case static_cast<uint32>(SwpNpcs::NPC_MURU):
+            case Id(SwpNpcs::NPC_MURU):
                 targets.muru = unit;
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS):
+            case Id(SwpNpcs::NPC_ENTROPIUS):
                 targets.entropius = unit;
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL):
+            case Id(SwpNpcs::NPC_VOID_SENTINEL):
                 targets.voidSentinels.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN):
+            case Id(SwpNpcs::NPC_VOID_SPAWN):
                 targets.voidSpawns.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
+            case Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
                 targets.furyMages.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
+            case Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
                 targets.berserkers.push_back(unit);
                 break;
 
@@ -148,7 +147,7 @@ Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
     for (ObjectGuid const& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || unit->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN) ||
+        if (!unit || unit->GetEntry() != Id(SwpNpcs::NPC_VOID_SPAWN) ||
             unit->IsCharmed() || unit->GetCharmer())
         {
             continue;

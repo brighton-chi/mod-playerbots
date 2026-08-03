@@ -11,6 +11,7 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "Spell.h"
 #include "ThreatManager.h"
 #include <list>
@@ -24,8 +25,7 @@ namespace
 {
 
 Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-std::array<Position, ALYTHESS_TANK_POSITION_COUNT> const alythessTankPositions =
-{{
+std::array<Position, ALYTHESS_TANK_POSITION_COUNT> const alythessTankPositions = {{
     { 1816.830f, 620.792f, 33.404f },
     { 1824.211f, 625.169f, 33.404f },
     { 1818.701f, 631.196f, 33.404f },
@@ -160,7 +160,7 @@ bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
 
     for (GameObject* go : targets)
     {
-        if (!go || go->GetEntry() != static_cast<uint32>(SwpObjects::GO_BLAZE))
+        if (!go || go->GetEntry() != Id(SwpObjects::GO_BLAZE))
             continue;
 
         if (go->GetExactDist2d(position) <= blazeDangerRadius)
@@ -179,7 +179,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        static_cast<uint32>(SwpObjects::GO_BLAZE), blazeObjectRadius);
+        Id(SwpObjects::GO_BLAZE), blazeObjectRadius);
 
     if (!blazeObject)
     {
