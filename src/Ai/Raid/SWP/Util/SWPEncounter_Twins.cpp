@@ -25,13 +25,13 @@ namespace
 {
 
 Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-std::array<Position, ALYTHESS_TANK_POSITION_COUNT> const alythessTankPositions = {{
-    { 1816.830f, 620.792f, 33.404f },
-    { 1824.211f, 625.169f, 33.404f },
-    { 1818.701f, 631.196f, 33.404f },
-    { 1829.375f, 631.110f, 33.404f },
-    { 1830.007f, 620.924f, 33.404f }
-}};
+std::array const alythessTankPositions = {
+    Position{ 1816.830f, 620.792f, 33.404f },
+    Position{ 1824.211f, 625.169f, 33.404f },
+    Position{ 1818.701f, 631.196f, 33.404f },
+    Position{ 1829.375f, 631.110f, 33.404f },
+    Position{ 1830.007f, 620.924f, 33.404f }
+};
 
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
@@ -65,8 +65,7 @@ Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
     eredarTwinsIncomingConflagrationStates;
 
-std::unordered_map<uint32, EredarTwinsBlazeTargetState>
-    eredarTwinsBlazeTargetStates;
+std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 
 std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
@@ -253,8 +252,7 @@ void RecordEredarTwinsBlazeTarget(Player* target)
 
     constexpr uint32 durationMs = 2000;
     uint32 const now = getMSTime();
-    EredarTwinsBlazeTargetState& state =
-        eredarTwinsBlazeTargetStates[target->GetInstanceId()];
+    EredarTwinsBlazeTargetState& state = eredarTwinsBlazeTargetStates[target->GetInstanceId()];
     state.targetGuid = target->GetGUID();
     state.expireMs = now + durationMs;
 }

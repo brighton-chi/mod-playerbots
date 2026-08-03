@@ -21,9 +21,6 @@ class Unit;
 namespace SwpHelpers
 {
 
-constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
-constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
-
 struct EredarTwinsIncomingConflagrationState
 {
     ObjectGuid targetGuid = ObjectGuid::Empty;
@@ -37,7 +34,9 @@ struct EredarTwinsBlazeTargetState
     uint32 expireMs = 0;
 };
 
-constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 300;
+inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
+inline constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
+inline constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 300;
 
 extern Position const SACROLASH_TANK_POSITION;
 extern Position const EREDAR_TWINS_P1_RANGED_POSITION;
@@ -46,8 +45,7 @@ extern Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
-extern std::unordered_map<uint32, EredarTwinsBlazeTargetState>
-	eredarTwinsBlazeTargetStates;
+extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);

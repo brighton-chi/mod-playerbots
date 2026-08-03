@@ -9,6 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
+#include "RaidBossHelpers.h"
 #include "SWPData.h"
 #include <array>
 #include <unordered_map>
@@ -51,8 +52,16 @@ struct KiljaedenEncounterState
     uint32 dragonOrbAnnouncementMs = 0;
 };
 
+inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
+    Id(SwpObjects::GO_DRAGON_ORB_1),
+    Id(SwpObjects::GO_DRAGON_ORB_2),
+    Id(SwpObjects::GO_DRAGON_ORB_3),
+    Id(SwpObjects::GO_DRAGON_ORB_4),
+};
+
 inline constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 inline constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
+
 inline constexpr float KILJAEDEN_RANGED_ARC_ORIENTATION = 0.8f;
 inline constexpr float KILJAEDEN_INNER_RANGED_RADIUS = 23.0f;
 inline constexpr float KILJAEDEN_OUTER_RANGED_RADIUS = 36.0f;
@@ -60,7 +69,6 @@ inline constexpr uint8 KILJAEDEN_INNER_RANGED_SLOT_COUNT = 7;
 inline constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
 inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
-extern std::array<uint32, 4> const KILJAEDEN_DRAGON_ORB_ENTRIES;
 
 extern Position const KILJAEDEN_CENTER_POSITION;
 extern Position const KILJAEDEN_TANK_POSITION;

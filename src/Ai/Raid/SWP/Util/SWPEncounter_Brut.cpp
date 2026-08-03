@@ -93,7 +93,6 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
             padIndex = candidate;
             return true;
         }
-
         return false;
     };
 
@@ -270,11 +269,9 @@ bool TryGetBrutallusRangedPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    const BrutallusRangedSlotInfo slotInfo =
-    {
+    const BrutallusRangedSlotInfo slotInfo = {
         rangedIndex % 2 == 0,
-        static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
-    };
+        static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP) };
 
     float const mainTankAngle =
         GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
@@ -305,7 +302,7 @@ bool TryGetBrutallusBurnPadPosition(
         return false;
 
     constexpr float degreeToRadian = M_PI / 180.0f;
-    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS> burnPadAngleOffsets = {
+    static constexpr std::array burnPadAngleOffsets = {
         70.0f * degreeToRadian,
         83.3f * degreeToRadian,
         96.7f * degreeToRadian,

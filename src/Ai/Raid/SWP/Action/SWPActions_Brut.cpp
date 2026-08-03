@@ -152,12 +152,12 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         uint8 slotCount;
     };
 
-    static constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts = {{
-        { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
-        { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
-        { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
-        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
-    }};
+    static constexpr std::array meleeRingLayouts = {
+        BrutallusMeleeRingLayout{ BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
+    };
 
     uint8 totalMeleeSlots = 0;
     for (auto const& meleeRingLayout : meleeRingLayouts)
