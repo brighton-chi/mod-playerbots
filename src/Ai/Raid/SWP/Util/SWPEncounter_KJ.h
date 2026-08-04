@@ -70,11 +70,11 @@ inline constexpr uint8 KILJAEDEN_OUTER_RANGED_SLOT_COUNT = 11;
 inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     KILJAEDEN_INNER_RANGED_SLOT_COUNT + KILJAEDEN_OUTER_RANGED_SLOT_COUNT;
 
-extern Position const KILJAEDEN_CENTER_POSITION;
-extern Position const KILJAEDEN_TANK_POSITION;
-extern Position const KILJAEDEN_S_MELEE_POSITION;
-extern Position const KILJAEDEN_E_MELEE_POSITION;
-extern Position const KILJAEDEN_DARKNESS_POSITION;
+inline Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
+inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
+inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
+inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;

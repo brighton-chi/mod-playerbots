@@ -21,9 +21,6 @@ namespace SwpHelpers
 // Note: Kalecgos remains on player threat lists for the duration of the encounter, even for
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
 
-Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
-Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
-
 std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 

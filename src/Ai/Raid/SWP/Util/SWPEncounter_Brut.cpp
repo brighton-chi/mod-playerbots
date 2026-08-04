@@ -16,8 +16,6 @@ namespace SwpHelpers
 
 // Note: Brutallus's CombatReach is 18.0f
 
-Position const BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
-
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedBurnPadAssignments;
@@ -26,16 +24,6 @@ std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStat
 
 namespace
 {
-
-float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
-{
-    if (!brutallus || !tank)
-        return Position::NormalizeOrientation(fallbackAngle);
-
-    return Position::NormalizeOrientation(std::atan2(
-        tank->GetPositionY() - brutallus->GetPositionY(),
-        tank->GetPositionX() - brutallus->GetPositionX()));
-}
 
 bool IsBurnPadActive(ObjectGuid ownerGuid)
 {
@@ -104,6 +92,16 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
 
 } // end anonymous namespace
 
+float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
+{
+    if (!brutallus || !tank)
+        return Position::NormalizeOrientation(fallbackAngle);
+
+    return Position::NormalizeOrientation(std::atan2(
+        tank->GetPositionY() - brutallus->GetPositionY(),
+        tank->GetPositionX() - brutallus->GetPositionX()));
+}
+
 float GetBrutallusMainTankAngle(Unit* brutallus)
 {
     if (!brutallus)
@@ -124,7 +122,7 @@ Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, 
     return { x, y, bot->GetPositionZ() };
 }
 
-float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
+float GetBrutallusCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
         return 0.0f;
@@ -135,7 +133,7 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
         if (slotIndex == 0)
             return 0.0f;
 
-        uint8 stepIndex = (slotIndex + 1) / 2;
+        uint8 const stepIndex = (slotIndex + 1) / 2;
         float angleOffset = angleStep * stepIndex;
         if (slotIndex % 2 == 0)
             angleOffset = -angleOffset;
@@ -280,7 +278,7 @@ bool TryGetBrutallusRangedPosition(
         Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 
     float const tankAngle = slotInfo.isMainTankGroup ? mainTankAngle : assistTankAngle;
-    float const angleOffset = GetCenteredArcSlotAngleOffset(
+    float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
         slotInfo.arcPositionIndex, BRUTALLUS_RANGED_POSITIONS_PER_GROUP,
         BRUTALLUS_RANGED_GROUP_ARC_WIDTH);
 

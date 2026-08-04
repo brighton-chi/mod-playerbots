@@ -184,18 +184,8 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     if (!maxMeleeSlots)
         return false;
 
-    auto const getTankAngle = [](Unit* brutallus, Player* tank, float fallbackAngle) -> float
-    {
-        if (!tank)
-            return Position::NormalizeOrientation(fallbackAngle);
-
-        return Position::NormalizeOrientation(std::atan2(
-            tank->GetPositionY() - brutallus->GetPositionY(),
-            tank->GetPositionX() - brutallus->GetPositionX()));
-    };
-
     float const mainTankAngle =
-        getTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
 
     float midpointAngle;
     if (!mainTank || !assistTank)
@@ -205,7 +195,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const assistTankAngle = getTankAngle(
+        float const assistTankAngle = GetBrutallusTankAngle(
             brutallus, assistTank, Position::NormalizeOrientation(
                 mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 
@@ -233,7 +223,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
 
     float const baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
-    float const angleOffset = GetCenteredArcSlotAngleOffset(
+    float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
         localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
 
     float const angle = Position::NormalizeOrientation(baseAngle + angleOffset);
