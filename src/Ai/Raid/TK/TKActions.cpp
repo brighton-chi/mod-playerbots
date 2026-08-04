@@ -281,7 +281,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    constexpr float safeDistance = 17.0f;
+    // Embers' Rebirth has a range of 15 yards (16.5y damage radius), though more space is
+    // needed since this movement is tank-to-player. Embers have a CombatReach of 3 yards.
+    constexpr float safeDistance = 20.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
 

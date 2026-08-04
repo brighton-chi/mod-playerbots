@@ -42,7 +42,6 @@ bool IsSingleTargetTaunt(Action* action)
 
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
-    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
     bool const isBlockedMovement =
         dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -50,7 +49,7 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         dynamic_cast<CastBlinkBackAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action);
 
-    if (!isBlockedMovement && !isReachTargetSpell)
+    if (!isBlockedMovement && !dynamic_cast<CastReachTargetSpellAction*>(action))
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -60,7 +59,8 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     if (isBlockedMovement)
         return 0.0f;
 
-    if (isReachTargetSpell && alar->IsFlying())
+    int8 const currentLocationIndex = GetAlarCurrentLocationIndex(alar);
+    if (currentLocationIndex < PLATFORM_0_IDX || currentLocationIndex > PLATFORM_3_IDX)
         return 0.0f;
 
     return 1.0f;
