@@ -19,11 +19,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class AlarDisableDisperseMultiplier : public Multiplier
+class AlarControlMovementMultiplier : public Multiplier
 {
 public:
-    AlarDisableDisperseMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar disable disperse") {}
+    AlarControlMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar control movement") {}
     float GetValue(Action* action) override;
 };
 

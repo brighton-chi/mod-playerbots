@@ -58,32 +58,34 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AlarDisableDisperseMultiplier::GetValue(Action* action)
+float AlarControlMovementMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    bool const isFollowAction = dynamic_cast<FollowAction*>(action);
+    bool const isDisperseOrFlee =
+        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action);
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) && !isFollowAction)
-    {
+    if (!isDisperseOrFlee && !isReachTargetSpell && !dynamic_cast<FollowAction*>(action))
         return 1.0f;
-    }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return 1.0f;
 
+    if (isDisperseOrFlee)
+        return 0.0f;
+
+    if (isReachTargetSpell && alar->IsFlying())
+        return 0.0f;
+
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
 
     if (!isAlarInPhase2[instanceId])
-        return 0.0f;
+        return 1.0f;
 
-    if (!isFollowAction && isAlarInPhase2[instanceId])
-        return 0.0f;
-
-    // Enable FollowAction in non-combat engine in Phase 2
+    // Enable FollowAction only in non-combat engine in Phase 2
     if (botAI->GetState() == BOT_STATE_COMBAT)
         return 0.0f;
 
