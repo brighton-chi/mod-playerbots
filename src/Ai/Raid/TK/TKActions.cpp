@@ -1749,7 +1749,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event /*event*/)
     if (bot->getClass() == CLASS_HUNTER)
         return UseNetherstrandLongbow();
 
-    if (bot->getClass() != CLASS_DRUID && botAI->IsTank(bot))
+    if (bot->getClass() != CLASS_DRUID && PlayerbotAI::IsTank(bot))
         return UsePhaseshiftBulwark();
 
     return UseStaffOfDisintegration();
