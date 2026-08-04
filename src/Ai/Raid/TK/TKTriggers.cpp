@@ -44,9 +44,6 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
-    if (PlayerbotAI::IsMelee(bot) && alar->GetHealthPct() <= 5.0f)
-        return false;
-
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
     {
@@ -54,9 +51,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
         locationIndex = GetAlarDestinationLocationIndex(alar, dest);
     }
 
-    return locationIndex != LOCATION_NONE &&
-        locationIndex != POINT_QUILL_OR_DIVE_IDX &&
-        locationIndex != POINT_MIDDLE_IDX;
+    return locationIndex != POINT_QUILL_OR_DIVE_IDX && locationIndex != POINT_MIDDLE_IDX;
 }
 
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()

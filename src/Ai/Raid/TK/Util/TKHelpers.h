@@ -123,22 +123,46 @@ enum AlarLocationIndex
 inline constexpr float ALAR_BALCONY_Z = 17.0f;
 inline constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
 
-inline Position const ALAR_PLATFORM_0 = { 335.638f,  59.4879f, 17.9319f }; // West Platform
-inline Position const ALAR_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest Platform
-inline Position const ALAR_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast Platform
-inline Position const ALAR_PLATFORM_3 = { 332.723f, -61.159f, 17.9791f }; // East Platform
-inline std::array const PLATFORM_POSITIONS = {
-    ALAR_PLATFORM_0,
-    ALAR_PLATFORM_1,
-    ALAR_PLATFORM_2,
-    ALAR_PLATFORM_3,
+inline Position const ALAR_LANDING_PLATFORM_0 = { 335.638f,  59.4879f, 17.9319f }; // West
+inline Position const ALAR_LANDING_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest
+inline Position const ALAR_LANDING_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast
+inline Position const ALAR_LANDING_PLATFORM_3 = { 332.723f, -61.1590f, 17.9791f }; // East
+inline std::array const ALAR_LANDING_PLATFORM_POSITIONS = {
+    ALAR_LANDING_PLATFORM_0,
+    ALAR_LANDING_PLATFORM_1,
+    ALAR_LANDING_PLATFORM_2,
+    ALAR_LANDING_PLATFORM_3,
 };
-inline std::array const GROUND_POSITIONS = {
-    Position{ 336.439f,  48.181f, -2.389f }, // Ground West
-    Position{ 379.122f,  25.146f, -2.385f }, // Ground Northwest
-    Position{ 378.583f, -27.481f, -2.385f }, // Ground Northeast
-    Position{ 331.631f, -49.716f, -2.389f }, // Ground East
+
+inline Position const ALAR_TANK_PLATFORM_0 = { 329.433f,  59.914f, 17.548f };
+inline Position const ALAR_TANK_PLATFORM_1 = { 395.772f,  26.779f, 20.181f };
+inline Position const ALAR_TANK_PLATFORM_2 = { 387.498f, -41.909f, 20.182f };
+inline Position const ALAR_TANK_PLATFORM_3 = { 330.342f, -61.902f, 17.719f };
+inline std::array const ALAR_TANK_PLATFORM_POSITIONS = {
+    ALAR_TANK_PLATFORM_0,
+    ALAR_TANK_PLATFORM_1,
+    ALAR_TANK_PLATFORM_2,
+    ALAR_TANK_PLATFORM_3,
 };
+
+inline Position const ALAR_MELEE_DPS_PLATFORM_0 = { 344.037f,  64.339f, 18.350f };
+inline Position const ALAR_MELEE_DPS_PLATFORM_1 = { 387.558f,  40.300f, 20.182f };
+inline Position const ALAR_MELEE_DPS_PLATFORM_2 = { 395.275f, -28.573f, 20.182f };
+inline Position const ALAR_MELEE_DPS_PLATFORM_3 = { 346.427f, -69.361f, 18.750f };
+inline std::array const ALAR_MELEE_DPS_PLATFORM_POSITIONS = {
+    ALAR_MELEE_DPS_PLATFORM_0,
+    ALAR_MELEE_DPS_PLATFORM_1,
+    ALAR_MELEE_DPS_PLATFORM_2,
+    ALAR_MELEE_DPS_PLATFORM_3,
+};
+
+inline std::array const ALAR_GROUND_POSITIONS = {
+    Position{ 336.439f,  48.181f, -2.389f }, // Underish West platform
+    Position{ 379.122f,  25.146f, -2.385f }, // Underish Northwest platform
+    Position{ 378.583f, -27.481f, -2.385f }, // Underish Northeast platform
+    Position{ 331.631f, -49.716f, -2.389f }, // Underish East platform
+};
+
 inline Position const ALAR_ROOM_CENTER         = { 330.611f,  -2.540f, -2.389f };
 inline Position const ALAR_POINT_QUILL_OR_DIVE = { 332.000f,   0.010f, 43.000f };
 inline Position const ALAR_POINT_MIDDLE        = { 331.000f,   0.010f, -2.380f };
@@ -151,8 +175,12 @@ extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
 int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
+int8 GetAlarLocationIndex(Unit* alar);
 void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position& ground);
-Player* GetSecondEmberTank(Player* bot);
+bool IsPrimaryEmberTank(Player* bot);
+bool IsFirstAlarTank(Player* bot);
+bool IsSecondAlarTank(Player* bot);
+Player* GetPhase2SecondEmberTank(Player* bot);
 
 // Void Reaver
 
@@ -191,7 +219,7 @@ inline Position const KAELTHAS_TANK_POSITION     = { 799.390f,  -0.837f, 48.729f
 extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
 Player* GetCapernianTank(Player* bot);
-bool IsDebuffHunter(Player* bot);
+bool IsSanguinarDebuffHunter(Player* bot);
 bool IsAnyLegendaryWeaponDead(Player* bot);
 bool IsFeigningDeath(Unit* advisor);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);

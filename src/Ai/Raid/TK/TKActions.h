@@ -290,6 +290,9 @@ public:
     KaelthasSunstriderAssignAdvisorDpsPriorityAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kael'thas sunstrider assign advisor dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool MeleeDpsPositionOutsideBombRange(Unit* telonicus);
 };
 
 class KaelthasSunstriderManageAdvisorDpsTimerAction : public Action

@@ -146,7 +146,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AlarControlMovementMultiplier(botAI));
     multipliers.push_back(new AlarDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
-    multipliers.push_back(new AlarDontTauntBossIfArmorMeltedMultiplier(botAI));
+    multipliers.push_back(new AlarControlTauntingMultiplier(botAI));
 
     // Void Reaver
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));

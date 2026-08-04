@@ -64,8 +64,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 
     for (Creature* centurion : centurions)
     {
-        if (!centurion || !centurion->IsAlive() ||
-            !centurion->HasAura(Id(TkSpells::SPELL_ARCANE_FLURRY)) ||
+        if (!centurion || !centurion->HasAura(Id(TkSpells::SPELL_ARCANE_FLURRY)) ||
             botAI->HasAura("polymorph", centurion))
         {
             continue;
@@ -94,7 +93,7 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(botAI, bot); // Player type equivalent of IsFirstAlarTank
     if (!mainTank)
         return false;
 
@@ -110,11 +109,10 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
+bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
 {
-    bool isMainTank = PlayerbotAI::IsMainTank(bot);
-    bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
-    if (!isMainTank && !isFirstAssistTank)
+    bool const isFirstAlarTank = IsFirstAlarTank(bot);
+    if (!isFirstAlarTank && !IsSecondAlarTank(bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -124,33 +122,27 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    constexpr uint8 TANK_PLATFORM_W  = 0;
-    constexpr uint8 TANK_PLATFORM_NW = 1;
-    constexpr uint8 TANK_PLATFORM_NE = 2;
-    constexpr uint8 TANK_PLATFORM_E  = 3;
-
-    int8 platformIdx;
-    if (isMainTank)
+    int8 locationIndex = GetAlarLocationIndex(alar);
+    int8 platformIdx; // Determine which platform the tank goes to based on Al'ar's platform
+    if (isFirstAlarTank)
     {
         platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_3_IDX) ?
-            TANK_PLATFORM_W : TANK_PLATFORM_NE;
+            PLATFORM_0_IDX : PLATFORM_2_IDX;
     }
-    else if (isFirstAssistTank)
+    else // first assist tank
     {
         platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_1_IDX) ?
-            TANK_PLATFORM_NW : TANK_PLATFORM_E;
+            PLATFORM_1_IDX : PLATFORM_3_IDX;
     }
 
-    Position const& target = PLATFORM_POSITIONS[platformIdx];
-    if (bot->GetExactDist2d(target) <= 5.0f)
+    Position const& target = ALAR_TANK_PLATFORM_POSITIONS[platformIdx];
+    if (bot->GetExactDist2d(target) <= 2.0f)
+    {
+        if (alar->GetVictim() != bot)
+            return botAI->DoSpecificAction("taunt spell", event, true);
+
         return false;
+    }
 
     return MoveTo(
         TK_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
@@ -159,29 +151,23 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
 
 bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
 {
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+    if (!PlayerbotAI::IsMelee(bot) || IsFirstAlarTank(bot) || IsSecondAlarTank(bot) ||
+        IsPrimaryEmberTank(bot))
     {
         return false;
     }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!alar || alar->GetHealthPct() <= 5.0f)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
+    int8 locationIndex = GetAlarLocationIndex(alar);
+    Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[locationIndex];
 
-    Position const& target = PLATFORM_POSITIONS[locationIndex];
-    if (bot->GetExactDist2d(target) <= 5.0f)
+    if (bot->GetExactDist2d(target) <= 2.0f)
         return false;
 
     return MoveTo(
@@ -191,8 +177,8 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
 
 bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
 {
-    bool isRanged = PlayerbotAI::IsRanged(bot);
-    bool isEmberTank = PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
+    bool const isEmberTank = IsPrimaryEmberTank(bot);
     if (!isRanged && !isEmberTank)
         return false;
 
@@ -200,14 +186,8 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    Position const& position = GROUND_POSITIONS[locationIndex];
+    int8 locationIndex = GetAlarLocationIndex(alar);
+    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
 
     float distFromTarget = 0.0f;
     if (isRanged)
@@ -240,7 +220,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
 // Embers will be tanked by only the second assist tank in Phase 1
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 {
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+    if (!IsPrimaryEmberTank(bot))
         return false;
 
     Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar");
@@ -260,15 +240,10 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     if (ember->GetVictim() != bot)
         return false;
 
-    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
-    if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
-
-    Position const& position = GROUND_POSITIONS[locationIndex];
+    int8 locationIndex = GetAlarLocationIndex(alar);
+    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
     Position const& center = ALAR_POINT_MIDDLE;
+
     float dx = center.GetPositionX() - position.GetPositionX();
     float dy = center.GetPositionY() - position.GetPositionY();
     float distToCenter = position.GetExactDist2d(center);
@@ -286,16 +261,15 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 }
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
-// the main tank or first assist tank (whichever is not tanking Al'ar)
+// the main tank or first assist tank (whichever is not tanking Al'ar).
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 {
-    auto const& [firstEmber, secondEmber] =
-        GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
+    auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
 
     Unit* ember = nullptr;
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+    if (IsPrimaryEmberTank(bot))
         ember = firstEmber;
-    else if (GetSecondEmberTank(bot) == bot)
+    else if (GetPhase2SecondEmberTank(bot) == bot)
         ember = secondEmber;
 
     if (!ember)
@@ -336,14 +310,15 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 
         if (AI_VALUE(Unit*, "current target") != ember)
             return Attack(ember);
-    }
-    else if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
-    {
-        if (AI_VALUE(Unit*, "current target") != alar)
-            return Attack(alar);
+
+        return false;
     }
 
-    return false;
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return false;
+
+    return AI_VALUE(Unit*, "current target") != alar && Attack(alar);
 }
 
 // Jump from platform during Flame Quills and wait at assigned position after landing
@@ -363,24 +338,29 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 
     constexpr float distMeleeFromPos = 5.0f;
     constexpr float distRangedFromPos = 10.0f;
+    bool const isFirstAlarTank = IsFirstAlarTank(bot);
+    bool const isSecondAlarTank = IsSecondAlarTank(bot);
+    bool const isTank = PlayerbotAI::IsTank(bot);
 
-    if (PlayerbotAI::IsMainTank(bot) && bot->GetExactDist2d(
-        ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) > distMeleeFromPos)
+    if (isFirstAlarTank /* && bot->GetExactDist2d(
+        ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) > distMeleeFromPos */)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY(),
             ALAR_SW_RAMP_BASE.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && bot->GetExactDist2d(
-        ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) > distMeleeFromPos)
+
+    if (isSecondAlarTank /* && bot->GetExactDist2d(
+        ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) > distMeleeFromPos */)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY(),
             ALAR_SE_RAMP_BASE.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) && bot->GetExactDist2d(
+
+    if (isTank && !isFirstAlarTank && !isSecondAlarTank && bot->GetExactDist2d(
         ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distMeleeFromPos)
     {
         return MoveTo(
@@ -388,21 +368,21 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             ALAR_POINT_MIDDLE.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (PlayerbotAI::IsMelee(bot) && bot->GetExactDist2d(
+
+    if (PlayerbotAI::IsMelee(bot) && !isTank && bot->GetExactDist2d(
         ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > distMeleeFromPos)
     {
         return MoveInside(
             TK_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
-            ALAR_ROOM_S_CENTER.GetPositionZ(), distMeleeFromPos,
-            MovementPriority::MOVEMENT_FORCED);
+            ALAR_ROOM_S_CENTER.GetPositionZ(), distMeleeFromPos, MovementPriority::MOVEMENT_FORCED);
     }
-    else if (bot->GetExactDist2d( // Ranged
+
+    if (PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d( // Ranged
         ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distRangedFromPos)
     {
         return MoveInside(
             TK_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
-            ALAR_POINT_MIDDLE.GetPositionZ(), distRangedFromPos,
-            MovementPriority::MOVEMENT_FORCED);
+            ALAR_POINT_MIDDLE.GetPositionZ(), distRangedFromPos, MovementPriority::MOVEMENT_FORCED);
     }
 
     return false;
@@ -447,16 +427,14 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
 // Main tank and first assist tank will swap tanking Al'ar when Melt Armor is applied
 bool AlarSwapTanksOnBossAction::Execute(Event event)
 {
-    if (!PlayerbotAI::IsMainTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+    if (!IsFirstAlarTank(bot) && !IsSecondAlarTank(bot))
         return false;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     if (!alar)
         return false;
 
-    // secondEmberTank = whichever of MT or 1st AT doesn't have Melt Armor (1st AT if neither do)
-    Player* secondEmberTank = GetSecondEmberTank(bot);
-    if (secondEmberTank == bot)
+    if (GetPhase2SecondEmberTank(bot) == bot)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != alar)
@@ -1025,17 +1003,11 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
     if (!kaelAI)
         return false;
 
-    if (PlayerbotAI::IsRanged(bot) && capernian->GetVictim() != bot &&
-        RangedBotsDisperse(kaelAI, capernian))
-    {
-        return true;
-    }
+    if (PlayerbotAI::IsRanged(bot) && capernian->GetVictim() != bot)
+        return RangedBotsDisperse(kaelAI, capernian);
 
-    if (PlayerbotAI::IsMelee(bot) && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR &&
-        MeleeStayBackFromCapernian(capernian))
-    {
-        return true;
-    }
+    if (PlayerbotAI::IsMelee(bot) && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
+        return MeleeStayBackFromCapernian(capernian);
 
     return false;
 }
@@ -1238,7 +1210,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     // Target priority 2: Capernian for ranged only (excluding debuff hunter)
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!target && capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian) && PlayerbotAI::IsRangedDps(bot) && !IsDebuffHunter(bot))
+        !IsFeigningDeath(capernian) && PlayerbotAI::IsRangedDps(bot) &&
+        !IsSanguinarDebuffHunter(bot))
     {
         target = capernian;
         if (isPhase3 && MarkTargetWithCross(bot, capernian))
@@ -1271,10 +1244,16 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
-    // Melee DPS need to stay at max-ish melee range behind Telonicus to avoid bombs
     if (target != telonicus || telonicus->GetVictim() == bot)
         return false;
 
+    // Melee DPS need to stay at max-ish melee range behind Telonicus to avoid bombs
+    return MeleeDpsPositionOutsideBombRange(telonicus);
+}
+
+bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::MeleeDpsPositionOutsideBombRange(
+    Unit* telonicus)
+{
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
@@ -1287,17 +1266,14 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        TK_MAP_ID, targetX, targetY, telonicus->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        TK_MAP_ID, targetX, targetY, telonicus->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 {
     static constexpr std::array advisorNames = {
-        "grand astromancer capernian",
-        "master engineer telonicus",
-        "lord sanguinar",
-    };
+        "grand astromancer capernian", "master engineer telonicus", "lord sanguinar", };
 
     bool advisorAtFullHp = false;
     for (char const* name : advisorNames)
@@ -1770,54 +1746,60 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event /*event*/)
 {
-    return UsePhaseshiftBulwark() || UseStaffOfDisintegration() || UseNetherstrandLongbow();
+    if (bot->getClass() == CLASS_HUNTER)
+        return UseNetherstrandLongbow();
+
+    if (bot->getClass() != CLASS_DRUID && botAI->IsTank(bot))
+        return UsePhaseshiftBulwark();
+
+    return UseStaffOfDisintegration();
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
 {
-    Item* offHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-    if (!offHand || offHand->GetEntry() != Id(TkItems::ITEM_PHASESHIFT_BULWARK))
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas || !kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
         return false;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_ARCANE_BARRIER)) ||
-        bot->CanUseItem(offHand) != EQUIP_ERR_OK)
-    {
+    if (bot->HasAura(Id(TkSpells::SPELL_ARCANE_BARRIER)))
         return false;
-    }
+
+    Item* offHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!offHand || offHand->GetEntry() != Id(TkItems::ITEM_PHASESHIFT_BULWARK))
+        return false;
+
+    if (bot->CanUseItem(offHand) != EQUIP_ERR_OK)
+        return false;
 
     return UseEquippedItemWithPacket(offHand);
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
 {
+    if (bot->HasAura(Id(TkSpells::SPELL_MENTAL_PROTECTION_FIELD)))
+        return false;
+
     Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     if (!mainHand || mainHand->GetEntry() != Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION))
         return false;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_MENTAL_PROTECTION_FIELD)) ||
-        bot->CanUseItem(mainHand) != EQUIP_ERR_OK)
-    {
+    if (bot->CanUseItem(mainHand) != EQUIP_ERR_OK)
         return false;
-    }
 
     return UseEquippedItemWithPacket(mainHand);
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
 {
+    if (bot->HasItemCount(Id(TkItems::ITEM_NETHER_SPIKES), 1, false))
+        return false;
+
     Item* ranged = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
     if (!ranged || ranged->GetEntry() != Id(TkItems::ITEM_NETHERSTRAND_LONGBOW))
         return false;
 
-    if (bot->HasItemCount(Id(TkItems::ITEM_NETHER_SPIKES), 1, false) ||
-        bot->CanUseItem(ranged) != EQUIP_ERR_OK)
-    {
+    if (bot->CanUseItem(ranged) != EQUIP_ERR_OK)
         return false;
-    }
 
     return UseEquippedItemWithPacket(ranged);
 }
@@ -2063,7 +2045,7 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
-    // Help bots that get stuck in midair after Gravity Lapse
+    // Make bots fall if stuck in midair after Gravity Lapse
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)) &&
         bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
     {

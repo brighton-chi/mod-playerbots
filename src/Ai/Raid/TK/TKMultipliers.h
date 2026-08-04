@@ -43,11 +43,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class AlarDontTauntBossIfArmorMeltedMultiplier : public Multiplier
+class AlarControlTauntingMultiplier : public Multiplier
 {
 public:
-    AlarDontTauntBossIfArmorMeltedMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar don't taunt boss if armor melted") {}
+    AlarControlTauntingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "al'ar control taunting") {}
     float GetValue(Action* action) override;
 };
 

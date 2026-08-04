@@ -42,17 +42,25 @@ bool IsSingleTargetTaunt(Action* action)
 
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<TankFaceAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<ReachTargetAction*>(action))
-    {
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
+    bool const isBlockedMovement =
+        dynamic_cast<TankFaceAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action);
+
+    if (!isBlockedMovement && !isReachTargetSpell)
         return 1.0f;
-    }
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (alar && !isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return 1.0f;
+
+    if (isBlockedMovement)
+        return 0.0f;
+
+    if (isReachTargetSpell && alar->IsFlying())
         return 0.0f;
 
     return 1.0f;
@@ -65,9 +73,8 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
 
     bool const isDisperseOrFlee =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action);
-    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    if (!isDisperseOrFlee && !isReachTargetSpell && !dynamic_cast<FollowAction*>(action))
+    if (!isDisperseOrFlee && !dynamic_cast<FollowAction*>(action))
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
@@ -77,12 +84,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     if (isDisperseOrFlee)
         return 0.0f;
 
-    if (isReachTargetSpell && alar->IsFlying())
-        return 0.0f;
-
-    uint32 const instanceId = alar->GetMap()->GetInstanceId();
-
-    if (!isAlarInPhase2[instanceId])
+    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
     // Enable FollowAction only in non-combat engine in Phase 2
@@ -135,17 +137,37 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AlarDontTauntBossIfArmorMeltedMultiplier::GetValue(Action* action)
+float AlarControlTauntingMultiplier::GetValue(Action* action)
 {
     if (!IsSingleTargetTaunt(action))
         return 1.0f;
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || AI_VALUE(Unit*, "current target") != alar)
+    bool const isFirstAlarTank = IsFirstAlarTank(bot);
+
+    if (!isFirstAlarTank && !IsSecondAlarTank(bot))
         return 1.0f;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)))
+    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
+    if (!alar)
+        return 1.0f;
+
+    if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)) && AI_VALUE(Unit*, "current target") == alar)
         return 0.0f;
+
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return 1.0f;
+
+    int8 locationIndex = GetAlarLocationIndex(alar);
+    if (isFirstAlarTank)
+    {
+        if (locationIndex != PLATFORM_0_IDX && locationIndex != PLATFORM_2_IDX)
+            return 0.0f;
+    }
+    else // Second Al'ar Tank
+    {
+        if (locationIndex != PLATFORM_1_IDX && locationIndex != PLATFORM_3_IDX)
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -434,6 +456,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
         return 1.0f;
 
     bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
+
     if (!isDpsAssist && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
@@ -530,8 +553,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
     bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) ||
-         dynamic_cast<CastHeroismAction*>(action));
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
     if (!isLustAction &&
         !dynamic_cast<CastMetamorphosisAction*>(action) &&

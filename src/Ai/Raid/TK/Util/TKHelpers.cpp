@@ -169,54 +169,16 @@ bool IsPathSafeFromHazards(
 std::unordered_map<uint32, bool> lastRebirthState;
 std::unordered_map<uint32, bool> isAlarInPhase2;
 
-int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest)
-{
-    if (!alar)
-        return LOCATION_NONE;
-
-    float x, y, z;
-    if (!alar->GetMotionMaster()->GetDestination(x, y, z))
-        return LOCATION_NONE;
-
-    dest.Relocate(x, y, z);
-
-    static std::array const locations = {
-        ALAR_PLATFORM_0,
-        ALAR_PLATFORM_1,
-        ALAR_PLATFORM_2,
-        ALAR_PLATFORM_3,
-        ALAR_POINT_QUILL_OR_DIVE,
-        ALAR_POINT_MIDDLE,
-    };
-
-    float minDist = std::numeric_limits<float>::max();
-    int8 locationIndex = LOCATION_NONE;
-    for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
-    {
-        float distToLocation = dest.GetExactDist2d(&locations[i]);
-        if (distToLocation < minDist)
-        {
-            minDist = distToLocation;
-            locationIndex = i;
-        }
-    }
-
-    if (minDist > 0.1f)
-        return LOCATION_NONE;
-
-    return locationIndex;
-}
-
 int8 GetAlarCurrentLocationIndex(Unit* alar)
 {
     if (!alar)
         return LOCATION_NONE;
 
     static std::array const locations = {
-        ALAR_PLATFORM_0,
-        ALAR_PLATFORM_1,
-        ALAR_PLATFORM_2,
-        ALAR_PLATFORM_3,
+        ALAR_LANDING_PLATFORM_0,
+        ALAR_LANDING_PLATFORM_1,
+        ALAR_LANDING_PLATFORM_2,
+        ALAR_LANDING_PLATFORM_3,
         ALAR_POINT_QUILL_OR_DIVE,
         ALAR_POINT_MIDDLE,
     };
@@ -239,23 +201,94 @@ int8 GetAlarCurrentLocationIndex(Unit* alar)
     return locationIndex;
 }
 
+int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest)
+{
+    if (!alar)
+        return LOCATION_NONE;
+
+    float x, y, z;
+    if (!alar->GetMotionMaster()->GetDestination(x, y, z))
+        return LOCATION_NONE;
+
+    dest.Relocate(x, y, z);
+
+    static std::array const locations = {
+        ALAR_LANDING_PLATFORM_0,
+        ALAR_LANDING_PLATFORM_1,
+        ALAR_LANDING_PLATFORM_2,
+        ALAR_LANDING_PLATFORM_3,
+        ALAR_POINT_QUILL_OR_DIVE,
+        ALAR_POINT_MIDDLE,
+    };
+
+    float minDist = std::numeric_limits<float>::max();
+    int8 locationIndex = LOCATION_NONE;
+    for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
+    {
+        float distToLocation = dest.GetExactDist2d(&locations[i]);
+        if (distToLocation < minDist)
+        {
+            minDist = distToLocation;
+            locationIndex = i;
+        }
+    }
+
+    if (minDist > 0.1f)
+        return LOCATION_NONE;
+
+    return locationIndex;
+}
+
+int8 GetAlarLocationIndex(Unit* alar)
+{
+    int8 locationIndex = GetAlarCurrentLocationIndex(alar);
+    if (locationIndex == LOCATION_NONE)
+    {
+        Position dest;
+        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
+    }
+
+    return locationIndex;
+}
+
 void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Position& ground)
 {
     float minDist = std::numeric_limits<float>::max();
     closestPlatform = -1;
     for (int8 i = 0; i < 4; ++i)
     {
-        float dist = botPos.GetExactDist2d(&PLATFORM_POSITIONS[i]);
+        float dist = botPos.GetExactDist2d(&ALAR_LANDING_PLATFORM_POSITIONS[i]);
         if (dist < minDist)
         {
             minDist = dist;
             closestPlatform = i;
         }
     }
-    ground = GROUND_POSITIONS[closestPlatform];
+    ground = ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
-Player* GetSecondEmberTank(Player* bot)
+// Main tank rotates between W (where Al'ar initially lands) and NE platforms in Phase 1
+// and starts on Al'ar in Phase 2
+bool IsFirstAlarTank(Player* bot)
+{
+    return PlayerbotAI::IsMainTank(bot);
+}
+
+// First assist tank rotates between NW and E platforms in Phase 1
+bool IsSecondAlarTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+}
+
+// Second assist tank is the primary ember tank
+bool IsPrimaryEmberTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+}
+
+// Whichever of MT or 1st AT doesn't have Melt Armor (1st AT if neither do) picks up the 2nd
+// Ember in phase 2 (2nd AT, the phase 1 Ember tank, picks up the 1st Ember)
+Player* GetPhase2SecondEmberTank(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -325,8 +358,11 @@ Player* GetCapernianTank(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+        if (!member || member->getClass() != CLASS_WARLOCK || !member->IsAlive() ||
+            member->GetMapId() != TK_MAP_ID)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member;
@@ -338,10 +374,10 @@ Player* GetCapernianTank(Player* bot)
     return fallbackWarlock;
 }
 
-// One Hunter will start on Sanguinar in Phase 3 with Melee to apply Armor Disruption
+// One Hunter will start on Sanguinar in Phase 3 with melee to apply Armor Disruption
 // (1) First priority is an assistant Hunter (real player or bot)
 // (2) If no assistant Hunter, then look for any Hunter bot
-bool IsDebuffHunter(Player* bot)
+bool IsSanguinarDebuffHunter(Player* bot)
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -355,8 +391,11 @@ bool IsDebuffHunter(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
+        if (!member || member->getClass() != CLASS_HUNTER || !member->IsAlive() ||
+            member->GetMapId() != TK_MAP_ID)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member == bot;
