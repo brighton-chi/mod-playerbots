@@ -731,7 +731,7 @@ bool HighAstromancerSolarianStackOnRangedLeaderAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Player* rangedLeader = GetRangedLeader(bot);
+    Player* rangedLeader = GetAstromancerRangedLeader(bot);
     if (!rangedLeader || bot == rangedLeader)
         return false;
 

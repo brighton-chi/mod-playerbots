@@ -198,11 +198,8 @@ bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
 bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
 {
     Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || astromancer->HasAura(
-        Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-    {
+    if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
         return false;
-    }
 
     if (HasWrathOfTheAstromancer(bot))
         return false;

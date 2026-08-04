@@ -201,7 +201,7 @@ extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOr
 // High Astromancer Solarian
 
 bool HasWrathOfTheAstromancer(Player* bot);
-Player* GetRangedLeader(Player* bot);
+Player* GetAstromancerRangedLeader(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 

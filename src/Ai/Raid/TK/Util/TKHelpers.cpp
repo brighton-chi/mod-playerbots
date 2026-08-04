@@ -319,7 +319,7 @@ bool HasWrathOfTheAstromancer(Player* bot)
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
 }
 
-Player* GetRangedLeader(Player* bot)
+Player* GetAstromancerRangedLeader(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -329,7 +329,7 @@ Player* GetRangedLeader(Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member->GetMapId() != TK_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || HasWrathOfTheAstromancer(bot))
+            !GET_PLAYERBOT_AI(member) || HasWrathOfTheAstromancer(member))
         {
             continue;
         }
