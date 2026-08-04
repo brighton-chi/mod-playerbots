@@ -50,9 +50,10 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
 
 uint32 GetDragonManualCooldown(uint32 spellId)
 {
+    constexpr uint32 globalCooldown = 1000;
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
-        return 1000;
+        return globalCooldown;
 
     uint32 cooldownMs = spellInfo->GetRecoveryTime();
     if (spellInfo->CategoryRecoveryTime > cooldownMs)
@@ -60,12 +61,12 @@ uint32 GetDragonManualCooldown(uint32 spellId)
     if (spellInfo->StartRecoveryTime > cooldownMs)
         cooldownMs = spellInfo->StartRecoveryTime;
 
-    return cooldownMs ? cooldownMs : 1000;
+    return cooldownMs ? cooldownMs : globalCooldown;
 }
 
 bool IsDragonGroupTarget(Player* bot, Player* member)
 {
-    return member && member->IsAlive() && member != bot &&
+    return member && member != bot && member->IsAlive() &&
         member->GetMapId() == SWP_MAP_ID && !PlayerbotAI::IsTank(member);
 }
 
@@ -228,7 +229,7 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
 void EnsureKiljaedenRangedAssignments(Player* bot)
 {
     Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SWP_MAP_ID)
+    if (!group)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
@@ -243,8 +244,8 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SWP_MAP_ID &&
-                PlayerbotAI::IsRanged(member) && GET_PLAYERBOT_AI(member);
+            found = member->GetMapId() == SWP_MAP_ID && GET_PLAYERBOT_AI(member) &&
+                PlayerbotAI::IsRanged(member);
 
             break;
         }
@@ -283,8 +284,8 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member) ||
-            !GET_PLAYERBOT_AI(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
         {
             continue;
         }
@@ -353,13 +354,12 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     auto const& armageddons = armageddonItr->second.armageddons;
     auto const& canonicalAssignments = canonicalItr->second.rangedAssignments;
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     std::vector<KiljaedenRangedBotAssignment> rangedBots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member) ||
-            !GET_PLAYERBOT_AI(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
         {
             continue;
         }
@@ -587,11 +587,8 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* candidate = ref->GetSource();
-        if (!IsDragonGroupTarget(bot, candidate) ||
-            HasAuraFromDragon(candidate, spellId))
-        {
+        if (!IsDragonGroupTarget(bot, candidate) || HasAuraFromDragon(candidate, spellId))
             continue;
-        }
 
         uint32 clusterSize = 0;
         uint32 totalClusterSize = 0;
@@ -655,7 +652,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot || member->GetMapId() != SWP_MAP_ID ||
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
             HasAuraFromDragon(member, spellId))
         {
             continue;

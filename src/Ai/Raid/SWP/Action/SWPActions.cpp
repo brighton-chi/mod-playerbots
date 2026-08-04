@@ -65,6 +65,9 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
             didSomething = true;
 
+        if (isMechanicTracker && brutallusMeleeAssignments.erase(instanceId) > 0)
+            didSomething = true;
+
         if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
             didSomething = true;
 

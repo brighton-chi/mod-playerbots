@@ -73,7 +73,7 @@ bool IsActivePortalCandidate(Player* bot, const KalecgosEncounterState& state)
 
 bool IsPortalEligibleCandidate(Player* bot)
 {
-    if (!bot->IsAlive() || !GET_PLAYERBOT_AI(bot) || bot->GetMapId() != SWP_MAP_ID)
+    if (!bot->IsAlive() || bot->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(bot))
         return false;
 
     return !IsExhausted(bot) && !IsInSpectralRealm(bot);
@@ -102,7 +102,7 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedTankAssignmentGuids(Playe
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || member->GetMapId() != SWP_MAP_ID)
             continue;
 
         if (PlayerbotAI::IsMainTank(member))
@@ -182,7 +182,7 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildTankPortalRotationGuids(
 
 Player* ResolveSurfaceTank(Group* group, ObjectGuid guid)
 {
-    if (guid == ObjectGuid::Empty || !group)
+    if (!group || guid == ObjectGuid::Empty)
         return nullptr;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -191,11 +191,8 @@ Player* ResolveSurfaceTank(Group* group, ObjectGuid guid)
         if (!member || member->GetGUID() != guid)
             continue;
 
-        if (member->GetMapId() != SWP_MAP_ID || !member->IsAlive() ||
-            IsInSpectralRealm(member))
-        {
+        if (!member->IsAlive() || member->GetMapId() != SWP_MAP_ID || IsInSpectralRealm(member))
             return nullptr;
-        }
 
         return member;
     }
@@ -258,10 +255,17 @@ Player* GetKalecgosCurrentVictimTank(
     Unit* kalecgos = nullptr;
 
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-        kalecgos = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kalecgos")->Get();
+    {
+        AiObjectContext* context = botAI->GetAiObjectContext();
+        kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    }
 
+    constexpr float searchRadius = 200.0f;
     if (!kalecgos)
-        kalecgos = player->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_DRAGON), 200.0f, true);
+    {
+        kalecgos = player->FindNearestCreature(
+            Id(SwpNpcs::NPC_KALECGOS_DRAGON), searchRadius, true);
+    }
 
     if (kalecgos)
     {
@@ -486,7 +490,6 @@ bool IsInSpectralRealm(Player* bot)
 
 bool IsKalecgosDecurser(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     switch (bot->getClass())
     {
         case CLASS_MAGE:
@@ -500,13 +503,14 @@ bool IsKalecgosDecurser(Player* bot)
             return false;
     }
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return botAI->HasStrategy("cure", BOT_STATE_COMBAT);
 }
 
-void EnsureKalecgosRaidAssignments (Player* player)
+void EnsureKalecgosRaidAssignments(Player* player)
 {
     Group* group = player->GetGroup();
-    if (!group || player->GetMapId() != SWP_MAP_ID)
+    if (!group)
         return;
 
     KalecgosEncounterState& state = kalecgosEncounterStates[player->GetInstanceId()];
@@ -663,7 +667,7 @@ bool ShouldEnterKalecgosPortal(Player* bot)
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
 {
     Group* group = player->GetGroup();
-    if (!group || player->GetMapId() != SWP_MAP_ID)
+    if (!group)
         return;
 
     KalecgosEncounterState& state = GetPreparedEncounterState(player);
@@ -711,7 +715,7 @@ void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
 void RecordSpectralRealmEnter(Player* player)
 {
     Group* group = player->GetGroup();
-    if (!group || player->GetMapId() != SWP_MAP_ID)
+    if (!group)
         return;
 
     KalecgosEncounterState& state = GetPreparedEncounterState(player);
