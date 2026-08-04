@@ -485,8 +485,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 {
     // After Dive Bomb, before reapperance
     if (alar->HasAura(Id(TkSpells::SPELL_MODEL_INVISIBILITY)) ||
-        (alar->HasUnitState(UNIT_STATE_CASTING) &&
-         alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_DIVE))))
+        alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_DIVE)))
     {
         constexpr float safeDistance = 20.0f;
         float const currentDistance = bot->GetDistance2d(alar);
@@ -522,8 +521,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
 
-    bool const rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
-        alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
+    bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
     if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
     {
