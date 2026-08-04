@@ -22,7 +22,6 @@ namespace SwpHelpers
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
 
 std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
-std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 
 namespace
 {
@@ -729,9 +728,6 @@ void RecordSpectralRealmEnter(Player* player)
             group, state.tankAssignmentGuids, guid, state.activeRiftOutgoingTankGuid, true);
     }
 
-    uint32 const now = getMSTime();
-    UpdateKalecgosRealmState(player, true, now);
-
     if (state.activeRiftOpenedMs)
     {
         if (state.firstEntrantGuid == ObjectGuid::Empty)
@@ -754,17 +750,6 @@ void RecordSpectralRealmEnter(Player* player)
                 replacementTank ? replacementTank->GetGUID() : ObjectGuid::Empty;
         }
     }
-}
-
-void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp)
-{
-    KalecgosRealmState& realmState = kalecgosRealmStates[bot->GetGUID()];
-    realmState.inSpectralRealm = inSpectralRealm;
-
-    if (inSpectralRealm)
-        realmState.lastEnterMs = timestamp;
-    else
-        realmState.lastExitMs = timestamp;
 }
 
 }

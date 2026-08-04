@@ -24,7 +24,6 @@ enum class SwpSpells : uint32
     SPELL_CURSE_OF_BOUNDLESS_AGONY     = 45032,
     SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC = 45034,
     SPELL_TELEPORT_SPECTRAL            = 46019,
-    SPELL_TELEPORT_NORMAL_REALM        = 46020,
     SPELL_SPECTRAL_REALM               = 46021,
 
     // Brutallus

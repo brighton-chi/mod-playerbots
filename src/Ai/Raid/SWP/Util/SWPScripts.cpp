@@ -203,11 +203,6 @@ public:
                     RecordSpectralRealmEnter(player);
                 break;
 
-            case Id(SwpSpells::SPELL_TELEPORT_NORMAL_REALM):
-                if (FindFirstSunwellCombatBotInGroup(player))
-                    UpdateKalecgosRealmState(player, false, getMSTime());
-                break;
-
             default:
                 break;
         }
