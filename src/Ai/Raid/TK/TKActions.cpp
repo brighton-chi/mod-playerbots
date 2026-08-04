@@ -1079,13 +1079,21 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 
     float targetX = capernian->GetPositionX() + radius * std::cos(angle);
     float targetY = capernian->GetPositionY() + radius * std::sin(angle);
+    float targetZ = bot->GetPositionZ();
 
     if (bot->GetExactDist2d(targetX, targetY) <= 1.0f)
         return false;
 
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(),
+            bot->GetPositionZ(), targetX, targetY, targetZ))
+    {
+        return false;
+    }
+
     botAI->InterruptSpell();
     return MoveTo(
-        TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        TK_MAP_ID, targetX, targetY, targetZ, false, false,
         false, true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
