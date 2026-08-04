@@ -17,7 +17,7 @@ using namespace TkHelpers;
 class VoidReaverSpellListenerScript : public AllSpellScript
 {
 public:
-    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") { }
+    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -44,7 +44,7 @@ public:
 
         orbs.erase(std::remove_if(orbs.begin(), orbs.end(),
             [now](ArcaneOrbData const& orb) {
-                return getMSTimeDiff(orb.castTime, now) > 5000;
+                return getMSTimeDiff(orb.castTime, now) > ARCANE_ORB_DURATION_MS;
             }), orbs.end());
     }
 };

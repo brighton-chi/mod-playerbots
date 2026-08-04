@@ -126,18 +126,18 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const orbIt = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
-    if (orbIt == voidReaverArcaneOrbs.end())
+    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return true;
 
-    constexpr uint32 orbDuration = 7000;
-    constexpr float orbSafeDistance = 30.0f;
     uint32 const now = getMSTime();
 
-    for (auto const& orb : orbIt->second)
+    for (auto const& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, now) <= orbDuration && bot->GetExactDist2d(
-                orb.destination.GetPositionX(), orb.destination.GetPositionY()) < orbSafeDistance)
+        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
+            bot->GetExactDist2d(
+                orb.destination.GetPositionX(),
+                orb.destination.GetPositionY()) < ARCANE_ORB_BUFFER_DISTANCE)
         {
             return false;
         }
@@ -155,18 +155,18 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
     uint32 const now = getMSTime();
-    constexpr uint32 orbDuration = 7000;
-    constexpr float safeDistance = 22.0f;
 
     for (auto const& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, now) <= orbDuration && bot->GetExactDist2d(
-                orb.destination.GetPositionX(), orb.destination.GetPositionY()) < safeDistance)
+        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
+            bot->GetExactDist2d(
+                orb.destination.GetPositionX(),
+                orb.destination.GetPositionY()) < ARCANE_ORB_SAFE_DISTANCE)
         {
             return true;
         }
@@ -544,4 +544,5 @@ bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
     // return bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    // Above commented out to test code for forcing fall
 }

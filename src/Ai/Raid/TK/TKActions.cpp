@@ -148,7 +148,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
     }
 
     Position const& target = PLATFORM_POSITIONS[platformIdx];
-    if (bot->GetExactDist2d(target) < 5.0f)
+    if (bot->GetExactDist2d(target) <= 5.0f)
         return false;
 
     return MoveTo(
@@ -180,7 +180,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
     }
 
     Position const& target = PLATFORM_POSITIONS[locationIndex];
-    if (bot->GetExactDist2d(target) < 5.0f)
+    if (bot->GetExactDist2d(target) <= 5.0f)
         return false;
 
     return MoveTo(
@@ -207,28 +207,21 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     }
 
     Position const& position = GROUND_POSITIONS[locationIndex];
-    if (isRanged)
-    {
-        constexpr float distFromTarget = 8.0f;
-        if (bot->GetExactDist2d(position) > distFromTarget)
-        {
-            return MoveInside(
-                TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), distFromTarget, MovementPriority::MOVEMENT_COMBAT);
-        }
-    }
-    else if (isEmberTank && !AI_VALUE2(Unit*, "find target", "ember of al'ar"))
-    {
-        constexpr float distFromTarget = 20.0f;
-        if (bot->GetExactDist2d(position) > distFromTarget)
-        {
-            return MoveInside(
-                TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), distFromTarget, MovementPriority::MOVEMENT_COMBAT);
-        }
-    }
 
-    return false;
+    float distFromTarget = 0.0f;
+    if (isRanged)
+        distFromTarget = 8.0f;
+    else if (isEmberTank && !AI_VALUE2(Unit*, "find target", "ember of al'ar"))
+        distFromTarget = 20.0f;
+    else
+        return false;
+
+    if (bot->GetExactDist2d(position) <= distFromTarget)
+        return false;
+
+    return MoveInside(
+        TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        position.GetPositionZ(), distFromTarget, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
@@ -283,7 +276,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     float targetX = position.GetPositionX() + (dx / distToCenter) * moveDist;
     float targetY = position.GetPositionY() + (dy / distToCenter) * moveDist;
 
-    if (bot->GetExactDist2d(targetX, targetY) < 1.0f)
+    if (bot->GetExactDist2d(targetX, targetY) <= 1.0f)
         return false;
 
     return MoveTo(
@@ -322,8 +315,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 
 bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
-    auto const& [firstEmber, secondEmber] =
-        GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
+    auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
 
     Unit* ember = nullptr;
     if (firstEmber)
@@ -467,10 +459,10 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    if (alar->GetVictim() != bot)
-        return botAI->DoSpecificAction("taunt spell", event, true);
+    if (alar->GetVictim() == bot)
+        return false;
 
-    return false;
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
@@ -485,10 +477,10 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
     constexpr float searchRadius = 40.0f;
-    constexpr float hazardRadius = 8.0f;
+    std::vector<Unit*> flamePatches = GetAllHazardTriggers(
+        bot, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
 
-    std::vector<Unit*> flamePatches =
-        GetAllHazardTriggers(bot, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+    constexpr float hazardRadius = 8.0f;
 
     for (Unit* flamePatch : flamePatches)
     {
@@ -547,7 +539,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
 
-    bool rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
+    bool const rebirthActive = alar->HasUnitState(UNIT_STATE_CASTING) &&
         alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
     if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
@@ -649,24 +641,23 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
-    constexpr uint32 orbDuration = 7000;
-    constexpr float orbSafeDistance = 22.0f;
     uint32 const now = getMSTime();
 
     std::vector<Position> activeOrbs;
     bool inDanger = false;
     for (auto const& orb : it->second)
     {
-        if (getMSTimeDiff(orb.castTime, now) > orbDuration)
+        if (getMSTimeDiff(orb.castTime, now) > ARCANE_ORB_DURATION_MS)
             continue;
 
         activeOrbs.push_back(orb.destination);
         if (!inDanger && bot->GetExactDist2d(
-                orb.destination.GetPositionX(), orb.destination.GetPositionY()) < orbSafeDistance)
+                orb.destination.GetPositionX(),
+                orb.destination.GetPositionY()) < ARCANE_ORB_SAFE_DISTANCE)
         {
             inDanger = true;
         }
@@ -707,7 +698,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
             {
                 float const dx = x - orbPos.GetPositionX();
                 float const dy = y - orbPos.GetPositionY();
-                if (std::sqrt(dx * dx + dy * dy) < orbSafeDistance)
+                if (std::sqrt(dx * dx + dy * dy) < ARCANE_ORB_SAFE_DISTANCE)
                 {
                     safeFromOrbs = false;
                     break;
@@ -737,7 +728,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     }
 
     constexpr uint32 minInterval = 0;
-    return FleePosition(activeOrbs[0], orbSafeDistance, minInterval);
+    return FleePosition(activeOrbs[0], ARCANE_ORB_SAFE_DISTANCE, minInterval);
 }
 
 // High Astromancer Solarian
@@ -840,8 +831,8 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
 
     if (botIndex < split)
         return priestsPair.first;
-    else
-        return priestsPair.second;
+
+    return priestsPair.second;
 }
 
 bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event /*event*/)
@@ -866,7 +857,7 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 15.0f;
     float const currentDistance = bot->GetDistance2d(thaladred);
-    if (currentDistance > safeDistance)
+    if (currentDistance >= safeDistance)
         return false;
 
     botAI->InterruptSpell();
@@ -1115,7 +1106,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     float targetX = capernian->GetPositionX() + radius * std::cos(angle);
     float targetY = capernian->GetPositionY() + radius * std::sin(angle);
 
-    if (bot->GetExactDist2d(targetX, targetY) < 1.0f)
+    if (bot->GetExactDist2d(targetX, targetY) <= 1.0f)
         return false;
 
     botAI->InterruptSpell();
@@ -1299,12 +1290,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
-
-    uint32 const instanceId = kaelthas->GetMap()->GetInstanceId();
-
     static constexpr std::array advisorNames = {
         "grand astromancer capernian",
         "master engineer telonicus",
@@ -1325,6 +1310,12 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
             break;
         }
     }
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    uint32 const instanceId = kaelthas->GetMap()->GetInstanceId();
 
     if (advisorAtFullHp)
     {
@@ -1365,6 +1356,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
             float const currentDistance = bot->GetExactDist2d(axe);
             if (currentDistance < safeDistance)
                 return MoveAway(axe, safeDistance - currentDistance);
+            // Cannot bail on tanks here because one could be the mechanic tracker
         }
     }
 
@@ -1424,7 +1416,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (!target)
         return false;
 
-    if (!PlayerbotAI::IsDps(bot))
+    if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
         return false;
 
     return AI_VALUE(Unit*, "current target") != target && Attack(target);
@@ -1635,8 +1627,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         dstSlot = EQUIPMENT_SLOT_OFFHAND;
     }
 
-    // Infinity Blade prefers OH when MH already holds a legendary
-    // (combat rogues: Warp Slicer MH, Infinity Blade OH)
+    // Infinity Blade prefers OH when MH already holds a legendary (so Combat Rogues will
+    // equip Warp Slicer MH, Infinity Blade OH)
     if (dstSlot == EQUIPMENT_SLOT_MAINHAND && itemId == Id(TkItems::ITEM_INFINITY_BLADE) &&
         bot->CanDualWield())
     {
@@ -1651,7 +1643,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         }
     }
 
-    // Check if the legendary is already equipped in the correct slot
     Item* alreadyEquipped = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, dstSlot);
     if (alreadyEquipped && alreadyEquipped->GetEntry() == itemId)
         return false;
@@ -1669,28 +1660,25 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
             uint16 const srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
             bot->SwapItem(mhPos, srcPos);
             ohCleared = true;
-            return true;  // legendary is now in MH; next tick will route it to OH if applicable
+            return true;
         }
     }
 
-    // Build src position — legendary may be in inventory or in the wrong equipped slot
     uint16 srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
     uint16 const dstPos = (INVENTORY_SLOT_BAG_0 << 8) | dstSlot;
 
-    // If target slot is empty, just move the legendary there from wherever it is
     if (!alreadyEquipped)
     {
         bot->SwapItem(srcPos, dstPos);
         return true;
     }
 
-    // Target slot has a different item — swap them
     bool const oldIs2H = alreadyEquipped->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
     bool const newIs2H = proto->InventoryType == INVTYPE_2HWEAPON;
 
     bot->SwapItem(srcPos, dstPos);
 
-    // If a 2H→1H or 1H→2H swap also affects OH, move the OH item to backpack
+    // If a 2H→1H or 1H→2H swap also affects OH, move the OH item to backpack.
     if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
          (!oldIs2H && newIs2H)) && bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
@@ -1706,7 +1694,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         }
     }
 
-    // After a 2H→1H swap left OH empty, try to equip the best offhand from inventory.
+    // After a 2H→1H swap left OH empty, try to equip the best OH from inventory.
     // Skip if MH is now a 2H (server rejects OH equip with IsTwoHandUsed).
     if (!ohCleared || bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         return true;
@@ -1747,8 +1735,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
             if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
                 continue;
 
-            float const score =
-                calculator.CalculateItem(itemProto->ItemId, item->GetItemRandomPropertyId());
+            float const score = calculator.CalculateItem(
+                itemProto->ItemId, item->GetItemRandomPropertyId());
             if (score > bestScore)
             {
                 bestScore = score;
@@ -1882,7 +1870,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
     if (kaelthas->GetVictim() != bot || !bot->IsWithinMeleeRange(kaelthas))
         return false;
 
-    Position const position = KAELTHAS_TANK_POSITION;
+    Position const& position = KAELTHAS_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
     if (distToPosition <= 4.0f)
         return false;
@@ -1911,8 +1899,8 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 40.0f;
-    std::vector<Unit*> flameStrikes =
-        GetAllHazardTriggers(bot, Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER), searchRadius);
+    std::vector<Unit*> flameStrikes = GetAllHazardTriggers(
+        bot, Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER), searchRadius);
 
     if (flameStrikes.empty())
         return false;
@@ -1953,7 +1941,6 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes()
 {
     std::vector<Unit*> phoenixes;
-    AiObjectContext* context = botAI->GetAiObjectContext();
     for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* target = botAI->GetUnit(targetGuid);
@@ -1983,10 +1970,10 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes(
         return false;
 
     constexpr float safeDistance = 12.0f;
-    if (GetNearestNonTankPlayerInRadius(bot, safeDistance))
-        return MoveFromGroup(safeDistance);
+    if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
+        return false;
 
-    return false;
+    return MoveFromGroup(safeDistance);
 }
 
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoidPhoenixes()
@@ -2003,20 +1990,18 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
     if (!kaelthas)
         return false;
 
+    Unit* target = kaelthas;
+
+    // If Shock Barrier is up, burn Kael and ignore eggs
     if (!kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
     {
+        // Otherwise, destroy eggs if any exist
         constexpr float searchRadius = 75.0f;
-        Unit* phoenixEgg = bot->FindNearestCreature(
-            Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
-        if (phoenixEgg && AI_VALUE(Unit*, "current target") != phoenixEgg)
-            return Attack(phoenixEgg);
-    }
-    else if (AI_VALUE(Unit*, "current target") != kaelthas)
-    {
-        return Attack(kaelthas);
+        if (Unit* egg = bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true))
+            target = egg;
     }
 
-    return false;
+    return AI_VALUE(Unit*, "current target") != target && Attack(target);
 }
 
 bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
@@ -2036,10 +2021,10 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 
         if (member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
         {
-            float dist = bot->GetExactDist2d(member);
-            if (dist < closestDist)
+            float distToMcMember = bot->GetExactDist2d(member);
+            if (distToMcMember < closestDist)
             {
-                closestDist = dist;
+                closestDist = distToMcMember;
                 mcTarget = member;
             }
         }
