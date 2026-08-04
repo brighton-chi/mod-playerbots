@@ -80,7 +80,6 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
     if (!botAI->CanCastSpell("polymorph", target))
         return false;
 
-    botAI->InterruptSpell();
     return botAI->CastSpell("polymorph", target);
 }
 
@@ -1257,7 +1256,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::MeleeDpsPositionOutsideBo
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
-    float const desiredDist = bot->GetMeleeRange(telonicus);
+    float const desiredDist = bot->GetMeleeRange(telonicus) - 0.5f;
     float const behindAngle = Position::NormalizeOrientation(telonicus->GetOrientation() + M_PI);
     float const targetX = telonicus->GetPositionX() + desiredDist * std::cos(behindAngle);
     float const targetY = telonicus->GetPositionY() + desiredDist * std::sin(behindAngle);
@@ -1469,25 +1468,25 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
         case TkNpcs::NPC_DEVASTATION:
             return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
                 (bot->getClass() == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
-                (PlayerbotAI::IsDps(bot) && bot->getClass() == CLASS_DEATH_KNIGHT);
+                (bot->getClass() == CLASS_DEATH_KNIGHT && PlayerbotAI::IsDps(bot));
 
         case TkNpcs::NPC_INFINITY_BLADES:
             return bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_HUNTER ||
                 (bot->getClass() == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT) ||
                 (bot->getClass() == CLASS_WARRIOR && tab != WARRIOR_TAB_ARMS);
 
-        // Sub will probably also want to use the Sword, but the spec is currently unimplemented
+        // Sublety will probably want to use the Sword, but the spec is currently unimplemented
         case TkNpcs::NPC_WARP_SLICER:
             return (bot->getClass() == CLASS_ROGUE && tab == ROGUE_TAB_COMBAT) ||
-                (PlayerbotAI::IsTank(bot) &&
-                 (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_PALADIN));
+                ((bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_PALADIN) &&
+                 PlayerbotAI::IsTank(bot));
 
         case TkNpcs::NPC_STAFF_OF_DISINTEGRATION:
-            return (PlayerbotAI::IsRangedDps(bot) && bot->getClass() != CLASS_HUNTER) ||
+            return (bot->getClass() != CLASS_HUNTER && PlayerbotAI::IsRangedDps(bot)) ||
                 (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL);
 
         case TkNpcs::NPC_PHASESHIFT_BULWARK:
-            return PlayerbotAI::IsTank(bot) && bot->getClass() != CLASS_DRUID;
+            return bot->getClass() != CLASS_DRUID && PlayerbotAI::IsTank(bot);
 
         default:
             return false;
@@ -1558,6 +1557,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         if (checkSlot(INVENTORY_SLOT_BAG_0, slot))
             break;
     }
+
     if (!legendaryItem)
     {
         for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
@@ -1566,6 +1566,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
                 break;
         }
     }
+
     if (!legendaryItem)
     {
         for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
@@ -1593,9 +1594,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     if (proto->InventoryType == INVTYPE_NON_EQUIP)
         return false;
 
-    // Determine the equip slot for this weapon type
     uint8 dstSlot = EQUIPMENT_SLOT_MAINHAND;
-
     if (proto->InventoryType == INVTYPE_RANGED)
     {
         dstSlot = EQUIPMENT_SLOT_RANGED;

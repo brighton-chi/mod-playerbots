@@ -457,12 +457,8 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (AI_VALUE2(bool, "combat", "self target"))
         return false;
 
-    Map* map = bot->GetMap();
-    if (!map)
-        return false;
-
     constexpr uint32 kaelthasDbGuid = 158218;
-    auto const& creatureStore = map->GetCreatureBySpawnIdStore();
+    auto const& creatureStore = bot->GetMap()->GetCreatureBySpawnIdStore();
     auto it = creatureStore.find(kaelthasDbGuid);
     if (it == creatureStore.end())
         return false;
@@ -472,10 +468,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
         return false;
 
     static constexpr std::array weaponSlots = {
-        EQUIPMENT_SLOT_MAINHAND,
-        EQUIPMENT_SLOT_OFFHAND,
-        EQUIPMENT_SLOT_RANGED,
-    };
+        EQUIPMENT_SLOT_MAINHAND, EQUIPMENT_SLOT_OFFHAND, EQUIPMENT_SLOT_RANGED, };
 
     for (uint8 slot : weaponSlots)
     {
