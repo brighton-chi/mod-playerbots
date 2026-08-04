@@ -30,7 +30,6 @@ struct KalecgosEncounterState
     uint32 activeRiftOpenedMs = 0;
     uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
     ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;
-    ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
     ObjectGuid currentTankGuid = ObjectGuid::Empty;
     ObjectGuid activeRiftOutgoingTankGuid = ObjectGuid::Empty;
     bool surfaceHealthAnnounced = false;

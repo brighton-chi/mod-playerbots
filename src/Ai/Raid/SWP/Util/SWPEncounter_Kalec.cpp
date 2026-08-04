@@ -38,7 +38,6 @@ void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
     state.activeRiftOpenedMs = 0;
     state.activeRiftGroup = KALECGOS_INVALID_GROUP;
     state.blastedPlayerGuid = ObjectGuid::Empty;
-    state.firstEntrantGuid = ObjectGuid::Empty;
     state.activeRiftOutgoingTankGuid = ObjectGuid::Empty;
 }
 
@@ -63,9 +62,6 @@ bool IsActivePortalCandidate(Player* bot, const KalecgosEncounterState& state)
 {
     if (!state.activeRiftOpenedMs || state.activeRiftGroup == KALECGOS_INVALID_GROUP)
         return false;
-
-    if (state.blastedPlayerGuid == bot->GetGUID())
-        return true;
 
     return GetAssignedGroup(state, bot->GetGUID()) == state.activeRiftGroup;
 }
@@ -375,25 +371,14 @@ uint8 GetNextAvailablePortalGroup(Group* group, const KalecgosEncounterState& st
 
 uint8 ResolveActivePortalGroup(Group* group, const KalecgosEncounterState& state)
 {
-    if (state.blastedPlayerGuid != ObjectGuid::Empty)
-    {
-        uint8 const blastedGroup = GetAssignedGroup(state, state.blastedPlayerGuid);
-        if (blastedGroup != KALECGOS_INVALID_GROUP)
-            return blastedGroup;
+    if (state.blastedPlayerGuid == ObjectGuid::Empty)
+        return KALECGOS_INVALID_GROUP;
 
-        return GetNextAvailablePortalGroup(group, state);
-    }
+    uint8 const blastedGroup = GetAssignedGroup(state, state.blastedPlayerGuid);
+    if (blastedGroup != KALECGOS_INVALID_GROUP)
+        return blastedGroup;
 
-    if (state.firstEntrantGuid != ObjectGuid::Empty)
-    {
-        uint8 const entrantGroup = GetAssignedGroup(state, state.firstEntrantGuid);
-        if (entrantGroup != KALECGOS_INVALID_GROUP)
-            return entrantGroup;
-
-        return GetNextAvailablePortalGroup(group, state);
-    }
-
-    return KALECGOS_INVALID_GROUP;
+    return GetNextAvailablePortalGroup(group, state);
 }
 
 void AssignPlayerToGroup(
@@ -674,7 +659,6 @@ void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
 
     state.activeRiftOpenedMs = now;
     state.blastedPlayerGuid = player->GetGUID();
-    state.firstEntrantGuid = ObjectGuid::Empty;
     state.activeRiftGroup = ResolveActivePortalGroup(group, state);
     AssignKalecgosTankTargetsForActiveRift(player, group, state);
 
@@ -728,14 +712,8 @@ void RecordSpectralRealmEnter(Player* player)
             group, state.tankAssignmentGuids, guid, state.activeRiftOutgoingTankGuid, true);
     }
 
-    if (state.activeRiftOpenedMs)
-    {
-        if (state.firstEntrantGuid == ObjectGuid::Empty)
-            state.firstEntrantGuid = guid;
-
-        if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
-            state.activeRiftGroup = ResolveActivePortalGroup(group, state);
-    }
+    if (state.activeRiftOpenedMs && state.activeRiftGroup == KALECGOS_INVALID_GROUP)
+        state.activeRiftGroup = ResolveActivePortalGroup(group, state);
 
     if (HasKalecgosTankAssignment(state.tankAssignmentGuids, player->GetGUID()))
     {
