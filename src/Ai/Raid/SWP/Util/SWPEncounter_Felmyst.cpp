@@ -394,12 +394,12 @@ bool IsDemonicVaporPathSafe(
     uint32 const stepCount = static_cast<uint32>(totalDistance / pathStepSize) + 1;
     for (uint32 step = 0; step <= stepCount; ++step)
     {
-        float const t = std::min(
-            static_cast<float>(step * pathStepSize) / totalDistance, 1.0f);
-        float const checkX = start.GetPositionX() +
-            (target.GetPositionX() - start.GetPositionX()) * t;
-        float const checkY = start.GetPositionY() +
-            (target.GetPositionY() - start.GetPositionY()) * t;
+        float const t =
+            std::min(static_cast<float>(step * pathStepSize) / totalDistance, 1.0f);
+        float const checkX =
+            start.GetPositionX() + (target.GetPositionX() - start.GetPositionX()) * t;
+        float const checkY =
+            start.GetPositionY() + (target.GetPositionY() - start.GetPositionY()) * t;
 
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -873,10 +873,11 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
 
     if (IsSweeping(felmyst))
     {
-        const FogLane sweepLane =
-            destinationLane != FogLane::None ? destinationLane : currentLane;
-        if (sweepLane != FogLane::None)
-            tracker.armedSweepLane = sweepLane;
+        FogLane sweepLane = destinationLane;
+        if (sweepLane == FogLane::None)
+            sweepLane = currentLane;
+
+        tracker.armedSweepLane = sweepLane;
     }
 
     if (destinationLocation != FogLocation::None &&
@@ -911,7 +912,7 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    // The HP threshold is to preserve melee targeting during the initial airborne pull
+    // HP threshold to preserve melee targeting during the initial airborne pull
     if (felmyst->GetHealthPct() > 90.0f)
         return false;
 
@@ -1251,6 +1252,8 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     return lowestHpTarget;
 }
 
+// Bots will follow this player during the vapor phase. Return the first eligible assistant,
+// if no eligible assistant is found, return the first eligible bot in the group.
 Player* GetFelmystFlightLeader(Player* player)
 {
     Group* group = player->GetGroup();
@@ -1265,7 +1268,9 @@ Player* GetFelmystFlightLeader(Player* player)
             !GetFelmystDemonicVaporSummonedByBot(member);
     };
 
-    // Keep the current flight leader if still eligible
+    // Keep the then-current flight leader if still eligible to maintain consistency (e.g., if
+    // the leader is targeted by vapor, a new leader is assigned, and we should not switch
+    // back to the original after the vapor head is gone, or chaos will ensue).
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -1279,7 +1284,6 @@ Player* GetFelmystFlightLeader(Player* player)
 
     state.flightLeaderGuid = ObjectGuid::Empty;
 
-    // Find a new flight leader
     Player* fallbackBot = nullptr;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

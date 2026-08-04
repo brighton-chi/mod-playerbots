@@ -138,9 +138,9 @@ static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmy
         if (!encapsulateTarget)
             continue;
 
-        constexpr float encapsulateSafeDistance = 20.0f;
+        constexpr float safeDistance = 20.0f;
         if (player != encapsulateTarget &&
-            player->GetExactDist2d(encapsulateTarget) > encapsulateSafeDistance)
+            player->GetExactDist2d(encapsulateTarget) > safeDistance)
         {
             continue;
         }

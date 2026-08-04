@@ -121,6 +121,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
     if (!target)
         return 1.0f;
 
+    // Like Illidan's Shadowfiends, the spread from player-to-player is a separate spell
     Aura* aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
     if (!aura)
         aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
@@ -415,6 +416,8 @@ float FelmystPrioritizeDemonicVaporAvoidanceMultiplier::GetValue(Action* action)
 
 float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
 {
+    // The charmed player is still friendly to group members so is considered to be an
+    // invalid target by bots; blocking "drop target" allows them to be attacked
     if (!dynamic_cast<DpsAssistAction*>(action) &&
         !dynamic_cast<DropTargetAction*>(action))
     {
@@ -556,10 +559,10 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     constexpr float alythessThreatRatio = 0.9f;
     constexpr float sacrolashThreatRatio = 0.8f;
 
-    bool const shouldHoldSacrolashThreat = sacrolash &&
-        ShouldHoldTwinThreat(bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
-    bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldTwinThreat(bot, alythess, alythessThreatRatio, IsAlythessTank);
+    bool const shouldHoldSacrolashThreat = sacrolash && ShouldHoldTwinThreat(
+        bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
+    bool const shouldHoldAlythessThreat = alythess && ShouldHoldTwinThreat(
+        bot, alythess, alythessThreatRatio, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -583,22 +586,20 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action);
-
-    bool const isTankAvoidAoe =
-        PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
+        dynamic_cast<CastKillingSpreeAction*>(action) ||
+        (PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action));
 
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    if (!isAlwaysBlocked && !isTankAvoidAoe && !isReachAction)
+    if (!isAlwaysBlocked && !isReachAction)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (isAlwaysBlocked || isTankAvoidAoe)
+    if (isAlwaysBlocked)
         return 0.0f;
 
     if (isReachAction && (PlayerbotAI::IsRanged(bot) || IsAlythessTank(bot)))
@@ -643,7 +644,7 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
     if (isReachSpell)
         return 0.0f;
 
-    if (bot->GetDistance2d(victim) < 10.0f) // For MovementAction generally
+    if (bot->GetDistance2d(victim) < 10.0f) // Block MovementAction generally
         return 0.0f;
 
     return 1.0f;
@@ -669,11 +670,11 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    bool isDpsAssist =
+    bool const isDpsAssist =
         botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<DpsAssistAction*>(action);
-    bool isTankAssist =
+    bool const isTankAssist =
         botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<TankAssistAction*>(action);
-    bool isCastDotOnAddSpell = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+    bool const isCastDotOnAddSpell = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
 
     if (!isDpsAssist && !isTankAssist && !isCastDotOnAddSpell)
         return 1.0f;
@@ -772,8 +773,8 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
 
     if (PlayerbotAI::IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru))
         return 1.0f;
-    else
-        return 0.0f;
+
+    return 0.0f;
 }
 
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
@@ -864,7 +865,7 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
         return 1.0f;
 
-    // Apply this multiplier only if there are 3 bot tanks
+    // Apply this multiplier only if there are at least 3 bot tanks
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
         return 1.0f;
@@ -927,10 +928,10 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
 
 float KiljaedenControlDragonMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<WipeAction*>(action))
+    if (dynamic_cast<KiljaedenControlDragonAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<KiljaedenControlDragonAction*>(action))
+    if (dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
