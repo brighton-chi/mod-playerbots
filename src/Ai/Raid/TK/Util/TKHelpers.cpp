@@ -20,10 +20,10 @@ std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
     Unit* lowest = nullptr;
     Unit* highest = nullptr;
 
-    for (auto const& guid :
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
     {
-        Unit* unit = botAI->GetUnit(guid);
+        Unit* unit = botAI->GetUnit(targetGuid);
         if (unit && unit->GetEntry() == entry)
         {
             if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
@@ -193,10 +193,10 @@ int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest)
     int8 locationIndex = LOCATION_NONE;
     for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
     {
-        float dist = dest.GetExactDist2d(&locations[i]);
-        if (dist < minDist)
+        float distToLocation = dest.GetExactDist2d(&locations[i]);
+        if (distToLocation < minDist)
         {
-            minDist = dist;
+            minDist = distToLocation;
             locationIndex = i;
         }
     }
@@ -225,10 +225,10 @@ int8 GetAlarCurrentLocationIndex(Unit* alar)
     int8 locationIndex = LOCATION_NONE;
     for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
     {
-        float dist = alar->GetPosition().GetExactDist2d(&locations[i]);
-        if (dist < minDist)
+        float distToLocation = alar->GetPosition().GetExactDist2d(&locations[i]);
+        if (distToLocation < minDist)
         {
-            minDist = dist;
+            minDist = distToLocation;
             locationIndex = i;
         }
     }
@@ -264,8 +264,8 @@ Player* GetSecondEmberTank(Player* bot)
     if (!mainTank || !assistTank)
         return nullptr;
 
-    bool mainTankHasMelt = mainTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
-    bool assistTankHasMelt = assistTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
+    bool const mainTankHasMelt = mainTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
+    bool const assistTankHasMelt = assistTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
 
     if (mainTankHasMelt)
         return mainTank;

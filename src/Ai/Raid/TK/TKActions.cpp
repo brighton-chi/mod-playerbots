@@ -1953,9 +1953,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes()
 {
     std::vector<Unit*> phoenixes;
-    auto const& targets =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (auto const& targetGuid : targets)
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* target = botAI->GetUnit(targetGuid);
         if (target && target->GetEntry() == Id(TkNpcs::NPC_PHOENIX))
