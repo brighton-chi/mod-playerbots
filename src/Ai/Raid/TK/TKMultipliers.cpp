@@ -111,6 +111,10 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (dynamic_cast<AlarMoveAwayFromRebirthAction*>(action))
         return 1.0f;
 
+    // Don't block Flame Quills avoidance in case of bad timing for the transition
+    if (dynamic_cast<AlarJumpFromPlatformAction*>(action))
+        return 1.0f;
+
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
@@ -118,16 +122,15 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return 1.0f;
 
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
-    {
-        Creature* alarCreature = alar->ToCreature();
-        if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
-            return 0.0f;
-    }
-    else if (alar->GetHealthPct() <= 5.0f) // Melee DPS
-    {
+    Creature* alarCreature = alar->ToCreature();
+    if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
         return 0.0f;
-    }
+
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    if (alar->GetHealthPct() <= 5.0f) // Melee dps activate logic for the P2 transition at 5% HP
+        return 0.0f;
 
     return 1.0f;
 }

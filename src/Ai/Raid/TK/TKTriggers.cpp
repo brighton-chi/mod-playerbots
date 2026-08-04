@@ -44,6 +44,9 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
+    if (PlayerbotAI::IsMelee(bot) && alar->GetHealthPct() <= 5.0f)
+        return false;
+
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
     {
@@ -80,8 +83,15 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
 bool AlarRisingFromTheAshesTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && alar->GetHealthPct() <= 5.0f &&
-        !isAlarInPhase2[alar->GetMap()->GetInstanceId()];
+    if (!alar || alar->GetHealthPct() > 5.0f)
+        return false;
+
+    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+        return false;
+
+    Position dest;
+    return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
+        GetAlarDestinationLocationIndex(alar, dest) != POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()

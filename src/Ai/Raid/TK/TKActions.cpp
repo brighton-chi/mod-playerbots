@@ -86,6 +86,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 }
 
 // Al'ar <Phoenix God>
+// CombatReach is 15 yards
 
 bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -413,6 +414,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
+    // Ranged/tanks wait until Al'ar actually "dies" to activate
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
     {
         Creature* alarCreature = alar->ToCreature();
@@ -420,7 +422,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // Per above, ranged/tanks wait until Al'ar actually "dies," while melee dps jumps off at 5% HP
+    // Meanwhile, melee dps jumps off at 5% HP
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         int8 closestPlatform;
@@ -433,8 +435,9 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             position.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance2d(alar);
+    // Everybody stays away from the center
+    constexpr float safeDistance = 35.0f;
+    float const currentDistance = bot->GetExactDist2d(ALAR_ROOM_CENTER);
     if (currentDistance >= safeDistance)
         return false;
 
