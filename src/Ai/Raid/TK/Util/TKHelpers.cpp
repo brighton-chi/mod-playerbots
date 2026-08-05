@@ -204,7 +204,7 @@ int8 GetAlarCurrentLocationIndex(Unit* alar)
     return locationIndex;
 }
 
-int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest)
+int8 GetAlarDestinationLocationIndex(Unit* alar)
 {
     if (!alar)
         return LOCATION_NONE;
@@ -213,7 +213,7 @@ int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest)
     if (!alar->GetMotionMaster()->GetDestination(x, y, z))
         return LOCATION_NONE;
 
-    dest.Relocate(x, y, z);
+    Position dest(x, y, z);
 
     static std::array const locations = {
         ALAR_LANDING_PLATFORM_0,
@@ -246,10 +246,7 @@ int8 GetAlarLocationIndex(Unit* alar)
 {
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
+        locationIndex = GetAlarDestinationLocationIndex(alar);
 
     return locationIndex;
 }
@@ -322,7 +319,7 @@ bool HasWrathOfTheAstromancer(Player* bot)
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
 }
 
-Player* GetAstromancerRangedLeader(Player* bot)
+Player* GetAstromancerRangedLeaderBot(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)

@@ -498,9 +498,8 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
     }
 
     // During Dive Bomb sequence
-    Position dest;
     if (GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
-        GetAlarDestinationLocationIndex(alar, dest) != POINT_QUILL_OR_DIVE_IDX)
+        GetAlarDestinationLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX)
     {
         return false;
     }
@@ -521,7 +520,6 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
         return false;
 
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
-
     bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
     if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
@@ -733,7 +731,7 @@ bool HighAstromancerSolarianStackOnRangedLeaderAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Player* rangedLeader = GetAstromancerRangedLeader(bot);
+    Player* rangedLeader = GetAstromancerRangedLeaderBot(bot);
     if (!rangedLeader || bot == rangedLeader)
         return false;
 
@@ -985,8 +983,8 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
     {
         constexpr float minDistance = 28.0f;
         float const currentDist = bot->GetDistance2d(capernian);
-        if (currentDist < minDistance)
-            return MoveAway(capernian, minDistance - currentDist);
+        if ((currentDist < minDistance) && MoveAway(capernian, minDistance - currentDist))
+            return true;
     }
 
     return botAI->CanCastSpell(searingPain, capernian) &&
@@ -1333,23 +1331,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
-    if (axe)
-    {
-        bool const hasAggroFromWeapon =
-            (mace && mace->GetVictim() == bot) ||
-            (dagger && dagger->GetVictim() == bot) ||
-            (sword && sword->GetVictim() == bot);
-
-        if (!PlayerbotAI::IsTank(bot) ||
-            (PlayerbotAI::IsAssistTank(bot) && hasAggroFromWeapon))
-        {
-            float const safeDistance = PlayerbotAI::IsTank(bot) ? 17.0f : 13.0f;
-            float const currentDistance = bot->GetExactDist2d(axe);
-            if (currentDistance < safeDistance)
-                return MoveAway(axe, safeDistance - currentDistance);
-            // Cannot bail on tanks here because one could be the mechanic tracker
-        }
-    }
+    // Variable return allows failure to MoveAway not to exit the function
+    bool const didAvoidDevastation = HandleDevastationAvoidance(axe, mace, dagger, sword);
 
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, TK_MAP_ID);
     Unit* target = nullptr;
@@ -1375,11 +1358,11 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (isMechanicTracker && MarkTargetWithSkull(bot, longbow))
             return true;
     }
-    // Priority 4: Warp Slicer
-    else if (sword)
+    // Priority 4: Devastation - ranged only
+    else if (axe && PlayerbotAI::IsRangedDps(bot))
     {
-        target = sword;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, sword))
+        target = axe;
+        if (MarkTargetWithCross(bot, axe))
             return true;
     }
     // Priority 5: Infinity Blades
@@ -1389,11 +1372,11 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (isMechanicTracker && MarkTargetWithSkull(bot, dagger))
             return true;
     }
-    // Priority 6: Devastation - ranged only
-    else if (axe && PlayerbotAI::IsRangedDps(bot))
+    // Priority 6: Warp Slicer
+    else if (sword)
     {
-        target = axe;
-        if (MarkTargetWithCross(bot, axe))
+        target = sword;
+        if (isMechanicTracker && MarkTargetWithSkull(bot, sword))
             return true;
     }
     // Priority 7: Phaseshift Bulwark
@@ -1405,12 +1388,44 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     }
 
     if (!target)
-        return false;
+        return didAvoidDevastation;
 
     if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
-        return false;
+        return didAvoidDevastation;
 
-    return AI_VALUE(Unit*, "current target") != target && Attack(target);
+    return didAvoidDevastation ||
+        (AI_VALUE(Unit*, "current target") != target && Attack(target));
+}
+
+bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastationAvoidance(
+    Unit* axe, Unit* mace, Unit* dagger, Unit* sword)
+{
+    bool const hasAggroFromWeapon =
+        (mace && mace->GetVictim() == bot) ||
+        (dagger && dagger->GetVictim() == bot) ||
+        (sword && sword->GetVictim() == bot);
+
+    bool result = false;
+
+    if (!PlayerbotAI::IsTank(bot) || (PlayerbotAI::IsAssistTank(bot) && hasAggroFromWeapon))
+    {
+        float const safeDistance = PlayerbotAI::IsTank(bot) ? 15.0f : 10.0f;
+        float const currentDistance = bot->GetDistance2d(axe);
+        if (currentDistance < safeDistance)
+            result = MoveAway(axe, safeDistance - currentDistance);
+    }
+
+    if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot) &&
+        AI_VALUE(Unit*, "current target") == axe)
+    {
+        // In case melee ends up on the axe despite the target exclusion
+        botAI->InterruptSpell();
+        bot->AttackStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+    }
+
+    return result;
 }
 
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
@@ -1466,40 +1481,48 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs weaponEntry)
 {
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
+    uint8 const tab = AiFactory::GetPlayerSpecTab(bot);
+
+    bool const isDruid = bot->getClass() == CLASS_DRUID;
+    bool const isHunter = bot->getClass() == CLASS_HUNTER;
+    bool const isPaladin = bot->getClass() == CLASS_PALADIN;
+    bool const isRogue = bot->getClass() == CLASS_ROGUE;
+    bool const isShaman = bot->getClass() == CLASS_SHAMAN;
+
+    bool const isDk = bot->getClass() == CLASS_DEATH_KNIGHT;
+    bool const isFrostDk = (isDk && tab == DEATH_KNIGHT_TAB_FROST);
+
+    bool const isWarrior = bot->getClass() == CLASS_WARRIOR;
+    bool const isArmsWarrior = (isWarrior && tab == WARRIOR_TAB_ARMS);
+
     switch (weaponEntry)
     {
-        case TkNpcs::NPC_NETHERSTRAND_LONGBOW:
-            return bot->getClass() == CLASS_HUNTER;
+        case TkNpcs::NPC_NETHERSTRAND_LONGBOW: // Hunter
+            return isHunter;
 
-        case TkNpcs::NPC_COSMIC_INFUSER:
+        case TkNpcs::NPC_COSMIC_INFUSER: // Healer
             return PlayerbotAI::IsHeal(bot);
 
-        // Fury Warriors could use the axe, but their DPS is terrible at 70
-        // So they're better off looting only the dagger to break MCs
-        // Plus dual wielding 1H is better dps than Titan Grip at 70 anyway
-        case TkNpcs::NPC_DEVASTATION:
-            return (bot->getClass() == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) ||
-                (bot->getClass() == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
-                (bot->getClass() == CLASS_DEATH_KNIGHT && PlayerbotAI::IsDps(bot));
+        // Fury Warriors could use the axe, but their DPS is terrible at 70 so they're better off
+        // looting the dagger to break MC (and DW 1H is better dps than Titan Grip at 70 anyway)
+        case TkNpcs::NPC_DEVASTATION: // Arms Warrior, Blood/Unholy DK, Ret Paladin
+            return isArmsWarrior || (isDk && !isFrostDk) || (isPaladin && PlayerbotAI::IsDps(bot));
 
-        case TkNpcs::NPC_INFINITY_BLADES:
-            return bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_HUNTER ||
-                (bot->getClass() == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT) ||
-                (bot->getClass() == CLASS_WARRIOR && tab != WARRIOR_TAB_ARMS);
+        case TkNpcs::NPC_INFINITY_BLADES: // Rogue, Hunter, Fury/Prot Warrior, Frost DK, Enh Shaman
+            return isRogue || isHunter || (isWarrior && !isArmsWarrior) || isFrostDk ||
+                (isShaman && tab == SHAMAN_TAB_ENHANCEMENT);
 
         // Sublety will probably want to use the Sword, but the spec is currently unimplemented
-        case TkNpcs::NPC_WARP_SLICER:
-            return (bot->getClass() == CLASS_ROGUE && tab == ROGUE_TAB_COMBAT) ||
-                ((bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_PALADIN) &&
-                 PlayerbotAI::IsTank(bot));
+        case TkNpcs::NPC_WARP_SLICER: // Prot Paladin, Frost DK, Combat Rogue
+            return (isPaladin && PlayerbotAI::IsTank(bot)) || isFrostDk ||
+                (isRogue && tab == ROGUE_TAB_COMBAT);
 
-        case TkNpcs::NPC_STAFF_OF_DISINTEGRATION:
-            return (bot->getClass() != CLASS_HUNTER && PlayerbotAI::IsRangedDps(bot)) ||
-                (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL);
+        case TkNpcs::NPC_STAFF_OF_DISINTEGRATION: // Dps caster, Feral Druid
+            return (!isHunter && PlayerbotAI::IsRangedDps(bot)) ||
+                (isDruid && tab == DRUID_TAB_FERAL);
 
-        case TkNpcs::NPC_PHASESHIFT_BULWARK:
-            return bot->getClass() != CLASS_DRUID && PlayerbotAI::IsTank(bot);
+        case TkNpcs::NPC_PHASESHIFT_BULWARK: // Prot Paladin/Warrior
+            return (isWarrior || isPaladin) && PlayerbotAI::IsTank(bot);
 
         default:
             return false;
@@ -1551,8 +1574,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 itemId)
 {
-    // Find the legendary item — check equipped slots first (it may have been swapped
-    // to a wrong slot by a previous EquipLegendaryWeapon call), then backpack and bags
     Item* legendaryItem = nullptr;
     auto const checkSlot = [&](uint8 bag, uint8 slot)
     {
@@ -1618,8 +1639,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         dstSlot = EQUIPMENT_SLOT_OFFHAND;
     }
 
-    // Infinity Blade prefers OH when MH already holds a legendary (so Combat Rogues will
-    // equip Warp Slicer MH, Infinity Blade OH)
+    // Infinity Blade prefers OH when MH already holds a legendary (so Combat Rogues and Frost DKs
+    // will equip Warp Slicer MH, Infinity Blade OH)
     if (dstSlot == EQUIPMENT_SLOT_MAINHAND && itemId == Id(TkItems::ITEM_INFINITY_BLADE) &&
         bot->CanDualWield())
     {
@@ -1640,7 +1661,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     botAI->InterruptSpell();
 
-    // If a 2H in MH is blocking the target OH slot, swap the 2H to inventory first
+    // If a 2H is blocking the target OH slot, unequip the 2H first
     bool ohCleared = false;
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
@@ -1669,7 +1690,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     bot->SwapItem(srcPos, dstPos);
 
-    // If a 2H→1H or 1H→2H swap also affects OH, move the OH item to backpack.
     if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
          (!oldIs2H && newIs2H)) && bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
@@ -1685,8 +1705,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         }
     }
 
-    // After a 2H→1H swap left OH empty, try to equip the best OH from inventory.
-    // Skip if MH is now a 2H (server rejects OH equip with IsTwoHandUsed).
+    // If a bot using a 2H equipped a 1H legendary, try to equip the best OH from its inventory
     if (!ohCleared || bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         return true;
 
@@ -1854,14 +1873,14 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
 
 bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != kaelthas)
+    if (PlayerbotAI::IsMainTank(bot) && AI_VALUE(Unit*, "current target") != kaelthas)
         return Attack(kaelthas);
 
     if (kaelthas->GetVictim() != bot || !bot->IsWithinMeleeRange(kaelthas))
@@ -2037,22 +2056,31 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    if (bot->getClass() == CLASS_ROGUE && AiFactory::GetPlayerSpecTab(bot) != ROGUE_TAB_COMBAT &&
-        botAI->CanCastSpell("sinister strike", mcTarget))
+    char const* spell = nullptr;
+    switch (bot->getClass())
     {
-        return botAI->CastSpell("sinister strike", mcTarget);
-    }
-    else
-    {
-        static std::array const spells = { "hamstring", "wing clip", "shiv", "stormstrike" };
-        for (char const* spell : spells)
-        {
-            if (botAI->CanCastSpell(spell, mcTarget))
-                return botAI->CastSpell(spell, mcTarget);
-        }
+        case CLASS_WARRIOR:
+            spell = "hamstring";
+            break;
+        case CLASS_HUNTER:
+            spell = "wing clip";
+            break;
+        case CLASS_ROGUE:
+            spell = (AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT) ?
+                "shiv" : "sinister strike";
+            break;
+        case CLASS_SHAMAN:
+            spell = "stormstrike";
+            break;
+        case CLASS_DEATH_KNIGHT:
+            spell = "blood strike";
+            break;
     }
 
-    return false;
+    if (!spell || !botAI->CanCastSpell(spell, mcTarget))
+        return false;
+
+    return botAI->CastSpell(spell, mcTarget);
 }
 
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)

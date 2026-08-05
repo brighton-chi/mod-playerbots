@@ -309,6 +309,9 @@ public:
     KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kael'thas sunstrider assign legendary weapon dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool HandleDevastationAvoidance(Unit* axe, Unit* mace, Unit* dagger, Unit* sword);
 };
 
 class KaelthasSunstriderMoveDevastationAwayAction : public AttackAction

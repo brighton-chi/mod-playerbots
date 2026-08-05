@@ -46,10 +46,7 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
-    {
-        Position dest;
-        locationIndex = GetAlarDestinationLocationIndex(alar, dest);
-    }
+        locationIndex = GetAlarDestinationLocationIndex(alar);
 
     return locationIndex != POINT_QUILL_OR_DIVE_IDX && locationIndex != POINT_MIDDLE_IDX;
 }
@@ -70,9 +67,8 @@ bool AlarIncomingFlameQuillsTrigger::IsActive()
     if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
-    Position dest;
     return GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
-        GetAlarDestinationLocationIndex(alar, dest) == POINT_QUILL_OR_DIVE_IDX;
+        GetAlarDestinationLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarRisingFromTheAshesTrigger::IsActive()
@@ -84,9 +80,8 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return false;
 
-    Position dest;
     return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
-        GetAlarDestinationLocationIndex(alar, dest) != POINT_QUILL_OR_DIVE_IDX;
+        GetAlarDestinationLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX;
 }
 
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
@@ -524,11 +519,7 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
-            return true;
+        return member && member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL));
     }
 
     return false;

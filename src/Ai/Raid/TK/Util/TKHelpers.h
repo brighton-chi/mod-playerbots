@@ -173,7 +173,7 @@ inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f }
 extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
-int8 GetAlarDestinationLocationIndex(Unit* alar, Position dest);
+int8 GetAlarDestinationLocationIndex(Unit* alar);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
 int8 GetAlarLocationIndex(Unit* alar);
 void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position& ground);
@@ -201,7 +201,7 @@ extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOr
 // High Astromancer Solarian
 
 bool HasWrathOfTheAstromancer(Player* bot);
-Player* GetAstromancerRangedLeader(Player* bot);
+Player* GetAstromancerRangedLeaderBot(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
