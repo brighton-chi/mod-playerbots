@@ -538,6 +538,4 @@ bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
-    // return bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
-    // Above commented out to test code for forcing fall
 }

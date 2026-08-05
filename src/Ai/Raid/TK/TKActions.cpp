@@ -10,6 +10,8 @@
 #include "ItemPackets.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
+#include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
@@ -2053,70 +2055,127 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
-    {
-        if (!bot->IsFlying())
-            return false;
+        return DropToGround();
 
-        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+    return HoverAndSpread();
+}
+
+bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
+{
+    if (!bot->IsFlying() && !bot->CanFly())
+        return false;
+
+    // Clear the flags before querying the floor: UpdateAllowedPositionZ skips clamping entirely while
+    // Player::CanFly() is true, so it would hand back the bot's airborne Z unchanged.
+    bot->RemoveUnitMovementFlag(
+        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+    if (!bot->IsRooted())
+        bot->SendMovementFlagUpdate();
+
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+    float groundZ = bot->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, groundZ);
+    bot->NearTeleportTo(x, y, groundZ, bot->GetOrientation());
+    return true;
+}
+
+bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
+{
+    // Nether Beam damage (35873) chains to 10 targets, and Spell::SearchChainTargets gives it a 10y jump
+    // radius (DmgClass MAGIC, no spell_jump_distance override). The hop test is IsWithinDist, which adds both
+    // sides' combat reach (1.5 each for players) and measures in 3d, so the real reach is 13y and altitude
+    // breaks the chain just as horizontal distance does. Keeping the tier gap equal to the spread distance
+    // splits the work: bots on different tiers already clear the threshold on height alone, so the horizontal
+    // push only ever fires between bots sharing a tier.
+    constexpr float minSpreadDistance = 14.0f;
+    constexpr float baseHoverHeight = 4.0f;
+    constexpr float tierHeight = minSpreadDistance;
+    constexpr uint32 tierCount = 3;
+
+    // Gravity Lapse (39432) applies SPELL_AURA_FLY, but Unit::SetCanFly() writes no movement flag for a
+    // client-controlled unit, so the core never actually grants a bot flight. UpdateMovementState() is what
+    // grants it, and its FLYING/DISABLE_GRAVITY half is what makes PlayerbotAI::CastSpell reject every cast.
+    // Nothing simulates gravity for players server side, so CAN_FLY on its own is enough to hold a bot at
+    // altitude: it stops UpdateAllowedPositionZ from clamping to the floor while leaving Unit::IsFlying()
+    // false. Reassert the split every tick, since any other MovementAction restores the full set.
+    if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) ||
+        bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
+    {
+        bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY);
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
-
-        float const x = bot->GetPositionX();
-        float const y = bot->GetPositionY();
-        float groundZ = bot->GetPositionZ();
-        bot->UpdateAllowedPositionZ(x, y, groundZ);
-        bot->NearTeleportTo(x, y, groundZ, bot->GetOrientation());
-        return true;
     }
+
+    // Let the current spline land before picking a new destination. Returning false leaves the tick free for
+    // the bot to keep casting, which is the point of holding the flags apart in the first place.
+    if (!bot->movespline->Finalized())
+        return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    constexpr float minSpreadDistance = 17.0f;
-    std::vector<Player*> nearbyPlayers;
+    Player* closestPlayer = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        if (bot->IsWithinDist3d(member, minSpreadDistance * 1.0f))
-            nearbyPlayers.push_back(member);
-    }
-
-    if (nearbyPlayers.empty())
-        return false;
-
-    Player* closestPlayer = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
-    for (Player* player : nearbyPlayers)
-    {
-        float const distToPlayer = bot->GetExactDist(player);
-        if (distToPlayer < closestDist)
+        float const distToMember = bot->GetExactDist(member);
+        if (distToMember < closestDist)
         {
-            closestDist = distToPlayer;
-            closestPlayer = player;
+            closestDist = distToMember;
+            closestPlayer = member;
         }
     }
 
-    if (!closestPlayer || closestDist >= minSpreadDistance)
-        return false;
-
-    float const angle = bot->GetAngle(closestPlayer) + M_PI;
-    float const spreadDist = minSpreadDistance - closestDist;
-    float targetX = bot->GetPositionX() + std::cos(angle) * spreadDist;
-    float targetY = bot->GetPositionY() + std::sin(angle) * spreadDist;
-    float targetZ = bot->GetPositionZ();
-
-    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-            targetX, targetY, targetZ))
+    float targetX = bot->GetPositionX();
+    float targetY = bot->GetPositionY();
+    if (closestPlayer && closestDist < minSpreadDistance)
     {
-        return false;
+        float const angle = bot->GetAngle(closestPlayer) + M_PI;
+        float const spreadDist = minSpreadDistance - closestDist;
+        targetX += std::cos(angle) * spreadDist;
+        targetY += std::sin(angle) * spreadDist;
     }
 
-    return MoveTo(
-        TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+    float const floorZ = bot->GetMapHeight(targetX, targetY, bot->GetPositionZ());
+    if (floorZ <= VMAP_INVALID_HEIGHT_VALUE)
+        return false;
+
+    // Stagger the raid across fixed altitudes so bots use the vertical space the way players do. Deriving the
+    // tier from the guid keeps a bot on the same one for the whole encounter.
+    uint32 const tier = bot->GetGUID().GetCounter() % tierCount;
+    float targetZ = floorZ + baseHoverHeight + tier * tierHeight;
+
+    // The arena ceiling is not a known constant, and Kael's platform sits above the surrounding floor, so let
+    // vmap decide how much headroom there is: step down a tier at a time until the destination is reachable.
+    while (targetZ > floorZ + baseHoverHeight && !bot->IsWithinLOS(targetX, targetY, targetZ))
+        targetZ -= tierHeight;
+
+    if (!bot->IsWithinLOS(targetX, targetY, targetZ))
+        return false;
+
+    if (bot->GetExactDist(targetX, targetY, targetZ) < 1.0f)
+        return false;
+
+    // Deliberately not MoveTo(): it runs UpdateMovementState(), which restores FLYING/DISABLE_GRAVITY while
+    // the aura is up, and with IsFlying() false it would generate an mmap path that flattens targetZ to the
+    // floor.
+    MotionMaster* mm = bot->GetMotionMaster();
+    mm->Clear();
+    mm->MovePoint(
+        /*id*/ 0,
+        /*coords*/ targetX, targetY, targetZ,
+        /*forcedMovement*/ FORCED_MOVEMENT_NONE,
+        /*speed*/ 0.f,
+        /*orientation*/ 0.f,
+        /*generatePath*/ false,  // straight 3d vmap spline
+        /*forceDestination*/ true);
+
+    return true;
 }

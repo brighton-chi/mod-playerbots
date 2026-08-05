@@ -401,6 +401,10 @@ public:
     KaelthasSunstriderSpreadOutInMidairAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kael'thas sunstrider spread out in midair") {}
     bool Execute(Event event) override;
+
+private:
+    bool DropToGround();
+    bool HoverAndSpread();
 };
 
 #endif
