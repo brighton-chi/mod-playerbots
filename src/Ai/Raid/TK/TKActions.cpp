@@ -1105,12 +1105,12 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
     {
         constexpr float targetDist = 20.0f;
         float const angle = capernian->GetAngle(bot);
-        float const destX = capernian->GetPositionX() + std::cos(angle) * targetDist;
-        float const destY = capernian->GetPositionY() + std::sin(angle) * targetDist;
+        float const targetX = capernian->GetPositionX() + std::cos(angle) * targetDist;
+        float const targetY = capernian->GetPositionY() + std::sin(angle) * targetDist;
 
         return MoveTo(
-            TK_MAP_ID, destX, destY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
@@ -1518,12 +1518,12 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
     {
         float const targetDist = INTERACTION_DISTANCE - 2.0f;
         float const angle = weapon->GetAngle(bot);
-        float const destX = weapon->GetPositionX() + std::cos(angle) * targetDist;
-        float const destY = weapon->GetPositionY() + std::sin(angle) * targetDist;
+        float const targetX = weapon->GetPositionX() + std::cos(angle) * targetDist;
+        float const targetY = weapon->GetPositionY() + std::sin(angle) * targetDist;
 
         return MoveTo(
-            TK_MAP_ID, destX, destY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     OpenLootAction open(botAI);
@@ -2052,21 +2052,20 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
-    // Make bots fall if stuck in midair after Gravity Lapse
-    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)) &&
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
+    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
     {
+        if (!bot->IsFlying())
+            return false;
+
+        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+        if (!bot->IsRooted())
+            bot->SendMovementFlagUpdate();
+
         float const x = bot->GetPositionX();
         float const y = bot->GetPositionY();
         float groundZ = bot->GetPositionZ();
         bot->UpdateAllowedPositionZ(x, y, groundZ);
-
-        bot->GetMotionMaster()->MoveFall();
-        bot->SetFallInformation(0, bot->GetPositionZ());
-        MovementInfo fallInfo = bot->m_movementInfo;
-        fallInfo.pos.Relocate(x, y, groundZ);
-        bot->HandleFall(fallInfo);
-        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+        bot->NearTeleportTo(x, y, groundZ, bot->GetOrientation());
         return true;
     }
 
@@ -2105,11 +2104,19 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
         return false;
 
     float const angle = bot->GetAngle(closestPlayer) + M_PI;
-    float const distance = minSpreadDistance - closestDist;
-    float const x = bot->GetPositionX() + std::cos(angle) * distance;
-    float const y = bot->GetPositionY() + std::sin(angle) * distance;
+    float const spreadDist = minSpreadDistance - closestDist;
+    float targetX = bot->GetPositionX() + std::cos(angle) * spreadDist;
+    float targetY = bot->GetPositionY() + std::sin(angle) * spreadDist;
+    float targetZ = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            targetX, targetY, targetZ))
+    {
+        return false;
+    }
 
     return MoveTo(
-        TK_MAP_ID, x, y, bot->GetPositionZ(), false, false, false, true,
+        TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
