@@ -489,25 +489,6 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    /* bool const isTankFace = dynamic_cast<TankFaceAction*>(action);
-    bool const isCombatFormationMove = dynamic_cast<CombatFormationMoveAction*>(action);
-
-    if (!isTankFace && !isCombatFormationMove)
-        return 1.0f;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return 1.0f;
-
-    if (isTankFace)
-    {
-        boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-        if (!kaelAI || kaelAI->GetPhase() == PHASE_WEAPONS)
-            return 1.0f;
-    }
-
-    return 0.0f;*/
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -594,13 +575,13 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
     if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
