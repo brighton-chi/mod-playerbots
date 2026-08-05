@@ -83,20 +83,23 @@ Position FindSafestNearbyPosition(
 {
     constexpr float searchStep = M_PI / 12.0f;
     constexpr float minDistance = 2.0f;
-    constexpr float maxDistance = 30.0f;
     constexpr float distanceStep = 1.0f;
+    constexpr uint8 numAngles = 24;
+    constexpr uint8 numDistSteps = 28;
 
     Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    for (float distance = minDistance; distance <= maxDistance; distance += distanceStep)
+    for (uint8 i = 0; i <= numDistSteps; ++i)
     {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        float const distance = minDistance + i * distanceStep;
+        for (uint8 j = 0; j < numAngles; ++j)
         {
+            float const angle = j * searchStep;
             Position const searchCenter = center ? *center : bot->GetPosition();
-            float x = searchCenter.GetPositionX() + distance * std::cos(angle);
-            float y = searchCenter.GetPositionY() + distance * std::sin(angle);
+            float const x = searchCenter.GetPositionX() + distance * std::cos(angle);
+            float const y = searchCenter.GetPositionY() + distance * std::sin(angle);
 
             bool isSafe = true;
             for (Unit* hazard : hazards)

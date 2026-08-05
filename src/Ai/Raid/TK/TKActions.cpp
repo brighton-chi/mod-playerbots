@@ -650,10 +650,11 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
 
     constexpr float searchStep = M_PI / 12.0f;
     constexpr float minSearchDist = 1.0f;
-    constexpr float maxSearchDist = 40.0f;
     constexpr float searchDistStep = 1.0f;
     constexpr float minDistFromBoss = 20.5f;
     constexpr float maxDistFromBoss = 28.5f;
+    constexpr uint8 numAngles = 24;
+    constexpr uint8 numDistSteps = 39;
 
     std::vector<Position> bestCandidates;
     float bestMoveDist = std::numeric_limits<float>::max();
@@ -661,13 +662,15 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
 
-    for (float dist = minSearchDist; dist <= maxSearchDist; dist += searchDistStep)
+    for (uint8 i = 0; i <= numDistSteps; ++i)
     {
+        float const dist = minSearchDist + i * searchDistStep;
         if (dist > bestMoveDist)
             break;
 
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        for (uint8 j = 0; j < numAngles; ++j)
         {
+            float const angle = j * searchStep;
             float const x = botX + dist * std::cos(angle);
             float const y = botY + dist * std::sin(angle);
 
