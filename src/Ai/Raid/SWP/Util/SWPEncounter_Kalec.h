@@ -42,6 +42,7 @@ struct KalecgosEncounterState
 };
 
 inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
+inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = 10000;
 inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
 
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
