@@ -2084,28 +2084,26 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
 {
-    // EffectMovementGenerator::Finalize only clears MOVEMENTFLAG_FALLING for creatures; a player normally
-    // clears it by reporting MSG_MOVE_FALL_LAND, which a bot never sends. Wait out the fall, then clear it,
-    // otherwise the flag sticks and bot->isMoving() stays true forever.
     if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
     {
         if (!bot->movespline->Finalized())
             return false;
 
         bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
+
         return true;
     }
 
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
     float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ());
+
     if (floorZ <= VMAP_INVALID_HEIGHT_VALUE)
         return false;
 
-    // Key the landing on height, not on flags: once wantsFly goes false, UpdateMovementState strips all
-    // three flags from any bot that happens to move, which would otherwise leave it stranded in midair.
     float const heightAboveFloor = bot->GetPositionZ() - floorZ;
     if (heightAboveFloor <= 1.0f && !bot->IsFlying() && !bot->CanFly())
         return false;
@@ -2114,17 +2112,16 @@ bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
     {
         bot->RemoveUnitMovementFlag(
             MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
     }
 
-    // MoveFall aborts when the ground is within 0.1y, and a bot that close needs no correction anyway:
-    // clearing the flags above is what unblocks casting, and the next grounded move fixes the rest.
-    if (heightAboveFloor > 0.5f)
-    {
-        bot->GetMotionMaster()->Clear();
-        bot->GetMotionMaster()->MoveFall();
-    }
+    if (heightAboveFloor <= 0.5f)
+        return false;
+
+    bot->GetMotionMaster()->Clear();
+    bot->GetMotionMaster()->MoveFall();
 
     return true;
 }
@@ -2135,6 +2132,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     {
         bot->AddUnitMovementFlag(
             MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
     }
@@ -2178,18 +2176,28 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     constexpr float baseHoverHeight = 4.0f;
     constexpr float tierHeight = minSpreadDistance;
     constexpr uint32 tierCount = 3;
-    uint32 const tier = bot->GetGUID().GetCounter() % tierCount;
-    float targetZ = floorZ + baseHoverHeight + tier * tierHeight;
+    int32 const tier = bot->GetGUID().GetCounter() % tierCount;
 
-    while (targetZ > floorZ + baseHoverHeight && !bot->IsWithinLOS(targetX, targetY, targetZ))
-        targetZ -= tierHeight;
+    float targetZ = 0.0f;
+    bool tierFound = false;
+    for (int32 i = tier; i >= 0; --i)
+    {
+        float const candidateZ = floorZ + baseHoverHeight + i * tierHeight;
+        if (bot->IsWithinLOS(targetX, targetY, candidateZ))
+        {
+            targetZ = candidateZ;
+            tierFound = true;
+            break;
+        }
+    }
 
-    if (!bot->IsWithinLOS(targetX, targetY, targetZ))
+    if (!tierFound)
         return false;
 
     if (bot->GetExactDist(targetX, targetY, targetZ) <= 1.0f)
         return false;
 
-    return MoveTo(TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(
+        TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }

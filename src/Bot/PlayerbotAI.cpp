@@ -59,11 +59,12 @@
 #include "UpdateTime.h"
 #include "Vehicle.h"
 
+namespace
+{
 constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
-// Kael'thas (The Eye) Gravity Lapse. Players are meant to keep casting while it holds them airborne, so it
-// is exempt from the IsFlying() cast block below. Magisters' Terrace uses different ids and is unaffected.
 constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
+}
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
