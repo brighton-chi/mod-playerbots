@@ -584,7 +584,7 @@ float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action*
     if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE))) // or bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) ?
         return 0.0f;
 
     return 1.0f;

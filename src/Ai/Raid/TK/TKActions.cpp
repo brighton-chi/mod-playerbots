@@ -1324,7 +1324,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
     // Variable return allows failure to MoveAway not to exit the function
-    bool const didAvoidDevastation = HandleDevastationAvoidance(axe, mace, dagger, sword);
+    bool didAvoidDevastation = false;
+    if (axe && HandleDevastationAvoidance(axe, mace, dagger, sword))
+        didAvoidDevastation = true;
 
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, TK_MAP_ID);
     Unit* target = nullptr;
@@ -2094,6 +2096,17 @@ bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
     float const y = bot->GetPositionY();
     float groundZ = bot->GetPositionZ();
     bot->UpdateAllowedPositionZ(x, y, groundZ);
+
+    // MoveFall aborts when the ground is within 0.1y, so only use it from a real height and teleport down
+    // otherwise. Clearing the flags above already dropped IsFlying()/CanFly(), so this runs once and the
+    // fall spline is left alone on later ticks.
+    if (bot->GetPositionZ() - groundZ > 1.0f)
+    {
+        bot->GetMotionMaster()->Clear();
+        bot->GetMotionMaster()->MoveFall();
+        return true;
+    }
+
     bot->NearTeleportTo(x, y, groundZ, bot->GetOrientation());
     return true;
 }
@@ -2108,9 +2121,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
     }
-
-    if (!bot->movespline->Finalized())
-        return false;
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -2161,6 +2171,13 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return false;
 
     if (bot->GetExactDist(targetX, targetY, targetZ) <= 1.0f)
+        return false;
+
+    // Let a running spline land before retargeting, so most ticks fall through to the bot's cast actions.
+    // The exception is a spline that never reaches the tier, above all the knockback arc from 34480: it is
+    // built with a ground endpoint before the fly aura lands, so discard it instead of riding it down.
+    constexpr float preemptTolerance = 2.0f;
+    if (!bot->movespline->Finalized() && bot->movespline->FinalDestination().z >= targetZ - preemptTolerance)
         return false;
 
     MotionMaster* mm = bot->GetMotionMaster();

@@ -459,7 +459,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
         return false;
 
     Creature* kaelthas = it->second;
-    if (!kaelthas || bot->GetExactDist2d(kaelthas) > 150.0f)
+    if (!kaelthas || bot->GetExactDist2d(kaelthas) > 125.0f)
         return false;
 
     static constexpr std::array weaponSlots = {
