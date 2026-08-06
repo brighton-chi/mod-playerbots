@@ -2084,40 +2084,57 @@ bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
 {
-    if (!bot->IsFlying() && !bot->CanFly())
-        return false;
-
-    bot->RemoveUnitMovementFlag(
-        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
-    if (!bot->IsRooted())
-        bot->SendMovementFlagUpdate();
-
-    float const x = bot->GetPositionX();
-    float const y = bot->GetPositionY();
-    float groundZ = bot->GetPositionZ();
-    bot->UpdateAllowedPositionZ(x, y, groundZ);
-
-    // MoveFall aborts when the ground is within 0.1y, so only use it from a real height and teleport down
-    // otherwise. Clearing the flags above already dropped IsFlying()/CanFly(), so this runs once and the
-    // fall spline is left alone on later ticks.
-    if (bot->GetPositionZ() - groundZ > 1.0f)
+    // EffectMovementGenerator::Finalize only clears MOVEMENTFLAG_FALLING for creatures; a player normally
+    // clears it by reporting MSG_MOVE_FALL_LAND, which a bot never sends. Wait out the fall, then clear it,
+    // otherwise the flag sticks and bot->isMoving() stays true forever.
+    if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
     {
-        bot->GetMotionMaster()->Clear();
-        bot->GetMotionMaster()->MoveFall();
+        if (!bot->movespline->Finalized())
+            return false;
+
+        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+        if (!bot->IsRooted())
+            bot->SendMovementFlagUpdate();
         return true;
     }
 
-    bot->NearTeleportTo(x, y, groundZ, bot->GetOrientation());
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+    float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ());
+    if (floorZ <= VMAP_INVALID_HEIGHT_VALUE)
+        return false;
+
+    // Key the landing on height, not on flags: once wantsFly goes false, UpdateMovementState strips all
+    // three flags from any bot that happens to move, which would otherwise leave it stranded in midair.
+    float const heightAboveFloor = bot->GetPositionZ() - floorZ;
+    if (heightAboveFloor <= 1.0f && !bot->IsFlying() && !bot->CanFly())
+        return false;
+
+    if (bot->IsFlying() || bot->CanFly())
+    {
+        bot->RemoveUnitMovementFlag(
+            MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
+        if (!bot->IsRooted())
+            bot->SendMovementFlagUpdate();
+    }
+
+    // MoveFall aborts when the ground is within 0.1y, and a bot that close needs no correction anyway:
+    // clearing the flags above is what unblocks casting, and the next grounded move fixes the rest.
+    if (heightAboveFloor > 0.5f)
+    {
+        bot->GetMotionMaster()->Clear();
+        bot->GetMotionMaster()->MoveFall();
+    }
+
     return true;
 }
 
 bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 {
-    if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) ||
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY))
+    if (!bot->IsFlying() || !bot->CanFly())
     {
-        bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY);
+        bot->AddUnitMovementFlag(
+            MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_FLYING);
         if (!bot->IsRooted())
             bot->SendMovementFlagUpdate();
     }
@@ -2173,16 +2190,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     if (bot->GetExactDist(targetX, targetY, targetZ) <= 1.0f)
         return false;
 
-    // Let a running spline land before retargeting, so most ticks fall through to the bot's cast actions.
-    // The exception is a spline that never reaches the tier, above all the knockback arc from 34480: it is
-    // built with a ground endpoint before the fly aura lands, so discard it instead of riding it down.
-    constexpr float preemptTolerance = 2.0f;
-    if (!bot->movespline->Finalized() && bot->movespline->FinalDestination().z >= targetZ - preemptTolerance)
-        return false;
-
-    MotionMaster* mm = bot->GetMotionMaster();
-    mm->Clear();
-    mm->MovePoint(0, targetX, targetY, targetZ, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, false, true);
-
-    return true;
+    return MoveTo(TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
+                  MovementPriority::MOVEMENT_FORCED, true, false);
 }

@@ -61,6 +61,9 @@
 
 constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
+// Kael'thas (The Eye) Gravity Lapse. Players are meant to keep casting while it holds them airborne, so it
+// is exempt from the IsFlying() cast block below. Magisters' Terrace uses different ids and is unaffected.
+constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
@@ -3633,7 +3636,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     // aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
     // aiObjectContext->GetValue<time_t>("stay time")->Set(0);
 
-    if (bot->IsFlying() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK)) ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
         // {
@@ -3891,7 +3895,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
 
     // MotionMaster& mm = *bot->GetMotionMaster();
 
-    if (bot->IsFlying() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK)) ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
         return false;
 
     // bot->ClearUnitState(UNIT_STATE_CHASE);
