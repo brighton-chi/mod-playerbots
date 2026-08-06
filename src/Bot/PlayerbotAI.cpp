@@ -64,6 +64,7 @@ namespace
 constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 constexpr uint32 SPELL_GRAVITY_LAPSE_TK = 39432;
+constexpr uint32 SPELL_GRAVITY_LAPSE_MGT = 44224;
 }
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
@@ -3637,8 +3638,9 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     // aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
     // aiObjectContext->GetValue<time_t>("stay time")->Set(0);
 
-    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK)) ||
-        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT) || (bot->IsFlying() &&
+        !bot->HasAura(SPELL_GRAVITY_LAPSE_TK) && !bot->HasAura(SPELL_GRAVITY_LAPSE_MGT)))
+        // Casting is permitted during Kael'thas's Gravity Lapse in Tempest Keep and Magister's Terrace
     {
         // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
         // {
