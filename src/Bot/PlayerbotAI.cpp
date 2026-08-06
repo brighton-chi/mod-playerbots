@@ -3638,15 +3638,11 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     // aiObjectContext->GetValue<LastMovement&>("last movement")->Get().Set(nullptr);
     // aiObjectContext->GetValue<time_t>("stay time")->Set(0);
 
-    if (bot->HasUnitState(UNIT_STATE_IN_FLIGHT) || (bot->IsFlying() &&
-        !bot->HasAura(SPELL_GRAVITY_LAPSE_TK) && !bot->HasAura(SPELL_GRAVITY_LAPSE_MGT)))
-        // Casting is permitted during Kael'thas's Gravity Lapse in Tempest Keep and Magister's Terrace
+    // MotionMaster& mm = *bot->GetMotionMaster();
+
+    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK) && !bot->HasAura(SPELL_GRAVITY_LAPSE_MGT)) ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
-        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        // {
-        //     LOG_DEBUG("playerbots", "Spell cast is flying - target name: {}, spellid: {}, bot name: {}}",
-        //         target->GetName(), spellId, bot->GetName());
-        // }
         return false;
     }
 
@@ -3898,9 +3894,11 @@ bool PlayerbotAI::CastSpell(uint32 spellId, float x, float y, float z, Item* ite
 
     // MotionMaster& mm = *bot->GetMotionMaster();
 
-    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK)) ||
+    if ((bot->IsFlying() && !bot->HasAura(SPELL_GRAVITY_LAPSE_TK) && !bot->HasAura(SPELL_GRAVITY_LAPSE_MGT)) ||
         bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    {
         return false;
+    }
 
     // bot->ClearUnitState(UNIT_STATE_CHASE);
     // bot->ClearUnitState(UNIT_STATE_FOLLOW);

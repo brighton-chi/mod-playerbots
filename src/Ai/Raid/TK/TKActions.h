@@ -311,7 +311,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool HandleDevastationAvoidance(Unit* axe, Unit* mace, Unit* dagger, Unit* sword);
+    bool HandleDevastationAvoidance(
+        Unit* axe, Unit* mace, Unit* dagger, Unit* sword, bool isTank, bool isMeleeDps);
 };
 
 class KaelthasSunstriderMoveDevastationAwayAction : public AttackAction

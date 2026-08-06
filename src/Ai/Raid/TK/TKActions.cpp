@@ -1316,83 +1316,112 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*event*/)
 {
-    // Priority 0: Everybody other than the main tank needs to stay away from the axe
-    // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
     Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
     Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
     Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
 
+    bool const isTank = PlayerbotAI::IsTank(bot);
+    bool const isRangedDps = PlayerbotAI::IsRangedDps(bot);
+    bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
+
+    // Priority 0: Everybody other than the main tank needs to stay away from the axe
+    // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
     // Variable return allows failure to MoveAway not to exit the function
     bool didAvoidDevastation = false;
-    if (axe && HandleDevastationAvoidance(axe, mace, dagger, sword))
+    if (axe && HandleDevastationAvoidance(axe, mace, dagger, sword, isTank, isMeleeDps))
         didAvoidDevastation = true;
 
-    bool const isMechanicTracker = IsMechanicTrackerBot(bot, TK_MAP_ID);
+    if (isTank)
+        return didAvoidDevastation;
+
+    constexpr float safeDistance = 12.0f;
     Unit* target = nullptr;
+    bool targetTooCloseToAxe = isMeleeDps && axe && target &&
+        target->GetDistance2d(axe) <= safeDistance;
 
     // Priority 1: Staff of Disintegration
     if (Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration"))
     {
         target = staff;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, staff))
+        if (MarkTargetWithSkull(bot, staff))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
     // Priority 2: Cosmic Infuser
-    else if (mace)
+    if (!target && mace)
     {
         target = mace;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, mace))
+        if (MarkTargetWithSkull(bot, mace))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
     // Priority 3: Netherstrand Longbow
-    else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
+    if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
+        longbow && !target)
     {
         target = longbow;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, longbow))
+        if (MarkTargetWithSkull(bot, longbow))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
     // Priority 4: Devastation - ranged only
-    else if (axe && PlayerbotAI::IsRangedDps(bot))
+    if (isRangedDps && !target && axe)
     {
         target = axe;
         if (MarkTargetWithCross(bot, axe))
             return true;
     }
     // Priority 5: Infinity Blades
-    else if (dagger)
+    if (!target && dagger)
     {
         target = dagger;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, dagger))
+        if (MarkTargetWithSkull(bot, dagger))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
     // Priority 6: Warp Slicer
-    else if (sword)
+    if (!target && sword)
     {
         target = sword;
-        if (isMechanicTracker && MarkTargetWithSkull(bot, sword))
+        if (MarkTargetWithSkull(bot, sword))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
     // Priority 7: Phaseshift Bulwark
-    else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
+    if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark");
+        shield && !target)
     {
         target = shield;
         if (MarkTargetWithSkull(bot, shield))
             return true;
+
+        if (targetTooCloseToAxe)
+            target = nullptr;
     }
 
     if (!target)
         return didAvoidDevastation;
 
-    if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
-        return didAvoidDevastation;
+    // if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
+    //     return didAvoidDevastation;
 
     return didAvoidDevastation ||
         (AI_VALUE(Unit*, "current target") != target && Attack(target));
 }
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastationAvoidance(
-    Unit* axe, Unit* mace, Unit* dagger, Unit* sword)
+    Unit* axe, Unit* mace, Unit* dagger, Unit* sword, bool const isTank, bool const isMeleeDps)
 {
     bool const hasAggroFromWeapon =
         (mace && mace->GetVictim() == bot) ||
@@ -1401,7 +1430,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     bool result = false;
 
-    if (!PlayerbotAI::IsTank(bot) || (PlayerbotAI::IsAssistTank(bot) && hasAggroFromWeapon))
+    if (!PlayerbotAI::IsTank(bot) || hasAggroFromWeapon)
     {
         float const safeDistance = PlayerbotAI::IsTank(bot) ? 15.0f : 10.0f;
         float const currentDistance = bot->GetDistance2d(axe);
@@ -1409,8 +1438,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
             result = MoveAway(axe, safeDistance - currentDistance);
     }
 
-    if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot) &&
-        AI_VALUE(Unit*, "current target") == axe)
+    if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
     {
         // In case melee ends up on the axe despite the target exclusion
         botAI->InterruptSpell();

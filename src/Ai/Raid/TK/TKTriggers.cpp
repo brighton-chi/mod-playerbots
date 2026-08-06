@@ -397,7 +397,10 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS;
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_WEAPONS)
+        return false;
+
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
