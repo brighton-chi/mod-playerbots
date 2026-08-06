@@ -25,14 +25,6 @@ using namespace TkHelpers;
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    // Some weird bug with Solarian applies this aura to players
-    // It doesn't seem to have any effect, but it should be removed anyway
-    if (bot->HasAura(Id(TkSpells::SPELL_SELECT_TRUE_BEAM)))
-        bot->RemoveAura(Id(TkSpells::SPELL_SELECT_TRUE_BEAM));
-
-    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
-        return false;
-
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     bool reset = false;
 
@@ -47,6 +39,12 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(Unit*, "find target", "void reaver") &&
         voidReaverArcaneOrbs.erase(instanceId) > 0)
+    {
+        reset = true;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") &&
+        advisorDpsWaitTimer.erase(instanceId) > 0)
     {
         reset = true;
     }
@@ -94,7 +92,7 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot); // Player type equivalent of IsFirstAlarTank
+    Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank)
         return false;
 
@@ -130,7 +128,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
         platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_3_IDX) ?
             PLATFORM_0_IDX : PLATFORM_2_IDX;
     }
-    else // first assist tank
+    else // isSecondAlarTank
     {
         platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_1_IDX) ?
             PLATFORM_1_IDX : PLATFORM_3_IDX;
@@ -324,7 +322,6 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != alar && Attack(alar);
 }
 
-// Jump from platform during Flame Quills and wait at assigned position after landing
 bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 {
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
@@ -345,8 +342,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
     bool const isSecondAlarTank = IsSecondAlarTank(bot);
     bool const isTank = PlayerbotAI::IsTank(bot);
 
-    if (isFirstAlarTank /* && bot->GetExactDist2d(
-        ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY()) > distMeleeFromPos */)
+    if (isFirstAlarTank)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY(),
@@ -354,8 +350,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (isSecondAlarTank /* && bot->GetExactDist2d(
-        ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY()) > distMeleeFromPos */)
+    if (isSecondAlarTank)
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SE_RAMP_BASE.GetPositionX(), ALAR_SE_RAMP_BASE.GetPositionY(),
@@ -365,7 +360,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 
     if (isTank && !isFirstAlarTank && !isSecondAlarTank && bot->GetExactDist2d(
         ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distMeleeFromPos)
-    {
+    {   // Distance check due to potential of an Ember still being alive during Flame Quills
         return MoveTo(
             TK_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
             ALAR_POINT_MIDDLE.GetPositionZ(), false, false, false, false,
@@ -397,7 +392,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    // Ranged/tanks wait until Al'ar actually "dies" to activate
+    // Ranged/tanks wait until Al'ar actually "dies" to activate this P1->P2 transition action
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
     {
         Creature* alarCreature = alar->ToCreature();
@@ -405,7 +400,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // Meanwhile, melee dps jumps off at 5% HP
+    // On the other hand, melee dps jumps off at 5% HP because Burning Crusade hates melee dps
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         int8 closestPlatform;
@@ -427,7 +422,6 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     return MoveAway(alar, safeDistance - currentDistance);
 }
 
-// Main tank and first assist tank will swap tanking Al'ar when Melt Armor is applied
 bool AlarSwapTanksOnBossAction::Execute(Event event)
 {
     if (!IsFirstAlarTank(bot) && !IsSecondAlarTank(bot))
@@ -609,7 +603,7 @@ bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
     if (voidReaver->GetHealthPct() > 90.0f)
         return false;
 
-    // Maintain small spread after pull to discourage clumping when avoiding orbs
+    // Maintain small spread after pull to discourage clumping from avoiding orbs
     constexpr float minDistFromPlayer = 3.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minDistFromPlayer);
@@ -1088,16 +1082,16 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         return false;
 
     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, bot->GetPositionX(), bot->GetPositionY(),
-            bot->GetPositionZ(), targetX, targetY, targetZ))
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            targetX, targetY, targetZ))
     {
         return false;
     }
 
     botAI->InterruptSpell();
     return MoveTo(
-        TK_MAP_ID, targetX, targetY, targetZ, false, false,
-        false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        TK_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCapernian(
@@ -1313,13 +1307,11 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     }
 
     auto it = advisorDpsWaitTimer.find(instanceId);
-    if (it != advisorDpsWaitTimer.end() && it->second == -1)
-    {
-        it->second = std::time(nullptr);
-        return true;
-    }
+    if (it == advisorDpsWaitTimer.end() || it->second != -1)
+        return false;
 
-    return false;
+    it->second = std::time(nullptr);
+    return true;
 }
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*event*/)
@@ -1661,8 +1653,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     botAI->InterruptSpell();
 
-    // If a 2H is blocking the target OH slot, unequip the 2H first
-    bool ohCleared = false;
+    bool ohCleared = false;  // If a 2H is blocking the target OH slot, unequip the 2H first
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
         Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -1705,7 +1696,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         }
     }
 
-    // If a bot using a 2H equipped a 1H legendary, try to equip the best OH from its inventory
+    // If using a 2H before equipping a 1H legendary, try to equip the best OH from the inventory
     if (!ohCleared || bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         return true;
 
@@ -1940,7 +1931,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
     botAI->InterruptSpell();
     return MoveTo(
         TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(), safestPos.GetPositionZ(),
-        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
@@ -2008,10 +1999,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 
     Unit* target = kaelthas;
 
-    // If Shock Barrier is up, burn Kael and ignore eggs
     if (!kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
     {
-        // Otherwise, destroy eggs if any exist
         constexpr float searchRadius = 75.0f;
         if (Unit* egg = bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true))
             target = egg;

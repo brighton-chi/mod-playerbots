@@ -16,7 +16,7 @@ using namespace TkHelpers;
 // General
 bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    return IsMechanicTrackerBot(bot, TK_MAP_ID) && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash

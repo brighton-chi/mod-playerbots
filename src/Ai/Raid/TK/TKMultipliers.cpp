@@ -163,7 +163,7 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
         if (locationIndex != PLATFORM_0_IDX && locationIndex != PLATFORM_2_IDX)
             return 0.0f;
     }
-    else // Second Al'ar Tank
+    else // isSecondAlarTank
     {
         if (locationIndex != PLATFORM_1_IDX && locationIndex != PLATFORM_3_IDX)
             return 0.0f;
@@ -514,7 +514,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
         return 1.0f;
 
-    // Proxy for revival/Kael talk phase (can pick any advisor here)
+    // Proxy for revival/Kael talk phase (could pick any advisor here)
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
@@ -530,7 +530,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Bloodlust/Heroism and other major cooldowns should be used at the start of Phase 3
+// Bloodlust/Heroism and other major cooldowns should be saved until Phase 3
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
     bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
