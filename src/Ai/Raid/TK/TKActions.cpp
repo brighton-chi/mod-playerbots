@@ -2165,12 +2165,49 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
             bot->SendMovementFlagUpdate();
     }
 
+    // The knockback from 34480 parks an EffectMovementGenerator in MOTION_SLOT_CONTROLLED, and CanMove()
+    // refuses while that slot is occupied, so MoveTo below would decline for the whole arc and the bot would
+    // ride it down to the floor first. Discard whatever is in the slot: nothing that belongs there can occur
+    // while Gravity Lapse holds the raid airborne, and the arc's endpoint was resolved to the ground before
+    // the fly aura ever landed.
+    MotionMaster* mm = bot->GetMotionMaster();
+    if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
+        mm->MovementExpiredOnSlot(MOTION_SLOT_CONTROLLED);
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    Player* closestPlayer = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
+    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    if (!lapse)
+        return false;
+
+    constexpr float safeDistance = 14.0f;
+    constexpr float minHoverHeight = 4.0f;
+    constexpr float maxHoverHeight = 34.0f;
+    constexpr float containmentRadius = 30.0f;
+    constexpr float heightPull = 0.35f;
+    constexpr float stepFraction = 0.6f;
+    constexpr float minMoveDistance = 2.0f;
+
+    // Each bot picks its own hover height, stable for this lapse and different on the next one: the aura's
+    // apply time changes every cast, so mixing it with the guid re-rolls the raid's vertical scatter without
+    // any shared state. Repulsion cannot create vertical spread on its own - every bot starts the lapse at
+    // roughly the same height, so every dz is ~0 and the push stays flat forever.
+    uint32 const seed =
+        (bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime())) * 2654435761u;
+    float const desiredHeight =
+        minHoverHeight + (seed >> 8) / static_cast<float>(1 << 24) * (maxHoverHeight - minHoverHeight);
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const botZ = bot->GetPositionZ();
+
+    // Sum the repulsion over every crowding member rather than backing away from the closest one: a bot in
+    // the middle of a clump has to leave the clump, not just step away from one neighbour.
+    float pushX = 0.0f;
+    float pushY = 0.0f;
+    float pushZ = 0.0f;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -2178,49 +2215,66 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
             continue;
 
         float const distToMember = bot->GetExactDist(member);
-        if (distToMember < closestDist)
+        if (distToMember >= safeDistance)
+            continue;
+
+        float const violation = safeDistance - distToMember;
+
+        // Two bots in the same spot have no direction to separate along, and their contributions would
+        // cancel. Break the tie with the bearing instead.
+        if (distToMember < 0.1f)
         {
-            closestDist = distToMember;
-            closestPlayer = member;
+            float const bearing = bot->GetAngle(member) + M_PI;
+            pushX += std::cos(bearing) * violation;
+            pushY += std::sin(bearing) * violation;
+            continue;
         }
+
+        pushX += (botX - member->GetPositionX()) / distToMember * violation;
+        pushY += (botY - member->GetPositionY()) / distToMember * violation;
+        pushZ += (botZ - member->GetPositionZ()) / distToMember * violation;
     }
 
-    constexpr float minSpreadDistance = 14.0f;
-    float targetX = bot->GetPositionX();
-    float targetY = bot->GetPositionY();
-
-    if (closestPlayer && closestDist < minSpreadDistance)
-    {
-        float const angle = bot->GetAngle(closestPlayer) + M_PI;
-        float const spreadDist = minSpreadDistance - closestDist;
-        targetX += std::cos(angle) * spreadDist;
-        targetY += std::sin(angle) * spreadDist;
-    }
-
-    float const floorZ = bot->GetMapHeight(targetX, targetY, bot->GetPositionZ());
+    float const floorZ = bot->GetMapHeight(botX, botY, botZ);
     if (floorZ <= VMAP_INVALID_HEIGHT_VALUE)
         return false;
 
-    constexpr float baseHoverHeight = 4.0f;
-    constexpr float tierHeight = minSpreadDistance;
-    constexpr uint32 tierCount = 3;
-    int32 const tier = bot->GetGUID().GetCounter() % tierCount;
+    // Altitude attractor. Does the initial climb and then holds the bot near its chosen height: repulsion has
+    // no altitude preference, so bots otherwise drift up until they pile against whatever cap they are given.
+    pushZ += (desiredHeight - (botZ - floorZ)) * heightPull;
 
-    float targetZ = 0.0f;
-    bool tierFound = false;
-    for (int32 i = tier; i >= 0; --i)
+    // Repulsion has no attractor either, so the raid would keep spreading until it hit a wall.
+    float const anchorX = KAELTHAS_GRAVITY_LAPSE_CENTER.GetPositionX();
+    float const anchorY = KAELTHAS_GRAVITY_LAPSE_CENTER.GetPositionY();
+    float const anchorDist = bot->GetExactDist2d(anchorX, anchorY);
+    if (anchorDist > containmentRadius)
     {
-        float const candidateZ = floorZ + baseHoverHeight + i * tierHeight;
-        if (bot->IsWithinLOS(targetX, targetY, candidateZ))
-        {
-            targetZ = candidateZ;
-            tierFound = true;
-            break;
-        }
+        float const pull = anchorDist - containmentRadius;
+        pushX += (anchorX - botX) / anchorDist * pull;
+        pushY += (anchorY - botY) / anchorDist * pull;
     }
 
-    if (!tierFound)
+    if (std::sqrt(pushX * pushX + pushY * pushY + pushZ * pushZ) < minMoveDistance)
         return false;
+
+    // Everyone repositions at once, so applying the whole correction makes pairs overshoot and oscillate.
+    float targetX = botX + pushX * stepFraction;
+    float targetY = botY + pushY * stepFraction;
+    float targetZ = botZ + pushZ * stepFraction;
+
+    float const targetFloorZ = bot->GetMapHeight(targetX, targetY, targetZ);
+    if (targetFloorZ <= VMAP_INVALID_HEIGHT_VALUE)
+        return false;
+
+    targetZ = std::clamp(targetZ, targetFloorZ + minHoverHeight, targetFloorZ + maxHoverHeight);
+
+    // Clips the destination to just short of any obstacle rather than rejecting the move outright. Valid in
+    // 3d here: IsFlying() puts this on the notOnGround branch, which raycasts vmaps and leaves z alone.
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, botX, botY, botZ, targetX, targetY, targetZ, false))
+    {
+        return false;
+    }
 
     if (bot->GetExactDist(targetX, targetY, targetZ) <= 1.0f)
         return false;

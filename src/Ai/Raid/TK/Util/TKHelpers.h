@@ -214,7 +214,15 @@ inline Position const TELONICUS_TANK_POSITION    = { 773.717f,  44.091f, 46.780f
 inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
 inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
-inline Position const KAELTHAS_TANK_POSITION     = { 799.390f,  -0.837f, 48.729f };
+// Anchor the Gravity Lapse spread is contained around. Only x/y are used; height is measured from the floor
+// under each bot.
+inline Position const KAELTHAS_GRAVITY_LAPSE_CENTER = { 774.008f,  -0.631f, 48.729f };
+
+// Kael is tanked on that same point. The lapse teleports (35966-35990) place the raid at 8 compass offsets
+// across rings of 5, 10 and 15y from the caster, so wherever he stands is where the spread starts from -
+// tanking him at the room's open centre keeps that scatter clear of the north wall and lets the raid expand
+// symmetrically. Split the two constants if the tank ever needs to stand somewhere else.
+inline Position const KAELTHAS_TANK_POSITION = KAELTHAS_GRAVITY_LAPSE_CENTER;
 
 extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
