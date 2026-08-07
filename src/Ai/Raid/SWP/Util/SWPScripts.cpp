@@ -7,7 +7,6 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
-#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SWPData.h"
