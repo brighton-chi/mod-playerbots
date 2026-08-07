@@ -25,24 +25,6 @@ using namespace TkHelpers;
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    // MotionMaster::MoveFall sets MOVEMENTFLAG_FALLING and only clears it again for creatures; a player is
-    // expected to clear it by reporting MSG_MOVE_FALL_LAND, which a bot never sends, and no later spline
-    // clears it either - MoveSplineInit::Launch carries the existing flags through. So a bot whose fall was
-    // interrupted keeps it for the session, and it is part of MOVEMENTFLAG_MASK_MOVING, which leaves
-    // bot->isMoving() stuck true. Only clear it where it is provably stale: no spline still running and the
-    // bot already standing on the floor, so a genuine fall in progress is never touched.
-    if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && bot->movespline->Finalized())
-    {
-        float const floorZ = bot->GetMapHeight(
-            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
-        if (floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ <= 1.0f)
-        {
-            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
-            if (!bot->IsRooted())
-                bot->SendMovementFlagUpdate();
-        }
-    }
-
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
     bool reset = false;
 
@@ -61,10 +43,24 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") &&
-        advisorDpsWaitTimer.erase(instanceId) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
     {
-        reset = true;
+        if (advisorDpsWaitTimer.erase(instanceId) > 0)
+            reset = true;
+
+        // Clear stale falling movement flag that may linger if a bot dies while falling during
+        // Kael's Gravity Lapse and then is not resurrected until after the encounter
+        if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) || !bot->movespline->Finalized())
+            return reset;
+
+        float const floorZ = bot->GetMapHeight(
+            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+        if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ > 1.0f)
+            return reset;
+
+        bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+        if (!bot->IsRooted())
+            bot->SendMovementFlagUpdate();
     }
 
     return reset;
@@ -2143,17 +2139,11 @@ bool KaelthasSunstriderSpreadOutInMidairAction::DropToGround()
         return true;
     }
 
-    // Something is still moving the bot. Above all that is the Gravity Lapse knockback arc, which launches
-    // before 39432 is applied - so for its whole duration the bot is airborne with no aura and no flight
-    // flags, which is exactly what the height check below reads as stranded. A genuinely stranded bot has no
-    // spline running, so defer while one is.
     if (!bot->movespline->Finalized())
         return false;
 
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
-    // GetMapHeight only searches 50y down by default, which a bot thrown up by the knockback can easily be
-    // above; it then reports INVALID_HEIGHT and every height test below silently reads as airborne.
     float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
 
     if (floorZ <= INVALID_HEIGHT)
@@ -2192,31 +2182,10 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
             bot->SendMovementFlagUpdate();
     }
 
-    // The knockback from 34480 parks an EffectMovementGenerator in MOTION_SLOT_CONTROLLED, and CanMove()
-    // refuses while that slot is occupied, so MoveTo below would decline for the whole arc and the bot would
-    // ride it down to the floor first. Discard whatever is in the slot: nothing that belongs there can occur
-    // while Gravity Lapse holds the raid airborne, and the arc's endpoint was resolved to the ground before
-    // the fly aura ever landed.
     MotionMaster* mm = bot->GetMotionMaster();
     if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
         mm->MovementExpiredOnSlot(MOTION_SLOT_CONTROLLED);
 
-    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
-    if (!lapse)
-        return false;
-
-    // Salts only need to differ from each other; the finalizer below does the mixing, so the values carry no
-    // meaning and can be changed freely.
-    constexpr uint32 heightSalt = 1u;
-    constexpr uint32 reactionSalt = 2u;
-    constexpr uint32 aimSalt = 3u;
-
-    // Three per-bot rolls, stable for this lapse and different on the next one: the aura's apply time changes
-    // every cast, so mixing it with the guid re-rolls the raid without any shared state.
-    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
-
-    // Murmur3's 32 bit finalizer. Guid counters in a raid tend to run consecutively, and a bare multiply
-    // leaves neighbouring seeds correlated across the three rolls; avalanching first makes them independent.
     auto const roll = [](uint32 value, uint32 salt)
     {
         uint32 hash = value + salt;
@@ -2228,44 +2197,44 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return (hash >> 8) / static_cast<float>(1 << 24);
     };
 
-    // Repulsion cannot create vertical spread on its own - every bot starts the lapse at roughly the same
-    // height, so every dz is ~0 and the push stays flat forever. Each bot picking a height seeds that. The
-    // band is also the clamp applied to the final destination further down.
-    constexpr float minHoverHeight = 4.0f;
-    constexpr float maxHoverHeight = 34.0f;
+    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    if (!lapse)
+        return false;
+
+    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
+
+    constexpr float minHoverHeight = 5.0f;
+    constexpr float maxHoverHeight = 35.0f;
+    constexpr uint32 heightSalt = 1u;
     float const desiredHeight =
         minHoverHeight + roll(seed, heightSalt) * (maxHoverHeight - minHoverHeight);
 
-    // Left alone, every bot reacts on the same tick with perfect knowledge of where everyone else is and moves
-    // on the exact optimal vector, which reads as one coordinated manoeuvre rather than as 25 people each
-    // noticing they are crowded. Stagger when each starts and skew its aim slightly.
     constexpr int32 minReactionMs = 250;
     constexpr int32 maxReactionMs = 1600;
-    int32 const reactionDelayMs =
-        minReactionMs + static_cast<int32>(roll(seed, reactionSalt) * (maxReactionMs - minReactionMs));
+    constexpr uint32 reactionSalt = 2u;
+    int32 const reactionDelayMs = minReactionMs + static_cast<int32>(roll(seed, reactionSalt) *
+        (maxReactionMs - minReactionMs));
+
     if (lapse->GetMaxDuration() - lapse->GetDuration() < reactionDelayMs)
         return false;
 
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     constexpr float maxAimBias = 0.20f;
+    constexpr uint32 aimSalt = 3u;
     float const aimBias = (roll(seed, aimSalt) * 2.0f - 1.0f) * maxAimBias;
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
     float const botZ = bot->GetPositionZ();
 
-    // Sum the repulsion over every crowding member rather than backing away from the closest one: a bot in
-    // the middle of a clump has to leave the clump, not just step away from one neighbour. The target sits
-    // well above the 13y chain reach because the push is damped: it converges on safeDistance from below and
-    // never quite arrives, so aiming at the threshold itself would settle the raid inside it.
     constexpr float safeDistance = 18.0f;
     float pushX = 0.0f;
     float pushY = 0.0f;
     float pushZ = 0.0f;
     float closestDist = std::numeric_limits<float>::max();
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -2280,8 +2249,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 
         float const violation = safeDistance - distToMember;
 
-        // Two bots in the same spot have no direction to separate along, and their contributions would
-        // cancel. Break the tie with the bearing instead.
         if (distToMember < 0.1f)
         {
             float const bearing = bot->GetAngle(member) + M_PI;
@@ -2295,32 +2262,19 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         pushZ += (botZ - member->GetPositionZ()) / distToMember * violation;
     }
 
-    // Skew the escape bearing so bots do not all leave on the perfect vector. Applied to the repulsion only -
-    // the containment pull below stays true, or bots would orbit the anchor instead of settling inside it.
+    float const floorZ = bot->GetMapHeight(botX, botY, botZ, true, MAX_FALL_DISTANCE);
+    if (floorZ <= INVALID_HEIGHT)
+        return false;
+
     float const cosBias = std::cos(aimBias);
     float const sinBias = std::sin(aimBias);
     float const biasedPushX = pushX * cosBias - pushY * sinBias;
     pushY = pushX * sinBias + pushY * cosBias;
     pushX = biasedPushX;
 
-    // Search far enough down to still find the floor from the top of the knockback arc. On the default 50y
-    // search this returns INVALID_HEIGHT once a bot is high enough, and since that is only -100000 rather
-    // than VMAP_INVALID_HEIGHT_VALUE it passes a careless guard and poisons every height term below it.
-    float const floorZ = bot->GetMapHeight(botX, botY, botZ, true, MAX_FALL_DISTANCE);
-    if (floorZ <= INVALID_HEIGHT)
-        return false;
-
-    // Altitude attractor. Does the initial climb and then holds the bot near its chosen height: repulsion has
-    // no altitude preference, so bots otherwise drift up until they pile against whatever cap they are given.
     constexpr float heightPull = 0.35f;
     pushZ += (desiredHeight - (botZ - floorZ)) * heightPull;
 
-    // Repulsion has no attractor either, so the raid would keep spreading until it hit a wall. Centre that on
-    // Kael'thas: the lapse teleports scatter the raid around wherever he actually stands, so any other anchor
-    // lets the two centres drift apart when he is pulled off the tank spot - and then the half of the raid
-    // scattered onto his far side starts outside the boundary and is dragged inward against its own push.
-    // The radius is a backstop, not a target - the spread is governed by safeDistance and settles well inside
-    // it, so this is sized with slack for bots pushed into a corner. 25 bots at safeDistance need ~33y.
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
@@ -2329,6 +2283,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     float const anchorX = kaelthas->GetPositionX();
     float const anchorY = kaelthas->GetPositionY();
     float const anchorDist = bot->GetExactDist2d(anchorX, anchorY);
+
     if (anchorDist > containmentRadius)
     {
         float const pull = anchorDist - containmentRadius;
@@ -2336,10 +2291,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         pushY += (anchorY - botY) / anchorDist * pull;
     }
 
-    // The hysteresis exists to stop cosmetic twitching, but for a single crowding neighbour the push length
-    // is just the violation - so a plain threshold silently tolerates any pair closer than
-    // safeDistance - minMoveDistance, which is squarely inside the chain. Never skip while anyone is still
-    // within reach of it.
     constexpr float chainDangerDistance = 15.0f;
     constexpr float minMoveDistance = 4.0f;
     if (closestDist > chainDangerDistance &&
@@ -2348,7 +2299,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return false;
     }
 
-    // Everyone repositions at once, so applying the whole correction makes pairs overshoot and oscillate.
     constexpr float stepFraction = 0.4f;
     float targetX = botX + pushX * stepFraction;
     float targetY = botY + pushY * stepFraction;
@@ -2360,8 +2310,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 
     targetZ = std::clamp(targetZ, targetFloorZ + minHoverHeight, targetFloorZ + maxHoverHeight);
 
-    // Clips the destination to just short of any obstacle rather than rejecting the move outright. Valid in
-    // 3d here: IsFlying() puts this on the notOnGround branch, which raycasts vmaps and leaves z alone.
     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
             bot, botX, botY, botZ, targetX, targetY, targetZ, false))
     {
@@ -2371,10 +2319,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     if (bot->GetExactDist(targetX, targetY, targetZ) <= 1.0f)
         return false;
 
-    // lessDelay is deliberately off here. DoMovePoint clears the motion master and launches a fresh spline on
-    // every call, so re-planning before the last one lands restarts the client's interpolation mid-flight and
-    // the movement reads as stutter. Letting IsWaitingForLastMove wait out the full travel time trades a
-    // little responsiveness for continuous motion.
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, false, false);
