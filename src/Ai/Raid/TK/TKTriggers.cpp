@@ -535,5 +535,5 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
+    return kaelthas /*&& kaelthas->GetHealthPct() <= 50.0f*/;
 }

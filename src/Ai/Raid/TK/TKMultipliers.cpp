@@ -15,6 +15,7 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "TKActions.h"
@@ -330,8 +331,11 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
     if (dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -574,16 +578,19 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
     if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
         return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
 
     if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE))) // or bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) ?
+    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 0.0f;
 
     return 1.0f;
