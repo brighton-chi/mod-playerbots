@@ -15,7 +15,6 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "TKActions.h"

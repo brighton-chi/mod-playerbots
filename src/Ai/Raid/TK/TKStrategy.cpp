@@ -8,7 +8,6 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "TKHelpers.h"
 #include "TKMultipliers.h"
 

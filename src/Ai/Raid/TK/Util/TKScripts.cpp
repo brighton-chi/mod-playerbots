@@ -6,7 +6,6 @@
 
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
