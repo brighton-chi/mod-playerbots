@@ -6,8 +6,8 @@
 
 #include "AiObjectContext.h"
 #include "ValueContext.h"
-#include "MechValueContext.h"
 #include "UBValueContext.h"
+#include "Ai/Dungeon/Mech/MechValueContext.h"
 
 void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {

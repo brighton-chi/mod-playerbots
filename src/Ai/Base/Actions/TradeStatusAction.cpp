@@ -168,10 +168,10 @@ bool TradeStatusAction::CheckTrade()
         return false;
 
     PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
-    if (traderBotAI && traderBotAI->IsRealPlayer() && botAI->GetMaster() == trader)
+    if (traderBotAI && IsSelfBot(trader) && botAI->GetMaster() == trader)
         return true;
 
-    if (!botAI->HasActivePlayerMaster() && traderBotAI)
+    if (!IsRealPlayer(botAI->GetMaster()) && traderBotAI)
     {
         bool isGettingItem = false;
         bool hasItems = false;
@@ -193,7 +193,7 @@ bool TradeStatusAction::CheckTrade()
         if (isGettingItem)
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(bot->GetTrader()->GetGUID()) &&
-                botAI->HasRealPlayerMaster())
+                botAI->HasGameClientMaster())
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "trade_thank_you_player",
                     "Thank you %player",
