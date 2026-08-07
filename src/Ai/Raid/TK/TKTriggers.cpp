@@ -400,7 +400,10 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
     if (!kaelAI || kaelAI->GetPhase() != PHASE_WEAPONS)
         return false;
 
-    return !PlayerbotAI::IsMainTank(bot);
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    return true;
 }
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
@@ -522,7 +525,8 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        return member && member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL));
+        if (member && member->HasAura(Id(TkSpells::SPELL_KAELTHAS_MIND_CONTROL)))
+            return true;
     }
 
     return false;
