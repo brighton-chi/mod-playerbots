@@ -377,7 +377,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
-bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
+bool KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
         return false;

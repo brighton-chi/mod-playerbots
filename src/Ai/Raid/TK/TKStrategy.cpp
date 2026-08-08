@@ -106,7 +106,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order", {
         NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider waiting for tanks to get aggro on advisors", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should manage advisor dps timer", {
         NextAction("kael'thas sunstrider manage advisor dps timer", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are alive", {

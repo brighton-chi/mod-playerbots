@@ -245,11 +245,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger : public Trigger
+class KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider waiting for tanks to get aggro on advisors") {}
+    KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kael'thas sunstrider should manage advisor dps timer") {}
     bool IsActive() override;
 };
 

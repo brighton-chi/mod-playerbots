@@ -1427,9 +1427,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (!target)
         return didAvoidDevastation;
 
-    // if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
-    //     return didAvoidDevastation;
-
     return didAvoidDevastation ||
         (AI_VALUE(Unit*, "current target") != target && Attack(target));
 }
