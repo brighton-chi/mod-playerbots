@@ -13,7 +13,7 @@ using namespace SethData;
 
 bool TimeLostControllerDropsCharmingTotemTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, SETHEKK_HALLS_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, SETH_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "time-lost controller");
 }
 
@@ -22,13 +22,15 @@ bool SethekkProphetCastsFearTrigger::IsActive()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "sethekk prophet") &&
-        !AI_VALUE2(bool, "has totem", "tremor totem");
+    if (!AI_VALUE2(Unit*, "find target", "sethekk prophet"))
+        return false;
+
+    return !AI_VALUE2(bool, "has totem", "tremor totem");
 }
 
 bool DarkweaverSythBossSummonsElementalsTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(bot, SETHEKK_HALLS_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, SETH_MAP_ID))
         return false;
 
     Unit* syth = AI_VALUE2(Unit*, "find target", "darkweaver syth");
@@ -42,26 +44,26 @@ bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
 
 bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_DRUID && botAI->IsHeal(bot) &&
+    return bot->getClass() == CLASS_DRUID && PlayerbotAI::IsHeal(bot) &&
         AI_VALUE2(Unit*, "find target", "anzu");
 }
 
 bool TalonKingIkissBossEngagedByTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && ikiss->GetVictim() == bot;
+    return ikiss && ikiss->GetVictim() == bot && bot->IsWithinMeleeRange(ikiss);
 }
 
 bool TalonKingIkissRangedPrepareForArcaneExplosionTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && !ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE)) &&
+    return ikiss && !ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE)) &&
         bot->IsWithinLOSInMap(ikiss);
 }
 
@@ -69,12 +71,12 @@ bool TalonKingIkissBossCastingArcaneExplosionTrigger::IsActive()
 {
     // Arcane Bubble is put up 1s before casting Arcane Explosion
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE));
+    return ikiss && ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE));
 }
 
 bool TalonKingIkissBossOutOfLosTrigger::IsActive()
 {
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && !ikiss->HasAura(static_cast<uint32>(SethSpells::SPELL_ARCANE_BUBBLE)) &&
+    return ikiss && !ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE)) &&
         !bot->IsWithinLOSInMap(ikiss);
 }

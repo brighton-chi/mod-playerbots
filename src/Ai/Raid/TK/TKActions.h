@@ -290,6 +290,9 @@ public:
     KaelthasSunstriderAssignAdvisorDpsPriorityAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kael'thas sunstrider assign advisor dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool MeleeDpsPositionOutsideBombRange(Unit* telonicus);
 };
 
 class KaelthasSunstriderManageAdvisorDpsTimerAction : public Action
@@ -306,6 +309,10 @@ public:
     KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kael'thas sunstrider assign legendary weapon dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool HandleDevastationAvoidance(
+        Unit* axe, Unit* mace, Unit* dagger, Unit* sword, bool isTank, bool isMeleeDps);
 };
 
 class KaelthasSunstriderMoveDevastationAwayAction : public AttackAction
@@ -398,6 +405,10 @@ public:
     KaelthasSunstriderSpreadOutInMidairAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kael'thas sunstrider spread out in midair") {}
     bool Execute(Event event) override;
+
+private:
+    bool DropToGround();
+    bool HoverAndSpread();
 };
 
 #endif

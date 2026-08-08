@@ -14,7 +14,7 @@ class KarazhanSetTremorTotemMultiplier : public Multiplier
 public:
     KarazhanSetTremorTotemMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "karazhan set tremor totem") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
@@ -22,7 +22,7 @@ class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 public:
     AttumenTheHuntsmanDisableAutomaticTargetingMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman disable automatic targeting") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class AttumenTheHuntsmanStayStackedMultiplier : public Multiplier
@@ -30,7 +30,7 @@ class AttumenTheHuntsmanStayStackedMultiplier : public Multiplier
 public:
     AttumenTheHuntsmanStayStackedMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman stay stacked") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class AttumenTheHuntsmanWaitForDpsMultiplier : public Multiplier
@@ -38,7 +38,7 @@ class AttumenTheHuntsmanWaitForDpsMultiplier : public Multiplier
 public:
     AttumenTheHuntsmanWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "attumen the huntsman wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
@@ -46,7 +46,7 @@ class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
 public:
     MaidenOfVirtueDisableCombatFormationMoveMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue disable combat formation move") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class MaidenOfVirtueSetGroundingTotemMultiplier : public Multiplier
@@ -54,7 +54,7 @@ class MaidenOfVirtueSetGroundingTotemMultiplier : public Multiplier
 public:
     MaidenOfVirtueSetGroundingTotemMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue set grounding totem") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
@@ -62,7 +62,7 @@ class TheCuratorDisableTankAssistMultiplier : public Multiplier
 public:
     TheCuratorDisableTankAssistMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable tank assist") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TheCuratorDisableCombatFormationMoveMultiplier : public Multiplier
@@ -70,7 +70,7 @@ class TheCuratorDisableCombatFormationMoveMultiplier : public Multiplier
 public:
     TheCuratorDisableCombatFormationMoveMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable combat formation move") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
@@ -78,7 +78,7 @@ class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     TheCuratorDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
@@ -86,7 +86,7 @@ class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
 public:
     TerestianIllhoofDontDotFiendishImpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "terestian illhoof don't dot fiendish imps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
@@ -94,7 +94,7 @@ class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
 public:
     ShadeOfAranArcaneExplosionRunAwayMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran arcane explosion run away") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class ShadeOfAranFlameWreathDisableMovementMultiplier : public Multiplier
@@ -102,7 +102,7 @@ class ShadeOfAranFlameWreathDisableMovementMultiplier : public Multiplier
 public:
     ShadeOfAranFlameWreathDisableMovementMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "shade of aran flame wreath disable movement") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NetherspiteKeepBlockingBeamMultiplier : public Multiplier
@@ -110,7 +110,7 @@ class NetherspiteKeepBlockingBeamMultiplier : public Multiplier
 public:
     NetherspiteKeepBlockingBeamMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "netherspite keep blocking beam") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NetherspiteWaitForDpsMultiplier : public Multiplier
@@ -118,15 +118,15 @@ class NetherspiteWaitForDpsMultiplier : public Multiplier
 public:
     NetherspiteWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "netherspite wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
-class PrinceMalchezaarEnfeebleKeepDistanceMultiplier : public Multiplier
+class PrinceMalchezaarEnfeebleMultiplier : public Multiplier
 {
 public:
-    PrinceMalchezaarEnfeebleKeepDistanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance") {}
-    virtual float GetValue(Action* action);
+    PrinceMalchezaarEnfeebleMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble") {}
+    float GetValue(Action* action) override;
 };
 
 class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
@@ -134,7 +134,7 @@ class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NightbaneDisablePetsMultiplier : public Multiplier
@@ -142,7 +142,7 @@ class NightbaneDisablePetsMultiplier : public Multiplier
 public:
     NightbaneDisablePetsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable pets") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NightbaneWaitForDpsMultiplier : public Multiplier
@@ -150,7 +150,7 @@ class NightbaneWaitForDpsMultiplier : public Multiplier
 public:
     NightbaneWaitForDpsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "nightbane wait for dps") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NightbaneDisableAvoidAoeMultiplier : public Multiplier
@@ -158,7 +158,7 @@ class NightbaneDisableAvoidAoeMultiplier : public Multiplier
 public:
     NightbaneDisableAvoidAoeMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable avoid aoe") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class NightbaneDisableMovementMultiplier : public Multiplier
@@ -166,7 +166,7 @@ class NightbaneDisableMovementMultiplier : public Multiplier
 public:
     NightbaneDisableMovementMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "nightbane disable movement") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 #endif

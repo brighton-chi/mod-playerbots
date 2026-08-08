@@ -38,10 +38,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Moroes
-    triggers.push_back(new TriggerNode("moroes boss engaged by main tank",
-        { NextAction("moroes main tank attack boss", ACTION_RAID) }
-    ));
-    triggers.push_back(new TriggerNode("moroes dps should prioritize adds",
+    triggers.push_back(new TriggerNode("moroes should prioritize adds",
         { NextAction("moroes mark target", ACTION_RAID) }
     ));
 
@@ -175,7 +172,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));
     multipliers.push_back(new NetherspiteWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new PrinceMalchezaarEnfeebleKeepDistanceMultiplier(botAI));
+    multipliers.push_back(new PrinceMalchezaarEnfeebleMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
     multipliers.push_back(new NightbaneWaitForDpsMultiplier(botAI));

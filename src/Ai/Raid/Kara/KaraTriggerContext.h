@@ -37,11 +37,8 @@ public:
             &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_transition;
 
         // Moroes
-        creators["moroes boss engaged by main tank"] =
-            &RaidKarazhanTriggerContext::moroes_boss_engaged_by_main_tank;
-
-        creators["moroes dps should prioritize adds"] =
-            &RaidKarazhanTriggerContext::moroes_dps_should_prioritize_adds;
+        creators["moroes should prioritize adds"] =
+            &RaidKarazhanTriggerContext::moroes_should_prioritize_adds;
 
         // Maiden of Virtue
         creators["maiden of virtue boss engaged by tanks"] =
@@ -173,11 +170,8 @@ private:
     }
 
     // Moroes
-    static Trigger* moroes_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new MoroesBossEngagedByMainTankTrigger(botAI);
-    }
-    static Trigger* moroes_dps_should_prioritize_adds(PlayerbotAI* botAI) {
-        return new MoroesDpsShouldPrioritizeAddsTrigger(botAI);
+    static Trigger* moroes_should_prioritize_adds(PlayerbotAI* botAI) {
+        return new MoroesShouldPrioritizeAddsTrigger(botAI);
     }
 
     // Maiden of Virtue

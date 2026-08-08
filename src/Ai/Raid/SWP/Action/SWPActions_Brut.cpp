@@ -26,7 +26,7 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_MISDIRECTION)) &&
+    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
         botAI->CanCastSpell("steady shot", brutallus))
     {
         return botAI->CastSpell("steady shot", brutallus);
@@ -50,20 +50,19 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     if (!mainTank || !assistTank)
         return false;
 
-    Aura* mainTankAura = mainTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
-    Aura* assistTankAura = assistTank->GetAura(static_cast<uint32>(SwpSpells::SPELL_METEOR_SLASH));
+    Aura* mainTankAura = mainTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
+    Aura* assistTankAura = assistTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
 
     if (mainTank == bot)
     {
-        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
-        float const distToPosition = bot->GetExactDist2d(
-            position.GetPositionX(), position.GetPositionY());
-
         if (brutallus->GetVictim() != bot && !mainTankAura &&
             ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
+
+        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
+        float const distToPosition = bot->GetExactDist2d(position);
 
         if (_mainTankInitialPositionReached == false && distToPosition <= 2.0f)
         {
@@ -74,11 +73,16 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             if (!bot->IsWithinMeleeRange(brutallus))
                 return false;
 
-            float const dX = position.GetPositionX() - bot->GetPositionX();
-            float const dY = position.GetPositionY() - bot->GetPositionY();
+            float const posX = position.GetPositionX();
+            float const posY = position.GetPositionY();
+            float const botX = bot->GetPositionX();
+            float const botY = bot->GetPositionY();
+            float const toPosX = posX - botX;
+            float const toPosY = posY - botY;
+
             float const moveDist = std::min(2.25f, distToPosition);
-            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            float const moveX = botX + (toPosX / distToPosition) * moveDist;
+            float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
             return MoveTo(
                 SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
@@ -102,8 +106,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
-
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 2.0f)
+        if (bot->GetExactDist2d(position) <= 2.0f)
             return false;
 
         return MoveTo(
@@ -125,14 +128,14 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
     uint8 meleeIndex = 0;
-    if (!TryGetBrutallusAssignedPositionIndex(bot, false, meleeIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, meleeIndex))
         return false;
 
     Position position;
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+    if (bot->GetExactDist2d(position) <= 0.5f)
         return false;
 
     return MoveTo(
@@ -141,8 +144,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 }
 
 bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
-    Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 meleeIndex, Position& position)
+    Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
     struct BrutallusMeleeRingLayout
     {
@@ -150,13 +152,12 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         uint8 slotCount;
     };
 
-    constexpr std::array<BrutallusMeleeRingLayout, 4> meleeRingLayouts =
-    {{
-        { BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
-        { BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
-        { BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
-        { BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
-    }};
+    static constexpr std::array meleeRingLayouts = {
+        BrutallusMeleeRingLayout{ BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
+        BrutallusMeleeRingLayout{ BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
+    };
 
     uint8 totalMeleeSlots = 0;
     for (auto const& meleeRingLayout : meleeRingLayouts)
@@ -183,18 +184,8 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     if (!maxMeleeSlots)
         return false;
 
-    auto const getTankAngle = [](Unit* brutallus, Player* tank, float fallbackAngle) -> float
-    {
-        if (!tank)
-            return Position::NormalizeOrientation(fallbackAngle);
-
-        return Position::NormalizeOrientation(std::atan2(
-            tank->GetPositionY() - brutallus->GetPositionY(),
-            tank->GetPositionX() - brutallus->GetPositionX()));
-    };
-
     float const mainTankAngle =
-        getTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
 
     float midpointAngle;
     if (!mainTank || !assistTank)
@@ -204,7 +195,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const assistTankAngle = getTankAngle(
+        float const assistTankAngle = GetBrutallusTankAngle(
             brutallus, assistTank, Position::NormalizeOrientation(
                 mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 
@@ -213,7 +204,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         float const midpointY =
             (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
 
-        if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
+        if (brutallus->GetExactDist2d(midpointX, midpointY) <= 0.1f)
         {
             float assistAngleDelta =
                 Position::NormalizeOrientation(assistTankAngle - mainTankAngle);
@@ -232,7 +223,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
 
     float const baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
-    float const angleOffset = GetCenteredArcSlotAngleOffset(
+    float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
         localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
 
     float const angle = Position::NormalizeOrientation(baseAngle + angleOffset);
@@ -251,7 +242,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     ObjectGuid const guid = bot->GetGUID();
     uint8 rangedIndex = 0;
-    if (!TryGetBrutallusAssignedPositionIndex(bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
     auto const burnStateItr = brutallusRangedBurnStates.find(guid);
@@ -282,7 +273,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -313,7 +304,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -321,13 +312,8 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        if (bot->GetExactDist2d(
-                returnTargetPosition.GetPositionX(),
-                returnTargetPosition.GetPositionY()) <= 1.0f)
-        {
-            brutallusRangedBurnStates[guid] =
-                BrutallusRangedBurnState::ReturningToNormalPosition;
-        }
+        if (bot->GetExactDist2d(returnTargetPosition) <= 1.0f)
+            brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::ReturningToNormalPosition;
 
         return false;
     }
@@ -342,7 +328,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -363,7 +349,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+    if (bot->GetExactDist2d(position) < 0.5f)
         return false;
 
     return MoveTo(
@@ -380,7 +366,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (RemoveBurnWithCooldown())
         return true;
 
-    if (botAI->IsMelee(bot))
+    if (PlayerbotAI::IsMelee(bot))
         return false;
 
     ObjectGuid const guid = bot->GetGUID();
@@ -388,7 +374,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
     uint8 rangedIndex = 0;
 
-    if (!TryGetBrutallusAssignedPositionIndex(bot, true, rangedIndex))
+    if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
     auto const burnStateItr = brutallusRangedBurnStates.find(guid);
@@ -420,7 +406,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(stepPosition) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
@@ -451,7 +437,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -459,11 +445,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        if (bot->GetExactDist2d(
-                padIngressPosition.GetPositionX(), padIngressPosition.GetPositionY()) <= 1.0f)
-        {
+        if (bot->GetExactDist2d(padIngressPosition) <= 1.0f)
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
-        }
 
         return false;
     }
@@ -475,7 +458,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+    if (bot->GetExactDist2d(position) > 1.0f)
     {
         return MoveTo(
             SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),

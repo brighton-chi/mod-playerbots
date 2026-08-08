@@ -142,10 +142,10 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 {
     // Alar <Phoenix God>
     multipliers.push_back(new AlarMoveBetweenPlatformsMultiplier(botAI));
-    multipliers.push_back(new AlarDisableDisperseMultiplier(botAI));
+    multipliers.push_back(new AlarControlMovementMultiplier(botAI));
     multipliers.push_back(new AlarDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
-    multipliers.push_back(new AlarDontTauntBossIfArmorMeltedMultiplier(botAI));
+    multipliers.push_back(new AlarControlTauntingMultiplier(botAI));
 
     // Void Reaver
     multipliers.push_back(new VoidReaverMaintainPositionsMultiplier(botAI));
@@ -153,6 +153,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // High Astromancer Solarian
     multipliers.push_back(new HighAstromancerSolarianDisableMeleeTargetingMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new HighAstromancerSolarianWrathStayAwayMultiplier(botAI));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
@@ -187,7 +188,7 @@ void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == static_cast<uint32>(TkNpcs::NPC_EMBER_OF_ALAR))
+        if (unit && unit->GetEntry() == Id(TkNpcs::NPC_EMBER_OF_ALAR))
             exclusions.insert(unit->GetGUID());
     }
 }
@@ -198,7 +199,7 @@ void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot) && !botAI->IsDps(bot))
+    if (!PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsDps(bot))
         return;
 
     AppendKaelthasDevastationExclusions(botAI, exclusions);

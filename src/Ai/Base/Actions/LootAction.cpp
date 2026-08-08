@@ -35,9 +35,8 @@ bool LootAction::Execute(Event /*event*/)
         // bot->GetSession()->HandleLootReleaseOpcode(packet);
     }
 
-    // Provide a system to check if the game object id is disallowed in the user configurable list or not.
-    // Check if the game object id is disallowed in the user configurable list or not.
-    if (sPlayerbotAIConfig.disallowedGameObjects.find(lootObject.guid.GetEntry()) != sPlayerbotAIConfig.disallowedGameObjects.end())
+    if (lootObject.guid.IsGameObject() &&
+        sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
@@ -51,7 +50,7 @@ bool LootAction::Execute(Event /*event*/)
 bool LootAction::isUseful()
 {
     if (sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
-        bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || botAI->IsRealPlayer())
+        bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || IsSelfBot(bot))
     {
         return true;
     }
@@ -150,8 +149,9 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (go && (go->GetGoState() != GO_STATE_READY))
         return false;
 
-    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots
-    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND))
+    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots.
+    // Quest objects carry the same flag but are gated on quest state, which ActivateToQuest answers.
+    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
         return false;
 
     // This prevents raid chests like Gunship Armory (ICC) from being ninja'd by the bots
@@ -413,7 +413,7 @@ bool StoreLootAction::Execute(Event event)
         if (!proto)
             continue;
 
-        if (!botAI->HasActivePlayerMaster() && AI_VALUE(uint8, "bag space") > 80)
+        if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
         {
             uint32 maxStack = proto->GetMaxStackSize();
             if (maxStack == 1)
@@ -524,7 +524,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
     //{
 
     bool canLoot = lootStrategy->CanLoot(proto, context);
-    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && botAI->HasActivePlayerMaster())
+    // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && IsRealPlayer(botAI->GetMaster()))
     // canLoot = sPlayerbotAIConfig.IsInRandomAccountList(botAI->GetBot()->GetSession()->GetAccountId());
 
     return canLoot;

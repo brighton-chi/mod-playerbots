@@ -8,9 +8,16 @@
 #define PLAYERBOTS_SWPDATA_H
 
 #include "Common.h"
+#include <type_traits>
 
 namespace SwpHelpers
 {
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
 
 enum class SwpSpells : uint32
 {
@@ -24,7 +31,6 @@ enum class SwpSpells : uint32
     SPELL_CURSE_OF_BOUNDLESS_AGONY     = 45032,
     SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC = 45034,
     SPELL_TELEPORT_SPECTRAL            = 46019,
-    SPELL_TELEPORT_NORMAL_REALM        = 46020,
     SPELL_SPECTRAL_REALM               = 46021,
 
     // Brutallus
@@ -69,13 +75,19 @@ enum class SwpSpells : uint32
     SPELL_MISDIRECTION                 = 35079,
 
     // Mage
+    SPELL_SPELLSTEAL                   = 30449,
     SPELL_ICE_BLOCK                    = 45438,
 
     // Paladin
     SPELL_DIVINE_SHIELD                = 642,
 
     // Priest
+    SPELL_DISPEL_MAGIC_RANK_1          = 527,
     SPELL_SHADOWFORM                   = 15473,
+    SPELL_MASS_DISPEL                  = 32375,
+
+    // Shaman
+    SPELL_PURGE_RANK_1                 = 370,
 
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
@@ -133,7 +145,7 @@ enum class SwpObjects : uint32
     GO_DRAGON_ORB_4  = 188116,
 };
 
-constexpr uint32 SWP_MAP_ID = 580;
+inline constexpr uint32 SWP_MAP_ID = 580;
 
 }
 

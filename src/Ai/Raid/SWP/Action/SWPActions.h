@@ -51,6 +51,14 @@ public:
 
 // Kalecgos
 
+class KalecgosAnnounceBossHealthAction : public Action
+{
+public:
+    KalecgosAnnounceBossHealthAction(
+        PlayerbotAI* botAI) : Action(botAI, "kalecgos announce boss health") {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosTankPositionBossAction : public AttackAction
 {
 public:
@@ -65,6 +73,9 @@ public:
     KalecgosEnterSpectralRiftAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kalecgos enter spectral rift") {}
     bool Execute(Event event) override;
+
+private:
+    bool ShouldTankEnter();
 };
 
 class KalecgosDisperseRangedAction : public MovementAction
@@ -233,6 +244,13 @@ public:
     FelmystAvoidDemonicVaporAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "felmyst avoid demonic vapor") {}
     bool Execute(Event event) override;
+
+private:
+    void AnnounceFlightLeader(Player* leader);
+    bool MoveAwayFromVapor(bool unrestricted = false);
+    bool MoveToFlightLeader(Player* leader);
+
+    ObjectGuid _announcedFlightLeaderGuid;
 };
 
 class FelmystKiteDemonicVaporAction : public MovementAction
@@ -252,7 +270,7 @@ public:
 
 private:
     Position _fogCrateStuckDestination;
-    float _fogCrateStuckNearestDistance = std::numeric_limits<float>::max();
+    float _fogCrateStuckNearestDist = std::numeric_limits<float>::max();
     uint32 _fogCrateStuckSampleMs = 0;
     bool TryTeleportStuckBotOntoCrate(Position const& destination);
 };
@@ -399,7 +417,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool _entropiusInitialRangedPositionReached = false;
+    bool _entropiusRangedPositionReached = false;
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
@@ -537,6 +555,11 @@ public:
     KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
+
+private:
+    bool ExecuteTankHandAssignment(
+        std::vector<Unit*> const& hands,
+        Player* mainTank, Player* firstAssistTank, Player* secondAssistTank);
 };
 
 class KiljaedenStunHandsOfTheDeceiverAction : public Action

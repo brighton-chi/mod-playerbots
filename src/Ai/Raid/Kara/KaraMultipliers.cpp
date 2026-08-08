@@ -7,6 +7,7 @@
 #include "KaraMultipliers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
 #include "DruidActions.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
@@ -14,12 +15,13 @@
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "WarriorActions.h"
 
 using namespace KaraHelpers;
 
@@ -61,7 +63,7 @@ float AttumenTheHuntsmanDisableAutomaticTargetingMultiplier::GetValue(Action* ac
     if (!dynamic_cast<TankAssistAction*>(action) &&
         !dynamic_cast<DpsAssistAction*>(action))
     {
-        return !.0f;
+        return 1.0f;
     }
 
     if (AI_VALUE2(Unit*, "find target", "midnight"))
@@ -114,7 +116,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!attumen)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -204,13 +206,14 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     }
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
-    if (curator && !curator->HasAura(static_cast<uint32>(KaraSpells::SPELL_CURATOR_EVOCATION)))
+    if (curator && !curator->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)))
         return 0.0f;
 
     return 1.0f;
 }
 
 // Terestian Illhoof
+
 float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
@@ -225,7 +228,6 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
 
 // Shade of Aran
 
-// Don't charge back in or move in any other way when running from Arcane Explosion
 float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
@@ -283,13 +285,17 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 
 float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 {
-    bool const isDisperseAction = dynamic_cast<CombatFormationMoveAction*>(action);
-    bool const isReachTargetSpell = dynamic_cast<ReachTargetAction*>(action);
-    bool const isBlockedAction =
-        isDisperseAction || isReachTargetSpell ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
+    bool const isReachTargetAction =
+        dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
+
+    bool const isBlockedAction =
+        isReachTargetAction ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action);
 
     if (!isBlockedAction)
         return 1.0f;
@@ -300,13 +306,10 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
 
-    if (bot == redBlocker && isDisperseAction)
+    if (bot == greenBlocker || bot == blueBlocker)
         return 0.0f;
 
-    if (bot == blueBlocker && (isDisperseAction || isReachTargetSpell))
-        return 0.0f;
-
-    if (bot == greenBlocker && isBlockedAction)
+    if (bot == redBlocker && !isReachTargetAction)
         return 0.0f;
 
     return 1.0f;
@@ -324,11 +327,11 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite || IsBanishPhase(netherspite))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (botAI->IsTank(bot))
+    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -343,8 +346,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 
 // Prince Malchezaar
 
-// Don't run back into Shadow Nova when Enfeebled
-float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
+float PrinceMalchezaarEnfeebleMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
@@ -352,17 +354,42 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return 1.0f;
+
+    // Disable movement other than escaping Shadow Nova range
+    if (dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 0.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "prince malchezaar"))
-        return 1.0f;
-
-    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
+    // Disable some cooldowns that are used upon low/critical health
+    if (dynamic_cast<CastIceBlockAction*>(action) ||
+        dynamic_cast<CastManaShieldAction*>(action) ||
+        dynamic_cast<CastDivineShieldAction*>(action) ||
+        dynamic_cast<CastLayOnHandsAction*>(action) ||
+        dynamic_cast<CastCloakOfShadowsAction*>(action) ||
+        dynamic_cast<CastEvasionAction*>(action) ||
+        dynamic_cast<CastShamanisticRageAction*>(action) ||
+        dynamic_cast<CastBindingHealAction*>(action) ||
+        dynamic_cast<CastDesperatePrayerAction*>(action) ||
+        dynamic_cast<CastPainSuppressionAction*>(action) ||
+        dynamic_cast<CastDispersionAction*>(action) ||
+        dynamic_cast<CastEnragedRegenerationAction*>(action) ||
+        dynamic_cast<CastLastStandAction*>(action) ||
+        dynamic_cast<CastShieldWallAction*>(action) ||
+        dynamic_cast<CastSurvivalInstinctsAction*>(action) ||
+        dynamic_cast<CastDeterrenceAction*>(action) ||
+        dynamic_cast<CastIceboundFortitudeAction*>(action) ||
+        dynamic_cast<CastRuneTapAction*>(action) ||
+        dynamic_cast<CastVampiricBloodAction*>(action) ||
+        dynamic_cast<CastDeathStrikeAction*>(action) ||
+        dynamic_cast<CastDeathPactAction*>(action) ||
+        dynamic_cast<UseItemAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -439,7 +466,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -452,21 +479,16 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The "avoid aoe" strategy must be disabled for the main tank
-// Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z) // TEST NOT DISABLING AOE DURING FLIGHT
+    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
-    // if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
-    //     return 0.0f;
-
-    if (botAI->IsMainTank(bot) || botAI->IsRanged(bot))
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsMainTank(bot))
         return 0.0f;
 
     return 1.0f;
@@ -505,6 +527,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     if (isReachAction)
         return 0.0f;
 
+    // After 35s, Nightbane goes to land, and bots freely follow their master
     time_t const now = std::time(nullptr);
     constexpr uint8 flightPhaseDurationSeconds = 35;
 

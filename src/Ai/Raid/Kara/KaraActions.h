@@ -70,14 +70,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class MoroesMainTankAttackBossAction : public AttackAction
-{
-public:
-    MoroesMainTankAttackBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "moroes main tank attack boss") {}
-    bool Execute(Event event) override;
-};
-
 class MoroesMarkTargetAction : public Action
 {
 public:
@@ -233,13 +225,14 @@ public:
     NetherspiteBlockRedBeamAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "netherspite block red beam") {}
     bool Execute(Event event) override;
-    bool ResetRedBeamState(time_t initialMoveTimer = 0)
+    bool ResetRedBeamState()
     {
-        if (_redBeamMoveTimer == initialMoveTimer && !_lastBeamMoveSideways && !_wasBlockingRedBeam)
+        if (!_redBeamTimerWasSet)
             return false;
-        _redBeamMoveTimer = initialMoveTimer;
+        _redBeamMoveTimer = 0;
         _lastBeamMoveSideways = false;
         _wasBlockingRedBeam = false;
+        _redBeamTimerWasSet = false;
         return true;
     }
 
@@ -247,6 +240,7 @@ private:
     time_t _redBeamMoveTimer = 0;
     bool _lastBeamMoveSideways = false;
     bool _wasBlockingRedBeam = false;
+    bool _redBeamTimerWasSet = false;
 };
 
 class NetherspiteBlockBlueBeamAction : public MovementAction
@@ -295,10 +289,13 @@ public:
 private:
     struct BeamAvoid
     {
-        Unit* portal;
-        float minDist, maxDist;
+        float minDist;
+        float maxDist;
+        float dirX;
+        float dirY;
     };
-    bool IsAwayFromBeams(float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite);
+    bool IsAwayFromBeams(
+        float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction

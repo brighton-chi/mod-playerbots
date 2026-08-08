@@ -16,12 +16,12 @@ using namespace TkHelpers;
 class VoidReaverSpellListenerScript : public AllSpellScript
 {
 public:
-    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") { }
+    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id != static_cast<uint32>(TkSpells::SPELL_ARCANE_ORB))
+        if (spellInfo->Id != Id(TkSpells::SPELL_ARCANE_ORB))
             return;
 
         std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
@@ -43,7 +43,7 @@ public:
 
         orbs.erase(std::remove_if(orbs.begin(), orbs.end(),
             [now](ArcaneOrbData const& orb) {
-                return getMSTimeDiff(orb.castTime, now) > 5000;
+                return getMSTimeDiff(orb.castTime, now) > ARCANE_ORB_DURATION_MS;
             }), orbs.end());
     }
 };
