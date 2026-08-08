@@ -190,30 +190,6 @@ bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
     return astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE;
 }
 
-bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
-{
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-        return false;
-
-    if (HasWrathOfTheAstromancer(bot))
-        return false;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    if (PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsHeal(bot))
-    {
-        Creature* astromancerCreature = astromancer->ToCreature();
-        if (astromancerCreature && astromancerCreature->GetReactState() == REACT_PASSIVE)
-            return true;
-
-        return false;
-    }
-
-    return !AI_VALUE2(Unit*, "find target", "solarium priest");
-}
-
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
 {
     return HasWrathOfTheAstromancer(bot);

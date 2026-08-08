@@ -67,9 +67,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian engaged by main tank", {
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("high astromancer solarian should position bots", {
-        NextAction("high astromancer solarian stack on ranged leader", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
         NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
 
@@ -153,7 +150,6 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // High Astromancer Solarian
     multipliers.push_back(new HighAstromancerSolarianDisableMeleeTargetingMultiplier(botAI));
-    multipliers.push_back(new HighAstromancerSolarianMaintainPositionMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianWrathStayAwayMultiplier(botAI));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>

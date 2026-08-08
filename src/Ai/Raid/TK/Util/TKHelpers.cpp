@@ -322,28 +322,6 @@ bool HasWrathOfTheAstromancer(Player* bot)
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
 }
 
-Player* GetAstromancerRangedLeaderBot(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != TK_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || HasWrathOfTheAstromancer(member))
-        {
-            continue;
-        }
-
-        if (PlayerbotAI::IsRangedDps(member))
-            return member;
-    }
-
-    return nullptr;
-}
-
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 std::unordered_map<uint32, time_t> advisorDpsWaitTimer;

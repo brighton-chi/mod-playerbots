@@ -139,14 +139,6 @@ public:
     bool IsActive() override;
 };
 
-class HighAstromancerSolarianShouldPositionBotsTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianShouldPositionBotsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian should position bots") {}
-    bool IsActive() override;
-};
-
 class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public Trigger
 {
 public:

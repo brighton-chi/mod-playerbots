@@ -177,14 +177,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighAstromancerSolarianStackOnRangedLeaderAction : public MovementAction
-{
-public:
-    HighAstromancerSolarianStackOnRangedLeaderAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high astromancer solarian stack on ranged leader") {}
-    bool Execute(Event event) override;
-};
-
 class HighAstromancerSolarianMoveAwayFromGroupAction : public MovementAction
 {
 public:

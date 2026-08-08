@@ -744,25 +744,6 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != astromancer && Attack(astromancer);
 }
 
-bool HighAstromancerSolarianStackOnRangedLeaderAction::Execute(Event /*event*/)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* rangedLeader = GetAstromancerRangedLeaderBot(bot);
-    if (!rangedLeader || bot == rangedLeader)
-        return false;
-
-    if (bot->GetExactDist2d(rangedLeader) <= 5.0f)
-        return false;
-
-    return MoveTo(
-        TK_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
-        rangedLeader->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 15.0f;
@@ -2312,7 +2293,8 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     float targetY = botY + pushY * stepFraction;
     float targetZ = botZ + pushZ * stepFraction;
 
-    float const targetFloorZ = bot->GetMapHeight(targetX, targetY, targetZ, true, MAX_FALL_DISTANCE);
+    float const targetFloorZ = bot->GetMapHeight(
+        targetX, targetY, targetZ, true, MAX_FALL_DISTANCE);
     if (targetFloorZ <= INVALID_HEIGHT)
         return false;
 

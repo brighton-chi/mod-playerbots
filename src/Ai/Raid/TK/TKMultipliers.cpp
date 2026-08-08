@@ -190,26 +190,6 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 
 // High Astromancer Solarian
 
-float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !(bot->getClass() != CLASS_HUNTER && dynamic_cast<FleeAction*>(action)))
-    {
-        return 1.0f;
-    }
-
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (astromancer && !astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-        return 0.0f;
-
-    return 1.0f;
-}
-
 float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||

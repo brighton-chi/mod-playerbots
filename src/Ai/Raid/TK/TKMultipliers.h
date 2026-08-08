@@ -71,14 +71,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class HighAstromancerSolarianMaintainPositionMultiplier : public Multiplier
-{
-public:
-    HighAstromancerSolarianMaintainPositionMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high astromancer solarian maintain position") {}
-    float GetValue(Action* action) override;
-};
-
 class HighAstromancerSolarianWrathStayAwayMultiplier : public Multiplier
 {
 public:

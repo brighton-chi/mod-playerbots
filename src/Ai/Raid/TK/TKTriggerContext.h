@@ -65,9 +65,6 @@ public:
         creators["high astromancer solarian engaged by main tank"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_engaged_by_main_tank;
 
-        creators["high astromancer solarian should position bots"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_position_bots;
-
         creators["high astromancer solarian bot has wrath of the astromancer"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
 
@@ -190,9 +187,6 @@ private:
     // High Astromancer Solarian
     static Trigger* high_astromancer_solarian_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianEngagedByMainTankTrigger(botAI);
-    }
-    static Trigger* high_astromancer_solarian_should_position_bots(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianShouldPositionBotsTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);

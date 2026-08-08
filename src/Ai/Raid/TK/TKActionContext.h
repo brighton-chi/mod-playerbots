@@ -74,9 +74,6 @@ public:
         creators["high astromancer solarian main tank pick up boss"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_main_tank_pick_up_boss;
 
-        creators["high astromancer solarian stack on ranged leader"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_stack_on_ranged_leader;
-
         creators["high astromancer solarian move away from group"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_move_away_from_group;
 
@@ -211,9 +208,6 @@ private:
     // High Astromancer Solarian
     static Action* high_astromancer_solarian_main_tank_pick_up_boss(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMainTankPickUpBossAction(botAI);
-    }
-    static Action* high_astromancer_solarian_stack_on_ranged_leader(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianStackOnRangedLeaderAction(botAI);
     }
     static Action* high_astromancer_solarian_move_away_from_group(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianMoveAwayFromGroupAction(botAI);
