@@ -26,7 +26,8 @@ bool TradeStatusAction::Execute(Event event)
 
     bool const traderIsGameClientPlayer = IsRealPlayer(trader) || IsSelfBot(trader);
 
-    // Allow the master and group members to trade
+    // Bots refuse to trade with a person (whether active or selfbotting) who is neither their
+    // master nor a group member. Bot traders (other than selfbots) are handled further down.
     if (trader != master && traderIsGameClientPlayer &&
         (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
     {
@@ -55,7 +56,7 @@ bool TradeStatusAction::Execute(Event event)
         return false;
     }
 
-    // Allow trades from group members or bots
+    // Bots also refuse their own master when ungrouped and security withholds full access.
     if ((!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())) &&
         (trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
         traderIsGameClientPlayer)
@@ -196,16 +197,20 @@ bool TradeStatusAction::CheckTrade()
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(bot->GetTrader()->GetGUID()) &&
                 botAI->HasGameClientMaster())
+            {
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "trade_thank_you_player",
                     "Thank you %player",
                     {{"%player", chat->FormatWorldobject(bot->GetTrader())}}));
+            }
             else
+            {
                 bot->Say(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                              "trade_thank_you_player",
                              "Thank you %player",
                              {{"%player", chat->FormatWorldobject(bot->GetTrader())}}),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+            }
         }
         return isGettingItem;
     }
