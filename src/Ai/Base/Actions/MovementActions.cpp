@@ -439,7 +439,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle
     //     uint32 entry;
     //     movePosition = movePath.getNextPoint(startPosition, maxDist, pathType, entry);
 
-    //     if (pathType == TravelNodePathType::portal) // && !botAI->isRealPlayer())
+    //     if (pathType == TravelNodePathType::portal) // && !IsSelfBot(bot))
     //     {
     //         //Log bot movement
     //         if (sPlayerbotAIConfig.hasLog("bot_movement.csv"))

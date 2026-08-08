@@ -136,8 +136,7 @@ void TradeStatusAction::BeginTrade()
     if (!trader)
         return;
 
-    PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
-    if (traderBotAI && !traderBotAI->IsRealPlayer())
+    if (!IsSelfBot(trader))
         return;
 
     WorldPacket p;

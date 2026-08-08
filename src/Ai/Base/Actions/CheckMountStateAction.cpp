@@ -156,7 +156,7 @@ bool CheckMountStateAction::isUseful()
 
     // Selfbots don't auto-mount.
     // If they are already mounted (manually), allow dismount logic to proceed.
-    if (botAI->IsRealPlayer() && !bot->IsMounted())
+    if (IsSelfBot(bot) && !bot->IsMounted())
         return false;
 
     master = GetMaster();
