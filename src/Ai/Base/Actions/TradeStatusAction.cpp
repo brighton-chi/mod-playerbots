@@ -5,7 +5,6 @@
  */
 
 #include "TradeStatusAction.h"
-
 #include "CraftValue.h"
 #include "Event.h"
 #include "GuildTaskMgr.h"
@@ -25,18 +24,16 @@ bool TradeStatusAction::Execute(Event event)
     if (!trader)
         return false;
 
-    // A selfbot is a person at a game client, so hold it to the same access rules as a regular player.
-    bool const traderAtGameClient = IsRealPlayer(trader) || IsSelfBot(trader);
+    bool const traderIsGameClientPlayer = IsRealPlayer(trader) || IsSelfBot(trader);
 
     // Allow the master and group members to trade
-    if (trader != master && traderAtGameClient && (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
+    if (trader != master && traderIsGameClientPlayer &&
+        (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
     {
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_busy_now", "I'm kind of busy now", {}),
                      LANG_UNIVERSAL, trader);
 
-        // Refusing is not enough: the core already opened TradeData, so it has to be torn down or the
-        // player stays locked out of trading with anyone.
         WorldPacket p;
         uint32 status = 0;
         p << status;
@@ -44,13 +41,13 @@ bool TradeStatusAction::Execute(Event event)
         return false;
     }
 
-    if (sPlayerbotAIConfig.enableRandomBotTrading == 0 && (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
+    if (sPlayerbotAIConfig.enableRandomBotTrading == 0 &&
+        (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
     {
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_disabled", "Trading is disabled", {}),
                      LANG_UNIVERSAL, trader);
 
-        // As above: tear down the TradeData the core already opened, or the player stays stuck.
         WorldPacket p;
         uint32 status = 0;
         p << status;
@@ -61,7 +58,7 @@ bool TradeStatusAction::Execute(Event event)
     // Allow trades from group members or bots
     if ((!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())) &&
         (trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
-        traderAtGameClient)
+        traderIsGameClientPlayer)
     {
         WorldPacket p;
         uint32 status = 0;
@@ -75,7 +72,9 @@ bool TradeStatusAction::Execute(Event event)
     uint32 status;
     p >> status;
 
-    if (status == TRADE_STATUS_TRADE_ACCEPT || (status == TRADE_STATUS_BACK_TO_TRADE && trader->GetTradeData() && trader->GetTradeData()->IsAccepted()))
+    if (status == TRADE_STATUS_TRADE_ACCEPT ||
+        (status == TRADE_STATUS_BACK_TO_TRADE &&
+         trader->GetTradeData() && trader->GetTradeData()->IsAccepted()))
     {
         WorldPacket p;
         uint32 status = 0;
@@ -110,9 +109,7 @@ bool TradeStatusAction::Execute(Event event)
 
                 CraftData& craftData = AI_VALUE(CraftData&, "craft");
                 if (!craftData.IsEmpty() && craftData.IsRequired(itemId))
-                {
                     craftData.AddObtained(itemId, count);
-                }
 
                 GuildTaskMgr::instance().CheckItemTask(itemId, count, trader, bot);
             }
@@ -124,9 +121,7 @@ bool TradeStatusAction::Execute(Event event)
 
                 CraftData& craftData = AI_VALUE(CraftData&, "craft");
                 if (!craftData.IsEmpty() && craftData.itemId == itemId)
-                {
                     craftData.Crafted(count);
-                }
             }
 
             return true;
@@ -147,7 +142,6 @@ bool TradeStatusAction::Execute(Event event)
 void TradeStatusAction::BeginTrade()
 {
     Player* trader = bot->GetTrader();
-    // Upstream opens the window for a human client only; also allow a selfbot to open one.
     if (!trader || (GET_PLAYERBOT_AI(trader) && !IsSelfBot(trader)))
         return;
 
@@ -178,9 +172,8 @@ bool TradeStatusAction::CheckTrade()
     if (!bot->GetTradeData() || !trader || !trader->GetTradeData())
         return false;
 
-    // Only an unattended bot-to-bot trade takes this branch. A selfbot on either side is a person at a
-    // game client, so it falls through to the same valuation logic a regular player gets.
-    if (!botAI->HasGameClientMaster() && GET_PLAYERBOT_AI(bot->GetTrader()) && !IsSelfBot(bot->GetTrader()))
+    if (!botAI->HasGameClientMaster() && GET_PLAYERBOT_AI(bot->GetTrader()) &&
+        !IsSelfBot(bot->GetTrader()))
     {
         for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
         {
@@ -216,10 +209,10 @@ bool TradeStatusAction::CheckTrade()
         }
         return isGettingItem;
     }
+
     if (!bot->GetSession())
-    {
         return false;
-    }
+
     uint32 accountId = bot->GetSession()->GetAccountId();
     if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
     {
@@ -237,14 +230,16 @@ bool TradeStatusAction::CheckTrade()
     int32 botMoney = bot->GetTradeData()->GetMoney() + botItemsMoney;
     int32 playerItemsMoney = CalculateCost(trader, false);
     int32 playerMoney = trader->GetTradeData()->GetMoney() + playerItemsMoney;
-    if (botItemsMoney > 0 && sPlayerbotAIConfig.enableRandomBotTrading == 2 && (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
+    if (botItemsMoney > 0 && sPlayerbotAIConfig.enableRandomBotTrading == 2 &&
+        (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
     {
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_selling_disabled", "Selling is disabled.", {}),
                      LANG_UNIVERSAL, trader);
         return false;
     }
-    if (playerItemsMoney && sPlayerbotAIConfig.enableRandomBotTrading == 3 && (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
+    if (playerItemsMoney && sPlayerbotAIConfig.enableRandomBotTrading == 3 &&
+        (sRandomPlayerbotMgr.IsRandomBot(bot)|| sRandomPlayerbotMgr.IsAddclassBot(bot)))
     {
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_buying_disabled", "Buying is disabled.", {}),
