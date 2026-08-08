@@ -25,14 +25,22 @@ bool TradeStatusAction::Execute(Event event)
     if (!trader)
         return false;
 
-    PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
+    // A selfbot is a person at a game client, so hold it to the same access rules as a regular player.
+    bool const traderAtGameClient = IsRealPlayer(trader) || IsSelfBot(trader);
 
     // Allow the master and group members to trade
-    if (trader != master && !traderBotAI && (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
+    if (trader != master && traderAtGameClient && (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))
     {
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_busy_now", "I'm kind of busy now", {}),
                      LANG_UNIVERSAL, trader);
+
+        // Refusing is not enough: the core already opened TradeData, so it has to be torn down or the
+        // player stays locked out of trading with anyone.
+        WorldPacket p;
+        uint32 status = 0;
+        p << status;
+        bot->GetSession()->HandleCancelTradeOpcode(p);
         return false;
     }
 
@@ -41,13 +49,19 @@ bool TradeStatusAction::Execute(Event event)
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_disabled", "Trading is disabled", {}),
                      LANG_UNIVERSAL, trader);
+
+        // As above: tear down the TradeData the core already opened, or the player stays stuck.
+        WorldPacket p;
+        uint32 status = 0;
+        p << status;
+        bot->GetSession()->HandleCancelTradeOpcode(p);
         return false;
     }
 
     // Allow trades from group members or bots
     if ((!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())) &&
         (trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
-        !traderBotAI)
+        traderAtGameClient)
     {
         WorldPacket p;
         uint32 status = 0;
@@ -133,10 +147,8 @@ bool TradeStatusAction::Execute(Event event)
 void TradeStatusAction::BeginTrade()
 {
     Player* trader = bot->GetTrader();
-    if (!trader)
-        return;
-
-    if (!IsRealPlayer(trader) && !IsSelfBot(trader))
+    // Upstream opens the window for a human client only; also allow a selfbot to open one.
+    if (!trader || (GET_PLAYERBOT_AI(trader) && !IsSelfBot(trader)))
         return;
 
     WorldPacket p;
@@ -166,28 +178,26 @@ bool TradeStatusAction::CheckTrade()
     if (!bot->GetTradeData() || !trader || !trader->GetTradeData())
         return false;
 
-    PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
-    if (traderBotAI && IsSelfBot(trader) && botAI->GetMaster() == trader)
-        return true;
-
-    if (!IsRealPlayer(botAI->GetMaster()) && traderBotAI)
+    // Only an unattended bot-to-bot trade takes this branch. A selfbot on either side is a person at a
+    // game client, so it falls through to the same valuation logic a regular player gets.
+    if (!botAI->HasGameClientMaster() && GET_PLAYERBOT_AI(bot->GetTrader()) && !IsSelfBot(bot->GetTrader()))
     {
-        bool isGettingItem = false;
-        bool hasItems = false;
         for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
         {
-            if (trader->GetTradeData()->GetItem((TradeSlots)slot))
+            Item* item = bot->GetTradeData()->GetItem((TradeSlots)slot);
+            if (item)
+                break;
+        }
+        bool isGettingItem = false;
+        for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
+        {
+            Item* item = trader->GetTradeData()->GetItem((TradeSlots)slot);
+            if (item)
             {
                 isGettingItem = true;
-                hasItems = true;
                 break;
             }
-            if (bot->GetTradeData()->GetItem((TradeSlots)slot))
-                hasItems = true;
         }
-
-        if (!hasItems)
-            return false;
 
         if (isGettingItem)
         {
@@ -204,7 +214,7 @@ bool TradeStatusAction::CheckTrade()
                              {{"%player", chat->FormatWorldobject(bot->GetTrader())}}),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
         }
-        return true;
+        return isGettingItem;
     }
     if (!bot->GetSession())
     {
