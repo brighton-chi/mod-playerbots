@@ -9,6 +9,7 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -170,7 +171,6 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 }
 
 namespace
-
 {
 
 using namespace TkHelpers;
@@ -178,8 +178,20 @@ using namespace TkHelpers;
 void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
-    if (Unit* axe = AI_VALUE2(Unit*, "find target", "devastation"))
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (kaelAI && (kaelAI->GetPhase() < PHASE_WEAPONS || kaelAI->GetPhase() > PHASE_ALL_ADVISORS))
+        return;
+
+    constexpr float searchRadius = 75.0f;
+    if (Creature* axe = botAI->GetBot()->FindNearestCreature(
+            Id(TkNpcs::NPC_DEVASTATION), searchRadius))
+    {
         exclusions.insert(axe->GetGUID());
+    }
 }
 
 void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -199,7 +211,7 @@ void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsDps(bot))
+    if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return;
 
     AppendKaelthasDevastationExclusions(botAI, exclusions);

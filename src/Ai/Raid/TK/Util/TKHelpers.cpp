@@ -87,7 +87,8 @@ Position FindSafestNearbyPosition(
     constexpr uint8 numAngles = 24;
     constexpr uint8 numDistSteps = 28;
 
-    Position bestPos;
+    Position const searchCenter = center ? *center : bot->GetPosition();
+    Position bestPos = bot->GetPosition();
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
@@ -97,7 +98,6 @@ Position FindSafestNearbyPosition(
         for (uint8 j = 0; j < numAngles; ++j)
         {
             float const angle = j * searchStep;
-            Position const searchCenter = center ? *center : bot->GetPosition();
             float const x = searchCenter.GetPositionX() + distance * std::cos(angle);
             float const y = searchCenter.GetPositionY() + distance * std::sin(angle);
 
@@ -172,6 +172,12 @@ bool IsPathSafeFromHazards(
 std::unordered_map<uint32, bool> lastRebirthState;
 std::unordered_map<uint32, bool> isAlarInPhase2;
 
+bool IsAlarInPhase2(uint32 instanceId)
+{
+    auto const it = isAlarInPhase2.find(instanceId);
+    return it != isAlarInPhase2.end() && it->second;
+}
+
 int8 GetAlarCurrentLocationIndex(Unit* alar)
 {
     if (!alar)
@@ -242,11 +248,14 @@ int8 GetAlarDestinationLocationIndex(Unit* alar)
     return locationIndex;
 }
 
-int8 GetAlarLocationIndex(Unit* alar)
+int8 GetAlarPlatformIndex(Unit* alar)
 {
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
     if (locationIndex == LOCATION_NONE)
         locationIndex = GetAlarDestinationLocationIndex(alar);
+
+    if (locationIndex < PLATFORM_0_IDX || locationIndex > PLATFORM_3_IDX)
+        return LOCATION_NONE;
 
     return locationIndex;
 }
@@ -286,8 +295,8 @@ bool IsPrimaryEmberTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
 }
 
-// Whichever of MT or 1st AT doesn't have Melt Armor (1st AT if neither do) picks up the 2nd
-// Ember in phase 2 (2nd AT, the phase 1 Ember tank, picks up the 1st Ember)
+// When Al'ar melts the armor of whoever is tanking it, the other tank taunts, and the melted tank
+// picks up the 2nd Ember (the 2nd AT, who tanked Embers in phase 1, picks up the 1st Ember).
 Player* GetPhase2SecondEmberTank(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -297,16 +306,10 @@ Player* GetPhase2SecondEmberTank(Player* bot)
     if (!mainTank || !assistTank)
         return nullptr;
 
-    bool const mainTankHasMelt = mainTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
-    bool const assistTankHasMelt = assistTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR));
-
-    if (mainTankHasMelt)
+    if (mainTank->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)))
         return mainTank;
 
-    if (assistTankHasMelt || (!mainTankHasMelt && !assistTankHasMelt))
-        return assistTank;
-
-    return nullptr;
+    return assistTank;
 }
 
 // Void Reaver

@@ -135,20 +135,22 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    int8 platformIdx; // Determine which platform the tank goes to based on Al'ar's platform
+    int8 alarPlatformIndex = GetAlarPlatformIndex(alar);
+    int8 tankPlatformIndex; // Determine which platform the tank goes to based on Al'ar's platform
     if (isFirstAlarTank)
     {
-        platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_3_IDX) ?
+        tankPlatformIndex =
+            (alarPlatformIndex == PLATFORM_0_IDX || alarPlatformIndex == PLATFORM_3_IDX) ?
             PLATFORM_0_IDX : PLATFORM_2_IDX;
     }
     else // isSecondAlarTank
     {
-        platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_1_IDX) ?
+        tankPlatformIndex =
+            (alarPlatformIndex == PLATFORM_0_IDX || alarPlatformIndex == PLATFORM_1_IDX) ?
             PLATFORM_1_IDX : PLATFORM_3_IDX;
     }
 
-    Position const& target = ALAR_TANK_PLATFORM_POSITIONS[platformIdx];
+    Position const& target = ALAR_TANK_PLATFORM_POSITIONS[tankPlatformIndex];
     if (bot->GetExactDist2d(target) <= 2.0f)
     {
         if (alar->GetVictim() != bot)
@@ -177,8 +179,11 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[platformIndex];
 
     if (bot->GetExactDist2d(target) <= 2.0f)
         return false;
@@ -199,8 +204,11 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& position = ALAR_GROUND_POSITIONS[platformIndex];
 
     float distFromTarget = 0.0f;
     if (isRanged)
@@ -224,7 +232,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return HandlePhase1Embers(alar);
 
     return HandlePhase2Embers(event);
@@ -253,8 +261,11 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     if (ember->GetVictim() != bot)
         return false;
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& position = ALAR_GROUND_POSITIONS[platformIndex];
     Position const& center = ALAR_POINT_MIDDLE;
 
     float dx = center.GetPositionX() - position.GetPositionX();
@@ -530,7 +541,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
     bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
-    if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
+    if (!IsAlarInPhase2(instanceId) && lastRebirthState[instanceId] && !rebirthActive)
     {
         isAlarInPhase2[instanceId] = true;
         return true;
