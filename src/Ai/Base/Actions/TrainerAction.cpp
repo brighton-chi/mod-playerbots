@@ -181,7 +181,7 @@ bool MaintenanceAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (botAI->IsRealPlayer()) // No maintenance for selfbots
+    if (IsSelfBot(bot)) // No maintenance for selfbots
         return false;
 
     botAI->TellMaster("I'm maintaining");
