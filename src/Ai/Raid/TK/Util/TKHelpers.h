@@ -7,16 +7,17 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
-#include "ObjectGuid.h"
-#include "Player.h"
 #include "Position.h"
-#include "Unit.h"
 #include <array>
 #include <ctime>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+class Player;
+class PlayerbotAI;
+class Unit;
 
 class PlayerbotAI;
 
