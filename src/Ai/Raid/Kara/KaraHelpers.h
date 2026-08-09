@@ -144,6 +144,9 @@ bool IsFlameWreathActive(Player* bot);
 
 // Netherspite
 extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+extern std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
 bool IsBanishPhase(Unit* netherspite);
 std::vector<Player*> GetRedBlockers(Player* bot);
 std::vector<Player*> GetBlueBlockers(Player* bot);
