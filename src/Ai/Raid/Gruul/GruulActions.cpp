@@ -11,6 +11,7 @@
 #include "RaidBossHelpers.h"
 #include "Unit.h"
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 using namespace GruulHelpers;
