@@ -16,14 +16,8 @@ public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
         // High King Maulgar
-        creators["high king maulgar boss engaged by main tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_boss_engaged_by_main_tank;
-
-        creators["high king maulgar olm engaged by first assist tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_olm_engaged_by_first_assist_tank;
-
-        creators["high king maulgar blindeye engaged by second assist tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_blindeye_engaged_by_second_assist_tank;
+        creators["high king maulgar bosses engaged by melee tanks"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_bosses_engaged_by_melee_tanks;
 
         creators["high king maulgar krosh engaged by mage tank"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_engaged_by_mage_tank;
@@ -59,14 +53,8 @@ public:
 
 private:
     // High King Maulgar
-    static Trigger* high_king_maulgar_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBossEngagedByMainTankTrigger(botAI);
-    }
-    static Trigger* high_king_maulgar_olm_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarOlmEngagedByFirstAssistTankTrigger(botAI);
-    }
-    static Trigger* high_king_maulgar_blindeye_engaged_by_second_assist_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger(botAI);
+    static Trigger* high_king_maulgar_bosses_engaged_by_melee_tanks(PlayerbotAI* botAI) {
+        return new HighKingMaulgarBossesEngagedByMeleeTanksTrigger(botAI);
     }
     static Trigger* high_king_maulgar_krosh_engaged_by_mage_tank(PlayerbotAI* botAI) {
         return new HighKingMaulgarKroshEngagedByMageTankTrigger(botAI);

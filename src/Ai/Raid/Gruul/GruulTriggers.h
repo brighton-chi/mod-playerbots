@@ -9,27 +9,11 @@
 
 #include "Trigger.h"
 
-class HighKingMaulgarBossEngagedByMainTankTrigger : public Trigger
+class HighKingMaulgarBossesEngagedByMeleeTanksTrigger : public Trigger
 {
 public:
-    HighKingMaulgarBossEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar engaged by main tank") {}
-    bool IsActive() override;
-};
-
-class HighKingMaulgarOlmEngagedByFirstAssistTankTrigger : public Trigger
-{
-public:
-    HighKingMaulgarOlmEngagedByFirstAssistTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar olm engaged by first assist tank") {}
-    bool IsActive() override;
-};
-
-class HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger : public Trigger
-{
-public:
-    HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar blindeye engaged by second assist tank") {}
+    HighKingMaulgarBossesEngagedByMeleeTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar bosses engaged by melee tanks") {}
     bool IsActive() override;
 };
 
