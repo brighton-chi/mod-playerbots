@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
+#include "Common.h"
 #include "Position.h"
 #include <array>
 #include <ctime>
@@ -18,8 +19,6 @@
 class Player;
 class PlayerbotAI;
 class Unit;
-
-class PlayerbotAI;
 
 namespace TkHelpers
 {

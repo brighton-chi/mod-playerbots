@@ -15,30 +15,6 @@ namespace HyjalHelpers
 
 // General
 
-bool GetGroundedStepPosition(
-    Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ)
-{
-    float const distance = bot->GetExactDist2d(destinationX, destinationY);
-    if (distance <= 0.0f)
-        return false;
-
-    float const stepDistance = std::min(moveDist, distance);
-    float const deltaX = destinationX - bot->GetPositionX();
-    float const deltaY = destinationY - bot->GetPositionY();
-    stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
-    stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
-    stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
-    if (stepZ <= INVALID_HEIGHT)
-        stepZ = bot->GetPositionZ();
-
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        stepX, stepY, stepZ, false);
-
-    return true;
-}
-
 RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
 {
     RangedGroups result;

@@ -13,6 +13,7 @@
 #include "SWPData.h"
 #include "Timer.h"
 #include <cmath>
+#include <string>
 
 using namespace SwpHelpers;
 
@@ -455,8 +456,6 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
         destination.GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
-
-    return false;
 }
 
 bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(

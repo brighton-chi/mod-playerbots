@@ -7,9 +7,18 @@
 #ifndef PLAYERBOTS_RAIDBOSSHELPERS_H
 #define PLAYERBOTS_RAIDBOSSHELPERS_H
 
-#include "AiObject.h"
-#include "Unit.h"
+#include "Common.h"
+#include "Position.h"
+#include <string>
+#include <vector>
 
+class Player;
+class PlayerbotAI;
+class Unit;
+
+bool GetGroundedStepPosition(
+    Player* bot, float destinationX, float destinationY, float moveDist,
+    float& stepX, float& stepY, float& stepZ);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);
 bool MarkTargetWithSquare(Player* bot, Unit* target);
@@ -20,7 +29,7 @@ bool MarkTargetWithTriangle(Player* bot, Unit* target);
 bool MarkTargetWithCross(Player* bot, Unit* target);
 bool MarkTargetWithMoon(Player* bot, Unit* target);
 bool ClearTargetIcon(Player* bot, uint8 iconId);
-void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);

@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
+#include "Common.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
@@ -76,11 +77,6 @@ enum class KaraNpcs : uint32
 
     // Attumen the Huntsman
     NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // ID for mounted version
-
-    // Terestian Illhoof
-    NPC_TERESTIAN_ILLHOOF         = 15688,
-    NPC_DEMON_CHAINS              = 17248,
-    NPC_KILREK                    = 17229,
 
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL        = 17167,

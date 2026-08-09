@@ -480,26 +480,23 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 
     if (!_hasReachedInitialPosition)
     {
-        float const distanceToTarget = bot->GetExactDist2d(_initialPosition);
-        if (distanceToTarget > 2.0f)
+        if (bot->GetExactDist2d(_initialPosition) > 2.0f)
         {
-            float destX = _initialPosition.GetPositionX();
-            float destY = _initialPosition.GetPositionY();
-            float destZ = _initialPosition.GetPositionZ();
-
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                    bot, bot->GetPositionX(), bot->GetPositionY(),
-                    bot->GetPositionZ(), destX, destY, destZ))
+            float moveX, moveY, moveZ;
+            constexpr float moveDist = 10.0f;
+            if (GetGroundedStepPosition(
+                    bot, _initialPosition.GetPositionX(), _initialPosition.GetPositionY(),
+                    moveDist, moveX, moveY, moveZ))
             {
-                return false;
+                return MoveTo(
+                    GRUUL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+                    MovementPriority::MOVEMENT_COMBAT, true, false);
             }
-
-            return MoveTo(
-                GRUUL_MAP_ID, destX, destY, destZ, false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
         }
-
-        _hasReachedInitialPosition = true;
+        else
+        {
+            _hasReachedInitialPosition = true;
+        }
     }
 
     constexpr float minSpreadDistance = 10.0f;
