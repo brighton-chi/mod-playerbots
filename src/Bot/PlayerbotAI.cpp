@@ -4,12 +4,6 @@
  */
 
 #include "PlayerbotAI.h"
-
-#include <cmath>
-#include <mutex>
-#include <sstream>
-#include <string>
-
 #include "AiFactory.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
@@ -38,10 +32,10 @@
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "Player.h"
-#include "PlayerbotTextMgr.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotMgr.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotMgr.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "RBAC.h"
@@ -58,6 +52,10 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include <cmath>
+#include <mutex>
+#include <sstream>
+#include <string>
 
 namespace
 {
@@ -1681,6 +1679,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep: The Eye
+            break;
+        case 556:
+            strategyName = "tbc-seth";  // Auchindoun: Sethekk Halls
             break;
         case 554:
             strategyName = "tbc-mech";  // Tempest Keep: The Mechanar

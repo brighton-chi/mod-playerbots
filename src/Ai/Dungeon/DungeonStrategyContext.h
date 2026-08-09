@@ -27,7 +27,6 @@
 #include "UBStrategy.h"
 #include "UKStrategy.h"
 #include "UPStrategy.h"
-#include "VHStrategy.h"
 
 class DungeonStrategyContext : public NamedObjectContext<Strategy>
 {

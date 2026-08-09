@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_WOTLKDUNGEONTRIGGERCONTEXT_H
 #define PLAYERBOTS_WOTLKDUNGEONTRIGGERCONTEXT_H
 
-#include "ANTriggerContext.h"
 #include "AKTriggerContext.h"
+#include "ANTriggerContext.h"
 #include "CoSTriggerContext.h"
 #include "DTKTriggerContext.h"
 #include "FoSTriggerContext.h"

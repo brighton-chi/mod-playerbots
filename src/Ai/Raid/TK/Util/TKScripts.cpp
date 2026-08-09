@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
+#include "TKHelpers.h"
 #include "Timer.h"
 #include "TKHelpers.h"
 

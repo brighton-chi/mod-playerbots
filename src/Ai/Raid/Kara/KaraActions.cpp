@@ -6,8 +6,8 @@
 
 #include "KaraActions.h"
 #include "KaraHelpers.h"
-#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include <array>
 
@@ -78,6 +78,15 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         {
             reset = true;
         }
+
+        if (currentRedBlocker.erase(instanceId) > 0)
+            reset = true;
+
+        if (currentGreenBlocker.erase(instanceId) > 0)
+            reset = true;
+
+        if (currentBlueBlocker.erase(instanceId) > 0)
+            reset = true;
     }
 
     return reset;
@@ -1260,7 +1269,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
