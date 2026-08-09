@@ -8,7 +8,6 @@
 #include "AiFactory.h"
 #include "GroupReference.h"
 #include "Playerbots.h"
-#include "Unit.h"
 
 namespace GruulHelpers
 {

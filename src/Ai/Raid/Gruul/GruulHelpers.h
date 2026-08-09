@@ -8,10 +8,9 @@
 #define PLAYERBOTS_GRUULHELPERS_H
 
 #include "Common.h"
+#include "Player.h"
 #include "Position.h"
 #include <type_traits>
-
-class Player;
 
 namespace GruulHelpers
 {
