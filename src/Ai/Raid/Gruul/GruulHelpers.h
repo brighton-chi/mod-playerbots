@@ -7,43 +7,58 @@
 #ifndef PLAYERBOTS_GRUULHELPERS_H
 #define PLAYERBOTS_GRUULHELPERS_H
 
-#include "PlayerbotAI.h"
+#include "Common.h"
+#include "Position.h"
+#include <type_traits>
 
-namespace GruulsLairHelpers
+class Player;
+
+namespace GruulHelpers
 {
 
-enum class GruulsLairSpells : uint32
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
+
+enum class GruulSpells : uint32
 {
     // High King Maulgar
-    SPELL_WHIRLWIND     = 33238,
+    SPELL_WHIRLWIND    = 33238,
 
     // Krosh Firehand
-    SPELL_SPELL_SHIELD  = 33054,
+    SPELL_SPELL_SHIELD = 33054,
 
     // Hunter
-    SPELL_MISDIRECTION  = 35079,
+    SPELL_MISDIRECTION = 35079,
+
+    // Mage
+    SPELL_SPELLSTEAL   = 30449,
 
     // Gruul the Dragonkiller
-    SPELL_GROUND_SLAM_1 = 33525,
-    SPELL_GROUND_SLAM_2 = 39187,
+    SPELL_GROUND_SLAM  = 33525,
 };
 
-enum class GruulsLairNpcs : uint32
+enum class GruulNpcs : uint32
 {
     NPC_WILD_FEL_STALKER = 18847,
 };
 
-constexpr uint32 GRUULS_LAIR_MAP_ID = 565;
+inline constexpr uint32 GRUUL_MAP_ID = 565;
 
+inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
+inline Position const OLM_TANK_POSITION      = { 101.050f, 219.359f,  -9.503f };
+inline Position const BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
+inline Position const KROSH_TANK_POSITION    = { 116.880f, 166.208f, -14.231f };
+inline Position const MAULGAR_ROOM_CENTER    = {  88.754f, 150.759f, -11.569f };
+inline Position const GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
+
+bool IsMaulgarTank(Player* bot);
+bool IsOlmTank(Player* bot);
+bool IsBlindeyeTank(Player* bot);
 Player* GetKroshMageTank(Player* bot);
 Player* GetKigglerMoonkinTank(Player* bot);
-
-extern const Position MAULGAR_TANK_POSITION;
-extern const Position OLM_TANK_POSITION;
-extern const Position BLINDEYE_TANK_POSITION;
-extern const Position KROSH_TANK_POSITION;
-extern const Position MAULGAR_ROOM_CENTER;
-extern const Position GRUUL_TANK_POSITION;
 
 }
 

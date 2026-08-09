@@ -4,12 +4,19 @@
  * or (at your option) any later version.
  */
 
-#include "KaraActions.h"
-#include "KaraHelpers.h"
-#include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
-#include "RaidBossHelpers.h"
-#include <array>
+ #include "KaraActions.h"
+ #include "KaraHelpers.h"
+ #include "PlayerbotTextMgr.h"
+ #include "Playerbots.h"
+ #include "RaidBossHelpers.h"
+ #include <algorithm>
+ #include <array>
+ #include <cmath>
+ #include <ctime>
+ #include <limits>
+ #include <list>
+ #include <map>
+ #include <string>
 
 using namespace KaraHelpers;
 
@@ -78,6 +85,15 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         {
             reset = true;
         }
+
+        if (currentRedBlocker.erase(instanceId) > 0)
+            reset = true;
+
+        if (currentGreenBlocker.erase(instanceId) > 0)
+            reset = true;
+
+        if (currentBlueBlocker.erase(instanceId) > 0)
+            reset = true;
     }
 
     return reset;
@@ -891,7 +907,6 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
         return false;
 
     constexpr uint8 numAngles = 36;
-    constexpr float maxSearchDist = 30.0f;
     constexpr float stepDist = 0.5f;
     constexpr uint8 numSteps = 56;
 
@@ -941,7 +956,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 }
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
-     float x, float y, float botX, float botY, const std::vector<BeamAvoid>& beams)
+     float x, float y, float botX, float botY, std::vector<BeamAvoid> const& beams)
 {
     for (auto const& beam : beams)
     {
@@ -1261,7 +1276,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        KARA_MAP_ID, destX, destY, bot->GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 

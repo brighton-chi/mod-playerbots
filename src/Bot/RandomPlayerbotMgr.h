@@ -7,12 +7,11 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 #define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
+#include "GameTime.h"
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
-#include "PlayerbotMgr.h"
-#include "GameTime.h"
 #include "PlayerbotCommandServer.h"
-
+#include "PlayerbotMgr.h"
 #include <unordered_set>
 
 struct BattlegroundInfo
@@ -243,14 +242,12 @@ private:
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;
-    uint32 processTicks;
 
     // std::map<uint32, std::vector<WorldLocation>> rpgLocsCache;
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> rpgLocsCacheLevel;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::unordered_map<uint32, BotEventCache> eventCache;
     std::unordered_set<uint32> currentBots;
-    uint32 bgBotsCount;
     uint32 playersLevel;
 
     // Account lists

@@ -5,9 +5,9 @@
  */
 
 #include "AiObjectContext.h"
-#include "ValueContext.h"
 #include "MechValueContext.h"
 #include "UBValueContext.h"
+#include "ValueContext.h"
 
 void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {

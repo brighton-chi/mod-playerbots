@@ -23,6 +23,7 @@
 #include "TKKaelthasBossAI.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include <ctime>
 
 namespace
 {
@@ -53,7 +54,7 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return 1.0f;
 
     if (isBlockedMovement)
@@ -84,7 +85,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     if (isDisperseOrFlee)
         return 0.0f;
 
-    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return 1.0f;
 
     // Enable FollowAction only in non-combat engine in Phase 2
@@ -121,7 +122,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return 1.0f;
 
     Creature* alarCreature = alar->ToCreature();
@@ -154,18 +155,18 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
     if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)) && AI_VALUE(Unit*, "current target") == alar)
         return 0.0f;
 
-    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return 1.0f;
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
+    int8 platformIndex = GetAlarPlatformIndex(alar);
     if (isFirstAlarTank)
     {
-        if (locationIndex != PLATFORM_0_IDX && locationIndex != PLATFORM_2_IDX)
+        if (platformIndex != PLATFORM_0_IDX && platformIndex != PLATFORM_2_IDX)
             return 0.0f;
     }
     else // isSecondAlarTank
     {
-        if (locationIndex != PLATFORM_1_IDX && locationIndex != PLATFORM_3_IDX)
+        if (platformIndex != PLATFORM_1_IDX && platformIndex != PLATFORM_3_IDX)
             return 0.0f;
     }
 
@@ -189,26 +190,6 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 }
 
 // High Astromancer Solarian
-
-float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !(bot->getClass() != CLASS_HUNTER && dynamic_cast<FleeAction*>(action)))
-    {
-        return 1.0f;
-    }
-
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (astromancer && !astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-        return 0.0f;
-
-    return 1.0f;
-}
 
 float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
 {
@@ -578,20 +559,20 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
+    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
+    if (dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
         return 1.0f;
-    }
 
     if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

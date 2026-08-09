@@ -4,12 +4,9 @@
  */
 
 #include "PlayerbotFactory.h"
-
-#include <array>
-#include <utility>
-
 #include "AccountMgr.h"
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
@@ -17,6 +14,7 @@
 #include "GuildMgr.h"
 #include "InventoryAction.h"
 #include "Item.h"
+#include "ItemPackets.h"
 #include "ItemTemplate.h"
 #include "ItemVisitors.h"
 #include "Log.h"
@@ -27,8 +25,8 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotRepository.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotRepository.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
@@ -37,8 +35,8 @@
 #include "SharedDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
-#include "AiObjectContext.h"
-#include "ItemPackets.h"
+#include <array>
+#include <utility>
 
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
@@ -2423,7 +2421,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
             calculator.SetExcludeResilience(isTrinketSlot);
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<std::pair<uint32, int32>>& ids = items[slot];

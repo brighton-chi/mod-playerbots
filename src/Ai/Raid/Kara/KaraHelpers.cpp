@@ -6,13 +6,16 @@
 
 #include "KaraHelpers.h"
 #include "Playerbots.h"
+#include <algorithm>
+#include <limits>
+#include <list>
 
 namespace KaraHelpers
 {
 
 // General
 
-bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)
     {
@@ -30,7 +33,7 @@ std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
 
 Unit* GetAttumenMounted(Player* bot)
 {
-    constexpr uint32 searchRadius = 50.0f;
+    constexpr float searchRadius = 50.0f;
     return bot->FindNearestCreature(Id(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
 }
 
@@ -73,6 +76,9 @@ bool IsFlameWreathActive(Player* bot)
 // Netherspite
 
 std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
+std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
+std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
 
 bool IsBanishPhase(Unit* netherspite)
 {
@@ -188,17 +194,16 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
 
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
 {
-    static ObjectGuid currentRedBlocker;
-    static ObjectGuid currentGreenBlocker;
-    static ObjectGuid currentBlueBlocker;
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
 
     Player* redBlocker = nullptr;
     auto redBlockers = GetRedBlockers(bot);
     if (!redBlockers.empty())
     {
-        auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
+        ObjectGuid& redGuid = currentRedBlocker[instanceId];
+        auto const it = std::find_if(redBlockers.begin(), redBlockers.end(), [&redGuid](Player* player)
         {
-            return player && player->GetGUID() == currentRedBlocker;
+            return player && player->GetGUID() == redGuid;
         });
 
         if (it != redBlockers.end())
@@ -206,11 +211,10 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
         else
             redBlocker = redBlockers.front();
 
-        currentRedBlocker = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
+        redGuid = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
     }
     else
     {
-        currentRedBlocker = ObjectGuid::Empty;
         redBlocker = nullptr;
     }
 
@@ -218,9 +222,10 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     auto greenBlockers = GetGreenBlockers(bot);
     if (!greenBlockers.empty())
     {
-        auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
+        ObjectGuid& greenGuid = currentGreenBlocker[instanceId];
+        auto const it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [&greenGuid](Player* player)
         {
-            return player && player->GetGUID() == currentGreenBlocker;
+            return player && player->GetGUID() == greenGuid;
         });
 
         if (it != greenBlockers.end())
@@ -228,11 +233,10 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
         else
             greenBlocker = greenBlockers.front();
 
-        currentGreenBlocker = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
+        greenGuid = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
     }
     else
     {
-        currentGreenBlocker = ObjectGuid::Empty;
         greenBlocker = nullptr;
     }
 
@@ -240,9 +244,10 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     auto blueBlockers = GetBlueBlockers(bot);
     if (!blueBlockers.empty())
     {
-        auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
+        ObjectGuid& blueGuid = currentBlueBlocker[instanceId];
+        auto const it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [&blueGuid](Player* player)
         {
-            return player && player->GetGUID() == currentBlueBlocker;
+            return player && player->GetGUID() == blueGuid;
         });
 
         if (it != blueBlockers.end())
@@ -250,11 +255,10 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
         else
             blueBlocker = blueBlockers.front();
 
-        currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
+        blueGuid = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
     }
     else
     {
-        currentBlueBlocker = ObjectGuid::Empty;
         blueBlocker = nullptr;
     }
 

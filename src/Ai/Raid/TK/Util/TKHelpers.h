@@ -7,13 +7,18 @@
 #ifndef PLAYERBOTS_TKHELPERS_H
 #define PLAYERBOTS_TKHELPERS_H
 
-#include "AiObject.h"
+#include "Common.h"
 #include "Position.h"
-#include "Unit.h"
+#include <array>
 #include <ctime>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+
+class Player;
+class PlayerbotAI;
+class Unit;
 
 namespace TkHelpers
 {
@@ -39,7 +44,6 @@ enum class TkSpells : uint32
     SPELL_ARCANE_ORB                = 34172,
 
     // High Astromancer Solarian
-    SPELL_SELECT_TRUE_BEAM          = 33365,
     SPELL_SOLARIAN_TRANSFORM        = 39117,
     SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
 
@@ -180,9 +184,10 @@ inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f }
 extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
+bool IsAlarInPhase2(uint32 instanceId);
 int8 GetAlarDestinationLocationIndex(Unit* alar);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
-int8 GetAlarLocationIndex(Unit* alar);
+int8 GetAlarPlatformIndex(Unit* alar);
 void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position& ground);
 bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
@@ -208,7 +213,6 @@ extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOr
 // High Astromancer Solarian
 
 bool HasWrathOfTheAstromancer(Player* bot);
-Player* GetAstromancerRangedLeaderBot(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 

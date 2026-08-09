@@ -7,13 +7,18 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
-#include "AiObject.h"
+#include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
-#include "Unit.h"
 #include <array>
 #include <ctime>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
+
+class Player;
+class Unit;
 
 namespace KaraHelpers
 {
@@ -73,11 +78,6 @@ enum class KaraNpcs : uint32
     // Attumen the Huntsman
     NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // ID for mounted version
 
-    // Terestian Illhoof
-    NPC_TERESTIAN_ILLHOOF         = 15688,
-    NPC_DEMON_CHAINS              = 17248,
-    NPC_KILREK                    = 17229,
-
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL        = 17167,
 
@@ -93,7 +93,7 @@ enum class KaraNpcs : uint32
 
 // General
 inline constexpr uint32 KARA_MAP_ID = 532;
-bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
+bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
 
 // Attumen the Huntsman
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
@@ -140,6 +140,9 @@ bool IsFlameWreathActive(Player* bot);
 
 // Netherspite
 extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+extern std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
+extern std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
 bool IsBanishPhase(Unit* netherspite);
 std::vector<Player*> GetRedBlockers(Player* bot);
 std::vector<Player*> GetBlueBlockers(Player* bot);

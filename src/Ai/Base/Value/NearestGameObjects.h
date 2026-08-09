@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_NEARESTGAMEOBJECTS_H
 #define PLAYERBOTS_NEARESTGAMEOBJECTS_H
 
+#include "GameObject.h"
 #include "PlayerbotAIConfig.h"
 #include "Value.h"
-#include "GameObject.h"
 
 class PlayerbotAI;
 
@@ -45,7 +45,6 @@ protected:
 
 private:
     float range;
-    bool ignoreLos;
 };
 
 class NearestTrapWithDamageValue : public ObjectGuidListCalculatedValue

@@ -10,6 +10,7 @@
 #include "TKActions.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
+#include <array>
 
 using namespace TkHelpers;
 
@@ -41,7 +42,7 @@ bool AlarPullingBossTrigger::IsActive()
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -64,7 +65,7 @@ bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return false;
 
     return GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
@@ -77,7 +78,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     if (!alar || alar->GetHealthPct() > 5.0f)
         return false;
 
-    if (isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return false;
 
     return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
@@ -87,7 +88,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && isAlarInPhase2[alar->GetMap()->GetInstanceId()];
+    return alar && IsAlarInPhase2(alar->GetMap()->GetInstanceId());
 }
 
 bool AlarShouldManagePhaseTrackerTrigger::IsActive()
@@ -188,30 +189,6 @@ bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
 
     Creature* astromancerCreature = astromancer->ToCreature();
     return astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE;
-}
-
-bool HighAstromancerSolarianShouldPositionBotsTrigger::IsActive()
-{
-    Unit* astromancer = AI_VALUE2(Unit*, "find target", "high astromancer solarian");
-    if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
-        return false;
-
-    if (HasWrathOfTheAstromancer(bot))
-        return false;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    if (PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsHeal(bot))
-    {
-        Creature* astromancerCreature = astromancer->ToCreature();
-        if (astromancerCreature && astromancerCreature->GetReactState() == REACT_PASSIVE)
-            return true;
-
-        return false;
-    }
-
-    return !AI_VALUE2(Unit*, "find target", "solarium priest");
 }
 
 bool HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger::IsActive()
@@ -377,7 +354,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
-bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
+bool KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
         return false;
@@ -421,7 +398,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
     if (!kaelAI)
         return false;
 
-    if (kaelAI->GetPhase() != PHASE_WEAPONS && kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+    if (kaelAI->GetPhase() < PHASE_WEAPONS || kaelAI->GetPhase() > PHASE_ALL_ADVISORS)
         return false;
 
     Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");

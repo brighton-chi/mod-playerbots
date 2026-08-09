@@ -66,9 +66,6 @@ struct RangedGroups
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
 };
-bool GetGroundedStepPosition(
-    Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ);
 RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
                                                     const RangedGroups& groups);

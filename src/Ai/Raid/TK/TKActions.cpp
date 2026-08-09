@@ -18,6 +18,13 @@
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <ctime>
+#include <iterator>
+#include <limits>
+#include <list>
 
 using namespace TkHelpers;
 
@@ -135,20 +142,22 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    int8 platformIdx; // Determine which platform the tank goes to based on Al'ar's platform
+    int8 alarPlatformIndex = GetAlarPlatformIndex(alar);
+    int8 tankPlatformIndex; // Determine which platform the tank goes to based on Al'ar's platform
     if (isFirstAlarTank)
     {
-        platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_3_IDX) ?
+        tankPlatformIndex =
+            (alarPlatformIndex == PLATFORM_0_IDX || alarPlatformIndex == PLATFORM_3_IDX) ?
             PLATFORM_0_IDX : PLATFORM_2_IDX;
     }
     else // isSecondAlarTank
     {
-        platformIdx = (locationIndex == PLATFORM_0_IDX || locationIndex == PLATFORM_1_IDX) ?
+        tankPlatformIndex =
+            (alarPlatformIndex == PLATFORM_0_IDX || alarPlatformIndex == PLATFORM_1_IDX) ?
             PLATFORM_1_IDX : PLATFORM_3_IDX;
     }
 
-    Position const& target = ALAR_TANK_PLATFORM_POSITIONS[platformIdx];
+    Position const& target = ALAR_TANK_PLATFORM_POSITIONS[tankPlatformIndex];
     if (bot->GetExactDist2d(target) <= 2.0f)
     {
         if (alar->GetVictim() != bot)
@@ -177,8 +186,11 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != alar)
         return Attack(alar);
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[platformIndex];
 
     if (bot->GetExactDist2d(target) <= 2.0f)
         return false;
@@ -199,8 +211,11 @@ bool AlarRangedAndEmberTankMoveUnderPlatformsAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& position = ALAR_GROUND_POSITIONS[platformIndex];
 
     float distFromTarget = 0.0f;
     if (isRanged)
@@ -224,7 +239,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
+    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
         return HandlePhase1Embers(alar);
 
     return HandlePhase2Embers(event);
@@ -253,8 +268,11 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     if (ember->GetVictim() != bot)
         return false;
 
-    int8 locationIndex = GetAlarLocationIndex(alar);
-    Position const& position = ALAR_GROUND_POSITIONS[locationIndex];
+    int8 platformIndex = GetAlarPlatformIndex(alar);
+    if (platformIndex == LOCATION_NONE)
+        return false;
+
+    Position const& position = ALAR_GROUND_POSITIONS[platformIndex];
     Position const& center = ALAR_POINT_MIDDLE;
 
     float dx = center.GetPositionX() - position.GetPositionX();
@@ -530,7 +548,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
     uint32 const instanceId = alar->GetMap()->GetInstanceId();
     bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
-    if (!isAlarInPhase2[instanceId] && lastRebirthState[instanceId] && !rebirthActive)
+    if (!IsAlarInPhase2(instanceId) && lastRebirthState[instanceId] && !rebirthActive)
     {
         isAlarInPhase2[instanceId] = true;
         return true;
@@ -731,25 +749,6 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
         return false;
 
     return AI_VALUE(Unit*, "current target") != astromancer && Attack(astromancer);
-}
-
-bool HighAstromancerSolarianStackOnRangedLeaderAction::Execute(Event /*event*/)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* rangedLeader = GetAstromancerRangedLeaderBot(bot);
-    if (!rangedLeader || bot == rangedLeader)
-        return false;
-
-    if (bot->GetExactDist2d(rangedLeader) <= 5.0f)
-        return false;
-
-    return MoveTo(
-        TK_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
-        rangedLeader->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
@@ -1427,9 +1426,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (!target)
         return didAvoidDevastation;
 
-    // if (!PlayerbotAI::IsDps(bot)) // This check keeps tanks/healers limited to marking
-    //     return didAvoidDevastation;
-
     return didAvoidDevastation ||
         (AI_VALUE(Unit*, "current target") != target && Attack(target));
 }
@@ -1444,9 +1440,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     bool result = false;
 
-    if (!PlayerbotAI::IsTank(bot) || hasAggroFromWeapon)
+    if (!isTank || hasAggroFromWeapon)
     {
-        float const safeDistance = PlayerbotAI::IsTank(bot) ? 15.0f : 10.0f;
+        float const safeDistance = isTank ? 15.0f : 10.0f;
         float const currentDistance = bot->GetDistance2d(axe);
         if (currentDistance < safeDistance)
             result = MoveAway(axe, safeDistance - currentDistance);
@@ -2304,7 +2300,8 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     float targetY = botY + pushY * stepFraction;
     float targetZ = botZ + pushZ * stepFraction;
 
-    float const targetFloorZ = bot->GetMapHeight(targetX, targetY, targetZ, true, MAX_FALL_DISTANCE);
+    float const targetFloorZ = bot->GetMapHeight(
+        targetX, targetY, targetZ, true, MAX_FALL_DISTANCE);
     if (targetFloorZ <= INVALID_HEIGHT)
         return false;
 
