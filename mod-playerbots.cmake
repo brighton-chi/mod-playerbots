@@ -1,24 +1,34 @@
 #
-# Auto-included by modules/CMakeLists.txt after the `modules` target is created.
+# Auto-included by modules/CMakeLists.txt (via the per-module `include(... OPTIONAL)`
+# hook) after the `modules` target has been created. Because that is an include()
+# and not an add_subdirectory(), this runs in the same directory scope as the
+# target definition, so source file properties set here take effect.
 #
 # AzerothCore's msvc/settings.cmake strips CMake's default /W flag from
-# CMAKE_CXX_FLAGS and never puts a level back, so cl.exe falls through to /W1.
+# CMAKE_CXX_FLAGS and never restores a level, so cl.exe falls through to /W1.
 # The core then remaps the unused-symbol warnings to level 3 (/w34100 /w34101
-# /w34189 /w34389), which means they can never fire. Setting the level here
-# brings them back:
+# /w34189), which means they can never fire. Re-levelling them to 1 does:
 #
 #   C4100 - unreferenced formal parameter
 #   C4101 - unreferenced local variable
 #   C4189 - local variable is initialized but not referenced
-#   C4389 - signed/unsigned mismatch in an equality comparison
+#   C4505 - unreferenced local function has been removed
 #
-# MODULES is "static", so mod-playerbots compiles into the `modules` target;
-# this therefore applies to every statically-linked module, not just this one.
+# MODULES is "static", so mod-playerbots is compiled into the shared `modules`
+# target alongside every other static module. Setting the option on the target
+# would raise the level for all of them, so scope it to this module's sources.
 
 if(MSVC)
-  target_compile_options(modules PRIVATE /W3)
+  GetPathToModuleSource(mod-playerbots PLAYERBOTS_WARNING_SCOPE_PATH)
 
-  # For /W4 instead, third-party headers (boost, g3d, mysql) pulled into module
-  # translation units get scanned at the same level, so silence them:
-  #   target_compile_options(modules PRIVATE /W4 /external:anglebrackets /external:W0)
+  unset(PLAYERBOTS_WARNING_SCOPE_SOURCES)
+  CollectSourceFiles(${PLAYERBOTS_WARNING_SCOPE_PATH} PLAYERBOTS_WARNING_SCOPE_SOURCES)
+
+  # Rather than raising the global level with /W3 - which also pulls in every
+  # other level-2/3 warning, notably the C4244/C4267 conversion noise - assign
+  # just the wanted warnings to level 1 so they fire under the default /W1.
+  # Nothing else changes, so no suppression list is needed.
+  set_source_files_properties(${PLAYERBOTS_WARNING_SCOPE_SOURCES}
+    PROPERTIES
+      COMPILE_OPTIONS "/w14100;/w14101;/w14189;/w14505")
 endif()
