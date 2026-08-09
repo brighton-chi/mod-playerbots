@@ -129,7 +129,6 @@ bool TradeStatusAction::Execute(Event event)
             bot->SetFacingToObject(trader);
 
         BeginTrade();
-
         return true;
     }
     return false;
