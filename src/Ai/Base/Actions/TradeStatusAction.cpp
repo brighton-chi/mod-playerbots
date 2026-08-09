@@ -19,6 +19,10 @@
 
 bool TradeStatusAction::Execute(Event event)
 {
+    // A selfbot has a person at the game client driving it, and that client handles their trading.
+    if (IsSelfBot(bot))
+        return false;
+
     Player* trader = bot->GetTrader();
     Player* master = GetMaster();
     if (!trader)
