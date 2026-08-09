@@ -164,7 +164,7 @@ void TradeStatusAction::BeginTrade()
 void TradeStatusAction::CancelTrade()
 {
     WorldPacket p;
-    bot->GetSession()->HandleBeginTradeOpcode(p);
+    bot->GetSession()->HandleCancelTradeOpcode(p);
 }
 
 bool TradeStatusAction::CheckTrade()
