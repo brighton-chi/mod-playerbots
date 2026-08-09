@@ -19,16 +19,18 @@
 
 bool TradeStatusAction::Execute(Event event)
 {
-    // A selfbot has a person at the game client driving it, and that client handles their trading.
     if (IsSelfBot(bot))
         return false;
 
+    if (!bot->GetSession())
+        return false;
+
     Player* trader = bot->GetTrader();
-    Player* master = GetMaster();
     if (!trader)
         return false;
 
     bool const traderIsGameClientPlayer = IsRealPlayer(trader) || IsSelfBot(trader);
+    Player* master = GetMaster();
 
     // Bots refuse to trade with a person (whether active or selfbotting) who is neither their
     // master nor a group member. Bot traders (other than selfbots) are handled further down.
@@ -38,11 +40,7 @@ bool TradeStatusAction::Execute(Event event)
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_busy_now", "I'm kind of busy now", {}),
                      LANG_UNIVERSAL, trader);
-
-        WorldPacket p;
-        uint32 status = 0;
-        p << status;
-        bot->GetSession()->HandleCancelTradeOpcode(p);
+        CancelTrade();
         return false;
     }
 
@@ -52,11 +50,7 @@ bool TradeStatusAction::Execute(Event event)
         bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                          "trade_disabled", "Trading is disabled", {}),
                      LANG_UNIVERSAL, trader);
-
-        WorldPacket p;
-        uint32 status = 0;
-        p << status;
-        bot->GetSession()->HandleCancelTradeOpcode(p);
+        CancelTrade();
         return false;
     }
 
@@ -65,10 +59,7 @@ bool TradeStatusAction::Execute(Event event)
         (trader != master || !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, true, master)) &&
         traderIsGameClientPlayer)
     {
-        WorldPacket p;
-        uint32 status = 0;
-        p << status;
-        bot->GetSession()->HandleCancelTradeOpcode(p);
+        CancelTrade();
         return false;
     }
 
@@ -171,6 +162,12 @@ void TradeStatusAction::BeginTrade()
     }
 }
 
+void TradeStatusAction::CancelTrade()
+{
+    WorldPacket p;
+    bot->GetSession()->HandleBeginTradeOpcode(p);
+}
+
 bool TradeStatusAction::CheckTrade()
 {
     Player* trader = bot->GetTrader();
@@ -218,9 +215,6 @@ bool TradeStatusAction::CheckTrade()
         }
         return isGettingItem;
     }
-
-    if (!bot->GetSession())
-        return false;
 
     uint32 accountId = bot->GetSession()->GetAccountId();
     if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
