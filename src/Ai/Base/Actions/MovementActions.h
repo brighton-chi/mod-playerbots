@@ -93,9 +93,6 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
-
-private:
-    float distance;
 };
 
 class FleeWithPetAction : public MovementAction
