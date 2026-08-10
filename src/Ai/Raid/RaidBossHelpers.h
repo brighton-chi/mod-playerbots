@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+class Action;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -38,5 +39,8 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+bool IsDpsCooldownAction(Player* bot, Action* action);
+bool IsTauntAction(Player* bot, Action* action);
+bool IsAoeThreatAction(Player* bot, Action* action);
 
 #endif
