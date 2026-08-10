@@ -9,6 +9,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "GenericSpellActions.h"
 #include "GruulActions.h"
 #include "GruulHelpers.h"
@@ -27,51 +28,106 @@ using namespace GruulHelpers;
 namespace
 {
 
-bool IsDpsCooldownAction(Action* action, PlayerbotAI* botAI)
+bool IsDpsCooldownAction(Player* bot, Action* action)
 {
-    return dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action) ||
-        dynamic_cast<CastMetamorphosisAction*>(action) ||
-        dynamic_cast<CastAdrenalineRushAction*>(action) ||
-        dynamic_cast<CastBladeFlurryAction*>(action) ||
-        dynamic_cast<CastIcyVeinsAction*>(action) ||
-        dynamic_cast<CastColdSnapAction*>(action) ||
-        dynamic_cast<CastArcanePowerAction*>(action) ||
-        dynamic_cast<CastPresenceOfMindAction*>(action) ||
-        dynamic_cast<CastCombustionAction*>(action) ||
-        dynamic_cast<CastRapidFireAction*>(action) ||
-        dynamic_cast<CastReadinessAction*>(action) ||
-        dynamic_cast<CastAvengingWrathAction*>(action) ||
-        dynamic_cast<CastElementalMasteryAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-        dynamic_cast<CastSummonGargoyleAction*>(action) ||
-        dynamic_cast<CastBerserkingAction*>(action) ||
-        dynamic_cast<CastBloodFuryAction*>(action) ||
-        (dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(botAI->GetBot()));
+    if (bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
+        return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+            dynamic_cast<CastDeathchillAction*>(action) ||
+            dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_DRUID)
+    {
+        return dynamic_cast<CastStarfallAction*>(action) ||
+            dynamic_cast<CastForceOfNatureAction*>(action) ||
+            dynamic_cast<CastBerserkAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_HUNTER)
+    {
+        return dynamic_cast<CastKillCommandAction*>(action) ||
+            dynamic_cast<CastRapidFireAction*>(action) ||
+            dynamic_cast<CastReadinessAction*>(action) ||
+            dynamic_cast<CastBestialWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_MAGE)
+    {
+        return dynamic_cast<CastArcanePowerAction*>(action) ||
+            dynamic_cast<CastCombustionAction*>(action) ||
+            dynamic_cast<CastIcyVeinsAction*>(action) ||
+            dynamic_cast<CastMirrorImageAction*>(action) ||
+            dynamic_cast<CastColdSnapAction*>(action) ||
+            dynamic_cast<CastPresenceOfMindAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_SHAMAN)
+    {
+        return dynamic_cast<CastElementalMasteryAction*>(action) ||
+            dynamic_cast<CastFeralSpiritAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemAction*>(action) ||
+            dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_PALADIN)
+    {
+        return dynamic_cast<CastAvengingWrathAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_ROGUE)
+    {
+        return dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBladeFlurryAction*>(action) ||
+            dynamic_cast<CastAdrenalineRushAction*>(action) ||
+            dynamic_cast<CastColdBloodAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARLOCK)
+    {
+        return dynamic_cast<CastMetamorphosisAction*>(action);
+    }
+    else if (bot->getClass() == CLASS_WARRIOR)
+    {
+        return dynamic_cast<CastDeathWishAction*>(action) ||
+            dynamic_cast<CastBladestormAction*>(action) ||
+            dynamic_cast<CastRecklessnessAction*>(action);
+    }
+
+    return false; // Priest =(
 }
 
-bool IsTauntAction(Action* action)
+bool IsSingleTargetTaunt(Action* action)
 {
     return dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastChallengingShoutAction*>(action) ||
         dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastChallengingRoarAction*>(action) ||
         dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastRighteousDefenseAction*>(action) ||
         dynamic_cast<CastDarkCommandAction*>(action) ||
         dynamic_cast<CastDeathGripAction*>(action);
+}
+
+bool IsAoeThreatAction(Action* action)
+{
+    return dynamic_cast<CastChallengingShoutAction*>(action) ||
+        dynamic_cast<CastThunderClapAction*>(action) ||
+        dynamic_cast<CastShockwaveAction*>(action) ||
+        dynamic_cast<CastCleaveAction*>(action) ||
+        dynamic_cast<CastSwipeBearAction*>(action) ||
+        dynamic_cast<CastChallengingRoarAction*>(action) ||
+        dynamic_cast<CastAvengersShieldAction*>(action) ||
+        dynamic_cast<CastConsecrationAction*>(action) ||
+        dynamic_cast<CastDeathAndDecayAction*>(action) ||
+        dynamic_cast<CastPestilenceAction*>(action) ||
+        dynamic_cast<CastBloodBoilAction*>(action);
 }
 
 }
 
 float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsCooldownAction(action, botAI))
+    bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastBloodlustAction*>(action) ||
+         dynamic_cast<CastHeroismAction*>(action));
+
+    if (!isLustAction && !IsDpsCooldownAction(bot, action) &&
+        !(dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(bot)))
+    {
         return 1.0f;
+    }
 
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (gruul && gruul->GetHealthPct() > 95.0f)
@@ -106,14 +162,27 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
 
 float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
 {
-    if (!IsTauntAction(action))
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    bool const isSingleTaunt = IsSingleTargetTaunt(action);
+    bool const isAoeThreat = IsAoeThreatAction(action);
+
+    if (!isSingleTaunt && !isAoeThreat)
         return 1.0f;
 
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (!kiggler)
         return 1.0f;
 
-    if (AI_VALUE(Unit*, "current target") == kiggler)
+    // The check for Kiggler presumes that Blindeye and Olm are already dead; aoe threat abilities
+    // are okay only when Maulgar and Krosh are left
+    if (isAoeThreat)
+        return 0.0f;
+
+    // Kiggler is the only ogre for which taunting is a problem because he is the only one that is
+    // both (1) tanked by a non-tank and (2) attacked by tanks (after Blindeye and Olm are down)
+    if (isSingleTaunt && AI_VALUE(Unit*, "current target") == kiggler)
         return 0.0f;
 
     return 1.0f;
