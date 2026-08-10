@@ -15,6 +15,10 @@ class RaidGruulsLairActionContext : public NamedObjectContext<Action>
 public:
     RaidGruulsLairActionContext()
     {
+        // General
+        creators["gruul's lair reset encounter states"] =
+            &RaidGruulsLairActionContext::gruuls_lair_reset_encounter_states;
+
         // High King Maulgar
         creators["high king maulgar melee tanks position bosses"] =
             &RaidGruulsLairActionContext::high_king_maulgar_melee_tanks_position_bosses;
@@ -52,6 +56,11 @@ public:
     }
 
 private:
+    // General
+    static Action* gruuls_lair_reset_encounter_states(PlayerbotAI* botAI) {
+        return new GruulsLairResetEncounterStatesAction(botAI);
+    }
+
     // High King Maulgar
     static Action* high_king_maulgar_melee_tanks_position_bosses(PlayerbotAI* botAI) {
         return new HighKingMaulgarMeleeTanksPositionBossesAction(botAI);

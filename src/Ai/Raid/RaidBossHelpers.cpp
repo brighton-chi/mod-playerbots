@@ -13,27 +13,90 @@
 #include <algorithm>
 #include <list>
 
+// Projects a short step from the bot towards a destination and snaps it to walkable ground.
+// The step is deliberately small: GetMapWaterOrGroundLevel only finds ground at or below its
+// seed, so a short hop keeps the bot's own Z usable as that seed. Pass destinationZ only when
+// the caller knows it is correct at the destination--a Z inherited from a circle centre or from
+// the bot itself is not, and seeding from the bot is the better guess in that case.
+//
+// Returns false when the bot is already there, or when no walkable step could be validated. The
+// latter lets a caller that enumerates candidate destinations fall through to the next one.
 bool GetGroundedStepPosition(
     Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ)
+    float& stepX, float& stepY, float& stepZ, float const* destinationZ)
 {
+    // A step shorter than this is not worth the map queries needed to validate it
+    constexpr float minStepDistance = 0.5f;
+
     float const distance = bot->GetExactDist2d(destinationX, destinationY);
-    if (distance <= 0.0f)
+    if (distance < minStepDistance)
         return false;
 
-    float const stepDistance = std::min(moveDist, distance);
-    float const deltaX = destinationX - bot->GetPositionX();
-    float const deltaY = destinationY - bot->GetPositionY();
-    stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
-    stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
-    stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
-    if (stepZ <= INVALID_HEIGHT)
-        stepZ = bot->GetPositionZ();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const botZ = bot->GetPositionZ();
+    float const deltaX = destinationX - botX;
+    float const deltaY = destinationY - botY;
 
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        stepX, stepY, stepZ, false);
+    // Reject a step onto ground the bot cannot climb. Set to false if raid terrain turns out to be
+    // rejected too aggressively and bots stop repositioning
+    constexpr bool failOnSlopes = true;
+    // How many times the step is halved after the map rejects it before giving up
+    constexpr uint8 maxAttempts = 3;
 
+    float stepDistance = std::min(moveDist, distance);
+
+    for (uint8 attempt = 0; attempt < maxAttempts; ++attempt)
+    {
+        if (stepDistance < minStepDistance)
+            return false;
+
+        float const ratio = stepDistance / distance;
+        float candidateX = botX + deltaX * ratio;
+        float candidateY = botY + deltaY * ratio;
+
+        // Interpolating the seed towards a trustworthy destination Z lets the search find ground
+        // above the bot, which a seed taken from the bot alone cannot do
+        float const seedZ = destinationZ ? botZ + (*destinationZ - botZ) * ratio : botZ;
+        float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, seedZ);
+
+        // No ground in that column. Keep the bot's Z as the candidate and let the reach check
+        // rule on it rather than silently moving to an ungrounded position
+        if (candidateZ <= INVALID_HEIGHT)
+            candidateZ = botZ;
+
+        // failOnCollision stays false so a blocked step is shortened to the contact point instead
+        // of being discarded; the slope check is what reports a step the bot cannot actually take
+        if (bot->GetMap()->CanReachPositionAndGetValidCoords(
+                bot, botX, botY, botZ, candidateX, candidateY, candidateZ, false, failOnSlopes))
+        {
+            stepX = candidateX;
+            stepY = candidateY;
+            stepZ = candidateZ;
+            return true;
+        }
+
+        stepDistance *= 0.5f;
+    }
+
+    return false;
+}
+
+// Overload for a destination whose Z is known good, such as a hand-placed encounter position
+bool GetGroundedStepPosition(
+    Player* bot, Position const& destination, float moveDist, Position& step)
+{
+    float const destinationZ = destination.GetPositionZ();
+    float stepX = 0.0f, stepY = 0.0f, stepZ = 0.0f;
+
+    if (!GetGroundedStepPosition(
+            bot, destination.GetPositionX(), destination.GetPositionY(),
+            moveDist, stepX, stepY, stepZ, &destinationZ))
+    {
+        return false;
+    }
+
+    step.Relocate(stepX, stepY, stepZ);
     return true;
 }
 
@@ -120,14 +183,9 @@ void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
     if (!target)
         return;
 
-    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-    if (currentRti != rtiName || currentTarget != target)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-    }
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    context->GetValue<std::string>("rti")->Set(rtiName);
+    context->GetValue<Unit*>("rti target")->Set(target);
 }
 
 // Return the first alive bot in the specified instance map for purposes of assigning

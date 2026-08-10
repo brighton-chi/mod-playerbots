@@ -9,6 +9,10 @@
 
 void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("gruul's lair bot is not in combat", {
+        NextAction("gruul's lair reset encounter states", ACTION_EMERGENCY + 10) }));
+
     // High King Maulgar
     triggers.push_back(new TriggerNode("high king maulgar bosses engaged by melee tanks", {
         NextAction("high king maulgar melee tanks position bosses", ACTION_RAID + 1) }));

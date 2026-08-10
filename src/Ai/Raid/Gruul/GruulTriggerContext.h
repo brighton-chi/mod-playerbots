@@ -15,6 +15,10 @@ class RaidGruulsLairTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
+        // General
+        creators["gruul's lair bot is not in combat"] =
+            &RaidGruulsLairTriggerContext::gruuls_lair_bot_is_not_in_combat;
+
         // High King Maulgar
         creators["high king maulgar bosses engaged by melee tanks"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_bosses_engaged_by_melee_tanks;
@@ -52,6 +56,11 @@ public:
     }
 
 private:
+    // General
+    static Trigger* gruuls_lair_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new GruulsLairBotIsNotInCombatTrigger(botAI);
+    }
+
     // High King Maulgar
     static Trigger* high_king_maulgar_bosses_engaged_by_melee_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarBossesEngagedByMeleeTanksTrigger(botAI);

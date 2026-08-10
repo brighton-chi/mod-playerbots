@@ -9,6 +9,14 @@
 
 #include "Trigger.h"
 
+class GruulsLairBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    GruulsLairBotIsNotInCombatTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gruul's lair bot is not in combat") {}
+    bool IsActive() override;
+};
+
 class HighKingMaulgarBossesEngagedByMeleeTanksTrigger : public Trigger
 {
 public:

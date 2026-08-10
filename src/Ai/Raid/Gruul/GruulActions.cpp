@@ -9,12 +9,37 @@
 #include "GruulHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "Unit.h"
+#include "RtiTargetValue.h"
 #include <algorithm>
 #include <limits>
 #include <vector>
 
 using namespace GruulHelpers;
+
+// General
+
+bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
+{
+    bool reset = false;
+
+    if (!AI_VALUE2(Unit*, "find target", "high king maulgar") &&
+        ClearTargetIcon(bot, RtiTargetValue::skullIndex))
+    {
+        reset = true;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+    {
+        Action* action = context->GetAction("gruul the dragonkiller spread ranged");
+        if (action &&
+            static_cast<GruulTheDragonkillerSpreadRangedAction*>(action)->ResetInitialPosition())
+        {
+            reset = true;
+        }
+    }
+
+    return reset;
+}
 
 // High King Maulgar
 
@@ -60,12 +85,10 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     if (distToPosition <= 3.0f)
         return false;
 
-    float const posX = position->GetPositionX();
-    float const posY = position->GetPositionY();
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
+    float const toPosX = position->GetPositionX() - botX;
+    float const toPosY = position->GetPositionY() - botY;
 
     float const toBossX = target->GetPositionX() - botX;
     float const toBossY = target->GetPositionY() - botY;
@@ -99,7 +122,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 bool HighKingMaulgarMageTankAttackKroshAction::AttackAndCast(Unit* krosh)
 {
     if (krosh->HasAura(Id(GruulSpells::SPELL_SPELL_SHIELD)) &&
-    botAI->CanCastSpell(Id(GruulSpells::SPELL_SPELLSTEAL), krosh))
+        botAI->CanCastSpell(Id(GruulSpells::SPELL_SPELLSTEAL), krosh))
     {
         return botAI->CastSpell(Id(GruulSpells::SPELL_SPELLSTEAL), krosh);
     }
@@ -401,12 +424,10 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (distToPosition <= 3.0f)
         return false;
 
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
 
     float const toBossX = gruul->GetPositionX() - botX;
     float const toBossY = gruul->GetPositionY() - botY;
@@ -429,9 +450,6 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul)
         return false;
-
-    if (gruul->GetHealth() == gruul->GetMaxHealth())
-        _hasReachedInitialPosition = false;
 
     Group* group = bot->GetGroup();
     if (!group)

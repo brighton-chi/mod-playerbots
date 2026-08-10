@@ -10,7 +10,14 @@
 
 using namespace GruulHelpers;
 
-// High King Maulgar Triggers
+// General
+
+bool GruulsLairBotIsNotInCombatTrigger::IsActive()
+{
+    return bot->GetMapId() == GRUUL_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+}
+
+// High King Maulgar
 
 bool HighKingMaulgarBossesEngagedByMeleeTanksTrigger::IsActive()
 {
@@ -94,7 +101,7 @@ bool HighKingMaulgarPullingOgreCouncilTrigger::IsActive()
     return blindeye && blindeye->GetHealthPct() > 80.0f;
 }
 
-// Gruul the Dragonkiller Triggers
+// Gruul the Dragonkiller
 
 bool GruulTheDragonkillerBossEngagedByTanksTrigger::IsActive()
 {
