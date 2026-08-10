@@ -51,53 +51,36 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* 
 
 const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
 
-DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+// The dynamic object's own lifetime governs how long the hazard lasts, so no spawn timestamps
+// are needed. Searching for it also finds it before the bot steps in, which reading the bot's
+// own Death and Decay aura could not
+bool GetNearestDeathAndDecay(Player* bot, float searchRadius, Position& deathAndDecay)
 {
-    auto instanceIt = deathAndDecayPosition.find(instanceId);
-    if (instanceIt == deathAndDecayPosition.end())
-        return nullptr;
+    std::vector<Position> const positions = GetDynamicObjectPositions(
+        bot, searchRadius, static_cast<uint32>(HyjalSpells::SPELL_DEATH_AND_DECAY));
 
-    uint32 const now = getMSTime();
-    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
-    if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
+    float nearestDistance = searchRadius;
+    bool found = false;
+
+    for (Position const& position : positions)
     {
-        deathAndDecayPosition.erase(instanceIt);
-        return nullptr;
+        float const distance = bot->GetExactDist2d(position);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            deathAndDecay = position;
+            found = true;
+        }
     }
 
-    if (elapsed >= DEATH_AND_DECAY_DURATION)
-        return nullptr;
-
-    return &instanceIt->second;
+    return found;
 }
 
 bool IsInDeathAndDecay(Player* bot, float radius)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSpells::SPELL_DEATH_AND_DECAY));
-    if (aura)
-    {
-        DynamicObject* dynObj = aura->GetDynobjOwner();
-        if (dynObj && dynObj->IsInWorld())
-        {
-            uint32 const now = getMSTime();
-            auto instanceIt = deathAndDecayPosition.find(instanceId);
-            if (instanceIt == deathAndDecayPosition.end() ||
-                getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
-            {
-                deathAndDecayPosition[instanceId] =
-                    DeathAndDecayData{ dynObj->GetPosition(), now };
-            }
-        }
-    }
-
-    DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(instanceId);
-    if (!data)
-        return false;
-
-    return bot->GetExactDist2d(data->position) < radius;
+    Position deathAndDecay;
+    return GetNearestDeathAndDecay(bot, radius, deathAndDecay);
 }
 
 // Anetheron
@@ -158,27 +141,6 @@ const Position AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.
 const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
 const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
 std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
-
-RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
-{
-    auto instanceIt = rainOfFirePosition.find(instanceId);
-    if (instanceIt == rainOfFirePosition.end())
-        return nullptr;
-
-    uint32 const now = getMSTime();
-    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
-    if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
-    {
-        rainOfFirePosition.erase(instanceIt);
-        return nullptr;
-    }
-
-    if (elapsed >= RAIN_OF_FIRE_DURATION)
-        return nullptr;
-
-    return &instanceIt->second;
-}
 
 TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
 {
@@ -193,13 +155,20 @@ TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
     return TankPositionState::Unknown;
 }
 
+// Each Rain of Fire is its own dynamic object that expires after 10s on its own, so nothing has
+// to be recorded to know whether one is still active
 bool IsInRainOfFire(Player* bot, float radius)
 {
-    RainOfFireData* data = GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
-    if (!data)
-        return false;
+    std::vector<Position> const positions = GetDynamicObjectPositions(
+        bot, radius, static_cast<uint32>(HyjalSpells::SPELL_RAIN_OF_FIRE));
 
-    return bot->GetExactDist2d(data->position) < radius;
+    for (Position const& position : positions)
+    {
+        if (bot->GetExactDist2d(position) < radius)
+            return true;
+    }
+
+    return false;
 }
 
 bool AnyGroupMemberHasDoom(Player* bot)
@@ -222,8 +191,6 @@ bool AnyGroupMemberHasDoom(Player* bot)
 
 const Position ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
-std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
-std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 
 AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
 {

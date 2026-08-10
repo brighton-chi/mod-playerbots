@@ -33,6 +33,7 @@ enum class HyjalSpells : uint32
     SPELL_DOOM             = 31347,
 
     // Archimonde
+    SPELL_DOOMFIRE_TRAIL   = 31943, // 6y persistent area aura dropped along the trail, lasts 18s
     SPELL_DOOMFIRE         = 31944, // Damaging part of trail
     SPELL_DOOMFIRE_DOT     = 31969, // DoT after exiting trail
     SPELL_ARCHIMONDE_FEAR  = 31970,
@@ -73,16 +74,8 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* 
 // Rage Winterchill
 extern const Position WINTERCHILL_TANK_POSITION;
 extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-constexpr uint32 DEATH_AND_DECAY_DURATION = 15000;
-constexpr uint32 DEATH_AND_DECAY_REACQUIRE_DELAY = 20000;
 constexpr float DEATH_AND_DECAY_SAFE_RADIUS = 22.0f; // 20y radius + 1.5y player hitbox + 0.5y buffer
-struct DeathAndDecayData
-{
-    Position position;
-    uint32 spawnTime;
-};
-extern std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
-DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId);
+bool GetNearestDeathAndDecay(Player* bot, float searchRadius, Position& deathAndDecay);
 bool IsInDeathAndDecay(Player* bot, float radius);
 
 // Anetheron
@@ -105,17 +98,8 @@ extern const Position AZGALOR_TANK_TRANSITION_POSITION;
 extern const Position AZGALOR_TANK_FINAL_POSITION;
 extern const Position AZGALOR_DOOMGUARD_POSITION;
 extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-constexpr uint32 RAIN_OF_FIRE_REACQUIRE_DELAY = 15000;
 constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
-struct RainOfFireData
-{
-    Position position;
-    uint32 spawnTime;
-};
-extern std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
 TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
-RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId);
 bool IsInRainOfFire(Player* bot, float radius);
 bool AnyGroupMemberHasDoom(Player* bot);
 
@@ -126,15 +110,8 @@ struct AirBurstData
     ObjectGuid targetGuid;
     uint32 castTime;
 };
-struct DoomfireTrailData
-{
-    Position position;
-    uint32 recordTime;
-};
 extern const Position ARCHIMONDE_INITIAL_POSITION;
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
-extern std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
-extern std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId);
 
 }

@@ -17,7 +17,6 @@ using namespace HyjalHelpers;
 bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
 
     bool erased = false;
     if (botAI->IsTank(bot))
@@ -31,26 +30,20 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
                 erased = true;
         }
 
-        if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
+            azgalorTankStep.erase(guid) > 0)
         {
-            if (azgalorTankStep.erase(guid) > 0)
-                erased = true;
-
-            if (rainOfFirePosition.erase(instanceId) > 0)
-                erased = true;
+            erased = true;
         }
 
         return erased;
     }
     else
     {
-        if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        if (!AI_VALUE2(Unit*, "find target", "rage winterchill") &&
+            hasReachedWinterchillPosition.erase(guid) > 0)
         {
-            if (hasReachedWinterchillPosition.erase(guid) > 0)
-                erased = true;
-
-            if (deathAndDecayPosition.erase(instanceId) > 0)
-                erased = true;
+            erased = true;
         }
 
         if (!AI_VALUE2(Unit*, "find target", "anetheron") &&
@@ -59,10 +52,6 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
 
         if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
             isBelowManaThreshold.erase(guid) > 0)
-            erased = true;
-
-        if (!AI_VALUE2(Unit*, "find target", "archimonde") &&
-            doomfireTrails.erase(instanceId) > 0)
             erased = true;
 
         return erased;
@@ -176,15 +165,14 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    DeathAndDecayData* data =
-        GetActiveWinterchillDeathAndDecay(bot->GetMap()->GetInstanceId());
-    if (!data)
+    Position deathAndDecay;
+    if (!GetNearestDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS, deathAndDecay))
         return false;
 
     constexpr float moveDist = 10.0f;
 
-    float const centerX = data->position.GetPositionX();
-    float const centerY = data->position.GetPositionY();
+    float const centerX = deathAndDecay.GetPositionX();
+    float const centerY = deathAndDecay.GetPositionY();
     float const currentDistance = bot->GetExactDist2d(centerX, centerY);
     float escapeAngle =
         std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
@@ -871,13 +859,15 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
 
     SetRtiTarget(botAI, "star", azgalor);
 
+    bot->AttackStop();
+    botAI->InterruptSpell();
+
     const Position& position = AZGALOR_DOOMGUARD_POSITION;
     constexpr float moveDist = 10.0f;
     float moveX, moveY, moveZ;
     if (GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
                                 moveDist, moveX, moveY, moveZ))
     {
-        botAI->Reset();
         return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
                       false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1137,32 +1127,24 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         return false;
 
     constexpr float dangerDist = 10.0f;
-    constexpr uint32 trailDuration = 18000;
 
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    uint32 const now = getMSTime();
-
-    auto it = doomfireTrails.find(instanceId);
-    if (it == doomfireTrails.end() || it->second.empty())
+    // Each trail patch is its own dynamic object that expires on its own after 18s, so the live
+    // set of them is the trail
+    std::vector<Position> const trail = GetDynamicObjectPositions(
+        bot, dangerDist, static_cast<uint32>(HyjalSpells::SPELL_DOOMFIRE_TRAIL));
+    if (trail.empty())
         return false;
 
-    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-        [now](const DoomfireTrailData& d)
-        {
-            return getMSTimeDiff(d.recordTime, now) > trailDuration;
-        }), it->second.end());
-
     float totalDx = 0.0f, totalDy = 0.0f;
-    for (auto const& data : it->second)
+    for (Position const& position : trail)
     {
-        float const d = bot->GetExactDist2d(data.position.GetPositionX(),
-                                            data.position.GetPositionY());
+        float const d = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
         if (d < dangerDist && d > 0.0f)
         {
             float const weight = (dangerDist - d) / dangerDist;
-            totalDx += (bot->GetPositionX() - data.position.GetPositionX()) / d * weight;
-            totalDy += (bot->GetPositionY() - data.position.GetPositionY()) / d * weight;
+            totalDx += (bot->GetPositionX() - position.GetPositionX()) / d * weight;
+            totalDy += (bot->GetPositionY() - position.GetPositionY()) / d * weight;
         }
     }
 
