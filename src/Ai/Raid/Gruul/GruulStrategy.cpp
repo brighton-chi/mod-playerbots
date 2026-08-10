@@ -52,10 +52,11 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new GruulsLairDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new GruulsLairDelayDpsCooldownsMultiplier(botAI));
 
     // High King Maulgar
     multipliers.push_back(new HighKingMaulgarControlTankActionsMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDontTauntKigglerMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableDpsAssistMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarControlHunterActionsMultiplier(botAI));
