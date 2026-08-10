@@ -299,7 +299,7 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
         }
     }
 
-    if (warlockIndex < 0 || warlockIndex <= felStalkers.size())
+    if (warlockIndex < 0 || warlockIndex >= felStalkers.size())
         return false;
 
     Unit* assignedFelStalker = felStalkers[warlockIndex];
