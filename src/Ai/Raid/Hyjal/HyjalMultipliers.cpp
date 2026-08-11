@@ -24,39 +24,37 @@ using namespace HyjalHelpers;
 // bosses because it will be used on cooldown during trash waves
 float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_SHAMAN)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (bot->GetMapId() != HYJAL_MAP_ID) // Needed in case strategy isn't cleared outside
         return 1.0f;
 
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
-    {
-        return 1.0f;
-    }
+    bool const isLust = bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 90.0f)
+    if (!IsDpsCooldownAction(bot, action)) // This includes Bloodlust & Heroism
         return 1.0f;
 
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (azgalor && azgalor->GetHealthPct() < 90.0f)
-        return 1.0f;
+    Unit* boss = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!boss)
+        boss = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!boss)
+        boss = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!boss)
+        boss = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!boss)
+        boss = AI_VALUE2(Unit*, "find target", "rage winterchill");
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (kazrogal && kazrogal->GetHealthPct() < 90.0f)
-        return 1.0f;
+    // Suppress Bloodlust/Heroism when no boss is present (trash waves)
+    if (isLust && !boss)
+        return 0.0f;
 
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (anetheron && anetheron->GetHealthPct() < 85.0f)
-        return 1.0f;
+    // Suppress all dps cooldowns when boss is above 90% health
+    if (boss && boss->GetHealthPct() > 90.0f)
+        return 0.0f;
 
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (winterchill && winterchill->GetHealthPct() < 90.0f)
-        return 1.0f;
-
-    return 0.0f;
+    return 1.0f;
 }
 
 // Rage Winterchill
@@ -77,32 +75,34 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
 
 float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsRanged(bot))
+    if (PlayerbotAI::IsRanged(bot))
         return 1.0f;
+
+    const bool isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
+
+    if (!isAvoidAoe &&
+        !dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 1.0f;
+    }
 
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (!winterchill)
         return 1.0f;
 
-    if (!IsInDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS + 2.0f))
+    constexpr float suppressionRadius = DEATH_AND_DECAY_SAFE_RADIUS + 10.0f;
+    if (!IsInDeathAndDecay(bot, suppressionRadius))
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
+    if (isAvoidAoe)
         return 0.0f;
 
-    if (botAI->IsMainTank(bot) || winterchill->GetVictim() == bot)
+    if (winterchill->GetVictim() == bot || botAI->IsMainTank(bot))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<RageWinterchillMeleeGetOutOfDeathAndDecayAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return 0.0f;
 }
 
 // Anetheron
@@ -112,7 +112,7 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
@@ -129,27 +129,33 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 
 float AnetheronDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-    {
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "anetheron"))
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
 float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+    if (AI_VALUE2(Unit*, "find target", "anetheron"))
         return 0.0f;
 
     return 1.0f;
@@ -159,75 +165,90 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER)
     {
         return 1.0f;
     }
 
-    uint8 tab = AiFactory::GetPlayerSpecTab(bot);
-    if (bot->getClass() == CLASS_DRUID && tab == DRUID_TAB_FERAL)
+    if (bot->getClass() == CLASS_DRUID &&
+        (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
+         botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
+    {
+        return 1.0f;
+    }
+
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<KazrogalLowManaBotTakeDefensiveMeasuresAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (!isBelowManaThreshold.count(bot->GetGUID()))
-        return 1.0f;
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<AttackAction*>(action) &&
-         !dynamic_cast<KazrogalLowManaBotTakeDefensiveMeasuresAction*>(action)))
-    {
+    if (isBelowManaThreshold.count(bot->GetGUID()))
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
 float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
+
+    if (!dynamic_cast<CastAspectOfTheHawkAction*>(action) &&
+        !dynamic_cast<CastAspectOfTheWildAction*>(action) &&
+        !dynamic_cast<CastAspectOfTheDragonhawkAction*>(action) &&
+        !dynamic_cast<CastAspectOfTheCheetahAction*>(action) &&
+        !dynamic_cast<CastAspectOfThePackAction*>(action) &&
+        !dynamic_cast<CastAspectOfTheMonkeyAction*>(action))
+    {
+        return 1.0f;
+    }
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) > 4000)
-        return 1.0f;
-
-    if (dynamic_cast<CastAspectOfTheHawkAction*>(action) ||
-        dynamic_cast<CastAspectOfTheWildAction*>(action) ||
-        dynamic_cast<CastAspectOfTheDragonhawkAction*>(action) ||
-        dynamic_cast<CastAspectOfTheCheetahAction*>(action) ||
-        dynamic_cast<CastAspectOfThePackAction*>(action) ||
-        dynamic_cast<CastAspectOfTheMonkeyAction*>(action))
-    {
+    if (bot->GetPower(POWER_MANA) < 4000)
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
 float KazrogalControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-    {
-        return 0.0f;
-    }
+    bool const isReachTargetAction = dynamic_cast<ReachTargetAction*>(action);
 
-    if (dynamic_cast<FleeAction*>(action))
+    if (!isReachTargetAction && !dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    if (isReachTargetAction && PlayerbotAI::IsRanged(bot))
         return 0.0f;
 
-    if (botAI->IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return 0.0f;
 }
 
 // Azgalor

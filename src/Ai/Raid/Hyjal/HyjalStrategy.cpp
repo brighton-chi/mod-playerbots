@@ -11,7 +11,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("hyjal summit bot is not in combat", {
-        NextAction("hyjal summit erase trackers", ACTION_EMERGENCY + 11) }));
+        NextAction("hyjal summit erase trackers", ACTION_EMERGENCY + 10) }));
 
     // Rage Winterchill
     triggers.push_back(new TriggerNode("rage winterchill pulling boss", {

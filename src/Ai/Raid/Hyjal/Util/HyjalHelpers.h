@@ -7,15 +7,24 @@
 #ifndef PLAYERBOTS_HYJALHELPERS_H
 #define PLAYERBOTS_HYJALHELPERS_H
 
-#include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+class Player;
+class PlayerbotAI;
+
 namespace HyjalHelpers
 {
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
 
 enum class HyjalSpells : uint32
 {
@@ -61,21 +70,21 @@ enum class TankPositionState : uint8
 };
 
 // General
-constexpr uint32 HYJAL_MAP_ID = 534;
+inline constexpr uint32 HYJAL_MAP_ID = 534;
 struct RangedGroups
 {
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
 };
-RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
-std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                    const RangedGroups& groups);
+RangedGroups GetRangedGroups(Player* bot);
+std::pair<size_t, size_t> GetBotCircleIndexAndCount(
+    PlayerbotAI* botAI, Player* bot, RangedGroups const& groups);
 
 // Rage Winterchill
+inline constexpr float DEATH_AND_DECAY_SAFE_RADIUS = 22.0f; // 20y radius + 1.5y player hitbox + 0.5y buffer
 extern const Position WINTERCHILL_TANK_POSITION;
 extern std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-constexpr float DEATH_AND_DECAY_SAFE_RADIUS = 22.0f; // 20y radius + 1.5y player hitbox + 0.5y buffer
-bool GetNearestDeathAndDecay(Player* bot, float searchRadius, Position& deathAndDecay);
+std::vector<Position> GetDeathAndDecayPositions(Player* bot, float searchRadius);
 bool IsInDeathAndDecay(Player* bot, float radius);
 
 // Anetheron
@@ -94,17 +103,17 @@ extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot);
 
 // Azgalor
+inline constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
 extern const Position AZGALOR_TANK_TRANSITION_POSITION;
 extern const Position AZGALOR_TANK_FINAL_POSITION;
 extern const Position AZGALOR_DOOMGUARD_POSITION;
 extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
 TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
 bool IsInRainOfFire(Player* bot, float radius);
 bool AnyGroupMemberHasDoom(Player* bot);
 
 // Archimonde
-constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
+inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 struct AirBurstData
 {
     ObjectGuid targetGuid;

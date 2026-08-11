@@ -15,7 +15,7 @@ namespace HyjalHelpers
 
 // General
 
-RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
+RangedGroups GetRangedGroups(Player* bot)
 {
     RangedGroups result;
     Group* group = bot->GetGroup();
@@ -25,10 +25,10 @@ RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != HYJAL_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
-        if (botAI->IsHeal(member))
+        if (PlayerbotAI::IsHeal(member))
             result.healers.push_back(member);
         else
             result.rangedDps.push_back(member);
@@ -37,8 +37,8 @@ RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     return result;
 }
 
-std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                    const RangedGroups& groups)
+std::pair<size_t, size_t> GetBotCircleIndexAndCount(
+    PlayerbotAI* botAI, Player* bot, RangedGroups const& groups)
 {
     const std::vector<Player*>& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
     auto it = std::find(vec.begin(), vec.end(), bot);
@@ -53,34 +53,24 @@ const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
 
 // The dynamic object's own lifetime governs how long the hazard lasts, so no spawn timestamps
-// are needed. Searching for it also finds it before the bot steps in, which reading the bot's
-// own Death and Decay aura could not
-bool GetNearestDeathAndDecay(Player* bot, float searchRadius, Position& deathAndDecay)
+// are needed. Searching for them also finds them before the bot steps in, which reading the
+// bot's own Death and Decay aura could not. Winterchill recasts while earlier pools are still
+// up, so callers have to reckon with all of them rather than just the nearest
+std::vector<Position> GetDeathAndDecayPositions(Player* bot, float searchRadius)
 {
-    std::vector<Position> const positions = GetDynamicObjectPositions(
+    return GetDynamicObjectPositions(
         bot, searchRadius, static_cast<uint32>(HyjalSpells::SPELL_DEATH_AND_DECAY));
-
-    float nearestDistance = searchRadius;
-    bool found = false;
-
-    for (Position const& position : positions)
-    {
-        float const distance = bot->GetExactDist2d(position);
-        if (distance < nearestDistance)
-        {
-            nearestDistance = distance;
-            deathAndDecay = position;
-            found = true;
-        }
-    }
-
-    return found;
 }
 
 bool IsInDeathAndDecay(Player* bot, float radius)
 {
-    Position deathAndDecay;
-    return GetNearestDeathAndDecay(bot, radius, deathAndDecay);
+    for (Position const& position : GetDeathAndDecayPositions(bot, radius))
+    {
+        if (bot->GetExactDist2d(position) < radius)
+            return true;
+    }
+
+    return false;
 }
 
 // Anetheron
