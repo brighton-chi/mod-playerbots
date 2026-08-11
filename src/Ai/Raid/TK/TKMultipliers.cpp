@@ -24,6 +24,9 @@
 
 float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     bool const isBlockedMovement =
         dynamic_cast<TankFaceAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
@@ -125,6 +128,9 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
 
 float AlarControlTauntingMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsTauntAction(bot, action))
         return 1.0f;
 
@@ -162,6 +168,9 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
 
 float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -323,6 +332,9 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
 
 float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -374,6 +386,9 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
 
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     // Try to keep main tank from grabbing aggro on any weapon other than the axe
     if (!IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
         return 1.0f;
@@ -442,6 +457,9 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -489,6 +507,9 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 // Bloodlust/Heroism and other major cooldowns should be saved until Phase 3
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 

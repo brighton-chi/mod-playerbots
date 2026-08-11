@@ -33,6 +33,9 @@ using namespace SwpHelpers;
 
 float KalecgosControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -82,6 +85,9 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
 
 float KalecgosControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action))
     {
@@ -100,6 +106,9 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
 
 float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsTauntAction(bot, action))
         return 1.0f;
 
@@ -139,6 +148,9 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -155,6 +167,9 @@ float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 
 float BrutallusControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -169,6 +184,9 @@ float BrutallusControlMisdirectionMultiplier::GetValue(Action* action)
 
 float BrutallusControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<FollowAction*>(action) &&
         !dynamic_cast<ReachTargetAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -189,6 +207,9 @@ float BrutallusControlMovementMultiplier::GetValue(Action* action)
 // Don't use KS if any melee member (other than the Brutallus tanks) has Burn
 float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_ROGUE)
         return 1.0f;
 
@@ -220,6 +241,9 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
 
 float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsTauntAction(bot, action))
         return 1.0f;
 
@@ -231,6 +255,9 @@ float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
 
 float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -245,6 +272,9 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
 
 float FelmystControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
@@ -307,6 +337,9 @@ float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
 
 float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
@@ -387,6 +420,9 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
 
 float FelmystDontDotAddsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
 
@@ -402,6 +438,9 @@ float FelmystDontDotAddsMultiplier::GetValue(Action* action)
 
 float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -433,6 +472,9 @@ float EredarTwinsDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 
 float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -515,6 +557,9 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 
 float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
@@ -586,6 +631,9 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
 
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -604,10 +652,11 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
-    bool const isDpsAssist =
-        botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<DpsAssistAction*>(action);
-    bool const isTankAssist =
-        botAI->GetState() == BOT_STATE_COMBAT && dynamic_cast<TankAssistAction*>(action);
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
     bool const isCastDotOnAddSpell = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
 
     if (!isDpsAssist && !isTankAssist && !isCastDotOnAddSpell)
@@ -635,6 +684,9 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 
 float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -652,6 +704,9 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
@@ -713,6 +768,9 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
 
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -740,6 +798,9 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 
 float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -822,6 +883,9 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 
 float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 

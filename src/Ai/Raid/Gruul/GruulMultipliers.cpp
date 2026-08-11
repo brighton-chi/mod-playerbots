@@ -19,6 +19,9 @@ using namespace GruulHelpers;
 
 float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -55,6 +58,9 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
 
 float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -124,6 +130,9 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
 // Arcane Shot will remove Spell Shield, which the mage tank needs to survive
 float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -149,6 +158,9 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
 
 float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
@@ -174,6 +186,9 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
 
 float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<AvoidAoeAction*>(action))
     {

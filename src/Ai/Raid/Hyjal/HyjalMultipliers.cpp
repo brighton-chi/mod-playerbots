@@ -27,7 +27,7 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (bot->GetMapId() != HYJAL_MAP_ID)
+    if (bot->GetMapId() != HYJAL_MAP_ID) // Needed in case strategy isn't cleared outside
         return 1.0f;
 
     if (!dynamic_cast<CastBloodlustAction*>(action) &&
@@ -109,6 +109,9 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 
 float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!botAI->IsTank(bot))
         return 1.0f;
 
@@ -117,9 +120,6 @@ float AnetheronDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
-
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
 
     if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
