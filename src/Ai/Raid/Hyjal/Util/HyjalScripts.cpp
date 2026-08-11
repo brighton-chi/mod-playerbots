@@ -22,10 +22,6 @@ using namespace HyjalHelpers;
 // to settle whether membership is decided on centre distance or on centre distance plus the
 // target's combat reach. Set hazardProbeEnabled to false to silence it, and delete the class once
 // the radii in HyjalHelpers.h are confirmed.
-//
-// Read it by standing still: membership is only re-evaluated every 500ms, so a moving reading
-// lags the position it is printed with. Step a quarter yard, pause a second, take the line. The
-// answer is the largest dist3d that still reports aura=1
 class HyjalHazardRadiusProbeScript : public DynamicObjectScript
 {
 public:
@@ -33,7 +29,7 @@ public:
 
     void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
     {
-        constexpr bool hazardProbeEnabled = true;
+        constexpr bool hazardProbeEnabled = false; // Set to true to reactivate
         if (!hazardProbeEnabled)
             return;
 
