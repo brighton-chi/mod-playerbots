@@ -275,8 +275,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         return false;
 
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_TRANSITION ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+        kaelAI->GetPhase() == PHASE_TRANSITION || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
 bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
@@ -471,6 +470,10 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas || kaelthas->GetVictim() == bot)
+        return false;
+
+    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_FINAL)
         return false;
 
     if (PlayerbotAI::IsMainTank(bot))
