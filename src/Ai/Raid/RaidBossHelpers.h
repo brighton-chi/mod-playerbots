@@ -19,9 +19,7 @@ class Unit;
 
 bool GetGroundedStepPosition(
     Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ, float const* destinationZ = nullptr);
-bool GetGroundedStepPosition(
-    Player* bot, Position const& destination, float moveDist, Position& step);
+    float& stepX, float& stepY, float& stepZ);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);
 bool MarkTargetWithSquare(Player* bot, Unit* target);

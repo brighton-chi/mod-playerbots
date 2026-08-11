@@ -24,23 +24,28 @@
 #include <algorithm>
 #include <list>
 
-// Projects a short step from the bot towards a destination and snaps it to walkable ground.
-// The step is deliberately small: GetMapWaterOrGroundLevel only finds ground at or below its
-// seed, so a short hop keeps the bot's own Z usable as that seed. Pass destinationZ only when
-// the caller knows it is correct at the destination--a Z inherited from a circle centre or from
-// the bot itself is not, and seeding from the bot is the better guess in that case.
+// Projects a short step from the bot towards a destination and snaps it to walkable ground. The
+// step is deliberately small: GetMapWaterOrGroundLevel only finds ground at or below its seed, so
+// a short hop keeps the bot's own Z usable as that seed.
+//
+// Only worth calling when the destination's own Z is not usable--a point computed on a circle
+// inherits the centre's Z, and a swimming destination needs the water surface. When the caller
+// already knows a correct Z, MoveTo re-derives one anyway through SearchForBestPath, so a plain
+// projection into MoveTo does the same job for none of the map queries.
 //
 // Returns false when the bot is already there, or when no walkable step could be validated. The
 // latter lets a caller that enumerates candidate destinations fall through to the next one.
 bool GetGroundedStepPosition(
     Player* bot, float destinationX, float destinationY, float moveDist,
-    float& stepX, float& stepY, float& stepZ, float const* destinationZ)
+    float& stepX, float& stepY, float& stepZ)
 {
-    // A step shorter than this is not worth the map queries needed to validate it
-    constexpr float minStepDistance = 0.5f;
+    // A step shorter than this is not worth the map queries needed to validate it. Sizing the
+    // caller's own deadzone against the movement floor below is what keeps the final approach
+    // from stuttering; this only rules out a degenerate step
+    constexpr float minMoveDistance = 0.5f;
 
     float const distance = bot->GetExactDist2d(destinationX, destinationY);
-    if (distance < minStepDistance)
+    if (distance < minMoveDistance)
         return false;
 
     float const botX = bot->GetPositionX();
@@ -55,21 +60,22 @@ bool GetGroundedStepPosition(
     // How many times the step is halved after the map rejects it before giving up
     constexpr uint8 maxAttempts = 3;
 
+    // A step shorter than one AI tick of travel finishes before the bot next thinks, so it
+    // arrives, stops and idles rather than gliding on. The tick is the react delay plus a
+    // per-bot stagger of up to 200ms, so the floor is sized for the worst case. Run speed is
+    // used even when the caller will step backwards, which only makes the floor safer
+    constexpr float maxTickPeriod = 0.3f;
+    float const movementFloor = bot->GetSpeed(MOVE_RUN) * maxTickPeriod;
+
     float stepDistance = std::min(moveDist, distance);
 
     for (uint8 attempt = 0; attempt < maxAttempts; ++attempt)
     {
-        if (stepDistance < minStepDistance)
-            return false;
-
         float const ratio = stepDistance / distance;
         float candidateX = botX + deltaX * ratio;
         float candidateY = botY + deltaY * ratio;
 
-        // Interpolating the seed towards a trustworthy destination Z lets the search find ground
-        // above the bot, which a seed taken from the bot alone cannot do
-        float const seedZ = destinationZ ? botZ + (*destinationZ - botZ) * ratio : botZ;
-        float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, seedZ);
+        float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
 
         // No ground in that column. Keep the bot's Z as the candidate and let the reach check
         // rule on it rather than silently moving to an ungrounded position
@@ -87,28 +93,15 @@ bool GetGroundedStepPosition(
             return true;
         }
 
+        // Halving any further would drop the step below the floor, so give up instead and let
+        // the caller try another destination
+        if (stepDistance * 0.5f < movementFloor)
+            return false;
+
         stepDistance *= 0.5f;
     }
 
     return false;
-}
-
-// Overload for a destination whose Z is known good, such as a hand-placed encounter position
-bool GetGroundedStepPosition(
-    Player* bot, Position const& destination, float moveDist, Position& step)
-{
-    float const destinationZ = destination.GetPositionZ();
-    float stepX = 0.0f, stepY = 0.0f, stepZ = 0.0f;
-
-    if (!GetGroundedStepPosition(
-            bot, destination.GetPositionX(), destination.GetPositionY(),
-            moveDist, stepX, stepY, stepZ, &destinationZ))
-    {
-        return false;
-    }
-
-    step.Relocate(stepX, stepY, stepZ);
-    return true;
 }
 
 // Functions to mark targets with raid target icons
