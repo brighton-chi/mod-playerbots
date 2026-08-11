@@ -11,7 +11,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("hyjal summit bot is not in combat", {
-        NextAction("hyjal summit erase trackers", ACTION_EMERGENCY + 10) }));
+        NextAction("hyjal summit reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Rage Winterchill
     triggers.push_back(new TriggerNode("rage winterchill pulling boss", {
@@ -78,7 +78,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
-        NextAction("azgalor melee get out of fire and swap targets", ACTION_EMERGENCY + 2) }));
+        NextAction("azgalor melee get out of fire", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
@@ -112,15 +112,15 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Trash
-    multipliers.push_back(new HyjalSummitTimeBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new HyjalSummitDelayDpsCooldownsMultiplier(botAI));
 
     // Rage Winterchill
     multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new RageWinterchillMeleeControlAvoidanceMultiplier(botAI));
 
     // Anetheron
-    multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new AnetheronDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new AnetheronDisableAssistTargetingMultiplier(botAI));
+    multipliers.push_back(new AnetheronControlMovementMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
     // Kaz'rogal
@@ -131,8 +131,10 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Azgalor
     multipliers.push_back(new AzgalorDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
+    multipliers.push_back(new AzgalorMeleeWaitForTankPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new ArchimondeSetTremorTotemMultiplier(botAI));
 }

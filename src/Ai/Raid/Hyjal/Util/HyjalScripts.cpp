@@ -13,6 +13,7 @@
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
+#include <list>
 
 using namespace HyjalHelpers;
 
@@ -53,8 +54,6 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* tar
 
 // Interrupts a cast when a Doomfire NPC comes too close. The trail it leaves behind is made of
 // SPELL_DOOMFIRE_TRAIL dynamic objects, which bots query directly, so nothing is recorded here.
-// The interrupt cannot move into a trigger or action: UpdateAI returns as soon as it handles a
-// cast in progress, so the engine never runs while one is pending
 class ArchimondeDoomfireTrailScript : public AllCreatureScript
 {
 public:
@@ -62,7 +61,7 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (creature->GetEntry() != static_cast<uint32>(HyjalNpcs::NPC_DOOMFIRE))
+        if (creature->GetEntry() != Id(HyjalNpcs::NPC_DOOMFIRE))
             return;
 
         constexpr float DOOMFIRE_DANGER_RANGE = 10.0f;
@@ -94,7 +93,7 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id != static_cast<uint32>(HyjalSpells::SPELL_AIR_BURST))
+        if (spellInfo->Id != Id(HyjalSpells::SPELL_AIR_BURST))
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);

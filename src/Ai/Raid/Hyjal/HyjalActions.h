@@ -13,11 +13,11 @@
 
 // General
 
-class HyjalSummitEraseTrackersAction : public Action
+class HyjalSummitResetEncounterStatesAction : public Action
 {
 public:
-    HyjalSummitEraseTrackersAction(PlayerbotAI* botAI)
-        : Action(botAI, "hyjal summit erase trackers") {}
+    HyjalSummitResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "hyjal summit reset encounter states") {}
     bool Execute(Event event) override;
 };
 
@@ -45,6 +45,16 @@ public:
     RageWinterchillSpreadRangedInCircleAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "rage winterchill spread ranged in circle") {}
     bool Execute(Event event) override;
+    bool ResetWinterchillPositionReached()
+    {
+        if (!_winterchillPositionReached)
+            return false;
+        _winterchillPositionReached = false;
+        return true;
+    }
+
+private:
+    bool _winterchillPositionReached = false;
 };
 
 class RageWinterchillMeleeGetOutOfDeathAndDecayAction : public AttackAction
@@ -79,6 +89,16 @@ public:
     AnetheronSpreadRangedInCircleAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "anetheron spread ranged in circle") {}
     bool Execute(Event event) override;
+    bool ResetAnetheronPositionReached()
+    {
+        if (!_anetheronPositionReached)
+            return false;
+        _anetheronPositionReached = false;
+        return true;
+    }
+
+private:
+    bool _anetheronPositionReached = false;
 };
 
 class AnetheronBringInfernalToInfernalTankAction : public MovementAction
@@ -189,11 +209,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeGetOutOfFireAndSwapTargetsAction : public AttackAction
+class AzgalorMeleeGetOutOfFireAction : public AttackAction
 {
 public:
-    AzgalorMeleeGetOutOfFireAndSwapTargetsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor melee get out of fire and swap targets") {}
+    AzgalorMeleeGetOutOfFireAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "azgalor melee get out of fire") {}
     bool Execute(Event event) override;
 };
 
@@ -248,7 +268,7 @@ public:
 
 private:
     bool CastFearWardOnMainTank();
-    bool UseTremorTotemStrategy();
+    bool SetTremorTotem();
 };
 
 class ArchimondeSpreadToAvoidAirBurstAction : public MovementAction

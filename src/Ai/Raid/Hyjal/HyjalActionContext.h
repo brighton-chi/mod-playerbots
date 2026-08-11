@@ -16,8 +16,8 @@ public:
     RaidHyjalSummitActionContext()
     {
         // General
-        creators["hyjal summit erase trackers"] =
-            &RaidHyjalSummitActionContext::hyjal_summit_erase_trackers;
+        creators["hyjal summit reset encounter states"] =
+            &RaidHyjalSummitActionContext::hyjal_summit_reset_encounter_states;
 
         // Rage Winterchill
         creators["rage winterchill misdirect boss to main tank"] =
@@ -83,7 +83,7 @@ public:
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
-        creators["azgalor melee get out of fire and swap targets"] =
+        creators["azgalor melee get out of fire"] =
             &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire_and_swap_targets;
 
         creators["azgalor move to doomguard tank"] =
@@ -117,8 +117,8 @@ public:
 
 private:
     // General
-    static Action* hyjal_summit_erase_trackers(PlayerbotAI* botAI) {
-        return new HyjalSummitEraseTrackersAction(botAI);
+    static Action* hyjal_summit_reset_encounter_states(PlayerbotAI* botAI) {
+        return new HyjalSummitResetEncounterStatesAction(botAI);
     }
 
     // Rage Winterchill
@@ -189,7 +189,7 @@ private:
         return new AzgalorDisperseRangedAction(botAI);
     }
     static Action* azgalor_melee_get_out_of_fire_and_swap_targets(PlayerbotAI* botAI) {
-        return new AzgalorMeleeGetOutOfFireAndSwapTargetsAction(botAI);
+        return new AzgalorMeleeGetOutOfFireAction(botAI);
     }
     static Action* azgalor_move_to_doomguard_tank(PlayerbotAI* botAI) {
         return new AzgalorMoveToDoomguardTankAction(botAI);
