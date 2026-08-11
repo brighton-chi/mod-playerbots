@@ -1472,7 +1472,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (MarkTargetWithCross(bot, axe))
         return true;
 
-    if (axe->GetVictim() != bot)
+    if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
     constexpr float safeDistance = 13.0f;
