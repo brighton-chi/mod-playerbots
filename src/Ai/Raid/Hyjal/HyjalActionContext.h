@@ -108,6 +108,9 @@ public:
         creators["archimonde spread to avoid air burst"] =
             &RaidHyjalSummitActionContext::archimonde_spread_to_avoid_air_burst;
 
+        creators["archimonde spread ranged"] =
+            &RaidHyjalSummitActionContext::archimonde_spread_ranged;
+
         creators["archimonde avoid doomfire"] =
             &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
 
@@ -213,6 +216,9 @@ private:
     }
     static Action* archimonde_spread_to_avoid_air_burst(PlayerbotAI* botAI) {
         return new ArchimondeSpreadToAvoidAirBurstAction(botAI);
+    }
+    static Action* archimonde_spread_ranged(PlayerbotAI* botAI) {
+        return new ArchimondeSpreadRangedAction(botAI);
     }
     static Action* archimonde_avoid_doomfire(PlayerbotAI* botAI) {
         return new ArchimondeAvoidDoomfireAction(botAI);

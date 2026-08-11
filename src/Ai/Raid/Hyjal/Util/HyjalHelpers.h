@@ -166,7 +166,9 @@ struct AirBurstData
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
-AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId);
+// The Air Burst currently being cast, if one is. Recorded when the cast starts and left to lapse
+// on its own, so it answers "is one on the way", not "was one cast"
+AirBurstData* GetPendingAirBurstCast(uint32 instanceId);
 
 }
 

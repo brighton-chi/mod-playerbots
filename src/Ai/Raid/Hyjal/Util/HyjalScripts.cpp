@@ -7,14 +7,12 @@
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
 #include "HyjalHelpers.h"
-#include "ObjectAccessor.h"
 #include "Player.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
-#include <list>
 
 using namespace HyjalHelpers;
 
@@ -75,20 +73,17 @@ private:
     uint32 _lastProbe = 0;
 };
 
-static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
+// The explicitly cast-at target, which is all that exists when a cast begins: Spell::prepare only
+// resolves a target list for item casts, so for a creature's cast GetUniqueTargetInfo stays empty
+// until Spell::cast runs at the end of the cast time. Both listeners below are driven by
+// DoCastRandomTarget, which always supplies an explicit unit target
+static Player* GetSpellPlayerTarget(Spell* spell)
 {
-    if (!spell || !caster)
+    if (!spell)
         return nullptr;
 
     if (Unit* unitTarget = spell->m_targets.GetUnitTarget())
         return unitTarget->ToPlayer();
-
-    std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
-    for (TargetInfo const& targetInfo : targets)
-    {
-        if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
-            return target;
-    }
 
     return nullptr;
 }
@@ -142,19 +137,23 @@ public:
     }
 };
 
+// Everything this listener is for happens before the spell lands: bots have to be clear of the
+// target while it is still being cast, and a bot part-way through a cast of its own cannot move
+// until that cast is dropped. It therefore hooks OnSpellPrepare, which fires once as the cast
+// begins. OnSpellCast is no use here--it runs at the end of Spell::cast, so for anything with a
+// cast time it reports the spell only after it has already gone off
 class ArchimondeAirBurstSpellListenerScript : public AllSpellScript
 {
 public:
     ArchimondeAirBurstSpellListenerScript() :
         AllSpellScript("ArchimondeAirBurstSpellListenerScript") {}
 
-    void OnSpellCast(
-        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
         if (spellInfo->Id != Id(HyjalSpells::SPELL_AIR_BURST))
             return;
 
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        Player* target = GetSpellPlayerTarget(spell);
         if (!target)
             return;
 
@@ -180,9 +179,37 @@ public:
     }
 };
 
+// Inferno summons a Towering Infernal at its target's position, and that position is not read until
+// the 3.5s cast completes--Spell::SelectSpellTargets runs from Spell::cast, not Spell::prepare, for
+// a creature's cast. The target therefore carries the landing point with it and can walk the
+// Infernal clear of the raid, but only if it starts moving at once, so a cast of its own has to go
+class AnetheronInfernoSpellListenerScript : public AllSpellScript
+{
+public:
+    AnetheronInfernoSpellListenerScript() :
+        AllSpellScript("AnetheronInfernoSpellListenerScript") {}
+
+    void OnSpellPrepare(Spell* spell, Unit* /*caster*/, SpellInfo const* spellInfo) override
+    {
+        if (spellInfo->Id != Id(HyjalSpells::SPELL_INFERNO))
+            return;
+
+        Player* target = GetSpellPlayerTarget(spell);
+        if (!target || !target->IsAlive())
+            return;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+        if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT))
+            return;
+
+        botAI->RequestSpellInterrupt();
+    }
+};
+
 void AddSC_HyjalSummitBotScripts()
 {
     new HyjalHazardRadiusProbeScript(); // temporary, see the class comment
     new ArchimondeDoomfireTrailScript();
     new ArchimondeAirBurstSpellListenerScript();
+    new AnetheronInfernoSpellListenerScript();
 }

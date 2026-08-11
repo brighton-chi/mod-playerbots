@@ -253,6 +253,14 @@ public:
     bool IsActive() override;
 };
 
+class ArchimondeBossEngagedByRangedTrigger : public Trigger
+{
+public:
+    ArchimondeBossEngagedByRangedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "archimonde boss engaged by ranged") {}
+    bool IsActive() override;
+};
+
 class ArchimondeBossSummonedDoomfireTrigger : public Trigger
 {
 public:

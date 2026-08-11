@@ -279,6 +279,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class ArchimondeSpreadRangedAction : public MovementAction
+{
+public:
+    ArchimondeSpreadRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "archimonde spread ranged") {}
+    bool Execute(Event event) override;
+};
+
 class ArchimondeAvoidDoomfireAction : public MovementAction
 {
 public:

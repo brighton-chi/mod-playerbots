@@ -99,8 +99,14 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
+    // The trigger only fires while the cast is actually up, a window of under two seconds, and
+    // losing the melee group to one burst is what ends the fight--so it outranks everything else
+    // the bot might want to do in that window
     triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
-        NextAction("archimonde spread to avoid air burst", ACTION_RAID) }));
+        NextAction("archimonde spread to avoid air burst", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("archimonde boss engaged by ranged", {
+        NextAction("archimonde spread ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));

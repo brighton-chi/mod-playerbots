@@ -336,16 +336,31 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 10.0f;
+    if (!archimonde)
+        return false;
+
+    return archimonde->GetHealthPct() < 90.0f && archimonde->GetHealthPct() > 10.0f;
 }
 
 bool ArchimondeBossCastsAirBurstTrigger::IsActive()
 {
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde || archimonde->GetHealthPct() <= 10.0f || archimonde->GetVictim() == bot)
         return false;
 
-    return !PlayerbotAI::IsMainTank(bot);
+    return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId()) != nullptr;
+}
+
+bool ArchimondeBossEngagedByRangedTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde && archimonde->GetHealthPct() > 90.0f;
 }
 
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()

@@ -299,12 +299,15 @@ bool AnyGroupMemberHasDoom(Player* bot)
 
 std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 
-AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
+AirBurstData* GetPendingAirBurstCast(uint32 instanceId)
 {
     auto instanceIt = archimondeAirBurstTargets.find(instanceId);
     if (instanceIt == archimondeAirBurstTargets.end())
         return nullptr;
 
+    // Timed from the start of the cast, so this has to outlast Air Burst's 1.7s cast time for bots
+    // to still be running clear when it lands. Reacting after that point is pointless: the knock-up
+    // has already picked its victims
     constexpr uint32 airBurstReactionWindow = 2000;
     uint32 const now = getMSTime();
     if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)

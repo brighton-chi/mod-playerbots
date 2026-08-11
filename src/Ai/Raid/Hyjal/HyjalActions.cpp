@@ -1215,62 +1215,41 @@ bool ArchimondeCastFearImmunitySpellAction::SetTremorTotem()
     return botAI->CastSpell(Id(HyjalSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
-// (1) Try to run away from the Air Burst target
-// (2) At the beginning of the fight, spread ranged in anticipation of Air Burst
+// Air Burst knocks everyone around its target into the air. Losing the whole melee group at once
+// is what has to be avoided, since Archimonde turns to a ranged one-shot when nobody is left in
+// melee, so a bot standing near the main tank clears out while the cast is still up
 bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
-        return false;
-
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && bot != mainTank)
-    {
-        float const distanceToMainTank = bot->GetDistance2d(mainTank);
-        bool shouldMoveFromMainTank = false;
-        if (AirBurstData* data = GetRecentArchimondeAirBurst(bot->GetMap()->GetInstanceId()))
-        {
-            bool isRelevantAirBurstTarget =
-                data->targetGuid == mainTank->GetGUID() || data->targetGuid == bot->GetGUID();
-            shouldMoveFromMainTank =
-                isRelevantAirBurstTarget && distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
-        }
-
-        if (!shouldMoveFromMainTank && archimonde->HasUnitState(UNIT_STATE_CASTING))
-        {
-            Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-            if (spell && spell->m_spellInfo->Id ==
-                static_cast<uint32>(HyjalSpells::SPELL_AIR_BURST))
-            {
-                Unit* spellTarget = spell->m_targets.GetUnitTarget();
-                if ((spellTarget == mainTank || spellTarget == bot) &&
-                    distanceToMainTank < AIR_BURST_SAFE_DISTANCE)
-                {
-                    shouldMoveFromMainTank = true;
-                }
-            }
-        }
-
-        if (shouldMoveFromMainTank)
-            return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - distanceToMainTank);
-    }
-
-    if (archimonde->GetHealthPct() < 90.0f)
+    if (!mainTank || bot == mainTank)
         return false;
 
+    // Recorded when the cast begins, so this is only ever answered during the cast
+    AirBurstData* data = GetPendingAirBurstCast(bot->GetMap()->GetInstanceId());
+    if (!data)
+        return false;
+
+    // Only a burst centred on the main tank or on this bot can catch the two of them together
+    if (data->targetGuid != mainTank->GetGUID() && data->targetGuid != bot->GetGUID())
+        return false;
+
+    float const distanceToMainTank = bot->GetDistance2d(mainTank);
+    if (distanceToMainTank >= AIR_BURST_SAFE_DISTANCE)
+        return false;
+
+    return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - distanceToMainTank);
+}
+
+// Opening spread. Ranged start the fight stacked from the run in, and the first Air Burst lands
+// 25-35s later, so they are pushed apart while there is still time to do it calmly
+bool ArchimondeSpreadRangedAction::Execute(Event /*event*/)
+{
     constexpr float safeDistFromPlayer = 10.0f;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+    if (!nearestPlayer)
+        return false;
 
-    if (PlayerbotAI::IsRanged(bot))
-    {
-        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
-        if (nearestPlayer &&
-            FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer))
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 }
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)

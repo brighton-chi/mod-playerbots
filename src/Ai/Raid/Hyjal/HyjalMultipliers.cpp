@@ -400,7 +400,8 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "archimonde"))
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (archimonde && archimonde->GetHealthPct() < 90.0f)
         return 0.0f;
 
     return 1.0f;

@@ -108,6 +108,9 @@ public:
         creators["archimonde boss casts air burst"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_air_burst;
 
+        creators["archimonde boss engaged by ranged"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_ranged;
+
         creators["archimonde boss summoned doomfire"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_summoned_doomfire;
 
@@ -213,6 +216,9 @@ private:
     }
     static Trigger* archimonde_boss_casts_air_burst(PlayerbotAI* botAI) {
         return new ArchimondeBossCastsAirBurstTrigger(botAI);
+    }
+    static Trigger* archimonde_boss_engaged_by_ranged(PlayerbotAI* botAI) {
+        return new ArchimondeBossEngagedByRangedTrigger(botAI);
     }
     static Trigger* archimonde_boss_summoned_doomfire(PlayerbotAI* botAI) {
         return new ArchimondeBossSummonedDoomfireTrigger(botAI);
