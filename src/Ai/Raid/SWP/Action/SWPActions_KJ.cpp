@@ -283,6 +283,16 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
+    if (AI_VALUE2(Unit*, "find target", "sinister reflection"))
+        return false;
+
+    constexpr float searchRadius = 100.0f;
+    if (Creature* reflection =
+            bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
+    {
+        return Attack(reflection);
+    }
+
     Position const& position = KILJAEDEN_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= 2.0f)
         return false;

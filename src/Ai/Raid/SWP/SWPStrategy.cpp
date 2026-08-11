@@ -347,10 +347,13 @@ void AppendKiljaedenShieldOrbExclusions(
     }
 }
 
+// This activates only after the Reflections become aggressive (after 3s or when attacked,
+// whichever is earlier); up until then, they are not on the attackers list anyway
 void AppendKiljaedenSinisterReflectionExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return;
 
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))

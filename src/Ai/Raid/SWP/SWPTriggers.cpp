@@ -741,26 +741,13 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden)
         return false;
-    }
 
-    if (kiljaeden->GetHealthPct() > 85.0f)
-        return true;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return true;
-
-    constexpr float searchRadius = 100.0f;
-    if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-        bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-    {
+    if (HasKiljaedenDragonAura(bot))
         return false;
-    }
 
-    return true;
+    return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
 bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
@@ -772,20 +759,10 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return false;
 
-    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-        return false;
-
     if (HasKiljaedenDragonAura(bot))
         return false;
 
-    constexpr float searchRadius = 50.0f;
-    if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-        bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-    {
-        return false;
-    }
-
-    return true;
+    return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()
@@ -794,14 +771,17 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden)
         return false;
-    }
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
+    if (HasKiljaedenDragonAura(bot))
         return false;
+
+    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return false;
+
+    if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
+        return AI_VALUE2(Unit*, "find target", "sinister reflection");
 
     return true;
 }
