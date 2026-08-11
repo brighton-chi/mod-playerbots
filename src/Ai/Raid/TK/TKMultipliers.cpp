@@ -57,13 +57,13 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 
 float AlarControlMovementMultiplier::GetValue(Action* action)
 {
-    if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
     bool const isDisperseOrFlee =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action);
 
     if (!isDisperseOrFlee && !dynamic_cast<FollowAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<TankFaceAction*>(action) || dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
