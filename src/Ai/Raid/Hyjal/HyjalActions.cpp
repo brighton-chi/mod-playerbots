@@ -122,13 +122,19 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     float const toBossY = winterchill->GetPositionY() - botY;
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
+    // This walk is downhill over uneven ground, so the position's own Z sits well below the step
+    // the bot is about to take. Seeding MoveTo with it leaves every height probe under the ground
+    // there and the move is silently refused, so the step is grounded from the bot instead
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    float moveX, moveY, moveZ;
+    if (!GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
+                                 maxMoveDist, moveX, moveY, moveZ))
+    {
+        return false;
+    }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -180,8 +186,10 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     return false;
 }
 
-// Melee prefer a spot that still reaches Winterchill, since only one pool is ever up and it
-// rarely covers his whole melee ring. When it does, they give up attacking and head straight out
+// Melee positioning is one question: which headings on the boss's melee ring are still open. For
+// Winterchill that is the single pool's blocked arc, and the bot swings to the nearest heading
+// outside it. When the pool covers the ring there is nothing to attack from, so the bot leaves by
+// the shortest line and waits it out
 bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
@@ -195,80 +203,40 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     constexpr float moveDist = 10.0f;
     float moveX, moveY, moveZ;
 
-    struct MeleeSpot
+    float const meleeRadius = bot->GetMeleeRange(winterchill) - MELEE_RING_BUFFER;
+
+    std::vector<BlockedArc> blocked;
+    BlockedArc poolArc;
+    if (GetHazardBlockedArc(winterchill->GetPosition(), meleeRadius, pool,
+                            DEATH_AND_DECAY_SAFE_RADIUS, poolArc))
     {
-        float x;
-        float y;
-        float distanceToBot;
-    };
-
-    constexpr uint8 angleCount = 16;
-    constexpr float angleStep = 2.0f * M_PI / angleCount;
-    float const meleeRadius = bot->GetMeleeRange(winterchill) * 0.8f;
-
-    std::vector<MeleeSpot> meleeSpots;
-    meleeSpots.reserve(angleCount);
-
-    for (uint8 i = 0; i < angleCount; ++i)
-    {
-        float const angle = angleStep * i;
-        float const x = winterchill->GetPositionX() + std::cos(angle) * meleeRadius;
-        float const y = winterchill->GetPositionY() + std::sin(angle) * meleeRadius;
-
-        if (pool.GetExactDist2d(x, y) >= DEATH_AND_DECAY_SAFE_RADIUS)
-            meleeSpots.push_back({ x, y, bot->GetExactDist2d(x, y) });
+        blocked.push_back(poolArc);
     }
 
-    // Least travel first, so the bot slides around him rather than crossing the pool
-    std::sort(meleeSpots.begin(), meleeSpots.end(),
-        [](MeleeSpot const& a, MeleeSpot const& b) { return a.distanceToBot < b.distanceToBot; });
+    float const bossX = winterchill->GetPositionX();
+    float const bossY = winterchill->GetPositionY();
+    float const botHeading =
+        std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
 
-    for (MeleeSpot const& spot : meleeSpots)
+    float openHeading;
+    if (FindOpenHeading(blocked, botHeading, openHeading))
     {
-        if (GetGroundedStepPosition(bot, spot.x, spot.y, moveDist, moveX, moveY, moveZ))
+        float const targetX = bossX + std::cos(openHeading) * meleeRadius;
+        float const targetY = bossY + std::sin(openHeading) * meleeRadius;
+
+        if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
         {
             return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
-    // Nothing within reach of him is clear, so give up attacking and leave by the shortest line
-    // out of the pool, widening the heading only where that line is blocked
-    float const centerX = pool.GetPositionX();
-    float const centerY = pool.GetPositionY();
-    float escapeAngle =
-        std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
-
-    // Dead centre gives no heading of its own, so leave by the side away from Winterchill
-    if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
+    constexpr float escapeMargin = 2.0f;
+    if (GetHazardEscapeStep(bot, pool, DEATH_AND_DECAY_SAFE_RADIUS + escapeMargin, moveDist,
+                            moveX, moveY, moveZ))
     {
-        escapeAngle = std::atan2(
-            centerY - winterchill->GetPositionY(), centerX - winterchill->GetPositionX());
-    }
-
-    // Counted rather than accumulated, so the sweep always reaches exactly 180 degrees instead of
-    // depending on where eight roundings of an inexact step happen to land
-    constexpr uint8 fanSteps = 8;
-    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
-
-    for (uint8 step = 0; step <= fanSteps; ++step)
-    {
-        float const delta = fanStep * step;
-        // Both offsets are the same heading at zero, so only try it once
-        uint8 const headings = (step == 0) ? 1 : 2;
-        for (uint8 i = 0; i < headings; ++i)
-        {
-            float const angle = escapeAngle + (i == 0 ? delta : -delta);
-            float const targetX = centerX + std::cos(angle) * DEATH_AND_DECAY_SAFE_RADIUS;
-            float const targetY = centerY + std::sin(angle) * DEATH_AND_DECAY_SAFE_RADIUS;
-
-            if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
-            {
-                return MoveTo(
-                    HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-                    MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
+        return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                      false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -346,13 +314,19 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     float const toBossY = anetheron->GetPositionY() - botY;
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
+    // Downhill over uneven ground, same as Winterchill at this base: the position's own Z sits
+    // well below the step the bot is about to take, so seeding MoveTo with it leaves every height
+    // probe under the ground there and the move is silently refused
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    float moveX, moveY, moveZ;
+    if (!GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
+                                 maxMoveDist, moveX, moveY, moveZ))
+    {
+        return false;
+    }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -924,9 +898,10 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-// Melee stay on Azgalor whenever his back arc has ground clear of fire, because being behind him
-// is immune to the cleave chain at any range. Only when nothing back there is clear do they give
-// up attacking. Cleave safety is never traded against standing in fire--fire ticks, cleave kills
+// The same question as at Winterchill, with two differences: Azgalor can have more than one pool
+// up at a time, and his frontal arc is taken away by the cleave chain whatever the fire is doing.
+// Both are just further blocked arcs on the same ring. Cleave safety is never traded against
+// standing in fire--fire ticks, cleave kills
 bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -939,106 +914,68 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     if (pools.empty())
         return false;
 
-    constexpr uint8 angleCount = 16;
-    constexpr float angleStep = 2.0f * M_PI / angleCount;
-
-    // Tier 0 keeps Azgalor in reach, the outer tiers give that up for clear ground
-    constexpr uint8 ringCount = 4;
-    constexpr float ringStep = 8.0f;
-
-    struct EscapeCandidate
-    {
-        float x;
-        float y;
-        float clearance;  // distance to the nearest pool
-        float rank;       // preference within a tier, lower first
-        uint8 tier;
-    };
-
-    std::vector<EscapeCandidate> candidates;
-    candidates.reserve(angleCount * (1 + ringCount));
-
-    float const meleeRadius = bot->GetMeleeRange(azgalor) * 0.8f;
-
-    for (uint8 i = 0; i < angleCount; ++i)
-    {
-        float const angle = angleStep * i;
-        float const x = azgalor->GetPositionX() + std::cos(angle) * meleeRadius;
-        float const y = azgalor->GetPositionY() + std::sin(angle) * meleeRadius;
-        // Prefer the least travel among the spots that still allow attacking
-        candidates.push_back({ x, y, 0.0f, bot->GetExactDist2d(x, y), 0 });
-    }
-
-    for (uint8 ring = 1; ring <= ringCount; ++ring)
-    {
-        for (uint8 i = 0; i < angleCount; ++i)
-        {
-            float const angle = angleStep * i;
-            float const x = bot->GetPositionX() + std::cos(angle) * (ringStep * ring);
-            float const y = bot->GetPositionY() + std::sin(angle) * (ringStep * ring);
-            // Having given up on attacking, stay as close to him as the ring allows
-            candidates.push_back({ x, y, 0.0f, azgalor->GetExactDist2d(x, y), ring });
-        }
-    }
-
-    // A cleave-unsafe candidate is never an option, so drop them before anything is ranked
-    candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
-        [azgalor](EscapeCandidate const& candidate)
-        { return !IsSafeFromAzgalorCleave(azgalor, candidate.x, candidate.y); }),
-        candidates.end());
-
-    for (EscapeCandidate& candidate : candidates)
-    {
-        candidate.clearance = HAZARD_SEARCH_RADIUS;
-        for (Position const& pool : pools)
-        {
-            float const distance = pool.GetExactDist2d(candidate.x, candidate.y);
-            candidate.clearance = std::min(candidate.clearance, distance);
-        }
-    }
-
-    std::sort(candidates.begin(), candidates.end(),
-        [](EscapeCandidate const& a, EscapeCandidate const& b)
-        { return a.tier != b.tier ? a.tier < b.tier : a.rank < b.rank; });
-
     constexpr float moveDist = 10.0f;
     float moveX, moveY, moveZ;
 
-    for (EscapeCandidate const& candidate : candidates)
-    {
-        if (candidate.clearance < RAIN_OF_FIRE_RADIUS)
-            continue;
+    float const meleeRadius = bot->GetMeleeRange(azgalor) - MELEE_RING_BUFFER;
 
-        if (GetGroundedStepPosition(bot, candidate.x, candidate.y, moveDist,
-                                    moveX, moveY, moveZ))
+    std::vector<BlockedArc> blocked;
+    blocked.reserve(pools.size() + 1);
+
+    for (Position const& pool : pools)
+    {
+        BlockedArc poolArc;
+        if (GetHazardBlockedArc(azgalor->GetPosition(), meleeRadius, pool, RAIN_OF_FIRE_RADIUS,
+                                poolArc))
+        {
+            blocked.push_back(poolArc);
+        }
+    }
+
+    // Every ring point sits inside the chain radius of whoever he is hitting, so on this ring the
+    // range half of the cleave rule never saves anyone and his frontal arc is simply unavailable
+    blocked.push_back({ azgalor->GetOrientation(), CLEAVE_DANGER_ARC / 2.0f });
+
+    float const bossX = azgalor->GetPositionX();
+    float const bossY = azgalor->GetPositionY();
+    float const botHeading =
+        std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
+
+    float openHeading;
+    if (FindOpenHeading(blocked, botHeading, openHeading))
+    {
+        float const targetX = bossX + std::cos(openHeading) * meleeRadius;
+        float const targetY = bossY + std::sin(openHeading) * meleeRadius;
+
+        if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
         {
             return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
-    // The pools cover every safe spot, so head for whatever has the most room. Only worth moving
-    // to somewhere with more room than the bot already has, or it shuffles between equally bad
-    // ground
-    float botClearance = HAZARD_SEARCH_RADIUS;
+    // Leave the nearest pool, still refusing any heading that would cross into the cleave
+    Position const* nearest = nullptr;
+    float nearestDistance = 0.0f;
     for (Position const& pool : pools)
-        botClearance = std::min(botClearance, bot->GetExactDist2d(pool));
-
-    std::sort(candidates.begin(), candidates.end(),
-        [](EscapeCandidate const& a, EscapeCandidate const& b)
-        { return a.clearance > b.clearance; });
-
-    for (EscapeCandidate const& candidate : candidates)
     {
-        if (candidate.clearance <= botClearance)
-            break;
-
-        if (GetGroundedStepPosition(bot, candidate.x, candidate.y, moveDist,
-                                    moveX, moveY, moveZ))
+        float const distance = bot->GetExactDist2d(pool);
+        if (!nearest || distance < nearestDistance)
         {
-            return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
-                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            nearest = &pool;
+            nearestDistance = distance;
         }
+    }
+
+    constexpr float escapeMargin = 2.0f;
+    auto cleaveSafe = [azgalor](float x, float y)
+    { return IsSafeFromAzgalorCleave(azgalor, x, y); };
+
+    if (GetHazardEscapeStep(bot, *nearest, RAIN_OF_FIRE_RADIUS + escapeMargin, moveDist,
+                            moveX, moveY, moveZ, cleaveSafe))
+    {
+        return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
+                      false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;

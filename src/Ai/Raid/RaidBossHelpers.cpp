@@ -54,9 +54,6 @@ bool GetGroundedStepPosition(
     float const deltaX = destinationX - botX;
     float const deltaY = destinationY - botY;
 
-    // Reject a step onto ground the bot cannot climb. Set to false if raid terrain turns out to be
-    // rejected too aggressively and bots stop repositioning
-    constexpr bool failOnSlopes = true;
     // How many times the step is halved after the map rejects it before giving up
     constexpr uint8 maxAttempts = 3;
 
@@ -81,6 +78,11 @@ bool GetGroundedStepPosition(
         // rule on it rather than silently moving to an ungrounded position
         if (candidateZ <= INVALID_HEIGHT)
             candidateZ = botZ;
+
+        // IsWalkableClimb measures abs(dz), so it turns down a descent as harshly as a climb.
+        // Only ask for it where the step actually rises; walking downhill is always possible and
+        // halving would not help, since a shorter step keeps the same slope angle
+        bool const failOnSlopes = candidateZ > botZ;
 
         // failOnCollision stays false so a blocked step is shortened to the contact point instead
         // of being discarded; the slope check is what reports a step the bot cannot actually take

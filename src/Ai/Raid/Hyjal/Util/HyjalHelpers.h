@@ -9,6 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
+#include <functional>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -82,11 +83,39 @@ enum class TankPositionState : uint8
 // General
 inline constexpr uint32 HYJAL_MAP_ID = 534;
 inline constexpr float HAZARD_SEARCH_RADIUS = 60.0f; // For Death & Decay and Rain of Fire
+// Held back from the edge of melee range so rounding and drift cannot leave a bot just out of
+// reach. GetMeleeRange is both combat reaches plus 4/3, so any buffer under that stays clear of
+// contact whatever the boss's hitbox. A fixed yard suits that; a proportion of the range would
+// only stand the bot deeper the wider the boss is, which nothing calls for
+inline constexpr float MELEE_RING_BUFFER = 1.0f;
 struct RangedGroups
 {
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
 };
+// A span of headings around a ring that is unavailable, as a centre heading and a half-width.
+// Melee positioning is the same problem at every boss here: stand on the ring at melee range and
+// pick a heading that no hazard, and no boss ability, has taken away
+struct BlockedArc
+{
+    float center;
+    float halfWidth;
+};
+
+// The span of a melee ring that a circular ground hazard covers. False when it reaches none of it
+bool GetHazardBlockedArc(Position const& ringCenter, float ringRadius, Position const& hazard,
+                         float hazardRadius, BlockedArc& arc);
+// The heading nearest to preferred that clears every blocked arc. False when none does, which
+// means the ring is entirely unavailable and the caller has to give up on attacking
+bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, float& open);
+// Steps out of a hazard by the shortest clear line, widening the heading where one is blocked.
+// escapeRadius should sit past the radius the caller reacts at, or the bot settles on the
+// threshold and slides around it instead of leaving. isAcceptable rejects headings a caller
+// cannot use for its own reasons, and may be empty
+bool GetHazardEscapeStep(Player* bot, Position const& hazard, float escapeRadius, float moveDist,
+                         float& stepX, float& stepY, float& stepZ,
+                         std::function<bool(float, float)> const& isAcceptable = {});
+
 RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
 

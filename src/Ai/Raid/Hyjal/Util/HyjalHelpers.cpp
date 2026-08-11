@@ -15,6 +15,128 @@ namespace HyjalHelpers
 
 // General
 
+bool GetHazardBlockedArc(Position const& ringCenter, float ringRadius, Position const& hazard,
+                         float hazardRadius, BlockedArc& arc)
+{
+    float const centerToHazard =
+        hazard.GetExactDist2d(ringCenter.GetPositionX(), ringCenter.GetPositionY());
+
+    // Sitting on the ring centre it either swallows the whole ring or none of it
+    if (centerToHazard <= 0.0f)
+    {
+        arc = { 0.0f, static_cast<float>(M_PI) };
+        return ringRadius < hazardRadius;
+    }
+
+    // Cosine of the half-angle it blocks, by the law of cosines on the ring centre
+    float const cosHalfWidth =
+        (centerToHazard * centerToHazard + ringRadius * ringRadius - hazardRadius * hazardRadius) /
+        (2.0f * centerToHazard * ringRadius);
+
+    if (cosHalfWidth >= 1.0f)
+        return false;
+
+    arc.center = std::atan2(hazard.GetPositionY() - ringCenter.GetPositionY(),
+                            hazard.GetPositionX() - ringCenter.GetPositionX());
+    arc.halfWidth = (cosHalfWidth <= -1.0f) ? static_cast<float>(M_PI) : std::acos(cosHalfWidth);
+    return true;
+}
+
+bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, float& open)
+{
+    auto offsetFrom = [](float angle, float from)
+    {
+        float offset = Position::NormalizeOrientation(angle - from);
+        if (offset > M_PI)
+            offset -= 2.0f * M_PI;
+
+        return offset;
+    };
+
+    auto isOpen = [&blocked, &offsetFrom](float angle)
+    {
+        for (BlockedArc const& arc : blocked)
+        {
+            if (std::fabs(offsetFrom(angle, arc.center)) < arc.halfWidth)
+                return false;
+        }
+
+        return true;
+    };
+
+    if (isOpen(preferred))
+    {
+        open = preferred;
+        return true;
+    }
+
+    // The nearest open heading always lies on the edge of one of the blocked arcs, so testing
+    // every edge finds it without having to merge the arcs into their union first
+    constexpr float edgeNudge = 0.01f;
+    bool found = false;
+    float bestOffset = 0.0f;
+
+    for (BlockedArc const& arc : blocked)
+    {
+        for (int8 side = -1; side <= 1; side += 2)
+        {
+            float const edge = arc.center + side * (arc.halfWidth + edgeNudge);
+            if (!isOpen(edge))
+                continue;
+
+            float const offset = offsetFrom(edge, preferred);
+            if (!found || std::fabs(offset) < std::fabs(bestOffset))
+            {
+                bestOffset = offset;
+                open = edge;
+                found = true;
+            }
+        }
+    }
+
+    return found;
+}
+
+bool GetHazardEscapeStep(Player* bot, Position const& hazard, float escapeRadius, float moveDist,
+                         float& stepX, float& stepY, float& stepZ,
+                         std::function<bool(float, float)> const& isAcceptable)
+{
+    float const centerX = hazard.GetPositionX();
+    float const centerY = hazard.GetPositionY();
+    float escapeAngle =
+        std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+    // Dead centre gives no heading of its own, so take the bot's own facing
+    if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
+        escapeAngle = bot->GetOrientation();
+
+    // Counted rather than accumulated, so the sweep always reaches exactly 180 degrees instead of
+    // depending on where eight roundings of an inexact step happen to land
+    constexpr uint8 fanSteps = 8;
+    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
+
+    for (uint8 step = 0; step <= fanSteps; ++step)
+    {
+        float const delta = fanStep * step;
+        // Both offsets are the same heading at zero, so only try it once
+        uint8 const headings = (step == 0) ? 1 : 2;
+        for (uint8 i = 0; i < headings; ++i)
+        {
+            float const angle = escapeAngle + (i == 0 ? delta : -delta);
+            float const targetX = centerX + std::cos(angle) * escapeRadius;
+            float const targetY = centerY + std::sin(angle) * escapeRadius;
+
+            if (isAcceptable && !isAcceptable(targetX, targetY))
+                continue;
+
+            if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 RangedGroups GetRangedGroups(Player* bot)
 {
     RangedGroups result;
