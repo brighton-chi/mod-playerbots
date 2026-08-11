@@ -355,6 +355,12 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
 // for bots to save cooldowns for particular phases (or for a bit after the pull)
 bool IsDpsCooldownAction(Player* bot, Action* action)
 {
+    if (bot->getClass() == CLASS_SHAMAN && // Before dps gate to capture Resto
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action)))
+    {
+        return true;
+    }
+
     if (!PlayerbotAI::IsDps(bot))
         return false;
 
@@ -389,9 +395,7 @@ bool IsDpsCooldownAction(Player* bot, Action* action)
                 dynamic_cast<CastPresenceOfMindAction*>(action);
 
         case CLASS_SHAMAN:
-            return dynamic_cast<CastBloodlustAction*>(action) ||
-                dynamic_cast<CastHeroismAction*>(action) ||
-                dynamic_cast<CastElementalMasteryAction*>(action) ||
+            return dynamic_cast<CastElementalMasteryAction*>(action) ||
                 dynamic_cast<CastFeralSpiritAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemAction*>(action) ||
                 dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
