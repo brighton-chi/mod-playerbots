@@ -237,7 +237,9 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 
 bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
 {
-    return bot->TeleportTo(
-        SWP_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-        KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
+    bot->NearTeleportTo(
+        bot->GetPositionX(), bot->GetPositionY(), KALECGOS_SPECTRAL_REALM_Z, bot->GetOrientation());
+
+    constexpr float zTolerance = 1.0f;
+    return std::fabs(bot->GetPositionZ() - KALECGOS_SPECTRAL_REALM_Z) <= zTolerance;
 }

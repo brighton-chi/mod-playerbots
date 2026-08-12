@@ -462,9 +462,8 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     Position const& destination)
 {
     constexpr float collisionCheckDist = 2.0f;
-    Position const stuckCratePosition = { 1484.443f, 591.337f, 23.391f };
 
-    if (bot->GetExactDist2d(stuckCratePosition) > collisionCheckDist)
+    if (bot->GetExactDist2d(FOG_CRATE_STUCK_POSITION) > collisionCheckDist)
     {
         _fogCrateStuckSampleMs = 0;
         return false;
@@ -495,13 +494,14 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     if (getMSTimeDiff(_fogCrateStuckSampleMs, now) < stuckTimeoutMs)
         return false;
 
-    Position const onCratePosition = { 1482.181f, 591.253f, 24.545f };
+    Position const& onCratePosition = FOG_CRATE_TELEPORT_POSITION;
 
     _fogCrateStuckSampleMs = 0;
     botAI->InterruptSpell();
-    return bot->TeleportTo(
-        SWP_MAP_ID, onCratePosition.GetPositionX(),onCratePosition.GetPositionY(),
+    bot->NearTeleportTo(
+        onCratePosition.GetPositionX(), onCratePosition.GetPositionY(),
         onCratePosition.GetPositionZ(), bot->GetOrientation());
+    return true;
 }
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)

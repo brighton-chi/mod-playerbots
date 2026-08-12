@@ -125,6 +125,9 @@ inline Position const LEFT_LANDING_POSITION =   { 1476.770f, 665.094f, 20.642f }
 inline Position const RIGHT_LANDING_POSITION =  { 1469.930f, 557.009f, 22.632f };
 inline Position const CENTER_GROUND_REFERENCE = { 1473.350f, 611.052f, 21.637f };
 
+inline Position const FOG_CRATE_STUCK_POSITION =    { 1484.443f, 591.337f, 23.391f };
+inline Position const FOG_CRATE_TELEPORT_POSITION = { 1482.181f, 591.253f, 24.545f };
+
 inline std::array const TANK_POSITIONS = {
     Position{ 1460.145f, 598.290f, 21.869f },
     Position{ 1480.587f, 636.805f, 21.713f },
