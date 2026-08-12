@@ -675,7 +675,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     }
 
     constexpr float searchRadius = 40.0f;
-    Unit* voidSpawn = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
+    Creature* voidSpawn = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
     if (isCastDotOnAddSpell && voidSpawn && AI_VALUE(Unit*, "current target") == voidSpawn)
         return 0.0f;
 
@@ -845,20 +845,10 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
         return 1.0f;
 
-    // Apply this multiplier only if there are at least 3 bot tanks
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
-        return 1.0f;
+    if (HasAtLeastThreeBotTanks(bot))
+        return 0.0f;
 
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (!firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank))
-        return 1.0f;
-
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
-        return 1.0f;
-
-    return 0.0f;
+    return 1.0f;
 }
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)

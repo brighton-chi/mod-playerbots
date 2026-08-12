@@ -150,7 +150,7 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 25.0f;
-    Unit* volatileFiend = bot->FindNearestCreature(
+    Creature* volatileFiend = bot->FindNearestCreature(
         Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
     if (!volatileFiend)
         return false;

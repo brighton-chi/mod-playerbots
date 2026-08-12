@@ -53,16 +53,13 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
 bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    // Don't run this method at all without at least 3 bot tanks
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
-        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
-        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
-    {
+    // Fewer than 3 bot tanks makes this a headache so just skip in that case;
+    // it's not vital anyway
+    Player* mainTank = nullptr;
+    Player* firstAssistTank = nullptr;
+    Player* secondAssistTank = nullptr;
+    if (!HasAtLeastThreeBotTanks(bot, &mainTank, &firstAssistTank, &secondAssistTank))
         return false;
-    }
 
     std::vector<Unit*> hands;
     auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
@@ -283,15 +280,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE2(Unit*, "find target", "sinister reflection"))
-        return false;
-
-    constexpr float searchRadius = 100.0f;
-    if (Creature* reflection =
-            bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-    {
-        return Attack(reflection);
-    }
+    if (AI_VALUE2(Unit*, "find target", "sinister reflection") && !PlayerbotAI::IsMainTank(bot))
+        return PickUpSinisterReflections();
 
     Position const& position = KILJAEDEN_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -300,6 +290,44 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
     return MoveTo(
         SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+bool KiljaedenPositionTanksAction::PickUpSinisterReflections()
+{
+    constexpr float searchRadius = 100.0f;
+    Creature* reflection = bot->FindNearestCreature(
+        Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true);
+    if (!reflection)
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != reflection)
+        return Attack(reflection);
+
+    if (reflection->GetReactState() != REACT_PASSIVE)
+        return false;
+
+    auto const castSpell = [&](char const* spell)
+    {
+        return botAI->CanCastSpell(spell, reflection) && botAI->CastSpell(spell, reflection);
+    };
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return castSpell("death and decay");
+
+        case CLASS_DRUID:
+            return castSpell("challenging roar");
+
+        case CLASS_PALADIN:
+            return castSpell("consecration");
+
+        case CLASS_WARRIOR:
+            return castSpell("challenging shout");
+
+        default:
+            return false;
+    }
 }
 
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)

@@ -300,6 +300,10 @@ void AppendMuruDarkFiendExclusions(
 
 void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
+    if (!PlayerbotAI::IsTank(bot))
+        return;
+
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (!muru || muru->GetHealth() <= 1)
         return;
@@ -318,7 +322,6 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
             continue;
         }
 
-        Player* bot = botAI->GetBot();
         if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
             TryGetMuruDarknessActiveState(bot, muru))
         {
@@ -349,9 +352,12 @@ void AppendKiljaedenShieldOrbExclusions(
 
 // This activates only after the Reflections become aggressive (after 3s or when attacked,
 // whichever is earlier); up until then, they are not on the attackers list anyway
-void AppendKiljaedenSinisterReflectionExclusions(
+/* void AppendKiljaedenSinisterReflectionExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
+    if (PlayerbotAI::IsTank(botAI->GetBot()))
+        return;
+
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
         return;
@@ -366,27 +372,17 @@ void AppendKiljaedenSinisterReflectionExclusions(
         if (!victim || !victim->IsPlayer() || !PlayerbotAI::IsTank(victim->ToPlayer()))
             exclusions.insert(guid);
     }
-}
+} */
 
 } // end anonymous namespace
 
-void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+void RaidSunwellStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendFelmystVaporPhaseMeleeExclusions(botAI, context, exclusions);
+    AppendMuruTankExclusions(botAI, context, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, context, exclusions);
-
-    switch (type)
-    {
-        case TargetValueExclusionType::Tank:
-            AppendMuruTankExclusions(botAI, context, exclusions);
-            break;
-        case TargetValueExclusionType::Dps:
-        case TargetValueExclusionType::Attacker:
-            AppendKiljaedenSinisterReflectionExclusions(botAI, context, exclusions);
-            break;
-        case TargetValueExclusionType::None:
-            break;
-    }
+    // AppendKiljaedenSinisterReflectionExclusions(botAI, context, exclusions);
 }

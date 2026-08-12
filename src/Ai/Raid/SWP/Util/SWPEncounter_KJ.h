@@ -95,6 +95,9 @@ Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
 Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId);
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
+bool HasAtLeastThreeBotTanks(
+    Player* bot, Player** outMainTank = nullptr, Player** outFirstAssist = nullptr,
+    Player** outSecondAssist = nullptr);
 
 }
 

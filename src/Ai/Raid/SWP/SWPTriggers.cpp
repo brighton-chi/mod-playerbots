@@ -780,6 +780,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
+    // Allow Demo Lock to AoE the Reflections
     if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
         return AI_VALUE2(Unit*, "find target", "sinister reflection");
 

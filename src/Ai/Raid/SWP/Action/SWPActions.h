@@ -581,6 +581,9 @@ public:
     KiljaedenPositionTanksAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "kil'jaeden position tanks") {}
     bool Execute(Event event) override;
+
+private:
+    bool PickUpSinisterReflections();
 };
 
 class KiljaedenPositionMeleeAction : public MovementAction

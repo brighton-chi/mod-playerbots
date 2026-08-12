@@ -668,4 +668,64 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     return closestTarget;
 }
 
+bool HasAtLeastThreeBotTanks(
+    Player* bot, Player** outMainTank, Player** outFirstAssist, Player** outSecondAssist)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
+    if (mainTankGuid.IsEmpty())
+        return false;
+
+    bool hasMainBotTank = false;
+    Player* mainTankPtr = nullptr;
+    std::vector<Player*> assistantTanks;
+    std::vector<Player*> nonAssistantTanks;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member))
+            continue;
+
+        if (member->GetGUID() == mainTankGuid)
+        {
+            hasMainBotTank = GET_PLAYERBOT_AI(member);
+            mainTankPtr = member;
+            continue;
+        }
+
+        if (!GET_PLAYERBOT_AI(member))
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()))
+            assistantTanks.push_back(member);
+        else
+            nonAssistantTanks.push_back(member);
+
+        if (hasMainBotTank && (assistantTanks.size() + nonAssistantTanks.size()) >= 2)
+            break;
+    }
+
+    if (outFirstAssist || outSecondAssist)
+    {
+        std::vector<Player*> ordered;
+        ordered.reserve(assistantTanks.size() + nonAssistantTanks.size());
+        ordered.insert(ordered.end(), assistantTanks.begin(), assistantTanks.end());
+        ordered.insert(ordered.end(), nonAssistantTanks.begin(), nonAssistantTanks.end());
+
+        if (outFirstAssist)
+            *outFirstAssist = ordered.size() >= 1 ? ordered[0] : nullptr;
+        if (outSecondAssist)
+            *outSecondAssist = ordered.size() >= 2 ? ordered[1] : nullptr;
+    }
+
+    if (outMainTank)
+        *outMainTank = hasMainBotTank ? mainTankPtr : nullptr;
+
+    return hasMainBotTank && (assistantTanks.size() + nonAssistantTanks.size()) >= 2;
+}
+
 }
