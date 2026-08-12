@@ -123,11 +123,11 @@ public:
 
 // Brutallus
 
-class BrutallusMisdirectBossToMainTankAction : public AttackAction
+class BrutallusMisdirectBossToMainTankAction : public Action
 {
 public:
     BrutallusMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "brutallus misdirect boss to main tank") {}
+        : Action(botAI, "brutallus misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -183,11 +183,11 @@ private:
 
 // Felmyst
 
-class FelmystMisdirectBossToMainTankAction : public AttackAction
+class FelmystMisdirectBossToMainTankAction : public Action
 {
 public:
     FelmystMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "felmyst misdirect boss to main tank") {}
+        : Action(botAI, "felmyst misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -310,11 +310,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMisdirectBossesToTanksAction : public AttackAction
+class EredarTwinsMisdirectBossesToTanksAction : public Action
 {
 public:
     EredarTwinsMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins misdirect bosses to tanks") {}
+        : Action(botAI, "eredar twins misdirect bosses to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -394,11 +394,11 @@ public:
 
 // M'uru
 
-class MuruMisdirectEnemiesToTanksAction : public AttackAction
+class MuruMisdirectEnemiesToTanksAction : public Action
 {
 public:
     MuruMisdirectEnemiesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "m'uru misdirect enemies to tanks") {}
+        : Action(botAI, "m'uru misdirect enemies to tanks") {}
     bool Execute(Event event) override;
 };
 

@@ -39,11 +39,11 @@ public:
 
 // Al'ar <Phoenix God>
 
-class AlarMisdirectBossToMainTankAction : public AttackAction
+class AlarMisdirectBossToMainTankAction : public Action
 {
 public:
     AlarMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "al'ar misdirect boss to main tank") {}
+        : Action(botAI, "al'ar misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -218,11 +218,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public AttackAction
+class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public Action
 {
 public:
     KaelthasSunstriderMisdirectAdvisorsToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider misdirect advisors to tanks") {}
+        : Action(botAI, "kael'thas sunstrider misdirect advisors to tanks") {}
     bool Execute(Event event) override;
 };
 
