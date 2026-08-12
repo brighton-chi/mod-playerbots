@@ -410,14 +410,15 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
     float const toPosX = position.GetPositionX() - botX;
     float const toPosY = position.GetPositionY() - botY;
 
-    // Backing away from whatever is being held keeps it in front, so it follows rather than
-    // wandering off to the next player it can see
+    // Backing away from the Infernal being held keeps it in front, so it follows rather than
+    // wandering off to the next player it can see. Measured against the one that has the bot, not
+    // whatever the bot happens to be swinging at, since tank assist can have it hitting a second
     bool backwards = false;
-    if (Unit* victim = bot->GetVictim())
+    if (Unit* held = GetInfernalTargetingBot(botAI, bot))
     {
-        float const toVictimX = victim->GetPositionX() - botX;
-        float const toVictimY = victim->GetPositionY() - botY;
-        backwards = (toPosX * toVictimX + toPosY * toVictimY) < 0.0f;
+        float const toHeldX = held->GetPositionX() - botX;
+        float const toHeldY = held->GetPositionY() - botY;
+        backwards = (toPosX * toHeldX + toPosY * toHeldY) < 0.0f;
     }
 
     float const maxMoveDist = backwards ? 2.25f : 3.5f;

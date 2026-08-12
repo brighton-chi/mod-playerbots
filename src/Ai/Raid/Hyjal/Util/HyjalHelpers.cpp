@@ -331,16 +331,14 @@ Player* GetInfernalTank(Player* bot)
 
 Position const& GetInfernalTankPosition(Player* bot)
 {
+    // Without a tank there is nobody to converge on, so the asking bot answers for itself
     Player* infernalTank = GetInfernalTank(bot);
-    return GetClosestInfernalTankPosition(infernalTank ? infernalTank : bot);
-}
+    Player* from = infernalTank ? infernalTank : bot;
 
-Position const& GetClosestInfernalTankPosition(Player* bot)
-{
     Position const& east = ANETHERON_E_INFERNAL_POSITION;
     Position const& west = ANETHERON_W_INFERNAL_POSITION;
-    return bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
-        bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY()) ? east : west;
+    return from->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
+        from->GetExactDist2d(west.GetPositionX(), west.GetPositionY()) ? east : west;
 }
 
 // Kaz'rogal

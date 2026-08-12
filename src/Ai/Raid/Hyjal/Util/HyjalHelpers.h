@@ -160,7 +160,6 @@ Player* GetInfernalTank(Player* bot);
 // off the asking bot is what stops the player carrying a summon and the tank waiting to receive it
 // from setting out for opposite sides
 Position const& GetInfernalTankPosition(Player* bot);
-Position const& GetClosestInfernalTankPosition(Player* bot);
 
 // Kaz'rogal
 inline Position const KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
