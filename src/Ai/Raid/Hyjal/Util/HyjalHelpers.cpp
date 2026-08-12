@@ -46,7 +46,8 @@ bool GetHazardBlockedArc(
     return true;
 }
 
-bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, float& open)
+bool FindNearestUnblockedAngle(
+    std::vector<BlockedArc> const& blocked, float preferred, float& unblocked)
 {
     auto offsetFrom = [](float angle, float from)
     {
@@ -57,7 +58,7 @@ bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, fl
         return offset;
     };
 
-    auto isOpen = [&blocked, &offsetFrom](float angle)
+    auto isUnblocked = [&blocked, &offsetFrom](float angle)
     {
         for (BlockedArc const& arc : blocked)
         {
@@ -68,13 +69,13 @@ bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, fl
         return true;
     };
 
-    if (isOpen(preferred))
+    if (isUnblocked(preferred))
     {
-        open = preferred;
+        unblocked = preferred;
         return true;
     }
 
-    // The nearest open heading always lies on the edge of one of the blocked arcs, so testing
+    // The nearest unblocked angle always lies on the edge of one of the blocked arcs, so testing
     // every edge finds it without having to merge the arcs into their union first
     constexpr float edgeNudge = 0.01f;
     bool found = false;
@@ -85,14 +86,14 @@ bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, fl
         for (int8 side = -1; side <= 1; side += 2)
         {
             float const edge = arc.center + side * (arc.halfWidth + edgeNudge);
-            if (!isOpen(edge))
+            if (!isUnblocked(edge))
                 continue;
 
             float const offset = offsetFrom(edge, preferred);
             if (!found || std::fabs(offset) < std::fabs(bestOffset))
             {
                 bestOffset = offset;
-                open = edge;
+                unblocked = edge;
                 found = true;
             }
         }
@@ -133,8 +134,23 @@ bool GetHazardEscapeStep(
             if (isAcceptable && !isAcceptable(targetX, targetY))
                 continue;
 
-            if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
-                return true;
+            // Nothing is asked of the terrain: the step is projected and MoveTo derives the height
+            // from the bot's own Z. The fan now widens only for headings a caller refuses, so at
+            // Winterchill, with no predicate, it always settles on the first one
+            float const botX = bot->GetPositionX();
+            float const botY = bot->GetPositionY();
+            float const distance = bot->GetExactDist2d(targetX, targetY);
+
+            constexpr float minStepDistance = 0.5f;
+            if (distance < minStepDistance)
+                continue;
+
+            float const stepDistance = std::min(moveDist, distance);
+            stepX = botX + ((targetX - botX) / distance) * stepDistance;
+            stepY = botY + ((targetY - botY) / distance) * stepDistance;
+            stepZ = bot->GetPositionZ();
+
+            return true;
         }
     }
 

@@ -109,9 +109,11 @@ struct BlockedArc
 bool GetHazardBlockedArc(
     Position const& ringCenter, float ringRadius, Position const& hazard,
     float hazardRadius, BlockedArc& arc);
-// The heading nearest to preferred that clears every blocked arc. False when none does, which
-// means the ring is entirely unavailable and the caller has to give up on attacking
-bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, float& open);
+// The angle nearest to preferred that clears every blocked arc. False when none does, which means
+// the ring is entirely unavailable and the caller has to give up on attacking. This is a place to
+// stand on the ring, not a direction to travel in
+bool FindNearestUnblockedAngle(
+    std::vector<BlockedArc> const& blocked, float preferred, float& unblocked);
 // Steps out of a hazard by the shortest clear line, widening the heading where one is blocked.
 // escapeRadius should sit past the radius the caller reacts at, or the bot settles on the
 // threshold and slides around it instead of leaving. isAcceptable rejects headings a caller

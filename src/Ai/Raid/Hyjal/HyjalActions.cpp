@@ -220,18 +220,25 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     float const bossY = winterchill->GetPositionY();
     float const botHeading = std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
 
-    float openHeading;
-    if (FindOpenHeading(blocked, botHeading, openHeading))
+    float standAngle;
+    if (FindNearestUnblockedAngle(blocked, botHeading, standAngle))
     {
-        float const targetX = bossX + std::cos(openHeading) * meleeRadius;
-        float const targetY = bossY + std::sin(openHeading) * meleeRadius;
+        float const targetX = bossX + std::cos(standAngle) * meleeRadius;
+        float const targetY = bossY + std::sin(standAngle) * meleeRadius;
+        float const distToTarget = bot->GetExactDist2d(targetX, targetY);
 
-        if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
-        {
-            return MoveTo(
-                HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        constexpr float minStepDistance = 0.5f;
+        if (distToTarget < minStepDistance)
+            return false;
+
+        float const stepDist = std::min(moveDist, distToTarget);
+        float const botX = bot->GetPositionX();
+        float const botY = bot->GetPositionY();
+
+        return MoveTo(
+            HYJAL_MAP_ID, botX + ((targetX - botX) / distToTarget) * stepDist,
+            botY + ((targetY - botY) / distToTarget) * stepDist, bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     constexpr float escapeMargin = 2.0f;
@@ -893,17 +900,28 @@ bool AzgalorMeleeGetOutOfFireAction::Execute(Event /*event*/)
     float const botHeading =
         std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
 
-    float openHeading;
-    if (FindOpenHeading(blocked, botHeading, openHeading))
+    float standAngle;
+    if (FindNearestUnblockedAngle(blocked, botHeading, standAngle))
     {
-        float const targetX = bossX + std::cos(openHeading) * meleeRadius;
-        float const targetY = bossY + std::sin(openHeading) * meleeRadius;
+        // Level ground, as at Winterchill, so the step needs no validating--only the unblocked
+        // angle decides whether the ring is worth standing on
+        float const targetX = bossX + std::cos(standAngle) * meleeRadius;
+        float const targetY = bossY + std::sin(standAngle) * meleeRadius;
+        float const distToTarget = bot->GetExactDist2d(targetX, targetY);
 
-        if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
-        {
-            return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
-                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        // Already standing on the open heading, so hold rather than divide by nothing below
+        constexpr float minStepDistance = 0.5f;
+        if (distToTarget < minStepDistance)
+            return false;
+
+        float const stepDist = std::min(moveDist, distToTarget);
+        float const botX = bot->GetPositionX();
+        float const botY = bot->GetPositionY();
+
+        return MoveTo(
+            HYJAL_MAP_ID, botX + ((targetX - botX) / distToTarget) * stepDist,
+            botY + ((targetY - botY) / distToTarget) * stepDist, bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     // Leave the nearest pool, still refusing any heading that would cross into the cleave
