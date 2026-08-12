@@ -2042,8 +2042,11 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
     if (!kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
     {
         constexpr float searchRadius = 75.0f;
-        if (Unit* egg = bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true))
+        if (Creature* egg = bot->FindNearestCreature(
+                Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true))
+        {
             target = egg;
+        }
     }
 
     return AI_VALUE(Unit*, "current target") != target && Attack(target);
