@@ -55,6 +55,17 @@ bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
     return IsInDeathAndDecay(bot);
 }
 
+bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        return false;
+
+    return IsInDeathAndDecay(bot);
+}
+
 // Anetheron
 
 bool AnetheronPullingBossOrInfernalTrigger::IsActive()
@@ -270,6 +281,17 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
         return false;
 
     if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        return false;
+
+    return IsInRainOfFire(bot);
+}
+
+bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
     return IsInRainOfFire(bot);

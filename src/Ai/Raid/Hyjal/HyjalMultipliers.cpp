@@ -93,7 +93,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (!winterchill)
         return 1.0f;
 
-    constexpr float suppressionRadius = DEATH_AND_DECAY_SAFE_RADIUS + 10.0f;
+    constexpr float suppressionRadius = DEATH_AND_DECAY_RADIUS + 10.0f;
     if (!IsNearDeathAndDecay(bot, suppressionRadius))
         return 1.0f;
 
@@ -104,6 +104,35 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     return 0.0f;
+}
+
+// Stock avoid-aoe discards Death and Decay outright: it drops any hazard whose own radius exceeds
+// AiPlayerbot.MaxAoeAvoidRadius, and at the default 15 a 20 yard pool never qualifies. Where it
+// does run it flees to the raw radius, which still sits inside the aura once the target's combat
+// reach is added. The hardcoded action handles both, so keep the two from fighting over the bot
+float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return 1.0f;
+
+    // AvoidAoeAction and the circle spread are both MovementActions, so this covers them
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<RageWinterchillRangedGetOutOfDeathAndDecayAction*>(action))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        return 1.0f;
+
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    // The spread settles once a bot reaches its point on the circle and then stops asking, but a
+    // bot pushed off course before it ever arrives never settles and keeps trying for the rest of
+    // the fight--including back into the pool it was just moved out of
+    constexpr float suppressionRadius = DEATH_AND_DECAY_RADIUS + 10.0f;
+    return IsNearDeathAndDecay(bot, suppressionRadius) ? 0.0f : 1.0f;
 }
 
 // Anetheron
@@ -392,6 +421,44 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
         return 0.0f;
 
     return 1.0f;
+}
+
+// Rain of Fire is 15 yards, so unlike Death and Decay it does scrape past the default
+// MaxAoeAvoidRadius and stock avoid-aoe does handle it--but only out to the raw radius, which
+// leaves the bot inside the aura. The hardcoded action owns this instead.
+//
+// The dispersal action is the other thing that moves ranged here, and it runs for the whole fight
+// rather than settling like the spreads at the other bosses do. It only loses to the escape on the
+// ticks the escape actually returns true, so on any tick FleePosition declines an angle it would
+// be free to walk the bot back into the fire it has just left
+float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return 1.0f;
+
+    // AvoidAoeAction and the dispersal are both MovementActions, so this covers them
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<AzgalorRangedGetOutOfRainOfFireAction*>(action))
+        return 1.0f;
+
+    // Doom outranks standing in fire, and it has its own positioning to do
+    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        return 1.0f;
+
+    // Stock avoid-aoe would duplicate the escape wherever the bot stands, so it goes regardless of
+    // distance. Everything else only has to stand aside while a pool is near, and that reach is
+    // wider than the radius which fires the escape so a bot that has only just cleared one is not
+    // immediately walked back in
+    if (dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
+    return IsNearRainOfFire(bot, suppressionRadius) ? 0.0f : 1.0f;
 }
 
 // Archimonde

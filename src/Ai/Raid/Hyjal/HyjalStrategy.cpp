@@ -31,6 +31,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rage winterchill melee is standing in death and decay", {
         NextAction("rage winterchill melee get out of death and decay", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("rage winterchill ranged is standing in death and decay", {
+        NextAction("rage winterchill ranged get out of death and decay", ACTION_EMERGENCY + 1) }));
+
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss or infernal", {
         NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 2) }));
@@ -85,6 +88,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
         NextAction("azgalor melee get out of fire", ACTION_EMERGENCY + 2) }));
 
+    triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
+        NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 2) }));
+
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
 
@@ -125,6 +131,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Rage Winterchill
     multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new RageWinterchillMeleeControlAvoidanceMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillRangedControlAvoidanceMultiplier(botAI));
 
     // Anetheron
     multipliers.push_back(new AnetheronDisableAssistTargetingMultiplier(botAI));
@@ -142,6 +149,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeWaitForTankPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
+    multipliers.push_back(new AzgalorRangedControlAvoidanceMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));

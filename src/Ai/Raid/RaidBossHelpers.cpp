@@ -24,24 +24,20 @@
 #include <algorithm>
 #include <list>
 
-// Projects a short step from the bot towards a destination and snaps it to walkable ground. The
-// step is deliberately small: GetMapWaterOrGroundLevel only finds ground at or below its seed, so
-// a short hop keeps the bot's own Z usable as that seed.
+// Asks whether a short step towards a destination is one the bot can actually take, and returns
+// where it lands. This is a verdict, not a movement helper: a caller that simply wants to walk
+// somewhere should project the step itself and hand MoveTo the bot's own Z, which re-derives the
+// real height through SearchForBestPath for none of the map queries below. Use this only where a
+// false answer means something--enumerating candidate destinations and moving on to the next.
 //
-// Only worth calling when the destination's own Z is not usable--a point computed on a circle
-// inherits the centre's Z, and a swimming destination needs the water surface. When the caller
-// already knows a correct Z, MoveTo re-derives one anyway through SearchForBestPath, so a plain
-// projection into MoveTo does the same job for none of the map queries.
-//
-// Returns false when the bot is already there, or when no walkable step could be validated. The
-// latter lets a caller that enumerates candidate destinations fall through to the next one.
+// The step has to be short. The candidate's height comes from a downward search seeded at the
+// bot, so a long hop can outrun the ground it is measured against.
 bool GetGroundedStepPosition(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
-    // A step shorter than this is not worth the map queries needed to validate it. Sizing the
-    // caller's own deadzone against the movement floor below is what keeps the final approach
-    // from stuttering; this only rules out a degenerate step
+    // Not worth the map queries, and the caller's own arrival deadzone is what governs the final
+    // approach; this only rules out a degenerate step
     constexpr float minMoveDistance = 0.5f;
 
     float const distance = bot->GetExactDist2d(destinationX, destinationY);
@@ -51,59 +47,36 @@ bool GetGroundedStepPosition(
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
     float const botZ = bot->GetPositionZ();
-    float const deltaX = destinationX - botX;
-    float const deltaY = destinationY - botY;
 
-    // How many times the step is halved after the map rejects it before giving up
-    constexpr uint8 maxAttempts = 3;
+    float const ratio = std::min(moveDist, distance) / distance;
+    float candidateX = botX + (destinationX - botX) * ratio;
+    float candidateY = botY + (destinationY - botY) * ratio;
+    float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
 
-    // A step shorter than one AI tick of travel finishes before the bot next thinks, so it
-    // arrives, stops and idles rather than gliding on. The tick is the react delay plus a
-    // per-bot stagger of up to 200ms, so the floor is sized for the worst case. Run speed is
-    // used even when the caller will step backwards, which only makes the floor safer
-    constexpr float maxTickPeriod = 0.3f;
-    float const movementFloor = bot->GetSpeed(MOVE_RUN) * maxTickPeriod;
+    // No ground in that column. Keep the bot's Z as the candidate and let the reach check rule on
+    // it rather than silently reporting an ungrounded position as reachable
+    if (candidateZ <= INVALID_HEIGHT)
+        candidateZ = botZ;
 
-    float stepDistance = std::min(moveDist, distance);
+    // IsWalkableClimb measures abs(dz), so it turns down a descent as harshly as a climb. Only ask
+    // for it where the step actually rises; walking downhill is always possible
+    bool const failOnSlopes = candidateZ > botZ;
 
-    for (uint8 attempt = 0; attempt < maxAttempts; ++attempt)
+    // Fail on collision rather than clamping to the contact point. Clamping reports success for a
+    // step that ends against whatever is in the way, which stops a caller enumerating candidates
+    // dead on the first blocked one--it walks into the obstacle, then repeats the same clamped
+    // point until MoveTo rejects it as a duplicate. A refusal sends the caller to its next
+    // candidate, which is the whole reason this returns a verdict
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
+            bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
     {
-        float const ratio = stepDistance / distance;
-        float candidateX = botX + deltaX * ratio;
-        float candidateY = botY + deltaY * ratio;
-
-        float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
-
-        // No ground in that column. Keep the bot's Z as the candidate and let the reach check
-        // rule on it rather than silently moving to an ungrounded position
-        if (candidateZ <= INVALID_HEIGHT)
-            candidateZ = botZ;
-
-        // IsWalkableClimb measures abs(dz), so it turns down a descent as harshly as a climb.
-        // Only ask for it where the step actually rises; walking downhill is always possible and
-        // halving would not help, since a shorter step keeps the same slope angle
-        bool const failOnSlopes = candidateZ > botZ;
-
-        // failOnCollision stays false so a blocked step is shortened to the contact point instead
-        // of being discarded; the slope check is what reports a step the bot cannot actually take
-        if (bot->GetMap()->CanReachPositionAndGetValidCoords(
-                bot, botX, botY, botZ, candidateX, candidateY, candidateZ, false, failOnSlopes))
-        {
-            stepX = candidateX;
-            stepY = candidateY;
-            stepZ = candidateZ;
-            return true;
-        }
-
-        // Halving any further would drop the step below the floor, so give up instead and let
-        // the caller try another destination
-        if (stepDistance * 0.5f < movementFloor)
-            return false;
-
-        stepDistance *= 0.5f;
+        return false;
     }
 
-    return false;
+    stepX = candidateX;
+    stepY = candidateY;
+    stepZ = candidateZ;
+    return true;
 }
 
 // Functions to mark targets with raid target icons

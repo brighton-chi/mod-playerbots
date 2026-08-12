@@ -195,7 +195,7 @@ bool IsNearDeathAndDecay(Player* bot, float radius)
 
 bool IsInDeathAndDecay(Player* bot)
 {
-    return IsNearDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS);
+    return IsNearDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS);
 }
 
 // Anetheron
@@ -372,6 +372,26 @@ std::vector<Position> GetRainOfFirePositions(Player* bot)
 {
     return GetDynamicObjectPositions(
         bot, HAZARD_SEARCH_RADIUS, Id(HyjalSpells::SPELL_RAIN_OF_FIRE));
+}
+
+// Fleeing the nearest can walk a bot into a second pool, which then becomes the nearest and is
+// fled in turn. That resolves itself a step at a time and is no worse than standing in the first
+bool GetNearestRainOfFirePosition(Player* bot, Position& pool)
+{
+    bool found = false;
+    float nearestDistance = 0.0f;
+    for (Position const& position : GetRainOfFirePositions(bot))
+    {
+        float const distance = bot->GetExactDist2d(position);
+        if (!found || distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            pool = position;
+            found = true;
+        }
+    }
+
+    return found;
 }
 
 bool IsNearRainOfFire(Player* bot, float radius)

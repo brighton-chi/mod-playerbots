@@ -29,6 +29,9 @@ public:
         creators["rage winterchill spread ranged in circle"] =
             &RaidHyjalSummitActionContext::rage_winterchill_spread_ranged_in_circle;
 
+        creators["rage winterchill ranged get out of death and decay"] =
+            &RaidHyjalSummitActionContext::rage_winterchill_ranged_get_out_of_death_and_decay;
+
         creators["rage winterchill melee get out of death and decay"] =
             &RaidHyjalSummitActionContext::rage_winterchill_melee_get_out_of_death_and_decay;
 
@@ -86,6 +89,9 @@ public:
         creators["azgalor melee get out of fire"] =
             &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire_and_swap_targets;
 
+        creators["azgalor ranged get out of rain of fire"] =
+            &RaidHyjalSummitActionContext::azgalor_ranged_get_out_of_rain_of_fire;
+
         creators["azgalor move to doomguard tank"] =
             &RaidHyjalSummitActionContext::azgalor_move_to_doomguard_tank;
 
@@ -133,6 +139,9 @@ private:
     }
     static Action* rage_winterchill_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new RageWinterchillSpreadRangedInCircleAction(botAI);
+    }
+    static Action* rage_winterchill_ranged_get_out_of_death_and_decay(PlayerbotAI* botAI) {
+        return new RageWinterchillRangedGetOutOfDeathAndDecayAction(botAI);
     }
     static Action* rage_winterchill_melee_get_out_of_death_and_decay(PlayerbotAI* botAI) {
         return new RageWinterchillMeleeGetOutOfDeathAndDecayAction(botAI);
@@ -193,6 +202,9 @@ private:
     }
     static Action* azgalor_melee_get_out_of_fire_and_swap_targets(PlayerbotAI* botAI) {
         return new AzgalorMeleeGetOutOfFireAction(botAI);
+    }
+    static Action* azgalor_ranged_get_out_of_rain_of_fire(PlayerbotAI* botAI) {
+        return new AzgalorRangedGetOutOfRainOfFireAction(botAI);
     }
     static Action* azgalor_move_to_doomguard_tank(PlayerbotAI* botAI) {
         return new AzgalorMoveToDoomguardTankAction(botAI);

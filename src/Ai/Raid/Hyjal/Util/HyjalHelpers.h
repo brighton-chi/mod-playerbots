@@ -124,7 +124,7 @@ RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
 
 // Rage Winterchill
-inline constexpr float DEATH_AND_DECAY_SAFE_RADIUS = 22.0f; // 20y radius + 1.5y player hitbox + 0.5y buffer
+inline constexpr float DEATH_AND_DECAY_RADIUS = 21.5f; // 20y radius + 1.5y player hitbox
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
 bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard
@@ -169,13 +169,14 @@ extern std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
 extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
 
 // Azgalor
-inline constexpr float RAIN_OF_FIRE_RADIUS = 17.0f; // 15y radius + 1.5y player hitbox + 0.5y buffer
+inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player hitbox
 inline Position const AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
 inline Position const AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
 inline Position const AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
 extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
 TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
 std::vector<Position> GetRainOfFirePositions(Player* bot);
+bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
 bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInRainOfFire(Player* bot);
 // Cleave chains from Azgalor's victim to four more players, but only within this distance of

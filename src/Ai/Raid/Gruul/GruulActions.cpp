@@ -498,18 +498,23 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 
     if (!_hasReachedInitialPosition)
     {
-        if (bot->GetExactDist2d(_initialPosition) > 2.0f)
+        float const distToTarget = bot->GetExactDist2d(_initialPosition);
+        if (distToTarget > 2.0f)
         {
-            float moveX, moveY, moveZ;
-            constexpr float moveDist = 10.0f;
-            if (GetGroundedStepPosition(
-                    bot, _initialPosition.GetPositionX(), _initialPosition.GetPositionY(),
-                    moveDist, moveX, moveY, moveZ))
-            {
-                return MoveTo(
-                    GRUUL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-                    MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
+            // The stored Z is the ring centre's, which says nothing about the ground 25-40 yards
+            // out. Seeding from the bot keeps the step inside the height probes MoveTo makes
+            constexpr float maxMoveDist = 10.0f;
+            float const moveDist = std::min(maxMoveDist, distToTarget);
+            float const botX = bot->GetPositionX();
+            float const botY = bot->GetPositionY();
+            float const moveX =
+                botX + ((_initialPosition.GetPositionX() - botX) / distToTarget) * moveDist;
+            float const moveY =
+                botY + ((_initialPosition.GetPositionY() - botY) / distToTarget) * moveDist;
+
+            return MoveTo(
+                GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
         {

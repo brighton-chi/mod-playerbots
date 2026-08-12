@@ -39,6 +39,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class RageWinterchillRangedGetOutOfDeathAndDecayAction : public MovementAction
+{
+public:
+    RageWinterchillRangedGetOutOfDeathAndDecayAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "rage winterchill ranged get out of death and decay") {}
+    bool Execute(Event event) override;
+};
+
 class RageWinterchillSpreadRangedInCircleAction : public MovementAction
 {
 public:
@@ -214,6 +222,14 @@ class AzgalorMeleeGetOutOfFireAction : public AttackAction
 public:
     AzgalorMeleeGetOutOfFireAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "azgalor melee get out of fire") {}
+    bool Execute(Event event) override;
+};
+
+class AzgalorRangedGetOutOfRainOfFireAction : public MovementAction
+{
+public:
+    AzgalorRangedGetOutOfRainOfFireAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "azgalor ranged get out of rain of fire") {}
     bool Execute(Event event) override;
 };
 

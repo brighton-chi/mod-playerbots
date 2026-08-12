@@ -35,6 +35,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class RageWinterchillRangedControlAvoidanceMultiplier : public Multiplier
+{
+public:
+    RageWinterchillRangedControlAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "rage winterchill ranged control avoidance") {}
+    float GetValue(Action* action) override;
+};
+
 // Anetheron
 
 class AnetheronDisableAssistTargetingMultiplier : public Multiplier
@@ -126,6 +134,14 @@ class AzgalorMeleeDpsControlAvoidanceMultiplier : public Multiplier
 public:
     AzgalorMeleeDpsControlAvoidanceMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "azgalor melee dps control avoidance") {}
+    float GetValue(Action* action) override;
+};
+
+class AzgalorRangedControlAvoidanceMultiplier : public Multiplier
+{
+public:
+    AzgalorRangedControlAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "azgalor ranged control avoidance") {}
     float GetValue(Action* action) override;
 };
 

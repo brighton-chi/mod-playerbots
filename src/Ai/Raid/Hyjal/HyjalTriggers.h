@@ -53,6 +53,14 @@ public:
     bool IsActive() override;
 };
 
+class RageWinterchillRangedIsStandingInDeathAndDecayTrigger : public Trigger
+{
+public:
+    RageWinterchillRangedIsStandingInDeathAndDecayTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "rage winterchill ranged is standing in death and decay") {}
+    bool IsActive() override;
+};
+
 // Anetheron
 
 class AnetheronPullingBossOrInfernalTrigger : public Trigger
@@ -192,6 +200,14 @@ class AzgalorBossCastsRainOfFireOnMeleeTrigger : public Trigger
 public:
     AzgalorBossCastsRainOfFireOnMeleeTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "azgalor boss casts rain of fire on melee") {}
+    bool IsActive() override;
+};
+
+class AzgalorRangedIsStandingInRainOfFireTrigger : public Trigger
+{
+public:
+    AzgalorRangedIsStandingInRainOfFireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor ranged is standing in rain of fire") {}
     bool IsActive() override;
 };
 

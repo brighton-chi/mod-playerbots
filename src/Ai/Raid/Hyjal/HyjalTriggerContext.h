@@ -32,6 +32,9 @@ public:
         creators["rage winterchill melee is standing in death and decay"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_melee_is_standing_in_death_and_decay;
 
+        creators["rage winterchill ranged is standing in death and decay"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_is_standing_in_death_and_decay;
+
         // Anetheron
         creators["anetheron pulling boss or infernal"] =
             &RaidHyjalSummitTriggerContext::anetheron_pulling_boss_or_infernal;
@@ -86,6 +89,9 @@ public:
         creators["azgalor boss casts rain of fire on melee"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_melee;
 
+        creators["azgalor ranged is standing in rain of fire"] =
+            &RaidHyjalSummitTriggerContext::azgalor_ranged_is_standing_in_rain_of_fire;
+
         creators["azgalor bot is doomed"] =
             &RaidHyjalSummitTriggerContext::azgalor_bot_is_doomed;
 
@@ -136,6 +142,9 @@ private:
     }
     static Trigger* rage_winterchill_melee_is_standing_in_death_and_decay(PlayerbotAI* botAI) {
         return new RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(botAI);
+    }
+    static Trigger* rage_winterchill_ranged_is_standing_in_death_and_decay(PlayerbotAI* botAI) {
+        return new RageWinterchillRangedIsStandingInDeathAndDecayTrigger(botAI);
     }
 
     // Anetheron
@@ -193,6 +202,9 @@ private:
     }
     static Trigger* azgalor_boss_casts_rain_of_fire_on_melee(PlayerbotAI* botAI) {
         return new AzgalorBossCastsRainOfFireOnMeleeTrigger(botAI);
+    }
+    static Trigger* azgalor_ranged_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
+        return new AzgalorRangedIsStandingInRainOfFireTrigger(botAI);
     }
     static Trigger* azgalor_bot_is_doomed(PlayerbotAI* botAI) {
         return new AzgalorBotIsDoomedTrigger(botAI);
