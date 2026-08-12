@@ -115,7 +115,6 @@ float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    // AvoidAoeAction and the circle spread are both MovementActions, so this covers them
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 

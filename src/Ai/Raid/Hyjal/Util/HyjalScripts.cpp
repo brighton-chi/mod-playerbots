@@ -80,11 +80,7 @@ public:
     }
 };
 
-// Everything this listener is for happens before the spell lands: bots have to be clear of the
-// target while it is still being cast, and a bot part-way through a cast of its own cannot move
-// until that cast is dropped. It therefore hooks OnSpellPrepare, which fires once as the cast
-// begins. OnSpellCast is no use here--it runs at the end of Spell::cast, so for anything with a
-// cast time it reports the spell only after it has already gone off
+// Air Burst is a 2s cast that hits all players within 13y of the target
 class ArchimondeAirBurstSpellListenerScript : public AllSpellScript
 {
 public:
@@ -122,10 +118,7 @@ public:
     }
 };
 
-// Inferno summons a Towering Infernal at its target's position, and that position is not read until
-// the 3.5s cast completes--Spell::SelectSpellTargets runs from Spell::cast, not Spell::prepare, for
-// a creature's cast. The target therefore carries the landing point with it and can walk the
-// Infernal clear of the raid, but only if it starts moving at once, so a cast of its own has to go
+// Inferno summons a Towering Infernal at its target's then-current position after a 3.5s cast
 class AnetheronInfernoSpellListenerScript : public AllSpellScript
 {
 public:
@@ -138,7 +131,7 @@ public:
             return;
 
         Player* target = GetSpellPlayerTarget(spell);
-        if (!target || !target->IsAlive())
+        if (!target)
             return;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);

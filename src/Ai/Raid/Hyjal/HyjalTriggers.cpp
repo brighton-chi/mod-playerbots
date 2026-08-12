@@ -117,11 +117,14 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    // Holding one is the whole point of walking to the spot. Merely knowing an Infernal exists
-    // would send the tank off alone and leave it loose among the raid, so while it holds nothing
-    // this stands down and stock tank assist goes and takes aggro instead--which is all a tank can
-    // do here, since Infernals cannot be taunted off whoever they have
-    return IsInfernalTank(bot) && GetInfernalTargetingBot(botAI, bot);
+    if (!IsInfernalTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+        return false;
+
+    Unit* infernal = GetInfernalTargetingBot(botAI, bot);
+    return infernal && bot->IsWithinMeleeRange(infernal);
 }
 
 bool AnetheronShouldDetermineDpsPriorityTrigger::IsActive()
