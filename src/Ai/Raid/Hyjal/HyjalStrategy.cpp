@@ -50,7 +50,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
         NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("anetheron infernals continue to spawn", {
+    triggers.push_back(new TriggerNode("anetheron should determine dps priority", {
         NextAction("anetheron assign dps priority", ACTION_RAID) }));
 
     // Kaz'rogal

@@ -103,11 +103,11 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronInfernalsContinueToSpawnTrigger : public Trigger
+class AnetheronShouldDetermineDpsPriorityTrigger : public Trigger
 {
 public:
-    AnetheronInfernalsContinueToSpawnTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron infernals continue to spawn") {}
+    AnetheronShouldDetermineDpsPriorityTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron should determine dps priority") {}
     bool IsActive() override;
 };
 

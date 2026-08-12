@@ -87,7 +87,17 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     if (!anetheron)
         return false;
 
-    return GetInfernoTarget(anetheron) != bot;
+    if (GetInfernoTarget(anetheron) == bot)
+        return false;
+
+    Unit* infernal = GetFocusedInfernal(botAI);
+    if (infernal && anetheron->GetHealthPct() > 10.0f &&
+        bot->GetDistance2d(infernal) < 50.0f)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 // Whoever an Infernal is on has to walk it to the gathering spot, since it cannot be taunted off
@@ -110,7 +120,7 @@ bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
     return IsInfernalTank(bot) && !GetInfernalGuids(botAI).empty();
 }
 
-bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
+bool AnetheronShouldDetermineDpsPriorityTrigger::IsActive()
 {
     return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }

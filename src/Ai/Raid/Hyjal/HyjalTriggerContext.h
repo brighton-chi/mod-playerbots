@@ -51,8 +51,8 @@ public:
         creators["anetheron infernals need to be kept away from raid"] =
             &RaidHyjalSummitTriggerContext::anetheron_infernals_need_to_be_kept_away_from_raid;
 
-        creators["anetheron infernals continue to spawn"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_continue_to_spawn;
+        creators["anetheron should determine dps priority"] =
+            &RaidHyjalSummitTriggerContext::anetheron_should_determine_dps_priority;
 
         // Kaz'rogal
         creators["kaz'rogal pulling boss"] =
@@ -163,8 +163,8 @@ private:
     static Trigger* anetheron_infernals_need_to_be_kept_away_from_raid(PlayerbotAI* botAI) {
         return new AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger(botAI);
     }
-    static Trigger* anetheron_infernals_continue_to_spawn(PlayerbotAI* botAI) {
-        return new AnetheronInfernalsContinueToSpawnTrigger(botAI);
+    static Trigger* anetheron_should_determine_dps_priority(PlayerbotAI* botAI) {
+        return new AnetheronShouldDetermineDpsPriorityTrigger(botAI);
     }
 
     // Kaz'rogal

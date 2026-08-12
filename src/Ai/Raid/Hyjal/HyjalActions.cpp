@@ -129,18 +129,13 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     float const moveX = botX + (toPosX / distToPosition) * moveDist;
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
-    // Seeded from the bot, not from the destination. The walk is downhill, so the ground at the
-    // step sits above the destination's own Z, and SearchForBestPath probes only about ten yards
-    // above whatever seed it is handed before giving up and refusing the move. Over a step this
-    // short the bot's own Z is inside that margin whichever way the ground runs
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Ranged have no ring to hold, so they just leave. FleePosition moves a fixed AiPlayerbot.FleeDistance
-// per call regardless of the radius handed to it, so clearing the pool takes several ticks--the
-// radius argument only records what the bot is escaping, it does not size the step
+// This is essentially a forced "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in the
+// config being 15 yards; avoidance works fine without this strategy if it is set to 20+ yards.
 bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -151,7 +146,7 @@ bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     return FleePosition(pool, DEATH_AND_DECAY_RADIUS, minInterval);
 }
 
-// Spread ranged DPS in a circle initially--after the initial spread, movement is free
+// Spread ranged DPS in a circle initially. After the initial spread, movement is free.
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
     RangedGroups groups = GetRangedGroups(bot);
@@ -177,31 +172,27 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     float targetY = position.GetPositionY() + radius * std::sin(angle);
 
     float const distToTarget = bot->GetExactDist2d(targetX, targetY);
-    if (distToTarget > 2.0f)
+    if (distToTarget <= 2.0f)
     {
-        // A point on a circle carries the centre's Z, which on this ground is nothing like the
-        // height at a spot 25-35 yards out. The bot's own Z is a sound seed for a step this
-        // short, and MoveTo derives the real height from it
-        constexpr float maxMoveDist = 10.0f;
-        float const moveDist = std::min(maxMoveDist, distToTarget);
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-        float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
-        float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
-
-        return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+        _winterchillPositionReached = true;
+        return false;
     }
 
-    _winterchillPositionReached = true;
-    return false;
+    constexpr float maxMoveDist = 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToTarget);
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
+    float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
+
+    return MoveTo(
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Melee positioning is one question: which headings on the boss's melee ring are still open. For
-// Winterchill that is the single pool's blocked arc, and the bot swings to the nearest heading
-// outside it. When the pool covers the ring there is nothing to attack from, so the bot leaves by
-// the shortest line and waits it out
+// When near Death & Decay, melee looks for an open position within the boss's melee range. If one
+// isn't available (likely the case if D&D lands on melee, with its 20y radius), then melee just
+// takes the shortest path out of the hazard and waits it out.
 bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
@@ -227,8 +218,7 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 
     float const bossX = winterchill->GetPositionX();
     float const bossY = winterchill->GetPositionY();
-    float const botHeading =
-        std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
+    float const botHeading = std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
 
     float openHeading;
     if (FindOpenHeading(blocked, botHeading, openHeading))
@@ -245,15 +235,15 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     }
 
     constexpr float escapeMargin = 2.0f;
-    if (GetHazardEscapeStep(
+    if (!GetHazardEscapeStep(
             bot, pool, DEATH_AND_DECAY_RADIUS + escapeMargin, moveDist, moveX, moveY, moveZ))
     {
-        return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+        return false;
     }
 
-    return false;
+    return MoveTo(
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Anetheron
@@ -325,9 +315,6 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     float const moveX = botX + (toPosX / distToPosition) * moveDist;
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
-    // Seeded from the bot for the same reason as Winterchill: this is the same base and the same
-    // descent, and the destination's own Z is far enough below the ground here to be outside every
-    // height probe SearchForBestPath makes from it
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
@@ -366,22 +353,22 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
     float targetY = position.GetPositionY() + radius * std::cos(angle);
 
     float const distToTarget = bot->GetExactDist2d(targetX, targetY);
-    if (distToTarget > 2.0f)
+    if (distToTarget <= 2.0f)
     {
-        constexpr float maxMoveDist = 10.0f;
-        float const moveDist = std::min(maxMoveDist, distToTarget);
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-        float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
-        float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
-
-        return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+        _anetheronPositionReached = true;
+        return false;
     }
 
-    _anetheronPositionReached = true;
-    return false;
+    constexpr float maxMoveDist = 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToTarget);
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
+    float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
+
+    return MoveTo(
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Infernals cannot be taunted, so nothing the tank does will pull one off its victim. What moves
@@ -443,25 +430,14 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Melee stay on Anetheron throughout--the Infernals are deliberately gathered away from him, and
-// following one there would drag melee out of the boss and into its Immolation
+// Melee stay on Anetheron throughout. Ranged attack Infernals if they are reasonably nearby.
 bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
 
-    if (PlayerbotAI::IsMelee(bot))
-    {
-        if (AI_VALUE(Unit*, "current target") != anetheron)
-            return Attack(anetheron);
-
-        return false;
-    }
-
-    // Immolation is a radius around the Infernal itself, so what matters here is the closest one,
-    // not the one being killed
-    constexpr float safeDistFromInfernal = 10.0f;
+    constexpr float safeDistFromInfernal = 10.0f; // Immolation (31303) radius is 10y
     if (Unit* nearest = GetNearestInfernal(botAI, bot))
     {
         constexpr uint32 minInterval = 0;
@@ -472,13 +448,19 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    if (!PlayerbotAI::IsRangedDps(bot))
+    if (PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsHeal(bot))
+    {
+        if (AI_VALUE(Unit*, "current target") != anetheron)
+            return Attack(anetheron);
+
         return false;
+    }
 
     Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > 10.0f && bot->GetDistance2d(infernal) < 50.0f)
+    if (infernal && anetheron->GetHealthPct() > 10.0f &&
+        bot->GetDistance2d(infernal) < 50.0f)
     {
-        // Wait for the tank to have it before adding damage, or the Infernal turns on the ranged
+        // Wait for the tank to pick up the Infernal before attacking directly
         Player* infernalTank = GetInfernalTank(bot);
         if (!infernalTank || infernal->GetVictim() == infernalTank)
         {
