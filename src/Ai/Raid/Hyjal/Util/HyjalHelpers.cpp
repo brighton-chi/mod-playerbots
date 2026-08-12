@@ -9,14 +9,16 @@
 #include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
+#include <list>
 
 namespace HyjalHelpers
 {
 
 // General
 
-bool GetHazardBlockedArc(Position const& ringCenter, float ringRadius, Position const& hazard,
-                         float hazardRadius, BlockedArc& arc)
+bool GetHazardBlockedArc(
+    Position const& ringCenter, float ringRadius, Position const& hazard,
+    float hazardRadius, BlockedArc& arc)
 {
     float const centerToHazard =
         hazard.GetExactDist2d(ringCenter.GetPositionX(), ringCenter.GetPositionY());
@@ -36,9 +38,11 @@ bool GetHazardBlockedArc(Position const& ringCenter, float ringRadius, Position 
     if (cosHalfWidth >= 1.0f)
         return false;
 
-    arc.center = std::atan2(hazard.GetPositionY() - ringCenter.GetPositionY(),
-                            hazard.GetPositionX() - ringCenter.GetPositionX());
+    arc.center = std::atan2(
+        hazard.GetPositionY() - ringCenter.GetPositionY(),
+        hazard.GetPositionX() - ringCenter.GetPositionX());
     arc.halfWidth = (cosHalfWidth <= -1.0f) ? static_cast<float>(M_PI) : std::acos(cosHalfWidth);
+
     return true;
 }
 
@@ -97,9 +101,9 @@ bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, fl
     return found;
 }
 
-bool GetHazardEscapeStep(Player* bot, Position const& hazard, float escapeRadius, float moveDist,
-                         float& stepX, float& stepY, float& stepZ,
-                         std::function<bool(float, float)> const& isAcceptable)
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable)
 {
     float const centerX = hazard.GetPositionX();
     float const centerY = hazard.GetPositionY();
@@ -209,6 +213,128 @@ Player* GetInfernoTarget(Unit* anetheron)
     return target ? target->ToPlayer() : nullptr;
 }
 
+GuidVector FindInfernalGuids(Player* bot)
+{
+    std::list<Creature*> infernals;
+    bot->GetCreatureListWithEntryInGrid(
+        infernals, Id(HyjalNpcs::NPC_TOWERING_INFERNAL), INFERNAL_SEARCH_RADIUS);
+
+    std::vector<Creature*> alive;
+    alive.reserve(infernals.size());
+    for (Creature* infernal : infernals)
+    {
+        if (infernal && infernal->IsAlive())
+            alive.push_back(infernal);
+    }
+
+    std::sort(alive.begin(), alive.end(), [](Creature const* first, Creature const* second)
+    {
+        return first->GetGUID().GetCounter() < second->GetGUID().GetCounter();
+    });
+
+    GuidVector guids;
+    guids.reserve(alive.size());
+    for (Creature* infernal : alive)
+        guids.push_back(infernal->GetGUID());
+
+    return guids;
+}
+
+GuidVector const& GetInfernalGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("hyjal infernals")->RefGet();
+}
+
+Unit* GetFocusedInfernal(PlayerbotAI* botAI)
+{
+    // Already alive-filtered and ordered oldest first, so the first one that still resolves wins
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        if (Unit* infernal = botAI->GetUnit(guid))
+            return infernal;
+    }
+
+    return nullptr;
+}
+
+Unit* GetLooseInfernal(PlayerbotAI* botAI, Player* bot)
+{
+    // Loose is only meaningful against a tank to be loose from. Without one the comparison below
+    // would invert, passing over an Infernal that has taken nobody at all as though it were held
+    Player* infernalTank = GetInfernalTank(bot);
+    if (!infernalTank)
+        return nullptr;
+
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (infernal && infernal->GetVictim() != infernalTank)
+            return infernal;
+    }
+
+    return nullptr;
+}
+
+Unit* GetNearestInfernal(PlayerbotAI* botAI, Player* bot)
+{
+    Unit* nearest = nullptr;
+    float nearestDistance = 0.0f;
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (!infernal)
+            continue;
+
+        float const distance = bot->GetDistance2d(infernal);
+        if (!nearest || distance < nearestDistance)
+        {
+            nearest = infernal;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearest;
+}
+
+Unit* GetInfernalTargetingBot(PlayerbotAI* botAI, Player* bot)
+{
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (infernal && infernal->GetVictim() == bot)
+            return infernal;
+    }
+
+    return nullptr;
+}
+
+bool IsInfernalTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+}
+
+Player* GetInfernalTank(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && IsInfernalTank(member))
+            return member;
+    }
+
+    return nullptr;
+}
+
+Position const& GetInfernalTankPosition(Player* bot)
+{
+    Player* infernalTank = GetInfernalTank(bot);
+    return GetClosestInfernalTankPosition(infernalTank ? infernalTank : bot);
+}
+
 Position const& GetClosestInfernalTankPosition(Player* bot)
 {
     Position const& east = ANETHERON_E_INFERNAL_POSITION;
@@ -305,9 +431,6 @@ AirBurstData* GetPendingAirBurstCast(uint32 instanceId)
     if (instanceIt == archimondeAirBurstTargets.end())
         return nullptr;
 
-    // Timed from the start of the cast, so this has to outlast Air Burst's 1.7s cast time for bots
-    // to still be running clear when it lands. Reacting after that point is pointless: the knock-up
-    // has already picked its victims
     constexpr uint32 airBurstReactionWindow = 2000;
     uint32 const now = getMSTime();
     if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)

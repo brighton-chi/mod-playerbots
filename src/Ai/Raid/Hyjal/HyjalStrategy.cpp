@@ -5,7 +5,12 @@
  */
 
 #include "HyjalStrategy.h"
+#include "AiObjectContext.h"
+#include "HyjalHelpers.h"
 #include "HyjalMultipliers.h"
+#include "Playerbots.h"
+
+using namespace HyjalHelpers;
 
 void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -40,7 +45,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
-        NextAction("anetheron first assist tank pick up infernals", ACTION_EMERGENCY + 1) }));
+        NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals continue to spawn", {
         NextAction("anetheron assign dps priority", ACTION_RAID) }));
@@ -99,9 +104,6 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
-    // The trigger only fires while the cast is actually up, a window of under two seconds, and
-    // losing the melee group to one burst is what ends the fight--so it outranks everything else
-    // the bot might want to do in that window
     triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
         NextAction("archimonde spread to avoid air burst", ACTION_EMERGENCY + 8) }));
 
@@ -126,6 +128,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Anetheron
     multipliers.push_back(new AnetheronDisableAssistTargetingMultiplier(botAI));
+    multipliers.push_back(new AnetheronAvoidAccidentalInfernalAggroMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMovementMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
@@ -143,4 +146,26 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new ArchimondeSetTremorTotemMultiplier(botAI));
+}
+
+// Limit Infernals to Infernal tank
+void RaidHyjalSummitStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (type != TargetValueExclusionType::Tank)
+        return;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return;
+
+    GuidVector const& infernals = GetInfernalGuids(botAI);
+    if (infernals.empty())
+        return;
+
+    if (IsInfernalTank(botAI->GetBot()))
+        exclusions.insert(anetheron->GetGUID());
+    else
+        exclusions.insert(infernals.begin(), infernals.end());
 }

@@ -113,10 +113,35 @@ float AnetheronDisableAssistTargetingMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) != nullptr;
+    if (!isTankAssist && !dynamic_cast<DpsAssistAction*>(action))
+        return 1.0f;
+
+    if (isTankAssist && IsInfernalTank(bot))
         return 1.0f;
 
     if (AI_VALUE2(Unit*, "find target", "anetheron"))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!IsAoeThreatAction(bot, action))
+        return 1.0f;
+
+    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
+    if (!infernal)
+        return 1.0f;
+
+    if (IsInfernalTank(bot))
+        return 1.0f;
+
+    if (infernal->GetExactDist2d(bot) <= 20.0f)
         return 0.0f;
 
     return 1.0f;
@@ -127,7 +152,8 @@ float AnetheronControlMovementMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isTankAvoidAoe = PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
+    bool const isTankAvoidAoe =
+        PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
 
     if (!isTankAvoidAoe && !dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;

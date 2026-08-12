@@ -68,6 +68,9 @@ enum class HyjalSpells : uint32
 
 enum class HyjalNpcs : uint32
 {
+    // Anetheron
+    NPC_TOWERING_INFERNAL  = 17818,
+
     // Archimonde
     NPC_DOOMFIRE           = 18095,
 };
@@ -103,8 +106,9 @@ struct BlockedArc
 };
 
 // The span of a melee ring that a circular ground hazard covers. False when it reaches none of it
-bool GetHazardBlockedArc(Position const& ringCenter, float ringRadius, Position const& hazard,
-                         float hazardRadius, BlockedArc& arc);
+bool GetHazardBlockedArc(
+    Position const& ringCenter, float ringRadius, Position const& hazard,
+    float hazardRadius, BlockedArc& arc);
 // The heading nearest to preferred that clears every blocked arc. False when none does, which
 // means the ring is entirely unavailable and the caller has to give up on attacking
 bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, float& open);
@@ -112,9 +116,9 @@ bool FindOpenHeading(std::vector<BlockedArc> const& blocked, float preferred, fl
 // escapeRadius should sit past the radius the caller reacts at, or the bot settles on the
 // threshold and slides around it instead of leaving. isAcceptable rejects headings a caller
 // cannot use for its own reasons, and may be empty
-bool GetHazardEscapeStep(Player* bot, Position const& hazard, float escapeRadius, float moveDist,
-                         float& stepX, float& stepY, float& stepZ,
-                         std::function<bool(float, float)> const& isAcceptable = {});
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
 
 RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
@@ -130,7 +134,32 @@ bool IsInDeathAndDecay(Player* bot);
 inline Position const ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
 inline Position const ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
 inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
+// Infernals are summoned wherever the Inferno target stands and then walked to the tanking spot,
+// so the search has to span the whole platform rather than the area around any one bot
+inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 Player* GetInfernoTarget(Unit* anetheron);
+// Every living Towering Infernal, oldest first. Creature GUIDs are handed out in spawn order, so
+// that ordering is both stable as the fight goes on and identical for every bot that asks--which
+// is what a name lookup through "find target" cannot give, since it returns whichever match an
+// unordered threat list happens to yield first. Read it through the "hyjal infernals" value
+GuidVector FindInfernalGuids(Player* bot);
+GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
+// The one the raid kills: the oldest alive. Focus fire keeps that the most damaged one as well,
+// and unlike a lowest-health rule it cannot change its mind as two Infernals cross
+Unit* GetFocusedInfernal(PlayerbotAI* botAI);
+// The first Infernal the Infernal tank does not have, which is the one worth handing over
+Unit* GetLooseInfernal(PlayerbotAI* botAI, Player* bot);
+Unit* GetNearestInfernal(PlayerbotAI* botAI, Player* bot);
+Unit* GetInfernalTargetingBot(PlayerbotAI* botAI, Player* bot);
+// The Infernal tank is the first assist tank among the living, so the role moves to the next tank
+// when its holder dies rather than pointing at a corpse--which would also decide, from wherever
+// that bot fell, the spot the rest of the raid walks Infernals to
+bool IsInfernalTank(Player* bot);
+Player* GetInfernalTank(Player* bot);
+// Whichever of the two spots the Infernal tank stands nearer. Reading it off the tank rather than
+// off the asking bot is what stops the player carrying a summon and the tank waiting to receive it
+// from setting out for opposite sides
+Position const& GetInfernalTankPosition(Player* bot);
 Position const& GetClosestInfernalTankPosition(Player* bot);
 
 // Kaz'rogal

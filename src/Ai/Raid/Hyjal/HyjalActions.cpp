@@ -10,6 +10,8 @@
 #include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
+#include <cmath>
+#include <iterator>
 #include <vector>
 
 using namespace HyjalHelpers;
@@ -40,34 +42,34 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
 
         return erased;
     }
-    else
+
+    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
     {
-        if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+        Action* action = context->GetAction("rage winterchill spread ranged in circle");
+        if (action && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
+                action)->ResetWinterchillPositionReached())
         {
-            Action* action = context->GetAction("rage winterchill spread ranged in circle");
-            if (action && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
-                    action)->ResetWinterchillPositionReached())
-            {
-                erased = true;
-            }
-        }
-
-        if (!AI_VALUE2(Unit*, "find target", "anetheron"))
-        {
-            Action* action = context->GetAction("anetheron spread ranged in circle");
-            if (action && static_cast<AnetheronSpreadRangedInCircleAction*>(
-                    action)->ResetAnetheronPositionReached())
-            {
-                erased = true;
-            }
-        }
-
-        if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
-            isBelowManaThreshold.erase(guid) > 0)
             erased = true;
-
-        return erased;
+        }
     }
+
+    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    {
+        Action* action = context->GetAction("anetheron spread ranged in circle");
+        if (action && static_cast<AnetheronSpreadRangedInCircleAction*>(
+                action)->ResetAnetheronPositionReached())
+        {
+            erased = true;
+        }
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
+        isBelowManaThreshold.erase(guid) > 0)
+    {
+        erased = true;
+    }
+
+    return erased;
 }
 
 // Rage Winterchill
@@ -127,15 +129,16 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     // there and the move is silently refused, so the step is grounded from the bot instead
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
     float moveX, moveY, moveZ;
-    if (!GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
-                                 maxMoveDist, moveX, moveY, moveZ))
+    if (!GetGroundedStepPosition(
+            bot, position.GetPositionX(), position.GetPositionY(),
+            maxMoveDist, moveX, moveY, moveZ))
     {
         return false;
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Spread ranged DPS in a circle initially--after the initial spread, movement is free
@@ -171,7 +174,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
         float moveZ;
 
         if (GetGroundedStepPosition(
-            bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
+                bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
         {
             return MoveTo(
                 HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
@@ -207,8 +210,8 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 
     std::vector<BlockedArc> blocked;
     BlockedArc poolArc;
-    if (GetHazardBlockedArc(winterchill->GetPosition(), meleeRadius, pool,
-                            DEATH_AND_DECAY_SAFE_RADIUS, poolArc))
+    if (GetHazardBlockedArc(
+            winterchill->GetPosition(), meleeRadius, pool, DEATH_AND_DECAY_SAFE_RADIUS, poolArc))
     {
         blocked.push_back(poolArc);
     }
@@ -226,17 +229,19 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 
         if (GetGroundedStepPosition(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
         {
-            return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
-                          false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(
+                HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+                MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
     constexpr float escapeMargin = 2.0f;
-    if (GetHazardEscapeStep(bot, pool, DEATH_AND_DECAY_SAFE_RADIUS + escapeMargin, moveDist,
-                            moveX, moveY, moveZ))
+    if (GetHazardEscapeStep(
+            bot, pool, DEATH_AND_DECAY_SAFE_RADIUS + escapeMargin, moveDist, moveX, moveY, moveZ))
     {
-        return MoveTo(HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false,
-                      false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        return MoveTo(
+            HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;
@@ -250,37 +255,29 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     if (!anetheron)
         return false;
 
+    Player* tankTarget = nullptr;
+    Unit* enemyTarget = nullptr;
     if (anetheron->GetHealthPct() > 95.0f)
     {
-        Player* mainTank = GetGroupMainTank(botAI, bot);
-        if (!mainTank)
-            return false;
-
-        if (botAI->CanCastSpell("misdirection", mainTank))
-            return botAI->CastSpell("misdirection", mainTank);
-
-        if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-            botAI->CanCastSpell("steady shot", anetheron))
-        {
-            return botAI->CastSpell("steady shot", anetheron);
-        }
+        tankTarget = GetGroupMainTank(botAI, bot);
+        enemyTarget = anetheron;
+    }
+    else if (Unit* infernal = GetLooseInfernal(botAI, bot))
+    {
+        tankTarget = GetInfernalTank(bot);
+        enemyTarget = infernal;
     }
 
-    if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-        infernal && infernal->GetHealthPct() > 50.0f)
+    if (!tankTarget || !enemyTarget)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", tankTarget))
+        return botAI->CastSpell("misdirection", tankTarget);
+
+    if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", enemyTarget))
     {
-        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-        if (!firstAssistTank)
-            return false;
-
-        if (botAI->CanCastSpell("misdirection", firstAssistTank))
-            return botAI->CastSpell("misdirection", firstAssistTank);
-
-        if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-            botAI->CanCastSpell("steady shot", infernal))
-        {
-            return botAI->CastSpell("steady shot", infernal);
-        }
+        return botAI->CastSpell("steady shot", enemyTarget);
     }
 
     return false;
@@ -319,15 +316,16 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     // probe under the ground there and the move is silently refused
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
     float moveX, moveY, moveZ;
-    if (!GetGroundedStepPosition(bot, position.GetPositionX(), position.GetPositionY(),
-                                 maxMoveDist, moveX, moveY, moveZ))
+    if (!GetGroundedStepPosition(
+            bot, position.GetPositionX(), position.GetPositionY(),
+            maxMoveDist, moveX, moveY, moveZ))
     {
         return false;
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
@@ -385,10 +383,12 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
     return false;
 }
 
-// Run to the nearest of two Infernal tanking spots, East and West of Anetheron
+// Infernals cannot be taunted, so nothing the tank does will pull one off its victim. What moves
+// an Infernal is its victim walking, and the summon itself lands wherever its target stands when
+// the 3.5s cast ends. Both cases are the same job: carry it to the gathering spot
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
-    Position const& position = GetClosestInfernalTankPosition(bot);
+    Position const& position = GetInfernalTankPosition(bot);
     float const distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition <= 2.0f)
@@ -406,77 +406,43 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// Pick up the Infernal and bring it to the closest Infernal tanking position
-bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
+// Stand where the Infernals are being gathered and let stock tank assist work through whatever has
+// arrived. There is no pick-up to perform: Infernals are immune to taunt, so holding them is plain
+// threat work, and the exclusions in the strategy are what keep this bot on them and off Anetheron
+bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
 {
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
+    Position const& position = GetInfernalTankPosition(bot);
+    float const distToPosition = bot->GetExactDist2d(position);
+
+    if (distToPosition <= 3.0f)
         return false;
 
-    Player* infernoTarget = GetInfernoTarget(anetheron);
-    if (infernoTarget && infernoTarget != bot)
-    {
-        float const distToInfernoTarget = bot->GetExactDist2d(infernoTarget);
-        if (distToInfernoTarget > 5.0f)
-        {
-            float const botX = bot->GetPositionX();
-            float const botY = bot->GetPositionY();
-            constexpr float maxMoveDist = 3.5f;
-            float const moveDist = std::min(maxMoveDist, distToInfernoTarget);
-            float const moveX =
-                botX + ((infernoTarget->GetPositionX() - botX) / distToInfernoTarget) * moveDist;
-            float const moveY =
-                botY + ((infernoTarget->GetPositionY() - botY) / distToInfernoTarget) * moveDist;
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
 
-            return MoveTo(HYJAL_MAP_ID, moveX, moveY, infernoTarget->GetPositionZ(),
-                          false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+    // Backing away from whatever is being held keeps it in front, so it follows rather than
+    // wandering off to the next player it can see
+    bool backwards = false;
+    if (Unit* victim = bot->GetVictim())
+    {
+        float const toVictimX = victim->GetPositionX() - botX;
+        float const toVictimY = victim->GetPositionY() - botY;
+        backwards = (toPosX * toVictimX + toPosY * toVictimY) < 0.0f;
     }
 
-    Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal");
-    if (!infernal)
-        return false;
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
-    if (MarkTargetWithDiamond(bot, infernal))
-        return true;
-
-    SetRtiTarget(botAI, "diamond", infernal);
-
-    if (AI_VALUE(Unit*, "current target") != infernal)
-        return Attack(infernal);
-
-    if ((infernoTarget && infernoTarget == bot) ||
-        (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal)))
-    {
-        Position const& position = GetClosestInfernalTankPosition(bot);
-        float const distToPosition = bot->GetExactDist2d(position);
-
-        if (distToPosition > 3.0f)
-        {
-            float const botX = bot->GetPositionX();
-            float const botY = bot->GetPositionY();
-            float const toPosX = position.GetPositionX() - botX;
-            float const toPosY = position.GetPositionY() - botY;
-
-            float const toInfernalX = infernal->GetPositionX() - botX;
-            float const toInfernalY = infernal->GetPositionY() - botY;
-            bool const backwards = (toPosX * toInfernalX + toPosY * toInfernalY) < 0.0f;
-
-            float const maxMoveDist = backwards ? 2.25f : 3.5f;
-            float const moveDist = std::min(maxMoveDist, distToPosition);
-            float const moveX = botX + (toPosX / distToPosition) * moveDist;
-            float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-            return MoveTo(HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-        }
-    }
-
-    return false;
+    return MoveTo(HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                  false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Only nearbyish ranged DPS should attack Infernals
+// Melee stay on Anetheron throughout--the Infernals are deliberately gathered away from him, and
+// following one there would drag melee out of the boss and into its Immolation
 bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -485,43 +451,44 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
     if (PlayerbotAI::IsMelee(bot))
     {
-        SetRtiTarget(botAI, "square", anetheron);
-
         if (AI_VALUE(Unit*, "current target") != anetheron)
             return Attack(anetheron);
 
         return false;
     }
-    if (Unit* infernal = AI_VALUE2(Unit*, "find target", "towering infernal"))
+
+    // Immolation is a radius around the Infernal itself, so what matters here is the closest one,
+    // not the one being killed
+    constexpr float safeDistFromInfernal = 10.0f;
+    if (Unit* nearest = GetNearestInfernal(botAI, bot))
     {
-        constexpr float safeDistFromInfernal = 10.0f;
         constexpr uint32 minInterval = 0;
-        if (infernal->GetVictim() != bot &&
-            bot->GetDistance2d(infernal) < safeDistFromInfernal)
+        if (nearest->GetVictim() != bot &&
+            bot->GetDistance2d(nearest) < safeDistFromInfernal)
         {
-            return FleePosition(infernal->GetPosition(), safeDistFromInfernal, minInterval);
-        }
-
-        if (anetheron->GetHealthPct() > 10.0f && PlayerbotAI::IsRangedDps(bot) &&
-            bot->GetDistance2d(infernal) < 50.0f)
-        {
-            if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-                !firstAssistTank || infernal->GetVictim() == firstAssistTank)
-            {
-                SetRtiTarget(botAI, "diamond", infernal);
-
-                if (AI_VALUE(Unit*, "current target") != infernal)
-                    return Attack(infernal);
-            }
+            return FleePosition(nearest->GetPosition(), safeDistFromInfernal, minInterval);
         }
     }
-    else if (PlayerbotAI::IsRangedDps(bot))
+
+    if (!PlayerbotAI::IsRangedDps(bot))
+        return false;
+
+    Unit* infernal = GetFocusedInfernal(botAI);
+    if (infernal && anetheron->GetHealthPct() > 10.0f && bot->GetDistance2d(infernal) < 50.0f)
     {
-        SetRtiTarget(botAI, "square", anetheron);
+        // Wait for the tank to have it before adding damage, or the Infernal turns on the ranged
+        Player* infernalTank = GetInfernalTank(bot);
+        if (!infernalTank || infernal->GetVictim() == infernalTank)
+        {
+            if (AI_VALUE(Unit*, "current target") != infernal)
+                return Attack(infernal);
 
-        if (AI_VALUE(Unit*, "current target") != anetheron)
-            return Attack(anetheron);
+            return false;
+        }
     }
+
+    if (AI_VALUE(Unit*, "current target") != anetheron)
+        return Attack(anetheron);
 
     return false;
 }

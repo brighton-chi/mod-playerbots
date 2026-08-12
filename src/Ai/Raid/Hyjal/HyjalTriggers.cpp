@@ -79,22 +79,24 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     return GetInfernoTarget(anetheron) != bot;
 }
 
+// Whoever an Infernal is on has to walk it to the gathering spot, since it cannot be taunted off
+// them. That is the Inferno target during the cast, and its victim from then on. The two who stay
+// put are the Infernal tank, which is already there, and whoever is holding Anetheron
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 {
+    if (IsInfernalTank(bot))
+        return false;
+
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
+    if (!anetheron || anetheron->GetVictim() == bot)
         return false;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    return GetInfernoTarget(anetheron) == bot;
+    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI, bot);
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        AI_VALUE2(Unit*, "find target", "towering infernal");
+    return IsInfernalTank(bot) && !GetInfernalGuids(botAI).empty();
 }
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()

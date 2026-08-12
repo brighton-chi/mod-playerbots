@@ -23,11 +23,11 @@ public:
 
 // Rage Winterchill
 
-class RageWinterchillMisdirectBossToMainTankAction : public AttackAction
+class RageWinterchillMisdirectBossToMainTankAction : public Action
 {
 public:
     RageWinterchillMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "rage winterchill misdirect boss to main tank") {}
+        : Action(botAI, "rage winterchill misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -67,11 +67,11 @@ public:
 
 // Anetheron
 
-class AnetheronMisdirectBossAndInfernalsToTanksAction : public AttackAction
+class AnetheronMisdirectBossAndInfernalsToTanksAction : public Action
 {
 public:
     AnetheronMisdirectBossAndInfernalsToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "anetheron misdirect boss and infernals to tanks") {}
+        : Action(botAI, "anetheron misdirect boss and infernals to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -109,11 +109,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AnetheronFirstAssistTankPickUpInfernalsAction : public AttackAction
+class AnetheronInfernalTankTakePositionAction : public MovementAction
 {
 public:
-    AnetheronFirstAssistTankPickUpInfernalsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "anetheron first assist tank pick up infernals") {}
+    AnetheronInfernalTankTakePositionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "anetheron infernal tank take position") {}
     bool Execute(Event event) override;
 };
 
@@ -127,11 +127,11 @@ public:
 
 // Kaz'rogal
 
-class KazrogalMisdirectBossToMainTankAction : public AttackAction
+class KazrogalMisdirectBossToMainTankAction : public Action
 {
 public:
     KazrogalMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kaz'rogal misdirect boss to main tank") {}
+        : Action(botAI, "kaz'rogal misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -177,11 +177,11 @@ public:
 
 // Azgalor
 
-class AzgalorMisdirectBossToMainTankAction : public AttackAction
+class AzgalorMisdirectBossToMainTankAction : public Action
 {
 public:
     AzgalorMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor misdirect boss to main tank") {}
+        : Action(botAI, "azgalor misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -243,11 +243,11 @@ public:
 
 // Archimonde
 
-class ArchimondeMisdirectBossToMainTankAction : public AttackAction
+class ArchimondeMisdirectBossToMainTankAction : public Action
 {
 public:
     ArchimondeMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "archimonde misdirect boss to main tank") {}
+        : Action(botAI, "archimonde misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 

@@ -45,6 +45,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class AnetheronAvoidAccidentalInfernalAggroMultiplier : public Multiplier
+{
+public:
+    AnetheronAvoidAccidentalInfernalAggroMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "anetheron avoid accidental infernal aggro") {}
+    float GetValue(Action* action) override;
+};
+
 class AnetheronControlMovementMultiplier : public Multiplier
 {
 public:

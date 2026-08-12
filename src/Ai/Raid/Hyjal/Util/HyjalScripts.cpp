@@ -16,63 +16,6 @@
 
 using namespace HyjalHelpers;
 
-// TEMPORARY DIAGNOSTIC. Measures the distance at which a ground hazard's aura is actually held,
-// to settle whether membership is decided on centre distance or on centre distance plus the
-// target's combat reach. Set hazardProbeEnabled to false to silence it, and delete the class once
-// the radii in HyjalHelpers.h are confirmed.
-class HyjalHazardRadiusProbeScript : public DynamicObjectScript
-{
-public:
-    HyjalHazardRadiusProbeScript() : DynamicObjectScript("HyjalHazardRadiusProbeScript") {}
-
-    void OnUpdate(DynamicObject* dynobj, uint32 /*diff*/) override
-    {
-        constexpr bool hazardProbeEnabled = false; // Set to true to reactivate
-        if (!hazardProbeEnabled)
-            return;
-
-        uint32 const spellId = dynobj->GetSpellId();
-        if (spellId != Id(HyjalSpells::SPELL_DEATH_AND_DECAY) &&
-            spellId != Id(HyjalSpells::SPELL_RAIN_OF_FIRE))
-        {
-            return;
-        }
-
-        // No point sampling faster than membership is recalculated
-        constexpr uint32 probeInterval = 500;
-        uint32 const now = getMSTime();
-        if (getMSTimeDiff(_lastProbe, now) < probeInterval)
-            return;
-
-        _lastProbe = now;
-
-        // Deliberately not filtered to bots: the point is to stand a real character at chosen
-        // distances, which a bot cannot be asked to do
-        constexpr float probeRange = 30.0f;
-        Map::PlayerList const& players = dynobj->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
-                continue;
-
-            float const distance3d = player->GetExactDist(dynobj);
-            if (distance3d > probeRange)
-                continue;
-
-            LOG_INFO("playerbots",
-                "[HazardProbe] spell={} radius={:.2f} player={} dist2d={:.2f} dist3d={:.2f} "
-                "reach={:.2f} aura={}",
-                spellId, dynobj->GetRadius(), player->GetName(),
-                player->GetExactDist2d(dynobj), distance3d, player->GetCombatReach(),
-                player->HasAura(spellId) ? 1 : 0);
-        }
-    }
-
-private:
-    uint32 _lastProbe = 0;
-};
-
 // The explicitly cast-at target, which is all that exists when a cast begins: Spell::prepare only
 // resolves a target list for item casts, so for a creature's cast GetUniqueTargetInfo stays empty
 // until Spell::cast runs at the end of the cast time. Both listeners below are driven by
@@ -208,7 +151,6 @@ public:
 
 void AddSC_HyjalSummitBotScripts()
 {
-    new HyjalHazardRadiusProbeScript(); // temporary, see the class comment
     new ArchimondeDoomfireTrailScript();
     new ArchimondeAirBurstSpellListenerScript();
     new AnetheronInfernoSpellListenerScript();
