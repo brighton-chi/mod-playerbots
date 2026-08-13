@@ -189,6 +189,9 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<AvoidAoeAction*>(action))
     {
