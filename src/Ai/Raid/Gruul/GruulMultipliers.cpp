@@ -127,7 +127,6 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Arcane Shot will remove Spell Shield, which the mage tank needs to survive
 float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -149,6 +148,7 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    // Arcane Shot removes Spell Shield, which the mage tank needs to survive
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (krosh && action->GetTarget() == krosh)
         return 0.0f;
