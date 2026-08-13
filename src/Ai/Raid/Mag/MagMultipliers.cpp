@@ -17,18 +17,28 @@
 #include "MovementActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
-#include <ctime>
 #include <unordered_map>
 
-using namespace MagtheridonHelpers;
+using namespace MagHelpers;
 
 // When a cube clicker is in the handling phase (waiting near cube or moving
 // to use), suppress movement actions that would pull them away from the cube
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
+    if (!dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<CastDisengageAction*>(action))
+    {
+        return 1.0;
+    }
+
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return 1.0f;
 
@@ -36,18 +46,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         return 1.0f;
 
     auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
-    if (timerIt == blastNovaTimer.end() ||
-        time(nullptr) - timerIt->second < BLAST_NOVA_INTERIM_SECONDS)
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action))
+    if (timerIt != blastNovaTimer.end() &&
+        getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS)
     {
         return 0.0f;
     }
@@ -58,59 +58,62 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 // Wait for 6 seconds after Magtheridon becomes attackable before engaging
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
+    if (!dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<CastSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
-    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    constexpr uint8 dpsWaitSeconds = 6;
+    constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
-    if (it != dpsWaitTimer.end() && time(nullptr) - it->second > dpsWaitSeconds)
-        return 1.0f;
-
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastSpellAction*>(action))
-    {
+    if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs)
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
 float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) || bot->GetVictim() == nullptr)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    bool const isTaunt = IsTauntAction(bot, action);
+    bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
+    bool const isReachTargetSpell =
+        dynamic_cast<CastReachTargetSpellAction*>(action);
+
+    if (!isTaunt && !isAvoidAoe && !isReachTargetSpell &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<TankAssistAction*>(action))
+    {
+        return 1.0f;
+    }
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<TankAssistAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    if (!botAI->IsMainTank(bot) && magtheridon->GetVictim() != bot)
+    if (isAvoidAoe && magtheridon->GetVictim() != bot)
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    if (IsMagtheridonActive(magtheridon) || GetChanneler(bot, SOUTH_CHANNELER) ||
-        GetChanneler(bot, WEST_CHANNELER) || GetChanneler(bot, EAST_CHANNELER))
-    {
+    if (isReachTargetSpell && !PlayerbotAI::IsMainTank(bot))
         return 1.0f;
-    }
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<CastTauntAction*>(action) ||
-        dynamic_cast<CastGrowlAction*>(action) ||
-        dynamic_cast<CastHandOfReckoningAction*>(action) ||
-        dynamic_cast<CastDarkCommandAction*>(action))
+    if (GetChanneler(bot, NORTHWEST_CHANNELER) ||
+        GetChanneler(bot, NORTHEAST_CHANNELER))
     {
         return 0.0f;
     }
@@ -120,18 +123,19 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
 
 float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon") ||
-        dynamic_cast<WipeAction*>(action) ||
+    if (dynamic_cast<WipeAction*>(action) ||
         dynamic_cast<MagtheridonMoveOutOfDebrisAction*>(action))
     {
         return 1.0f;
     }
 
-    // 15y is wider than the default hazard zone but is needed to
-    // keep the multiplier in effect
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+        return 1.0f;
+
+    constexpr float debrisSuppressionZone = 15.0f;
     if (IsPositionInActiveDebris(
             bot->GetMap()->GetInstanceId(), bot->GetPositionX(),
-            bot->GetPositionY(), 15.0f))
+            bot->GetPositionY(), debrisSuppressionZone))
     {
         return 0.0f;
     }

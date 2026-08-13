@@ -13,10 +13,7 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("magtheridon main tank attack first three channelers", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon nw channeler engaged by first assist tank", {
-        NextAction("magtheridon first assist tank attack nw channeler", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("magtheridon ne channeler engaged by second assist tank", {
-        NextAction("magtheridon second assist tank attack ne channeler", ACTION_RAID + 1) }));
+        NextAction("magtheridon assist tanks attack last two channelers", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers", {
         NextAction("magtheridon misdirect hellfire channelers to main tank", ACTION_RAID + 2) }));

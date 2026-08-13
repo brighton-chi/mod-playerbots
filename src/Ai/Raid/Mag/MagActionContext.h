@@ -18,11 +18,8 @@ public:
         creators["magtheridon main tank attack first three channelers"] =
             &RaidMagtheridonActionContext::magtheridon_main_tank_attack_first_three_channelers;
 
-        creators["magtheridon first assist tank attack nw channeler"] =
-            &RaidMagtheridonActionContext::magtheridon_first_assist_tank_attack_nw_channeler;
-
-        creators["magtheridon second assist tank attack ne channeler"] =
-            &RaidMagtheridonActionContext::magtheridon_second_assist_tank_attack_ne_channeler;
+        creators["magtheridon assist tanks attack last two channelers"] =
+            &RaidMagtheridonActionContext::magtheridon_assist_tanks_attack_last_two_channelers;
 
         creators["magtheridon misdirect hellfire channelers to main tank"] =
             &RaidMagtheridonActionContext::magtheridon_misdirect_hellfire_channelers_to_main_tank;
@@ -56,11 +53,8 @@ private:
     static Action* magtheridon_main_tank_attack_first_three_channelers(PlayerbotAI* botAI) {
         return new MagtheridonMainTankAttackFirstThreeChannelersAction(botAI);
     }
-    static Action* magtheridon_first_assist_tank_attack_nw_channeler(PlayerbotAI* botAI) {
-        return new MagtheridonFirstAssistTankAttackNWChannelerAction(botAI);
-    }
-    static Action* magtheridon_second_assist_tank_attack_ne_channeler(PlayerbotAI* botAI) {
-        return new MagtheridonSecondAssistTankAttackNEChannelerAction(botAI);
+    static Action* magtheridon_assist_tanks_attack_last_two_channelers(PlayerbotAI* botAI) {
+        return new MagtheridonAssistTanksAttackLastTwoChannelersAction(botAI);
     }
     static Action* magtheridon_misdirect_hellfire_channelers_to_main_tank(PlayerbotAI* botAI) {
         return new MagtheridonMisdirectHellfireChannelersToMainTankAction(botAI);

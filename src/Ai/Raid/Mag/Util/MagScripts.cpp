@@ -13,7 +13,7 @@
 #include "Spell.h"
 #include "Timer.h"
 
-using namespace MagtheridonHelpers;
+using namespace MagHelpers;
 
 class MagtheridonBotSpellScript : public AllSpellScript
 {
@@ -23,12 +23,12 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_DEBRIS_SPAWN))
+        if (spellInfo->Id == Id(MagSpells::SPELL_DEBRIS_SPAWN))
         {
             // Debris is a one-shot that has no prior warning other than a visual effect,
             // which necessitates this spell hook to track debris spawn positions
-            const uint32 instanceId = caster->GetMap()->GetInstanceId();
-            const uint32 now = getMSTime();
+            uint32 const instanceId = caster->GetMap()->GetInstanceId();
+            uint32 const now = getMSTime();
 
             activeDebrisPositions[instanceId].push_back({ caster->GetPosition(), now });
 
@@ -59,12 +59,12 @@ public:
                 }
             }
         }
-        else if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_QUAKE))
+        else if (spellInfo->Id == static_cast<uint32>(MagSpells::SPELL_QUAKE))
         {
             // To account for Blast Nova delay caused by Quake's DelayAll(6999ms)
             auto it = blastNovaTimer.find(caster->GetMap()->GetInstanceId());
             if (it != blastNovaTimer.end())
-                it->second += 7;
+                it->second += 7 * IN_MILLISECONDS;
         }
     }
 };
