@@ -100,19 +100,19 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     return true;
 }
 
-// Whoever an Infernal is on has to walk it to the gathering spot, since it cannot be taunted off
-// them. That is the Inferno target during the cast, and its victim from then on. The two who stay
-// put are the Infernal tank, which is already there, and whoever is holding Anetheron
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 {
-    if (IsInfernalTank(bot))
-        return false;
-
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron || anetheron->GetVictim() == bot)
         return false;
 
-    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI, bot);
+    if (GetInfernoTarget(anetheron) == bot)
+        return true;
+
+    if (IsInfernalTank(bot))
+        return false;
+
+    return GetInfernalTargetingBot(botAI, bot);
 }
 
 bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
@@ -225,21 +225,14 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
 
 bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_WARLOCK)
+    if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+    if (!bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)))
         return false;
 
-    if (bot->getClass() == CLASS_PALADIN &&
-        (botAI->HasAura("shadow resistance aura", bot) ||
-         botAI->HasAura("prayer of shadow protection", bot) ||
-         botAI->HasAura("shadow protection", bot)))
-    {
-        return false;
-    }
-
-    return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+    return bot->GetPower(POWER_MANA) <= 3000 &&
+        bot->GetHealthPct() <= sPlayerbotAIConfig.lowHealth; // min. Life Tap HP threshold
 }
 
 // Azgalor
@@ -285,12 +278,16 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
     if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
-    return !bot->HasAura(Id(HyjalSpells::SPELL_DOOM));
+    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        return false;
+
+    constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
+    return !IsNearRainOfFire(bot, suppressionRadius);
 }
 
-bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
+bool AzgalorMeleeIsStandingInRainOfFireTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot)) // MT only?
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -311,6 +308,9 @@ bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
+    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        return false;
+
     return IsInRainOfFire(bot);
 }
 
@@ -321,7 +321,7 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsAssistTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
@@ -346,9 +346,9 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     return false;
 }
 
-bool AzgalorDoomguardsMustDieTrigger::IsActive()
+bool AzgalorMeleeAndRangedShouldDivideDpsTrigger::IsActive()
 {
-    return PlayerbotAI::IsRangedDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde

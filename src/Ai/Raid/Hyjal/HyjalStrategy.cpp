@@ -70,7 +70,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal low mana bot take defensive measures", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal mark deals shadow damage", {
-        NextAction("kaz'rogal cast shadow protection spell", ACTION_EMERGENCY + 6) }));
+        NextAction("kaz'rogal warlock cast shadow ward", ACTION_EMERGENCY + 6) }));
 
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
@@ -85,8 +85,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
-        NextAction("azgalor melee get out of fire", ACTION_EMERGENCY + 2) }));
+    triggers.push_back(new TriggerNode("azgalor melee is standing in rain of fire", {
+        NextAction("azgalor melee manuever through fire", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
         NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 2) }));
@@ -97,8 +97,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
         NextAction("azgalor first assist tank position doomguard", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("azgalor doomguards must die", {
-        NextAction("azgalor ranged dps prioritize doomguards", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("azgalor melee and ranged should divide dps", {
+        NextAction("azgalor determine dps priority", ACTION_RAID) }));
 
     // Archimonde
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
@@ -136,6 +136,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Anetheron
     multipliers.push_back(new AnetheronDisableAssistTargetingMultiplier(botAI));
     multipliers.push_back(new AnetheronAvoidAccidentalInfernalAggroMultiplier(botAI));
+    multipliers.push_back(new AnetheronInfernalTargetRunToPositionMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMovementMultiplier(botAI));
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
@@ -145,7 +146,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KazrogalControlMovementMultiplier(botAI));
 
     // Azgalor
-    multipliers.push_back(new AzgalorDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new AzgalorDisableAutoTargetingAndPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeWaitForTankPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));

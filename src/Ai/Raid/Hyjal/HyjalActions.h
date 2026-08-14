@@ -175,11 +175,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalCastShadowProtectionSpellAction : public Action
+class KazrogalWarlockCastShadowWardAction : public Action
 {
 public:
-    KazrogalCastShadowProtectionSpellAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal cast shadow protection spell") {}
+    KazrogalWarlockCastShadowWardAction(PlayerbotAI* botAI)
+        : Action(botAI, "kaz'rogal cast shadow ward") {}
     bool Execute(Event event) override;
 };
 
@@ -217,11 +217,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeGetOutOfFireAction : public AttackAction
+class AzgalorMeleeManueverThroughFireAction : public AttackAction
 {
 public:
-    AzgalorMeleeGetOutOfFireAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor melee get out of fire") {}
+    AzgalorMeleeManueverThroughFireAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "azgalor melee manuever through fire") {}
     bool Execute(Event event) override;
 };
 
@@ -249,11 +249,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorRangedDpsPrioritizeDoomguardsAction : public AttackAction
+class AzgalorDetermineDpsPriorityAction : public AttackAction
 {
 public:
-    AzgalorRangedDpsPrioritizeDoomguardsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor ranged dps prioritize doomguards") {}
+    AzgalorDetermineDpsPriorityAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "azgalor determine dps priority") {}
     bool Execute(Event event) override;
 };
 

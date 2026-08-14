@@ -61,6 +61,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class AnetheronInfernalTargetRunToPositionMultiplier : public Multiplier
+{
+public:
+    AnetheronInfernalTargetRunToPositionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "anetheron infernal target run to position") {}
+    float GetValue(Action* action) override;
+};
+
 class AnetheronControlMovementMultiplier : public Multiplier
 {
 public:
@@ -105,11 +113,11 @@ public:
 
 // Azgalor
 
-class AzgalorDisableTankActionsMultiplier : public Multiplier
+class AzgalorDisableAutoTargetingAndPositioningMultiplier : public Multiplier
 {
 public:
-    AzgalorDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "azgalor disable tank actions") {}
+    AzgalorDisableAutoTargetingAndPositioningMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "azgalor disable auto targeting and positioning") {}
     float GetValue(Action* action) override;
 };
 

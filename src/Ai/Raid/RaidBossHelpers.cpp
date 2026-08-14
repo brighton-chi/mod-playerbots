@@ -22,6 +22,7 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
+#include <cmath>
 #include <list>
 
 // Asks whether a short step towards a destination is one the bot can actually take, and returns
@@ -32,7 +33,7 @@
 //
 // The step has to be short. The candidate's height comes from a downward search seeded at the
 // bot, so a long hop can outrun the ground it is measured against.
-bool GetGroundedStepPosition(
+bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
@@ -67,11 +68,26 @@ bool GetGroundedStepPosition(
     // dead on the first blocked one--it walks into the obstacle, then repeats the same clamped
     // point until MoveTo rejects it as a duplicate. A refusal sends the caller to its next
     // candidate, which is the whole reason this returns a verdict
+    float const requestedX = candidateX;
+    float const requestedY = candidateY;
+
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
             bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
     {
         return false;
     }
+
+    // The reach check answers true for a step it silently shortened. Its raycast accepts
+    // PATHFIND_INCOMPLETE and then overwrites the destination with wherever the ray stopped, so a
+    // step into anything the navmesh has carved out--scenery, a building--comes back as a success
+    // that ends against the obstruction. failOnCollision does not cover it: that governs the model
+    // trees, and static models are not consulted at all for a bot walking on the ground.
+    //
+    // A caller with somewhere else to try needs this to read as a refusal, or it commits to the
+    // first direction and walks into the thing forever
+    constexpr float truncationTolerance = 1.0f;
+    if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
+        return false;
 
     stepX = candidateX;
     stepY = candidateY;

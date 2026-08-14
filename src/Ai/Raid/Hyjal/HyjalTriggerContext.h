@@ -86,8 +86,8 @@ public:
         creators["azgalor boss engaged by ranged"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_ranged;
 
-        creators["azgalor boss casts rain of fire on melee"] =
-            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_melee;
+        creators["azgalor melee is standing in rain of fire"] =
+            &RaidHyjalSummitTriggerContext::azgalor_melee_is_standing_in_rain_of_fire;
 
         creators["azgalor ranged is standing in rain of fire"] =
             &RaidHyjalSummitTriggerContext::azgalor_ranged_is_standing_in_rain_of_fire;
@@ -98,8 +98,8 @@ public:
         creators["azgalor doomguards must be controlled"] =
             &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_be_controlled;
 
-        creators["azgalor doomguards must die"] =
-            &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_die;
+        creators["azgalor melee and ranged should divide dps"] =
+            &RaidHyjalSummitTriggerContext::azgalor_melee_and_ranged_should_divide_dps;
 
         // Archimonde
         creators["archimonde pulling boss"] =
@@ -200,8 +200,8 @@ private:
     static Trigger* azgalor_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByRangedTrigger(botAI);
     }
-    static Trigger* azgalor_boss_casts_rain_of_fire_on_melee(PlayerbotAI* botAI) {
-        return new AzgalorBossCastsRainOfFireOnMeleeTrigger(botAI);
+    static Trigger* azgalor_melee_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
+        return new AzgalorMeleeIsStandingInRainOfFireTrigger(botAI);
     }
     static Trigger* azgalor_ranged_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
         return new AzgalorRangedIsStandingInRainOfFireTrigger(botAI);
@@ -212,8 +212,8 @@ private:
     static Trigger* azgalor_doomguards_must_be_controlled(PlayerbotAI* botAI) {
         return new AzgalorDoomguardsMustBeControlledTrigger(botAI);
     }
-    static Trigger* azgalor_doomguards_must_die(PlayerbotAI* botAI) {
-        return new AzgalorDoomguardsMustDieTrigger(botAI);
+    static Trigger* azgalor_melee_and_ranged_should_divide_dps(PlayerbotAI* botAI) {
+        return new AzgalorMeleeAndRangedShouldDivideDpsTrigger(botAI);
     }
 
     // Archimonde

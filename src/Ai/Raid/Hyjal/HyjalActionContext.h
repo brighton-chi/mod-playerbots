@@ -70,8 +70,8 @@ public:
         creators["kaz'rogal low mana bot take defensive measures"] =
             &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_take_defensive_measures;
 
-        creators["kaz'rogal cast shadow protection spell"] =
-            &RaidHyjalSummitActionContext::kazrogal_cast_shadow_protection_spell;
+        creators["kaz'rogal warlock cast shadow ward"] =
+            &RaidHyjalSummitActionContext::kazrogal_warlock_cast_shadow_ward;
 
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
@@ -86,8 +86,8 @@ public:
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
-        creators["azgalor melee get out of fire"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire_and_swap_targets;
+        creators["azgalor melee manuever through fire"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_manuever_through_fire;
 
         creators["azgalor ranged get out of rain of fire"] =
             &RaidHyjalSummitActionContext::azgalor_ranged_get_out_of_rain_of_fire;
@@ -98,8 +98,8 @@ public:
         creators["azgalor first assist tank position doomguard"] =
             &RaidHyjalSummitActionContext::azgalor_first_assist_tank_position_doomguard;
 
-        creators["azgalor ranged dps prioritize doomguards"] =
-            &RaidHyjalSummitActionContext::azgalor_ranged_dps_prioritize_doomguards;
+        creators["azgalor determine dps priority"] =
+            &RaidHyjalSummitActionContext::azgalor_determine_dps_priority;
 
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
@@ -183,8 +183,8 @@ private:
     static Action* kazrogal_low_mana_bot_take_defensive_measures(PlayerbotAI* botAI) {
         return new KazrogalLowManaBotTakeDefensiveMeasuresAction(botAI);
     }
-    static Action* kazrogal_cast_shadow_protection_spell(PlayerbotAI* botAI) {
-        return new KazrogalCastShadowProtectionSpellAction(botAI);
+    static Action* kazrogal_warlock_cast_shadow_ward(PlayerbotAI* botAI) {
+        return new KazrogalWarlockCastShadowWardAction(botAI);
     }
 
     // Azgalor
@@ -200,8 +200,8 @@ private:
     static Action* azgalor_disperse_ranged(PlayerbotAI* botAI) {
         return new AzgalorDisperseRangedAction(botAI);
     }
-    static Action* azgalor_melee_get_out_of_fire_and_swap_targets(PlayerbotAI* botAI) {
-        return new AzgalorMeleeGetOutOfFireAction(botAI);
+    static Action* azgalor_melee_manuever_through_fire(PlayerbotAI* botAI) {
+        return new AzgalorMeleeManueverThroughFireAction(botAI);
     }
     static Action* azgalor_ranged_get_out_of_rain_of_fire(PlayerbotAI* botAI) {
         return new AzgalorRangedGetOutOfRainOfFireAction(botAI);
@@ -212,8 +212,8 @@ private:
     static Action* azgalor_first_assist_tank_position_doomguard(PlayerbotAI* botAI) {
         return new AzgalorFirstAssistTankPositionDoomguardAction(botAI);
     }
-    static Action* azgalor_ranged_dps_prioritize_doomguards(PlayerbotAI* botAI) {
-        return new AzgalorRangedDpsPrioritizeDoomguardsAction(botAI);
+    static Action* azgalor_determine_dps_priority(PlayerbotAI* botAI) {
+        return new AzgalorDetermineDpsPriorityAction(botAI);
     }
 
     // Archimonde

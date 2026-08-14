@@ -17,7 +17,10 @@ class Player;
 class PlayerbotAI;
 class Unit;
 
-bool GetGroundedStepPosition(
+// Answers whether the bot can take one short step towards a destination, and where that step
+// lands. It says nothing about the destination itself--only about the next hop. stepX/Y/Z are
+// written on success and left untouched on failure
+bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);

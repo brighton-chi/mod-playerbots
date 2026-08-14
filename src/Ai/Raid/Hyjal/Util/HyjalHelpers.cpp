@@ -102,6 +102,83 @@ bool FindNearestUnblockedAngle(
     return found;
 }
 
+bool FindStepToCircle(
+    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
+    float& stepX, float& stepY, float& stepZ,
+    std::function<bool(float, float)> const& isAcceptable, float* chosenX, float* chosenY,
+    bool allowUnvalidatedFallback)
+{
+    float const centerX = center.GetPositionX();
+    float const centerY = center.GetPositionY();
+
+    // Counted rather than accumulated, so the sweep always reaches exactly 180 degrees instead of
+    // depending on where eight roundings of an inexact step happen to land
+    constexpr uint8 fanSteps = 8;
+    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
+
+    // Two sweeps at most. The first asks whether each step can actually be taken, which is the
+    // only place in Hyjal that does: a refusal costs nothing here because there are sixteen more
+    // angles, and without it the bot commits to the first whatever is in the way--a rise too steep
+    // for the navmesh, the foot of a small hill, leaves MoveTo with no path at all.
+    //
+    // The second sweep runs only for callers that would rather move badly than not move, and drops
+    // the check while keeping the caller's own predicate. MovementAction::MoveAway does the same
+    // thing: a failed collision check downgrades how it moves rather than whether it moves
+    uint8 const sweeps = allowUnvalidatedFallback ? 2 : 1;
+    for (uint8 sweep = 0; sweep < sweeps; ++sweep)
+    {
+        bool const validate = (sweep == 0);
+
+        for (uint8 step = 0; step <= fanSteps; ++step)
+        {
+            float const delta = fanStep * step;
+            // Both offsets are the same angle at zero, so only try it once
+            uint8 const candidates = (step == 0) ? 1 : 2;
+            for (uint8 i = 0; i < candidates; ++i)
+            {
+                float const angle = preferredAngle + (i == 0 ? delta : -delta);
+                float const targetX = centerX + std::cos(angle) * radius;
+                float const targetY = centerY + std::sin(angle) * radius;
+
+                // Kept in both sweeps. Whatever a caller rules out is a rule about the fight, not
+                // about the ground, and giving up on the ground is no reason to break it
+                if (isAcceptable && !isAcceptable(targetX, targetY))
+                    continue;
+
+                if (validate)
+                {
+                    if (!CanTakeStepTowards(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
+                        continue;
+                }
+                else
+                {
+                    float const botX = bot->GetPositionX();
+                    float const botY = bot->GetPositionY();
+                    float const distance = bot->GetExactDist2d(targetX, targetY);
+
+                    constexpr float minStepDistance = 0.5f;
+                    if (distance < minStepDistance)
+                        continue;
+
+                    float const stepDistance = std::min(moveDist, distance);
+                    stepX = botX + ((targetX - botX) / distance) * stepDistance;
+                    stepY = botY + ((targetY - botY) / distance) * stepDistance;
+                    stepZ = bot->GetPositionZ();
+                }
+
+                if (chosenX)
+                    *chosenX = targetX;
+                if (chosenY)
+                    *chosenY = targetY;
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable)
@@ -111,50 +188,16 @@ bool GetHazardEscapeStep(
     float escapeAngle =
         std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
 
-    // Dead centre gives no heading of its own, so take the bot's own facing
+    // Dead centre gives no direction of its own, so take the bot's own facing
     if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
         escapeAngle = bot->GetOrientation();
 
-    // Counted rather than accumulated, so the sweep always reaches exactly 180 degrees instead of
-    // depending on where eight roundings of an inexact step happen to land
-    constexpr uint8 fanSteps = 8;
-    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
-
-    for (uint8 step = 0; step <= fanSteps; ++step)
-    {
-        float const delta = fanStep * step;
-        // Both offsets are the same heading at zero, so only try it once
-        uint8 const headings = (step == 0) ? 1 : 2;
-        for (uint8 i = 0; i < headings; ++i)
-        {
-            float const angle = escapeAngle + (i == 0 ? delta : -delta);
-            float const targetX = centerX + std::cos(angle) * escapeRadius;
-            float const targetY = centerY + std::sin(angle) * escapeRadius;
-
-            if (isAcceptable && !isAcceptable(targetX, targetY))
-                continue;
-
-            // Nothing is asked of the terrain: the step is projected and MoveTo derives the height
-            // from the bot's own Z. The fan now widens only for headings a caller refuses, so at
-            // Winterchill, with no predicate, it always settles on the first one
-            float const botX = bot->GetPositionX();
-            float const botY = bot->GetPositionY();
-            float const distance = bot->GetExactDist2d(targetX, targetY);
-
-            constexpr float minStepDistance = 0.5f;
-            if (distance < minStepDistance)
-                continue;
-
-            float const stepDistance = std::min(moveDist, distance);
-            stepX = botX + ((targetX - botX) / distance) * stepDistance;
-            stepY = botY + ((targetY - botY) / distance) * stepDistance;
-            stepZ = bot->GetPositionZ();
-
-            return true;
-        }
-    }
-
-    return false;
+    // Standing in a hazard is worse than walking into something, so if nothing validates, go
+    // anyway. It is often not futile either: the navmesh holds no gameobjects at all, so a step
+    // refused for scenery may still find a path straight through where that scenery stands
+    return FindStepToCircle(
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ, isAcceptable,
+        nullptr, nullptr, true);
 }
 
 RangedGroups GetRangedGroups(Player* bot)

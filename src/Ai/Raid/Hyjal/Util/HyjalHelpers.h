@@ -31,48 +31,52 @@ constexpr uint32 Id(T value)
 enum class HyjalSpells : uint32
 {
     // Rage Winterchill
-    SPELL_DEATH_AND_DECAY  = 31258,
+    SPELL_DEATH_AND_DECAY     = 31258,
 
     // Anetheron
-    SPELL_INFERNO          = 31299,
+    SPELL_INFERNO             = 31299,
 
     // Kaz'rogal
-    SPELL_MARK_OF_KAZROGAL = 31447,
+    SPELL_MARK_OF_KAZROGAL    = 31447,
 
     // Azgalor
-    SPELL_RAIN_OF_FIRE     = 31340,
-    SPELL_DOOM             = 31347,
+    SPELL_RAIN_OF_FIRE        = 31340,
+    SPELL_DOOM                = 31347,
 
     // Archimonde
-    SPELL_DOOMFIRE_TRAIL   = 31943, // 6y persistent area aura dropped along the trail, lasts 18s
-    SPELL_DOOMFIRE         = 31944, // Damaging part of trail
-    SPELL_DOOMFIRE_DOT     = 31969, // DoT after exiting trail
-    // SPELL_ARCHIMONDE_FEAR  = 31970,
-    SPELL_AIR_BURST        = 32014,
+    SPELL_DOOMFIRE_TRAIL      = 31943, // 6y persistent area aura dropped along the trail, lasts 18s
+    SPELL_DOOMFIRE            = 31944, // Damaging part of trail
+    SPELL_DOOMFIRE_DOT        = 31969, // DoT after exiting trail
+    // SPELL_ARCHIMONDE_FEAR    = 31970,
+    SPELL_AIR_BURST           = 32014,
 
     // Hunter
-    SPELL_MISDIRECTION     = 35079,
+    SPELL_ASPECT_OF_THE_VIPER = 34074,
+    SPELL_MISDIRECTION        = 35079,
 
     // Mage
-    SPELL_ICE_BLOCK        = 45438,
+    SPELL_ICE_BLOCK           = 45438,
 
     // Paladin
-    SPELL_DIVINE_SHIELD    = 642,
+    SPELL_DIVINE_SHIELD       = 642,
 
     // Priest
-    SPELL_FEAR_WARD        = 6346,
+    SPELL_FEAR_WARD           = 6346,
+
+    // Rogue
+    SPELL_CLOAK_OF_SHADOWS    = 31224,
 
     // Shaman
-    SPELL_TREMOR_TOTEM     = 8143,
+    SPELL_TREMOR_TOTEM        = 8143,
 };
 
 enum class HyjalNpcs : uint32
 {
     // Anetheron
-    NPC_TOWERING_INFERNAL  = 17818,
+    NPC_TOWERING_INFERNAL = 17818,
 
     // Archimonde
-    NPC_DOOMFIRE           = 18095,
+    NPC_DOOMFIRE          = 18095,
 };
 
 enum class TankPositionState : uint8
@@ -114,10 +118,23 @@ bool GetHazardBlockedArc(
 // stand on the ring, not a direction to travel in
 bool FindNearestUnblockedAngle(
     std::vector<BlockedArc> const& blocked, float preferred, float& unblocked);
-// Steps out of a hazard by the shortest clear line, widening the heading where one is blocked.
-// escapeRadius should sit past the radius the caller reacts at, or the bot settles on the
-// threshold and slides around it instead of leaving. isAcceptable rejects headings a caller
-// cannot use for its own reasons, and may be empty
+// A step towards a point on a circle, taking the angle nearest to preferred that the bot can
+// actually reach. Widening on refusal is the point of it: the angle only has to be roughly right,
+// so a candidate blocked by terrain or by geometry costs nothing to abandon. isAcceptable rejects
+// angles a caller cannot use for its own reasons, and may be empty
+// chosenX/chosenY report the point on the circle the step is aimed at, which is not the preferred
+// one when that had to be abandoned. A caller deciding whether it has arrived has to measure
+// against this, not against what it asked for, or a bot settling on a neighbouring angle is never
+// finished and keeps asking for the rest of the fight
+// allowUnvalidatedFallback sweeps the fan a second time without the reachability check, for a
+// caller that would rather move badly than stand still. isAcceptable is honoured in both sweeps
+bool FindStepToCircle(
+    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
+    float& stepX, float& stepY, float& stepZ,
+    std::function<bool(float, float)> const& isAcceptable = {},
+    float* chosenX = nullptr, float* chosenY = nullptr, bool allowUnvalidatedFallback = false);
+// The same search, aimed straight out of a hazard. escapeRadius should sit past the radius the
+// caller reacts at, or the bot settles on the threshold and slides around it instead of leaving
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
@@ -126,7 +143,10 @@ RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
 
 // Rage Winterchill
-inline constexpr float DEATH_AND_DECAY_RADIUS = 21.5f; // 20y radius + 1.5y player hitbox
+// 20y radius + 1.5y player hitbox, rounded up. Combat reach is not fixed: a scale aura takes it to
+// 1.95, so the aura reaches 21.95 for the 40s Bloodlust is up, and a bot parked on an exact 21.5
+// would be taking damage while every check here called it clear
+inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
 bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard

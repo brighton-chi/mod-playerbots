@@ -195,11 +195,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorBossCastsRainOfFireOnMeleeTrigger : public Trigger
+class AzgalorMeleeIsStandingInRainOfFireTrigger : public Trigger
 {
 public:
-    AzgalorBossCastsRainOfFireOnMeleeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor boss casts rain of fire on melee") {}
+    AzgalorMeleeIsStandingInRainOfFireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor melee is standing in rain of fire") {}
     bool IsActive() override;
 };
 
@@ -227,11 +227,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorDoomguardsMustDieTrigger : public Trigger
+class AzgalorMeleeAndRangedShouldDivideDpsTrigger : public Trigger
 {
 public:
-    AzgalorDoomguardsMustDieTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor doomguards must die") {}
+    AzgalorMeleeAndRangedShouldDivideDpsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor melee and ranged should divide dps") {}
     bool IsActive() override;
 };
 

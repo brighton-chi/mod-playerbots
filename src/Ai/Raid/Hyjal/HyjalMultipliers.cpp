@@ -175,6 +175,30 @@ float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float AnetheronInfernalTargetRunToPositionMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AnetheronBringInfernalToInfernalTankAction*>(action))
+        return 1.0f;
+
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron || anetheron->GetVictim() == bot)
+        return 1.0f;
+
+    if (IsInfernalTank(bot))
+        return 1.0f;
+
+    if (GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI, bot))
+        return 0.0f;
+
+    return 1.0f;
+}
+
 float AnetheronControlMovementMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -304,36 +328,23 @@ float KazrogalControlMovementMultiplier::GetValue(Action* action)
 
 // Azgalor
 
-float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
+float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    bool const isTankFace = dynamic_cast<TankFaceAction*>(action);
-
-    if (!isTankFace &&
+    if (!dynamic_cast<DpsAssistAction*>(action) &&
         !dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<AvoidAoeAction*>(action))
+        !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    // Still disabled in RoF, below
+    if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (isTankFace)
-        return 0.0f;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return 0.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "lesser doomguard"))
-        return 0.0f;
-
-    if (AnyGroupMemberHasDoom(bot))
+    if (AI_VALUE2(Unit*, "find target", "azgalor"))
         return 0.0f;
 
     return 1.0f;
@@ -366,19 +377,13 @@ float AzgalorMeleeWaitForTankPositioningMultiplier::GetValue(Action* action)
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    // Getting out of Rain of Fire is exempt as well, so waiting on the tank never means standing
-    // in fire to do it
-    if (dynamic_cast<AzgalorWaitAtSafePositionAction*>(action) ||
-        dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
-    {
+    if (dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
         return 1.0f;
-    }
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    // Walks the group, so it comes after everything cheaper. A human main tank does not drive the
-    // bot tank state machine, so there is nothing to wait on
+    // Don't wait if the tank is a human
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
         return 1.0f;
@@ -396,17 +401,20 @@ float AzgalorMeleeWaitForTankPositioningMultiplier::GetValue(Action* action)
 // Leave the escape action as the only thing that moves melee while Rain of Fire is a threat
 float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    // AvoidAoeAction is a MovementAction, so the first check already covers it
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
-    if (dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
+    // Doom outranks standing in fire, and it has its own positioning to do
+    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        return 1.0f;
+
+    if (dynamic_cast<AzgalorMeleeManueverThroughFireAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
@@ -435,26 +443,18 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    // AvoidAoeAction and the dispersal are both MovementActions, so this covers them
     if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<AzgalorRangedGetOutOfRainOfFireAction*>(action))
         return 1.0f;
 
     // Doom outranks standing in fire, and it has its own positioning to do
     if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (dynamic_cast<AzgalorRangedGetOutOfRainOfFireAction*>(action))
         return 1.0f;
 
-    // Stock avoid-aoe would duplicate the escape wherever the bot stands, so it goes regardless of
-    // distance. Everything else only has to stand aside while a pool is near, and that reach is
-    // wider than the radius which fires the escape so a bot that has only just cleared one is not
-    // immediately walked back in
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
+    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
+        return 1.0f;
 
     constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
     return IsNearRainOfFire(bot, suppressionRadius) ? 0.0f : 1.0f;
