@@ -25,7 +25,6 @@
 #include "TargetValue.h"
 #include "Timer.h"
 #include "WipeAction.h"
-#include <ctime>
 
 using namespace SwpHelpers;
 
@@ -308,7 +307,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     auto& state = felmystEncounterStates[felmyst->GetMap()->GetInstanceId()];
-    if (state.landingDpsWaitTimer != 0)
+    if (state.landingDpsWaitStartMs != 0)
         return 0.0f;
 
     return 1.0f;
@@ -508,11 +507,11 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 const instanceId = bot->GetInstanceId();
-    time_t const now = std::time(nullptr);
-    auto const it = eredarTwinsDpsHoldTimer.try_emplace(instanceId, now).first;
-    constexpr uint8 dpsHoldSeconds = 8;
+    uint32 const now = getMSTime();
+    auto const it = eredarTwinsDpsHoldStartMs.try_emplace(instanceId, now).first;
+    constexpr uint32 dpsHoldMs = 8000;
 
-    if ((now - it->second) < dpsHoldSeconds)
+    if (getMSTimeDiff(it->second, now) < dpsHoldMs)
         return 0.0f;
 
     return 1.0f;

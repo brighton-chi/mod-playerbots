@@ -537,37 +537,36 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
 
     if (felmyst->IsFlying() && IsFelmystLanding(felmyst))
     {
-        if (state.landingDpsWaitTimer)
+        if (state.landingDpsWaitStartMs)
             return false;
 
-        state.landingDpsWaitTimer = std::time(nullptr);
-        state.landingTouchdownTimer = 0;
+        state.landingDpsWaitStartMs = getMSTime();
+        state.landingTouchdownMs = 0;
         return true;
     }
 
     if (felmyst->IsFlying())
     {
-        state.landingDpsWaitTimer = 0;
-        state.landingTouchdownTimer = 0;
+        state.landingDpsWaitStartMs = 0;
+        state.landingTouchdownMs = 0;
         return true;
     }
 
     // Grounded
-    if (!state.landingDpsWaitTimer)
+    if (!state.landingDpsWaitStartMs)
         return false;
 
-    if (!state.landingTouchdownTimer)
+    if (!state.landingTouchdownMs)
     {
-        state.landingTouchdownTimer = std::time(nullptr);
+        state.landingTouchdownMs = getMSTime();
         return true;
     }
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 groundedDpsWaitSeconds = 3;
-    if ((now - state.landingTouchdownTimer) < groundedDpsWaitSeconds)
+    constexpr uint32 groundedDpsWaitMs = 3000;
+    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < groundedDpsWaitMs)
         return false;
 
-    state.landingDpsWaitTimer = 0;
-    state.landingTouchdownTimer = 0;
+    state.landingDpsWaitStartMs = 0;
+    state.landingTouchdownMs = 0;
     return true;
 }

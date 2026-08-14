@@ -11,7 +11,6 @@
 #include "Position.h"
 #include "SWPData.h"
 #include <array>
-#include <ctime>
 #include <limits>
 #include <unordered_map>
 #include <vector>
@@ -94,8 +93,8 @@ struct FelmystEncounterState
     uint8 demonicVaporFirstRegionIndex = 0;
     FogOfCorruptionState fogOfCorruption;
     FogPassState fogPass;
-    time_t landingDpsWaitTimer = 0;
-    time_t landingTouchdownTimer = 0;
+    uint32 landingDpsWaitStartMs = 0;
+    uint32 landingTouchdownMs = 0;
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
 

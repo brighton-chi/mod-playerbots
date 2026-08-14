@@ -89,7 +89,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
             didSomething = true;
 
-        if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
+        if (eredarTwinsDpsHoldStartMs.erase(instanceId) > 0)
             didSomething = true;
     }
 

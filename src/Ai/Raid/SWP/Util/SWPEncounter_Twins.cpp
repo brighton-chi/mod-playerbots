@@ -13,6 +13,7 @@
 #include "Playerbots.h"
 #include "Spell.h"
 #include "ThreatManager.h"
+#include "Timer.h"
 #include <list>
 
 namespace SwpHelpers
@@ -52,7 +53,7 @@ std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 
 std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 
-std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
+std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {
@@ -234,11 +235,9 @@ void RecordEredarTwinsBlazeTarget(Player* target)
     if (!target)
         return;
 
-    constexpr uint32 durationMs = 2000;
-    uint32 const now = getMSTime();
     EredarTwinsBlazeTargetState& state = eredarTwinsBlazeTargetStates[target->GetInstanceId()];
     state.targetGuid = target->GetGUID();
-    state.expireMs = now + durationMs;
+    state.startMs = getMSTime();
 }
 
 Player* GetEredarTwinsBlazeTarget(Player* bot)
@@ -248,7 +247,8 @@ Player* GetEredarTwinsBlazeTarget(Player* bot)
         return nullptr;
 
     EredarTwinsBlazeTargetState const& state = itr->second;
-    if (state.expireMs <= getMSTime())
+    constexpr uint32 durationMs = 2000;
+    if (GetMSTimeDiffToNow(state.startMs) >= durationMs)
     {
         eredarTwinsBlazeTargetStates.erase(itr);
         return nullptr;
