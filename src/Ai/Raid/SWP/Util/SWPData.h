@@ -86,6 +86,9 @@ enum class SwpSpells : uint32
     SPELL_SHADOWFORM                   = 15473,
     SPELL_MASS_DISPEL                  = 32375,
 
+    // Rogue
+    SPELL_CLOAK_OF_SHADOWS             = 31224,
+
     // Shaman
     SPELL_PURGE_RANK_1                 = 370,
 
