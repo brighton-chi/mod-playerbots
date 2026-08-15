@@ -311,21 +311,19 @@ float KazrogalControlMovementMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return 1.0f;
+    bool const isRangedReachTarget = PlayerbotAI::IsRanged(bot) &&
+        dynamic_cast<ReachTargetAction*>(action);
 
-    bool const isReachTarget = dynamic_cast<ReachTargetAction*>(action);
-
-    if (!isReachTarget && !dynamic_cast<CombatFormationMoveAction*>(action))
+    if (!isRangedReachTarget && !dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (isReachTarget && PlayerbotAI::IsRanged(bot))
+    if (AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 0.0f;
 
-    return 0.0f;
+    return 1.0f;
 }
 
 // Azgalor
