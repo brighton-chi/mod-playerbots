@@ -94,7 +94,7 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
     return MoveTo(
-        MAG_MAP_ID, moveX, moveY, position->GetPositionZ(), false, false,
+        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -277,7 +277,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        MAG_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
