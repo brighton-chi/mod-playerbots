@@ -156,7 +156,8 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    return bot->GetPower(POWER_MANA) > 3000;
+    // An assist tank only steps in front while it could still eat a full Mark
+    return bot->GetPower(POWER_MANA) > MARK_SURVIVAL_MANA;
 }
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
@@ -181,7 +182,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     {
         return true;
     }
-    else if (bot->GetPower(POWER_MANA) > 4000)
+    else if (bot->GetPower(POWER_MANA) > MARK_RECOVERED_MANA)
     {
         isBelowManaThreshold.erase(bot->GetGUID());
         if (PlayerbotAI::IsMelee(bot))
@@ -191,6 +192,54 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     }
 
     return false;
+}
+
+bool KazrogalBotShouldPreserveManaTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
+
+    if (bot->GetPower(POWER_MANA) >= MARK_RECOVERED_MANA)
+        return false;
+
+    switch (bot->getClass())
+    {
+        case CLASS_HUNTER:
+            return !bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER));
+
+        // Life Tap is priced in health, so below the threshold the AI life taps at it stops being
+        // available and Shadow Ward takes over
+        case CLASS_WARLOCK:
+            return bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth;
+
+        default:
+            return false;
+    }
+}
+
+// Spending Ice Block or Divine Shield costs a cooldown longer than the pull, so it waits until the
+// Mark is certain to detonate and running can no longer open enough ground before it does
+bool KazrogalBotMustCancelMarkTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
+
+    if (bot->HasAura(Id(HyjalSpells::SPELL_DIVINE_SHIELD)) ||
+        bot->HasAura(Id(HyjalSpells::SPELL_ICE_BLOCK)))
+    {
+        return false;
+    }
+
+    if (!HasMarkOfKazrogal(bot))
+        return false;
+
+    if (bot->GetPower(POWER_MANA) >= MARK_SURVIVAL_MANA)
+        return false;
+
+    return !CanOutrunMarkDetonation(bot);
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -217,22 +266,29 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         return false;
     }
 
-    if (isBelowManaThreshold.count(bot->GetGUID()) || bot->GetPower(POWER_MANA) <= 3200)
+    // The latch belongs here rather than in the action it drives: the movement multiplier reads it
+    // too, and a flag two files depend on should not be a side effect of one of them running
+    if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
+    {
+        isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
         return true;
+    }
 
-    return false;
+    return isBelowManaThreshold.count(bot->GetGUID()) > 0;
 }
 
+// Below the survival line with Life Tap priced out of reach: the detonation is coming and there is
+// nothing left but to soften it
 bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)))
+    if (!HasMarkOfKazrogal(bot))
         return false;
 
-    return bot->GetPower(POWER_MANA) <= 3000 &&
-        bot->GetHealthPct() <= sPlayerbotAIConfig.lowHealth; // min. Life Tap HP threshold
+    return bot->GetPower(POWER_MANA) < MARK_SURVIVAL_MANA &&
+        bot->GetHealthPct() <= sPlayerbotAIConfig.lowHealth;
 }
 
 // Azgalor

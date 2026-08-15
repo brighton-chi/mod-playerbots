@@ -145,6 +145,22 @@ public:
     bool IsActive() override;
 };
 
+class KazrogalBotShouldPreserveManaTrigger : public Trigger
+{
+public:
+    KazrogalBotShouldPreserveManaTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal bot should preserve mana") {}
+    bool IsActive() override;
+};
+
+class KazrogalBotMustCancelMarkTrigger : public Trigger
+{
+public:
+    KazrogalBotMustCancelMarkTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal bot must cancel mark") {}
+    bool IsActive() override;
+};
+
 class KazrogalBotIsLowOnManaTrigger : public Trigger
 {
 public:

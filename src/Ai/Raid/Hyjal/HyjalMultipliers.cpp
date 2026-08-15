@@ -265,7 +265,9 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<KazrogalLowManaBotTakeDefensiveMeasuresAction*>(action))
+    // The escape is itself a MovementAction, so it has to be excused from the suppression it exists
+    // to satisfy. The other three responses are plain casts and never reach this far
+    if (dynamic_cast<KazrogalMoveAwayFromGroupAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
@@ -298,7 +300,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) < 4000)
+    if (bot->GetPower(POWER_MANA) < MARK_RECOVERED_MANA)
         return 0.0f;
 
     return 1.0f;

@@ -66,11 +66,22 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal low mana bots need escape path", {
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
 
+    // Ordered by who each response saves. Cancelling the Mark spares everyone and so outranks the
+    // rest, but its trigger only opens once the bot cannot run clear in time. Topping mana up
+    // outranks running because for a warlock it is the actual save rather than damage control, and
+    // warding comes last because it protects nobody but its caster--so it waits for a tick on which
+    // moving has already reported there is no one left to move away from
+    triggers.push_back(new TriggerNode("kaz'rogal bot must cancel mark", {
+        NextAction("kaz'rogal cancel mark", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("kaz'rogal bot should preserve mana", {
+        NextAction("kaz'rogal preserve mana", ACTION_EMERGENCY + 5) }));
+
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
-        NextAction("kaz'rogal low mana bot take defensive measures", ACTION_EMERGENCY + 1) }));
+        NextAction("kaz'rogal move away from group", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal mark deals shadow damage", {
-        NextAction("kaz'rogal warlock cast shadow ward", ACTION_EMERGENCY + 6) }));
+        NextAction("kaz'rogal mitigate mark damage", ACTION_EMERGENCY + 2) }));
 
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {

@@ -16,6 +16,13 @@
 
 using namespace HyjalHelpers;
 
+// Every mover here walks in short steps rather than handing MoveTo a far destination, and the Z it
+// seeds MoveTo with is always the bot's own. That is not a detail: MoveTo seeds SearchForBestPath
+// with the Z it is given, and the search resolves a point only a few yards ahead. Passing the
+// destination's Z instead asks it to reconcile ground fifty yards away with ground under the bot's
+// feet, which on Hyjal's terrain fails outright--MoveTo returns false and the bot simply stands
+// there, with no error and nothing suppressing it. The destination's Z belongs in the arrival test,
+// never in the step
 // General
 
 bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
@@ -406,7 +413,7 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
     float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -443,7 +450,7 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -495,6 +502,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 }
 
 // Kaz'rogal
+// CombatReach is 7.875y
 
 bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -557,7 +565,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
         float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
         return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
             false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
@@ -590,7 +598,7 @@ bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
     float const moveY = botY + ((mtY - botY) / distToMainTank) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, mainTank->GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -622,16 +630,14 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t botIndex = (findIt != rangedMembers.end()) ?
         std::distance(rangedMembers.begin(), findIt) : 0;
 
-    constexpr float arcSpan = M_PI / 3.0f;
-    constexpr float arcCenter = 4.225f; // measured ingame
-    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
+    float const arcSpan = GetKazrogalRangedArcSpan();
+    float const arcStart = KAZROGAL_RANGED_ARC_CENTER - arcSpan / 2.0f;
 
-    constexpr float radius = 20.0f;
-    float angle = (count == 1) ? arcCenter :
+    float angle = (count == 1) ? KAZROGAL_RANGED_ARC_CENTER :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-    float targetX = kazrogal->GetPositionX() + radius * std::cos(angle);
-    float targetY = kazrogal->GetPositionY() + radius * std::sin(angle);
+    float targetX = kazrogal->GetPositionX() + KAZROGAL_RANGED_ARC_RADIUS * std::cos(angle);
+    float targetY = kazrogal->GetPositionY() + KAZROGAL_RANGED_ARC_RADIUS * std::sin(angle);
 
     float const distToTarget = bot->GetExactDist2d(targetX, targetY);
     if (distToTarget <= 0.5f)
@@ -649,76 +655,77 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
+// Aspect of the Viper and Life Tap are the only two ways a bot here restores mana fast enough to
+// matter. Life Tap doubles as a warlock's escape from a Mark already ticking, because the
+// detonation test reads current mana on every tick rather than deciding once at application
+bool KazrogalPreserveManaAction::Execute(Event /*event*/)
 {
     switch (bot->getClass())
     {
         case CLASS_HUNTER:
-            if (!bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)) &&
-                botAI->CanCastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot))
-            {
-                return botAI->CastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot);
-            }
-            return false;
+            return !bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)) &&
+                botAI->CanCastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot) &&
+                botAI->CastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot);
 
         case CLASS_WARLOCK:
-            if (botAI->CanCastSpell("life tap", bot) &&
-                botAI->CastSpell("life tap", bot))
-            {
-                return true;
-            }
-            break;
-
-        case CLASS_MAGE:
-            if (bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)) &&
-                bot->GetPower(POWER_MANA) <= 1200 &&
-                botAI->CanCastSpell(Id(HyjalSpells::SPELL_ICE_BLOCK), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_ICE_BLOCK), bot))
-            {
-                return true;
-            }
-            break;
-
-        case CLASS_PALADIN:
-            if (bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)) &&
-                bot->GetPower(POWER_MANA) <= 1200 &&
-                botAI->CanCastSpell(Id(HyjalSpells::SPELL_DIVINE_SHIELD), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_DIVINE_SHIELD), bot))
-            {
-                return true;
-            }
-            break;
+            return botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot);
 
         default:
-            break;
+            return false;
     }
+}
 
-    if (bot->GetPower(POWER_MANA) <= 3200)
-        isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
+// Ice Block and Divine Shield apply a school immunity, and a positive immunity carrying
+// SPELL_ATTR1_IMMUNITY_PURGES_EFFECT strips held auras of that school--so either one removes the
+// Mark itself and the blast never happens to anybody. That makes this the only response that
+// protects the raid rather than its carrier, and the only reason to hold it back is the cooldown,
+// which the trigger spends solely once running has stopped being an option
+bool KazrogalCancelMarkAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = bot->getClass() == CLASS_MAGE
+        ? Id(HyjalSpells::SPELL_ICE_BLOCK)
+        : Id(HyjalSpells::SPELL_DIVINE_SHIELD);
 
-    constexpr float safeDistance = 16.0f;
+    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
 
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+// Moving does nothing for the carrier and everything for the people beside it. 31463 ignores line
+// of sight, so this has to buy real distance--none of the Horde base's cover counts
+bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
+{
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, MARK_ESCAPE_DISTANCE);
     if (!nearestPlayer)
         return false;
 
     float const currentDistance = bot->GetDistance2d(nearestPlayer);
-    if (currentDistance < safeDistance)
-    {
-        Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-        if (!kazrogal)
-            return false;
+    if (currentDistance >= MARK_ESCAPE_DISTANCE)
+        return false;
 
-        if (bot->GetExactDist2d(kazrogal) > 36.0f)
-            return MoveAway(nearestPlayer, safeDistance - currentDistance);
-        else
-            return MoveFromGroup(safeDistance);
-    }
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
 
-    return false;
+    // MoveFromGroup steers away from the group's centre of mass but gates on the nearest member,
+    // and those come apart once the nearest member is another bot fleeing the same Mark: the
+    // centroid sits back with the raid, so it sends both of them the same way, the pair stays
+    // together, and neither one's gate ever closes. Its step is distance - closestDist too, which
+    // is longest exactly when they are closest. MoveAway is the answer there and only there--its
+    // vector is away from that one player, so a pair splits on the first step--but it costs lateral
+    // drift, which is wasted on a bot whose neighbours are all still holding station
+    // Reading the latch asks that directly rather than by proxy, so nothing here has to know where
+    // any given role stands. Ranged hold an arc, melee are on the far side of the boss, and both
+    // produce fleeing bots that this one test catches. The nearest player is inside
+    // MARK_ESCAPE_DISTANCE by construction, so a latched one is always a live collision rather
+    // than someone who happens to still carry the flag
+    if (isBelowManaThreshold.count(nearestPlayer->GetGUID()) > 0)
+        return MoveAway(nearestPlayer, MARK_ESCAPE_DISTANCE - currentDistance);
+
+    return MoveFromGroup(MARK_ESCAPE_DISTANCE);
 }
 
-bool KazrogalWarlockCastShadowWardAction::Execute(Event /*event*/)
+// Shadow Ward absorbs. It does not touch the Mark, the drain or the detonation, so it saves only
+// the warlock holding it--which is why it sits below the movement: while anyone is still inside
+// the blast, walking out of it is worth more than softening the hit
+bool KazrogalMitigateMarkDamageAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot);
 }
@@ -787,7 +794,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
         float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
         return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
             false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
@@ -953,7 +960,7 @@ bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
     float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -986,7 +993,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
     float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1039,7 +1046,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1139,7 +1146,7 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
