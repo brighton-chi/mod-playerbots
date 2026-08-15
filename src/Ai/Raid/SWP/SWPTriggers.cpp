@@ -700,11 +700,13 @@ bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_WARLOCK || bot->GetCharm())
+    if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
+    if (bot->GetCharm())
         return false;
 
     return FindAvailableVoidSpawnForEnslave(bot);

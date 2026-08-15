@@ -696,13 +696,6 @@ bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
 
 bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() != CLASS_WARLOCK || bot->GetCharm())
-        return false;
-
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
-        return false;
-
     Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(bot);
     if (!voidSpawn)
         return false;
@@ -757,9 +750,6 @@ bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
 
 bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() != CLASS_WARLOCK)
-        return false;
-
     Unit* voidSpawn = GetControlledVoidSpawn();
     if (!voidSpawn)
         return false;
@@ -770,7 +760,8 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 
     bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
+    constexpr float shadowBoltVolleyRange = 20.0f;
+    if (voidSpawn->GetDistance(target) > shadowBoltVolleyRange)
         return commandedAttack;
 
     constexpr uint32 volleySpellId = Id(SwpSpells::SPELL_SHADOW_BOLT_VOLLEY);
