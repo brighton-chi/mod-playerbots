@@ -87,6 +87,14 @@ public:
     bool IsActive() override;
 };
 
+class AnetheronBotIsNearInfernoTargetTrigger : public Trigger
+{
+public:
+    AnetheronBotIsNearInfernoTargetTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron bot is near inferno target") {}
+    bool IsActive() override;
+};
+
 class AnetheronBotIsTargetedByInfernalTrigger : public Trigger
 {
 public:

@@ -109,6 +109,14 @@ private:
     bool _anetheronPositionReached = false;
 };
 
+class AnetheronMoveAwayFromInfernoTargetAction : public MovementAction
+{
+public:
+    AnetheronMoveAwayFromInfernoTargetAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "anetheron move away from inferno target") {}
+    bool Execute(Event event) override;
+};
+
 class AnetheronBringInfernalToInfernalTankAction : public MovementAction
 {
 public:

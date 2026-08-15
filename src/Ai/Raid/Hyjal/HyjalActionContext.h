@@ -45,6 +45,9 @@ public:
         creators["anetheron spread ranged in circle"] =
             &RaidHyjalSummitActionContext::anetheron_spread_ranged_in_circle;
 
+        creators["anetheron move away from inferno target"] =
+            &RaidHyjalSummitActionContext::anetheron_move_away_from_inferno_target;
+
         creators["anetheron bring infernal to infernal tank"] =
             &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
 
@@ -162,6 +165,9 @@ private:
     }
     static Action* anetheron_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new AnetheronSpreadRangedInCircleAction(botAI);
+    }
+    static Action* anetheron_move_away_from_inferno_target(PlayerbotAI* botAI) {
+        return new AnetheronMoveAwayFromInfernoTargetAction(botAI);
     }
     static Action* anetheron_bring_infernal_to_infernal_tank(PlayerbotAI* botAI) {
         return new AnetheronBringInfernalToInfernalTankAction(botAI);

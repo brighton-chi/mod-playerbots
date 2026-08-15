@@ -45,6 +45,9 @@ public:
         creators["anetheron boss casts carrion swarm"] =
             &RaidHyjalSummitTriggerContext::anetheron_boss_casts_carrion_swarm;
 
+        creators["anetheron bot is near inferno target"] =
+            &RaidHyjalSummitTriggerContext::anetheron_bot_is_near_inferno_target;
+
         creators["anetheron bot is targeted by infernal"] =
             &RaidHyjalSummitTriggerContext::anetheron_bot_is_targeted_by_infernal;
 
@@ -156,6 +159,9 @@ private:
     }
     static Trigger* anetheron_boss_casts_carrion_swarm(PlayerbotAI* botAI) {
         return new AnetheronBossCastsCarrionSwarmTrigger(botAI);
+    }
+    static Trigger* anetheron_bot_is_near_inferno_target(PlayerbotAI* botAI) {
+        return new AnetheronBotIsNearInfernoTargetTrigger(botAI);
     }
     static Trigger* anetheron_bot_is_targeted_by_infernal(PlayerbotAI* botAI) {
         return new AnetheronBotIsTargetedByInfernalTrigger(botAI);

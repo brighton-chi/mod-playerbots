@@ -100,6 +100,22 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
     return true;
 }
 
+// Whoever is holding Anetheron stays put: walking him across the platform costs the raid more than
+// a two second stun costs one bot. The Inferno target itself is excluded because it has its own job
+// -- carrying the summon to the gathering spot -- and nothing it does avoids a stun centred on it
+bool AnetheronBotIsNearInfernoTargetTrigger::IsActive()
+{
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron || anetheron->GetVictim() == bot)
+        return false;
+
+    Player* infernoTarget = GetInfernoTarget(anetheron);
+    if (!infernoTarget || infernoTarget == bot)
+        return false;
+
+    return bot->GetExactDist2d(infernoTarget) < INFERNAL_ESCAPE_DISTANCE;
+}
+
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");

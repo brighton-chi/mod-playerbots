@@ -45,7 +45,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("anetheron spread ranged in circle", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal", {
-        NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 6) }));
+        NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 7) }));
+
+    triggers.push_back(new TriggerNode("anetheron bot is near inferno target", {
+        NextAction("anetheron move away from inferno target", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
         NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));

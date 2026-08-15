@@ -160,6 +160,13 @@ inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1
 // Infernals are summoned wherever the Inferno target stands and then walked to the tanking spot,
 // so the search has to span the whole platform rather than the area around any one bot
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
+// A landing Infernal stuns everything within 10y for 2s (31302), and then burns everything within
+// 10y of itself for as long as it lives (31304 triggering 31303). Both are cast by the creature, so
+// the post-#26967 area check adds no combat reach to either--10 is 10, Bloodlust included. Since
+// Inferno drops the Infernal on its target's feet, clearing this much of that target during the
+// 3.5s cast dodges the stun and starts the bot outside the immolation for free
+inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
+inline constexpr float INFERNAL_ESCAPE_DISTANCE = INFERNAL_DANGER_RADIUS + 2.0f;
 Player* GetInfernoTarget(Unit* anetheron);
 // Every living Towering Infernal, oldest first. Creature GUIDs are handed out in spawn order, so
 // that ordering is both stable as the fight goes on and identical for every bot that asks--which

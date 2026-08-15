@@ -394,6 +394,23 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// Everyone standing near whoever Inferno is aimed at is about to be stunned, since the Infernal
+// lands on that player's feet. The 3.5s cast is the whole window, and stepping out of it also
+// starts the bot clear of the immolation aura the Infernal carries afterwards
+bool AnetheronMoveAwayFromInfernoTargetAction::Execute(Event /*event*/)
+{
+    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    if (!anetheron)
+        return false;
+
+    Player* infernoTarget = GetInfernoTarget(anetheron);
+    if (!infernoTarget || infernoTarget == bot)
+        return false;
+
+    constexpr uint32 minInterval = 0;
+    return FleePosition(infernoTarget->GetPosition(), INFERNAL_ESCAPE_DISTANCE, minInterval);
+}
+
 // Infernals cannot be taunted, so nothing the tank does will pull one off its victim. What moves
 // an Infernal is its victim walking, and the summon itself lands wherever its target stands when
 // the 3.5s cast ends. Both cases are the same job: carry it to the gathering spot
