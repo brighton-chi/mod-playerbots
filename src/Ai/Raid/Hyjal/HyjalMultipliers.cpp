@@ -300,7 +300,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) < MARK_RECOVERED_MANA)
+    if (bot->GetPower(POWER_MANA) < MARK_DANGER_MANA)
         return 0.0f;
 
     return 1.0f;

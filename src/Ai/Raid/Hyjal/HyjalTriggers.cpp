@@ -172,8 +172,13 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    // An assist tank only steps in front while it could still eat a full Mark
-    return bot->GetPower(POWER_MANA) > MARK_SURVIVAL_MANA;
+    if (bot->getClass() != CLASS_PALADIN)
+        return true;
+
+    if (isBelowManaThreshold.count(bot->GetGUID()) > 0)
+        return false;
+
+    return bot->GetPower(POWER_MANA) > MARK_DANGER_MANA;
 }
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
@@ -194,11 +199,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    if (bot->getClass() == CLASS_HUNTER)
-    {
-        return true;
-    }
-    else if (bot->GetPower(POWER_MANA) > MARK_RECOVERED_MANA)
+    if (bot->GetPower(POWER_MANA) > MARK_REJOIN_MANA)
     {
         isBelowManaThreshold.erase(bot->GetGUID());
         if (PlayerbotAI::IsMelee(bot))
@@ -210,54 +211,6 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     return false;
 }
 
-bool KazrogalBotShouldPreserveManaTrigger::IsActive()
-{
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return false;
-
-    if (bot->GetPower(POWER_MANA) >= MARK_RECOVERED_MANA)
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_HUNTER:
-            return !bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER));
-
-        // Life Tap is priced in health, so below the threshold the AI life taps at it stops being
-        // available and Shadow Ward takes over
-        case CLASS_WARLOCK:
-            return bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth;
-
-        default:
-            return false;
-    }
-}
-
-// Spending Ice Block or Divine Shield costs a cooldown longer than the pull, so it waits until the
-// Mark is certain to detonate and running can no longer open enough ground before it does
-bool KazrogalBotMustCancelMarkTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return false;
-
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DIVINE_SHIELD)) ||
-        bot->HasAura(Id(HyjalSpells::SPELL_ICE_BLOCK)))
-    {
-        return false;
-    }
-
-    if (!HasMarkOfKazrogal(bot))
-        return false;
-
-    if (bot->GetPower(POWER_MANA) >= MARK_SURVIVAL_MANA)
-        return false;
-
-    return !CanOutrunMarkDetonation(bot);
-}
-
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
@@ -266,6 +219,10 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         return false;
     }
 
+    // Hunters never run. They rely only on Aspect of the Viper.
+    if (bot->getClass() == CLASS_HUNTER)
+        return false;
+
     if (bot->getClass() == CLASS_DRUID &&
         (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
          botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
@@ -273,17 +230,10 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
         return false;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal || kazrogal->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DIVINE_SHIELD)) ||
-        bot->HasAura(Id(HyjalSpells::SPELL_ICE_BLOCK)))
-    {
-        return false;
-    }
-
-    // The latch belongs here rather than in the action it drives: the movement multiplier reads it
-    // too, and a flag two files depend on should not be a side effect of one of them running
     if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
     {
         isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
@@ -293,18 +243,60 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     return isBelowManaThreshold.count(bot->GetGUID()) > 0;
 }
 
-// Below the survival line with Life Tap priced out of reach: the detonation is coming and there is
-// nothing left but to soften it
-bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
+bool KazrogalHunterShouldPreserveManaTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return false;
+
+    if (bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)))
+        return false;
+
+    // Activate at 3200 mana; switch back based on normal Hunter strategy
+    return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA;
+}
+
+bool KazrogalMarkOnMageOrPaladinTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal || kazrogal->GetVictim() == bot)
+        return false;
+
+    Aura* aura = bot->GetAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+    if (!aura)
+        return false;
+
+    uint32 const mana = bot->GetPower(POWER_MANA);
+    constexpr float markFullyDrainedMana = 3000f;
+    if (mana >= markFullyDrainedMana)
+        return false;
+
+    // Blowing Ice Block/Divine Shield is worth it only where the Mark outlasts mana.
+    //   2401-3000  needs 4s left      1201-1800  needs 2s left      0-600  cast regardless
+    //   1801-2400  needs 3s left       601-1200  needs 1s left
+    uint32 const tickDrain = static_cast<uint32>(MARK_TICK_DRAIN);
+    int32 const requiredMs =
+        (static_cast<int32>((mana + tickDrain - 1) / tickDrain) - 1) * IN_MILLISECONDS;
+
+    return requiredMs <= 0 || aura->GetDuration() >= requiredMs;
+}
+
+// Warlocks use Shadow Ward when the next tick will detonate
+bool KazrogalMarkAboutToDetonateOnWarlockTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!HasMarkOfKazrogal(bot))
+    if (!bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)))
         return false;
 
-    return bot->GetPower(POWER_MANA) < MARK_SURVIVAL_MANA &&
-        bot->GetHealthPct() <= sPlayerbotAIConfig.lowHealth;
+    constexpr float markHighDangerMana = 600f;
+    return bot->GetPower(POWER_MANA) <= markHighDangerMana;
 }
 
 // Azgalor

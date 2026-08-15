@@ -175,15 +175,19 @@ public:
     bool Execute(Event event) override;
 };
 
-// The four responses to Mark of Kaz'rogal are split by what each one accomplishes, since they
-// protect different people and so cannot share a relevance. Cancelling the Mark spares the whole
-// raid, moving spares everyone but the carrier, warding spares only the carrier, and topping mana
-// up is the one that stops any of it being needed
-class KazrogalPreserveManaAction : public Action
+class KazrogalMoveAwayFromGroupAction : public MovementAction
 {
 public:
-    KazrogalPreserveManaAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal preserve mana") {}
+    KazrogalMoveAwayFromGroupAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kaz'rogal move away from group") {}
+    bool Execute(Event event) override;
+};
+
+class KazrogalActivateAspectOfTheViperAction : public Action
+{
+public:
+    KazrogalActivateAspectOfTheViperAction(PlayerbotAI* botAI)
+        : Action(botAI, "kaz'rogal activate aspect of the viper") {}
     bool Execute(Event event) override;
 };
 
@@ -195,19 +199,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalMoveAwayFromGroupAction : public MovementAction
+class KazrogalCastShadowWardAction : public Action
 {
 public:
-    KazrogalMoveAwayFromGroupAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "kaz'rogal move away from group") {}
-    bool Execute(Event event) override;
-};
-
-class KazrogalMitigateMarkDamageAction : public Action
-{
-public:
-    KazrogalMitigateMarkDamageAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal mitigate mark damage") {}
+    KazrogalCastShadowWardAction(PlayerbotAI* botAI)
+        : Action(botAI, "kaz'rogal cast shadow ward") {}
     bool Execute(Event event) override;
 };
 

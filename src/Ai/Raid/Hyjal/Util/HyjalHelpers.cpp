@@ -403,36 +403,7 @@ Position const& GetInfernalTankPosition(Player* bot)
 
 // Kaz'rogal
 
-std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
 std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
-
-bool HasMarkOfKazrogal(Player* bot)
-{
-    return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
-}
-
-float GetSecondsBeforeMarkDetonates(Player* bot)
-{
-    // A tick tests mana before draining it, so a bot holding n whole ticks' worth clears n more of
-    // them and detonates on the one after
-    return std::floor(static_cast<float>(bot->GetPower(POWER_MANA)) / MARK_TICK_DRAIN);
-}
-
-bool CanOutrunMarkDetonation(Player* bot)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, MARK_ESCAPE_DISTANCE);
-    if (!nearestPlayer)
-        return true;
-
-    float const gapNeeded = MARK_ESCAPE_DISTANCE - bot->GetDistance2d(nearestPlayer);
-    if (gapNeeded <= 0.0f)
-        return true;
-
-    float const reachable = GetSecondsBeforeMarkDetonates(bot) *
-        bot->GetSpeed(MOVE_RUN) * MARK_ESCAPE_PATH_EFFICIENCY;
-
-    return reachable >= gapNeeded;
-}
 
 // Azgalor
 

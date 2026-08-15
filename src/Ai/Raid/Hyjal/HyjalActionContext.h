@@ -70,17 +70,17 @@ public:
         creators["kaz'rogal spread ranged in arc"] =
             &RaidHyjalSummitActionContext::kazrogal_spread_ranged_in_arc;
 
-        creators["kaz'rogal preserve mana"] =
-            &RaidHyjalSummitActionContext::kazrogal_preserve_mana;
+        creators["kaz'rogal move away from group"] =
+            &RaidHyjalSummitActionContext::kazrogal_move_away_from_group;
+
+        creators["kaz'rogal activate aspect of the viper"] =
+            &RaidHyjalSummitActionContext::kazrogal_activate_aspect_of_the_viper;
 
         creators["kaz'rogal cancel mark"] =
             &RaidHyjalSummitActionContext::kazrogal_cancel_mark;
 
-        creators["kaz'rogal move away from group"] =
-            &RaidHyjalSummitActionContext::kazrogal_move_away_from_group;
-
-        creators["kaz'rogal mitigate mark damage"] =
-            &RaidHyjalSummitActionContext::kazrogal_mitigate_mark_damage;
+        creators["kaz'rogal cast shadow ward"] =
+            &RaidHyjalSummitActionContext::kazrogal_cast_shadow_ward;
 
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
@@ -192,17 +192,17 @@ private:
     static Action* kazrogal_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new KazrogalSpreadRangedInArcAction(botAI);
     }
-    static Action* kazrogal_preserve_mana(PlayerbotAI* botAI) {
-        return new KazrogalPreserveManaAction(botAI);
+    static Action* kazrogal_move_away_from_group(PlayerbotAI* botAI) {
+        return new KazrogalMoveAwayFromGroupAction(botAI);
+    }
+    static Action* kazrogal_activate_aspect_of_the_viper(PlayerbotAI* botAI) {
+        return new KazrogalActivateAspectOfTheViperAction(botAI);
     }
     static Action* kazrogal_cancel_mark(PlayerbotAI* botAI) {
         return new KazrogalCancelMarkAction(botAI);
     }
-    static Action* kazrogal_move_away_from_group(PlayerbotAI* botAI) {
-        return new KazrogalMoveAwayFromGroupAction(botAI);
-    }
-    static Action* kazrogal_mitigate_mark_damage(PlayerbotAI* botAI) {
-        return new KazrogalMitigateMarkDamageAction(botAI);
+    static Action* kazrogal_cast_shadow_ward(PlayerbotAI* botAI) {
+        return new KazrogalCastShadowWardAction(botAI);
     }
 
     // Azgalor

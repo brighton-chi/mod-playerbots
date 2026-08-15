@@ -67,14 +67,20 @@ public:
         creators["kaz'rogal boss engaged by assist tanks"] =
             &RaidHyjalSummitTriggerContext::kazrogal_boss_engaged_by_assist_tanks;
 
-        creators["kaz'rogal bot is low on mana"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
-
         creators["kaz'rogal low mana bots need escape path"] =
             &RaidHyjalSummitTriggerContext::kazrogal_low_mana_bots_need_escape_path;
 
-        creators["kaz'rogal mark deals shadow damage"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_mark_deals_shadow_damage;
+        creators["kaz'rogal bot is low on mana"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
+
+        creators["kaz'rogal hunter should preserve mana"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_hunter_should_preserve_mana;
+
+        creators["kaz'rogal mark on mage or paladin"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_mark_on_mage_or_paladin;
+
+        creators["kaz'rogal mark about to detonate on warlock"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_mark_about_to_detonate_on_warlock;
 
         // Azgalor
         creators["azgalor pulling boss"] =
@@ -189,8 +195,14 @@ private:
     static Trigger* kazrogal_bot_is_low_on_mana(PlayerbotAI* botAI) {
         return new KazrogalBotIsLowOnManaTrigger(botAI);
     }
-    static Trigger* kazrogal_mark_deals_shadow_damage(PlayerbotAI* botAI) {
-        return new KazrogalMarkDealsShadowDamageTrigger(botAI);
+    static Trigger* kazrogal_hunter_should_preserve_mana(PlayerbotAI* botAI) {
+        return new KazrogalHunterShouldPreserveManaTrigger(botAI);
+    }
+    static Trigger* kazrogal_mark_on_mage_or_paladin(PlayerbotAI* botAI) {
+        return new KazrogalMarkOnMageOrPaladinTrigger(botAI);
+    }
+    static Trigger* kazrogal_mark_about_to_detonate_on_warlock(PlayerbotAI* botAI) {
+        return new KazrogalMarkAboutToDetonateOnWarlockTrigger(botAI);
     }
 
     // Azgalor

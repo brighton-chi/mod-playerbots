@@ -32,15 +32,6 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     bool erased = false;
     if (PlayerbotAI::IsTank(bot))
     {
-        if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        {
-            if (kazrogalTankStep.erase(guid) > 0)
-                erased = true;
-
-            if (isBelowManaThreshold.erase(guid) > 0)
-                erased = true;
-        }
-
         if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
             azgalorTankStep.erase(guid) > 0)
         {
@@ -556,42 +547,29 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (kazrogal->GetVictim() != bot || !bot->IsWithinMeleeRange(kazrogal))
         return false;
 
-    ObjectGuid const guid = bot->GetGUID();
-    TankPositionState state = kazrogalTankStep.count(guid) ?
-        kazrogalTankStep[guid] : TankPositionState::MovingToTransition;
-    Position const& position = state == TankPositionState::MovingToTransition ?
-        KAZROGAL_TANK_TRANSITION_POSITION : KAZROGAL_TANK_FINAL_POSITION;
-
-    constexpr float maxDistance = 2.0f;
+    Position const& position = KAZROGAL_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
 
-    if (distToPosition > maxDistance)
-    {
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-        float const toPosX = position.GetPositionX() - botX;
-        float const toPosY = position.GetPositionY() - botY;
+    if (distToPosition <= 2.0f)
+        return false;
 
-        float const toBossX = kazrogal->GetPositionX() - botX;
-        float const toBossY = kazrogal->GetPositionY() - botY;
-        bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
 
-        float const maxMoveDist = backwards ? 2.25f : 3.5f;
-        float const moveDist = std::min(maxMoveDist, distToPosition);
-        float const moveX = botX + (toPosX / distToPosition) * moveDist;
-        float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    float const toBossX = kazrogal->GetPositionX() - botX;
+    float const toBossY = kazrogal->GetPositionY() - botY;
+    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
-        return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
-    if (state == TankPositionState::MovingToTransition)
-        kazrogalTankStep[guid] = TankPositionState::MovingToFinal;
-    else if (state != TankPositionState::MovingToTransition)
-        kazrogalTankStep[guid] = TankPositionState::Positioned;
-
-    return false;
+    return MoveTo(
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // To spread cleave damage
@@ -672,40 +650,6 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Aspect of the Viper and Life Tap are the only two ways a bot here restores mana fast enough to
-// matter. Life Tap doubles as a warlock's escape from a Mark already ticking, because the
-// detonation test reads current mana on every tick rather than deciding once at application
-bool KazrogalPreserveManaAction::Execute(Event /*event*/)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_HUNTER:
-            return !bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)) &&
-                botAI->CanCastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot);
-
-        case CLASS_WARLOCK:
-            return botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot);
-
-        default:
-            return false;
-    }
-}
-
-// Ice Block and Divine Shield apply a school immunity, and a positive immunity carrying
-// SPELL_ATTR1_IMMUNITY_PURGES_EFFECT strips held auras of that school--so either one removes the
-// Mark itself and the blast never happens to anybody. That makes this the only response that
-// protects the raid rather than its carrier, and the only reason to hold it back is the cooldown,
-// which the trigger spends solely once running has stopped being an option
-bool KazrogalCancelMarkAction::Execute(Event /*event*/)
-{
-    uint32 const spellId = bot->getClass() == CLASS_MAGE
-        ? Id(HyjalSpells::SPELL_ICE_BLOCK)
-        : Id(HyjalSpells::SPELL_DIVINE_SHIELD);
-
-    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
-}
-
 // Moving does nothing for the carrier and everything for the people beside it. 31463 ignores line
 // of sight, so this has to buy real distance--none of the Horde base's cover counts
 bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
@@ -739,10 +683,24 @@ bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
     return MoveFromGroup(MARK_ESCAPE_DISTANCE);
 }
 
-// Shadow Ward absorbs. It does not touch the Mark, the drain or the detonation, so it saves only
-// the warlock holding it--which is why it sits below the movement: while anyone is still inside
-// the blast, walking out of it is worth more than softening the hit
-bool KazrogalMitigateMarkDamageAction::Execute(Event /*event*/)
+bool KazrogalActivateAspectOfTheViperAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot) &&
+        botAI->CastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot);
+}
+
+bool KazrogalCancelMarkAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = bot->getClass() == CLASS_MAGE
+        ? Id(HyjalSpells::SPELL_ICE_BLOCK) : Id(HyjalSpells::SPELL_DIVINE_SHIELD);
+
+    if (!PlayerbotAI::IsHeal(bot)) // Remove to resume dps
+        bot->RemoveAura(spellId);
+
+    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
+bool KazrogalCastShadowWardAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot);
 }

@@ -153,22 +153,6 @@ public:
     bool IsActive() override;
 };
 
-class KazrogalBotShouldPreserveManaTrigger : public Trigger
-{
-public:
-    KazrogalBotShouldPreserveManaTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal bot should preserve mana") {}
-    bool IsActive() override;
-};
-
-class KazrogalBotMustCancelMarkTrigger : public Trigger
-{
-public:
-    KazrogalBotMustCancelMarkTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal bot must cancel mark") {}
-    bool IsActive() override;
-};
-
 class KazrogalBotIsLowOnManaTrigger : public Trigger
 {
 public:
@@ -177,11 +161,27 @@ public:
     bool IsActive() override;
 };
 
-class KazrogalMarkDealsShadowDamageTrigger : public Trigger
+class KazrogalHunterShouldPreserveManaTrigger : public Trigger
 {
 public:
-    KazrogalMarkDealsShadowDamageTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal mark deals shadow damage") {}
+    KazrogalHunterShouldPreserveManaTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal hunter should preserve mana") {}
+    bool IsActive() override;
+};
+
+class KazrogalMarkOnMageOrPaladinTrigger : public Trigger
+{
+public:
+    KazrogalMarkOnMageOrPaladinTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal mark on mage or paladin") {}
+    bool IsActive() override;
+};
+
+class KazrogalMarkAboutToDetonateOnWarlockTrigger : public Trigger
+{
+public:
+    KazrogalMarkAboutToDetonateOnWarlockTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal mark about to detonate on warlock") {}
     bool IsActive() override;
 };
 

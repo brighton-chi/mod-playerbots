@@ -181,9 +181,6 @@ Unit* GetFocusedInfernal(PlayerbotAI* botAI);
 Unit* GetLooseInfernal(PlayerbotAI* botAI, Player* bot);
 Unit* GetNearestInfernal(PlayerbotAI* botAI, Player* bot);
 Unit* GetInfernalTargetingBot(PlayerbotAI* botAI, Player* bot);
-// The Infernal tank is the first assist tank among the living, so the role moves to the next tank
-// when its holder dies rather than pointing at a corpse--which would also decide, from wherever
-// that bot fell, the spot the rest of the raid walks Infernals to
 bool IsInfernalTank(Player* bot);
 Player* GetInfernalTank(Player* bot);
 // Whichever of the two spots the Infernal tank stands nearer. Reading it off the tank rather than
@@ -192,14 +189,7 @@ Player* GetInfernalTank(Player* bot);
 Position const& GetInfernalTankPosition(Player* bot);
 
 // Kaz'rogal
-inline Position const KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
-inline Position const KAZROGAL_TANK_FINAL_POSITION =      { 5511.514f, -2662.466f, 1480.288f };
-// The ranged ring is not placed to clear War Stomp--31480 reaches only 12y, and no combat reach is
-// added to that, since its caster is a creature and the post-#26967 area check adds the victim's
-// reach for player casters alone. What sets the radius is retreat depth: a bot escaping a Mark has
-// to open MARK_ESCAPE_DISTANCE, essentially all of it radially, and everything past its own cast
-// range is retreat it cannot make without dropping out of the fight. Hence a ring close enough in
-// to leave a 30y caster the room to run
+inline Position const KAZROGAL_TANK_POSITION = { 5505.440f, -2665.059f, 1480.598f };
 inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
 // Measured in game: the heading from Kaz'rogal down the open approach
 inline constexpr float KAZROGAL_RANGED_ARC_CENTER = 4.225f;
@@ -213,18 +203,8 @@ inline float GetKazrogalRangedArcSpan()
     float const ratio = KAZROGAL_RANGED_ARC_HALF_WIDTH / KAZROGAL_RANGED_ARC_RADIUS;
     return 2.0f * std::asin(ratio < 1.0f ? ratio : 1.0f);
 }
-// Mark of Kaz'rogal 31447 is a 5s periodic mana leech: five 1s ticks of 600 each. A tick reads
-// mana before it drains and detonates 31463 when the victim holds less than one tick's worth, so
-// a bot that gains nothing while the aura runs survives exactly when it had the full 3000 as the
-// Mark landed, and otherwise blows up on tick floor(mana / 600) + 1. Life Tap is why that is a
-// deadline rather than a verdict: mana added mid-aura buys further ticks
-inline constexpr float MARK_TICK_DRAIN = 600.0f;
-inline constexpr float MARK_SURVIVAL_MANA = 5.0f * MARK_TICK_DRAIN;
-// Hysteresis on "in danger from the next Mark". Danger starts a little above the survival line and
-// only ends well clear of it, so a bot hovering either side of 3000 does not flicker in and out of
-// spreading. Held in isBelowManaThreshold, which the movement trigger owns
-inline constexpr float MARK_DANGER_MANA = MARK_SURVIVAL_MANA + 200.0f;
-inline constexpr float MARK_RECOVERED_MANA = 4000.0f;
+inline constexpr float MARK_DANGER_MANA = 3200f;
+inline constexpr float MARK_REJOIN_MANA = 4000f;
 // 31463 carries a flat 15y radius. Its caster and its victims are all player controlled, which is
 // the one combination the post-#26967 area check adds no combat reach for, and its
 // TARGET_UNIT_SRC_AREA_ALLY is not among the three target types that earn movement leeway--so
@@ -232,20 +212,8 @@ inline constexpr float MARK_RECOVERED_MANA = 4000.0f;
 // position and the server ticking the aura
 inline constexpr float MARK_EXPLOSION_RADIUS = 15.0f;
 inline constexpr float MARK_ESCAPE_DISTANCE = MARK_EXPLOSION_RADIUS + 1.0f;
-// Both spells carry SPELL_ATTR2_IGNORE_LINE_OF_SIGHT, so the fences and wrecked siege engines
-// packed around the Horde base lengthen an escape path without shortening the distance it has to
-// cover. Straight-line speed therefore flatters the bot, and only this share of it is credited
-// when asking whether running is still an option
 inline constexpr float MARK_ESCAPE_PATH_EFFICIENCY = 0.6f;
-extern std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
 extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
-bool HasMarkOfKazrogal(Player* bot);
-// Whole seconds of Mark left before the blast, assuming no mana arrives meanwhile. Zero means the
-// next tick detonates
-float GetSecondsBeforeMarkDetonates(Player* bot);
-// Whether the bot can still open MARK_ESCAPE_DISTANCE on the nearest player before the blast
-// lands. A false here is what justifies spending an immunity on a cooldown longer than the fight
-bool CanOutrunMarkDetonation(Player* bot);
 
 // Azgalor
 inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player hitbox
