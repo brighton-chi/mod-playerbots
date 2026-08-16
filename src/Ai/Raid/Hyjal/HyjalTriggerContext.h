@@ -89,9 +89,6 @@ public:
         creators["azgalor boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_main_tank;
 
-        creators["azgalor main tank is positioning boss"] =
-            &RaidHyjalSummitTriggerContext::azgalor_main_tank_is_positioning_boss;
-
         creators["azgalor boss engaged by ranged"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_ranged;
 
@@ -211,9 +208,6 @@ private:
     }
     static Trigger* azgalor_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByMainTankTrigger(botAI);
-    }
-    static Trigger* azgalor_main_tank_is_positioning_boss(PlayerbotAI* botAI) {
-        return new AzgalorMainTankIsPositioningBossTrigger(botAI);
     }
     static Trigger* azgalor_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByRangedTrigger(botAI);

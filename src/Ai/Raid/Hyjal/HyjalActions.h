@@ -225,14 +225,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorWaitAtSafePositionAction : public MovementAction
-{
-public:
-    AzgalorWaitAtSafePositionAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "azgalor wait at safe position") {}
-    bool Execute(Event event) override;
-};
-
 class AzgalorDisperseRangedAction : public MovementAction
 {
 public:

@@ -88,9 +88,6 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss engaged by main tank", {
         NextAction("azgalor main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("azgalor main tank is positioning boss", {
-        NextAction("azgalor wait at safe position", ACTION_EMERGENCY + 1) }));
-
     triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
@@ -157,7 +154,6 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Azgalor
     multipliers.push_back(new AzgalorDisableAutoTargetingAndPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new AzgalorMeleeWaitForTankPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
     multipliers.push_back(new AzgalorRangedControlAvoidanceMultiplier(botAI));
 

@@ -81,14 +81,6 @@ enum class HyjalNpcs : uint32
     NPC_DOOMFIRE          = 18095,
 };
 
-enum class TankPositionState : uint8
-{
-    MovingToTransition = 0,
-    MovingToFinal      = 1,
-    Positioned         = 2,
-    Unknown            = 255,
-};
-
 // General
 inline constexpr uint32 HYJAL_MAP_ID = 534;
 inline constexpr float HAZARD_SEARCH_RADIUS = 60.0f; // For Death & Decay and Rain of Fire
@@ -243,15 +235,21 @@ float GetDistanceFromGroupCenter(Player* bot);
 
 // Azgalor
 inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player hitbox
-inline Position const AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
-inline Position const AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
-inline Position const AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
-extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
+// Out to here, melee movement near a pool belongs to the maneuver action and nothing else. The
+// trigger that runs that action and the multiplier that clears the way for it have to read the same
+// figure: where they disagree is a band in which the trigger has stopped firing but the suppression
+// has not lifted, and a melee bot that has just stepped clear of a pool stands frozen in it for the
+// pool's whole life--following Azgalor nowhere while the tank drags him out of reach
+inline constexpr float RAIN_OF_FIRE_MELEE_CONTROL_RADIUS = RAIN_OF_FIRE_RADIUS + 10.0f;
+inline Position const AZGALOR_TANK_POSITION =      { 5494.594f, -2747.069f, 1487.800f };
+// TODO: re-measure. The old value was chosen relative to the tank's transition spot, which no
+// longer exists now that the boss is walked straight to the final position
+inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
 std::vector<Position> GetRainOfFirePositions(Player* bot);
 bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
 bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInRainOfFire(Player* bot);
+bool IsDoomed(Player* bot);
 // Cleave chains from Azgalor's victim to four more players, but only within this distance of
 // that victim and inside his frontal arc. Both are padded past the 10y jump radius and the
 // 180 degree filter in Spell::SearchChainTargets, since he turns with the tank

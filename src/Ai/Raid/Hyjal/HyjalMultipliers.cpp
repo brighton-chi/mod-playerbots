@@ -326,7 +326,10 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) &&
+    bool const isAvoidAoeAction = dynamic_cast<AvoidAoeAction*>(action);
+
+    if (!isAvoidAoeAction &&
+        !dynamic_cast<DpsAssistAction*>(action) &&
         !dynamic_cast<TankAssistAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action))
     {
@@ -337,6 +340,9 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
+    if (isAvoidAoeAction && IsDoomed(bot))
+        return 1.0f;
+
     if (AI_VALUE2(Unit*, "find target", "azgalor"))
         return 0.0f;
 
@@ -345,7 +351,7 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
 
 float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (!IsDoomed(bot))
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action))
@@ -361,36 +367,6 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 0.0f;
 }
 
-// Hold melee at the safe spot until the tank has Azgalor turned away from the raid
-float AzgalorMeleeWaitForTankPositioningMultiplier::GetValue(Action* action)
-{
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "azgalor"))
-        return 1.0f;
-
-    // Don't wait if the tank is a human
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
-        return 1.0f;
-
-    TankPositionState const tankState = GetAzgalorTankPositionState(botAI, bot);
-    if (tankState == TankPositionState::Unknown ||
-        tankState == TankPositionState::MovingToTransition)
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
 // Leave the escape action as the only thing that moves melee while Rain of Fire is a threat
 float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 {
@@ -404,7 +380,7 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     }
 
     // Doom outranks standing in fire, and it has its own positioning to do
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (IsDoomed(bot))
         return 1.0f;
 
     if (dynamic_cast<AzgalorMeleeManueverThroughFireAction*>(action))
@@ -413,11 +389,9 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    // Has to reach further than the radius that fires the escape action, by at least the one step
-    // that action takes, so a bot which has only just cleared the fire is still held back instead
-    // of being walked into Azgalor's front again
-    constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
-    if (IsNearRainOfFire(bot, suppressionRadius))
+    // Shares its radius with the trigger that runs the maneuver action, so that action owns melee
+    // movement across exactly the area this clears for it and there is no band between them
+    if (IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS))
         return 0.0f;
 
     return 1.0f;
@@ -440,7 +414,7 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Doom outranks standing in fire, and it has its own positioning to do
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (IsDoomed(bot))
         return 1.0f;
 
     if (dynamic_cast<AzgalorRangedGetOutOfRainOfFireAction*>(action))

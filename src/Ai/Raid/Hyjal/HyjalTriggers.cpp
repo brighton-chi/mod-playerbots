@@ -275,9 +275,6 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActive()
     return requiredMs <= 0 || aura->GetDuration() >= requiredMs;
 }
 
-// Two responses under one trigger because they are the same job at different prices: Life Tap while
-// there is health to trade, Shadow Ward once there is not. Tapping runs from well above the danger
-// line so a warlock never reaches the escape; warding only matters on the tick before detonation
 bool KazrogalWarlockShouldManageManaTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -314,24 +311,6 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
-bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
-{
-    if (PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetVictim() == bot)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) || PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
-    return tankState == TankPositionState::Unknown ||
-        tankState == TankPositionState::MovingToTransition;
-}
-
 bool AzgalorBossEngagedByRangedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -341,7 +320,7 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
     if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (IsDoomed(bot))
         return false;
 
     constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
@@ -357,10 +336,14 @@ bool AzgalorMeleeIsStandingInRainOfFireTrigger::IsActive()
     if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (IsDoomed(bot))
         return false;
 
-    return IsInRainOfFire(bot);
+    // Reaches as far as the suppression that accompanies it, not just to the fire. Everything
+    // inside that radius has had its other movement zeroed, so this action has to keep running
+    // across the whole of it--it is the only thing left that can walk the bot anywhere, including
+    // back onto Azgalor once the tank has dragged him clear of the pool
+    return IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
 }
 
 bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
@@ -371,7 +354,7 @@ bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    if (bot->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+    if (IsDoomed(bot))
         return false;
 
     return IsInRainOfFire(bot);
@@ -379,7 +362,7 @@ bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return bot->HasAura(Id(HyjalSpells::SPELL_DOOM));
+    return IsDoomed(bot);
 }
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
@@ -400,7 +383,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     {
         // Trigger for second assist tank only if first assist tank has Doom
         Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-        if (firstAssistTank && !firstAssistTank->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        if (firstAssistTank && !IsDoomed(firstAssistTank))
             return false;
 
         return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);

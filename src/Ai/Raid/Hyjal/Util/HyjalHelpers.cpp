@@ -447,21 +447,6 @@ bool HasMarkOfKazrogal(Player* bot)
 
 // Azgalor
 
-std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-
-TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
-{
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return TankPositionState::Unknown;
-
-    auto it = azgalorTankStep.find(mainTank->GetGUID());
-    if (it != azgalorTankStep.end())
-        return it->second;
-
-    return TankPositionState::Unknown;
-}
-
 // Each Rain of Fire is its own dynamic object that expires after 10s on its own, so nothing has
 // to be recorded to know whether one is still active. Azgalor casts on a timer that lets two
 // overlap, so callers have to weigh all of them rather than just the nearest
@@ -507,6 +492,11 @@ bool IsInRainOfFire(Player* bot)
     return IsNearRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
 }
 
+bool IsDoomed(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_DOOM));
+}
+
 // Standing behind Azgalor is immune at any range, which is where melee want to be anyway. The
 // range clause only matters for anyone who has to pass through his front
 bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)
@@ -531,7 +521,7 @@ bool AnyGroupMemberHasDoom(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(Id(HyjalSpells::SPELL_DOOM)))
+        if (member && IsDoomed(member))
             return true;
     }
 

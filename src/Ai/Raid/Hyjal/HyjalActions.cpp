@@ -30,17 +30,6 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     ObjectGuid const guid = bot->GetGUID();
 
     bool erased = false;
-    if (PlayerbotAI::IsTank(bot))
-    {
-        if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
-            azgalorTankStep.erase(guid))
-        {
-            erased = true;
-        }
-
-        return erased;
-    }
-
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
     {
         Action* action = context->GetAction("rage winterchill spread ranged in circle");
@@ -510,7 +499,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 }
 
 // Kaz'rogal
-// CombatReach is 7.875y
+// CombatReach is 7.875 yards
 
 bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -713,6 +702,8 @@ bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 }
 
 // Azgalor
+// CombatReach is 8.8 yards
+// Doomguard CombatReach is 3.75 yards
 
 bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -736,8 +727,6 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-// Two-step move: back up toward the base, then move back toward the base entrance
-// to turn Azgalor away from the raid
 bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -750,42 +739,30 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     if (azgalor->GetVictim() != bot || !bot->IsWithinMeleeRange(azgalor))
         return false;
 
-    ObjectGuid const guid = bot->GetGUID();
-    auto it = azgalorTankStep.try_emplace(guid, TankPositionState::MovingToTransition).first;
-    TankPositionState state = it->second;
-    Position const& position = state == TankPositionState::MovingToTransition ?
-        AZGALOR_TANK_TRANSITION_POSITION : AZGALOR_TANK_FINAL_POSITION;
-
-    constexpr float maxDistance = 2.0f;
+    Position const& position = AZGALOR_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
 
-    if (distToPosition > maxDistance)
-    {
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-        float const toPosX = position.GetPositionX() - botX;
-        float const toPosY = position.GetPositionY() - botY;
+    constexpr float maxDistance = 2.0f;
+    if (distToPosition <= maxDistance)
+        return false;
 
-        float const toBossX = azgalor->GetPositionX() - botX;
-        float const toBossY = azgalor->GetPositionY() - botY;
-        bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
 
-        float const maxMoveDist = backwards ? 2.25f : 3.5f;
-        float const moveDist = std::min(maxMoveDist, distToPosition);
-        float const moveX = botX + (toPosX / distToPosition) * moveDist;
-        float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    float const toBossX = azgalor->GetPositionX() - botX;
+    float const toBossY = azgalor->GetPositionY() - botY;
+    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
-        return MoveTo(
-            HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
-    if (state == TankPositionState::MovingToTransition)
-        azgalorTankStep[guid] = TankPositionState::MovingToFinal;
-    else if (state != TankPositionState::MovingToTransition)
-        azgalorTankStep[guid] = TankPositionState::Positioned;
-
-    return false;
+    return MoveTo(
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
@@ -794,9 +771,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
-    float const safeDistFromBoss =
-        (tankState == TankPositionState::MovingToTransition ? 35.0f : 29.0f);
+    float const safeDistFromBoss = 30.0f; // ~20 yards + boss and bot CombatReaches
     constexpr uint32 minInterval = 0;
 
     if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
@@ -806,7 +781,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     }
 
     Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-    constexpr float safeDistFromDoomguard = 14.0f;
+    constexpr float safeDistFromDoomguard = 10.0f; // War Stomp is 10 yards center-to-center
 
     if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
         return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
@@ -888,6 +863,13 @@ bool AzgalorMeleeManueverThroughFireAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
+    // No heading on the ring is open. Fleeing is the answer only while the bot is actually in fire:
+    // the escape aims at a point on a circle drawn round the pool, so a bot that has already
+    // cleared that circle would be walked back inward toward it. Standing still is better--the ring
+    // reopens on its own as Azgalor is dragged or the pool expires
+    if (!IsInRainOfFire(bot))
+        return false;
+
     // Leave the nearest pool, still refusing any heading that would cross into the cleave
     Position const* nearest = nullptr;
     float nearestDistance = 0.0f;
@@ -903,7 +885,9 @@ bool AzgalorMeleeManueverThroughFireAction::Execute(Event /*event*/)
 
     constexpr float escapeMargin = 2.0f;
     auto cleaveSafe = [azgalor](float x, float y)
-    { return IsSafeFromAzgalorCleave(azgalor, x, y); };
+    {
+        return IsSafeFromAzgalorCleave(azgalor, x, y);
+    };
 
     if (!GetHazardEscapeStep(
             bot, *nearest, RAIN_OF_FIRE_RADIUS + escapeMargin, moveDist,
@@ -915,35 +899,6 @@ bool AzgalorMeleeManueverThroughFireAction::Execute(Event /*event*/)
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
-// Wait for the tank to get to the transition position (i.e., move in to attack as
-// Azgalor turns away from the raid)
-bool AzgalorWaitAtSafePositionAction::Execute(Event /*event*/)
-{
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
-        return false;
-
-    bot->AttackStop();
-    botAI->InterruptSpell();
-
-    Position const& position = AZGALOR_DOOMGUARD_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 2.0f)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + ((position.GetPositionX() - botX) / distToPosition) * moveDist;
-    float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
-
-    return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // As at Winterchill, except Azgalor can have more than one pool up, so the nearest is the one to

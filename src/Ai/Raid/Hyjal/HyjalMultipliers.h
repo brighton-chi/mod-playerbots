@@ -129,14 +129,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class AzgalorMeleeWaitForTankPositioningMultiplier : public Multiplier
-{
-public:
-    AzgalorMeleeWaitForTankPositioningMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "azgalor melee wait for tank positioning") {}
-    float GetValue(Action* action) override;
-};
-
 class AzgalorMeleeDpsControlAvoidanceMultiplier : public Multiplier
 {
 public:
