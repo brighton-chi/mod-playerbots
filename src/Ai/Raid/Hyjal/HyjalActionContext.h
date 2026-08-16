@@ -79,8 +79,8 @@ public:
         creators["kaz'rogal cancel mark"] =
             &RaidHyjalSummitActionContext::kazrogal_cancel_mark;
 
-        creators["kaz'rogal cast shadow ward"] =
-            &RaidHyjalSummitActionContext::kazrogal_cast_shadow_ward;
+        creators["kaz'rogal warlock manage mana"] =
+            &RaidHyjalSummitActionContext::kazrogal_warlock_manage_mana;
 
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
@@ -201,8 +201,8 @@ private:
     static Action* kazrogal_cancel_mark(PlayerbotAI* botAI) {
         return new KazrogalCancelMarkAction(botAI);
     }
-    static Action* kazrogal_cast_shadow_ward(PlayerbotAI* botAI) {
-        return new KazrogalCastShadowWardAction(botAI);
+    static Action* kazrogal_warlock_manage_mana(PlayerbotAI* botAI) {
+        return new KazrogalWarlockManageManaAction(botAI);
     }
 
     // Azgalor

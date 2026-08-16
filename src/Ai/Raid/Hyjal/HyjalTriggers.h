@@ -177,11 +177,11 @@ public:
     bool IsActive() override;
 };
 
-class KazrogalMarkAboutToDetonateOnWarlockTrigger : public Trigger
+class KazrogalWarlockShouldManageManaTrigger : public Trigger
 {
 public:
-    KazrogalMarkAboutToDetonateOnWarlockTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal mark about to detonate on warlock") {}
+    KazrogalWarlockShouldManageManaTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal warlock should manage mana") {}
     bool IsActive() override;
 };
 

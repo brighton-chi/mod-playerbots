@@ -78,8 +78,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal mark on mage or paladin", {
         NextAction("kaz'rogal cancel mark", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal mark about to detonate on warlock", {
-        NextAction("kaz'rogal cast shadow ward", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("kaz'rogal warlock should manage mana", {
+        NextAction("kaz'rogal warlock manage mana", ACTION_EMERGENCY + 6) }));
 
     // Azgalor
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
@@ -150,9 +150,9 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new AnetheronControlMisdirectionMultiplier(botAI));
 
     // Kaz'rogal
-    multipliers.push_back(new KazrogalLowManaBotStayAwayFromGroupMultiplier(botAI));
+    multipliers.push_back(new KazrogalDisableDisperseAndTankFaceMultiplier(botAI));
+    multipliers.push_back(new KazrogalControlLowManaMovementMultiplier(botAI));
     multipliers.push_back(new KazrogalKeepAspectOfTheViperActiveMultiplier(botAI));
-    multipliers.push_back(new KazrogalControlMovementMultiplier(botAI));
 
     // Azgalor
     multipliers.push_back(new AzgalorDisableAutoTargetingAndPositioningMultiplier(botAI));

@@ -33,7 +33,7 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot))
     {
         if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
-            azgalorTankStep.erase(guid) > 0)
+            azgalorTankStep.erase(guid))
         {
             erased = true;
         }
@@ -62,7 +62,7 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
-        isBelowManaThreshold.erase(guid) > 0)
+        botsBelowManaThreshold.erase(guid))
     {
         erased = true;
     }
@@ -625,14 +625,15 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t botIndex = (findIt != rangedMembers.end()) ?
         std::distance(rangedMembers.begin(), findIt) : 0;
 
-    float const arcSpan = GetKazrogalRangedArcSpan();
+    float const arcRadius = GetKazrogalRangedArcRadius(kazrogal);
+    float const arcSpan = GetKazrogalRangedArcSpan(arcRadius);
     float const arcStart = KAZROGAL_RANGED_ARC_CENTER - arcSpan / 2.0f;
 
     float angle = (count == 1) ? KAZROGAL_RANGED_ARC_CENTER :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-    float targetX = kazrogal->GetPositionX() + KAZROGAL_RANGED_ARC_RADIUS * std::cos(angle);
-    float targetY = kazrogal->GetPositionY() + KAZROGAL_RANGED_ARC_RADIUS * std::sin(angle);
+    float targetX = kazrogal->GetPositionX() + arcRadius * std::cos(angle);
+    float targetY = kazrogal->GetPositionY() + arcRadius * std::sin(angle);
 
     float const distToTarget = bot->GetExactDist2d(targetX, targetY);
     if (distToTarget <= 0.5f)
@@ -650,34 +651,27 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Moving does nothing for the carrier and everything for the people beside it. 31463 ignores line
-// of sight, so this has to buy real distance--none of the Horde base's cover counts
 bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
+    if (bot->GetPower(POWER_MANA) > MARK_REJOIN_MANA)
+    {
+        botsBelowManaThreshold.erase(bot->GetGUID());
+        return false;
+    }
+
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, MARK_ESCAPE_DISTANCE);
     if (!nearestPlayer)
         return false;
 
-    float const currentDistance = bot->GetDistance2d(nearestPlayer);
+    float const currentDistance = bot->GetExactDist2d(nearestPlayer);
     if (currentDistance >= MARK_ESCAPE_DISTANCE)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return false;
-
-    // MoveFromGroup steers away from the group's centre of mass but gates on the nearest member,
-    // and those come apart once the nearest member is another bot fleeing the same Mark: the
-    // centroid sits back with the raid, so it sends both of them the same way, the pair stays
-    // together, and neither one's gate ever closes. Its step is distance - closestDist too, which
-    // is longest exactly when they are closest. MoveAway is the answer there and only there--its
-    // vector is away from that one player, so a pair splits on the first step--but it costs lateral
-    // drift, which is wasted on a bot whose neighbours are all still holding station
-    // Reading the latch asks that directly rather than by proxy, so nothing here has to know where
-    // any given role stands. Ranged hold an arc, melee are on the far side of the boss, and both
-    // produce fleeing bots that this one test catches. The nearest player is inside
-    // MARK_ESCAPE_DISTANCE by construction, so a latched one is always a live collision rather
-    // than someone who happens to still carry the flag
-    if (isBelowManaThreshold.count(nearestPlayer->GetGUID()) > 0)
+    // Away from the group's centre while still in among it, since that is the direction that gets a
+    // bot out. Once clear of the raid the nearest player is usually another bot fleeing the same
+    // Mark, and MoveFromGroup cannot separate a pair--it steers both by the same centre, so they
+    // travel together and neither one's gate ever closes. MoveAway is antisymmetric between them
+    if (GetDistanceFromGroupCenter(bot) >= MARK_ESCAPE_SPLIT_DISTANCE)
         return MoveAway(nearestPlayer, MARK_ESCAPE_DISTANCE - currentDistance);
 
     return MoveFromGroup(MARK_ESCAPE_DISTANCE);
@@ -700,8 +694,21 @@ bool KazrogalCancelMarkAction::Execute(Event /*event*/)
     return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
-bool KazrogalCastShadowWardAction::Execute(Event /*event*/)
+// Life Tap first, because it is the only one of the two that removes the problem rather than
+// softening it: mana bought back above the danger line keeps the warlock out of the escape
+// entirely. Shadow Ward is what is left once health is too low to trade
+bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 {
+    if (bot->GetPower(POWER_MANA) <= MARK_LIFE_TAP_MANA &&
+        bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth &&
+        botAI->CanCastSpell("life tap", bot))
+    {
+        return botAI->CastSpell("life tap", bot);
+    }
+
+    if (!HasMarkOfKazrogal(bot))
+        return false;
+
     return botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot);
 }
 

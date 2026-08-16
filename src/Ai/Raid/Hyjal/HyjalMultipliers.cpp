@@ -238,11 +238,25 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 // Kaz'rogal
 
-float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
+float KazrogalDisableDisperseAndTankFaceMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    if (AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
+{
     if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER)
     {
@@ -265,15 +279,14 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    // The escape is itself a MovementAction, so it has to be excused from the suppression it exists
-    // to satisfy. The other three responses are plain casts and never reach this far
     if (dynamic_cast<KazrogalMoveAwayFromGroupAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (!kazrogal || kazrogal->GetVictim() == bot)
         return 1.0f;
 
-    if (isBelowManaThreshold.count(bot->GetGUID()))
+    if (botsBelowManaThreshold.contains(bot->GetGUID()))
         return 0.0f;
 
     return 1.0f;
@@ -300,27 +313,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) < MARK_DANGER_MANA)
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float KazrogalControlMovementMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    bool const isRangedReachTarget = PlayerbotAI::IsRanged(bot) &&
-        dynamic_cast<ReachTargetAction*>(action);
-
-    if (!isRangedReachTarget && !dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+    if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
         return 0.0f;
 
     return 1.0f;
@@ -481,6 +474,9 @@ float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 

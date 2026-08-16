@@ -175,10 +175,7 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
     if (bot->getClass() != CLASS_PALADIN)
         return true;
 
-    if (isBelowManaThreshold.count(bot->GetGUID()) > 0)
-        return false;
-
-    return bot->GetPower(POWER_MANA) > MARK_DANGER_MANA;
+    return !botsBelowManaThreshold.contains(bot->GetGUID());
 }
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
@@ -199,16 +196,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    if (bot->GetPower(POWER_MANA) > MARK_REJOIN_MANA)
-    {
-        isBelowManaThreshold.erase(bot->GetGUID());
-        if (PlayerbotAI::IsMelee(bot))
-            return false;
-        else
-            return true;
-    }
-
-    return false;
+    return !botsBelowManaThreshold.contains(bot->GetGUID());
 }
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
@@ -223,6 +211,7 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
     if (bot->getClass() == CLASS_HUNTER)
         return false;
 
+    // Druids in cat or bear form are immune: the Mark filters to units whose current power is mana
     if (bot->getClass() == CLASS_DRUID &&
         (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
          botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
@@ -236,11 +225,11 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
 
     if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
     {
-        isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
+        botsBelowManaThreshold.insert(bot->GetGUID());
         return true;
     }
 
-    return isBelowManaThreshold.count(bot->GetGUID()) > 0;
+    return botsBelowManaThreshold.contains(bot->GetGUID());
 }
 
 bool KazrogalHunterShouldPreserveManaTrigger::IsActive()
@@ -272,7 +261,7 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActive()
         return false;
 
     uint32 const mana = bot->GetPower(POWER_MANA);
-    constexpr float markFullyDrainedMana = 3000f;
+    constexpr float markFullyDrainedMana = 3000.0f;
     if (mana >= markFullyDrainedMana)
         return false;
 
@@ -286,17 +275,27 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActive()
     return requiredMs <= 0 || aura->GetDuration() >= requiredMs;
 }
 
-// Warlocks use Shadow Ward when the next tick will detonate
-bool KazrogalMarkAboutToDetonateOnWarlockTrigger::IsActive()
+// Two responses under one trigger because they are the same job at different prices: Life Tap while
+// there is health to trade, Shadow Ward once there is not. Tapping runs from well above the danger
+// line so a warlock never reaches the escape; warding only matters on the tick before detonation
+bool KazrogalWarlockShouldManageManaTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL)))
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    constexpr float markHighDangerMana = 600f;
-    return bot->GetPower(POWER_MANA) <= markHighDangerMana;
+    if (bot->GetPower(POWER_MANA) <= MARK_LIFE_TAP_MANA &&
+        bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth)
+    {
+        return true;
+    }
+
+    if (!HasMarkOfKazrogal(bot) || botAI->HasAura("shadow ward", bot))
+        return false;
+
+    return bot->GetPower(POWER_MANA) <= MARK_TICK_DRAIN;
 }
 
 // Azgalor

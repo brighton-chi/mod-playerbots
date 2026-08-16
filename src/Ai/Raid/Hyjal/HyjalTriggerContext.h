@@ -79,8 +79,8 @@ public:
         creators["kaz'rogal mark on mage or paladin"] =
             &RaidHyjalSummitTriggerContext::kazrogal_mark_on_mage_or_paladin;
 
-        creators["kaz'rogal mark about to detonate on warlock"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_mark_about_to_detonate_on_warlock;
+        creators["kaz'rogal warlock should manage mana"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_warlock_should_manage_mana;
 
         // Azgalor
         creators["azgalor pulling boss"] =
@@ -201,8 +201,8 @@ private:
     static Trigger* kazrogal_mark_on_mage_or_paladin(PlayerbotAI* botAI) {
         return new KazrogalMarkOnMageOrPaladinTrigger(botAI);
     }
-    static Trigger* kazrogal_mark_about_to_detonate_on_warlock(PlayerbotAI* botAI) {
-        return new KazrogalMarkAboutToDetonateOnWarlockTrigger(botAI);
+    static Trigger* kazrogal_warlock_should_manage_mana(PlayerbotAI* botAI) {
+        return new KazrogalWarlockShouldManageManaTrigger(botAI);
     }
 
     // Azgalor

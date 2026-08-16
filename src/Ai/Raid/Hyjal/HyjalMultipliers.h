@@ -87,11 +87,19 @@ public:
 
 // Kaz'rogal
 
-class KazrogalLowManaBotStayAwayFromGroupMultiplier : public Multiplier
+class KazrogalDisableDisperseAndTankFaceMultiplier : public Multiplier
 {
 public:
-    KazrogalLowManaBotStayAwayFromGroupMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kaz'rogal low mana bot stay away from group") {}
+    KazrogalDisableDisperseAndTankFaceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kaz'rogal disable disperse and tank face") {}
+    float GetValue(Action* action) override;
+};
+
+class KazrogalControlLowManaMovementMultiplier : public Multiplier
+{
+public:
+    KazrogalControlLowManaMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kaz'rogal control low mana movement") {}
     float GetValue(Action* action) override;
 };
 
@@ -100,14 +108,6 @@ class KazrogalKeepAspectOfTheViperActiveMultiplier : public Multiplier
 public:
     KazrogalKeepAspectOfTheViperActiveMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "kaz'rogal keep aspect of the viper active") {}
-    float GetValue(Action* action) override;
-};
-
-class KazrogalControlMovementMultiplier : public Multiplier
-{
-public:
-    KazrogalControlMovementMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kaz'rogal control movement") {}
     float GetValue(Action* action) override;
 };
 

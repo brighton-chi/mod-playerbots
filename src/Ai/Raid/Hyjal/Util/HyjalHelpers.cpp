@@ -403,7 +403,47 @@ Position const& GetInfernalTankPosition(Player* bot)
 
 // Kaz'rogal
 
-std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
+std::unordered_set<ObjectGuid> botsBelowManaThreshold;
+
+float GetKazrogalRangedArcRadius(Unit* kazrogal)
+{
+    return (kazrogal && kazrogal->GetHealthPct() > KAZROGAL_ENGAGED_HEALTH_PCT)
+        ? KAZROGAL_RANGED_ARC_APPROACH_RADIUS : KAZROGAL_RANGED_ARC_RADIUS;
+}
+
+float GetDistanceFromGroupCenter(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return 0.0f;
+
+    float x = 0.0f;
+    float y = 0.0f;
+    uint32 count = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() ||
+            member->GetMapId() != bot->GetMapId())
+        {
+            continue;
+        }
+
+        x += member->GetPositionX();
+        y += member->GetPositionY();
+        ++count;
+    }
+
+    if (!count)
+        return 0.0f;
+
+    return bot->GetExactDist2d(x / count, y / count);
+}
+
+bool HasMarkOfKazrogal(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+}
 
 // Azgalor
 

@@ -199,11 +199,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalCastShadowWardAction : public Action
+class KazrogalWarlockManageManaAction : public Action
 {
 public:
-    KazrogalCastShadowWardAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal cast shadow ward") {}
+    KazrogalWarlockManageManaAction(PlayerbotAI* botAI)
+        : Action(botAI, "kaz'rogal warlock manage mana") {}
     bool Execute(Event event) override;
 };
 

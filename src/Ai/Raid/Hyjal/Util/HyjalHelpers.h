@@ -13,6 +13,7 @@
 #include <functional>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -191,6 +192,11 @@ Position const& GetInfernalTankPosition(Player* bot);
 // Kaz'rogal
 inline Position const KAZROGAL_TANK_POSITION = { 5505.440f, -2665.059f, 1480.598f };
 inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
+// Kaz'rogal is still being walked to his tanking spot at the pull, and ranged closing to the
+// fighting radius while that happens puts them in front of him. Hold them further out until the
+// tank has him engaged, for which his health leaving full is the cheapest proxy
+inline constexpr float KAZROGAL_RANGED_ARC_APPROACH_RADIUS = 25.0f;
+inline constexpr float KAZROGAL_ENGAGED_HEALTH_PCT = 95.0f;
 // Measured in game: the heading from Kaz'rogal down the open approach
 inline constexpr float KAZROGAL_RANGED_ARC_CENTER = 4.225f;
 // Obstacles flank that approach at fixed world positions, so what bounds the arc is lateral
@@ -198,13 +204,24 @@ inline constexpr float KAZROGAL_RANGED_ARC_CENTER = 4.225f;
 // Deriving the span keeps the two consistent whenever the radius moves. This half-width is a
 // measurement, so re-check that the outer slots still path cleanly after changing either
 inline constexpr float KAZROGAL_RANGED_ARC_HALF_WIDTH = 10.0f;
-inline float GetKazrogalRangedArcSpan()
+float GetKazrogalRangedArcRadius(Unit* kazrogal);
+// Takes the radius rather than reading the constant, since which radius is in force depends on how
+// far into the pull the raid is. Pulling the ring in widens the span for the same clearance, so the
+// arc holds roughly its length either way and spacing does not collapse on the approach
+inline float GetKazrogalRangedArcSpan(float radius)
 {
-    float const ratio = KAZROGAL_RANGED_ARC_HALF_WIDTH / KAZROGAL_RANGED_ARC_RADIUS;
+    float const ratio = KAZROGAL_RANGED_ARC_HALF_WIDTH / radius;
     return 2.0f * std::asin(ratio < 1.0f ? ratio : 1.0f);
 }
-inline constexpr float MARK_DANGER_MANA = 3200f;
-inline constexpr float MARK_REJOIN_MANA = 4000f;
+// Mark of Kaz'rogal 31447 drains 600 a tick, five 1s ticks for 3000 in all, and detonates on the
+// first tick that finds the victim holding less than one tick's worth
+inline constexpr float MARK_TICK_DRAIN = 600.0f;
+inline constexpr float MARK_DANGER_MANA = 3200.0f;
+inline constexpr float MARK_REJOIN_MANA = 5000.0f;
+// Life Tap runs far above the danger line on purpose: it is the only response that stops a warlock
+// needing to run at all, and health is the cheaper resource here. Below the AI's low-health mark
+// there is nothing left to spend, and Shadow Ward takes over
+inline constexpr float MARK_LIFE_TAP_MANA = 5000.0f;
 // 31463 carries a flat 15y radius. Its caster and its victims are all player controlled, which is
 // the one combination the post-#26967 area check adds no combat reach for, and its
 // TARGET_UNIT_SRC_AREA_ALLY is not among the three target types that earn movement leeway--so
@@ -212,8 +229,17 @@ inline constexpr float MARK_REJOIN_MANA = 4000f;
 // position and the server ticking the aura
 inline constexpr float MARK_EXPLOSION_RADIUS = 15.0f;
 inline constexpr float MARK_ESCAPE_DISTANCE = MARK_EXPLOSION_RADIUS + 1.0f;
-inline constexpr float MARK_ESCAPE_PATH_EFFICIENCY = 0.6f;
-extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
+// How far from the raid a bot has to get before the escape stops pushing it away from the group as
+// a whole and starts pushing it off whoever is nearest. Inside this it is still leaving the pack,
+// and away-from-centre is the direction that does that; past it the only thing left within reach is
+// usually another bot fleeing the same Mark, which only the away-from-one-player vector separates
+inline constexpr float MARK_ESCAPE_SPLIT_DISTANCE = 10.0f;
+extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
+bool HasMarkOfKazrogal(Player* bot);
+// Distance from the group's centre of mass, computed over the same members MoveFromGroup steers by.
+// Deliberately not distance to the nearest player: two bots fleeing side by side stay a yard apart
+// however far they run, so a threshold on that would never be crossed by the pair it exists for
+float GetDistanceFromGroupCenter(Player* bot);
 
 // Azgalor
 inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player hitbox
