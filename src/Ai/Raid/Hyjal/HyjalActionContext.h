@@ -92,8 +92,8 @@ public:
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
-        creators["azgalor melee manuever through fire"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_manuever_through_fire;
+        creators["azgalor melee maneuver through fire"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_maneuver_through_fire;
 
         creators["azgalor ranged get out of rain of fire"] =
             &RaidHyjalSummitActionContext::azgalor_ranged_get_out_of_rain_of_fire;
@@ -212,8 +212,8 @@ private:
     static Action* azgalor_disperse_ranged(PlayerbotAI* botAI) {
         return new AzgalorDisperseRangedAction(botAI);
     }
-    static Action* azgalor_melee_manuever_through_fire(PlayerbotAI* botAI) {
-        return new AzgalorMeleeManueverThroughFireAction(botAI);
+    static Action* azgalor_melee_maneuver_through_fire(PlayerbotAI* botAI) {
+        return new AzgalorMeleeManeuverThroughFireAction(botAI);
     }
     static Action* azgalor_ranged_get_out_of_rain_of_fire(PlayerbotAI* botAI) {
         return new AzgalorRangedGetOutOfRainOfFireAction(botAI);

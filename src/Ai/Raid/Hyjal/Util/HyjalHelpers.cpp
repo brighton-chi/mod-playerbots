@@ -167,6 +167,13 @@ bool FindStepToCircle(
                     stepZ = bot->GetPositionZ();
                 }
 
+                // The step is where the bot actually stops, and that is not the target whenever the
+                // target lies further off than moveDist. A caller's rule has to hold where it comes
+                // to rest, not only where it was heading, or a heading cleared on the strength of
+                // its endpoint parks the bot somewhere the caller had ruled out
+                if (isAcceptable && !isAcceptable(stepX, stepY))
+                    continue;
+
                 if (chosenX)
                     *chosenX = targetX;
                 if (chosenY)
@@ -499,6 +506,23 @@ bool IsDoomed(Player* bot)
 
 // Standing behind Azgalor is immune at any range, which is where melee want to be anyway. The
 // range clause only matters for anyone who has to pass through his front
+bool IsDoomguardTank(PlayerbotAI* botAI, Player* bot)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+        return true;
+
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+        return false;
+
+    // The second assist tank takes over only once the first is Doomed. A first tank that has died
+    // needs no handover: the indices compact, so the second has already become index 0 above
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    return !firstAssistTank || IsDoomed(firstAssistTank);
+}
+
 bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)
 {
     Unit* victim = azgalor->GetVictim();

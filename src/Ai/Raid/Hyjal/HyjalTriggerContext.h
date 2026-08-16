@@ -92,8 +92,8 @@ public:
         creators["azgalor boss engaged by ranged"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_ranged;
 
-        creators["azgalor melee is standing in rain of fire"] =
-            &RaidHyjalSummitTriggerContext::azgalor_melee_is_standing_in_rain_of_fire;
+        creators["azgalor melee should maneuver through fire"] =
+            &RaidHyjalSummitTriggerContext::azgalor_melee_should_maneuver_through_fire;
 
         creators["azgalor ranged is standing in rain of fire"] =
             &RaidHyjalSummitTriggerContext::azgalor_ranged_is_standing_in_rain_of_fire;
@@ -212,8 +212,8 @@ private:
     static Trigger* azgalor_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByRangedTrigger(botAI);
     }
-    static Trigger* azgalor_melee_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
-        return new AzgalorMeleeIsStandingInRainOfFireTrigger(botAI);
+    static Trigger* azgalor_melee_should_maneuver_through_fire(PlayerbotAI* botAI) {
+        return new AzgalorMeleeShouldManeuverThroughFireTrigger(botAI);
     }
     static Trigger* azgalor_ranged_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
         return new AzgalorRangedIsStandingInRainOfFireTrigger(botAI);

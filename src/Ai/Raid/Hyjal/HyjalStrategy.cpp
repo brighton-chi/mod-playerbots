@@ -91,8 +91,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor melee is standing in rain of fire", {
-        NextAction("azgalor melee manuever through fire", ACTION_EMERGENCY + 2) }));
+    triggers.push_back(new TriggerNode("azgalor melee should maneuver through fire", {
+        NextAction("azgalor melee maneuver through fire", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
         NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 2) }));

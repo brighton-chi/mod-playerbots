@@ -83,7 +83,7 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-// Position is back towards the center of the base to give some more room to manuever
+// Position is back towards the center of the base to give some more room to maneuver
 bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
@@ -798,14 +798,11 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 // up at a time, and his frontal arc is taken away by the cleave chain whatever the fire is doing.
 // Both are just further blocked arcs on the same ring. Cleave safety is never traded against
 // standing in fire--fire ticks, cleave kills
-bool AzgalorMeleeManueverThroughFireAction::Execute(Event /*event*/)
+bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
     if (!azgalor)
         return false;
-
-    if (AI_VALUE(Unit*, "current target") != azgalor)
-        return Attack(azgalor);
 
     std::vector<Position> const pools = GetRainOfFirePositions(bot);
     if (pools.empty())
@@ -1010,7 +1007,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
     else
     {
         Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
-        if (doomguard && bot->GetDistance2d(doomguard) < 60.0f)
+        if (doomguard && bot->GetExactDist2d(doomguard) < 70.0f)
             target = doomguard;
         else
             target = azgalor;

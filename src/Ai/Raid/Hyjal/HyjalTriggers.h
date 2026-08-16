@@ -211,11 +211,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorMeleeIsStandingInRainOfFireTrigger : public Trigger
+class AzgalorMeleeShouldManeuverThroughFireTrigger : public Trigger
 {
 public:
-    AzgalorMeleeIsStandingInRainOfFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor melee is standing in rain of fire") {}
+    AzgalorMeleeShouldManeuverThroughFireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor melee should maneuver through fire") {}
     bool IsActive() override;
 };
 

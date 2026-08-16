@@ -250,6 +250,12 @@ bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
 bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInRainOfFire(Player* bot);
 bool IsDoomed(Player* bot);
+// The tank that holds Lesser Doomguards: the first assist tank among the living, or the second once
+// the first is Doomed and so about to spawn one of its own. Numbered among the living because
+// GetGroupAssistTank has no dead-inclusive mode--count corpses here and the two disagree the moment
+// a tank dies. Its own positioning keeps it at AZGALOR_DOOMGUARD_POSITION, well away from the raid,
+// which is why nothing else may walk it: dragging it to Azgalor brings the Doomguard along
+bool IsDoomguardTank(PlayerbotAI* botAI, Player* bot);
 // Cleave chains from Azgalor's victim to four more players, but only within this distance of
 // that victim and inside his frontal arc. Both are padded past the 10y jump radius and the
 // 180 degree filter in Spell::SearchChainTargets, since he turns with the tank

@@ -233,11 +233,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeManueverThroughFireAction : public AttackAction
+class AzgalorMeleeManeuverThroughFireAction : public MovementAction
 {
 public:
-    AzgalorMeleeManueverThroughFireAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor melee manuever through fire") {}
+    AzgalorMeleeManeuverThroughFireAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "azgalor melee maneuver through fire") {}
     bool Execute(Event event) override;
 };
 

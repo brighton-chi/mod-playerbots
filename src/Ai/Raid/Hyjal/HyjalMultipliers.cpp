@@ -326,21 +326,16 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isAvoidAoeAction = dynamic_cast<AvoidAoeAction*>(action);
-
-    if (!isAvoidAoeAction &&
-        !dynamic_cast<DpsAssistAction*>(action) &&
+    if (!dynamic_cast<DpsAssistAction*>(action) &&
         !dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action))
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<AvoidAoeAction*>(action))
     {
         return 1.0f;
     }
 
     // Still disabled in RoF, below
     if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    if (isAvoidAoeAction && IsDoomed(bot))
         return 1.0f;
 
     if (AI_VALUE2(Unit*, "find target", "azgalor"))
@@ -358,7 +353,6 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action) ||
         dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action))
     {
         return 1.0f;
@@ -383,7 +377,14 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     if (IsDoomed(bot))
         return 1.0f;
 
-    if (dynamic_cast<AzgalorMeleeManueverThroughFireAction*>(action))
+    if (dynamic_cast<AzgalorMeleeManeuverThroughFireAction*>(action))
+        return 1.0f;
+
+    // Acquiring a target is not movement. It only reads as such because AttackAction derives from
+    // MovementAction, and Attack itself paths nowhere--it sets selection, faces the target, and if
+    // anything stops movement. Suppressing it would leave a melee bot that entered the fire without
+    // a live target unable to pick one up until the pool expired
+    if (dynamic_cast<AzgalorDetermineDpsPriorityAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))

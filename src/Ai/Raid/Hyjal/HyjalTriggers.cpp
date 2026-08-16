@@ -327,9 +327,9 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
     return !IsNearRainOfFire(bot, suppressionRadius);
 }
 
-bool AzgalorMeleeIsStandingInRainOfFireTrigger::IsActive()
+bool AzgalorMeleeShouldManeuverThroughFireTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsMelee(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -337,6 +337,12 @@ bool AzgalorMeleeIsStandingInRainOfFireTrigger::IsActive()
         return false;
 
     if (IsDoomed(bot))
+        return false;
+
+    // The Doomguard tank keeps its corner. This action walks bots onto Azgalor's melee ring, which
+    // for that one would haul the Doomguard into the raid behind it--and at ACTION_EMERGENCY it
+    // outranks the positioning that would walk it back, so it would not return until the pool died
+    if (IsDoomguardTank(botAI, bot))
         return false;
 
     // Reaches as far as the suppression that accompanies it, not just to the fire. Everything
@@ -373,23 +379,10 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
-        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-            AnyGroupMemberHasDoom(bot);
-    }
+    if (!IsDoomguardTank(botAI, bot))
+        return false;
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
-    {
-        // Trigger for second assist tank only if first assist tank has Doom
-        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-        if (firstAssistTank && !IsDoomed(firstAssistTank))
-            return false;
-
-        return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
-    }
-
-    return false;
+    return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
 }
 
 bool AzgalorMeleeAndRangedShouldDivideDpsTrigger::IsActive()
