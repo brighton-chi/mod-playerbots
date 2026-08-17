@@ -283,7 +283,7 @@ inline constexpr float DOOMFIRE_DANGER_RADIUS = 8.0f;
 // between them is where an escaped bot waits for the trail to burn out or wander off, and it is
 // kept narrow on purpose: trails are laid close together, so every yard of suppression is a yard of
 // floor a bot may not use to get around the next one
-inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 3.0f;
+inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 2.0f;
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
 bool HasProtectionOfElune(Player* bot);
