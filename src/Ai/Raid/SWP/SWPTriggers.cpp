@@ -97,7 +97,7 @@ bool KalecgosShouldCommunicateBossHealthTrigger::IsActive()
     return bot == spectralBot || bot == surfaceBot;
 }
 
-bool KalecgosBossEngagedByTankTrigger::IsActive()
+bool KalecgosBossRequiresTankRotationTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -193,7 +193,7 @@ bool BrutallusBossEngagedByTanksTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-bool BrutallusBossEngagedByMeleeTrigger::IsActive()
+bool BrutallusMeleeShouldStayInPlaceTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
@@ -267,7 +267,7 @@ bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
     return true;
 }
 
-bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
+bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -296,7 +296,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
-bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
+bool FelmystMeleeShouldStayTogetherTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot))
         return false;
@@ -471,7 +471,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
     return IsAnySacrolashTank(bot);
 }
 
-bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
+bool EredarTwinsAlythessCastsBlazeOnTankTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -758,7 +758,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
+    if (!kiljaeden)
         return false;
 
     if (HasKiljaedenDragonAura(bot))

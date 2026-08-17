@@ -34,8 +34,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos should communicate boss health", {
         NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
-        NextAction("kalecgos tank position boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kalecgos boss requires tank rotation", {
+        NextAction("kalecgos surface tank position dragon", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos spectral rift is open", {
         NextAction("kalecgos enter spectral rift", ACTION_EMERGENCY + 1) }));
@@ -57,13 +57,13 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("brutallus misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("brutallus boss engaged by tanks", {
-        NextAction("brutallus tanks handle boss", ACTION_RAID) }));
+        NextAction("brutallus tanks position and swap", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("brutallus boss engaged by melee", {
-        NextAction("brutallus position melee", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("brutallus melee should stand in place", {
+        NextAction("brutallus position melee at rear center", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("brutallus boss engaged by ranged", {
-        NextAction("brutallus position ranged", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("brutallus ranged should soak meteor slash", {
+        NextAction("brutallus position ranged in two groups", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("brutallus bot is burning", {
         NextAction("brutallus handle burn", ACTION_EMERGENCY + 1) }));
@@ -75,11 +75,11 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst boss engaged by main tank on ground", {
         NextAction("felmyst main tank position boss on ground", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("felmyst boss engaged by ranged on ground", {
-        NextAction("felmyst position ranged on ground", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("felmyst ranged should split in three", {
+        NextAction("felmyst ranged stack in three groups", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("felmyst boss engaged by melee on ground", {
-        NextAction("felmyst position melee on ground", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("felmyst melee should stay together", {
+        NextAction("felmyst melee stack behind boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("felmyst bot is encapsulated", {
         NextAction("felmyst remove encapsulate", ACTION_EMERGENCY + 7) }));
@@ -118,7 +118,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins sacrolash engaged by two tanks", {
         NextAction("eredar twins main and second assist tanks position sacrolash", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins alythess engaged by first assist tank", {
+    triggers.push_back(new TriggerNode("eredar twins alythess casts blaze on tank", {
         NextAction("eredar twins first assist tank move out of blaze", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("eredar twins bosses engaged by ranged", {
@@ -156,7 +156,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru second assist tank guard ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("m'uru determining dps priority", {
-        NextAction("m'uru set dps priority", ACTION_RAID) }));
+        NextAction("m'uru assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {
         NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
@@ -165,7 +165,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("m'uru don't touch the dark fiend", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru darkness is coming", {
-        NextAction("m'uru flee the darkness", ACTION_EMERGENCY + 8) }));
+        NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near", {
         NextAction("m'uru flee from singularity", ACTION_EMERGENCY + 7) }));

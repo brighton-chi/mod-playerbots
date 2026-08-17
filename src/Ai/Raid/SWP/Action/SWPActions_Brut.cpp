@@ -37,7 +37,7 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool BrutallusTanksHandleBossAction::Execute(Event event)
+bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -120,7 +120,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     return false;
 }
 
-bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
+bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -145,7 +145,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
+bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
     struct BrutallusMeleeRingLayout
@@ -233,7 +233,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     return true;
 }
 
-bool BrutallusPositionRangedAction::Execute(Event /*event*/)
+bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)

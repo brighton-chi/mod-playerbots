@@ -89,11 +89,11 @@ public:
     bool IsActive() override;
 };
 
-class GruulTheDragonkillerBossEngagedByRangedTrigger : public Trigger
+class GruulTheDragonkillerRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "gruul the dragonkiller boss engaged by ranged") {}
+    GruulTheDragonkillerRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "gruul the dragonkiller ranged should spread") {}
     bool IsActive() override;
 };
 

@@ -69,8 +69,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
         if (PlayerbotAI::IsTank(bot))
         {
-            Action* brutallusAction = context->GetAction("brutallus tanks handle boss");
-            if (brutallusAction && static_cast<BrutallusTanksHandleBossAction*>(
+            Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
+            if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
                     brutallusAction)->ResetInitialPositionReached())
             {
                 didSomething = true;

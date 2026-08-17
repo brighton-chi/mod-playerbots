@@ -66,7 +66,7 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
     return botAI->SayToRaid(text);
 }
 
-bool KalecgosTankPositionBossAction::Execute(Event event)
+bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
 {
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
     if (!kalecgos)

@@ -82,7 +82,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
-bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
+bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
@@ -99,7 +99,7 @@ bool FelmystPositionRangedOnGroundAction::Execute(Event /*event*/)
         FELMYST_RANGED_GROUP_RADIUS, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool FelmystPositionMeleeOnGroundAction::Execute(Event /*event*/)
+bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 

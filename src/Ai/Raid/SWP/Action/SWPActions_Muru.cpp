@@ -154,7 +154,7 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     return true;
 }
 
-bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
+bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
     Unit* target = ResolveMuruDpsTarget(currentTarget);
@@ -188,7 +188,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     return false;
 }
 
-Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
+Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 {
     bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
@@ -334,7 +334,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     return target;
 }
 
-Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
+Unit* MuruAssignDpsPriorityAction::SelectMuruEncounterTarget(
     Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const
 {
     Unit* selected = nullptr;
@@ -539,7 +539,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
+bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (!muru)

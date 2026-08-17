@@ -108,7 +108,7 @@ bool GruulTheDragonkillerBossEngagedByTanksTrigger::IsActive()
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
-bool GruulTheDragonkillerBossEngagedByRangedTrigger::IsActive()
+bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActive()
 {
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }

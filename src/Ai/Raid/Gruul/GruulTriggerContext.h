@@ -48,8 +48,8 @@ public:
         creators["gruul the dragonkiller boss engaged by tanks"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_tanks;
 
-        creators["gruul the dragonkiller boss engaged by ranged"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_ranged;
+        creators["gruul the dragonkiller ranged should spread"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
@@ -91,8 +91,8 @@ private:
     static Trigger* gruul_the_dragonkiller_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerBossEngagedByTanksTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new GruulTheDragonkillerBossEngagedByRangedTrigger(botAI);
+    static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);

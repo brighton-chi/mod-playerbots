@@ -197,19 +197,19 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger : public Trigger
+class KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider capernian should be tanked by a warlock") {}
+    KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider capernian should be tanked by warlock") {}
     bool IsActive() override;
 };
 
-class KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger : public Trigger
+class KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider capernian casts arcane burst and conflagration") {}
+    KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider capernian blows up near and far") {}
     bool IsActive() override;
 };
 
@@ -261,11 +261,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger : public Trigger
+class KaelthasSunstriderLegendaryWeaponsAreDeadTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider legendary weapons are dead and lootable") {}
+    KaelthasSunstriderLegendaryWeaponsAreDeadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider legendary weapons are dead") {}
     bool IsActive() override;
 };
 

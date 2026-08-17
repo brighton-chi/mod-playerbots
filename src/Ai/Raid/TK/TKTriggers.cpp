@@ -278,7 +278,7 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         kaelAI->GetPhase() == PHASE_TRANSITION || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
-bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
+bool KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_WARLOCK || GetCapernianTank(bot) != bot)
         return false;
@@ -288,7 +288,7 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
         !IsFeigningDeath(capernian);
 }
 
-bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
+bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
 {
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
@@ -387,7 +387,7 @@ bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "devastation");
 }
 
-bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
+bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
