@@ -1527,8 +1527,8 @@ bool NightbaneFlightPhaseStackAndMoveAction::Execute(Event /*event*/)
 bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
 {
     Position const& position = NIGHTBANE_TELEPORT_POSITION;
-    return bot->TeleportTo(
-        KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+    return bot->NearTeleportTo(
+        position.GetPositionX(), position.GetPositionY(),
         position.GetPositionZ(), bot->GetOrientation());
 }
 
