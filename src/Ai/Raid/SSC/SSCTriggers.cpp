@@ -523,7 +523,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 
     // First and second passers move to positions as soon as the elemental appears
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
+    if (tainted && coreHandlers[0] && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
         (bot == coreHandlers[1] || bot == coreHandlers[2]))
         return true;
 

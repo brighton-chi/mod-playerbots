@@ -2289,6 +2289,9 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     Player* designatedLooter)
 {
+    if (!designatedLooter)
+        return false;
+
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
     constexpr float radius = 57.5f;
@@ -2322,6 +2325,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
 bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     Player* firstCorePasser, Unit* closestTrigger)
 {
+    if (!firstCorePasser || !closestTrigger)
+        return false;
+
     auto itFirst = intendedLineup.find(firstCorePasser->GetGUID());
     if (itFirst == intendedLineup.end())
         return false;
@@ -2378,6 +2384,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     Player*, Player* firstCorePasser,
     Player* secondCorePasser, Unit* closestTrigger)
 {
+    if (!secondCorePasser || !closestTrigger)
+        return false;
+
     bool needThirdPasser =
         (IsFirstCorePasserInPosition(firstCorePasser) &&
          firstCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
@@ -2443,6 +2452,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     Player*, Player* secondCorePasser,
     Player* thirdCorePasser, Unit* closestTrigger)
 {
+    if (!thirdCorePasser || !closestTrigger)
+        return false;
+
     bool needFourthPasser =
         (IsSecondCorePasserInPosition(secondCorePasser) &&
          secondCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
@@ -2498,6 +2510,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
 // position and are used to determine when the prior bot in the chain can pass the core
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firstCorePasser)
 {
+    if (!firstCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(firstCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2511,6 +2526,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firs
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* secondCorePasser)
 {
+    if (!secondCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(secondCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2524,6 +2542,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* sec
 
 bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thirdCorePasser)
 {
+    if (!thirdCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(thirdCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2537,6 +2558,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thir
 
 bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fourthCorePasser)
 {
+    if (!fourthCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(fourthCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
