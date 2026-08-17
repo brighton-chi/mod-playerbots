@@ -399,7 +399,10 @@ float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "archimonde") ? 0.0f : 1.0f;
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
+        return 1.0f;
+
+    return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;
 }
 
 // Leave the Doomfire avoidance as the only thing that moves a bot near a trail. Its push tapers to
@@ -432,6 +435,9 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
+    if (HasProtectionOfElune(bot))
+        return 1.0f;
+
     // Wider than the radius the avoidance reacts at, so a bot pushed to the edge is still held
     return IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
@@ -453,5 +459,8 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
     }
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() < 90.0f ? 0.0f : 1.0f;
+    if (!archimonde || archimonde->GetHealthPct() > 90.0f)
+        return 1.0f;
+
+    return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;
 }

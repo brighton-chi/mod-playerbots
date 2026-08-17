@@ -556,6 +556,11 @@ bool AnyGroupMemberHasDoom(Player* bot)
 
 std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 
+bool HasProtectionOfElune(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
+}
+
 bool IsNearDoomfire(Player* bot, float radius)
 {
     return !GetDynamicObjectPositions(

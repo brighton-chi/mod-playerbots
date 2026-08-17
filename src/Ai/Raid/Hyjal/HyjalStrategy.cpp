@@ -25,7 +25,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rage winterchill boss engaged by main tank", {
         NextAction("rage winterchill main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("rage winterchill boss casts death and decay on ranged", {
+    triggers.push_back(new TriggerNode("rage winterchill ranged should spread", {
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill melee is standing in death and decay", {
@@ -50,7 +50,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron bot is near inferno target", {
         NextAction("anetheron move away from inferno target", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("anetheron infernals need to be kept away from raid", {
+    triggers.push_back(new TriggerNode("anetheron infernals should be kept away", {
         NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron should determine dps priority", {
@@ -91,7 +91,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor melee should maneuver through fire", {
+    triggers.push_back(new TriggerNode("azgalor melee near rain of fire", {
         NextAction("azgalor melee maneuver through fire", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
@@ -103,7 +103,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
         NextAction("azgalor first assist tank position doomguard", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("azgalor melee and ranged should divide dps", {
+    triggers.push_back(new TriggerNode("azgalor should divide dps", {
         NextAction("azgalor determine dps priority", ACTION_RAID) }));
 
     // Archimonde
@@ -122,7 +122,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
+    triggers.push_back(new TriggerNode("archimonde don't stand in doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {

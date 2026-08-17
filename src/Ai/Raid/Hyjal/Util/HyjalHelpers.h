@@ -51,6 +51,7 @@ enum class HyjalSpells : uint32
     SPELL_DOOMFIRE_DOT        = 31969, // DoT after exiting trail
     // SPELL_ARCHIMONDE_FEAR    = 31970,
     SPELL_AIR_BURST           = 32014,
+    SPELL_PROTECTION_OF_ELUNE = 38528,
 
     // Hunter
     SPELL_ASPECT_OF_THE_VIPER = 34074,
@@ -285,6 +286,7 @@ inline constexpr float DOOMFIRE_DANGER_RADIUS = 8.0f;
 inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 3.0f;
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
+bool HasProtectionOfElune(Player* bot);
 bool IsNearDoomfire(Player* bot, float radius);
 // The same question asked of a point the bot is about to step to rather than of where it stands.
 // Patches are gathered around the bot, so the search reaches far enough to cover the step as well

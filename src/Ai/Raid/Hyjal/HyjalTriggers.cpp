@@ -35,7 +35,7 @@ bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
-bool RageWinterchillBossCastsDeathAndDecayOnRangedTrigger::IsActive()
+bool RageWinterchillRangedShouldSpreadTrigger::IsActive()
 {
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
@@ -91,11 +91,8 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
         return false;
 
     Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > 10.0f &&
-        bot->GetDistance2d(infernal) < 50.0f)
-    {
+    if (infernal && anetheron->GetHealthPct() > 10.0f && bot->GetDistance2d(infernal) < 50.0f)
         return false;
-    }
 
     return true;
 }
@@ -131,7 +128,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     return GetInfernalTargetingBot(botAI, bot);
 }
 
-bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
+bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
 {
     if (!IsInfernalTank(bot))
         return false;
@@ -327,7 +324,7 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
     return !IsNearRainOfFire(bot, suppressionRadius);
 }
 
-bool AzgalorMeleeShouldManeuverThroughFireTrigger::IsActive()
+bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot))
         return false;
@@ -385,7 +382,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
 }
 
-bool AzgalorMeleeAndRangedShouldDivideDpsTrigger::IsActive()
+bool AzgalorShouldDivideDpsTrigger::IsActive()
 {
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
@@ -416,22 +413,25 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
+    if (!archimonde || archimonde->GetHealthPct() > 90.0f) // Wait for initial positioning
         return false;
 
-    return archimonde->GetHealthPct() < 90.0f && archimonde->GetHealthPct() > 10.0f;
+    return !HasProtectionOfElune(bot);
 }
 
 bool ArchimondeBossCastingAirBurstTrigger::IsActive()
 {
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde || archimonde->GetVictim() == bot)
+        return false;
+
+    if (HasProtectionOfElune(bot))
+        return false;
+
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() <= 10.0f || archimonde->GetVictim() == bot)
-        return false;
-
-    return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId()) != nullptr;
+    return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId());
 }
 
 // No longer gated to the opening. Ranged drift back together across a fight this long, and the
@@ -442,13 +442,19 @@ bool ArchimondeRangedShouldSpreadTrigger::IsActive()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "archimonde") != nullptr;
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
+        return false;
+
+    return !HasProtectionOfElune(bot);
 }
 
-bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
+bool ArchimondeDontStandInDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 10.0f;
+    if (!archimonde)
+        return false;
+
+    return !HasProtectionOfElune(bot);
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
@@ -458,6 +464,9 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
     {
         return false;
     }
+
+    if (HasProtectionOfElune(bot))
+        return false;
 
     return bot->GetHealthPct() < 40.0f &&
         (bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE)) ||

@@ -37,11 +37,11 @@ public:
     bool IsActive() override;
 };
 
-class RageWinterchillBossCastsDeathAndDecayOnRangedTrigger : public Trigger
+class RageWinterchillRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    RageWinterchillBossCastsDeathAndDecayOnRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill boss casts death and decay on ranged") {}
+    RageWinterchillRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "rage winterchill ranged should spread") {}
     bool IsActive() override;
 };
 
@@ -103,11 +103,11 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger : public Trigger
+class AnetheronInfernalsShouldBeKeptAwayTrigger : public Trigger
 {
 public:
-    AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron infernals need to be kept away from raid") {}
+    AnetheronInfernalsShouldBeKeptAwayTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron infernals should be kept away") {}
     bool IsActive() override;
 };
 
@@ -211,11 +211,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorMeleeShouldManeuverThroughFireTrigger : public Trigger
+class AzgalorMeleeNearRainOfFireTrigger : public Trigger
 {
 public:
-    AzgalorMeleeShouldManeuverThroughFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor melee should maneuver through fire") {}
+    AzgalorMeleeNearRainOfFireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor melee near rain of fire") {}
     bool IsActive() override;
 };
 
@@ -243,11 +243,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorMeleeAndRangedShouldDivideDpsTrigger : public Trigger
+class AzgalorShouldDivideDpsTrigger : public Trigger
 {
 public:
-    AzgalorMeleeAndRangedShouldDivideDpsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor melee and ranged should divide dps") {}
+    AzgalorShouldDivideDpsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "azgalor should divide dps") {}
     bool IsActive() override;
 };
 
@@ -293,11 +293,11 @@ public:
     bool IsActive() override;
 };
 
-class ArchimondeBossSummonedDoomfireTrigger : public Trigger
+class ArchimondeDontStandInDoomfireTrigger : public Trigger
 {
 public:
-    ArchimondeBossSummonedDoomfireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss summoned doomfire") {}
+    ArchimondeDontStandInDoomfireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "archimonde don't stand in doomfire") {}
     bool IsActive() override;
 };
 

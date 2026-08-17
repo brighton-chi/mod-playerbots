@@ -26,8 +26,8 @@ public:
         creators["rage winterchill boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_boss_engaged_by_main_tank;
 
-        creators["rage winterchill boss casts death and decay on ranged"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_boss_casts_death_and_decay_on_ranged;
+        creators["rage winterchill ranged should spread"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_should_spread;
 
         creators["rage winterchill melee is standing in death and decay"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_melee_is_standing_in_death_and_decay;
@@ -51,8 +51,8 @@ public:
         creators["anetheron bot is targeted by infernal"] =
             &RaidHyjalSummitTriggerContext::anetheron_bot_is_targeted_by_infernal;
 
-        creators["anetheron infernals need to be kept away from raid"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_need_to_be_kept_away_from_raid;
+        creators["anetheron infernals should be kept away"] =
+            &RaidHyjalSummitTriggerContext::anetheron_infernals_should_be_kept_away;
 
         creators["anetheron should determine dps priority"] =
             &RaidHyjalSummitTriggerContext::anetheron_should_determine_dps_priority;
@@ -92,8 +92,8 @@ public:
         creators["azgalor boss engaged by ranged"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_ranged;
 
-        creators["azgalor melee should maneuver through fire"] =
-            &RaidHyjalSummitTriggerContext::azgalor_melee_should_maneuver_through_fire;
+        creators["azgalor melee near rain of fire"] =
+            &RaidHyjalSummitTriggerContext::azgalor_melee_near_rain_of_fire;
 
         creators["azgalor ranged is standing in rain of fire"] =
             &RaidHyjalSummitTriggerContext::azgalor_ranged_is_standing_in_rain_of_fire;
@@ -104,8 +104,8 @@ public:
         creators["azgalor doomguards must be controlled"] =
             &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_be_controlled;
 
-        creators["azgalor melee and ranged should divide dps"] =
-            &RaidHyjalSummitTriggerContext::azgalor_melee_and_ranged_should_divide_dps;
+        creators["azgalor should divide dps"] =
+            &RaidHyjalSummitTriggerContext::azgalor_should_divide_dps;
 
         // Archimonde
         creators["archimonde pulling boss"] =
@@ -123,8 +123,8 @@ public:
         creators["archimonde ranged should spread"] =
             &RaidHyjalSummitTriggerContext::archimonde_ranged_should_spread;
 
-        creators["archimonde boss summoned doomfire"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_summoned_doomfire;
+        creators["archimonde don't stand in doomfire"] =
+            &RaidHyjalSummitTriggerContext::archimonde_dont_stand_in_doomfire;
 
         creators["archimonde bot stood in doomfire"] =
             &RaidHyjalSummitTriggerContext::archimonde_bot_stood_in_doomfire;
@@ -143,8 +143,8 @@ private:
     static Trigger* rage_winterchill_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new RageWinterchillBossEngagedByMainTankTrigger(botAI);
     }
-    static Trigger* rage_winterchill_boss_casts_death_and_decay_on_ranged(PlayerbotAI* botAI) {
-        return new RageWinterchillBossCastsDeathAndDecayOnRangedTrigger(botAI);
+    static Trigger* rage_winterchill_ranged_should_spread(PlayerbotAI* botAI) {
+        return new RageWinterchillRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* rage_winterchill_melee_is_standing_in_death_and_decay(PlayerbotAI* botAI) {
         return new RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(botAI);
@@ -169,8 +169,8 @@ private:
     static Trigger* anetheron_bot_is_targeted_by_infernal(PlayerbotAI* botAI) {
         return new AnetheronBotIsTargetedByInfernalTrigger(botAI);
     }
-    static Trigger* anetheron_infernals_need_to_be_kept_away_from_raid(PlayerbotAI* botAI) {
-        return new AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger(botAI);
+    static Trigger* anetheron_infernals_should_be_kept_away(PlayerbotAI* botAI) {
+        return new AnetheronInfernalsShouldBeKeptAwayTrigger(botAI);
     }
     static Trigger* anetheron_should_determine_dps_priority(PlayerbotAI* botAI) {
         return new AnetheronShouldDetermineDpsPriorityTrigger(botAI);
@@ -212,8 +212,8 @@ private:
     static Trigger* azgalor_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByRangedTrigger(botAI);
     }
-    static Trigger* azgalor_melee_should_maneuver_through_fire(PlayerbotAI* botAI) {
-        return new AzgalorMeleeShouldManeuverThroughFireTrigger(botAI);
+    static Trigger* azgalor_melee_near_rain_of_fire(PlayerbotAI* botAI) {
+        return new AzgalorMeleeNearRainOfFireTrigger(botAI);
     }
     static Trigger* azgalor_ranged_is_standing_in_rain_of_fire(PlayerbotAI* botAI) {
         return new AzgalorRangedIsStandingInRainOfFireTrigger(botAI);
@@ -224,8 +224,8 @@ private:
     static Trigger* azgalor_doomguards_must_be_controlled(PlayerbotAI* botAI) {
         return new AzgalorDoomguardsMustBeControlledTrigger(botAI);
     }
-    static Trigger* azgalor_melee_and_ranged_should_divide_dps(PlayerbotAI* botAI) {
-        return new AzgalorMeleeAndRangedShouldDivideDpsTrigger(botAI);
+    static Trigger* azgalor_should_divide_dps(PlayerbotAI* botAI) {
+        return new AzgalorShouldDivideDpsTrigger(botAI);
     }
 
     // Archimonde
@@ -244,8 +244,8 @@ private:
     static Trigger* archimonde_ranged_should_spread(PlayerbotAI* botAI) {
         return new ArchimondeRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* archimonde_boss_summoned_doomfire(PlayerbotAI* botAI) {
-        return new ArchimondeBossSummonedDoomfireTrigger(botAI);
+    static Trigger* archimonde_dont_stand_in_doomfire(PlayerbotAI* botAI) {
+        return new ArchimondeDontStandInDoomfireTrigger(botAI);
     }
     static Trigger* archimonde_bot_stood_in_doomfire(PlayerbotAI* botAI) {
         return new ArchimondeBotStoodInDoomfireTrigger(botAI);
