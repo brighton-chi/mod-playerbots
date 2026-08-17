@@ -556,6 +556,25 @@ bool AnyGroupMemberHasDoom(Player* bot)
 
 std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 
+bool IsNearDoomfire(Player* bot, float radius)
+{
+    return !GetDynamicObjectPositions(
+        bot, radius, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL)).empty();
+}
+
+bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius)
+{
+    float const searchRadius = radius + bot->GetExactDist2d(x, y) + 1.0f;
+    for (Position const& patch : GetDynamicObjectPositions(
+             bot, searchRadius, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL)))
+    {
+        if (patch.GetExactDist2d(x, y) < radius)
+            return true;
+    }
+
+    return false;
+}
+
 AirBurstData* GetPendingAirBurstCast(uint32 instanceId)
 {
     auto instanceIt = archimondeAirBurstTargets.find(instanceId);

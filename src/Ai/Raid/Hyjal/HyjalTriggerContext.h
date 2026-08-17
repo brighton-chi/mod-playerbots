@@ -64,8 +64,8 @@ public:
         creators["kaz'rogal boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::kazrogal_boss_engaged_by_main_tank;
 
-        creators["kaz'rogal boss engaged by assist tanks"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_boss_engaged_by_assist_tanks;
+        creators["kaz'rogal malevolent cleave splits damage"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_malevolent_cleave_splits_damage;
 
         creators["kaz'rogal low mana bots need escape path"] =
             &RaidHyjalSummitTriggerContext::kazrogal_low_mana_bots_need_escape_path;
@@ -117,11 +117,11 @@ public:
         creators["archimonde boss casts fear"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
 
-        creators["archimonde boss casts air burst"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_casts_air_burst;
+        creators["archimonde boss casting air burst"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_casting_air_burst;
 
-        creators["archimonde boss engaged by ranged"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_ranged;
+        creators["archimonde ranged should spread"] =
+            &RaidHyjalSummitTriggerContext::archimonde_ranged_should_spread;
 
         creators["archimonde boss summoned doomfire"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_summoned_doomfire;
@@ -183,8 +183,8 @@ private:
     static Trigger* kazrogal_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new KazrogalBossEngagedByMainTankTrigger(botAI);
     }
-    static Trigger* kazrogal_boss_engaged_by_assist_tanks(PlayerbotAI* botAI) {
-        return new KazrogalBossEngagedByAssistTanksTrigger(botAI);
+    static Trigger* kazrogal_malevolent_cleave_splits_damage(PlayerbotAI* botAI) {
+        return new KazrogalMalevolentCleaveSplitsDamageTrigger(botAI);
     }
     static Trigger* kazrogal_low_mana_bots_need_escape_path(PlayerbotAI* botAI) {
         return new KazrogalLowManaBotsNeedEscapePathTrigger(botAI);
@@ -238,11 +238,11 @@ private:
     static Trigger* archimonde_boss_casts_fear(PlayerbotAI* botAI) {
         return new ArchimondeBossCastsFearTrigger(botAI);
     }
-    static Trigger* archimonde_boss_casts_air_burst(PlayerbotAI* botAI) {
-        return new ArchimondeBossCastsAirBurstTrigger(botAI);
+    static Trigger* archimonde_boss_casting_air_burst(PlayerbotAI* botAI) {
+        return new ArchimondeBossCastingAirBurstTrigger(botAI);
     }
-    static Trigger* archimonde_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new ArchimondeBossEngagedByRangedTrigger(botAI);
+    static Trigger* archimonde_ranged_should_spread(PlayerbotAI* botAI) {
+        return new ArchimondeRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* archimonde_boss_summoned_doomfire(PlayerbotAI* botAI) {
         return new ArchimondeBossSummonedDoomfireTrigger(botAI);

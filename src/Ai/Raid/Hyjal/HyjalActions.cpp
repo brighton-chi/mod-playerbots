@@ -561,7 +561,6 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// To spread cleave damage
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -1143,27 +1142,38 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - distanceToMainTank);
 }
 
-// Opening spread. Ranged start the fight stacked from the run in, and the first Air Burst lands
-// 25-35s later, so they are pushed apart while there is still time to do it calmly
+// Runs all fight, not just off the pull. Ranged start stacked from the run in and drift back
+// together afterwards, and a clump is what turns one Air Burst into a raid-wide one. The interval
+// keeps it a periodic nudge rather than something contending for every tick, and the Doomfire
+// multiplier takes it out entirely near a trail so it never argues with the avoidance
 bool ArchimondeSpreadRangedAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistFromPlayer = 10.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, ARCHIMONDE_RANGED_SPREAD_DISTANCE);
     if (!nearestPlayer)
         return false;
 
-    return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+    return FleePosition(
+        nearestPlayer->GetPosition(), ARCHIMONDE_RANGED_SPREAD_DISTANCE,
+        ARCHIMONDE_RANGED_SPREAD_INTERVAL);
 }
 
+// Two jobs, because the suppression that comes with this action reaches further than its push does.
+// Inside DOOMFIRE_DANGER_RADIUS it shoves the bot clear; from there out to DOOMFIRE_CONTROL_RADIUS
+// the push has faded to nothing but no other movement is allowed yet, so this has to be what walks
+// the bot back to Archimonde. Without that second half a bot that dodged a trail stands exactly
+// where it was pushed while the tank drags him out of reach, and only starts chasing once the trail
+// burns out
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    constexpr float dangerDist = 10.0f;
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
+    constexpr float dangerDist = DOOMFIRE_DANGER_RADIUS;
     // Each trail patch is its own dynamic object that expires on its own after 18s, so the live
     // set of them is the trail
     std::vector<Position> const trail = GetDynamicObjectPositions(
         bot, dangerDist, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL));
-    if (trail.empty())
-        return false;
 
     float totalDx = 0.0f;
     float totalDy = 0.0f;
@@ -1179,26 +1189,55 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         }
     }
 
-    if (totalDx == 0.0f && totalDy == 0.0f)
-        return false;
-
     float const norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
     float const moveDist = std::min(norm * dangerDist, dangerDist);
-    if (moveDist < 0.5f)
+
+    if (norm > 0.0f && moveDist >= 0.5f)
+    {
+        float const targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
+        float const targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
+
+        MovementPriority const priority = PlayerbotAI::IsHeal(bot) ?
+            MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
+
+        bool const backwards = archimonde->GetVictim() == bot;
+
+        return MoveTo(
+            HYJAL_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+            false, false, priority, true, backwards);
+    }
+
+    // Nothing is pushing the bot. Only take over the chase where this action's own suppression is
+    // what would otherwise hold it--past that, ordinary movement closes the gap perfectly well and
+    // there is no reason to outrank it for the whole fight
+    if (!IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS))
         return false;
 
-    float const targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
-    float const targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
+    float const chaseRange = PlayerbotAI::IsRanged(bot) ?
+        sPlayerbotAIConfig.spellDistance : bot->GetMeleeRange(archimonde);
 
-    MovementPriority const priority = PlayerbotAI::IsHeal(bot) ?
-        MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
+    float const distToBoss = bot->GetExactDist2d(archimonde);
+    if (distToBoss <= chaseRange)
+        return false;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    bool const backwards = archimonde && archimonde->GetVictim() == bot;
+    constexpr float maxMoveDist = 3.5f;
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const step = std::min(maxMoveDist, distToBoss - chaseRange);
+    float const moveX = botX + ((archimonde->GetPositionX() - botX) / distToBoss) * step;
+    float const moveY = botY + ((archimonde->GetPositionY() - botY) / distToBoss) * step;
+
+    // A trail lying between the bot and Archimonde is the ordinary case for ranged, not a corner
+    // one: it walks the floor they stand off. Stepping into it only to be shoved straight back out
+    // is the bounce this whole arrangement exists to prevent, so a step that would land inside the
+    // danger radius is simply not taken. Asked of the destination rather than of the direction,
+    // which is what makes it exact--the trail blocks the path or it does not
+    if (IsPositionNearDoomfire(bot, moveX, moveY, DOOMFIRE_DANGER_RADIUS))
+        return false;
 
     return MoveTo(
-        HYJAL_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-        false, false, priority, true, backwards);
+        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)

@@ -137,11 +137,11 @@ public:
     bool IsActive() override;
 };
 
-class KazrogalBossEngagedByAssistTanksTrigger : public Trigger
+class KazrogalMalevolentCleaveSplitsDamageTrigger : public Trigger
 {
 public:
-    KazrogalBossEngagedByAssistTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal boss engaged by assist tanks") {}
+    KazrogalMalevolentCleaveSplitsDamageTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal malevolent cleave splits damage") {}
     bool IsActive() override;
 };
 
@@ -277,19 +277,19 @@ public:
     bool IsActive() override;
 };
 
-class ArchimondeBossCastsAirBurstTrigger : public Trigger
+class ArchimondeBossCastingAirBurstTrigger : public Trigger
 {
 public:
-    ArchimondeBossCastsAirBurstTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss casts air burst") {}
+    ArchimondeBossCastingAirBurstTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "archimonde boss casting air burst") {}
     bool IsActive() override;
 };
 
-class ArchimondeBossEngagedByRangedTrigger : public Trigger
+class ArchimondeRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    ArchimondeBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss engaged by ranged") {}
+    ArchimondeRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "archimonde ranged should spread") {}
     bool IsActive() override;
 };
 

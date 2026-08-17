@@ -49,10 +49,7 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // Suppress all dps cooldowns when boss is above 90% health
-    if (boss && boss->GetHealthPct() > 90.0f)
-        return 0.0f;
-
-    return 1.0f;
+    return boss && boss->GetHealthPct() > 90.0f ? 0.0f : 1.0f;
 }
 
 // Rage Winterchill
@@ -68,10 +65,7 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "rage winterchill"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "rage winterchill") ? 0.0f : 1.0f;
 }
 
 float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
@@ -100,10 +94,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (isAvoidAoe)
         return 0.0f;
 
-    if (winterchill->GetVictim() == bot || PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
-    return 0.0f;
+    return winterchill->GetVictim() == bot || PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 }
 
 // Stock avoid-aoe discards Death and Decay outright: it drops any hazard whose own radius exceeds
@@ -148,10 +139,7 @@ float AnetheronDisableAssistTargetingMultiplier::GetValue(Action* action)
     if (isTankAssist && IsInfernalTank(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "anetheron"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
 float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
@@ -169,10 +157,7 @@ float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
     if (IsInfernalTank(bot))
         return 1.0f;
 
-    if (infernal->GetExactDist2d(bot) <= 20.0f)
-        return 0.0f;
-
-    return 1.0f;
+    return infernal->GetExactDist2d(bot) <= 20.0f ? 0.0f : 1.0f;
 }
 
 float AnetheronInfernalTargetRunToPositionMultiplier::GetValue(Action* action)
@@ -193,10 +178,7 @@ float AnetheronInfernalTargetRunToPositionMultiplier::GetValue(Action* action)
     if (IsInfernalTank(bot))
         return 1.0f;
 
-    if (GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI, bot))
-        return 0.0f;
-
-    return 1.0f;
+    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI, bot) ? 0.0f : 1.0f;
 }
 
 float AnetheronControlMovementMultiplier::GetValue(Action* action)
@@ -213,10 +195,7 @@ float AnetheronControlMovementMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "anetheron"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
 float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
@@ -230,10 +209,7 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "anetheron"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
 // Kaz'rogal
@@ -249,10 +225,7 @@ float KazrogalDisableDisperseAndTankFaceMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "kaz'rogal") ? 0.0f : 1.0f;
 }
 
 float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
@@ -286,10 +259,7 @@ float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
     if (!kazrogal || kazrogal->GetVictim() == bot)
         return 1.0f;
 
-    if (botsBelowManaThreshold.contains(bot->GetGUID()))
-        return 0.0f;
-
-    return 1.0f;
+    return botsBelowManaThreshold.contains(bot->GetGUID()) ? 0.0f : 1.0f;
 }
 
 float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
@@ -313,10 +283,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
-        return 0.0f;
-
-    return 1.0f;
+    return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA ? 0.0f : 1.0f;
 }
 
 // Azgalor
@@ -338,10 +305,7 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "azgalor"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "azgalor") ? 0.0f : 1.0f;
 }
 
 float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
@@ -352,13 +316,10 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action))
-    {
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
-    }
 
-    return 0.0f;
+    return !dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Leave the escape action as the only thing that moves melee while Rain of Fire is a threat
@@ -392,10 +353,7 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 
     // Shares its radius with the trigger that runs the maneuver action, so that action owns melee
     // movement across exactly the area this clears for it and there is no band between them
-    if (IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS))
-        return 0.0f;
-
-    return 1.0f;
+    return IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Rain of Fire is 15 yards, so unlike Death and Decay it does scrape past the default
@@ -441,10 +399,41 @@ float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "archimonde"))
+    return AI_VALUE2(Unit*, "find target", "archimonde") ? 0.0f : 1.0f;
+}
+
+// Leave the Doomfire avoidance as the only thing that moves a bot near a trail. Its push tapers to
+// nothing at DOOMFIRE_DANGER_RADIUS, so without this anything that wants the bot elsewhere--closing
+// to spell range, stock avoid-aoe on the same patches, the ranged spread--takes over the instant it
+// stops being pushed, drags it back inside, and the two swap the bot every tick
+float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    // Air Burst outranks Doomfire: a knockback lands the bot somewhere unpredictable anyway, and
+    // its own action already reaches further than this suppression does
+    if (dynamic_cast<ArchimondeAvoidDoomfireAction*>(action) ||
+        dynamic_cast<ArchimondeSpreadToAvoidAirBurstAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
+        return 1.0f;
+
+    // Stock avoid-aoe goes for the whole fight, not merely near a trail. Between them the hardcoded
+    // actions cover both hazards here, and stock flees each trail patch to its own 6y radius--a
+    // different figure, reached by a different route, pulling against the repulsion the moment the
+    // two disagree about which patch matters
+    if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    return 1.0f;
+    // Wider than the radius the avoidance reacts at, so a bot pushed to the edge is still held
+    return IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
@@ -464,8 +453,5 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
     }
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (archimonde && archimonde->GetHealthPct() < 90.0f)
-        return 0.0f;
-
-    return 1.0f;
+    return archimonde && archimonde->GetHealthPct() < 90.0f ? 0.0f : 1.0f;
 }

@@ -272,6 +272,24 @@ struct AirBurstData
 };
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
+// The trail is a line of overlapping 6y patches, so avoidance reads the cluster rather than any one
+// of them and pushes until the nearest is this far off. The push tapers to nothing at the edge,
+// which is exactly where it needs to hand over cleanly
+inline constexpr float DOOMFIRE_DANGER_RADIUS = 8.0f;
+// Suppression has to reach past where the push fades. If the two met at the same figure, a bot that
+// had just been pushed to the edge would find the pull resuming in the same tick, be dragged back
+// inside, and be pushed out again--the jitter is the two trading it back and forth. The band
+// between them is where an escaped bot waits for the trail to burn out or wander off, and it is
+// kept narrow on purpose: trails are laid close together, so every yard of suppression is a yard of
+// floor a bot may not use to get around the next one
+inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 3.0f;
+inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
+inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
+bool IsNearDoomfire(Player* bot, float radius);
+// The same question asked of a point the bot is about to step to rather than of where it stands.
+// Patches are gathered around the bot, so the search reaches far enough to cover the step as well
+// as the radius being tested
+bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius);
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 // The Air Burst currently being cast, if one is. Recorded when the cast starts and left to lapse
 // on its own, so it answers "is one on the way", not "was one cast"

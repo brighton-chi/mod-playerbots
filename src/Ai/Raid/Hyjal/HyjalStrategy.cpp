@@ -63,7 +63,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal boss engaged by main tank", {
         NextAction("kaz'rogal main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal boss engaged by assist tanks", {
+    triggers.push_back(new TriggerNode("kaz'rogal malevolent cleave splits damage", {
         NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal low mana bots need escape path", {
@@ -116,10 +116,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss casts air burst", {
+    triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
         NextAction("archimonde spread to avoid air burst", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss summoned doomfire", {
@@ -159,6 +159,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new ArchimondeControlDoomfireAvoidanceMultiplier(botAI));
     multipliers.push_back(new ArchimondeSetTremorTotemMultiplier(botAI));
 }
 

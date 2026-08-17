@@ -163,4 +163,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class ArchimondeControlDoomfireAvoidanceMultiplier : public Multiplier
+{
+public:
+    ArchimondeControlDoomfireAvoidanceMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "archimonde control doomfire avoidance") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

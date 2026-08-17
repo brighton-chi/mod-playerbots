@@ -164,7 +164,7 @@ bool KazrogalBossEngagedByMainTankTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "kaz'rogal");
 }
 
-bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
+bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
 {
     if (!PlayerbotAI::IsAssistTank(bot))
         return false;
@@ -422,7 +422,7 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
     return archimonde->GetHealthPct() < 90.0f && archimonde->GetHealthPct() > 10.0f;
 }
 
-bool ArchimondeBossCastsAirBurstTrigger::IsActive()
+bool ArchimondeBossCastingAirBurstTrigger::IsActive()
 {
     if (PlayerbotAI::IsMainTank(bot))
         return false;
@@ -434,24 +434,21 @@ bool ArchimondeBossCastsAirBurstTrigger::IsActive()
     return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId()) != nullptr;
 }
 
-bool ArchimondeBossEngagedByRangedTrigger::IsActive()
+// No longer gated to the opening. Ranged drift back together across a fight this long, and the
+// spread is cheap: the action rate limits itself and the Doomfire multiplier removes it near a
+// trail, so leaving it live costs nothing where it would otherwise get in the way
+bool ArchimondeRangedShouldSpreadTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 90.0f;
+    return AI_VALUE2(Unit*, "find target", "archimonde") != nullptr;
 }
 
 bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     return archimonde && archimonde->GetHealthPct() > 10.0f;
-    // if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
-    //    return false;
-
-    // If I don't make an exception, bots refuse to enter the Doomfire even when feared
-    // return !bot->HasAura(Id(HyjalSpells::SPELL_ARCHIMONDE_FEAR));
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
