@@ -2072,8 +2072,8 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
-        bot->TeleportTo(SSC_MAP_ID, tainted->GetPositionX(), tainted->GetPositionY(),
-                        tainted->GetPositionZ(), tainted->GetOrientation());
+        bot->NearTeleportTo(tainted->GetPositionX(), tainted->GetPositionY(),
+                            tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
     if (AI_VALUE(Unit*, "current target") != tainted)
