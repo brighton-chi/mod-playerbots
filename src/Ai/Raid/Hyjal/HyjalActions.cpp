@@ -739,6 +739,9 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     if (azgalor->GetVictim() != bot || !bot->IsWithinMeleeRange(azgalor))
         return false;
 
+    if (bot->GetHealthPct() < 60.0f)
+        return false;
+
     Position const& position = AZGALOR_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
 
@@ -1053,11 +1056,11 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != archimonde)
         return Attack(archimonde);
 
-    if (archimonde->GetVictim() != bot || !bot->IsWithinMeleeRange(archimonde) ||
-        bot->GetHealthPct() < 50.0f)
-    {
+    if (archimonde->GetVictim() != bot || !bot->IsWithinMeleeRange(archimonde))
         return false;
-    }
+
+    if (bot->GetHealthPct() < 60.0f)
+        return false;
 
     Position const& position = ARCHIMONDE_INITIAL_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
