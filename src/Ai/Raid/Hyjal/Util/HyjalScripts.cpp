@@ -50,6 +50,13 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* tar
 
 // Interrupts a cast when a Doomfire NPC comes too close. The trail it leaves behind is made of
 // SPELL_DOOMFIRE_TRAIL dynamic objects, which bots query directly, so nothing is recorded here.
+//
+// Keyed on the Doomfire itself and not on the Doomfire Spirit it follows. The Spirit is the invisible
+// one, and it does not walk--it NearTeleportTo's up to 8 yards every 1600ms--so reading it would let
+// bots react to a position no human can see, and to one the fire has not reached yet. The Doomfire
+// walks after it carrying 31945, a 1s periodic that drops the next patch at its own feet, so its
+// position is where fire is about to be. That is what makes DOOMFIRE_DANGER_RADIUS the right figure
+// here: the same distance the avoidance keeps from patches already on the ground
 class ArchimondeDoomfireTrailScript : public AllCreatureScript
 {
 public:
@@ -60,7 +67,6 @@ public:
         if (creature->GetEntry() != Id(HyjalNpcs::NPC_DOOMFIRE))
             return;
 
-        constexpr float DOOMFIRE_DANGER_RANGE = 10.0f;
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -69,8 +75,10 @@ public:
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            // Centre to centre, as the avoidance measures. GetDistance would subtract both object
+            // sizes, quietly making this wider than the figure it shares
             if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
-                creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
+                creature->GetExactDist2d(player) > DOOMFIRE_DANGER_RADIUS)
             {
                 continue;
             }

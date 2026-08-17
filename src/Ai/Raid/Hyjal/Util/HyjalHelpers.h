@@ -89,7 +89,7 @@ inline constexpr float HAZARD_SEARCH_RADIUS = 60.0f; // For Death & Decay and Ra
 // reach. GetMeleeRange is both combat reaches plus 4/3, so any buffer under that stays clear of
 // contact whatever the boss's hitbox. A fixed yard suits that; a proportion of the range would
 // only stand the bot deeper the wider the boss is, which nothing calls for
-inline constexpr float MELEE_RING_BUFFER = 1.0f;
+inline constexpr float MELEE_RANGE_INSET = 1.0f;
 struct RangedGroups
 {
     std::vector<Player*> healers;
@@ -273,10 +273,16 @@ struct AirBurstData
 };
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
-// The trail is a line of overlapping 6y patches, so avoidance reads the cluster rather than any one
-// of them and pushes until the nearest is this far off. The push tapers to nothing at the edge,
-// which is exactly where it needs to hand over cleanly
-inline constexpr float DOOMFIRE_DANGER_RADIUS = 8.0f;
+// Where the ground actually burns, and the only figure here that is a fact rather than a choice.
+// The Doomfire carries 31945, a 1s periodic that drops a fresh 31943 patch at its feet; 31943 is a
+// persistent area aura of 6y, and persistent area auras add the victim's own combat reach--1.5
+// ordinarily, 1.95 for the 40s Bloodlust is up. So the fire reaches nearly 8, not 6, and a stopping
+// distance set against the raw 6 leaves a bot standing in it
+inline constexpr float DOOMFIRE_BURN_RADIUS = 8.0f;
+// Where the avoidance parks the bot. Everything below is derived from the burn radius rather than
+// picked, because the gap between them is the whole safety margin: the Doomfire walks, and the aura
+// re-reads its targets every second, so a bot left on the edge is clipped between pushes
+inline constexpr float DOOMFIRE_DANGER_RADIUS = DOOMFIRE_BURN_RADIUS + 2.0f;
 // Suppression has to reach past where the push fades. If the two met at the same figure, a bot that
 // had just been pushed to the edge would find the pull resuming in the same tick, be dragged back
 // inside, and be pushed out again--the jitter is the two trading it back and forth. The band
@@ -284,6 +290,11 @@ inline constexpr float DOOMFIRE_DANGER_RADIUS = 8.0f;
 // kept narrow on purpose: trails are laid close together, so every yard of suppression is a yard of
 // floor a bot may not use to get around the next one
 inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 2.0f;
+// Patches are gathered this far out but only counted as dangerous inside the danger radius above.
+// Direction and magnitude are read separately, so a patch further off bends which way the bot goes
+// without adding any push of its own--letting it steer around a cluster it has not entered instead
+// of being shoved out of one patch straight into the neighbour it could not see
+inline constexpr float DOOMFIRE_FIELD_RADIUS = 18.0f;
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
 bool HasProtectionOfElune(Player* bot);

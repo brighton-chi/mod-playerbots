@@ -200,7 +200,7 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
     constexpr float moveDist = 10.0f;
     float moveX, moveY, moveZ;
 
-    float const meleeRadius = bot->GetMeleeRange(winterchill) - MELEE_RING_BUFFER;
+    float const meleeRadius = bot->GetMeleeRange(winterchill) - MELEE_RANGE_INSET;
 
     std::vector<BlockedArc> blocked;
     BlockedArc poolArc;
@@ -814,7 +814,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     float moveZ;
-    float const meleeRadius = bot->GetMeleeRange(azgalor) - MELEE_RING_BUFFER;
+    float const meleeRadius = bot->GetMeleeRange(azgalor) - MELEE_RANGE_INSET;
 
     std::vector<BlockedArc> blocked;
     blocked.reserve(pools.size() + 1);
@@ -1169,33 +1169,110 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    constexpr float dangerDist = DOOMFIRE_DANGER_RADIUS;
-    // Each trail patch is its own dynamic object that expires on its own after 18s, so the live
-    // set of them is the trail
+    // Each trail patch is its own dynamic object that expires on its own after 18s, so the live set
+    // of them is the trail. Gathered well past the danger radius so that patches the bot has not
+    // reached yet still get a say in which way it goes
     std::vector<Position> const trail = GetDynamicObjectPositions(
-        bot, dangerDist, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL));
+        bot, DOOMFIRE_FIELD_RADIUS, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL));
 
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+
+    Position const* nearest = nullptr;
+    float nearestDistance = 0.0f;
     float totalDx = 0.0f;
     float totalDy = 0.0f;
-    for (Position const& position : trail)
-    {
-        float const d = bot->GetExactDist2d(position);
 
-        if (d < dangerDist && d > 0.0f)
+    for (Position const& patch : trail)
+    {
+        float const d = bot->GetExactDist2d(patch);
+        if (d >= DOOMFIRE_FIELD_RADIUS)
+            continue;
+
+        if (!nearest || d < nearestDistance)
         {
-            float const weight = (dangerDist - d) / dangerDist;
-            totalDx += (bot->GetPositionX() - position.GetPositionX()) / d * weight;
-            totalDy += (bot->GetPositionY() - position.GetPositionY()) / d * weight;
+            nearest = &patch;
+            nearestDistance = d;
+        }
+
+        if (d > 0.0f)
+        {
+            float const weight = (DOOMFIRE_FIELD_RADIUS - d) / DOOMFIRE_FIELD_RADIUS;
+            totalDx += (botX - patch.GetPositionX()) / d * weight;
+            totalDy += (botY - patch.GetPositionY()) / d * weight;
         }
     }
 
-    float const norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
-    float const moveDist = std::min(norm * dangerDist, dangerDist);
+    // Direction comes from the whole field, distance only from what is actually dangerous. Keeping
+    // them apart is what holds the two properties the suppression band rests on: the push still
+    // fades to exactly nothing at the danger radius, and a dense cluster can no longer sum to a
+    // shove longer than the bot needs and carry it clean past the band
+    float norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
+    float moveDist = (nearest && nearestDistance < DOOMFIRE_DANGER_RADIUS) ?
+        DOOMFIRE_DANGER_RADIUS - nearestDistance : 0.0f;
+
+    // Boxed in: patches on opposite sides cancel and the field has no direction left to give. That
+    // is precisely when holding is worst, because the bot is standing in fire taking damage. Sweep
+    // for the bearing whose landing point sits furthest from anything and take it, crossing a patch
+    // on the way if that is what it costs. Picking "away from the nearest" instead would only trade
+    // one patch for its neighbour and walk back again next tick
+    constexpr float minFieldStrength = 0.05f;
+    if (nearest && nearestDistance < DOOMFIRE_BURN_RADIUS && norm < minFieldStrength)
+    {
+        // Two passes, as FindStepToCircle does. Archimonde is fought on a wooded hill, and trees
+        // and fallen logs sit in the navmesh--a bearing that is open on the fire alone may not be
+        // walkable at all, and MoveTo does not say so: an incomplete path is accepted with the
+        // destination quietly replaced by wherever the ray stopped, which can be back in the fire.
+        // So prefer a bearing the bot can actually walk, and only when none can be walked take the
+        // best of the rest, because moving badly still beats standing here burning
+        constexpr uint8 fanSteps = 12;
+        constexpr float escapeStep = 10.0f;
+        bool found = false;
+
+        for (uint8 pass = 0; pass < 2 && !found; ++pass)
+        {
+            bool const validate = (pass == 0);
+            float bestClearance = -1.0f;
+
+            for (uint8 i = 0; i < fanSteps; ++i)
+            {
+                float const angle = 2.0f * static_cast<float>(M_PI) * i / fanSteps;
+                float const testX = botX + std::cos(angle) * DOOMFIRE_DANGER_RADIUS;
+                float const testY = botY + std::sin(angle) * DOOMFIRE_DANGER_RADIUS;
+
+                // Ranked rather than vetoed. Boxed in is exactly the case where every bearing fails
+                // an outright test, so the question has to be which is least bad, not which passes
+                float clearance = DOOMFIRE_FIELD_RADIUS;
+                for (Position const& patch : trail)
+                    clearance = std::min(clearance, patch.GetExactDist2d(testX, testY));
+
+                if (clearance <= bestClearance)
+                    continue;
+
+                float stepX = testX;
+                float stepY = testY;
+                float stepZ = bot->GetPositionZ();
+                if (validate &&
+                    !CanTakeStepTowards(bot, testX, testY, escapeStep, stepX, stepY, stepZ))
+                {
+                    continue;
+                }
+
+                bestClearance = clearance;
+                totalDx = stepX - botX;
+                totalDy = stepY - botY;
+                found = true;
+            }
+        }
+
+        norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
+        moveDist = norm;
+    }
 
     if (norm > 0.0f && moveDist >= 0.5f)
     {
-        float const targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
-        float const targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
+        float const targetX = botX + (totalDx / norm) * moveDist;
+        float const targetY = botY + (totalDy / norm) * moveDist;
 
         MovementPriority const priority = PlayerbotAI::IsHeal(bot) ?
             MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
@@ -1213,19 +1290,28 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     if (!IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS))
         return false;
 
-    float const chaseRange = PlayerbotAI::IsRanged(bot) ?
-        sPlayerbotAIConfig.spellDistance : bot->GetMeleeRange(archimonde);
+    // Each side has to be asked in its own units. GetRange hands back the edge-to-edge figure
+    // ReachSpellAction is built with, and IsWithinCombatRange is what consumes it--adding both
+    // combat reaches. Measured instead against a raw centre-to-centre distance it would walk ranged
+    // in by the whole of Archimonde's hitbox, toward the very trail they just dodged. GetMeleeRange
+    // already carries both reaches, so the melee side compares centre to centre directly
+    bool const inPosition = PlayerbotAI::IsRanged(bot) ?
+        bot->IsWithinCombatRange(archimonde, botAI->GetRange("spell")) :
+        bot->GetExactDist2d(archimonde) <= bot->GetMeleeRange(archimonde) - MELEE_RANGE_INSET;
 
-    float const distToBoss = bot->GetExactDist2d(archimonde);
-    if (distToBoss <= chaseRange)
+    if (inPosition)
         return false;
 
+    float const distToBoss = bot->GetExactDist2d(archimonde);
+    if (distToBoss < 0.5f)
+        return false;
+
+    // A whole step every time, letting the test above stop it. Trimming the last step to land
+    // exactly on the range would need that range back in centre-to-centre terms, which is the
+    // conversion this is avoiding
     constexpr float maxMoveDist = 3.5f;
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const step = std::min(maxMoveDist, distToBoss - chaseRange);
-    float const moveX = botX + ((archimonde->GetPositionX() - botX) / distToBoss) * step;
-    float const moveY = botY + ((archimonde->GetPositionY() - botY) / distToBoss) * step;
+    float const moveX = botX + ((archimonde->GetPositionX() - botX) / distToBoss) * maxMoveDist;
+    float const moveY = botY + ((archimonde->GetPositionY() - botY) / distToBoss) * maxMoveDist;
 
     // A trail lying between the bot and Archimonde is the ordinary case for ranged, not a corner
     // one: it walks the floor they stand off. Stepping into it only to be shoved straight back out
