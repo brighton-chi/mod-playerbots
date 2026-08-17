@@ -34,10 +34,7 @@ float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "sethekk prophet"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "sethekk prophet") ? 0.0f : 1.0f;
 }
 
 float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
@@ -56,10 +53,10 @@ float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
 
     // For healer
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && mainTank->GetHealthPct() > 50.0f)
-        return 0.0f;
+    if (!mainTank)
+        return 1.0f;
 
-    return 1.0f;
+    return mainTank->GetHealthPct() > 50.0f ? 0.0f : 1.0f;
 }
 
 float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
@@ -77,10 +74,10 @@ float TalonKingIkissDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     }
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    if (ikiss && ikiss->GetHealthPct() > 95.0f)
-        return 0.0f;
+    if (!ikiss)
+        return 1.0f;
 
-    return 1.0f;
+    return ikiss->GetHealthPct() > 95.0f ? 0.0f : 1.0f;
 }
 
 float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
@@ -112,8 +109,5 @@ float TalonKingIkissControlMovementMultiplier::GetValue(Action* action)
     if (isAlwaysDisabled)
         return 0.0f;
 
-    if (ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE))) // Movement generally
-        return 0.0f;
-
-    return 1.0f;
+    return ikiss->HasAura(Id(SethSpells::SPELL_ARCANE_BUBBLE)) ? 0.0f : 1.0f;
 }
