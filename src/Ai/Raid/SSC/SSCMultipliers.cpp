@@ -711,9 +711,19 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     if (hasCore(bot) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
         return 0.0f;
 
+    // The designated looter must stay on the Tainted Elemental until it has the core.
+    if (botAI->HasCheat(BotCheatMask::raid) && bot == coreHandlers[0] && !hasCore(bot) &&
+        dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action))
+    {
+        constexpr float corpseSearchRadius = 30.0f;
+        if (AI_VALUE2(Unit*, "find target", "tainted elemental") ||
+            bot->FindNearestCreature(NPC_TAINTED_ELEMENTAL, corpseSearchRadius, false))
+            return 0.0f;
+    }
+
     // First and second passers block movement when the looter teleports to the elemental
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
+    if (tainted && coreHandlers[0] && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
         (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
@@ -741,9 +751,14 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase2(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FleeAction*>(action))
+        if (botAI->GetState() == BOT_STATE_COMBAT &&
+            (dynamic_cast<DpsAssistAction*>(action) ||
+             dynamic_cast<TankAssistAction*>(action)))
+        {
+            return 0.0f;
+        }
+
+        if (dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
         if (bot->GetExactDist2d(vashj) < 60.0f &&
@@ -761,9 +776,12 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<TankAssistAction*>(action))
+        if (botAI->GetState() == BOT_STATE_COMBAT &&
+            (dynamic_cast<DpsAssistAction*>(action) ||
+             dynamic_cast<TankAssistAction*>(action)))
+        {
             return 0.0f;
+        }
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
