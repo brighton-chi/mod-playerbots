@@ -460,16 +460,15 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) > 1.0f)
+    if (bot->GetExactDist2d(position) <= 1.0f)
     {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
+        return false;
+    {
 
-    brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
-
-    return false;
+    return MoveTo(
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()

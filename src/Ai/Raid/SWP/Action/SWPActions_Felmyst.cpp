@@ -309,7 +309,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
     if (!foundSafe)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(
         SWP_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -334,7 +334,7 @@ bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
     float const toPosY = leaderY - botY;
     float const toPosZ = leaderZ - botZ;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
 
     // 1) Try exact leader position
     if (MoveTo(
@@ -456,6 +456,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
+    bot->CastStop();
     return MoveTo(
         SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
         destination.GetPositionZ(), false, false, false, false,
@@ -501,7 +502,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     Position const& onCratePosition = FOG_CRATE_TELEPORT_POSITION;
 
     _fogCrateStuckSampleMs = 0;
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     bot->NearTeleportTo(
         onCratePosition.GetPositionX(), onCratePosition.GetPositionY(),
         onCratePosition.GetPositionZ(), bot->GetOrientation());
@@ -510,7 +511,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 {
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     bot->AttackStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetSelection(ObjectGuid());

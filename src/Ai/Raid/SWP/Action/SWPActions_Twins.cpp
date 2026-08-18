@@ -29,12 +29,10 @@ bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
             jumpPosition.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else
-    {
-        return JumpTo(
-            SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
-            landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
-    }
+
+    return JumpTo(
+        SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
+        landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
 }
 
 bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
@@ -244,12 +242,10 @@ bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
                 jumpPosition.GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }
-        else
-        {
-            return JumpTo(
-                SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
-                landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
-        }
+
+        return JumpTo(
+            SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
+            landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 
     return false;
@@ -302,15 +298,14 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
         if (ShouldHoldTwinThreat(bot, sacrolash, threatRatio, IsAnySacrolashTank))
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             bot->SetTarget(ObjectGuid::Empty);
             bot->SetSelection(ObjectGuid());
             return true;
         }
-        else if (AI_VALUE(Unit*, "current target") != sacrolash)
-        {
+
+        if (AI_VALUE(Unit*, "current target") != sacrolash)
             return Attack(sacrolash);
-        }
 
         return false;
     }
@@ -320,15 +315,14 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
         if (ShouldHoldTwinThreat(bot, alythess, threatRatio, IsAlythessTank))
         {
             bot->AttackStop();
-            bot->InterruptNonMeleeSpells(true);
+            bot->CastStop();
             bot->SetTarget(ObjectGuid::Empty);
             bot->SetSelection(ObjectGuid());
             return true;
         }
-        else if (AI_VALUE(Unit*, "current target") != alythess)
-        {
+
+        if (AI_VALUE(Unit*, "current target") != alythess)
             return Attack(alythess);
-        }
     }
 
     return false;
@@ -354,21 +348,18 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
             SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else
-    {
-        constexpr float safeDistance = 10.0f;
-        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-        {
-            float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
-            if (distanceToPlayer >= safeDistance)
-                return false;
 
-            bot->InterruptNonMeleeSpells(false);
-            return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
-        }
-    }
+    constexpr float safeDistance = 10.0f;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    if (!nearestPlayer)
+        return false;
 
-    return false;
+    float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
+    if (distanceToPlayer >= safeDistance)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
 }
 
 bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
@@ -385,6 +376,6 @@ bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(victim) >= safeDistance)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveFromGroup(safeDistance);
 }

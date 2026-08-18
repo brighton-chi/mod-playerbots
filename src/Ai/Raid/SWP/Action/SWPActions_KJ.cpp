@@ -520,9 +520,9 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         if (!kiljaeden)
             return false;
 
-        if (Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
-                Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
-            darknessSpell && darknessSpell->GetCastTimeRemaining() >= 4500)
+        Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
+            Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+        if (darknessSpell && darknessSpell->GetCastTimeRemaining() >= 4500)
         {
             constexpr float targetDistance = 15.0f;
             float const angle = darknessPosition.GetAngle(bot);
@@ -534,7 +534,7 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(destX, destY) < 1.0f)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(
         SWP_MAP_ID, destX, destY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
@@ -577,21 +577,20 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         }
     }
 
+    // Failsafe to keep the orb user from leaving early
     if (orbInUse)
     {
-        if (closestInUseOrb)
-        {
-            constexpr float orbInUsePendingDistance = 15.0f;
-            if (closestInUseOrbDistance <= orbInUsePendingDistance)
-                return true;
+        if (!closestInUseOrb)
+            return false;
 
-            return MoveTo(
-                SWP_MAP_ID, closestInUseOrb->GetPositionX(), closestInUseOrb->GetPositionY(),
-                closestInUseOrb->GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+        constexpr float orbInUsePendingDistance = 15.0f;
+        if (closestInUseOrbDistance <= orbInUsePendingDistance)
+            return true;
 
-        return false;
+        return MoveTo(
+            SWP_MAP_ID, closestInUseOrb->GetPositionX(), closestInUseOrb->GetPositionY(),
+            closestInUseOrb->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     if (!closestOrb)
@@ -634,13 +633,11 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_SHADOW_SPIKE)))
     {
-        if (HasKiljaedenDragonAura(bot))
-        {
-            bot->RemoveAura(Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
-            return true;
-        }
+        if (!HasKiljaedenDragonAura(bot))
+            return false;
 
-        return false;
+        bot->RemoveAura(Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+        return true;
     }
 
     Unit* dragon = GetKiljaedenControlledDragon(bot);
