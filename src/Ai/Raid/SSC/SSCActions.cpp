@@ -1821,11 +1821,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     {
         // This block is needed to prevent bots from floating into the air to attack sporebats
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->InterruptNonMeleeSpells(false);
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
-        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                        platformZ, bot->GetOrientation());
+        bot->NearTeleportTo(bot->GetPositionX(), bot->GetPositionY(),
+                            platformZ, bot->GetOrientation());
         return true;
     }
 
@@ -1956,7 +1956,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->InterruptNonMeleeSpells(false);
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
@@ -2071,7 +2071,12 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(tainted) > 10.0f)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->InterruptNonMeleeSpells(false);
+
+        // NearTeleportTo passes TELE_TO_NOT_LEAVE_COMBAT; TeleportTo does not and so calls
+        // CombatStop(), which tears down every CombatReference and empties the bot's threat
+        // lists. That drops the bot out of combat (letting it sit and drink) and blanks every
+        // "find target" lookup, which silently disables the whole encounter strategy for it
         bot->NearTeleportTo(tainted->GetPositionX(), tainted->GetPositionY(),
                             tainted->GetPositionZ(), tainted->GetOrientation());
     }
@@ -2223,7 +2228,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, firstCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
+                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
+                // ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
                 return true;
             }
         }
@@ -2239,7 +2245,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, secondCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
+                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
+                // ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
                 return true;
             }
         }
@@ -2256,7 +2263,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, thirdCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
+                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
+                // ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
                 return true;
             }
         }
@@ -2273,7 +2281,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, fourthCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
+                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
+                // ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
                 return true;
             }
         }
@@ -2316,8 +2325,13 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
+    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
+    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
+    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
+    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
+    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2374,8 +2388,13 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
+    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
+    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
+    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
+    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
+    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2442,8 +2461,13 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
+    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
+    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
+    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
+    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
+    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2500,8 +2524,13 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
+    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
+    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
+    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
+    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
+    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
