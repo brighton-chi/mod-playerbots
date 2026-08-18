@@ -363,7 +363,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
             if (distanceToPlayer >= safeDistance)
                 return false;
 
-            botAI->InterruptSpell();
+            bot->InterruptNonMeleeSpells(false);
             return MoveAway(nearestPlayer, safeDistance - distanceToPlayer);
         }
     }
@@ -385,6 +385,6 @@ bool EredarTwinsMoveFromConflagSacrolashVictimAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(victim) >= safeDistance)
         return false;
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
     return MoveFromGroup(safeDistance);
 }
