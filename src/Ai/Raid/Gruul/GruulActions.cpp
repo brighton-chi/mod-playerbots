@@ -234,14 +234,12 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     if (!maulgar)
         return false;
 
-    constexpr float safeDistance = 8.0f;
     float const currentDistance = bot->GetDistance2d(maulgar);
-
-    if (currentDistance >= safeDistance)
+    if (currentDistance >= WHIRLWIND_SAFE_DISTANCE)
         return false;
 
     bot->InterruptNonMeleeSpells(false);
-    return MoveAway(maulgar, safeDistance - currentDistance);
+    return MoveAway(maulgar, WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
 bool HighKingMaulgarFleeFromBlastNovaDangerAction::Execute(Event /*event*/)

@@ -30,10 +30,10 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    if (blindeye && blindeye->GetHealthPct() > 75.0f)
-        return 0.0f;
+    if (!blindeye)
+        return 1.0f;
 
-    return 1.0f;
+    return blindeye->GetHealthPct() > 75.0f ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
@@ -50,10 +50,7 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "high king maulgar"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
@@ -80,10 +77,7 @@ float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
 
     // Kiggler is the only ogre for which taunting is a problem because he is the only one that is
     // both (1) tanked by a non-tank and (2) attacked by tanks (after Blindeye and Olm are down)
-    if (AI_VALUE(Unit*, "current target") == kiggler)
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE(Unit*, "current target") == kiggler ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarDisableDpsAssistMultiplier::GetValue(Action* action)
@@ -97,10 +91,7 @@ float HighKingMaulgarDisableDpsAssistMultiplier::GetValue(Action* action)
     if (!dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "high king maulgar"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
@@ -121,10 +112,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    if (bot->GetDistance2d(maulgar) < 15.0f)
-        return 0.0f;
-
-    return 1.0f;
+    return bot->GetDistance2d(maulgar) < WHIRLWIND_SAFE_DISTANCE + 5.0f ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
@@ -150,10 +138,10 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
 
     // Arcane Shot removes Spell Shield, which the mage tank needs to survive
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (krosh && action->GetTarget() == krosh)
-        return 0.0f;
+    if (!krosh)
+        return 1.0f;
 
-    return 1.0f;
+    return action->GetTarget() == krosh ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
@@ -178,10 +166,7 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "krosh firehand"))
         return 1.0f;
 
-    if (GetKroshMageTank(bot) == bot)
-        return 0.0f;
-
-    return 1.0f;
+    return GetKroshMageTank(bot) == bot ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action)
@@ -199,10 +184,10 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action
     }
 
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (gruul && gruul->GetVictim() == bot)
-        return 0.0f;
+    if (!gruul)
+        return 1.0f;
 
-    return 1.0f;
+    return gruul->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* action)
@@ -216,8 +201,5 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* actio
         return 1.0f;
     }
 
-    if (dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action))
-        return 1.0f;
-
-    return 0.0f;
+    return dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action) ? 1.0f : 0.0f;
 }
