@@ -464,7 +464,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     {
         brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
         return false;
-    {
+    }
 
     return MoveTo(
         SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),

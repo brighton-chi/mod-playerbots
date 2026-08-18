@@ -303,7 +303,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
         {
             threatHoldRatio = 0.9f;
             isTwinTank = IsAlythessTank;
-        
+        }
     }
 
     if (!twinTarget)

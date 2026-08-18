@@ -183,7 +183,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
-    Unit* target = Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    Unit* target = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Unit* krosh = nullptr;
     if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
     {

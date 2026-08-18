@@ -467,7 +467,6 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     Position const& destination)
 {
     constexpr float collisionCheckDist = 2.0f;
-
     if (bot->GetExactDist2d(FOG_CRATE_STUCK_POSITION) > collisionCheckDist)
     {
         _fogCrateStuckSampleMs = 0;

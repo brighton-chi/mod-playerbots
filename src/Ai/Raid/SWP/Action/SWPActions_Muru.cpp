@@ -436,7 +436,6 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
     Unit* hazard = AI_VALUE2(Unit*, "find target", "dark fiend");
-    
     if (!hazard)
     {
         constexpr float searchRadius = 20.0f;

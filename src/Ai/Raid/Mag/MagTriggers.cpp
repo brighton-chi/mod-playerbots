@@ -61,7 +61,7 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
         return true;
-    {
+    }
 
     return !PlayerbotAI::IsMainTank(bot);
 }
