@@ -290,7 +290,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (spellInterruptRequested)
             {
                 spellInterruptRequested = false;
-                InterruptSpell();
+                bot->InterruptSpell(currentSpell->GetCurrentContainer());
                 YieldThread(bot, GetReactDelay());
                 return;
             }
@@ -302,7 +302,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 // Interrupt if target is dead or spell can't target dead units
                 if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -311,7 +311,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
                 if (goSpellTarget && !goSpellTarget->isSpawned())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -343,7 +343,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 // Interrupt if target ally has full health (heal by other member)
                 if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
                 {
-                    InterruptSpell();
+                    bot->InterruptSpell(currentSpell->GetCurrentContainer());
                     YieldThread(bot, GetReactDelay());
                     return;
                 }
@@ -369,7 +369,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         {
             spellInterruptRequested = false;
-            InterruptSpell();
+            bot->InterruptSpell(currentSpell->GetCurrentContainer());
             YieldThread(bot, GetReactDelay());
             return;
         }
