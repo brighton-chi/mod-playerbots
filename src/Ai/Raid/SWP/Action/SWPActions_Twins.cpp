@@ -299,11 +299,8 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
     if (!twinTarget)
     {
         twinTarget = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        if (twinTarget)
-        {
-            threatHoldRatio = 0.9f;
-            isTwinTank = IsAlythessTank;
-        }
+        threatHoldRatio = 0.9f;
+        isTwinTank = IsAlythessTank;
     }
 
     if (!twinTarget)

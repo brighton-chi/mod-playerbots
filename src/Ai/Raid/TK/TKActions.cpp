@@ -1174,11 +1174,11 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
 {
     Position position;
-    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, false))
+    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         position = ADVISOR_HEAL_POSITION;
     else if (PlayerbotAI::IsMainTank(bot))
         position = SANGUINAR_WAITING_POSITION;
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         position = TELONICUS_WAITING_POSITION;
     else // Capernian Tank
         position = CAPERNIAN_WAITING_POSITION;

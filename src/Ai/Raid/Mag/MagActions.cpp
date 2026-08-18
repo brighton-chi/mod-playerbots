@@ -22,13 +22,9 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 {
     Creature* channeler = GetChanneler(bot, SOUTH_CHANNELER);
     if (!channeler)
-    {
-        if (Creature* channelerW = GetChanneler(bot, WEST_CHANNELER))
-            channeler = channelerW;
-
-        if (Creature* channelerE = GetChanneler(bot, EAST_CHANNELER))
-            channeler = channelerE;
-    }
+        channeler = GetChanneler(bot, WEST_CHANNELER);
+    if (!channeler)
+        channeler = GetChanneler(bot, EAST_CHANNELER);
 
     if (channeler)
     {
@@ -53,18 +49,20 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 
 bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*/)
 {
-    Creature* channeler = GetChanneler(bot, NORTHWEST_CHANNELER);
-    Position const* position = &NW_CHANNELER_TANK_POSITION;
-    if (!channeler || !position || !PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    Creature* channeler = nullptr;
+    Position position;
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
-        if (Creature* channelerNe = GetChanneler(bot, NORTHEAST_CHANNELER))
-        {
-            channeler = channelerNe;
-            position = &NE_CHANNELER_TANK_POSITION;
-        }
+        channeler = GetChanneler(bot, NORTHWEST_CHANNELER);
+        position = NW_CHANNELER_TANK_POSITION;
+    }
+    else // PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    {
+        channeler = GetChanneler(bot, NORTHEAST_CHANNELER);
+        position = NE_CHANNELER_TANK_POSITION;
     }
 
-    if (!channeler || !position)
+    if (!channeler)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != channeler)
@@ -73,12 +71,12 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
     if (channeler->GetVictim() != bot)
         return false;
 
-    float const distToPosition = bot->GetExactDist2d(*position);
+    float const distToPosition = bot->GetExactDist2d(position);
     if (distToPosition <= 3.0f)
         return false;
 
-    float const dX = position->GetPositionX() - bot->GetPositionX();
-    float const dY = position->GetPositionY() - bot->GetPositionY();
+    float const dX = position.GetPositionX() - bot->GetPositionX();
+    float const dY = position.GetPositionY() - bot->GetPositionY();
     float const moveDist = std::min(distToPosition, 3.5f);
     float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
     float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;

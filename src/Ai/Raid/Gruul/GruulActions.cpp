@@ -45,29 +45,25 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Position const* position =  &MAULGAR_TANK_POSITION;
-    if (!target || !position || !IsMaulgarTank(bot))
+    Unit* target = nullptr;
+    Position position;
+    if (IsMaulgarTank(bot))
     {
-        if (IsOlmTank(bot))
-        {
-            if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
-            {
-                target = olm;
-                position = &OLM_TANK_POSITION;
-            }
-        }
-        else if (IsBlindeyeTank(bot))
-        {
-            if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
-            {
-                target = blindeye;
-                position = &BLINDEYE_TANK_POSITION;
-            }
-        }
+        target = AI_VALUE2(Unit*, "find target", "high king maulgar");
+        position = MAULGAR_TANK_POSITION;
+    }
+    else if (IsOlmTank(bot))
+    {
+        target = AI_VALUE2(Unit*, "find target", "olm the summoner");
+        position = OLM_TANK_POSITION;
+    }
+    else if (IsBlindeyeTank(bot))
+    {
+        target = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        position = BLINDEYE_TANK_POSITION;
     }
 
-    if (!target || !position)
+    if (!target)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != target)
@@ -76,14 +72,14 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     if (target->GetVictim() != bot)
         return false;
 
-    float const distToPosition = bot->GetExactDist2d(*position);
+    float const distToPosition = bot->GetExactDist2d(position);
     if (distToPosition <= 3.0f)
         return false;
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const toPosX = position->GetPositionX() - botX;
-    float const toPosY = position->GetPositionY() - botY;
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
 
     float const toBossX = target->GetPositionX() - botX;
     float const toBossY = target->GetPositionY() - botY;
