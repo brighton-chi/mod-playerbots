@@ -160,7 +160,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh
     if (currentDistance >= safeDistance)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveAway(krosh, safeDistance - currentDistance);
 }
 
@@ -238,7 +238,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     if (currentDistance >= WHIRLWIND_SAFE_DISTANCE)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveAway(maulgar, WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
@@ -254,7 +254,7 @@ bool HighKingMaulgarFleeFromBlastNovaDangerAction::Execute(Event /*event*/)
     if (currentDistance >= safeDistance)
         return false;
 
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return FleePosition(krosh->GetPosition(), safeDistance);
 }
 
