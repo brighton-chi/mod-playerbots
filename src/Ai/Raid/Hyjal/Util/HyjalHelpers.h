@@ -84,7 +84,16 @@ enum class HyjalNpcs : uint32
 
 // General
 inline constexpr uint32 HYJAL_MAP_ID = 534;
-inline constexpr float HAZARD_SEARCH_RADIUS = 60.0f; // For Death & Decay and Rain of Fire
+// Ground hazards are cached per bot rather than searched for on every ask. The interval matches
+// the default AiPlayerbot.ReactDelay, so a hazard is re-read once per decision cycle and never
+// twice within one--which is the whole point, since Engine runs every multiplier against every
+// action in the queue. It is also the floor that can be stated in milliseconds at all:
+// CalculatedValue reads any interval below 100 as seconds
+inline constexpr uint32 HAZARD_CACHE_INTERVAL = 100;
+// Each hazard is searched only as far as its widest consumer actually looks, plus the ground a
+// bot covers between refreshes. Derived from that consumer rather than picked, so widening a
+// control radius widens the search feeding it instead of silently truncating it
+inline constexpr float HAZARD_SEARCH_MARGIN = 2.0f;
 // Held back from the edge of melee range so rounding and drift cannot leave a bot just out of
 // reach. GetMeleeRange is both combat reaches plus 4/3, so any buffer under that stays clear of
 // contact whatever the boss's hitbox. A fixed yard suits that; a proportion of the range would
@@ -154,6 +163,10 @@ inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 // stands where it is while the main tank walks Winterchill out of reach
 inline constexpr float DEATH_AND_DECAY_MELEE_CONTROL_RADIUS = DEATH_AND_DECAY_RADIUS + 10.0f;
 // Back towards the centre of the base, for more room to maneuver
+// Widest consumer is the melee control radius, which the maneuver trigger and its multiplier
+// both read
+inline constexpr float DEATH_AND_DECAY_SEARCH_RADIUS =
+    DEATH_AND_DECAY_MELEE_CONTROL_RADIUS + HAZARD_SEARCH_MARGIN;
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
 bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard
@@ -261,11 +274,14 @@ inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player 
 // has not lifted, and a melee bot that has just stepped clear of a pool stands frozen in it for the
 // pool's whole life--following Azgalor nowhere while the tank drags him out of reach
 inline constexpr float RAIN_OF_FIRE_MELEE_CONTROL_RADIUS = RAIN_OF_FIRE_RADIUS + 10.0f;
+// As at Winterchill: the melee control radius is the furthest anything asks about a pool
+inline constexpr float RAIN_OF_FIRE_SEARCH_RADIUS =
+    RAIN_OF_FIRE_MELEE_CONTROL_RADIUS + HAZARD_SEARCH_MARGIN;
 inline Position const AZGALOR_TANK_POSITION =      { 5494.594f, -2747.069f, 1487.800f };
 // TODO: re-measure. The old value was chosen relative to the tank's transition spot, which no
 // longer exists now that the boss is walked straight to the final position
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-std::vector<Position> const& GetRainOfFirePositions(Player* bot);
+std::vector<Position> GetRainOfFirePositions(Player* bot);
 bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
 bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInRainOfFire(Player* bot);
@@ -315,15 +331,22 @@ inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 2.0f;
 // without adding any push of its own--letting it steer around a cluster it has not entered instead
 // of being shoved out of one patch straight into the neighbour it could not see
 inline constexpr float DOOMFIRE_FIELD_RADIUS = 18.0f;
+// The furthest a patch can matter is not the field radius but the trapped sweep: it ranks
+// landing points up to DOOMFIRE_DANGER_RADIUS from the bot against whatever sits within
+// DOOMFIRE_FIELD_RADIUS of them, so a patch that far out again can still decide a bearing
+inline constexpr float DOOMFIRE_SEARCH_RADIUS =
+    DOOMFIRE_FIELD_RADIUS + DOOMFIRE_DANGER_RADIUS + HAZARD_SEARCH_MARGIN;
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
 bool HasProtectionOfElune(Player* bot);
 bool IsNearDoomfire(Player* bot, float radius);
 // The same question asked of a point the bot is about to step to rather than of where it stands
 bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius);
-// Every live trail patch within HAZARD_SEARCH_RADIUS, for callers that weigh the field rather
-// than just asking whether one is near
-std::vector<Position> const& GetDoomfirePositions(Player* bot);
+// Every live trail patch the cache holds, for callers that weigh the field rather than just
+// asking whether one is near. By value on purpose: these are bound to a local and held
+// across other helper calls, and a reference into the cache would dangle the moment one of
+// those refreshed it
+std::vector<Position> GetDoomfirePositions(Player* bot);
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 // The Air Burst currently being cast, if one is. Recorded when the cast starts and left to lapse
 // on its own, so it answers "is one on the way", not "was one cast"

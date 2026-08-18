@@ -484,7 +484,7 @@ bool HasMarkOfKazrogal(Player* bot)
 // Each Rain of Fire is its own dynamic object that expires after 10s on its own, so nothing has
 // to be recorded to know whether one is still active. Azgalor casts on a timer that lets two
 // overlap, so callers have to weigh all of them rather than just the nearest
-std::vector<Position> const& GetRainOfFirePositions(Player* bot)
+std::vector<Position> GetRainOfFirePositions(Player* bot)
 {
     return GetCachedHazardPositions(bot, "hyjal rain of fire");
 }
@@ -495,7 +495,7 @@ bool GetNearestRainOfFirePosition(Player* bot, Position& pool)
 {
     bool found = false;
     float nearestDistance = 0.0f;
-    for (Position const& position : GetRainOfFirePositions(bot))
+    for (Position const& position : GetCachedHazardPositions(bot, "hyjal rain of fire"))
     {
         float const distance = bot->GetExactDist2d(position);
         if (!found || distance < nearestDistance)
@@ -511,7 +511,7 @@ bool GetNearestRainOfFirePosition(Player* bot, Position& pool)
 
 bool IsNearRainOfFire(Player* bot, float radius)
 {
-    for (Position const& position : GetRainOfFirePositions(bot))
+    for (Position const& position : GetCachedHazardPositions(bot, "hyjal rain of fire"))
     {
         if (bot->GetExactDist2d(position) < radius)
             return true;
@@ -587,7 +587,7 @@ bool HasProtectionOfElune(Player* bot)
     return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
 }
 
-std::vector<Position> const& GetDoomfirePositions(Player* bot)
+std::vector<Position> GetDoomfirePositions(Player* bot)
 {
     return GetCachedHazardPositions(bot, "hyjal doomfire trail");
 }
@@ -597,7 +597,7 @@ std::vector<Position> const& GetDoomfirePositions(Player* bot)
 // reached about two yards further than it said, and disagreed with IsPositionNearDoomfire below
 bool IsNearDoomfire(Player* bot, float radius)
 {
-    for (Position const& patch : GetDoomfirePositions(bot))
+    for (Position const& patch : GetCachedHazardPositions(bot, "hyjal doomfire trail"))
     {
         if (bot->GetExactDist2d(patch) < radius)
             return true;
@@ -608,7 +608,7 @@ bool IsNearDoomfire(Player* bot, float radius)
 
 bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius)
 {
-    for (Position const& patch : GetDoomfirePositions(bot))
+    for (Position const& patch : GetCachedHazardPositions(bot, "hyjal doomfire trail"))
     {
         if (patch.GetExactDist2d(x, y) < radius)
             return true;

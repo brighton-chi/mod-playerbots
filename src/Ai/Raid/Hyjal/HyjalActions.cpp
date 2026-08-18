@@ -662,7 +662,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    std::vector<Position> const& pools = GetRainOfFirePositions(bot);
+    std::vector<Position> const pools = GetRainOfFirePositions(bot);
     if (pools.empty())
         return false;
 
@@ -963,11 +963,11 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         return false;
 
     // Each trail patch is its own dynamic object that expires on its own after 18s, so the live set
-    // of them is the trail. The cached set spans HAZARD_SEARCH_RADIUS; the field loop below narrows
-    // it to DOOMFIRE_FIELD_RADIUS so that patches the bot has not reached yet still get a say in
+    // of them is the trail. The cached set spans DOOMFIRE_SEARCH_RADIUS; the field loop below
+    // narrows it to DOOMFIRE_FIELD_RADIUS so patches the bot has not reached yet still get a say in
     // which way it goes, while the trapped sweep reads it whole--a bearing is only worth taking if
     // nothing sits near where it lands, and that includes patches beyond the field
-    std::vector<Position> const& trail = GetDoomfirePositions(bot);
+    std::vector<Position> const trail = GetDoomfirePositions(bot);
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();

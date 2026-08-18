@@ -31,23 +31,26 @@ protected:
 // multiplier body is paid once per action rather than once per bot. Between the triggers, the
 // multipliers and the actions, each of these was being searched for several times a tick.
 //
-// Always searched at HAZARD_SEARCH_RADIUS so one cached set serves every caller's radius; the
-// helpers narrow it themselves. 200ms of staleness is inside human reaction time
+// Each is searched at its own radius, derived from the widest thing that asks about it, and
+// the helpers narrow it further from there
 class HyjalHazardPositionsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
-    HyjalHazardPositionsValue(PlayerbotAI* botAI, std::string const& name, uint32 spellId)
-        : CalculatedValue<std::vector<Position>>(botAI, name, 200), _spellId(spellId) {}
+    HyjalHazardPositionsValue(
+        PlayerbotAI* botAI, std::string const& name, uint32 spellId, float searchRadius)
+        : CalculatedValue<std::vector<Position>>(
+              botAI, name, HyjalHelpers::HAZARD_CACHE_INTERVAL),
+          _spellId(spellId), _searchRadius(searchRadius) {}
 
 protected:
     std::vector<Position> Calculate() override
     {
-        return GetDynamicObjectPositions(
-            bot, HyjalHelpers::HAZARD_SEARCH_RADIUS, _spellId);
+        return GetDynamicObjectPositions(bot, _searchRadius, _spellId);
     }
 
 private:
     uint32 const _spellId;
+    float const _searchRadius;
 };
 
 class RaidHyjalSummitValueContext : public NamedObjectContext<UntypedValue>
@@ -67,15 +70,18 @@ private:
     }
     static UntypedValue* hyjal_death_and_decay(PlayerbotAI* botAI) {
         return new HyjalHazardPositionsValue(
-            botAI, "hyjal death and decay", HyjalHelpers::Id(HyjalSpells::SPELL_DEATH_AND_DECAY));
+            botAI, "hyjal death and decay", HyjalHelpers::Id(HyjalSpells::SPELL_DEATH_AND_DECAY),
+            HyjalHelpers::DEATH_AND_DECAY_SEARCH_RADIUS);
     }
     static UntypedValue* hyjal_rain_of_fire(PlayerbotAI* botAI) {
         return new HyjalHazardPositionsValue(
-            botAI, "hyjal rain of fire", HyjalHelpers::Id(HyjalSpells::SPELL_RAIN_OF_FIRE));
+            botAI, "hyjal rain of fire", HyjalHelpers::Id(HyjalSpells::SPELL_RAIN_OF_FIRE),
+            HyjalHelpers::RAIN_OF_FIRE_SEARCH_RADIUS);
     }
     static UntypedValue* hyjal_doomfire_trail(PlayerbotAI* botAI) {
         return new HyjalHazardPositionsValue(
-            botAI, "hyjal doomfire trail", HyjalHelpers::Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL));
+            botAI, "hyjal doomfire trail", HyjalHelpers::Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL),
+            HyjalHelpers::DOOMFIRE_SEARCH_RADIUS);
     }
 };
 
