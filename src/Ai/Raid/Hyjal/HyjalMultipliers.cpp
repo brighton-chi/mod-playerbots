@@ -28,28 +28,30 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
     if (bot->GetMapId() != HYJAL_MAP_ID) // Needed in case strategy isn't cleared outside
         return 1.0f;
 
-    bool const isLust = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
-
     if (!IsDpsCooldownAction(bot, action)) // This includes Bloodlust & Heroism
         return 1.0f;
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!boss)
-        boss = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!boss)
-        boss = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!boss)
-        boss = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!boss)
-        boss = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    // Last boss first, so an instance that has progressed answers on its first lookup
+    Unit* boss = nullptr;
+    for (char const* name :
+         { "archimonde", "azgalor", "kaz'rogal", "anetheron", "rage winterchill" })
+    {
+        boss = AI_VALUE2(Unit*, "find target", name);
+        if (boss)
+            break;
+    }
 
-    // Suppress Bloodlust/Heroism when no boss is present (trash waves)
-    if (isLust && !boss)
-        return 0.0f;
+    // Suppress Bloodlust/Heroism when no boss is present (trash waves). Asked only on this branch,
+    // since it is the only one the answer differs on--everything else here is a dps cooldown too
+    if (!boss)
+    {
+        return bot->getClass() == CLASS_SHAMAN &&
+            (dynamic_cast<CastBloodlustAction*>(action) ||
+             dynamic_cast<CastHeroismAction*>(action)) ? 0.0f : 1.0f;
+    }
 
     // Suppress all dps cooldowns when boss is above 90% health
-    return boss && boss->GetHealthPct() > 90.0f ? 0.0f : 1.0f;
+    return boss->GetHealthPct() > 90.0f ? 0.0f : 1.0f;
 }
 
 // Rage Winterchill
@@ -87,8 +89,9 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (!winterchill)
         return 1.0f;
 
-    constexpr float suppressionRadius = DEATH_AND_DECAY_RADIUS + 10.0f;
-    if (!IsNearDeathAndDecay(bot, suppressionRadius))
+    // Shares its radius with the trigger that runs the maneuver action, so that action owns melee
+    // movement across exactly the area this clears for it and there is no band between them
+    if (!IsNearDeathAndDecay(bot, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS))
         return 1.0f;
 
     if (isAvoidAoe)
@@ -110,6 +113,15 @@ float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<RageWinterchillRangedGetOutOfDeathAndDecayAction*>(action))
+        return 1.0f;
+
+    // Acquiring a target is not movement. It only reads as such because AttackAction derives from
+    // MovementAction, and Attack itself paths nowhere--it sets selection, faces the target, and if
+    // anything stops movement. Unlike Azgalor there is no hardcoded targeting action here to spare,
+    // so what this would otherwise suppress is stock "dps assist", which every dps bot runs and
+    // which nothing else at this fight disables: ranged near a pool could not pick up a target at
+    // all until it expired
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
@@ -230,18 +242,10 @@ float KazrogalDisableDisperseAndTankFaceMultiplier::GetValue(Action* action)
 
 float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
-        bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER)
-    {
+    // Hunters are excluded alongside the classes the Mark cannot reach: it reaches them, but their
+    // whole answer to it is Viper, so there is no escape here to clear the way for
+    if (!IsKazrogalManaUser(botAI, bot) || bot->getClass() == CLASS_HUNTER)
         return 1.0f;
-    }
-
-    if (bot->getClass() == CLASS_DRUID &&
-        (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
-         botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
-    {
-        return 1.0f;
-    }
 
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -319,7 +323,7 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    return !dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 0.0f : 1.0f;
+    return dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 1.0f : 0.0f;
 }
 
 // Leave the escape action as the only thing that moves melee while Rain of Fire is a threat
@@ -379,9 +383,20 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
     if (dynamic_cast<AzgalorRangedGetOutOfRainOfFireAction*>(action))
         return 1.0f;
 
+    // Spared for the same reason as on the melee side: acquiring a target is not movement, it only
+    // reads as such because AttackAction derives from MovementAction. Suppressing it would leave a
+    // ranged bot near a pool stuck on whatever it was already hitting--unable to switch onto a
+    // Doomguard as one spawns, or back onto Azgalor once it dies
+    if (dynamic_cast<AzgalorDetermineDpsPriorityAction*>(action))
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
+    // Wider than the escape trigger's own radius on purpose. The band between them is where a bot
+    // that has just left a pool waits it out: the dispersal action is what would otherwise move it,
+    // and letting that resume at the pool's edge is the tug-of-war this exists to prevent. Nothing
+    // is lost by holding it there--the dispersal trigger stops firing across the same band anyway
     constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
     return IsNearRainOfFire(bot, suppressionRadius) ? 0.0f : 1.0f;
 }

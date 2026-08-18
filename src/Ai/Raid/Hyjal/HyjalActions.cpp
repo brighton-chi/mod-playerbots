@@ -184,10 +184,14 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// When near Death & Decay, melee looks for an open position within the boss's melee range. If one
-// isn't available (likely the case if D&D lands on melee, with its 20y radius), then melee just
-// takes the shortest path out of the hazard and waits it out.
-bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
+// Melee looks for an open position within the boss's melee range. If one isn't available (likely
+// the case if D&D lands on melee, with its 20y radius), then melee takes the shortest path out of
+// the hazard and waits it out.
+//
+// Two jobs, since the suppression that comes with this action reaches past the pool itself: inside
+// the pool it is an escape, and from there out to DEATH_AND_DECAY_MELEE_CONTROL_RADIUS it is the
+// only thing that can walk the bot back onto Winterchill's ring
+bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*event*/)
 {
     Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
     if (!winterchill)
@@ -234,6 +238,13 @@ bool RageWinterchillMeleeGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
             botY + ((targetY - botY) / distToTarget) * stepDist, bot->GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    // No heading on the ring is open. Fleeing is the answer only while the bot is actually in the
+    // pool: the escape aims at a point on a circle drawn round it, so a bot that has already
+    // cleared that circle would be walked back inward toward it. Standing still is better--the
+    // ring reopens on its own as Winterchill is dragged or the pool expires
+    if (!IsInDeathAndDecay(bot))
+        return false;
 
     constexpr float escapeMargin = 2.0f;
     if (!GetHazardEscapeStep(
@@ -458,14 +469,18 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     if (!anetheron)
         return false;
 
-    constexpr float safeDistFromInfernal = 10.0f; // Immolation (31303) radius is 10y
+    // Centre to centre, as the Immolation itself measures: it is cast by the creature, which is the
+    // case the post-#26967 area check adds no combat reach for. GetDistance would subtract both
+    // object sizes, and a Towering Infernal's is not small--the bot would be fleeing from well
+    // outside the aura, and since FleePosition reports success on any tick it moves, this would
+    // return before reaching the targeting below and leave the bot without a target while it ran
     if (Unit* nearest = GetNearestInfernal(botAI, bot))
     {
         constexpr uint32 minInterval = 0;
         if (nearest->GetVictim() != bot &&
-            bot->GetDistance2d(nearest) < safeDistFromInfernal)
+            bot->GetExactDist2d(nearest) < INFERNAL_DANGER_RADIUS)
         {
-            return FleePosition(nearest->GetPosition(), safeDistFromInfernal, minInterval);
+            return FleePosition(nearest->GetPosition(), INFERNAL_DANGER_RADIUS, minInterval);
         }
     }
 
@@ -599,7 +614,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != HYJAL_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -1135,7 +1150,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (data->targetGuid != mainTank->GetGUID() && data->targetGuid != bot->GetGUID())
         return false;
 
-    float const distanceToMainTank = bot->GetDistance2d(mainTank);
+    float const distanceToMainTank = bot->GetExactDist2d(mainTank);
     if (distanceToMainTank >= AIR_BURST_SAFE_DISTANCE)
         return false;
 
@@ -1284,12 +1299,11 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
             false, false, priority, true, backwards);
     }
 
-    // Nothing is pushing the bot. Only take over the chase where this action's own suppression is
-    // what would otherwise hold it--past that, ordinary movement closes the gap perfectly well and
-    // there is no reason to outrank it for the whole fight
-    if (!IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS))
-        return false;
-
+    // Nothing is pushing the bot, so take over the chase. That this only happens where the action's
+    // own suppression would otherwise hold the bot is the trigger's doing--it fires on the same
+    // DOOMFIRE_CONTROL_RADIUS the multiplier suppresses at, so past that ordinary movement is free
+    // again and there is nothing here to take over from
+    //
     // Each side has to be asked in its own units. GetRange hands back the edge-to-edge figure
     // ReachSpellAction is built with, and IsWithinCombatRange is what consumes it--adding both
     // combat reaches. Measured instead against a raw centre-to-centre distance it would walk ranged

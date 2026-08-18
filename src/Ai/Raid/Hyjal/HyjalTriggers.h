@@ -45,11 +45,11 @@ public:
     bool IsActive() override;
 };
 
-class RageWinterchillMeleeIsStandingInDeathAndDecayTrigger : public Trigger
+class RageWinterchillMeleeNearDeathAndDecayTrigger : public Trigger
 {
 public:
-    RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill melee is standing in death and decay") {}
+    RageWinterchillMeleeNearDeathAndDecayTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "rage winterchill melee near death and decay") {}
     bool IsActive() override;
 };
 
@@ -79,11 +79,11 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronBossCastsCarrionSwarmTrigger : public Trigger
+class AnetheronRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    AnetheronBossCastsCarrionSwarmTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron boss casts carrion swarm") {}
+    AnetheronRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron ranged should spread") {}
     bool IsActive() override;
 };
 
@@ -293,11 +293,11 @@ public:
     bool IsActive() override;
 };
 
-class ArchimondeDontStandInDoomfireTrigger : public Trigger
+class ArchimondeBotIsNearDoomfireTrigger : public Trigger
 {
 public:
-    ArchimondeDontStandInDoomfireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde don't stand in doomfire") {}
+    ArchimondeBotIsNearDoomfireTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "archimonde bot is near doomfire") {}
     bool IsActive() override;
 };
 

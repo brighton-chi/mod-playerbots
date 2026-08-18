@@ -65,11 +65,11 @@ private:
     bool _winterchillPositionReached = false;
 };
 
-class RageWinterchillMeleeGetOutOfDeathAndDecayAction : public AttackAction
+class RageWinterchillMeleeManeuverThroughDeathAndDecayAction : public AttackAction
 {
 public:
-    RageWinterchillMeleeGetOutOfDeathAndDecayAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "rage winterchill melee get out of death and decay") {}
+    RageWinterchillMeleeManeuverThroughDeathAndDecayAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "rage winterchill melee maneuver through death and decay") {}
     bool Execute(Event event) override;
 };
 

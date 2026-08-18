@@ -32,8 +32,8 @@ public:
         creators["rage winterchill ranged get out of death and decay"] =
             &RaidHyjalSummitActionContext::rage_winterchill_ranged_get_out_of_death_and_decay;
 
-        creators["rage winterchill melee get out of death and decay"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_melee_get_out_of_death_and_decay;
+        creators["rage winterchill melee maneuver through death and decay"] =
+            &RaidHyjalSummitActionContext::rage_winterchill_melee_maneuver_through_death_and_decay;
 
         // Anetheron
         creators["anetheron misdirect boss and infernals to tanks"] =
@@ -149,8 +149,8 @@ private:
     static Action* rage_winterchill_ranged_get_out_of_death_and_decay(PlayerbotAI* botAI) {
         return new RageWinterchillRangedGetOutOfDeathAndDecayAction(botAI);
     }
-    static Action* rage_winterchill_melee_get_out_of_death_and_decay(PlayerbotAI* botAI) {
-        return new RageWinterchillMeleeGetOutOfDeathAndDecayAction(botAI);
+    static Action* rage_winterchill_melee_maneuver_through_death_and_decay(PlayerbotAI* botAI) {
+        return new RageWinterchillMeleeManeuverThroughDeathAndDecayAction(botAI);
     }
 
     // Anetheron

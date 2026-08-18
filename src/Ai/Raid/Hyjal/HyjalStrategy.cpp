@@ -28,8 +28,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rage winterchill ranged should spread", {
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("rage winterchill melee is standing in death and decay", {
-        NextAction("rage winterchill melee get out of death and decay", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("rage winterchill melee near death and decay", {
+        NextAction("rage winterchill melee maneuver through death and decay", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("rage winterchill ranged is standing in death and decay", {
         NextAction("rage winterchill ranged get out of death and decay", ACTION_EMERGENCY + 1) }));
@@ -41,7 +41,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron boss engaged by main tank", {
         NextAction("anetheron main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("anetheron boss casts carrion swarm", {
+    triggers.push_back(new TriggerNode("anetheron ranged should spread", {
         NextAction("anetheron spread ranged in circle", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal", {
@@ -122,7 +122,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("archimonde don't stand in doomfire", {
+    triggers.push_back(new TriggerNode("archimonde bot is near doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {

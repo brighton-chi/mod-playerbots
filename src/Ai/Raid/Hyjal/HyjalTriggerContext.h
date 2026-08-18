@@ -29,8 +29,8 @@ public:
         creators["rage winterchill ranged should spread"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_should_spread;
 
-        creators["rage winterchill melee is standing in death and decay"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_melee_is_standing_in_death_and_decay;
+        creators["rage winterchill melee near death and decay"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_melee_near_death_and_decay;
 
         creators["rage winterchill ranged is standing in death and decay"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_is_standing_in_death_and_decay;
@@ -42,8 +42,8 @@ public:
         creators["anetheron boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::anetheron_boss_engaged_by_main_tank;
 
-        creators["anetheron boss casts carrion swarm"] =
-            &RaidHyjalSummitTriggerContext::anetheron_boss_casts_carrion_swarm;
+        creators["anetheron ranged should spread"] =
+            &RaidHyjalSummitTriggerContext::anetheron_ranged_should_spread;
 
         creators["anetheron bot is near inferno target"] =
             &RaidHyjalSummitTriggerContext::anetheron_bot_is_near_inferno_target;
@@ -123,8 +123,8 @@ public:
         creators["archimonde ranged should spread"] =
             &RaidHyjalSummitTriggerContext::archimonde_ranged_should_spread;
 
-        creators["archimonde don't stand in doomfire"] =
-            &RaidHyjalSummitTriggerContext::archimonde_dont_stand_in_doomfire;
+        creators["archimonde bot is near doomfire"] =
+            &RaidHyjalSummitTriggerContext::archimonde_bot_is_near_doomfire;
 
         creators["archimonde bot stood in doomfire"] =
             &RaidHyjalSummitTriggerContext::archimonde_bot_stood_in_doomfire;
@@ -146,8 +146,8 @@ private:
     static Trigger* rage_winterchill_ranged_should_spread(PlayerbotAI* botAI) {
         return new RageWinterchillRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* rage_winterchill_melee_is_standing_in_death_and_decay(PlayerbotAI* botAI) {
-        return new RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(botAI);
+    static Trigger* rage_winterchill_melee_near_death_and_decay(PlayerbotAI* botAI) {
+        return new RageWinterchillMeleeNearDeathAndDecayTrigger(botAI);
     }
     static Trigger* rage_winterchill_ranged_is_standing_in_death_and_decay(PlayerbotAI* botAI) {
         return new RageWinterchillRangedIsStandingInDeathAndDecayTrigger(botAI);
@@ -160,8 +160,8 @@ private:
     static Trigger* anetheron_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new AnetheronBossEngagedByMainTankTrigger(botAI);
     }
-    static Trigger* anetheron_boss_casts_carrion_swarm(PlayerbotAI* botAI) {
-        return new AnetheronBossCastsCarrionSwarmTrigger(botAI);
+    static Trigger* anetheron_ranged_should_spread(PlayerbotAI* botAI) {
+        return new AnetheronRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* anetheron_bot_is_near_inferno_target(PlayerbotAI* botAI) {
         return new AnetheronBotIsNearInfernoTargetTrigger(botAI);
@@ -244,8 +244,8 @@ private:
     static Trigger* archimonde_ranged_should_spread(PlayerbotAI* botAI) {
         return new ArchimondeRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* archimonde_dont_stand_in_doomfire(PlayerbotAI* botAI) {
-        return new ArchimondeDontStandInDoomfireTrigger(botAI);
+    static Trigger* archimonde_bot_is_near_doomfire(PlayerbotAI* botAI) {
+        return new ArchimondeBotIsNearDoomfireTrigger(botAI);
     }
     static Trigger* archimonde_bot_stood_in_doomfire(PlayerbotAI* botAI) {
         return new ArchimondeBotStoodInDoomfireTrigger(botAI);

@@ -40,7 +40,7 @@ bool RageWinterchillRangedShouldSpreadTrigger::IsActive()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
-bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
+bool RageWinterchillMeleeNearDeathAndDecayTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot))
         return false;
@@ -52,7 +52,11 @@ bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return IsInDeathAndDecay(bot);
+    // Reaches as far as the suppression that accompanies it, not just to the pool. Everything
+    // inside that radius has had its path back to the boss zeroed, so this action has to keep
+    // running across the whole of it--it is the only thing left that can walk the bot anywhere,
+    // including back onto Winterchill once the pool no longer blocks the ring
+    return IsNearDeathAndDecay(bot, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
 }
 
 bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
@@ -78,7 +82,7 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
-bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
+bool AnetheronRangedShouldSpreadTrigger::IsActive()
 {
     if (PlayerbotAI::IsMelee(bot))
         return false;
@@ -177,18 +181,10 @@ bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
-        bot->getClass() == CLASS_DEATH_KNIGHT)
-    {
+    // Hunters are wanted here even though they never run: this is what puts ranged on the arc, and
+    // a hunter that has fallen back on Viper is still one of the ranged standing in it
+    if (!IsKazrogalManaUser(botAI, bot))
         return false;
-    }
-
-    if (bot->getClass() == CLASS_DRUID &&
-        (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
-         botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
-    {
-        return false;
-    }
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
@@ -198,23 +194,12 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
-        bot->getClass() == CLASS_DEATH_KNIGHT)
-    {
+    if (!IsKazrogalManaUser(botAI, bot))
         return false;
-    }
 
     // Hunters never run. They rely only on Aspect of the Viper.
     if (bot->getClass() == CLASS_HUNTER)
         return false;
-
-    // Druids in cat or bear form are immune: the Mark filters to units whose current power is mana
-    if (bot->getClass() == CLASS_DRUID &&
-        (botAI->HasStrategy("bear", BOT_STATE_COMBAT) ||
-         botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
-    {
-        return false;
-    }
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
     if (!kazrogal || kazrogal->GetVictim() == bot)
@@ -338,7 +323,12 @@ bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
 
     // The Doomguard tank keeps its corner. This action walks bots onto Azgalor's melee ring, which
     // for that one would haul the Doomguard into the raid behind it--and at ACTION_EMERGENCY it
-    // outranks the positioning that would walk it back, so it would not return until the pool died
+    // outranks the positioning that would walk it back, so it would not return until the pool died.
+    //
+    // That leaves the Doomguard tank with no Rain of Fire avoidance at all: stock avoid-aoe is off
+    // for the whole fight and the ranged escape does not apply to it either. Deliberate, not an
+    // oversight--the corner is a fixed position and shifting it far enough to clear a pool costs
+    // more than it saves. One tank standing in fire is a healing problem; a loose Doomguard is not
     if (IsDoomguardTank(botAI, bot))
         return false;
 
@@ -448,13 +438,22 @@ bool ArchimondeRangedShouldSpreadTrigger::IsActive()
     return !HasProtectionOfElune(bot);
 }
 
-bool ArchimondeDontStandInDoomfireTrigger::IsActive()
+bool ArchimondeBotIsNearDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)
         return false;
 
-    return !HasProtectionOfElune(bot);
+    if (HasProtectionOfElune(bot))
+        return false;
+
+    // The same radius the multiplier suppresses at, so the action owns movement across exactly the
+    // area cleared for it. Nothing it does reaches further: the push only has a magnitude inside
+    // DOOMFIRE_DANGER_RADIUS, the trapped sweep needs a patch inside DOOMFIRE_BURN_RADIUS, and past
+    // this ordinary movement is free again and closes the gap to Archimonde perfectly well. Gating
+    // here rather than in the action is what keeps the 18y field sweep off every bot on every tick
+    // of a fight where a trail is usually nowhere near them
+    return IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS);
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()

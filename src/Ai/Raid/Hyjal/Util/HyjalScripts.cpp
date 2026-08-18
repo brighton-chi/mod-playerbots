@@ -44,7 +44,7 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* tar
     if (target != mainTank && target != bot)
         return false;
 
-    float const distanceToMainTank = bot->GetDistance2d(mainTank);
+    float const distanceToMainTank = bot->GetExactDist2d(mainTank);
     return distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
 }
 

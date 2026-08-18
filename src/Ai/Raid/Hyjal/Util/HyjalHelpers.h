@@ -142,6 +142,13 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups co
 // 1.95, so the aura reaches 21.95 for the 40s Bloodlust is up, and a bot parked on an exact 21.5
 // would be taking damage while every check here called it clear
 inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
+// Out to here, melee movement near the pool belongs to the maneuver action and nothing else. The
+// same arrangement as Azgalor's pools, for the same reason: where the trigger that runs that action
+// and the multiplier that clears the way for it disagree, the gap between them is a band in which
+// the trigger has stopped firing but the suppression has not lifted. A melee bot in that band has
+// nothing left that closes distance--the formation movers are already off for the fight--so it
+// stands where it is while the main tank walks Winterchill out of reach
+inline constexpr float DEATH_AND_DECAY_MELEE_CONTROL_RADIUS = DEATH_AND_DECAY_RADIUS + 10.0f;
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
 bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard
@@ -228,6 +235,12 @@ inline constexpr float MARK_ESCAPE_DISTANCE = MARK_EXPLOSION_RADIUS + 1.0f;
 // usually another bot fleeing the same Mark, which only the away-from-one-player vector separates
 inline constexpr float MARK_ESCAPE_SPLIT_DISTANCE = 10.0f;
 extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
+// Whether the Mark can land on this bot at all, and so whether any of the low-mana handling means
+// anything for it. 31447 filters to units whose current power is mana, which rules out the three
+// classes that never have any and a druid shifted into bear or cat--forms whose bar is rage or
+// energy. Hunters are mana users and are not excluded here: what they do about it differs, not
+// whether the Mark can reach them
+bool IsKazrogalManaUser(PlayerbotAI* botAI, Player* bot);
 bool HasMarkOfKazrogal(Player* bot);
 // Distance from the group's centre of mass, computed over the same members MoveFromGroup steers by.
 // Deliberately not distance to the nearest player: two bots fleeing side by side stay a yard apart

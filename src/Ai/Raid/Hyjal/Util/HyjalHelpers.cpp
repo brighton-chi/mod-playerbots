@@ -447,6 +447,24 @@ float GetDistanceFromGroupCenter(Player* bot)
     return bot->GetExactDist2d(x / count, y / count);
 }
 
+bool IsKazrogalManaUser(PlayerbotAI* botAI, Player* bot)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+        case CLASS_ROGUE:
+        case CLASS_DEATH_KNIGHT:
+            return false;
+
+        case CLASS_DRUID:
+            return !botAI->HasStrategy("bear", BOT_STATE_COMBAT) &&
+                !botAI->HasStrategy("cat", BOT_STATE_COMBAT);
+
+        default:
+            return true;
+    }
+}
+
 bool HasMarkOfKazrogal(Player* bot)
 {
     return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
