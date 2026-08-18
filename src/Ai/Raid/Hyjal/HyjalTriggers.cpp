@@ -19,21 +19,25 @@ bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
     return bot->GetMapId() == HYJAL_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
-// Rage Winterchill
-
-bool RageWinterchillPullingBossTrigger::IsActive()
+bool HyjalPullingBossTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    return winterchill && winterchill->GetHealthPct() > 95.0f;
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
-bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
+bool HyjalBossEngagedByMainTankTrigger::IsActive()
 {
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "rage winterchill");
+    if (!PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > _activeAboveHealthPct;
 }
+
+// Rage Winterchill
 
 bool RageWinterchillRangedShouldSpreadTrigger::IsActive()
 {
@@ -75,11 +79,6 @@ bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
 bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 {
     return bot->getClass() == CLASS_HUNTER && AI_VALUE2(Unit*, "find target", "anetheron");
-}
-
-bool AnetheronBossEngagedByMainTankTrigger::IsActive()
-{
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronRangedShouldSpreadTrigger::IsActive()
@@ -150,20 +149,6 @@ bool AnetheronShouldDetermineDpsPriorityTrigger::IsActive()
 }
 
 // Kaz'rogal
-
-bool KazrogalPullingBossTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    return kazrogal && kazrogal->GetHealthPct() > 95.0f;
-}
-
-bool KazrogalBossEngagedByMainTankTrigger::IsActive()
-{
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "kaz'rogal");
-}
 
 bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
 {
@@ -279,20 +264,6 @@ bool KazrogalWarlockShouldManageManaTrigger::IsActive()
 
 // Azgalor
 
-bool AzgalorPullingBossTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    return azgalor && azgalor->GetHealthPct() > 95.0f;
-}
-
-bool AzgalorBossEngagedByMainTankTrigger::IsActive()
-{
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
-}
-
 bool AzgalorBossEngagedByRangedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -378,24 +349,6 @@ bool AzgalorShouldDivideDpsTrigger::IsActive()
 }
 
 // Archimonde
-
-bool ArchimondePullingBossTrigger::IsActive()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 95.0f;
-}
-
-bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
-{
-    if (!PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 95.0f;
-}
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
 {

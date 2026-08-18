@@ -414,7 +414,7 @@ std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 
 float GetKazrogalRangedArcRadius(Unit* kazrogal)
 {
-    return (kazrogal && kazrogal->GetHealthPct() > KAZROGAL_ENGAGED_HEALTH_PCT)
+    return (kazrogal && kazrogal->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         ? KAZROGAL_RANGED_ARC_APPROACH_RADIUS : KAZROGAL_RANGED_ARC_RADIUS;
 }
 

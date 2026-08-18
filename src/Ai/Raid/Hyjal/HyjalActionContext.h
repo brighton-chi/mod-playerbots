@@ -138,7 +138,8 @@ private:
 
     // Rage Winterchill
     static Action* rage_winterchill_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new RageWinterchillMisdirectBossToMainTankAction(botAI);
+        return new HyjalMisdirectBossToMainTankAction(
+            botAI, "rage winterchill misdirect boss to main tank", "rage winterchill");
     }
     static Action* rage_winterchill_main_tank_position_boss(PlayerbotAI* botAI) {
         return new RageWinterchillMainTankPositionBossAction(botAI);
@@ -178,7 +179,8 @@ private:
 
     // Kaz'rogal
     static Action* kazrogal_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new KazrogalMisdirectBossToMainTankAction(botAI);
+        return new HyjalMisdirectBossToMainTankAction(
+            botAI, "kaz'rogal misdirect boss to main tank", "kaz'rogal");
     }
     static Action* kazrogal_main_tank_position_boss(PlayerbotAI* botAI) {
         return new KazrogalMainTankPositionBossAction(botAI);
@@ -204,7 +206,8 @@ private:
 
     // Azgalor
     static Action* azgalor_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new AzgalorMisdirectBossToMainTankAction(botAI);
+        return new HyjalMisdirectBossToMainTankAction(
+            botAI, "azgalor misdirect boss to main tank", "azgalor");
     }
     static Action* azgalor_main_tank_position_boss(PlayerbotAI* botAI) {
         return new AzgalorMainTankPositionBossAction(botAI);
@@ -230,7 +233,8 @@ private:
 
     // Archimonde
     static Action* archimonde_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new ArchimondeMisdirectBossToMainTankAction(botAI);
+        return new HyjalMisdirectBossToMainTankAction(
+            botAI, "archimonde misdirect boss to main tank", "archimonde");
     }
     static Action* archimonde_move_boss_to_initial_position(PlayerbotAI* botAI) {
         return new ArchimondeMoveBossToInitialPositionAction(botAI);

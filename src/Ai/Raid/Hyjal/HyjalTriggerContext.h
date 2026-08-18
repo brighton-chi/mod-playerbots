@@ -138,10 +138,12 @@ private:
 
     // Rage Winterchill
     static Trigger* rage_winterchill_pulling_boss(PlayerbotAI* botAI) {
-        return new RageWinterchillPullingBossTrigger(botAI);
+        return new HyjalPullingBossTrigger(
+            botAI, "rage winterchill pulling boss", "rage winterchill");
     }
     static Trigger* rage_winterchill_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new RageWinterchillBossEngagedByMainTankTrigger(botAI);
+        return new HyjalBossEngagedByMainTankTrigger(
+            botAI, "rage winterchill boss engaged by main tank", "rage winterchill");
     }
     static Trigger* rage_winterchill_ranged_should_spread(PlayerbotAI* botAI) {
         return new RageWinterchillRangedShouldSpreadTrigger(botAI);
@@ -158,7 +160,8 @@ private:
         return new AnetheronPullingBossOrInfernalTrigger(botAI);
     }
     static Trigger* anetheron_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new AnetheronBossEngagedByMainTankTrigger(botAI);
+        return new HyjalBossEngagedByMainTankTrigger(
+            botAI, "anetheron boss engaged by main tank", "anetheron");
     }
     static Trigger* anetheron_ranged_should_spread(PlayerbotAI* botAI) {
         return new AnetheronRangedShouldSpreadTrigger(botAI);
@@ -178,10 +181,11 @@ private:
 
     // Kaz'rogal
     static Trigger* kazrogal_pulling_boss(PlayerbotAI* botAI) {
-        return new KazrogalPullingBossTrigger(botAI);
+        return new HyjalPullingBossTrigger(botAI, "kaz'rogal pulling boss", "kaz'rogal");
     }
     static Trigger* kazrogal_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new KazrogalBossEngagedByMainTankTrigger(botAI);
+        return new HyjalBossEngagedByMainTankTrigger(
+            botAI, "kaz'rogal boss engaged by main tank", "kaz'rogal");
     }
     static Trigger* kazrogal_malevolent_cleave_splits_damage(PlayerbotAI* botAI) {
         return new KazrogalMalevolentCleaveSplitsDamageTrigger(botAI);
@@ -204,10 +208,11 @@ private:
 
     // Azgalor
     static Trigger* azgalor_pulling_boss(PlayerbotAI* botAI) {
-        return new AzgalorPullingBossTrigger(botAI);
+        return new HyjalPullingBossTrigger(botAI, "azgalor pulling boss", "azgalor");
     }
     static Trigger* azgalor_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new AzgalorBossEngagedByMainTankTrigger(botAI);
+        return new HyjalBossEngagedByMainTankTrigger(
+            botAI, "azgalor boss engaged by main tank", "azgalor");
     }
     static Trigger* azgalor_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new AzgalorBossEngagedByRangedTrigger(botAI);
@@ -230,10 +235,11 @@ private:
 
     // Archimonde
     static Trigger* archimonde_pulling_boss(PlayerbotAI* botAI) {
-        return new ArchimondePullingBossTrigger(botAI);
+        return new HyjalPullingBossTrigger(botAI, "archimonde pulling boss", "archimonde");
     }
     static Trigger* archimonde_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new ArchimondeBossEngagedByMainTankTrigger(botAI);
+        return new HyjalBossEngagedByMainTankTrigger(
+            botAI, "archimonde boss engaged by main tank", "archimonde", BOSS_ENGAGED_HEALTH_PCT);
     }
     static Trigger* archimonde_boss_casts_fear(PlayerbotAI* botAI) {
         return new ArchimondeBossCastsFearTrigger(botAI);

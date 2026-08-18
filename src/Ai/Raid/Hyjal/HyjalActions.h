@@ -21,15 +21,23 @@ public:
     bool Execute(Event event) override;
 };
 
-// Rage Winterchill
-
-class RageWinterchillMisdirectBossToMainTankAction : public Action
+// Hand threat to the main tank on the pull, then spend the charge on the boss. Four of the five
+// encounters open exactly this way and nothing about it varies but which unit to shoot, so they
+// share one class and name the boss at registration. Anetheron has its own, since there the target
+// changes to a loose Infernal once the pull is over
+class HyjalMisdirectBossToMainTankAction : public Action
 {
 public:
-    RageWinterchillMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "rage winterchill misdirect boss to main tank") {}
+    HyjalMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
 };
+
+// Rage Winterchill
 
 class RageWinterchillMainTankPositionBossAction : public AttackAction
 {
@@ -143,14 +151,6 @@ public:
 
 // Kaz'rogal
 
-class KazrogalMisdirectBossToMainTankAction : public Action
-{
-public:
-    KazrogalMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
 class KazrogalMainTankPositionBossAction : public AttackAction
 {
 public:
@@ -209,14 +209,6 @@ public:
 
 // Azgalor
 
-class AzgalorMisdirectBossToMainTankAction : public Action
-{
-public:
-    AzgalorMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "azgalor misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
 class AzgalorMainTankPositionBossAction : public AttackAction
 {
 public:
@@ -274,14 +266,6 @@ public:
 };
 
 // Archimonde
-
-class ArchimondeMisdirectBossToMainTankAction : public Action
-{
-public:
-    ArchimondeMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "archimonde misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
 
 class ArchimondeMoveBossToInitialPositionAction : public AttackAction
 {

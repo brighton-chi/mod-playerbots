@@ -59,12 +59,10 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     return erased;
 }
 
-// Rage Winterchill
-
-bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool HyjalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (!winterchill)
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -75,13 +73,15 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
         return botAI->CastSpell("misdirection", mainTank);
 
     if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", winterchill))
+        botAI->CanCastSpell("steady shot", boss))
     {
-        return botAI->CastSpell("steady shot", winterchill);
+        return botAI->CastSpell("steady shot", boss);
     }
 
     return false;
 }
+
+// Rage Winterchill
 
 // Position is back towards the center of the base to give some more room to maneuver
 bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
@@ -268,7 +268,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
 
     Player* tankTarget = nullptr;
     Unit* enemyTarget = nullptr;
-    if (anetheron->GetHealthPct() > 95.0f)
+    if (anetheron->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
     {
         tankTarget = GetGroupMainTank(botAI, bot);
         enemyTarget = anetheron;
@@ -516,28 +516,6 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 // Kaz'rogal
 // CombatReach is 7.875 yards
 
-bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", kazrogal))
-    {
-        return botAI->CastSpell("steady shot", kazrogal);
-    }
-
-    return false;
-}
-
 // Position is near the gate so the raid can get started on DPS ASAP
 bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
 {
@@ -718,28 +696,6 @@ bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 // Azgalor
 // CombatReach is 8.8 yards
 // Doomguard CombatReach is 3.75 yards
-
-bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", azgalor))
-    {
-        return botAI->CastSpell("steady shot", azgalor);
-    }
-
-    return false;
-}
 
 bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
 {
@@ -1037,28 +993,6 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 }
 
 // Archimonde
-
-bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(HyjalSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", archimonde))
-    {
-        return botAI->CastSpell("steady shot", archimonde);
-    }
-
-    return false;
-}
 
 // Initially move Archimonde up the hill a bit to get space from the World Tree
 bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)

@@ -19,23 +19,41 @@ public:
     bool IsActive() override;
 };
 
+// A hunter opening the fight, which is any hunter looking at a boss still on full health. Four of
+// the five encounters are pulled exactly this way and only the boss differs, so they share one
+// class and name it at registration. Anetheron has its own: there the hunter keeps misdirecting
+// all fight to hand over Infernals, so it never gates on health at all
+class HyjalPullingBossTrigger : public Trigger
+{
+public:
+    HyjalPullingBossTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Trigger(botAI, name), _bossName(bossName) {}
+    bool IsActive() override;
+
+private:
+    std::string const _bossName;
+};
+
+// The main tank should be holding this boss where it wants him. activeAboveHealthPct exists for
+// Archimonde alone, whose tank only walks him at the opening and then leaves him be; the default
+// needs no special case, since a boss that is alive at all is above zero health
+class HyjalBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    HyjalBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        float activeAboveHealthPct = 0.0f)
+        : Trigger(botAI, name), _bossName(bossName),
+          _activeAboveHealthPct(activeAboveHealthPct) {}
+    bool IsActive() override;
+
+private:
+    std::string const _bossName;
+    float const _activeAboveHealthPct;
+};
+
 // Rage Winterchill
-
-class RageWinterchillPullingBossTrigger : public Trigger
-{
-public:
-    RageWinterchillPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill pulling boss") {}
-    bool IsActive() override;
-};
-
-class RageWinterchillBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    RageWinterchillBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill boss engaged by main tank") {}
-    bool IsActive() override;
-};
 
 class RageWinterchillRangedShouldSpreadTrigger : public Trigger
 {
@@ -68,14 +86,6 @@ class AnetheronPullingBossOrInfernalTrigger : public Trigger
 public:
     AnetheronPullingBossOrInfernalTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "anetheron pulling boss or infernal") {}
-    bool IsActive() override;
-};
-
-class AnetheronBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    AnetheronBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron boss engaged by main tank") {}
     bool IsActive() override;
 };
 
@@ -120,22 +130,6 @@ public:
 };
 
 // Kaz'rogal
-
-class KazrogalPullingBossTrigger : public Trigger
-{
-public:
-    KazrogalPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal pulling boss") {}
-    bool IsActive() override;
-};
-
-class KazrogalBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    KazrogalBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal boss engaged by main tank") {}
-    bool IsActive() override;
-};
 
 class KazrogalMalevolentCleaveSplitsDamageTrigger : public Trigger
 {
@@ -187,22 +181,6 @@ public:
 
 // Azgalor
 
-class AzgalorPullingBossTrigger : public Trigger
-{
-public:
-    AzgalorPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor pulling boss") {}
-    bool IsActive() override;
-};
-
-class AzgalorBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    AzgalorBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor boss engaged by main tank") {}
-    bool IsActive() override;
-};
-
 class AzgalorBossEngagedByRangedTrigger : public Trigger
 {
 public:
@@ -252,22 +230,6 @@ public:
 };
 
 // Archimonde
-
-class ArchimondePullingBossTrigger : public Trigger
-{
-public:
-    ArchimondePullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde pulling boss") {}
-    bool IsActive() override;
-};
-
-class ArchimondeBossEngagedByMainTankTrigger : public Trigger
-{
-public:
-    ArchimondeBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss engaged by main tank") {}
-    bool IsActive() override;
-};
 
 class ArchimondeBossCastsFearTrigger : public Trigger
 {

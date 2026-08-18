@@ -90,6 +90,10 @@ inline constexpr float HAZARD_SEARCH_RADIUS = 60.0f; // For Death & Decay and Ra
 // contact whatever the boss's hitbox. A fixed yard suits that; a proportion of the range would
 // only stand the bot deeper the wider the boss is, which nothing calls for
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
+// A boss still at full health has not been pulled properly yet: the tank is still walking him to
+// his spot and threat is still being handed over. Health leaving full is the cheapest proxy for
+// that being over, and every gate here that means "the opening is not finished" keys on it
+inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
 struct RangedGroups
 {
     std::vector<Player*> healers;
@@ -196,7 +200,6 @@ inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
 // fighting radius while that happens puts them in front of him. Hold them further out until the
 // tank has him engaged, for which his health leaving full is the cheapest proxy
 inline constexpr float KAZROGAL_RANGED_ARC_APPROACH_RADIUS = 25.0f;
-inline constexpr float KAZROGAL_ENGAGED_HEALTH_PCT = 95.0f;
 // Measured in game: the heading from Kaz'rogal down the open approach
 inline constexpr float KAZROGAL_RANGED_ARC_CENTER = 4.225f;
 // Obstacles flank that approach at fixed world positions, so what bounds the arc is lateral
