@@ -17,6 +17,17 @@ namespace HyjalHelpers
 
 // General
 
+// Every ground hazard here is read through a cached value rather than searched for directly. The
+// cache is keyed per bot and refreshed on its own interval, so the several triggers, multipliers
+// and actions that all ask about the same pool each tick share one grid search between them
+static std::vector<Position> const& GetCachedHazardPositions(Player* bot, std::string const& value)
+{
+    static std::vector<Position> const none;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    return botAI ? botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet()
+                 : none;
+}
+
 bool GetHazardBlockedArc(
     Position const& ringCenter, float ringRadius, Position const& hazard,
     float hazardRadius, BlockedArc& arc)
@@ -243,9 +254,7 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups co
 
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay)
 {
-    std::vector<Position> const positions = GetDynamicObjectPositions(
-        bot, HAZARD_SEARCH_RADIUS, Id(HyjalSpells::SPELL_DEATH_AND_DECAY));
-
+    std::vector<Position> const& positions = GetCachedHazardPositions(bot, "hyjal death and decay");
     if (positions.empty())
         return false;
 
@@ -475,10 +484,9 @@ bool HasMarkOfKazrogal(Player* bot)
 // Each Rain of Fire is its own dynamic object that expires after 10s on its own, so nothing has
 // to be recorded to know whether one is still active. Azgalor casts on a timer that lets two
 // overlap, so callers have to weigh all of them rather than just the nearest
-std::vector<Position> GetRainOfFirePositions(Player* bot)
+std::vector<Position> const& GetRainOfFirePositions(Player* bot)
 {
-    return GetDynamicObjectPositions(
-        bot, HAZARD_SEARCH_RADIUS, Id(HyjalSpells::SPELL_RAIN_OF_FIRE));
+    return GetCachedHazardPositions(bot, "hyjal rain of fire");
 }
 
 // Fleeing the nearest can walk a bot into a second pool, which then becomes the nearest and is
@@ -579,17 +587,28 @@ bool HasProtectionOfElune(Player* bot)
     return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
 }
 
+std::vector<Position> const& GetDoomfirePositions(Player* bot)
+{
+    return GetCachedHazardPositions(bot, "hyjal doomfire trail");
+}
+
+// Centre to centre, as every other hazard test here measures. This used to lean on the grid
+// search's own range check, which quietly pads by both object sizes--so the radius handed in
+// reached about two yards further than it said, and disagreed with IsPositionNearDoomfire below
 bool IsNearDoomfire(Player* bot, float radius)
 {
-    return !GetDynamicObjectPositions(
-        bot, radius, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL)).empty();
+    for (Position const& patch : GetDoomfirePositions(bot))
+    {
+        if (bot->GetExactDist2d(patch) < radius)
+            return true;
+    }
+
+    return false;
 }
 
 bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius)
 {
-    float const searchRadius = radius + bot->GetExactDist2d(x, y) + 1.0f;
-    for (Position const& patch : GetDynamicObjectPositions(
-             bot, searchRadius, Id(HyjalSpells::SPELL_DOOMFIRE_TRAIL)))
+    for (Position const& patch : GetDoomfirePositions(bot))
     {
         if (patch.GetExactDist2d(x, y) < radius)
             return true;

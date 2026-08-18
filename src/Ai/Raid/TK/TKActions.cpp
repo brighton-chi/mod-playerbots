@@ -337,7 +337,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
         float const currentDistance = bot->GetDistance2d(ember);
         if (currentDistance < safeDistance)
         {
-            botAI->InterruptSpell();
+            bot->InterruptNonMeleeSpells(false);
             return MoveAway(ember, safeDistance - currentDistance);
         }
 
@@ -362,7 +362,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
         Position ground;
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, ground);
 
-        botAI->InterruptSpell();
+        bot->InterruptNonMeleeSpells(false);
         return JumpTo(
             TK_MAP_ID, ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(),
             MovementPriority::MOVEMENT_FORCED);
@@ -439,7 +439,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
         Position position;
         GetClosestPlatformAndGround(bot->GetPosition(), closestPlatform, position);
 
-        botAI->InterruptSpell();
+        bot->InterruptNonMeleeSpells(false);
         return JumpTo(
             TK_MAP_ID, position.GetPositionX(), position.GetPositionY(),
             position.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
@@ -497,7 +497,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
         if (bot->GetExactDist2d(flamePatch) < hazardRadius)
         {
             Position safestPos = FindSafestNearbyPosition(bot, flamePatches, hazardRadius);
-            botAI->InterruptSpell();
+            bot->InterruptNonMeleeSpells(false);
             return MoveTo(
                 TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                 safestPos.GetPositionZ(), false, false, false, false,
@@ -519,7 +519,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         if (currentDistance >= safeDistance)
             return false;
 
-        botAI->InterruptSpell();
+        bot->InterruptNonMeleeSpells(false);
         return MoveAway(alar, safeDistance - currentDistance);
     }
 
@@ -726,7 +726,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
         }
     }
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
 
     if (!bestCandidates.empty())
     {
@@ -757,7 +757,7 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
     if (!GetNearestPlayerInRadius(bot, safeDistance))
         return false;
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
     return MoveFromGroup(safeDistance);
 }
 
@@ -850,7 +850,7 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     if (currentDistance >= safeDistance)
         return false;
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
     return MoveAway(thaladred, safeDistance - currentDistance);
 }
 
@@ -1101,7 +1101,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         return false;
     }
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1129,7 +1129,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
         if (currentDistance >= safeDistance)
             return true;
 
-        botAI->InterruptSpell();
+        bot->InterruptNonMeleeSpells(false);
         return MoveAway(capernian, safeDistance - currentDistance);
     }
 }
@@ -1451,7 +1451,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
     {
         // In case melee ends up on the axe despite the target exclusion
-        botAI->InterruptSpell();
+        bot->InterruptNonMeleeSpells(false);
         bot->AttackStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetSelection(ObjectGuid());
@@ -1691,7 +1691,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     if (alreadyEquipped && alreadyEquipped->GetEntry() == itemId)
         return false;
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
 
     bool ohCleared = false;  // If a 2H is blocking the target OH slot, unequip the 2H first
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
@@ -1968,7 +1968,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 
     Position safestPos = FindSafestNearbyPosition(bot, flameStrikes, hazardRadius);
 
-    botAI->InterruptSpell();
+    bot->InterruptNonMeleeSpells(false);
     return MoveTo(
         TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(), safestPos.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);

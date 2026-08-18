@@ -265,7 +265,7 @@ inline Position const AZGALOR_TANK_POSITION =      { 5494.594f, -2747.069f, 1487
 // TODO: re-measure. The old value was chosen relative to the tank's transition spot, which no
 // longer exists now that the boss is walked straight to the final position
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-std::vector<Position> GetRainOfFirePositions(Player* bot);
+std::vector<Position> const& GetRainOfFirePositions(Player* bot);
 bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
 bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInRainOfFire(Player* bot);
@@ -319,10 +319,11 @@ inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
 bool HasProtectionOfElune(Player* bot);
 bool IsNearDoomfire(Player* bot, float radius);
-// The same question asked of a point the bot is about to step to rather than of where it stands.
-// Patches are gathered around the bot, so the search reaches far enough to cover the step as well
-// as the radius being tested
+// The same question asked of a point the bot is about to step to rather than of where it stands
 bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius);
+// Every live trail patch within HAZARD_SEARCH_RADIUS, for callers that weigh the field rather
+// than just asking whether one is near
+std::vector<Position> const& GetDoomfirePositions(Player* bot);
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 // The Air Burst currently being cast, if one is. Recorded when the cast starts and left to lapse
 // on its own, so it answers "is one on the way", not "was one cast"
