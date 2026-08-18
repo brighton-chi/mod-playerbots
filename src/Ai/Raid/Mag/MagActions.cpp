@@ -349,7 +349,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     botAI->AddTimedEvent(
         [this]
         {
-            botAI->Reset();
+            bot->CastStop();
         },
         delay);
     botAI->SetNextCheckDelay(delay + 50);
