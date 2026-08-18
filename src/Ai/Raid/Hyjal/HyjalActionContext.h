@@ -8,6 +8,7 @@
 #define PLAYERBOTS_HYJALACTIONCONTEXT_H
 
 #include "HyjalActions.h"
+#include "HyjalHelpers.h"
 #include "NamedObjectContext.h"
 
 class RaidHyjalSummitActionContext : public NamedObjectContext<Action>
@@ -142,7 +143,9 @@ private:
             botAI, "rage winterchill misdirect boss to main tank", "rage winterchill");
     }
     static Action* rage_winterchill_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new RageWinterchillMainTankPositionBossAction(botAI);
+        return new HyjalMainTankPositionBossAction(
+            botAI, "rage winterchill main tank position boss", "rage winterchill",
+            HyjalHelpers::WINTERCHILL_TANK_POSITION, 4.0f);
     }
     static Action* rage_winterchill_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new RageWinterchillSpreadRangedInCircleAction(botAI);
@@ -159,7 +162,9 @@ private:
         return new AnetheronMisdirectBossAndInfernalsToTanksAction(botAI);
     }
     static Action* anetheron_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new AnetheronMainTankPositionBossAction(botAI);
+        return new HyjalMainTankPositionBossAction(
+            botAI, "anetheron main tank position boss", "anetheron",
+            HyjalHelpers::ANETHERON_TANK_POSITION, 4.0f);
     }
     static Action* anetheron_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new AnetheronSpreadRangedInCircleAction(botAI);
@@ -183,7 +188,9 @@ private:
             botAI, "kaz'rogal misdirect boss to main tank", "kaz'rogal");
     }
     static Action* kazrogal_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new KazrogalMainTankPositionBossAction(botAI);
+        return new HyjalMainTankPositionBossAction(
+            botAI, "kaz'rogal main tank position boss", "kaz'rogal",
+            HyjalHelpers::KAZROGAL_TANK_POSITION, 2.0f);
     }
     static Action* kazrogal_assist_tanks_move_in_front_of_boss(PlayerbotAI* botAI) {
         return new KazrogalAssistTanksMoveInFrontOfBossAction(botAI);
@@ -210,7 +217,9 @@ private:
             botAI, "azgalor misdirect boss to main tank", "azgalor");
     }
     static Action* azgalor_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new AzgalorMainTankPositionBossAction(botAI);
+        return new HyjalMainTankPositionBossAction(
+            botAI, "azgalor main tank position boss", "azgalor",
+            HyjalHelpers::AZGALOR_TANK_POSITION, 2.0f, 60.0f);
     }
     static Action* azgalor_disperse_ranged(PlayerbotAI* botAI) {
         return new AzgalorDisperseRangedAction(botAI);
@@ -237,7 +246,9 @@ private:
             botAI, "archimonde misdirect boss to main tank", "archimonde");
     }
     static Action* archimonde_move_boss_to_initial_position(PlayerbotAI* botAI) {
-        return new ArchimondeMoveBossToInitialPositionAction(botAI);
+        return new HyjalMainTankPositionBossAction(
+            botAI, "archimonde move boss to initial position", "archimonde",
+            HyjalHelpers::ARCHIMONDE_INITIAL_POSITION, 3.0f, 60.0f);
     }
     static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
         return new ArchimondeCastFearImmunitySpellAction(botAI);

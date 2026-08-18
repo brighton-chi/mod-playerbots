@@ -81,34 +81,34 @@ bool HyjalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-// Rage Winterchill
-
-// Position is back towards the center of the base to give some more room to maneuver
-bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
+bool HyjalMainTankPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
-    if (!winterchill)
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != winterchill)
-        return Attack(winterchill);
+    if (AI_VALUE(Unit*, "current target") != boss)
+        return Attack(boss);
 
-    if (winterchill->GetVictim() != bot || !bot->IsWithinMeleeRange(winterchill))
+    if (boss->GetVictim() != bot || !bot->IsWithinMeleeRange(boss))
         return false;
 
-    Position const& position = WINTERCHILL_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
+    if (bot->GetHealthPct() < _bailBelowHealthPct)
+        return false;
 
-    if (distToPosition <= 4.0f)
+    float const distToPosition = bot->GetExactDist2d(_position);
+    if (distToPosition <= _arrivalDistance)
         return false;
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
+    float const toPosX = _position.GetPositionX() - botX;
+    float const toPosY = _position.GetPositionY() - botY;
 
-    float const toBossX = winterchill->GetPositionX() - botX;
-    float const toBossY = winterchill->GetPositionY() - botY;
+    // Backpedal when the spot lies behind the bot as the boss sees it, so the tank never turns
+    // its back on him and swings his frontal arc across the raid. Slower, hence not unconditional
+    float const toBossX = boss->GetPositionX() - botX;
+    float const toBossY = boss->GetPositionY() - botY;
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
@@ -120,6 +120,8 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
+
+// Rage Winterchill
 
 // This is essentially a forced "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in the
 // config being 15 yards; avoidance works fine without this strategy if it is set to 20+ yards.
@@ -292,44 +294,6 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     }
 
     return false;
-}
-
-// Position is back towards the center of the base, near the crossroads
-bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != anetheron)
-        return Attack(anetheron);
-
-    if (anetheron->GetVictim() != bot || !bot->IsWithinMeleeRange(anetheron))
-        return false;
-
-    Position const& position = ANETHERON_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 4.0f)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = anetheron->GetPositionX() - botX;
-    float const toBossY = anetheron->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-    return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
@@ -516,44 +480,6 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 // Kaz'rogal
 // CombatReach is 7.875 yards
 
-// Position is near the gate so the raid can get started on DPS ASAP
-bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
-    if (!kazrogal)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != kazrogal)
-        return Attack(kazrogal);
-
-    if (kazrogal->GetVictim() != bot || !bot->IsWithinMeleeRange(kazrogal))
-        return false;
-
-    Position const& position = KAZROGAL_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 2.0f)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = kazrogal->GetPositionX() - botX;
-    float const toBossY = kazrogal->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-    return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
-
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -696,47 +622,6 @@ bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 // Azgalor
 // CombatReach is 8.8 yards
 // Doomguard CombatReach is 3.75 yards
-
-bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != azgalor)
-        return Attack(azgalor);
-
-    if (azgalor->GetVictim() != bot || !bot->IsWithinMeleeRange(azgalor))
-        return false;
-
-    if (bot->GetHealthPct() < 60.0f)
-        return false;
-
-    Position const& position = AZGALOR_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    constexpr float maxDistance = 2.0f;
-    if (distToPosition <= maxDistance)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = azgalor->GetPositionX() - botX;
-    float const toBossY = azgalor->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-    return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
 
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
@@ -993,47 +878,6 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 }
 
 // Archimonde
-
-// Initially move Archimonde up the hill a bit to get space from the World Tree
-bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
-{
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != archimonde)
-        return Attack(archimonde);
-
-    if (archimonde->GetVictim() != bot || !bot->IsWithinMeleeRange(archimonde))
-        return false;
-
-    if (bot->GetHealthPct() < 60.0f)
-        return false;
-
-    Position const& position = ARCHIMONDE_INITIAL_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 3.0f)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = archimonde->GetPositionX() - botX;
-    float const toBossY = archimonde->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-    return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
 
 bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 {

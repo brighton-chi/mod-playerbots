@@ -153,12 +153,14 @@ inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 // nothing left that closes distance--the formation movers are already off for the fight--so it
 // stands where it is while the main tank walks Winterchill out of reach
 inline constexpr float DEATH_AND_DECAY_MELEE_CONTROL_RADIUS = DEATH_AND_DECAY_RADIUS + 10.0f;
+// Back towards the centre of the base, for more room to maneuver
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
 bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard
 bool IsInDeathAndDecay(Player* bot);
 
 // Anetheron
+// Back towards the centre of the base, near the crossroads
 inline Position const ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
 inline Position const ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
 inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
@@ -194,6 +196,7 @@ Player* GetInfernalTank(Player* bot);
 Position const& GetInfernalTankPosition(Player* bot);
 
 // Kaz'rogal
+// Near the gate, so the raid can get started on DPS ASAP
 inline Position const KAZROGAL_TANK_POSITION = { 5505.440f, -2665.059f, 1480.598f };
 inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
 // Kaz'rogal is still being walked to his tanking spot at the pull, and ranged closing to the
@@ -288,6 +291,7 @@ struct AirBurstData
     uint32 castTime;
 };
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
+// Up the hill a bit, for space from the World Tree. The tank walks him here at the opening only
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 // Where the ground actually burns, and the only figure here that is a fact rather than a choice.
 // The Doomfire carries 31945, a 1s periodic that drops a fresh 31943 patch at its feet; 31943 is a

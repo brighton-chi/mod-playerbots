@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "Position.h"
 
 // General
 
@@ -37,15 +38,30 @@ private:
     std::string const _bossName;
 };
 
-// Rage Winterchill
-
-class RageWinterchillMainTankPositionBossAction : public AttackAction
+// The main tank walking his boss to where the raid wants him: take the target, wait until he is
+// actually being held in melee, then close on the spot a step at a time. All five encounters do
+// this and only the spot, how near counts as arrived, and whether the tank's own health calls it
+// off differ, so they share one class and name those at registration.
+//
+// bailBelowHealthPct needs no special case at its default: a bot alive to run this is above zero
+class HyjalMainTankPositionBossAction : public AttackAction
 {
 public:
-    RageWinterchillMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "rage winterchill main tank position boss") {}
+    HyjalMainTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        Position const& position, float arrivalDistance, float bailBelowHealthPct = 0.0f)
+        : AttackAction(botAI, name), _bossName(bossName), _position(position),
+          _arrivalDistance(arrivalDistance), _bailBelowHealthPct(bailBelowHealthPct) {}
     bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
+    Position const& _position;
+    float const _arrivalDistance;
+    float const _bailBelowHealthPct;
 };
+
+// Rage Winterchill
 
 class RageWinterchillRangedGetOutOfDeathAndDecayAction : public MovementAction
 {
@@ -88,14 +104,6 @@ class AnetheronMisdirectBossAndInfernalsToTanksAction : public Action
 public:
     AnetheronMisdirectBossAndInfernalsToTanksAction(PlayerbotAI* botAI)
         : Action(botAI, "anetheron misdirect boss and infernals to tanks") {}
-    bool Execute(Event event) override;
-};
-
-class AnetheronMainTankPositionBossAction : public AttackAction
-{
-public:
-    AnetheronMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "anetheron main tank position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -151,14 +159,6 @@ public:
 
 // Kaz'rogal
 
-class KazrogalMainTankPositionBossAction : public AttackAction
-{
-public:
-    KazrogalMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kaz'rogal main tank position boss") {}
-    bool Execute(Event event) override;
-};
-
 class KazrogalAssistTanksMoveInFrontOfBossAction : public AttackAction
 {
 public:
@@ -209,14 +209,6 @@ public:
 
 // Azgalor
 
-class AzgalorMainTankPositionBossAction : public AttackAction
-{
-public:
-    AzgalorMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor main tank position boss") {}
-    bool Execute(Event event) override;
-};
-
 class AzgalorDisperseRangedAction : public MovementAction
 {
 public:
@@ -266,14 +258,6 @@ public:
 };
 
 // Archimonde
-
-class ArchimondeMoveBossToInitialPositionAction : public AttackAction
-{
-public:
-    ArchimondeMoveBossToInitialPositionAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "archimonde move boss to initial position") {}
-    bool Execute(Event event) override;
-};
 
 class ArchimondeCastFearImmunitySpellAction : public Action
 {
