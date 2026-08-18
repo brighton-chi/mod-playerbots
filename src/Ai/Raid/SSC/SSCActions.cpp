@@ -1821,7 +1821,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     {
         // This block is needed to prevent bots from floating into the air to attack sporebats
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->CastStop();
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
         bot->NearTeleportTo(bot->GetPositionX(), bot->GetPositionY(),
@@ -1956,7 +1956,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->CastStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
@@ -2071,7 +2071,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(tainted) > 10.0f)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(false);
+        bot->CastStop();
 
         // NearTeleportTo passes TELE_TO_NOT_LEAVE_COMBAT; TeleportTo does not and so calls
         // CombatStop(), which tears down every CombatReference and empties the bot's threat
@@ -2331,7 +2331,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
     // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2394,7 +2394,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
     // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2467,7 +2467,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
     // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2530,7 +2530,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
     // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(false);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
