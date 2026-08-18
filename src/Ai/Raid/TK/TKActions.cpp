@@ -1451,8 +1451,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
     {
         // In case melee ends up on the axe despite the target exclusion
-        bot->CastStop();
         bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        bot->CastStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetSelection(ObjectGuid());
     }
