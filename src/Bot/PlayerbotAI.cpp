@@ -369,7 +369,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         {
             spellInterruptRequested = false;
-            bot->InterruptSpell(currentSpell->GetCurrentContainer());
+            bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
             YieldThread(bot, GetReactDelay());
             return;
         }
