@@ -20,13 +20,15 @@ using namespace MagHelpers;
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
-    Creature* channeler = nullptr;
-    if (Creature* channelerS = GetChanneler(bot, SOUTH_CHANNELER))
-        channeler = channelerS;
-    else if (Creature* channelerW = GetChanneler(bot, WEST_CHANNELER))
-        channeler = channelerW;
-    else if (Creature* channelerE = GetChanneler(bot, EAST_CHANNELER))
-        channeler = channelerE;
+    Creature* channeler = GetChanneler(bot, SOUTH_CHANNELER);
+    if (!channeler)
+    {
+        if (Creature* channelerW = GetChanneler(bot, WEST_CHANNELER))
+            channeler = channelerW;
+
+        if (Creature* channelerE = GetChanneler(bot, EAST_CHANNELER))
+            channeler = channelerE;
+    }
 
     if (channeler)
     {
@@ -51,27 +53,15 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 
 bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*/)
 {
-    Creature* channeler = nullptr;
-    Position const* position = nullptr;
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
-        if (Creature* channelerNw = GetChanneler(bot, NORTHWEST_CHANNELER))
-        {
-            channeler = channelerNw;
-            position = &NW_CHANNELER_TANK_POSITION;
-        }
-    }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    Creature* channeler = GetChanneler(bot, NORTHWEST_CHANNELER);
+    Position const* position = &NW_CHANNELER_TANK_POSITION;
+    if (!channeler || !position || !PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
         if (Creature* channelerNe = GetChanneler(bot, NORTHEAST_CHANNELER))
         {
             channeler = channelerNe;
             position = &NE_CHANNELER_TANK_POSITION;
         }
-    }
-    else
-    {
-        return false;
     }
 
     if (!channeler || !position)
@@ -349,21 +339,21 @@ CubeInfo const* MagtheridonUseManticronCubeAction::GetAssignedCube()
 
 bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
 {
-    if (bot->HasAura(Id(MagSpells::SPELL_SHADOW_GRASP)) &&
-        !IsBlastNovaCasting(magtheridon))
+    if (!bot->HasAura(Id(MagSpells::SPELL_SHADOW_GRASP)) ||
+        IsBlastNovaCasting(magtheridon))
     {
-        uint32 delay = urand(200, 3000);
-        botAI->AddTimedEvent(
-            [this]
-            {
-                botAI->Reset();
-            },
-            delay);
-        botAI->SetNextCheckDelay(delay + 50);
-        return true;
+        return false;
     }
 
-    return false;
+    uint32 delay = urand(200, 3000);
+    botAI->AddTimedEvent(
+        [this]
+        {
+            botAI->Reset();
+        },
+        delay);
+    botAI->SetNextCheckDelay(delay + 50);
+    return true;
 }
 
 bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)

@@ -22,11 +22,17 @@ bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 
 bool MagtheridonLastTwoChannelersEngagedByAssistTanksTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "magtheridon") &&
-        (GetChanneler(bot, NORTHWEST_CHANNELER) || GetChanneler(bot, NORTHEAST_CHANNELER));
+    if (GetChanneler(bot, NORTHWEST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    {
+        return true;
+    }
+
+    return GetChanneler(bot, NORTHEAST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
@@ -45,13 +51,17 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    Creature* channelerNw = GetChanneler(bot, NORTHWEST_CHANNELER);
-    if (!channelerNw && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    if (!GetChanneler(bot, NORTHWEST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    {
         return true;
+    }
 
-    Creature* channelerNe = GetChanneler(bot, NORTHEAST_CHANNELER);
-    if (!channelerNe && PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    if (!GetChanneler(bot, NORTHEAST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    {
         return true;
+    {
 
     return !PlayerbotAI::IsMainTank(bot);
 }
@@ -72,7 +82,7 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
         return false;
 
     // Include an assist tank that pulls aggro
-    return PlayerbotAI::IsMainTank(bot) || magtheridon->GetVictim() == bot;
+    return magtheridon->GetVictim() == bot || PlayerbotAI::IsMainTank(bot);
 }
 
 bool MagtheridonBossEngagedByRangedTrigger::IsActive()

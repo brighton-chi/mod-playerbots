@@ -45,30 +45,25 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-    Position const* position = nullptr;
-    if (IsMaulgarTank(bot))
+    Unit* target = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Position const* position =  &MAULGAR_TANK_POSITION;
+    if (!target || !position || !IsMaulgarTank(bot))
     {
-        if (Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar"))
+        if (IsOlmTank(bot))
         {
-            target = maulgar;
-            position = &MAULGAR_TANK_POSITION;
+            if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
+            {
+                target = olm;
+                position = &OLM_TANK_POSITION;
+            }
         }
-    }
-    else if (IsOlmTank(bot))
-    {
-        if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
+        else if (IsBlindeyeTank(bot))
         {
-            target = olm;
-            position = &OLM_TANK_POSITION;
-        }
-    }
-    else if (IsBlindeyeTank(bot))
-    {
-        if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
-        {
-            target = blindeye;
-            position = &BLINDEYE_TANK_POSITION;
+            if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
+            {
+                target = blindeye;
+                position = &BLINDEYE_TANK_POSITION;
+            }
         }
     }
 
@@ -188,13 +183,9 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
-    Unit* target = nullptr;
+    Unit* target = Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Unit* krosh = nullptr;
-    if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
-    {
-        target = blindeye;
-    }
-    else if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
+    if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
     {
         target = olm;
     }
@@ -497,27 +488,24 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     if (!_hasReachedInitialPosition)
     {
         float const distToTarget = bot->GetExactDist2d(_initialPosition);
-        if (distToTarget > 2.0f)
+        if (distToTarget <= 2.0f)
         {
-            // The stored Z is the ring centre's, which says nothing about the ground 25-40 yards
-            // out. Seeding from the bot keeps the step inside the height probes MoveTo makes
-            constexpr float maxMoveDist = 10.0f;
-            float const moveDist = std::min(maxMoveDist, distToTarget);
-            float const botX = bot->GetPositionX();
-            float const botY = bot->GetPositionY();
-            float const moveX =
-                botX + ((_initialPosition.GetPositionX() - botX) / distToTarget) * moveDist;
-            float const moveY =
-                botY + ((_initialPosition.GetPositionY() - botY) / distToTarget) * moveDist;
+             _hasReachedInitialPosition = true;
+            return false;
+        }
 
-            return MoveTo(
-                GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-        else
-        {
-            _hasReachedInitialPosition = true;
-        }
+        constexpr float maxMoveDist = 10.0f;
+        float const moveDist = std::min(maxMoveDist, distToTarget);
+        float const botX = bot->GetPositionX();
+        float const botY = bot->GetPositionY();
+        float const moveX =
+            botX + ((_initialPosition.GetPositionX() - botX) / distToTarget) * moveDist;
+        float const moveY =
+            botY + ((_initialPosition.GetPositionY() - botY) / distToTarget) * moveDist;
+
+        return MoveTo(
+            GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     constexpr float minSpreadDistance = 10.0f;

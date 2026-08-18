@@ -324,15 +324,14 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
 {
     auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
-
-    Unit* ember = nullptr;
-    if (firstEmber)
-        ember = firstEmber;
-    else if (secondEmber)
+    Unit* ember = firstEmber;
+    if (!ember && secondEmber)
         ember = secondEmber;
 
+    Unit* target = nullptr;
     if (ember)
     {
+        target = ember;
         constexpr float safeDistance = 15.0f;
         float const currentDistance = bot->GetDistance2d(ember);
         if (currentDistance < safeDistance)
@@ -340,18 +339,18 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
             bot->CastStop();
             return MoveAway(ember, safeDistance - currentDistance);
         }
-
-        if (AI_VALUE(Unit*, "current target") != ember)
-            return Attack(ember);
-
-        return false;
     }
 
-    Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar)
+    if (!target)
+    {
+        if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
+            target = alar;
+    }
+
+    if (AI_VALUE(Unit*, "current target") == target)
         return false;
 
-    return AI_VALUE(Unit*, "current target") != alar && Attack(alar);
+    return Attack(target);
 }
 
 bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
@@ -1181,10 +1180,8 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
         position = SANGUINAR_WAITING_POSITION;
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
         position = TELONICUS_WAITING_POSITION;
-    else if (GetCapernianTank(bot) == bot)
+    else // Capernian Tank
         position = CAPERNIAN_WAITING_POSITION;
-    else
-        return false;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
         return false;
@@ -1978,7 +1975,7 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 {
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
         return AssistTanksPickUpPhoenixes();
     }
@@ -2002,10 +1999,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes(
     std::sort(phoenixes.begin(), phoenixes.end(),
         [](Unit* first, Unit* second) { return first->GetGUID() < second->GetGUID(); });
 
-    Unit* targetPhoenix = nullptr;
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        targetPhoenix = phoenixes[0];
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) && phoenixes.size() >= 2)
+    Unit* targetPhoenix = phoenixes[0];
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && phoenixes.size() >= 2)
         targetPhoenix = phoenixes[1];
 
     if (!targetPhoenix)
