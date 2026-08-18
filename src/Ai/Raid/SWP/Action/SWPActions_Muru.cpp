@@ -435,17 +435,19 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
-    Unit* hazard = nullptr;
-    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    constexpr float searchRadius = 20.0f;
-    Creature* darkness = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_DARKNESS), searchRadius, true);
+    Unit* hazard = AI_VALUE2(Unit*, "find target", "dark fiend");
+    
+    if (!hazard)
+    {
+        constexpr float searchRadius = 20.0f;
+        if (Creature* darkness = bot->FindNearestCreature(
+                Id(SwpNpcs::NPC_DARKNESS), searchRadius, true))
+        {
+            hazard = darkness;
+        }
+    }
 
-    if (darkFiend)
-        hazard = darkFiend;
-    else if (darkness)
-        hazard = darkness;
-    else
+    if (!hazard)
         return false;
 
     constexpr float safeDistance = 15.0f;
@@ -588,13 +590,11 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
 
         return FleePosition(muru->GetPosition(), safeDistanceFromMuru, minInterval);
     }
-    else
-    {
-        constexpr float stackArrivalDistance = 3.0f;
-        return MoveInside(
-            SWP_MAP_ID, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
-            stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
-    }
+
+    constexpr float stackArrivalDistance = 3.0f;
+    return MoveInside(
+        SWP_MAP_ID, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
+        stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool MuruFleeFromSingularityAction::Execute(Event /*event*/)

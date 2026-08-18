@@ -185,13 +185,11 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
-    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-    {
-        constexpr uint32 minInterval = 1000;
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
-    }
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+    if (!nearestPlayer)
+        return false;
 
-    return false;
+    return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
 }
 
 bool KalecgosRemoveArcaneBuffetAction::Execute(Event /*event*/)

@@ -292,38 +292,35 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+    Unit* twinTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+    float threatHoldRatio = 0.8f;
+    bool (*isTwinTank)(Player*) = IsAnySacrolashTank;
+
+    if (!twinTarget)
     {
-        constexpr float threatRatio = 0.8f;
-        if (ShouldHoldTwinThreat(bot, sacrolash, threatRatio, IsAnySacrolashTank))
+        twinTarget = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+        if (twinTarget)
         {
-            bot->AttackStop();
-            bot->CastStop();
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-            return true;
-        }
+            threatHoldRatio = 0.9f;
+            isTwinTank = IsAlythessTank;
+        
+    }
 
-        if (AI_VALUE(Unit*, "current target") != sacrolash)
-            return Attack(sacrolash);
-
+    if (!twinTarget)
         return false;
-    }
-    else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-    {
-        constexpr float threatRatio = 0.9f;
-        if (ShouldHoldTwinThreat(bot, alythess, threatRatio, IsAlythessTank))
-        {
-            bot->AttackStop();
-            bot->CastStop();
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid());
-            return true;
-        }
 
-        if (AI_VALUE(Unit*, "current target") != alythess)
-            return Attack(alythess);
+    if (ShouldHoldTwinThreat(bot, twinTarget, threatHoldRatio, isTwinTank))
+    {
+        bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        bot->CastStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+        return true;
     }
+
+    if (AI_VALUE(Unit*, "current target") != twinTarget)
+        return Attack(twinTarget);
 
     return false;
 }
