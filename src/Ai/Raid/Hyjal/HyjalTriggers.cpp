@@ -166,8 +166,14 @@ bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 {
-    // Hunters are wanted here even though they never run: this is what puts ranged on the arc, and
-    // a hunter that has fallen back on Viper is still one of the ranged standing in it
+    // This is what puts ranged on the arc, so it is ranged that belong in it. Melee mana users--a
+    // ret paladin, an enhancement shaman--pass every other test here and would be walked out to a
+    // slot they have no business in, then dragged back by ReachMelee the moment they arrived
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    // Hunters are wanted even though they never run: a hunter that has fallen back on Viper is
+    // still one of the ranged standing in the arc
     if (!IsKazrogalManaUser(botAI, bot))
         return false;
 

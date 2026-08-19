@@ -524,13 +524,14 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         rangedMembers.push_back(member);
     }
 
-    if (rangedMembers.empty())
+    // A bot that is not in the list has no slot, and falling back on index 0 would send it to the
+    // first bot's, not to none. Refuse instead: whatever put it here was wrong about it
+    auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+    if (findIt == rangedMembers.end())
         return false;
 
-    size_t count = rangedMembers.size();
-    auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-    size_t botIndex = (findIt != rangedMembers.end()) ?
-        std::distance(rangedMembers.begin(), findIt) : 0;
+    size_t const count = rangedMembers.size();
+    size_t const botIndex = std::distance(rangedMembers.begin(), findIt);
 
     float const arcRadius = GetKazrogalRangedArcRadius(kazrogal);
     float const arcSpan = GetKazrogalRangedArcSpan(arcRadius);
@@ -570,18 +571,23 @@ bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
     if (!nearestPlayer)
         return false;
 
-    float const currentDistance = bot->GetExactDist2d(nearestPlayer);
-    if (currentDistance >= MARK_ESCAPE_DISTANCE)
-        return false;
+    float const step = MARK_ESCAPE_DISTANCE - bot->GetExactDist2d(nearestPlayer);
 
-    // Away from the group's centre while still in among it, since that is the direction that gets a
-    // bot out. Once clear of the raid the nearest player is usually another bot fleeing the same
-    // Mark, and MoveFromGroup cannot separate a pair--it steers both by the same centre, so they
-    // travel together and neither one's gate ever closes. MoveAway is antisymmetric between them
-    if (GetDistanceFromGroupCenter(bot) >= MARK_ESCAPE_SPLIT_DISTANCE)
-        return MoveAway(nearestPlayer, MARK_ESCAPE_DISTANCE - currentDistance);
+    // Away from whoever is nearest. For two bots side by side on the arc that is very nearly
+    // tangential, which is the direction that separates a pair fastest. Running straight out from
+    // Kaz'rogal instead would barely separate them at all: radial escape scales the gap by the
+    // radius, so neighbours a yard and a half apart would have to reach the far side of the base
+    // before they made 16.
+    //
+    // Except where that player is further out than the bot, since away-from-them then points back
+    // into the raid. There Kaz'rogal is the reference instead: radially out is at least progress,
+    // and it can never be inward. Both branches are MoveAway, which fans nine headings against
+    // collision before giving up--worth having where fences and war machines flank every approach
+    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    if (kazrogal && nearestPlayer->GetExactDist2d(kazrogal) > bot->GetExactDist2d(kazrogal))
+        return MoveAway(kazrogal, step);
 
-    return MoveFromGroup(MARK_ESCAPE_DISTANCE);
+    return MoveAway(nearestPlayer, step);
 }
 
 bool KazrogalActivateAspectOfTheViperAction::Execute(Event /*event*/)

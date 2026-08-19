@@ -248,11 +248,6 @@ inline constexpr float MARK_LIFE_TAP_MANA = 5000.0f;
 // position and the server ticking the aura
 inline constexpr float MARK_EXPLOSION_RADIUS = 15.0f;
 inline constexpr float MARK_ESCAPE_DISTANCE = MARK_EXPLOSION_RADIUS + 1.0f;
-// How far from the raid a bot has to get before the escape stops pushing it away from the group as
-// a whole and starts pushing it off whoever is nearest. Inside this it is still leaving the pack,
-// and away-from-centre is the direction that does that; past it the only thing left within reach is
-// usually another bot fleeing the same Mark, which only the away-from-one-player vector separates
-inline constexpr float MARK_ESCAPE_SPLIT_DISTANCE = 10.0f;
 extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 // Whether the Mark can land on this bot at all, and so whether any of the low-mana handling means
 // anything for it. 31447 filters to units whose current power is mana, which rules out the three
@@ -261,10 +256,6 @@ extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 // whether the Mark can reach them
 bool IsKazrogalManaUser(PlayerbotAI* botAI, Player* bot);
 bool HasMarkOfKazrogal(Player* bot);
-// Distance from the group's centre of mass, computed over the same members MoveFromGroup steers by.
-// Deliberately not distance to the nearest player: two bots fleeing side by side stay a yard apart
-// however far they run, so a threshold on that would never be crossed by the pair it exists for
-float GetDistanceFromGroupCenter(Player* bot);
 
 // Azgalor
 inline constexpr float RAIN_OF_FIRE_RADIUS = 16.5f; // 15y radius + 1.5y player hitbox
