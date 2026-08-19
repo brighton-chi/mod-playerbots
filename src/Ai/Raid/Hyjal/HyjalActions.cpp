@@ -128,7 +128,7 @@ bool HyjalMainTankPositionBossAction::Execute(Event /*event*/)
 bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Position pool;
-    if (!GetDeathAndDecayPosition(bot, pool))
+    if (!GetDeathAndDecayPosition(botAI, pool))
         return false;
 
     constexpr uint32 minInterval = 0;
@@ -200,7 +200,7 @@ bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*eve
         return false;
 
     Position pool;
-    if (!GetDeathAndDecayPosition(bot, pool))
+    if (!GetDeathAndDecayPosition(botAI, pool))
         return false;
 
     constexpr float moveDist = 10.0f;
@@ -245,7 +245,7 @@ bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*eve
     // pool: the escape aims at a point on a circle drawn round it, so a bot that has already
     // cleared that circle would be walked back inward toward it. Standing still is better--the
     // ring reopens on its own as Winterchill is dragged or the pool expires
-    if (!IsInDeathAndDecay(bot))
+    if (!IsInDeathAndDecay(botAI))
         return false;
 
     constexpr float escapeMargin = 2.0f;
@@ -668,7 +668,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    std::vector<Position> const pools = GetRainOfFirePositions(bot);
+    std::vector<Position> const pools = GetRainOfFirePositions(botAI);
     if (pools.empty())
         return false;
 
@@ -728,7 +728,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     // the escape aims at a point on a circle drawn round the pool, so a bot that has already
     // cleared that circle would be walked back inward toward it. Standing still is better--the ring
     // reopens on its own as Azgalor is dragged or the pool expires
-    if (!IsInRainOfFire(bot))
+    if (!IsInRainOfFire(botAI))
         return false;
 
     // Leave the nearest pool, still refusing any heading that would cross into the cleave
@@ -767,7 +767,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
 {
     Position pool;
-    if (!GetNearestRainOfFirePosition(bot, pool))
+    if (!GetNearestRainOfFirePosition(botAI, pool))
         return false;
 
     constexpr uint32 minInterval = 0;
@@ -973,7 +973,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     // narrows it to DOOMFIRE_FIELD_RADIUS so patches the bot has not reached yet still get a say in
     // which way it goes, while the trapped sweep reads it whole--a bearing is only worth taking if
     // nothing sits near where it lands, and that includes patches beyond the field
-    std::vector<Position> const trail = GetDoomfirePositions(bot);
+    std::vector<Position> const trail = GetDoomfirePositions(botAI);
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -1117,7 +1117,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     // is the bounce this whole arrangement exists to prevent, so a step that would land inside the
     // danger radius is simply not taken. Asked of the destination rather than of the direction,
     // which is what makes it exact--the trail blocks the path or it does not
-    if (IsPositionNearDoomfire(bot, moveX, moveY, DOOMFIRE_DANGER_RADIUS))
+    if (IsPositionNearDoomfire(botAI, moveX, moveY, DOOMFIRE_DANGER_RADIUS))
         return false;
 
     return MoveTo(

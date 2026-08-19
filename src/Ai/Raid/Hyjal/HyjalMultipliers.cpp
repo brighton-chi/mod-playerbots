@@ -91,7 +91,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 
     // Shares its radius with the trigger that runs the maneuver action, so that action owns melee
     // movement across exactly the area this clears for it and there is no band between them
-    if (!IsNearDeathAndDecay(bot, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS))
+    if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS))
         return 1.0f;
 
     if (isAvoidAoe)
@@ -134,7 +134,7 @@ float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
     // bot pushed off course before it ever arrives never settles and keeps trying for the rest of
     // the fight--including back into the pool it was just moved out of
     constexpr float suppressionRadius = DEATH_AND_DECAY_RADIUS + 10.0f;
-    return IsNearDeathAndDecay(bot, suppressionRadius) ? 0.0f : 1.0f;
+    return IsNearDeathAndDecay(botAI, suppressionRadius) ? 0.0f : 1.0f;
 }
 
 // Anetheron
@@ -357,7 +357,7 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 
     // Shares its radius with the trigger that runs the maneuver action, so that action owns melee
     // movement across exactly the area this clears for it and there is no band between them
-    return IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Rain of Fire is 15 yards, so unlike Death and Decay it does scrape past the default
@@ -398,7 +398,7 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
     // and letting that resume at the pool's edge is the tug-of-war this exists to prevent. Nothing
     // is lost by holding it there--the dispersal trigger stops firing across the same band anyway
     constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
-    return IsNearRainOfFire(bot, suppressionRadius) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, suppressionRadius) ? 0.0f : 1.0f;
 }
 
 // Archimonde
@@ -454,7 +454,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Wider than the radius the avoidance reacts at, so a bot pushed to the edge is still held
-    return IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)

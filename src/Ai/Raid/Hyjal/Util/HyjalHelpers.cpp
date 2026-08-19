@@ -19,13 +19,19 @@ namespace HyjalHelpers
 
 // Every ground hazard here is read through a cached value rather than searched for directly. The
 // cache is keyed per bot and refreshed on its own interval, so the several triggers, multipliers
-// and actions that all ask about the same pool each tick share one grid search between them
-static std::vector<Position> const& GetCachedHazardPositions(Player* bot, std::string const& value)
+// and actions that all ask about the same pool each tick share one grid search between them.
+//
+// Taking the AI rather than the bot is what keeps that cheap: reaching a context from a Player
+// costs a GET_PLAYERBOT_AI, which is a hash lookup keyed on the GUID, and this sits on the path a
+// multiplier walks once per action in the queue. Every caller already holds its own botAI
+namespace
+{
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
     static std::vector<Position> const none;
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     return botAI ? botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet()
                  : none;
+}
 }
 
 bool GetHazardBlockedArc(
@@ -252,9 +258,10 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups co
 
 // Rage Winterchill
 
-bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay)
+bool GetDeathAndDecayPosition(PlayerbotAI* botAI, Position& deathAndDecay)
 {
-    std::vector<Position> const& positions = GetCachedHazardPositions(bot, "hyjal death and decay");
+    std::vector<Position> const& positions =
+        GetCachedHazardPositions(botAI, "hyjal death and decay");
     if (positions.empty())
         return false;
 
@@ -262,16 +269,16 @@ bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay)
     return true;
 }
 
-bool IsNearDeathAndDecay(Player* bot, float radius)
+bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius)
 {
     Position deathAndDecay;
-    return GetDeathAndDecayPosition(bot, deathAndDecay) &&
-        bot->GetExactDist2d(deathAndDecay) < radius;
+    return GetDeathAndDecayPosition(botAI, deathAndDecay) &&
+        botAI->GetBot()->GetExactDist2d(deathAndDecay) < radius;
 }
 
-bool IsInDeathAndDecay(Player* bot)
+bool IsInDeathAndDecay(PlayerbotAI* botAI)
 {
-    return IsNearDeathAndDecay(bot, DEATH_AND_DECAY_RADIUS);
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_RADIUS);
 }
 
 // Anetheron
@@ -455,18 +462,19 @@ bool HasMarkOfKazrogal(Player* bot)
 // Each Rain of Fire is its own dynamic object that expires after 10s on its own, so nothing has
 // to be recorded to know whether one is still active. Azgalor casts on a timer that lets two
 // overlap, so callers have to weigh all of them rather than just the nearest
-std::vector<Position> GetRainOfFirePositions(Player* bot)
+std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI)
 {
-    return GetCachedHazardPositions(bot, "hyjal rain of fire");
+    return GetCachedHazardPositions(botAI, "hyjal rain of fire");
 }
 
 // Fleeing the nearest can walk a bot into a second pool, which then becomes the nearest and is
 // fled in turn. That resolves itself a step at a time and is no worse than standing in the first
-bool GetNearestRainOfFirePosition(Player* bot, Position& pool)
+bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool)
 {
+    Player* bot = botAI->GetBot();
     bool found = false;
     float nearestDistance = 0.0f;
-    for (Position const& position : GetCachedHazardPositions(bot, "hyjal rain of fire"))
+    for (Position const& position : GetCachedHazardPositions(botAI, "hyjal rain of fire"))
     {
         float const distance = bot->GetExactDist2d(position);
         if (!found || distance < nearestDistance)
@@ -480,9 +488,10 @@ bool GetNearestRainOfFirePosition(Player* bot, Position& pool)
     return found;
 }
 
-bool IsNearRainOfFire(Player* bot, float radius)
+bool IsNearRainOfFire(PlayerbotAI* botAI, float radius)
 {
-    for (Position const& position : GetCachedHazardPositions(bot, "hyjal rain of fire"))
+    Player* bot = botAI->GetBot();
+    for (Position const& position : GetCachedHazardPositions(botAI, "hyjal rain of fire"))
     {
         if (bot->GetExactDist2d(position) < radius)
             return true;
@@ -491,9 +500,9 @@ bool IsNearRainOfFire(Player* bot, float radius)
     return false;
 }
 
-bool IsInRainOfFire(Player* bot)
+bool IsInRainOfFire(PlayerbotAI* botAI)
 {
-    return IsNearRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_RADIUS);
 }
 
 bool IsDoomed(Player* bot)
@@ -558,17 +567,18 @@ bool HasProtectionOfElune(Player* bot)
     return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
 }
 
-std::vector<Position> GetDoomfirePositions(Player* bot)
+std::vector<Position> GetDoomfirePositions(PlayerbotAI* botAI)
 {
-    return GetCachedHazardPositions(bot, "hyjal doomfire trail");
+    return GetCachedHazardPositions(botAI, "hyjal doomfire trail");
 }
 
 // Centre to centre, as every other hazard test here measures. This used to lean on the grid
 // search's own range check, which quietly pads by both object sizes--so the radius handed in
 // reached about two yards further than it said, and disagreed with IsPositionNearDoomfire below
-bool IsNearDoomfire(Player* bot, float radius)
+bool IsNearDoomfire(PlayerbotAI* botAI, float radius)
 {
-    for (Position const& patch : GetCachedHazardPositions(bot, "hyjal doomfire trail"))
+    Player* bot = botAI->GetBot();
+    for (Position const& patch : GetCachedHazardPositions(botAI, "hyjal doomfire trail"))
     {
         if (bot->GetExactDist2d(patch) < radius)
             return true;
@@ -577,9 +587,9 @@ bool IsNearDoomfire(Player* bot, float radius)
     return false;
 }
 
-bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius)
+bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius)
 {
-    for (Position const& patch : GetCachedHazardPositions(bot, "hyjal doomfire trail"))
+    for (Position const& patch : GetCachedHazardPositions(botAI, "hyjal doomfire trail"))
     {
         if (patch.GetExactDist2d(x, y) < radius)
             return true;

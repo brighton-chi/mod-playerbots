@@ -60,7 +60,7 @@ bool RageWinterchillMeleeNearDeathAndDecayTrigger::IsActive()
     // inside that radius has had its path back to the boss zeroed, so this action has to keep
     // running across the whole of it--it is the only thing left that can walk the bot anywhere,
     // including back onto Winterchill once the pool no longer blocks the ring
-    return IsNearDeathAndDecay(bot, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
 }
 
 bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
@@ -71,7 +71,7 @@ bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
         return false;
 
-    return IsInDeathAndDecay(bot);
+    return IsInDeathAndDecay(botAI);
 }
 
 // Anetheron
@@ -283,7 +283,7 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
         return false;
 
     constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
-    return !IsNearRainOfFire(bot, suppressionRadius);
+    return !IsNearRainOfFire(botAI, suppressionRadius);
 }
 
 bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
@@ -313,7 +313,7 @@ bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
     // inside that radius has had its other movement zeroed, so this action has to keep running
     // across the whole of it--it is the only thing left that can walk the bot anywhere, including
     // back onto Azgalor once the tank has dragged him clear of the pool
-    return IsNearRainOfFire(bot, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
 }
 
 bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
@@ -327,7 +327,7 @@ bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
     if (IsDoomed(bot))
         return false;
 
-    return IsInRainOfFire(bot);
+    return IsInRainOfFire(botAI);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -412,7 +412,7 @@ bool ArchimondeBotIsNearDoomfireTrigger::IsActive()
     // this ordinary movement is free again and closes the gap to Archimonde perfectly well. Gating
     // here rather than in the action is what keeps the 18y field sweep off every bot on every tick
     // of a fight where a trail is usually nowhere near them
-    return IsNearDoomfire(bot, DOOMFIRE_CONTROL_RADIUS);
+    return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS);
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()

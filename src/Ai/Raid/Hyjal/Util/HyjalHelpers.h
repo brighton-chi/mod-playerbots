@@ -162,15 +162,16 @@ inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 // nothing left that closes distance--the formation movers are already off for the fight--so it
 // stands where it is while the main tank walks Winterchill out of reach
 inline constexpr float DEATH_AND_DECAY_MELEE_CONTROL_RADIUS = DEATH_AND_DECAY_RADIUS + 10.0f;
-// Back towards the centre of the base, for more room to maneuver
 // Widest consumer is the melee control radius, which the maneuver trigger and its multiplier
 // both read
 inline constexpr float DEATH_AND_DECAY_SEARCH_RADIUS =
     DEATH_AND_DECAY_MELEE_CONTROL_RADIUS + HAZARD_SEARCH_MARGIN;
+// Back towards the centre of the base, for more room to maneuver
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
-bool GetDeathAndDecayPosition(Player* bot, Position& deathAndDecay); // at most one is ever up
-bool IsNearDeathAndDecay(Player* bot, float radius); // for callers wanting a margin on the hazard
-bool IsInDeathAndDecay(Player* bot);
+bool GetDeathAndDecayPosition(PlayerbotAI* botAI, Position& deathAndDecay); // one at most
+// For callers wanting a margin on the hazard
+bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius);
+bool IsInDeathAndDecay(PlayerbotAI* botAI);
 
 // Anetheron
 // Back towards the centre of the base, near the crossroads
@@ -272,10 +273,11 @@ inline Position const AZGALOR_TANK_POSITION =      { 5494.594f, -2747.069f, 1487
 // TODO: re-measure. The old value was chosen relative to the tank's transition spot, which no
 // longer exists now that the boss is walked straight to the final position
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-std::vector<Position> GetRainOfFirePositions(Player* bot);
-bool GetNearestRainOfFirePosition(Player* bot, Position& pool);
-bool IsNearRainOfFire(Player* bot, float radius); // for callers wanting a margin on the hazard
-bool IsInRainOfFire(Player* bot);
+std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI);
+bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool);
+// For callers wanting a margin on the hazard
+bool IsNearRainOfFire(PlayerbotAI* botAI, float radius);
+bool IsInRainOfFire(PlayerbotAI* botAI);
 bool IsDoomed(Player* bot);
 // The tank that holds Lesser Doomguards: the first assist tank among the living, or the second once
 // the first is Doomed and so about to spawn one of its own. Numbered among the living because
@@ -330,14 +332,14 @@ inline constexpr float DOOMFIRE_SEARCH_RADIUS =
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 inline constexpr uint32 ARCHIMONDE_RANGED_SPREAD_INTERVAL = 3000;
 bool HasProtectionOfElune(Player* bot);
-bool IsNearDoomfire(Player* bot, float radius);
+bool IsNearDoomfire(PlayerbotAI* botAI, float radius);
 // The same question asked of a point the bot is about to step to rather than of where it stands
-bool IsPositionNearDoomfire(Player* bot, float x, float y, float radius);
+bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius);
 // Every live trail patch the cache holds, for callers that weigh the field rather than just
 // asking whether one is near. By value on purpose: these are bound to a local and held
 // across other helper calls, and a reference into the cache would dangle the moment one of
 // those refreshed it
-std::vector<Position> GetDoomfirePositions(Player* bot);
+std::vector<Position> GetDoomfirePositions(PlayerbotAI* botAI);
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
 // The Air Burst currently being cast, if one is. Recorded when the cast starts and left to lapse
 // on its own, so it answers "is one on the way", not "was one cast"
