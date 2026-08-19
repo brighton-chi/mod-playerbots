@@ -101,7 +101,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 
     if (target && bot->GetExactDist2d(target) > 2.0f)
     {
-        botAI->Reset();
+        bot->CastStop();
         return MoveTo(ZULAMAN_MAP_ID, target->GetPositionX(), target->GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);

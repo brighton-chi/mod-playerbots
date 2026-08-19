@@ -125,7 +125,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
         moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
     }
 
-    botAI->Reset();
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false,
                   true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -202,7 +202,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
             }
             else
             {
-                botAI->Reset();
+                bot->CastStop();
                 return true;
             }
         }
@@ -284,7 +284,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
             }
             else
             {
-                botAI->Reset();
+                bot->CastStop();
                 return true;
             }
         }
@@ -428,7 +428,8 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 
     if (shouldStopDps)
     {
-        botAI->Reset();
+        bot->AttackStop();
+        bot->CastStop();
         return true;
     }
 
@@ -494,7 +495,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         float moveX = lurker->GetPositionX() + radius * std::cos(tangentAngle);
         float moveY = lurker->GetPositionY() + radius * std::sin(tangentAngle);
 
-        botAI->Reset();
+        bot->CastStop();
         return MoveTo(SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -506,7 +507,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 
         if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
         {
-            botAI->Reset();
+            bot->CastStop();
             return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -734,7 +735,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event*/)
 {
     bot->AttackStop();
-    botAI->Reset();
+    bot->CastStop();
     return true;
 }
 
@@ -789,7 +790,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         constexpr float safeDistance = 25.0f;
         if (currentDistance < safeDistance)
         {
-            botAI->Reset();
+            bot->CastStop();
             return MoveAway(leotherasHuman, safeDistance - currentDistance);
         }
     }
