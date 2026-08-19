@@ -5,12 +5,7 @@
  */
 
 #include "HyjalStrategy.h"
-#include "AiObjectContext.h"
-#include "HyjalHelpers.h"
 #include "HyjalMultipliers.h"
-#include "Playerbots.h"
-
-using namespace HyjalHelpers;
 
 void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -70,7 +65,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
-        NextAction("kaz'rogal move away from group", ACTION_EMERGENCY + 3) }));
+        NextAction("kaz'rogal move away from group", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal hunter should preserve mana", {
         NextAction("kaz'rogal activate aspect of the viper", ACTION_EMERGENCY + 6) }));
@@ -92,13 +87,13 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor melee near rain of fire", {
-        NextAction("azgalor melee maneuver through fire", ACTION_EMERGENCY + 2) }));
+        NextAction("azgalor melee maneuver through fire", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
-        NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 2) }));
+        NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
-        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
+        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
         NextAction("azgalor first assist tank position doomguard", ACTION_RAID) }));
@@ -131,7 +126,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Trash
+    // General
     multipliers.push_back(new HyjalSummitDelayDpsCooldownsMultiplier(botAI));
 
     // Rage Winterchill
@@ -161,26 +156,4 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new ArchimondeControlDoomfireAvoidanceMultiplier(botAI));
     multipliers.push_back(new ArchimondeSetTremorTotemMultiplier(botAI));
-}
-
-// Limit Infernals to Infernal tank
-void RaidHyjalSummitStrategy::AppendTargetExclusions(
-    GuidSet& exclusions, TargetValueExclusionType type)
-{
-    if (type != TargetValueExclusionType::Tank)
-        return;
-
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
-        return;
-
-    GuidVector const& infernals = GetInfernalGuids(botAI);
-    if (infernals.empty())
-        return;
-
-    if (IsInfernalTank(botAI->GetBot()))
-        exclusions.insert(anetheron->GetGUID());
-    else
-        exclusions.insert(infernals.begin(), infernals.end());
 }

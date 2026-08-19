@@ -11,11 +11,11 @@
 #include "NamedObjectContext.h"
 #include "RaidBossHelpers.h"
 #include "Value.h"
+#include <string>
+#include <vector>
 
 using HyjalHelpers::HyjalSpells;
 
-// Anetheron's Infernals, oldest first. Cached because the grid search behind it is not something
-// every trigger and multiplier should be repeating each tick for every bot in the raid
 class HyjalInfernalsValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -26,13 +26,6 @@ protected:
     GuidVector Calculate() override { return HyjalHelpers::FindInfernalGuids(bot); }
 };
 
-// The ground hazards, cached for the same reason the Infernals are, only more so: Engine applies
-// every multiplier to every action it pulls from the queue each tick, so a grid search inside a
-// multiplier body is paid once per action rather than once per bot. Between the triggers, the
-// multipliers and the actions, each of these was being searched for several times a tick.
-//
-// Each is searched at its own radius, derived from the widest thing that asks about it, and
-// the helpers narrow it further from there
 class HyjalHazardPositionsValue : public CalculatedValue<std::vector<Position>>
 {
 public:

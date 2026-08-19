@@ -16,11 +16,11 @@
 
 using namespace HyjalHelpers;
 
-// The explicitly cast-at target, which is all that exists when a cast begins: Spell::prepare only
-// resolves a target list for item casts, so for a creature's cast GetUniqueTargetInfo stays empty
-// until Spell::cast runs at the end of the cast time. Both listeners below are driven by
-// DoCastRandomTarget, which always supplies an explicit unit target
-static Player* GetSpellPlayerTarget(Spell* spell)
+namespace
+{
+// Both spell listeners below are driven by DoCastRandomTarget, which always supplies an explicit
+// unit target
+Player* GetTargetedPlayer(Spell* spell)
 {
     if (!spell)
         return nullptr;
@@ -31,32 +31,34 @@ static Player* GetSpellPlayerTarget(Spell* spell)
     return nullptr;
 }
 
-static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* target)
+bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* target)
 {
     if (!target)
         return false;
 
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
+    Unit* activeTank = archimonde->GetVictim();
     Player* bot = botAI->GetBot();
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || bot == mainTank)
+    if (!activeTank || bot == activeTank)
         return false;
 
-    if (target != mainTank && target != bot)
+    if (target != activeTank && target != bot)
         return false;
 
-    float const distanceToMainTank = bot->GetExactDist2d(mainTank);
-    return distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
+    float const distanceToActiveTank = bot->GetExactDist2d(activeTank);
+    return distanceToActiveTank < AIR_BURST_SAFE_DISTANCE;
 }
 
-// Interrupts a cast when a Doomfire NPC comes too close. The trail it leaves behind is made of
-// SPELL_DOOMFIRE_TRAIL dynamic objects, which bots query directly, so nothing is recorded here.
-//
-// Keyed on the Doomfire itself and not on the Doomfire Spirit it follows. The Spirit is the invisible
-// one, and it does not walk--it NearTeleportTo's up to 8 yards every 1600ms--so reading it would let
-// bots react to a position no human can see, and to one the fire has not reached yet. The Doomfire
-// walks after it carrying 31945, a 1s periodic that drops the next patch at its own feet, so its
-// position is where fire is about to be. That is what makes DOOMFIRE_DANGER_RADIUS the right figure
-// here: the same distance the avoidance keeps from patches already on the ground
+}
+
+// Doomfire's mechanic is pretty interesting. A Doomfire Spirit trigger NPC teleports up to 8y
+// every 1.6s, and the Doomfire trigger NPC follows it after each teleport and drops the hazards.
+// The hook reads the Doomfire NPC since it accompanies the visual fire trail. Real players cannot
+// see the spirit so keying off of that would be a cheat.
 class ArchimondeDoomfireTrailScript : public AllCreatureScript
 {
 public:
@@ -75,8 +77,6 @@ public:
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            // Centre to centre, as the avoidance measures. GetDistance would subtract both object
-            // sizes, quietly making this wider than the figure it shares
             if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
                 creature->GetExactDist2d(player) > DOOMFIRE_DANGER_RADIUS)
             {
@@ -100,7 +100,7 @@ public:
         if (spellInfo->Id != Id(HyjalSpells::SPELL_AIR_BURST))
             return;
 
-        Player* target = GetSpellPlayerTarget(spell);
+        Player* target = GetTargetedPlayer(spell);
         if (!target)
             return;
 
@@ -138,7 +138,7 @@ public:
         if (spellInfo->Id != Id(HyjalSpells::SPELL_INFERNO))
             return;
 
-        Player* target = GetSpellPlayerTarget(spell);
+        Player* target = GetTargetedPlayer(spell);
         if (!target)
             return;
 

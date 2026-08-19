@@ -56,10 +56,6 @@ bool RageWinterchillMeleeNearDeathAndDecayTrigger::IsActive()
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    // Reaches as far as the suppression that accompanies it, not just to the pool. Everything
-    // inside that radius has had its path back to the boss zeroed, so this action has to keep
-    // running across the whole of it--it is the only thing left that can walk the bot anywhere,
-    // including back onto Winterchill once the pool no longer blocks the ring
     return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
 }
 
@@ -100,9 +96,6 @@ bool AnetheronRangedShouldSpreadTrigger::IsActive()
     return true;
 }
 
-// Whoever is holding Anetheron stays put: walking him across the platform costs the raid more than
-// a two second stun costs one bot. The Inferno target itself is excluded because it has its own job
-// -- carrying the summon to the gathering spot -- and nothing it does avoids a stun centred on it
 bool AnetheronBotIsNearInfernoTargetTrigger::IsActive()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -128,7 +121,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (IsInfernalTank(bot))
         return false;
 
-    return GetInfernalTargetingBot(botAI, bot);
+    return GetInfernalTargetingBot(bot);
 }
 
 bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
@@ -139,7 +132,7 @@ bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
         return false;
 
-    Unit* infernal = GetInfernalTargetingBot(botAI, bot);
+    Unit* infernal = GetInfernalTargetingBot(bot);
     return infernal && bot->IsWithinMeleeRange(infernal);
 }
 
@@ -166,15 +159,10 @@ bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 {
-    // This is what puts ranged on the arc, so it is ranged that belong in it. Melee mana users--a
-    // ret paladin, an enhancement shaman--pass every other test here and would be walked out to a
-    // slot they have no business in, then dragged back by ReachMelee the moment they arrived
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    // Hunters are wanted even though they never run: a hunter that has fallen back on Viper is
-    // still one of the ranged standing in the arc
-    if (!IsKazrogalManaUser(botAI, bot))
+    if (!IsKazrogalManaUser(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
@@ -185,10 +173,10 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    if (!IsKazrogalManaUser(botAI, bot))
+    if (!IsKazrogalManaUser(bot))
         return false;
 
-    // Hunters never run. They rely only on Aspect of the Viper.
+    // Hunters never run away. They rely only on Aspect of the Viper.
     if (bot->getClass() == CLASS_HUNTER)
         return false;
 
@@ -216,7 +204,7 @@ bool KazrogalHunterShouldPreserveManaTrigger::IsActive()
     if (bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)))
         return false;
 
-    // Activate at 3200 mana; switch back based on normal Hunter strategy
+    // Activate at 3200 mana; switch back based on normal Hunter aspect strategies
     return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA;
 }
 
@@ -282,8 +270,7 @@ bool AzgalorBossEngagedByRangedTrigger::IsActive()
     if (IsDoomed(bot))
         return false;
 
-    constexpr float suppressionRadius = RAIN_OF_FIRE_RADIUS + 10.0f;
-    return !IsNearRainOfFire(botAI, suppressionRadius);
+    return !IsNearRainOfFire(botAI, RAIN_OF_FIRE_RANGED_CONTROL_RADIUS);
 }
 
 bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
@@ -298,21 +285,12 @@ bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
     if (IsDoomed(bot))
         return false;
 
-    // The Doomguard tank keeps its corner. This action walks bots onto Azgalor's melee ring, which
-    // for that one would haul the Doomguard into the raid behind it--and at ACTION_EMERGENCY it
-    // outranks the positioning that would walk it back, so it would not return until the pool died.
-    //
-    // That leaves the Doomguard tank with no Rain of Fire avoidance at all: stock avoid-aoe is off
-    // for the whole fight and the ranged escape does not apply to it either. Deliberate, not an
-    // oversight--the corner is a fixed position and shifting it far enough to clear a pool costs
-    // more than it saves. One tank standing in fire is a healing problem; a loose Doomguard is not
-    if (IsDoomguardTank(botAI, bot))
+    // The Doomguard tank is excluded due to needing to hold at the Doomguard tanking position.
+    // This isn't ideal, but special avoidance for one role that needs specific positioning would
+    // be very difficult, and it's not hard to heal through the damage for one bot.
+    if (IsDoomguardTank(bot))
         return false;
 
-    // Reaches as far as the suppression that accompanies it, not just to the fire. Everything
-    // inside that radius has had its other movement zeroed, so this action has to keep running
-    // across the whole of it--it is the only thing left that can walk the bot anywhere, including
-    // back onto Azgalor once the tank has dragged him clear of the pool
     return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
 }
 
@@ -343,7 +321,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    if (!IsDoomguardTank(botAI, bot))
+    if (!IsDoomguardTank(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
@@ -377,15 +355,9 @@ bool ArchimondeBossCastingAirBurstTrigger::IsActive()
     if (HasProtectionOfElune(bot))
         return false;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
     return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId());
 }
 
-// No longer gated to the opening. Ranged drift back together across a fight this long, and the
-// spread is cheap: the action rate limits itself and the Doomfire multiplier removes it near a
-// trail, so leaving it live costs nothing where it would otherwise get in the way
 bool ArchimondeRangedShouldSpreadTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -406,12 +378,6 @@ bool ArchimondeBotIsNearDoomfireTrigger::IsActive()
     if (HasProtectionOfElune(bot))
         return false;
 
-    // The same radius the multiplier suppresses at, so the action owns movement across exactly the
-    // area cleared for it. Nothing it does reaches further: the push only has a magnitude inside
-    // DOOMFIRE_DANGER_RADIUS, the trapped sweep needs a patch inside DOOMFIRE_BURN_RADIUS, and past
-    // this ordinary movement is free again and closes the gap to Archimonde perfectly well. Gating
-    // here rather than in the action is what keeps the 18y field sweep off every bot on every tick
-    // of a fight where a trail is usually nowhere near them
     return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS);
 }
 

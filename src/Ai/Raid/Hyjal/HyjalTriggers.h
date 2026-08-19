@@ -8,6 +8,7 @@
 #define PLAYERBOTS_HYJALTRIGGERS_H
 
 #include "Trigger.h"
+#include <string>
 
 // General
 
@@ -19,10 +20,7 @@ public:
     bool IsActive() override;
 };
 
-// A hunter opening the fight, which is any hunter looking at a boss still on full health. Four of
-// the five encounters are pulled exactly this way and only the boss differs, so they share one
-// class and name it at registration. Anetheron has its own: there the hunter keeps misdirecting
-// all fight to hand over Infernals, so it never gates on health at all
+// For Misdirection. Anetheron is not included because Hunters also Misdirect the Infernals.
 class HyjalPullingBossTrigger : public Trigger
 {
 public:
@@ -35,17 +33,14 @@ private:
     std::string const _bossName;
 };
 
-// The main tank should be holding this boss where it wants him. activeAboveHealthPct exists for
-// Archimonde alone, whose tank only walks him at the opening and then leaves him be; the default
-// needs no special case, since a boss that is alive at all is above zero health
+// This covers all five MT actions, and activeAboveHealthPct is used for Archimonde only
 class HyjalBossEngagedByMainTankTrigger : public Trigger
 {
 public:
     HyjalBossEngagedByMainTankTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
         float activeAboveHealthPct = 0.0f)
-        : Trigger(botAI, name), _bossName(bossName),
-          _activeAboveHealthPct(activeAboveHealthPct) {}
+        : Trigger(botAI, name), _bossName(bossName), _activeAboveHealthPct(activeAboveHealthPct) {}
     bool IsActive() override;
 
 private:

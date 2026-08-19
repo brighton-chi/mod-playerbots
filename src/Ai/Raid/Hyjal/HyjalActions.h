@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "Position.h"
+#include <string>
 
 // General
 
@@ -22,14 +23,10 @@ public:
     bool Execute(Event event) override;
 };
 
-// Hand threat to the main tank on the pull, then spend the charge on the boss. Four of the five
-// encounters open exactly this way and nothing about it varies but which unit to shoot, so they
-// share one class and name the boss at registration. Anetheron has its own, since there the target
-// changes to a loose Infernal once the pull is over
-class HyjalMisdirectBossToMainTankAction : public Action
+class HyjalSummitMisdirectBossToMainTankAction : public Action
 {
 public:
-    HyjalMisdirectBossToMainTankAction(
+    HyjalSummitMisdirectBossToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
@@ -38,16 +35,10 @@ private:
     std::string const _bossName;
 };
 
-// The main tank walking his boss to where the raid wants him: take the target, wait until he is
-// actually being held in melee, then close on the spot a step at a time. All five encounters do
-// this and only the spot, how near counts as arrived, and whether the tank's own health calls it
-// off differ, so they share one class and name those at registration.
-//
-// bailBelowHealthPct needs no special case at its default: a bot alive to run this is above zero
-class HyjalMainTankPositionBossAction : public AttackAction
+class HyjalSummitMainTankPositionBossAction : public AttackAction
 {
 public:
-    HyjalMainTankPositionBossAction(
+    HyjalSummitMainTankPositionBossAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
         Position const& position, float arrivalDistance, float bailBelowHealthPct = 0.0f)
         : AttackAction(botAI, name), _bossName(bossName), _position(position),
