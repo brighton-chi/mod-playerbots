@@ -1526,8 +1526,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId)
 {
-    constexpr float searchRadius = 150.0f;
-    Creature* weapon = bot->FindNearestCreature(weaponEntry, searchRadius, false);
+    Creature* weapon = GetDeadLegendaryWeapon(botAI, weaponEntry);
     if (!weapon)
         return false;
 

@@ -390,7 +390,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActive()
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return IsAnyLegendaryWeaponDead(bot);
+    return IsAnyLegendaryWeaponDead(botAI);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()

@@ -405,27 +405,52 @@ bool IsFeigningDeath(Unit* advisor)
     return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
-bool IsAnyLegendaryWeaponDead(Player* bot)
+GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
-    static constexpr std::array weaponEntries = {
-        TkNpcs::NPC_STAFF_OF_DISINTEGRATION,
-        TkNpcs::NPC_COSMIC_INFUSER,
-        TkNpcs::NPC_INFINITY_BLADES,
-        TkNpcs::NPC_WARP_SLICER,
-        TkNpcs::NPC_PHASESHIFT_BULWARK,
-        TkNpcs::NPC_NETHERSTRAND_LONGBOW,
-        TkNpcs::NPC_DEVASTATION,
+    static std::vector<uint32> const weaponEntries = {
+        Id(TkNpcs::NPC_STAFF_OF_DISINTEGRATION),
+        Id(TkNpcs::NPC_COSMIC_INFUSER),
+        Id(TkNpcs::NPC_INFINITY_BLADES),
+        Id(TkNpcs::NPC_WARP_SLICER),
+        Id(TkNpcs::NPC_PHASESHIFT_BULWARK),
+        Id(TkNpcs::NPC_NETHERSTRAND_LONGBOW),
+        Id(TkNpcs::NPC_DEVASTATION),
     };
 
-    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> weapons;
+    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntries, LEGENDARY_WEAPON_SEARCH_RADIUS);
 
-    for (TkNpcs entry : weaponEntries)
+    GuidVector guids;
+    guids.reserve(weapons.size());
+    for (Creature* weapon : weapons)
     {
-        if (bot->FindNearestCreature(static_cast<uint32>(entry), searchRadius, false))
-            return true;
+        if (weapon && !weapon->IsAlive())
+            guids.push_back(weapon->GetGUID());
     }
 
-    return false;
+    return guids;
+}
+
+GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
+}
+
+bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI)
+{
+    return !GetDeadLegendaryWeaponGuids(botAI).empty();
+}
+
+Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
+{
+    for (ObjectGuid const guid : GetDeadLegendaryWeaponGuids(botAI))
+    {
+        Creature* weapon = botAI->GetCreature(guid);
+        if (weapon && weapon->GetEntry() == weaponEntry)
+            return weapon;
+    }
+
+    return nullptr;
 }
 
 bool HasEquippableItemForSlot(Player* bot, uint8 slot)

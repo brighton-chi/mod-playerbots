@@ -8,6 +8,7 @@
 #define PLAYERBOTS_TKHELPERS_H
 
 #include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
 #include <ctime>
@@ -16,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -233,6 +235,7 @@ uint32 GetKaelthasPhase(Unit* kaelthas);
 
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
+inline constexpr float LEGENDARY_WEAPON_SEARCH_RADIUS = 150.0f;
 
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
@@ -246,7 +249,10 @@ extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
-bool IsAnyLegendaryWeaponDead(Player* bot);
+GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
+GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
+bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI);
+Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 bool IsFeigningDeath(Unit* advisor);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 
