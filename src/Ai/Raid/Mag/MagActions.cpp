@@ -391,7 +391,7 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
         float const x = cubeInfo.x + std::cos(angle) * preferredDistance;
         float const y = cubeInfo.y + std::sin(angle) * preferredDistance;
 
-        if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
+        if (IsPositionInActiveDebris(bot, x, y))
             continue;
 
         if (IsPositionInActiveConflagration(botAI, x, y))
@@ -454,7 +454,6 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
 
     // Need to remove float loop
     for (float distance = 2.0f; distance <= maxSearchRadius; distance += distanceStep)
@@ -464,7 +463,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 
-            if (IsPositionInActiveDebris(instanceId, x, y))
+            if (IsPositionInActiveDebris(bot, x, y))
                 continue;
 
             if (IsPositionInActiveConflagration(botAI, x, y))
@@ -623,7 +622,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
     return true;
 }
 
-bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(const uint32 instanceId)
+bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 instanceId)
 {
     auto mapIt = botToCubeAssignments.find(instanceId);
     if (mapIt == botToCubeAssignments.end() || mapIt->second.empty())
@@ -653,8 +652,6 @@ bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
     if (lastBlastNovaState.erase(instanceId) > 0)
         erased = true;
     if (botToCubeAssignments.erase(instanceId) > 0)
-        erased = true;
-    if (activeDebrisPositions.erase(instanceId) > 0)
         erased = true;
 
     return erased;

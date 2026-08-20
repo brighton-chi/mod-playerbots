@@ -133,8 +133,7 @@ float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
 
     constexpr float debrisSuppressionZone = 15.0f;
     if (IsPositionInActiveDebris(
-            bot->GetMap()->GetInstanceId(), bot->GetPositionX(),
-            bot->GetPositionY(), debrisSuppressionZone))
+            bot, bot->GetPositionX(), bot->GetPositionY(), debrisSuppressionZone))
     {
         return 0.0f;
     }

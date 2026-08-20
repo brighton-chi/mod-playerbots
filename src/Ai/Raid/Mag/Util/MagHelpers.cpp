@@ -10,6 +10,7 @@
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 namespace MagHelpers
 {
@@ -19,7 +20,6 @@ std::unordered_map<uint32, uint32> dpsWaitTimer;
 std::unordered_map<uint32, bool> ceilingCollapseApplied;
 std::unordered_map<uint32, bool> lastBlastNovaState;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
-std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
@@ -87,27 +87,15 @@ bool IsCubeClicker(Player* bot)
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }
 
-bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius)
+bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius)
 {
-    constexpr uint32 maxAgeMs = 8000;
-
-    auto it = activeDebrisPositions.find(instanceId);
-    if (it == activeDebrisPositions.end())
+    constexpr float searchRadius = 30.0f;
+    std::vector<Position> debrisPositions = GetDynamicObjectPositions(
+        bot, searchRadius, Id(MagSpells::SPELL_DEBRIS_SPAWN));
+    if (debrisPositions.empty())
         return false;
 
-    uint32 const now = getMSTime();
-    for (DebrisData const& debris : it->second)
-    {
-        if (getMSTimeDiff(debris.spawnTime, now) > maxAgeMs)
-            continue;
-
-        float dx = x - debris.position.GetPositionX();
-        float dy = y - debris.position.GetPositionY();
-        if ((dx * dx + dy * dy) < (radius * radius))
-            return true;
-    }
-
-    return false;
+    return debrisPositions.front().GetExactDist2d(x, y) <= radius;
 }
 
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)

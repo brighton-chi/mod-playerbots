@@ -107,8 +107,7 @@ bool MagtheridonStandingInDebrisTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return IsPositionInActiveDebris(
-        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY());
+    return IsPositionInActiveDebris(bot, bot->GetPositionX(), bot->GetPositionY());
 }
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActive()
