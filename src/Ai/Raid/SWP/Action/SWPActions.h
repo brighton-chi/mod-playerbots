@@ -60,11 +60,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KalecgosTankPositionBossAction : public AttackAction
+class KalecgosSurfaceTankPositionDragonAction : public AttackAction
 {
 public:
-    KalecgosTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kalecgos tank position boss") {}
+    KalecgosSurfaceTankPositionDragonAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kalecgos surface tank position dragon") {}
     bool Execute(Event event) override;
 };
 
@@ -123,19 +123,19 @@ public:
 
 // Brutallus
 
-class BrutallusMisdirectBossToMainTankAction : public AttackAction
+class BrutallusMisdirectBossToMainTankAction : public Action
 {
 public:
     BrutallusMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "brutallus misdirect boss to main tank") {}
+        : Action(botAI, "brutallus misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
-class BrutallusTanksHandleBossAction : public AttackAction
+class BrutallusTanksPositionAndSwapAction : public AttackAction
 {
 public:
-    BrutallusTanksHandleBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "brutallus tanks handle boss") {}
+    BrutallusTanksPositionAndSwapAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "brutallus tanks position and swap") {}
     bool Execute(Event event) override;
     bool ResetInitialPositionReached()
     {
@@ -149,11 +149,11 @@ private:
     bool _mainTankInitialPositionReached = false;
 };
 
-class BrutallusPositionMeleeAction : public MovementAction
+class BrutallusPositionMeleeAtRearCenterAction : public MovementAction
 {
 public:
-    BrutallusPositionMeleeAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "brutallus position melee") {}
+    BrutallusPositionMeleeAtRearCenterAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "brutallus position melee at rear center") {}
     bool Execute(Event event) override;
 
 private:
@@ -162,11 +162,11 @@ private:
         uint8 meleeIndex, Position& position);
 };
 
-class BrutallusPositionRangedAction : public MovementAction
+class BrutallusPositionRangedInTwoGroupsAction : public MovementAction
 {
 public:
-    BrutallusPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "brutallus position ranged") {}
+    BrutallusPositionRangedInTwoGroupsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "brutallus position ranged in two groups") {}
     bool Execute(Event event) override;
 };
 
@@ -183,11 +183,11 @@ private:
 
 // Felmyst
 
-class FelmystMisdirectBossToMainTankAction : public AttackAction
+class FelmystMisdirectBossToMainTankAction : public Action
 {
 public:
     FelmystMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "felmyst misdirect boss to main tank") {}
+        : Action(botAI, "felmyst misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -199,19 +199,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class FelmystPositionRangedOnGroundAction : public MovementAction
+class FelmystRangedStackInThreeGroupsAction : public MovementAction
 {
 public:
-    FelmystPositionRangedOnGroundAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "felmyst position ranged on ground") {}
+    FelmystRangedStackInThreeGroupsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst ranged stack in three groups") {}
     bool Execute(Event event) override;
 };
 
-class FelmystPositionMeleeOnGroundAction : public MovementAction
+class FelmystMeleeStackBehindBossAction : public MovementAction
 {
 public:
-    FelmystPositionMeleeOnGroundAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "felmyst position melee on ground") {}
+    FelmystMeleeStackBehindBossAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst melee stack behind boss") {}
     bool Execute(Event event) override;
 };
 
@@ -310,11 +310,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsMisdirectBossesToTanksAction : public AttackAction
+class EredarTwinsMisdirectBossesToTanksAction : public Action
 {
 public:
     EredarTwinsMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "eredar twins misdirect bosses to tanks") {}
+        : Action(botAI, "eredar twins misdirect bosses to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -394,11 +394,11 @@ public:
 
 // M'uru
 
-class MuruMisdirectEnemiesToTanksAction : public AttackAction
+class MuruMisdirectEnemiesToTanksAction : public Action
 {
 public:
     MuruMisdirectEnemiesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "m'uru misdirect enemies to tanks") {}
+        : Action(botAI, "m'uru misdirect enemies to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -422,11 +422,11 @@ private:
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
-class MuruSetDpsPriorityAction : public AttackAction
+class MuruAssignDpsPriorityAction : public AttackAction
 {
 public:
-    MuruSetDpsPriorityAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "m'uru set dps priority") {}
+    MuruAssignDpsPriorityAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "m'uru assign dps priority") {}
     bool Execute(Event event) override;
 
 private:
@@ -470,11 +470,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruFleeTheDarknessAction : public MovementAction
+class MuruMeleeFleeTheDarknessAction : public MovementAction
 {
 public:
-    MuruFleeTheDarknessAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru flee the darkness") {}
+    MuruMeleeFleeTheDarknessAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru melee flee the darkness") {}
     bool Execute(Event event) override;
 };
 
@@ -581,6 +581,9 @@ public:
     KiljaedenPositionTanksAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "kil'jaeden position tanks") {}
     bool Execute(Event event) override;
+
+private:
+    bool PickUpSinisterReflections();
 };
 
 class KiljaedenPositionMeleeAction : public MovementAction

@@ -55,11 +55,11 @@ public:
     bool IsActive() override;
 };
 
-class KalecgosBossEngagedByTankTrigger : public Trigger
+class KalecgosBossRequiresTankRotationTrigger : public Trigger
 {
 public:
-    KalecgosBossEngagedByTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kalecgos boss engaged by tank") {}
+    KalecgosBossRequiresTankRotationTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kalecgos boss requires tank rotation") {}
     bool IsActive() override;
 };
 
@@ -121,11 +121,11 @@ public:
     bool IsActive() override;
 };
 
-class BrutallusBossEngagedByMeleeTrigger : public Trigger
+class BrutallusMeleeShouldStayInPlaceTrigger : public Trigger
 {
 public:
-    BrutallusBossEngagedByMeleeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus boss engaged by melee") {}
+    BrutallusMeleeShouldStayInPlaceTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "brutallus melee should stand in place") {}
     bool IsActive() override;
 };
 
@@ -133,7 +133,7 @@ class BrutallusBossEngagedByRangedTrigger : public Trigger
 {
 public:
     BrutallusBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus boss engaged by ranged") {}
+        : Trigger(botAI, "brutallus ranged should soak meteor slash") {}
     bool IsActive() override;
 };
 
@@ -163,19 +163,19 @@ public:
     bool IsActive() override;
 };
 
-class FelmystBossEngagedByRangedOnGroundTrigger : public Trigger
+class FelmystRangedShouldSplitInThreeTrigger : public Trigger
 {
 public:
-    FelmystBossEngagedByRangedOnGroundTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst boss engaged by ranged on ground") {}
+    FelmystRangedShouldSplitInThreeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst ranged should split in three") {}
     bool IsActive() override;
 };
 
-class FelmystBossEngagedByMeleeOnGroundTrigger : public Trigger
+class FelmystMeleeShouldStayTogetherTrigger : public Trigger
 {
 public:
-    FelmystBossEngagedByMeleeOnGroundTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst boss engaged by melee on ground") {}
+    FelmystMeleeShouldStayTogetherTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "felmyst melee should stay together") {}
     bool IsActive() override;
 };
 
@@ -277,11 +277,11 @@ public:
     bool IsActive() override;
 };
 
-class EredarTwinsAlythessEngagedByFirstAssistTankTrigger : public Trigger
+class EredarTwinsAlythessCastsBlazeOnTankTrigger : public Trigger
 {
 public:
-    EredarTwinsAlythessEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins alythess engaged by first assist tank") {}
+    EredarTwinsAlythessCastsBlazeOnTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "eredar twins alythess casts blaze on tank") {}
     bool IsActive() override;
 };
 

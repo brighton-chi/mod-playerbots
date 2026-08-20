@@ -35,8 +35,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
         if (PlayerbotAI::IsTank(bot))
         {
-            Action* kalecAction = botAI->GetAiObjectContext()->GetAction(
-                "kalecgos disperse ranged");
+            Action* kalecAction = context->GetAction("kalecgos disperse ranged");
             if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
                     kalecAction)->ResetInitialRangedPositionReached())
             {
@@ -70,9 +69,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
         if (PlayerbotAI::IsTank(bot))
         {
-            Action* brutallusAction = botAI->GetAiObjectContext()->GetAction(
-                "brutallus tanks handle boss");
-            if (brutallusAction && static_cast<BrutallusTanksHandleBossAction*>(
+            Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
+            if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
                     brutallusAction)->ResetInitialPositionReached())
             {
                 didSomething = true;
@@ -91,13 +89,13 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
             didSomething = true;
 
-        if (eredarTwinsDpsHoldTimer.erase(instanceId) > 0)
+        if (eredarTwinsDpsHoldStartMs.erase(instanceId) > 0)
             didSomething = true;
     }
 
     if (PlayerbotAI::IsTank(bot) && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        Action* twinsAction = botAI->GetAiObjectContext()->GetAction(
+        Action* twinsAction = context->GetAction(
             "eredar twins first assist tank move out of blaze");
         if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
                 twinsAction)->ResetAlythessTankStep())
@@ -152,7 +150,7 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 25.0f;
-    Unit* volatileFiend = bot->FindNearestCreature(
+    Creature* volatileFiend = bot->FindNearestCreature(
         Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
     if (!volatileFiend)
         return false;
@@ -168,7 +166,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
         float const currentDistance = bot->GetDistance(volatileFiend);
         if (currentDistance < safeDistance)
         {
-            botAI->InterruptSpell();
+            bot->CastStop();
             return MoveAway(volatileFiend, safeDistance - currentDistance);
         }
     }

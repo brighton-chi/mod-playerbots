@@ -9,67 +9,75 @@
 
 #include "Multiplier.h"
 
-class GruulsLairDelayBloodlustAndHeroismMultiplier : public Multiplier
+class GruulsLairDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
-    GruulsLairDelayBloodlustAndHeroismMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "gruul's lair delay bloodlust and heroism") {}
+    GruulsLairDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "gruul's lair delay dps cooldowns") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarControlTankActionsMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarControlTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar control tank actions") {}
+    HighKingMaulgarControlTankActionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar control tank actions") {}
+    float GetValue(Action* action) override;
+};
+
+class HighKingMaulgarDontTauntKigglerMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarDontTauntKigglerMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar don't taunt kiggler") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarDisableDpsAssistMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableDpsAssistMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable dps assist") {}
+    HighKingMaulgarDisableDpsAssistMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar disable dps assist") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarAvoidWhirlwindMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind") {}
+    HighKingMaulgarAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar avoid whirlwind") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarControlHunterActionsMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarControlHunterActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar control hunter actions") {}
+    HighKingMaulgarControlHunterActionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar control hunter actions") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarControlMageTankActionsMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarControlMageTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar control mage tank actions") {}
+    HighKingMaulgarControlMageTankActionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar control mage tank actions") {}
     float GetValue(Action* action) override;
 };
 
 class GruulTheDragonkillerControlTankMovementMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerControlTankMovementMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller control tank movement") {}
+    GruulTheDragonkillerControlTankMovementMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "gruul the dragonkiller control tank movement") {}
     float GetValue(Action* action) override;
 };
 
 class GruulTheDragonkillerStaySpreadForShatterMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerStaySpreadForShatterMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller stay spread for shatter") {}
+    GruulTheDragonkillerStaySpreadForShatterMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "gruul the dragonkiller stay spread for shatter") {}
     float GetValue(Action* action) override;
 };
 

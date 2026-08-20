@@ -97,7 +97,7 @@ bool KalecgosShouldCommunicateBossHealthTrigger::IsActive()
     return bot == spectralBot || bot == surfaceBot;
 }
 
-bool KalecgosBossEngagedByTankTrigger::IsActive()
+bool KalecgosBossRequiresTankRotationTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -193,7 +193,7 @@ bool BrutallusBossEngagedByTanksTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-bool BrutallusBossEngagedByMeleeTrigger::IsActive()
+bool BrutallusMeleeShouldStayInPlaceTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
@@ -267,7 +267,7 @@ bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
     return true;
 }
 
-bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
+bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -296,7 +296,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
-bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
+bool FelmystMeleeShouldStayTogetherTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot))
         return false;
@@ -471,7 +471,7 @@ bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
     return IsAnySacrolashTank(bot);
 }
 
-bool EredarTwinsAlythessEngagedByFirstAssistTankTrigger::IsActive()
+bool EredarTwinsAlythessCastsBlazeOnTankTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -700,11 +700,13 @@ bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_WARLOCK || bot->GetCharm())
+    if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru)
+    if (!AI_VALUE2(Unit*, "find target", "m'uru"))
+        return false;
+
+    if (bot->GetCharm())
         return false;
 
     return FindAvailableVoidSpawnForEnslave(bot);
@@ -741,26 +743,13 @@ bool KiljaedenBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden)
         return false;
-    }
 
-    if (kiljaeden->GetHealthPct() > 85.0f)
-        return true;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return true;
-
-    constexpr float searchRadius = 100.0f;
-    if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-        bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-    {
+    if (HasKiljaedenDragonAura(bot))
         return false;
-    }
 
-    return true;
+    return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
 bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
@@ -769,23 +758,13 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
-        return false;
-
-    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+    if (!kiljaeden)
         return false;
 
     if (HasKiljaedenDragonAura(bot))
         return false;
 
-    constexpr float searchRadius = 50.0f;
-    if (AI_VALUE2(Unit*, "find target", "sinister reflection") ||
-        bot->FindNearestCreature(Id(SwpNpcs::NPC_SINISTER_REFLECTION), searchRadius, true))
-    {
-        return false;
-    }
-
-    return true;
+    return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
 bool KiljaedenBossEngagedByRangedTrigger::IsActive()
@@ -794,14 +773,18 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || HasKiljaedenDragonAura(bot) ||
-        IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
-    {
+    if (!kiljaeden)
         return false;
-    }
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
+    if (HasKiljaedenDragonAura(bot))
         return false;
+
+    if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
+        return false;
+
+    // Allow Demo Lock to AoE the Reflections
+    if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
+        return AI_VALUE2(Unit*, "find target", "sinister reflection");
 
     return true;
 }

@@ -9,6 +9,10 @@
 
 void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("gruul's lair bot is not in combat", {
+        NextAction("gruul's lair reset encounter states", ACTION_EMERGENCY + 10) }));
+
     // High King Maulgar
     triggers.push_back(new TriggerNode("high king maulgar bosses engaged by melee tanks", {
         NextAction("high king maulgar melee tanks position bosses", ACTION_RAID + 1) }));
@@ -38,7 +42,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by tanks", {
         NextAction("gruul the dragonkiller tanks position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("gruul the dragonkiller ranged should spread", {
         NextAction("gruul the dragonkiller spread ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("gruul the dragonkiller incoming shatter", {
@@ -48,10 +52,11 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new GruulsLairDelayBloodlustAndHeroismMultiplier(botAI));
+    multipliers.push_back(new GruulsLairDelayDpsCooldownsMultiplier(botAI));
 
     // High King Maulgar
     multipliers.push_back(new HighKingMaulgarControlTankActionsMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDontTauntKigglerMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarDisableDpsAssistMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new HighKingMaulgarControlHunterActionsMultiplier(botAI));

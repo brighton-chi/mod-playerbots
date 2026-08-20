@@ -21,7 +21,10 @@
 
 using namespace SwpHelpers;
 
-static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
+namespace
+{
+
+PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
 {
     if (!referencePlayer)
         return nullptr;
@@ -52,7 +55,7 @@ static PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     return nullptr;
 }
 
-static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
+Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
         return nullptr;
@@ -73,8 +76,7 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-static void RequestInterruptForBotsNeedingFelmystFogMovement(
-    Unit* contextUnit, Player* groupReference)
+void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
 {
     if (!contextUnit)
         return;
@@ -111,7 +113,7 @@ static void RequestInterruptForBotsNeedingFelmystFogMovement(
     }
 }
 
-static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
+void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
 {
     if (!felmyst || felmyst->IsFlying())
         return;
@@ -148,7 +150,7 @@ static void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmy
     }
 }
 
-static void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
+void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 {
     if (!alythess)
         return;
@@ -176,6 +178,8 @@ static void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
             botAI->RequestSpellInterrupt();
         }
     }
+}
+
 }
 
 class KalecgosSpellListenerScript : public AllSpellScript
@@ -319,26 +323,24 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
-        {
-            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-            {
-                Player* player = it->GetSource();
-                if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
-                    continue;
-
-                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-                if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                    continue;
-
-                if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
-                    continue;
-
-                botAI->RequestSpellInterrupt();
-            }
-
+        if (spellInfo->Id != Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
             return;
+
+        Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                continue;
+
+            if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
+                continue;
+
+            botAI->RequestSpellInterrupt();
         }
     }
 };

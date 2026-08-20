@@ -8,6 +8,8 @@
 #define PLAYERBOTS_MAGSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidMagtheridonStrategy : public Strategy
 {

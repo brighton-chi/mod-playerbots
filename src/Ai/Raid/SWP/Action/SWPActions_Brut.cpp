@@ -37,7 +37,7 @@ bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return false;
 }
 
-bool BrutallusTanksHandleBossAction::Execute(Event event)
+bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -87,7 +87,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
             return MoveTo(
-                SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+                SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
                 false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
@@ -120,7 +120,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
     return false;
 }
 
-bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
+bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -145,7 +145,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
+bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
     struct BrutallusMeleeRingLayout
@@ -233,7 +233,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     return true;
 }
 
-bool BrutallusPositionRangedAction::Execute(Event /*event*/)
+bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
     if (!brutallus)
@@ -460,16 +460,15 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) > 1.0f)
+    if (bot->GetExactDist2d(position) <= 1.0f)
     {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+        brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
+        return false;
     }
 
-    brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
-
-    return false;
+    return MoveTo(
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
@@ -477,16 +476,16 @@ bool BrutallusHandleBurnAction::RemoveBurnWithCooldown()
     switch (bot->getClass())
     {
         case CLASS_MAGE:
-            return botAI->CanCastSpell("ice block", bot) &&
-                botAI->CastSpell("ice block", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
 
         case CLASS_PALADIN:
-            return botAI->CanCastSpell("divine shield", bot) &&
-                botAI->CastSpell("divine shield", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
 
         case CLASS_ROGUE:
-            return botAI->CanCastSpell("cloak of shadows", bot) &&
-                botAI->CastSpell("cloak of shadows", bot);
+            return botAI->CanCastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
+                botAI->CastSpell(Id(SwpSpells::SPELL_CLOAK_OF_SHADOWS), bot);
 
         default:
             return false;

@@ -8,6 +8,7 @@
 #define PLAYERBOTS_TKHELPERS_H
 
 #include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
 #include <ctime>
@@ -16,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -216,8 +218,23 @@ bool HasWrathOfTheAstromancer(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
+// Mirrors the phase enum of the core's boss_kaelthas. Reading the phase means casting the boss AI
+// to a hand-written mirror of that class (TKKaelthasBossAI.h), which is only correct for as long as
+// the two agree--so GetKaelthasPhase is the one place that does the cast, and the one place to fix
+// if the core's class ever changes. A missing boss or a failed cast both report PHASE_NONE.
+enum KTPhases
+{
+    PHASE_NONE           = 0,
+    PHASE_SINGLE_ADVISOR = 1,
+    PHASE_WEAPONS        = 2,
+    PHASE_TRANSITION     = 3,
+    PHASE_ALL_ADVISORS   = 4,
+    PHASE_FINAL          = 5
+};
+
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
+inline constexpr float LEGENDARY_WEAPON_SEARCH_RADIUS = 150.0f;
 
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
@@ -227,11 +244,16 @@ inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
+inline constexpr time_t ADVISOR_DPS_WAIT_NOT_STARTED = -1;
 extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
+uint32 GetKaelthasPhase(Unit* kaelthas);
+Creature* GetPhoenixEgg(Player* bot);
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
-bool IsAnyLegendaryWeaponDead(Player* bot);
+GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
+bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI);
+Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 bool IsFeigningDeath(Unit* advisor);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 

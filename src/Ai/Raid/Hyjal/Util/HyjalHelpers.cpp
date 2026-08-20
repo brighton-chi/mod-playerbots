@@ -9,13 +9,168 @@
 #include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
+#include <cmath>
+#include <list>
+#include <string>
 
 namespace HyjalHelpers
 {
 
+namespace
+{
+// Every ground hazard is read through a cached value rather than searched for directly.
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
+{
+    static std::vector<Position> const none;
+    return botAI ? botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet()
+        : none;
+}
+
+}
+
 // General
 
-RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
+bool GetHazardBlockedArc(
+    Position const& ringCenter, float ringRadius, Position const& hazard,
+    float hazardRadius, BlockedArc& arc)
+{
+    float const centerToHazard =
+        hazard.GetExactDist2d(ringCenter.GetPositionX(), ringCenter.GetPositionY());
+
+    if (centerToHazard <= 0.0f)
+    {
+        arc = { 0.0f, static_cast<float>(M_PI) };
+        return ringRadius < hazardRadius;
+    }
+
+    float const cosHalfWidth =
+        (centerToHazard * centerToHazard + ringRadius * ringRadius - hazardRadius * hazardRadius) /
+        (2.0f * centerToHazard * ringRadius);
+
+    if (cosHalfWidth >= 1.0f)
+        return false;
+
+    arc.center = std::atan2(
+        hazard.GetPositionY() - ringCenter.GetPositionY(),
+        hazard.GetPositionX() - ringCenter.GetPositionX());
+    arc.halfWidth = (cosHalfWidth <= -1.0f) ? static_cast<float>(M_PI) : std::acos(cosHalfWidth);
+
+    return true;
+}
+
+bool FindNearestUnblockedAngle(
+    std::vector<BlockedArc> const& blocked, float preferred, float& unblocked)
+{
+    auto offsetFrom = [](float angle, float from)
+    {
+        float offset = Position::NormalizeOrientation(angle - from);
+        if (offset > M_PI)
+            offset -= 2.0f * M_PI;
+
+        return offset;
+    };
+
+    auto isUnblocked = [&blocked, &offsetFrom](float angle)
+    {
+        for (BlockedArc const& arc : blocked)
+        {
+            if (std::fabs(offsetFrom(angle, arc.center)) < arc.halfWidth)
+                return false;
+        }
+
+        return true;
+    };
+
+    if (isUnblocked(preferred))
+    {
+        unblocked = preferred;
+        return true;
+    }
+
+    constexpr float edgeNudge = 0.01f;
+    bool found = false;
+    float bestOffset = 0.0f;
+
+    for (BlockedArc const& arc : blocked)
+    {
+        for (int8 side = -1; side <= 1; side += 2)
+        {
+            float const edge = arc.center + side * (arc.halfWidth + edgeNudge);
+            if (!isUnblocked(edge))
+                continue;
+
+            float const offset = offsetFrom(edge, preferred);
+            if (!found || std::fabs(offset) < std::fabs(bestOffset))
+            {
+                bestOffset = offset;
+                unblocked = edge;
+                found = true;
+            }
+        }
+    }
+
+    return found;
+}
+
+bool FindStepToCircle(
+    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
+    float& stepX, float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable,
+    float* chosenX, float* chosenY)
+{
+    float const centerX = center.GetPositionX();
+    float const centerY = center.GetPositionY();
+
+    constexpr uint8 fanSteps = 8;
+    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
+
+    for (uint8 step = 0; step <= fanSteps; ++step)
+    {
+        float const delta = fanStep * step;
+        uint8 const candidates = (step == 0) ? 1 : 2;
+        for (uint8 i = 0; i < candidates; ++i)
+        {
+            float const angle = preferredAngle + (i == 0 ? delta : -delta);
+            float const targetX = centerX + std::cos(angle) * radius;
+            float const targetY = centerY + std::sin(angle) * radius;
+
+            if (isAcceptable && !isAcceptable(targetX, targetY))
+                continue;
+
+            if (!CanTakeStepTowards(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
+                continue;
+
+            if (isAcceptable && !isAcceptable(stepX, stepY))
+                continue;
+
+            if (chosenX)
+                *chosenX = targetX;
+            if (chosenY)
+                *chosenY = targetY;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable)
+{
+    float const centerX = hazard.GetPositionX();
+    float const centerY = hazard.GetPositionY();
+    float escapeAngle =
+        std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+    if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
+        escapeAngle = bot->GetOrientation();
+
+    return FindStepToCircle(
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ, isAcceptable);
+}
+
+RangedGroups GetRangedGroups(Player* bot)
 {
     RangedGroups result;
     Group* group = bot->GetGroup();
@@ -25,10 +180,10 @@ RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != HYJAL_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
-        if (botAI->IsHeal(member))
+        if (PlayerbotAI::IsHeal(member))
             result.healers.push_back(member);
         else
             result.rangedDps.push_back(member);
@@ -37,10 +192,9 @@ RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     return result;
 }
 
-std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
-                                                    const RangedGroups& groups)
+std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups)
 {
-    const std::vector<Player*>& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
+    std::vector<Player*> const& vec = PlayerbotAI::IsHeal(bot) ? groups.healers : groups.rangedDps;
     auto it = std::find(vec.begin(), vec.end(), bot);
     size_t index = (it != vec.end()) ? std::distance(vec.begin(), it) : 0;
 
@@ -49,157 +203,289 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* 
 
 // Rage Winterchill
 
-const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
-std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
-std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
-
-DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+bool GetDeathAndDecayPosition(PlayerbotAI* botAI, Position& deathAndDecay)
 {
-    auto instanceIt = deathAndDecayPosition.find(instanceId);
-    if (instanceIt == deathAndDecayPosition.end())
-        return nullptr;
-
-    uint32 const now = getMSTime();
-    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
-    if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
-    {
-        deathAndDecayPosition.erase(instanceIt);
-        return nullptr;
-    }
-
-    if (elapsed >= DEATH_AND_DECAY_DURATION)
-        return nullptr;
-
-    return &instanceIt->second;
-}
-
-bool IsInDeathAndDecay(Player* bot, float radius)
-{
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSpells::SPELL_DEATH_AND_DECAY));
-    if (aura)
-    {
-        DynamicObject* dynObj = aura->GetDynobjOwner();
-        if (dynObj && dynObj->IsInWorld())
-        {
-            uint32 const now = getMSTime();
-            auto instanceIt = deathAndDecayPosition.find(instanceId);
-            if (instanceIt == deathAndDecayPosition.end() ||
-                getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
-            {
-                deathAndDecayPosition[instanceId] =
-                    DeathAndDecayData{ dynObj->GetPosition(), now };
-            }
-        }
-    }
-
-    DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(instanceId);
-    if (!data)
+    std::vector<Position> const& positions =
+        GetCachedHazardPositions(botAI, "hyjal death and decay");
+    if (positions.empty())
         return false;
 
-    return bot->GetExactDist2d(data->position) < radius;
+    deathAndDecay = positions.front();
+    return true;
+}
+
+bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius)
+{
+    Position deathAndDecay;
+    return GetDeathAndDecayPosition(botAI, deathAndDecay) &&
+        botAI->GetBot()->GetExactDist2d(deathAndDecay) < radius;
+}
+
+bool IsInDeathAndDecay(PlayerbotAI* botAI)
+{
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_RADIUS);
 }
 
 // Anetheron
-
-const Position ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
-const Position ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
-const Position ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
-std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 
 Player* GetInfernoTarget(Unit* anetheron)
 {
     if (!anetheron)
         return nullptr;
 
-    Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (spell && spell->m_spellInfo->Id ==
-        static_cast<uint32>(HyjalSpells::SPELL_INFERNO))
+    Spell* spell = anetheron->FindCurrentSpellBySpellId(Id(HyjalSpells::SPELL_INFERNO));
+    if (!spell)
+        return nullptr;
+
+    Unit* target = spell->m_targets.GetUnitTarget();
+    return target ? target->ToPlayer() : nullptr;
+}
+
+GuidVector FindInfernalGuids(Player* bot)
+{
+    std::list<Creature*> infernals;
+    bot->GetCreatureListWithEntryInGrid(
+        infernals, Id(HyjalNpcs::NPC_TOWERING_INFERNAL), INFERNAL_SEARCH_RADIUS);
+
+    std::vector<Creature*> alive;
+    alive.reserve(infernals.size());
+    for (Creature* infernal : infernals)
     {
-        Unit* spellTarget = spell->m_targets.GetUnitTarget();
-        if (spellTarget && spellTarget->IsPlayer())
-            return spellTarget->ToPlayer();
+        if (infernal && infernal->IsAlive())
+            alive.push_back(infernal);
+    }
+
+    std::sort(alive.begin(), alive.end(), [](Creature const* first, Creature const* second)
+    {
+        return first->GetGUID().GetCounter() < second->GetGUID().GetCounter();
+    });
+
+    GuidVector guids;
+    guids.reserve(alive.size());
+    for (Creature* infernal : alive)
+        guids.push_back(infernal->GetGUID());
+
+    return guids;
+}
+
+GuidVector const& GetInfernalGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("hyjal infernals")->RefGet();
+}
+
+Unit* GetFocusedInfernal(PlayerbotAI* botAI)
+{
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        if (Unit* infernal = botAI->GetUnit(guid))
+            return infernal;
     }
 
     return nullptr;
 }
 
-Position const& GetClosestInfernalTankPosition(Player* bot)
+Unit* GetLooseInfernal(Player* bot)
 {
+    Player* infernalTank = GetInfernalTank(bot);
+    if (!infernalTank)
+        return nullptr;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (infernal && infernal->GetVictim() != infernalTank)
+            return infernal;
+    }
+
+    return nullptr;
+}
+
+Unit* GetNearestInfernal(Player* bot)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    Unit* nearest = nullptr;
+    float nearestDistance = 0.0f;
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (!infernal)
+            continue;
+
+        float const distance = bot->GetDistance2d(infernal);
+        if (!nearest || distance < nearestDistance)
+        {
+            nearest = infernal;
+            nearestDistance = distance;
+        }
+    }
+
+    return nearest;
+}
+
+Unit* GetInfernalTargetingBot(Player* bot)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        Unit* infernal = botAI->GetUnit(guid);
+        if (infernal && infernal->GetVictim() == bot)
+            return infernal;
+    }
+
+    return nullptr;
+}
+
+bool IsInfernalTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+}
+
+Player* GetInfernalTank(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && IsInfernalTank(member))
+            return member;
+    }
+
+    return nullptr;
+}
+
+Position const& GetInfernalTankPosition(Player* bot)
+{
+    Player* infernalTank = GetInfernalTank(bot);
+    Player* from = infernalTank ? infernalTank : bot;
+
     Position const& east = ANETHERON_E_INFERNAL_POSITION;
     Position const& west = ANETHERON_W_INFERNAL_POSITION;
-    return bot->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
-        bot->GetExactDist2d(west.GetPositionX(), west.GetPositionY()) ? east : west;
+    return from->GetExactDist2d(east.GetPositionX(), east.GetPositionY()) <=
+        from->GetExactDist2d(west.GetPositionX(), west.GetPositionY()) ? east : west;
 }
 
 // Kaz'rogal
 
-const Position KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
-const Position KAZROGAL_TANK_FINAL_POSITION =      { 5511.514f, -2662.466f, 1480.288f };
-std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
-std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
+std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 
-TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot)
+float GetKazrogalRangedArcRadius(Unit* kazrogal)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return TankPositionState::Unknown;
+    return (kazrogal && kazrogal->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+        ? KAZROGAL_RANGED_ARC_APPROACH_RADIUS : KAZROGAL_RANGED_ARC_RADIUS;
+}
 
-    auto it = kazrogalTankStep.find(mainTank->GetGUID());
-    if (it != kazrogalTankStep.end())
-        return it->second;
+float GetKazrogalRangedArcSpan(float radius)
+{
+    float const ratio = KAZROGAL_RANGED_ARC_HALF_WIDTH / radius;
+    return 2.0f * std::asin(ratio < 1.0f ? ratio : 1.0f);
+}
 
-    return TankPositionState::Unknown;
+bool IsKazrogalManaUser(Player* bot)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+        case CLASS_ROGUE:
+        case CLASS_DEATH_KNIGHT:
+            return false;
+
+        case CLASS_DRUID:
+            return !botAI->HasStrategy("bear", BOT_STATE_COMBAT) &&
+                !botAI->HasStrategy("cat", BOT_STATE_COMBAT);
+
+        default:
+            return true;
+    }
+}
+
+bool HasMarkOfKazrogal(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
 // Azgalor
 
-const Position AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
-const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
-const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
-std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
-
-RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
+// Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time
+std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI)
 {
-    auto instanceIt = rainOfFirePosition.find(instanceId);
-    if (instanceIt == rainOfFirePosition.end())
-        return nullptr;
+    return GetCachedHazardPositions(botAI, "hyjal rain of fire");
+}
 
-    uint32 const now = getMSTime();
-    uint32 const elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
-    if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
+
+bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool)
+{
+    Player* bot = botAI->GetBot();
+    bool found = false;
+    float nearestDistance = 0.0f;
+    for (Position const& position : GetCachedHazardPositions(botAI, "hyjal rain of fire"))
     {
-        rainOfFirePosition.erase(instanceIt);
-        return nullptr;
+        float const distance = bot->GetExactDist2d(position);
+        if (!found || distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            pool = position;
+            found = true;
+        }
     }
 
-    if (elapsed >= RAIN_OF_FIRE_DURATION)
-        return nullptr;
-
-    return &instanceIt->second;
+    return found;
 }
 
-TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
+bool IsNearRainOfFire(PlayerbotAI* botAI, float radius)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return TankPositionState::Unknown;
+    Player* bot = botAI->GetBot();
+    for (Position const& position : GetCachedHazardPositions(botAI, "hyjal rain of fire"))
+    {
+        if (bot->GetExactDist2d(position) < radius)
+            return true;
+    }
 
-    auto it = azgalorTankStep.find(mainTank->GetGUID());
-    if (it != azgalorTankStep.end())
-        return it->second;
-
-    return TankPositionState::Unknown;
+    return false;
 }
 
-bool IsInRainOfFire(Player* bot, float radius)
+bool IsInRainOfFire(PlayerbotAI* botAI)
 {
-    RainOfFireData* data = GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
-    if (!data)
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_RADIUS);
+}
+
+bool IsDoomed(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_DOOM));
+}
+
+bool IsDoomguardTank(Player* bot)
+{
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    return bot->GetExactDist2d(data->position) < radius;
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+        return true;
+
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+        return false;
+
+    // The second assist tank takes over if the first assist tank is Doomed. GetGroupAssistTank()
+    // requires a live tank, so if the first dies, the second becomes the Doomguard tank.
+    Player* firstAssistTank = GetGroupAssistTank(GET_PLAYERBOT_AI(bot), bot, 0);
+    return !firstAssistTank || IsDoomed(firstAssistTank);
+}
+
+bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)
+{
+    Unit* victim = azgalor->GetVictim();
+    if (!victim)
+        return true;
+
+    if (victim->GetExactDist2d(x, y) > CLEAVE_CHAIN_RADIUS)
+        return true;
+
+    Position const candidate(x, y, azgalor->GetPositionZ());
+    return !azgalor->HasInArc(CLEAVE_DANGER_ARC, &candidate);
 }
 
 bool AnyGroupMemberHasDoom(Player* bot)
@@ -211,7 +497,7 @@ bool AnyGroupMemberHasDoom(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(static_cast<uint32>(HyjalSpells::SPELL_DOOM)))
+        if (member && IsDoomed(member))
             return true;
     }
 
@@ -220,12 +506,42 @@ bool AnyGroupMemberHasDoom(Player* bot)
 
 // Archimonde
 
-const Position ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
-std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
-std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 
-AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
+bool HasProtectionOfElune(Player* bot)
+{
+    return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
+}
+
+std::vector<Position> GetDoomfirePositions(PlayerbotAI* botAI)
+{
+    return GetCachedHazardPositions(botAI, "hyjal doomfire trail");
+}
+
+bool IsNearDoomfire(PlayerbotAI* botAI, float radius)
+{
+    Player* bot = botAI->GetBot();
+    for (Position const& patch : GetCachedHazardPositions(botAI, "hyjal doomfire trail"))
+    {
+        if (bot->GetExactDist2d(patch) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius)
+{
+    for (Position const& patch : GetCachedHazardPositions(botAI, "hyjal doomfire trail"))
+    {
+        if (patch.GetExactDist2d(x, y) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+AirBurstData* GetPendingAirBurstCast(uint32 instanceId)
 {
     auto instanceIt = archimondeAirBurstTargets.find(instanceId);
     if (instanceIt == archimondeAirBurstTargets.end())

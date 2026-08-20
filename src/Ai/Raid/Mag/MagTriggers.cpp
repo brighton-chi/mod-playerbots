@@ -9,33 +9,30 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
-using namespace MagtheridonHelpers;
+using namespace MagHelpers;
 
 bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!PlayerbotAI::IsMainTank(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     return magtheridon && !IsMagtheridonActive(magtheridon);
 }
 
-bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
+bool MagtheridonLastTwoChannelersEngagedByAssistTanksTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, false))
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "magtheridon") &&
-           GetChanneler(bot, NORTHWEST_CHANNELER);
-}
+    if (GetChanneler(bot, NORTHWEST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    {
+        return true;
+    }
 
-bool MagtheridonNEChannelerEngagedBySecondAssistTankTrigger::IsActive()
-{
-    if (!botAI->IsAssistTankOfIndex(bot, 1, true))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "magtheridon") &&
-           GetChanneler(bot, NORTHEAST_CHANNELER);
+    return GetChanneler(bot, NORTHEAST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
@@ -51,26 +48,33 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
 
 bool MagtheridonDeterminingKillOrderTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) || !AI_VALUE2(Unit*, "find target", "magtheridon"))
+    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
-    Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+    if (!GetChanneler(bot, NORTHWEST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    {
+        return true;
+    }
 
-    return !botAI->IsMainTank(bot) &&
-           !(botAI->IsAssistTankOfIndex(bot, 0, false) && channelerDiamond) &&
-           !(botAI->IsAssistTankOfIndex(bot, 1, true) && channelerTriangle);
+    if (!GetChanneler(bot, NORTHEAST_CHANNELER) &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    {
+        return true;
+    }
+
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
 {
     return bot->getClass() == CLASS_WARLOCK &&
-           AI_VALUE2(Unit*, "find target", "burning abyssal");
+        AI_VALUE2(Unit*, "find target", "burning abyssal");
 }
 
 bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
@@ -78,21 +82,21 @@ bool MagtheridonBossEngagedByMainTankTrigger::IsActive()
         return false;
 
     // Include an assist tank that pulls aggro
-    return botAI->IsMainTank(bot) || magtheridon->GetVictim() == bot;
+    return magtheridon->GetVictim() == bot || PlayerbotAI::IsMainTank(bot);
 }
 
 bool MagtheridonBossEngagedByRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
-    constexpr uint8 dpsWaitSeconds = 6;
+    constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
-    if (it == dpsWaitTimer.end() || (time(nullptr) - it->second) < dpsWaitSeconds)
+    if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs)
         return false;
 
     return magtheridon->GetVictim() != bot;
@@ -103,8 +107,7 @@ bool MagtheridonStandingInDebrisTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return IsPositionInActiveDebris(
-        bot->GetMap()->GetInstanceId(), bot->GetPositionX(), bot->GetPositionY());
+    return IsPositionInActiveDebris(bot, bot->GetPositionX(), bot->GetPositionY());
 }
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActive()
@@ -115,14 +118,13 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, MAGTHERIDON_MAP_ID) &&
-           AI_VALUE2(Unit*, "find target", "magtheridon");
+    return IsMechanicTrackerBot(bot, MAG_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 
 bool MagtheridonBotIsNotInCombatTrigger::IsActive()
 {
-    return bot->GetMapId() == MAGTHERIDON_MAP_ID &&
-           !AI_VALUE2(bool, "combat", "self target") &&
-           !AI_VALUE2(Unit*, "find target", "magtheridon") &&
-           !AI_VALUE2(Unit*, "find target", "hellfire channeler");
+    return bot->GetMapId() == MAG_MAP_ID && !AI_VALUE2(bool, "combat", "self target") &&
+        !AI_VALUE2(Unit*, "find target", "magtheridon") &&
+        !AI_VALUE2(Unit*, "find target", "hellfire channeler");
 }

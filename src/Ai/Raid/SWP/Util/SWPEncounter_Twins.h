@@ -11,7 +11,6 @@
 #include "Position.h"
 #include "SWPData.h"
 #include <array>
-#include <ctime>
 #include <unordered_map>
 
 class Player;
@@ -31,7 +30,7 @@ struct EredarTwinsIncomingConflagrationState
 struct EredarTwinsBlazeTargetState
 {
     ObjectGuid targetGuid = ObjectGuid::Empty;
-    uint32 expireMs = 0;
+    uint32 startMs = 0;
 };
 
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
@@ -59,7 +58,7 @@ inline Position const EREDAR_TWINS_P2_RANGED_POSITION =      { 1805.587f, 625.65
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 	eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
-extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
+extern std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleePosition(Unit* alythess);

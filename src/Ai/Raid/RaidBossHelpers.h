@@ -12,11 +12,15 @@
 #include <string>
 #include <vector>
 
+class Action;
 class Player;
 class PlayerbotAI;
 class Unit;
 
-bool GetGroundedStepPosition(
+// Answers whether the bot can take one short step towards a destination, and where that step
+// lands. It says nothing about the destination itself--only about the next hop. stepX/Y/Z are
+// written on success and left untouched on failure
+bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
@@ -36,5 +40,8 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+bool IsDpsCooldownAction(Player* bot, Action* action);
+bool IsTauntAction(Player* bot, Action* action);
+bool IsAoeThreatAction(Player* bot, Action* action);
 
 #endif

@@ -6,34 +6,92 @@
 
 #include "RaidBossHelpers.h"
 #include "CellImpl.h"
+#include "DKActions.h"
+#include "DruidActions.h"
+#include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "HunterActions.h"
+#include "MageActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
+#include "RogueActions.h"
 #include "RtiTargetValue.h"
+#include "ShamanActions.h"
+#include "WarlockActions.h"
+#include "WarriorActions.h"
 #include <algorithm>
+#include <cmath>
 #include <list>
 
-bool GetGroundedStepPosition(
+// Asks whether a short step towards a destination is one the bot can actually take, and returns
+// where it lands. This is a verdict, not a movement helper: a caller that simply wants to walk
+// somewhere should project the step itself and hand MoveTo the bot's own Z, which re-derives the
+// real height through SearchForBestPath for none of the map queries below. Use this only where a
+// false answer means something--enumerating candidate destinations and moving on to the next.
+//
+// The step has to be short. The candidate's height comes from a downward search seeded at the
+// bot, so a long hop can outrun the ground it is measured against.
+bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
+    // Not worth the map queries, and the caller's own arrival deadzone is what governs the final
+    // approach; this only rules out a degenerate step
+    constexpr float minMoveDistance = 0.5f;
+
     float const distance = bot->GetExactDist2d(destinationX, destinationY);
-    if (distance <= 0.0f)
+    if (distance < minMoveDistance)
         return false;
 
-    float const stepDistance = std::min(moveDist, distance);
-    float const deltaX = destinationX - bot->GetPositionX();
-    float const deltaY = destinationY - bot->GetPositionY();
-    stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
-    stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
-    stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
-    if (stepZ <= INVALID_HEIGHT)
-        stepZ = bot->GetPositionZ();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const botZ = bot->GetPositionZ();
 
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        stepX, stepY, stepZ, false);
+    float const ratio = std::min(moveDist, distance) / distance;
+    float candidateX = botX + (destinationX - botX) * ratio;
+    float candidateY = botY + (destinationY - botY) * ratio;
+    float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
 
+    // No ground in that column. Keep the bot's Z as the candidate and let the reach check rule on
+    // it rather than silently reporting an ungrounded position as reachable
+    if (candidateZ <= INVALID_HEIGHT)
+        candidateZ = botZ;
+
+    // IsWalkableClimb measures abs(dz), so it turns down a descent as harshly as a climb. Only ask
+    // for it where the step actually rises; walking downhill is always possible
+    bool const failOnSlopes = candidateZ > botZ;
+
+    // Fail on collision rather than clamping to the contact point. Clamping reports success for a
+    // step that ends against whatever is in the way, which stops a caller enumerating candidates
+    // dead on the first blocked one--it walks into the obstacle, then repeats the same clamped
+    // point until MoveTo rejects it as a duplicate. A refusal sends the caller to its next
+    // candidate, which is the whole reason this returns a verdict
+    float const requestedX = candidateX;
+    float const requestedY = candidateY;
+
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(
+            bot, botX, botY, botZ, candidateX, candidateY, candidateZ, true, failOnSlopes))
+    {
+        return false;
+    }
+
+    // The reach check answers true for a step it silently shortened. Its raycast accepts
+    // PATHFIND_INCOMPLETE and then overwrites the destination with wherever the ray stopped, so a
+    // step into anything the navmesh has carved out--scenery, a building--comes back as a success
+    // that ends against the obstruction. failOnCollision does not cover it: that governs the model
+    // trees, and static models are not consulted at all for a bot walking on the ground.
+    //
+    // A caller with somewhere else to try needs this to read as a refusal, or it commits to the
+    // first direction and walks into the thing forever
+    constexpr float truncationTolerance = 1.0f;
+    if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
+        return false;
+
+    stepX = candidateX;
+    stepY = candidateY;
+    stepZ = candidateZ;
     return true;
 }
 
@@ -114,20 +172,15 @@ bool ClearTargetIcon(Player* bot, uint8 iconId)
     return false;
 }
 
-// For bots to set their raid target icon to the specified icon on the specified target
+// Set raid target icon to the specified icon on the specified target
 void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
 {
     if (!target)
         return;
 
-    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-    if (currentRti != rtiName || currentTarget != target)
-    {
-        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-    }
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    context->GetValue<std::string>("rti")->Set(rtiName);
+    context->GetValue<Unit*>("rti target")->Set(target);
 }
 
 // Return the first alive bot in the specified instance map for purposes of assigning
@@ -285,4 +338,161 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
     }
 
     return dynObjs;
+}
+
+// This function is primarily for use in multipliers during encounters where it is desirable
+// for bots to save cooldowns for particular phases (or for a bit after the pull)
+bool IsDpsCooldownAction(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_SHAMAN && // Before dps gate to capture Resto
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action)))
+    {
+        return true;
+    }
+
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    if (dynamic_cast<UseTrinketAction*>(action))
+        return true;
+
+    bool isClassCooldown = false;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            isClassCooldown = dynamic_cast<CastSummonGargoyleAction*>(action) ||
+                dynamic_cast<CastDeathchillAction*>(action) ||
+                dynamic_cast<CastEmpowerRuneWeaponAction*>(action) ||
+                dynamic_cast<CastArmyOfTheDeadAction*>(action);
+            break;
+
+        case CLASS_DRUID:
+            isClassCooldown = dynamic_cast<CastStarfallAction*>(action) ||
+                dynamic_cast<CastForceOfNatureAction*>(action) ||
+                dynamic_cast<CastBerserkAction*>(action);
+            break;
+
+        case CLASS_HUNTER:
+            isClassCooldown = dynamic_cast<CastKillCommandAction*>(action) ||
+                dynamic_cast<CastRapidFireAction*>(action) ||
+                dynamic_cast<CastReadinessAction*>(action) ||
+                dynamic_cast<CastBestialWrathAction*>(action);
+            break;
+
+        case CLASS_MAGE:
+            isClassCooldown = dynamic_cast<CastArcanePowerAction*>(action) ||
+                dynamic_cast<CastCombustionAction*>(action) ||
+                dynamic_cast<CastIcyVeinsAction*>(action) ||
+                dynamic_cast<CastMirrorImageAction*>(action) ||
+                dynamic_cast<CastColdSnapAction*>(action) ||
+                dynamic_cast<CastPresenceOfMindAction*>(action);
+            break;
+
+        case CLASS_SHAMAN:
+            isClassCooldown = dynamic_cast<CastElementalMasteryAction*>(action) ||
+                dynamic_cast<CastFeralSpiritAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+            break;
+
+        case CLASS_PALADIN:
+            isClassCooldown = dynamic_cast<CastAvengingWrathAction*>(action);
+            break;
+
+        case CLASS_ROGUE:
+            isClassCooldown = dynamic_cast<CastKillingSpreeAction*>(action) ||
+                dynamic_cast<CastBladeFlurryAction*>(action) ||
+                dynamic_cast<CastAdrenalineRushAction*>(action) ||
+                dynamic_cast<CastColdBloodAction*>(action);
+            break;
+
+        case CLASS_WARLOCK:
+            isClassCooldown = dynamic_cast<CastMetamorphosisAction*>(action);
+            break;
+
+        case CLASS_WARRIOR:
+            isClassCooldown = dynamic_cast<CastDeathWishAction*>(action) ||
+                dynamic_cast<CastBladestormAction*>(action) ||
+                dynamic_cast<CastRecklessnessAction*>(action);
+            break;
+
+        default:
+            break; // Priest =(
+    }
+
+    if (isClassCooldown)
+        return true;
+
+    switch (bot->getRace())
+    {
+        case RACE_BLOODELF:
+            return dynamic_cast<CastArcaneTorrentAction*>(action);
+
+        case RACE_ORC:
+            return dynamic_cast<CastBloodFuryAction*>(action);
+
+        case RACE_TROLL:
+            return dynamic_cast<CastBerserkingAction*>(action);
+
+        default:
+            return false;
+    }
+}
+
+bool IsTauntAction(Player* bot, Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastDeathGripAction*>(action);
+
+        case CLASS_DRUID:
+            return dynamic_cast<CastGrowlAction*>(action) ||
+                dynamic_cast<CastChallengingRoarAction*>(action);
+
+        case CLASS_PALADIN:
+            return dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastRighteousDefenseAction*>(action);
+
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastChallengingShoutAction*>(action);
+
+        default:
+            return false;
+    }
+}
+
+// These abilities can be particularly problematic on the pull for a council boss
+bool IsAoeThreatAction(Player* bot, Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastDeathAndDecayAction*>(action) ||
+                dynamic_cast<CastPestilenceAction*>(action) ||
+                dynamic_cast<CastBloodBoilAction*>(action);
+
+        case CLASS_DRUID:
+            return dynamic_cast<CastSwipeBearAction*>(action);
+
+        case CLASS_PALADIN:
+            return dynamic_cast<CastAvengersShieldAction*>(action) ||
+                dynamic_cast<CastConsecrationAction*>(action);
+
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastThunderClapAction*>(action) ||
+                dynamic_cast<CastShockwaveAction*>(action) ||
+                dynamic_cast<CastCleaveAction*>(action);
+
+        default:
+            return false;
+    }
 }

@@ -18,11 +18,8 @@ public:
         creators["magtheridon first three channelers engaged by main tank"] =
             &RaidMagtheridonTriggerContext::magtheridon_first_three_channelers_engaged_by_main_tank;
 
-        creators["magtheridon nw channeler engaged by first assist tank"] =
-            &RaidMagtheridonTriggerContext::magtheridon_nw_channeler_engaged_by_first_assist_tank;
-
-        creators["magtheridon ne channeler engaged by second assist tank"] =
-            &RaidMagtheridonTriggerContext::magtheridon_ne_channeler_engaged_by_second_assist_tank;
+        creators["magtheridon last two channelers engaged by assist tanks"] =
+            &RaidMagtheridonTriggerContext::magtheridon_last_two_channelers_engaged_by_assist_tanks;
 
         creators["magtheridon pulling west and east channelers"] =
             &RaidMagtheridonTriggerContext::magtheridon_pull_west_and_east_channelers;
@@ -56,11 +53,8 @@ private:
     static Trigger* magtheridon_first_three_channelers_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new MagtheridonFirstThreeChannelersEngagedByMainTankTrigger(botAI);
     }
-    static Trigger* magtheridon_nw_channeler_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new MagtheridonNWChannelerEngagedByFirstAssistTankTrigger(botAI);
-    }
-    static Trigger* magtheridon_ne_channeler_engaged_by_second_assist_tank(PlayerbotAI* botAI) {
-        return new MagtheridonNEChannelerEngagedBySecondAssistTankTrigger(botAI);
+    static Trigger* magtheridon_last_two_channelers_engaged_by_assist_tanks(PlayerbotAI* botAI) {
+        return new MagtheridonLastTwoChannelersEngagedByAssistTanksTrigger(botAI);
     }
     static Trigger* magtheridon_pull_west_and_east_channelers(PlayerbotAI* botAI) {
         return new MagtheridonPullingWestAndEastChannelersTrigger(botAI);

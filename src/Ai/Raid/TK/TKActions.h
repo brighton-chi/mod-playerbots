@@ -11,7 +11,6 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include <utility>
 #include <vector>
 
@@ -39,11 +38,11 @@ public:
 
 // Al'ar <Phoenix God>
 
-class AlarMisdirectBossToMainTankAction : public AttackAction
+class AlarMisdirectBossToMainTankAction : public Action
 {
 public:
     AlarMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "al'ar misdirect boss to main tank") {}
+        : Action(botAI, "al'ar misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -218,19 +217,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public AttackAction
+class KaelthasSunstriderMisdirectAdvisorsToTanksAction : public Action
 {
 public:
     KaelthasSunstriderMisdirectAdvisorsToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider misdirect advisors to tanks") {}
+        : Action(botAI, "kael'thas sunstrider misdirect advisors to tanks") {}
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionSanguinarAction : public AttackAction
+class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public AttackAction
 {
 public:
-    KaelthasSunstriderMainTankPositionSanguinarAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider main tank position sanguinar") {}
+    KaelthasSunstriderMeleeTanksPositionAdvisorsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kael'thas sunstrider melee tanks position advisors") {}
     bool Execute(Event event) override;
 };
 
@@ -258,16 +257,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian);
+    bool RangedBotsDisperse(uint32 phase, Unit* capernian);
     bool MeleeStayBackFromCapernian(Unit* capernian);
-};
-
-class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAction
-{
-public:
-    KaelthasSunstriderFirstAssistTankPositionTelonicusAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider first assist tank position telonicus") {}
-    bool Execute(Event event) override;
 };
 
 class KaelthasSunstriderHandleAdvisorRolesInPhase3Action : public MovementAction

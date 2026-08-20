@@ -11,7 +11,6 @@
 #include "Position.h"
 #include "SWPData.h"
 #include <array>
-#include <ctime>
 #include <limits>
 #include <unordered_map>
 #include <vector>
@@ -94,8 +93,8 @@ struct FelmystEncounterState
     uint8 demonicVaporFirstRegionIndex = 0;
     FogOfCorruptionState fogOfCorruption;
     FogPassState fogPass;
-    time_t landingDpsWaitTimer = 0;
-    time_t landingTouchdownTimer = 0;
+    uint32 landingDpsWaitStartMs = 0;
+    uint32 landingTouchdownMs = 0;
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
 
@@ -124,6 +123,9 @@ inline Position const FOG_RIGHT_SIDE = { 1458.556f, 502.200f, 59.900f, 1.606f };
 inline Position const LEFT_LANDING_POSITION =   { 1476.770f, 665.094f, 20.642f };
 inline Position const RIGHT_LANDING_POSITION =  { 1469.930f, 557.009f, 22.632f };
 inline Position const CENTER_GROUND_REFERENCE = { 1473.350f, 611.052f, 21.637f };
+
+inline Position const FOG_CRATE_STUCK_POSITION =    { 1484.443f, 591.337f, 23.391f };
+inline Position const FOG_CRATE_TELEPORT_POSITION = { 1482.181f, 591.253f, 24.545f };
 
 inline std::array const TANK_POSITIONS = {
     Position{ 1460.145f, 598.290f, 21.869f },

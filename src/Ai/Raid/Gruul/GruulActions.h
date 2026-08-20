@@ -12,6 +12,14 @@
 #include "MovementActions.h"
 #include "Position.h"
 
+class GruulsLairResetEncounterStatesAction : public Action
+{
+public:
+    GruulsLairResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "gruul's lair reset encounter states") {}
+    bool Execute(Event event) override;
+};
+
 class HighKingMaulgarMeleeTanksPositionBossesAction : public AttackAction
 {
 public:
@@ -94,6 +102,18 @@ public:
     GruulTheDragonkillerSpreadRangedAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "gruul the dragonkiller spread ranged") {}
     bool Execute(Event event) override;
+    bool ResetInitialPosition()
+    {
+        if (!_hasReachedInitialPosition && _initialPosition.GetPositionX() == 0.0f &&
+            _initialPosition.GetPositionY() == 0.0f)
+        {
+            return false;
+        }
+
+        _hasReachedInitialPosition = false;
+        _initialPosition = Position();
+        return true;
+    }
 
 private:
     Position _initialPosition;

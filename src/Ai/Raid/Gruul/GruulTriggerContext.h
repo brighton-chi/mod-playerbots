@@ -15,6 +15,10 @@ class RaidGruulsLairTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
+        // General
+        creators["gruul's lair bot is not in combat"] =
+            &RaidGruulsLairTriggerContext::gruuls_lair_bot_is_not_in_combat;
+
         // High King Maulgar
         creators["high king maulgar bosses engaged by melee tanks"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_bosses_engaged_by_melee_tanks;
@@ -44,14 +48,19 @@ public:
         creators["gruul the dragonkiller boss engaged by tanks"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_tanks;
 
-        creators["gruul the dragonkiller boss engaged by ranged"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_ranged;
+        creators["gruul the dragonkiller ranged should spread"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
 
 private:
+    // General
+    static Trigger* gruuls_lair_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new GruulsLairBotIsNotInCombatTrigger(botAI);
+    }
+
     // High King Maulgar
     static Trigger* high_king_maulgar_bosses_engaged_by_melee_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarBossesEngagedByMeleeTanksTrigger(botAI);
@@ -82,8 +91,8 @@ private:
     static Trigger* gruul_the_dragonkiller_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerBossEngagedByTanksTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new GruulTheDragonkillerBossEngagedByRangedTrigger(botAI);
+    static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);

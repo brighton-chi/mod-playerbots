@@ -8,7 +8,6 @@
 #include "AiObjectContext.h"
 #include "Playerbots.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -82,20 +81,17 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors", {
         NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar engaged by main tank", {
-        NextAction("kael'thas sunstrider main tank position sanguinar", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar or telonicus is active", {
+        NextAction("kael'thas sunstrider melee tanks position advisors", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar casts bellowing roar", {
         NextAction("kael'thas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by a warlock", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by warlock", {
         NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian casts arcane burst and conflagration", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank", {
-        NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider bots have specific roles in phase 3", {
         NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));
@@ -112,7 +108,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary axe casts whirlwind", {
         NextAction("kael'thas sunstrider move devastation away", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead", {
         NextAction("kael'thas sunstrider loot legendary weapons", ACTION_NORMAL) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are equipped", {
@@ -177,8 +173,8 @@ void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions
     if (!kaelthas)
         return;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && (kaelAI->GetPhase() < PHASE_WEAPONS || kaelAI->GetPhase() > PHASE_ALL_ADVISORS))
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_NONE && (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS))
         return;
 
     constexpr float searchRadius = 75.0f;

@@ -8,6 +8,8 @@
 #define PLAYERBOTS_HYJALSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidHyjalSummitStrategy : public Strategy
 {

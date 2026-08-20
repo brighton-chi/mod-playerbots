@@ -26,20 +26,28 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     bool erased = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-        (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0 ||
-         hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0 ||
-         hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
-         hydrossFrostDpsWaitTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
-        erased = true;
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "the lurker below") &&
-        (lurkerRangedPositions.erase(guid) > 0 ||
-         lurkerSpoutTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
-        erased = true;
+        if (lurkerRangedPositions.erase(guid) > 0)
+            erased = true;
+
+        if (lurkerSpoutTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
@@ -48,17 +56,31 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker") &&
-        (tidewalkerTankStep.erase(guid) > 0 ||
-         tidewalkerRangedStep.erase(guid) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        erased = true;
+        if (tidewalkerTankStep.erase(guid) > 0)
+            erased = true;
+
+        if (tidewalkerRangedStep.erase(guid) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") &&
-         hasReachedVashjRangedPosition.erase(guid) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
-        erased = true;
+        if (hasReachedVashjRangedPosition.erase(guid) > 0)
+            erased = true;
+
+        if (intendedLineup.erase(guid) > 0)
+            erased = true;
+
+        if (lastImbueAttempt.erase(instanceId) > 0)
+            erased = true;
+
+        if (lastCoreInInventoryTime.erase(guid) > 0)
+            erased = true;
+
+        if (nearestTriggerGuid.erase(instanceId) > 0)
+            erased = true;
     }
 
     return erased;
@@ -125,7 +147,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
         moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
     }
 
-    botAI->Reset();
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false,
                   true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -202,7 +224,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
             }
             else
             {
-                botAI->Reset();
+                bot->CastStop();
                 return true;
             }
         }
@@ -284,7 +306,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
             }
             else
             {
-                botAI->Reset();
+                bot->CastStop();
                 return true;
             }
         }
@@ -428,7 +450,8 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 
     if (shouldStopDps)
     {
-        botAI->Reset();
+        bot->AttackStop();
+        bot->CastStop();
         return true;
     }
 
@@ -494,7 +517,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         float moveX = lurker->GetPositionX() + radius * std::cos(tangentAngle);
         float moveY = lurker->GetPositionY() + radius * std::sin(tangentAngle);
 
-        botAI->Reset();
+        bot->CastStop();
         return MoveTo(SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -506,7 +529,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 
         if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
         {
-            botAI->Reset();
+            bot->CastStop();
             return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -734,7 +757,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event*/)
 {
     bot->AttackStop();
-    botAI->Reset();
+    bot->CastStop();
     return true;
 }
 
@@ -789,7 +812,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         constexpr float safeDistance = 25.0f;
         if (currentDistance < safeDistance)
         {
-            botAI->Reset();
+            bot->CastStop();
             return MoveAway(leotherasHuman, safeDistance - currentDistance);
         }
     }
@@ -1821,11 +1844,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     {
         // This block is needed to prevent bots from floating into the air to attack sporebats
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
-        bot->TeleportTo(SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(),
-                        platformZ, bot->GetOrientation());
+        bot->NearTeleportTo(bot->GetPositionX(), bot->GetPositionY(),
+                            platformZ, bot->GetOrientation());
         return true;
     }
 
@@ -1956,7 +1979,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->CastStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
         bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
@@ -2071,9 +2094,14 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(tainted) > 10.0f)
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        bot->TeleportTo(SSC_MAP_ID, tainted->GetPositionX(), tainted->GetPositionY(),
-                        tainted->GetPositionZ(), tainted->GetOrientation());
+        bot->CastStop();
+
+        // NearTeleportTo passes TELE_TO_NOT_LEAVE_COMBAT; TeleportTo does not and so calls
+        // CombatStop(), which tears down every CombatReference and empties the bot's threat
+        // lists. That drops the bot out of combat (letting it sit and drink) and blanks every
+        // "find target" lookup, which silently disables the whole encounter strategy for it
+        bot->NearTeleportTo(tainted->GetPositionX(), tainted->GetPositionY(),
+                            tainted->GetPositionZ(), tainted->GetOrientation());
     }
 
     if (AI_VALUE(Unit*, "current target") != tainted)
@@ -2223,7 +2251,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, firstCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
+                // ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
                 return true;
             }
         }
@@ -2239,7 +2267,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, secondCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
+                // ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
                 return true;
             }
         }
@@ -2256,7 +2284,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, thirdCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
+                // ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
                 return true;
             }
         }
@@ -2273,7 +2301,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, fourthCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
+                // ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
                 return true;
             }
         }
@@ -2289,6 +2317,9 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     Player* designatedLooter)
 {
+    if (!designatedLooter)
+        return false;
+
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
     constexpr float radius = 57.5f;
@@ -2314,7 +2345,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2322,6 +2353,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
 bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     Player* firstCorePasser, Unit* closestTrigger)
 {
+    if (!firstCorePasser || !closestTrigger)
+        return false;
+
     auto itFirst = intendedLineup.find(firstCorePasser->GetGUID());
     if (itFirst == intendedLineup.end())
         return false;
@@ -2369,7 +2403,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2378,6 +2412,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     Player*, Player* firstCorePasser,
     Player* secondCorePasser, Unit* closestTrigger)
 {
+    if (!secondCorePasser || !closestTrigger)
+        return false;
+
     bool needThirdPasser =
         (IsFirstCorePasserInPosition(firstCorePasser) &&
          firstCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
@@ -2434,7 +2471,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2443,6 +2480,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     Player*, Player* secondCorePasser,
     Player* thirdCorePasser, Unit* closestTrigger)
 {
+    if (!thirdCorePasser || !closestTrigger)
+        return false;
+
     bool needFourthPasser =
         (IsSecondCorePasserInPosition(secondCorePasser) &&
          secondCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
@@ -2489,7 +2529,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     float targetZ = pos.GetPositionZ();
 
     bot->AttackStop();
-    bot->InterruptNonMeleeSpells(true);
+    bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -2498,6 +2538,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
 // position and are used to determine when the prior bot in the chain can pass the core
 bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firstCorePasser)
 {
+    if (!firstCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(firstCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2511,6 +2554,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firs
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* secondCorePasser)
 {
+    if (!secondCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(secondCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2524,6 +2570,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* sec
 
 bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thirdCorePasser)
 {
+    if (!thirdCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(thirdCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2537,6 +2586,9 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thir
 
 bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fourthCorePasser)
 {
+    if (!fourthCorePasser)
+        return false;
+
     auto itSnap = intendedLineup.find(fourthCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
     {
@@ -2551,6 +2603,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fou
 // ImbueItem() is inconsistent in causing the receiver bot to receive the core and the giver
 // bot to remove the core, so ScheduleTransferCoreAfterImbue() creates the core on the receiver
 // and removes it from the giver, with ImbueItem() called primarily for the throwing animation
+// NOTE: Probably not needed. Commented out in calls now. To be removed during rewrite.
 void LadyVashjPassTheTaintedCoreAction::ScheduleTransferCoreAfterImbue(
     PlayerbotAI* botAI, Player* giver, Player* receiver)
 {
