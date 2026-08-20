@@ -383,6 +383,10 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
 {
     constexpr float angleStep = M_PI / 8.0f;
 
+    Position debris;
+    bool const hasDebris = GetActiveDebrisPosition(bot, debris);
+    std::vector<GameObject*> const blazes = GetActiveConflagrations(botAI);
+
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
@@ -391,10 +395,10 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
         float const x = cubeInfo.x + std::cos(angle) * preferredDistance;
         float const y = cubeInfo.y + std::sin(angle) * preferredDistance;
 
-        if (IsPositionInActiveDebris(bot, x, y))
+        if (hasDebris && debris.GetExactDist2d(x, y) <= DEBRIS_HAZARD_RADIUS)
             continue;
 
-        if (IsPositionInActiveConflagration(botAI, x, y))
+        if (IsPositionInConflagration(blazes, x, y))
             continue;
 
         float const moveDistance = bot->GetExactDist2d(x, y);
@@ -452,6 +456,10 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
     constexpr float distanceStep = 1.0f;
     constexpr float angleStep = M_PI / 12.0f;
 
+    Position debris;
+    bool const hasDebris = GetActiveDebrisPosition(bot, debris);
+    std::vector<GameObject*> const blazes = GetActiveConflagrations(botAI);
+
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
@@ -463,10 +471,10 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 
-            if (IsPositionInActiveDebris(bot, x, y))
+            if (hasDebris && debris.GetExactDist2d(x, y) <= DEBRIS_HAZARD_RADIUS)
                 continue;
 
-            if (IsPositionInActiveConflagration(botAI, x, y))
+            if (IsPositionInConflagration(blazes, x, y))
                 continue;
 
             float const moveDistance = bot->GetExactDist2d(x, y);
@@ -492,47 +500,36 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
     uint32 const instanceId = magtheridon->GetMap()->GetInstanceId();
     uint32 const now = getMSTime();
 
-    if (!lastBlastNovaState[instanceId] && IsBlastNovaCasting(magtheridon))
+    bool const isCasting = IsBlastNovaCasting(magtheridon);
+    if (isCasting && !lastBlastNovaState[instanceId])
         blastNovaTimer[instanceId] = now;
 
-    lastBlastNovaState[instanceId] = IsBlastNovaCasting(magtheridon);
+    lastBlastNovaState[instanceId] = isCasting;
 
     bool updated = false;
 
     if (IsMagtheridonActive(magtheridon))
     {
-        if (blastNovaTimer.try_emplace(instanceId, now).second)
-            updated = true;
+        updated |= blastNovaTimer.try_emplace(instanceId, now).second;
+        updated |= dpsWaitTimer.try_emplace(instanceId, now).second;
 
-        if (dpsWaitTimer.try_emplace(instanceId, now).second)
-            updated = true;
-
-        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied[instanceId])
+        // Ceiling collapse at 30% HP delays scheduled abilities such as Blast Nova by 18s
+        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied.contains(instanceId))
         {
             blastNovaTimer[instanceId] += 18 * IN_MILLISECONDS;
-            ceilingCollapseApplied[instanceId] = true;
+            ceilingCollapseApplied.insert(instanceId);
             updated = true;
         }
 
-        if (NeedsCubeReassignment(instanceId) && AssignCubeClickers())
-            updated = true;
+        updated |= NeedsCubeReassignment(instanceId) && AssignCubeClickers();
     }
     else
     {
-        if (blastNovaTimer.erase(instanceId) > 0)
-            updated = true;
-
-        if (dpsWaitTimer.erase(instanceId) > 0)
-            updated = true;
-
-        if (botToCubeAssignments.erase(instanceId) > 0)
-            updated = true;
-
-        if (ceilingCollapseApplied.erase(instanceId) > 0)
-            updated = true;
-
-        if (lastBlastNovaState.erase(instanceId) > 0)
-            updated = true;
+        updated |= blastNovaTimer.erase(instanceId) > 0;
+        updated |= dpsWaitTimer.erase(instanceId) > 0;
+        updated |= botToCubeAssignments.erase(instanceId) > 0;
+        updated |= ceilingCollapseApplied.erase(instanceId) > 0;
+        updated |= lastBlastNovaState.erase(instanceId) > 0;
     }
 
     return updated;
@@ -641,18 +638,13 @@ bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
 bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    bool erased = false;
 
-    if (blastNovaTimer.erase(instanceId) > 0)
-        erased = true;
-    if (dpsWaitTimer.erase(instanceId) > 0)
-        erased = true;
-    if (ceilingCollapseApplied.erase(instanceId) > 0)
-        erased = true;
-    if (lastBlastNovaState.erase(instanceId) > 0)
-        erased = true;
-    if (botToCubeAssignments.erase(instanceId) > 0)
-        erased = true;
+    bool erased = false;
+    erased |= blastNovaTimer.erase(instanceId) > 0;
+    erased |= dpsWaitTimer.erase(instanceId) > 0;
+    erased |= ceilingCollapseApplied.erase(instanceId) > 0;
+    erased |= lastBlastNovaState.erase(instanceId) > 0;
+    erased |= botToCubeAssignments.erase(instanceId) > 0;
 
     return erased;
 }

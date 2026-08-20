@@ -17,7 +17,7 @@ namespace MagHelpers
 
 std::unordered_map<uint32, uint32> blastNovaTimer;
 std::unordered_map<uint32, uint32> dpsWaitTimer;
-std::unordered_map<uint32, bool> ceilingCollapseApplied;
+std::unordered_set<uint32> ceilingCollapseApplied;
 std::unordered_map<uint32, bool> lastBlastNovaState;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
 
@@ -87,20 +87,27 @@ bool IsCubeClicker(Player* bot)
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }
 
-bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius)
+bool GetActiveDebrisPosition(Player* bot, Position& debris)
 {
-    constexpr float searchRadius = 30.0f;
-    std::vector<Position> debrisPositions = GetDynamicObjectPositions(
+    constexpr float searchRadius = 150.0f;
+    std::vector<Position> const debrisPositions = GetDynamicObjectPositions(
         bot, searchRadius, Id(MagSpells::SPELL_DEBRIS_SPAWN));
     if (debrisPositions.empty())
         return false;
 
-    return debrisPositions.front().GetExactDist2d(x, y) <= radius;
+    debris = debrisPositions.front();
+    return true;
 }
 
-bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
+bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius)
 {
-    constexpr float conflagrationHazardRadius = 5.0f;
+    Position debris;
+    return GetActiveDebrisPosition(bot, debris) && debris.GetExactDist2d(x, y) <= radius;
+}
+
+std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI)
+{
+    std::vector<GameObject*> blazes;
     auto const& gameObjects =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
     for (auto const& goGuid : gameObjects)
@@ -109,11 +116,26 @@ bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
         if (!go || !go->isSpawned() || go->GetEntry() != Id(MagObjs::GO_BLAZE))
             continue;
 
-        if (go->GetDistance2d(x, y) < conflagrationHazardRadius)
+        blazes.push_back(go);
+    }
+
+    return blazes;
+}
+
+bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y)
+{
+    for (GameObject* blaze : blazes)
+    {
+        if (blaze->GetDistance2d(x, y) < CONFLAGRATION_HAZARD_RADIUS)
             return true;
     }
 
     return false;
+}
+
+bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
+{
+    return IsPositionInConflagration(GetActiveConflagrations(botAI), x, y);
 }
 
 }

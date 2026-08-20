@@ -12,9 +12,11 @@
 #include "Position.h"
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class Creature;
+class GameObject;
 class Map;
 class Player;
 class PlayerbotAI;
@@ -76,7 +78,7 @@ inline Position const HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -
 
 extern std::unordered_map<uint32, uint32> dpsWaitTimer;
 extern std::unordered_map<uint32, uint32> blastNovaTimer;
-extern std::unordered_map<uint32, bool> ceilingCollapseApplied;
+extern std::unordered_set<uint32> ceilingCollapseApplied;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
 
@@ -86,7 +88,12 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
-bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius = 10.0f);
+inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
+inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
+bool GetActiveDebrisPosition(Player* bot, Position& debris);
+std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
+bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
+bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius = DEBRIS_HAZARD_RADIUS);
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y);
 
 }
