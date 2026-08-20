@@ -8,7 +8,6 @@
 #include "AiObjectContext.h"
 #include "Playerbots.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -174,8 +173,8 @@ void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions
     if (!kaelthas)
         return;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && (kaelAI->GetPhase() < PHASE_WEAPONS || kaelAI->GetPhase() > PHASE_ALL_ADVISORS))
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_NONE && (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS))
         return;
 
     constexpr float searchRadius = 75.0f;

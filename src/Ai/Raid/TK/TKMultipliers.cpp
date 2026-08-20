@@ -17,8 +17,9 @@
 #include "ShamanActions.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include <ctime>
+
+using namespace TkHelpers;
 
 // Al'ar <Phoenix God>
 
@@ -255,8 +256,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
     time_t const now = std::time(nullptr);
@@ -316,11 +316,11 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot) && kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+    if (PlayerbotAI::IsTank(bot) && phase == PHASE_ALL_ADVISORS)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
@@ -345,8 +345,8 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && kaelAI->GetPhase() != PHASE_FINAL)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_NONE && phase != PHASE_FINAL)
         return 0.0f;
 
     return 1.0f;
@@ -370,8 +370,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -400,8 +399,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (kaelAI && kaelAI->GetPhase() == PHASE_WEAPONS)
+    if (GetKaelthasPhase(kaelthas) == PHASE_WEAPONS)
         return 0.0f;
 
     return 1.0f;
@@ -435,8 +433,8 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
     if (isDpsAssist)
@@ -446,8 +444,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     if (PlayerbotAI::IsMainTank(bot))
         return 0.0f;
 
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR ||
-        kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+    if (phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS)
     {
         return 0.0f;
     }
@@ -484,8 +481,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+    if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return 1.0f;
 
     // Proxy for revival/Kael talk phase (could pick any advisor here)
@@ -517,18 +513,18 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return 1.0f;
 
     bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) ||
          dynamic_cast<CastHeroismAction*>(action));
 
-    if (isLustAction && kaelAI->GetPhase() == PHASE_WEAPONS)
+    if (isLustAction && phase == PHASE_WEAPONS)
         return 0.0f;
 
-    if (kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_TRANSITION)
+    if (phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION)
         return 0.0f;
 
     return 1.0f;

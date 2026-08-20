@@ -11,7 +11,6 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include <utility>
 #include <vector>
 
@@ -258,7 +257,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian);
+    bool RangedBotsDisperse(uint32 phase, Unit* capernian);
     bool MeleeStayBackFromCapernian(Unit* capernian);
 };
 

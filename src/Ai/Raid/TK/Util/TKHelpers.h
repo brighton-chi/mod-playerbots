@@ -216,6 +216,21 @@ bool HasWrathOfTheAstromancer(Player* bot);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
+// Mirrors the phase enum of the core's boss_kaelthas. Reading the phase means casting the boss AI
+// to a hand-written mirror of that class (TKKaelthasBossAI.h), which is only correct for as long as
+// the two agree--so GetKaelthasPhase is the one place that does the cast, and the one place to fix
+// if the core's class ever changes. A missing boss or a failed cast both report PHASE_NONE.
+enum KTPhases
+{
+    PHASE_NONE           = 0,
+    PHASE_SINGLE_ADVISOR = 1,
+    PHASE_WEAPONS        = 2,
+    PHASE_TRANSITION     = 3,
+    PHASE_ALL_ADVISORS   = 4,
+    PHASE_FINAL          = 5
+};
+uint32 GetKaelthasPhase(Unit* kaelthas);
+
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
 inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
 

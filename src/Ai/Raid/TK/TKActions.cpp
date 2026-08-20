@@ -17,7 +17,6 @@
 #include "RaidBossHelpers.h"
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -1018,23 +1017,23 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
     if (!kaelthas)
         return false;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return false;
 
     if (PlayerbotAI::IsRanged(bot) && capernian->GetVictim() != bot)
-        return RangedBotsDisperse(kaelAI, capernian);
+        return RangedBotsDisperse(phase, capernian);
 
-    if (PlayerbotAI::IsMelee(bot) && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR)
+    if (PlayerbotAI::IsMelee(bot) && phase == PHASE_SINGLE_ADVISOR)
         return MeleeStayBackFromCapernian(capernian);
 
     return false;
 }
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
-    boss_kaelthas* kaelAI, Unit* capernian)
+    uint32 phase, Unit* capernian)
 {
-    if (kaelAI->GetPhase() == PHASE_ALL_ADVISORS)
+    if (phase == PHASE_ALL_ADVISORS)
     {
         if (AI_VALUE2(Unit*, "find target", "thaladred the darkener"))
             return false;
@@ -1175,11 +1174,11 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    if (!kaelAI)
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase == PHASE_NONE)
         return false;
 
-    bool const isPhase3 = kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+    bool const isPhase3 = phase == PHASE_ALL_ADVISORS;
     bool const isActiveCapernianTank = isPhase3 && GetCapernianTank(bot) == bot;
 
     Unit* target = nullptr;
