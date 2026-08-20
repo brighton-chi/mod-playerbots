@@ -26,20 +26,28 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     bool erased = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-        (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0 ||
-         hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0 ||
-         hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
-         hydrossFrostDpsWaitTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
-        erased = true;
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "the lurker below") &&
-        (lurkerRangedPositions.erase(guid) > 0 ||
-         lurkerSpoutTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
-        erased = true;
+        if (lurkerRangedPositions.erase(guid) > 0)
+            erased = true;
+
+        if (lurkerSpoutTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
@@ -48,17 +56,31 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker") &&
-        (tidewalkerTankStep.erase(guid) > 0 ||
-         tidewalkerRangedStep.erase(guid) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        erased = true;
+        if (tidewalkerTankStep.erase(guid) > 0)
+            erased = true;
+
+        if (tidewalkerRangedStep.erase(guid) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") &&
-         hasReachedVashjRangedPosition.erase(guid) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
-        erased = true;
+        if (hasReachedVashjRangedPosition.erase(guid) > 0)
+            erased = true;
+
+        if (intendedLineup.erase(guid) > 0)
+            erased = true;
+
+        if (lastImbueAttempt.erase(instanceId) > 0)
+            erased = true;
+
+        if (lastCoreInInventoryTime.erase(guid) > 0)
+            erased = true;
+
+        if (nearestTriggerGuid.erase(instanceId) > 0)
+            erased = true;
     }
 
     return erased;
@@ -2229,7 +2251,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, firstCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
                 // ScheduleTransferCoreAfterImbue(botAI, bot, firstCorePasser);
                 return true;
             }
@@ -2246,7 +2267,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, secondCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
                 // ScheduleTransferCoreAfterImbue(botAI, bot, secondCorePasser);
                 return true;
             }
@@ -2264,7 +2284,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, thirdCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
                 // ScheduleTransferCoreAfterImbue(botAI, bot, thirdCorePasser);
                 return true;
             }
@@ -2282,7 +2301,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, fourthCorePasser);
                 lastCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                // TEST: artificial transfer disabled - relying on spell 38134 to deliver
                 // ScheduleTransferCoreAfterImbue(botAI, bot, fourthCorePasser);
                 return true;
             }
@@ -2326,11 +2344,6 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
-    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
-    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
-    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
-    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
-    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
     bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
@@ -2389,11 +2402,6 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
-    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
-    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
-    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
-    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
-    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
     bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
@@ -2462,11 +2470,6 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
-    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
-    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
-    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
-    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
-    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
     bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
@@ -2525,11 +2528,6 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
 
-    // withDelayed must stay false: spell 38134 "Throw Key" is a projectile (speed 30), so a
-    // core already thrown sits in CURRENT_GENERIC_SPELL as SPELL_STATE_DELAYED while it flies.
-    // Passing true here cancels it in flight - the item is consumed at launch but never lands.
-    // A preparing cast can never be seen from an action anyway: UpdateAI returns early on
-    // SPELL_STATE_PREPARING before DoNextAction runs, so false costs nothing.
     bot->AttackStop();
     bot->CastStop();
     return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
@@ -2605,6 +2603,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fou
 // ImbueItem() is inconsistent in causing the receiver bot to receive the core and the giver
 // bot to remove the core, so ScheduleTransferCoreAfterImbue() creates the core on the receiver
 // and removes it from the giver, with ImbueItem() called primarily for the throwing animation
+// NOTE: Probably not needed. Commented out in calls now. To be removed during rewrite.
 void LadyVashjPassTheTaintedCoreAction::ScheduleTransferCoreAfterImbue(
     PlayerbotAI* botAI, Player* giver, Player* receiver)
 {
