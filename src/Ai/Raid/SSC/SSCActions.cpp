@@ -26,20 +26,28 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
 
     bool erased = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-        (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0 ||
-         hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0 ||
-         hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
-         hydrossFrostDpsWaitTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
     {
-        erased = true;
+        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
+
+        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "the lurker below") &&
-        (lurkerRangedPositions.erase(guid) > 0 ||
-         lurkerSpoutTimer.erase(instanceId) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
     {
-        erased = true;
+        if (lurkerRangedPositions.erase(guid) > 0)
+            erased = true;
+
+        if (lurkerSpoutTimer.erase(instanceId) > 0)
+            erased = true;
     }
 
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
@@ -48,17 +56,31 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker") &&
-        (tidewalkerTankStep.erase(guid) > 0 ||
-         tidewalkerRangedStep.erase(guid) > 0))
+    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        erased = true;
+        if (tidewalkerTankStep.erase(guid) > 0)
+            erased = true;
+
+        if (tidewalkerRangedStep.erase(guid) > 0)
+            erased = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") &&
-         hasReachedVashjRangedPosition.erase(guid) > 0)
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
-        erased = true;
+        if (hasReachedVashjRangedPosition.erase(guid) > 0)
+            erased = true;
+
+        if (intendedLineup.erase(guid) > 0)
+            erased = true;
+
+        if (lastImbueAttempt.erase(instanceId) > 0)
+            erased = true;
+
+        if (lastCoreInInventoryTime.erase(guid) > 0)
+            erased = true;
+
+        if (nearestTriggerGuid.erase(instanceId) > 0)
+            erased = true;
     }
 
     return erased;
