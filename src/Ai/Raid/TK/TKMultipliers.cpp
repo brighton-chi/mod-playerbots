@@ -281,7 +281,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
 
     bool isMainTank = PlayerbotAI::IsMainTank(bot);
     bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
-    bool isWarlockTank = GetCapernianTank(bot) == bot;
+    bool isWarlockTank = bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
 
     if ((isAdvisorActive(sanguinar) && isMainTank) ||
         (isAdvisorActive(telonicus) && isFirstAssistTank) ||

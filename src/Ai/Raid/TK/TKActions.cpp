@@ -1172,7 +1172,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     bool const isPhase3 = phase == PHASE_ALL_ADVISORS;
-    bool const isActiveCapernianTank = isPhase3 && GetCapernianTank(bot) == bot;
+    bool const isActiveCapernianTank = isPhase3 && bot->getClass() == CLASS_WARLOCK &&
+        GetCapernianTank(bot) == bot;
 
     Unit* target = nullptr;
 
