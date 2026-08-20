@@ -1278,12 +1278,12 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 
     if (advisorAtFullHp)
     {
-        advisorDpsWaitTimer[instanceId] = -1;
+        advisorDpsWaitTimer[instanceId] = ADVISOR_DPS_WAIT_NOT_STARTED;
         return false;
     }
 
     auto it = advisorDpsWaitTimer.find(instanceId);
-    if (it == advisorDpsWaitTimer.end() || it->second != -1)
+    if (it == advisorDpsWaitTimer.end() || it->second != ADVISOR_DPS_WAIT_NOT_STARTED)
         return false;
 
     it->second = std::time(nullptr);
@@ -2002,12 +2002,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 
     if (!kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
     {
-        constexpr float searchRadius = 75.0f;
-        if (Creature* egg = bot->FindNearestCreature(
-                Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true))
-        {
+        if (Creature* egg = GetPhoenixEgg(bot))
             target = egg;
-        }
     }
 
     return AI_VALUE(Unit*, "current target") != target && Attack(target);

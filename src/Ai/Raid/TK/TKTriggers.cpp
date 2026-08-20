@@ -466,8 +466,7 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
     if (AI_VALUE2(Unit*, "find target", "phoenix"))
         return true;
 
-    constexpr float searchRadius = 75.0f;
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+    return GetPhoenixEgg(bot);
 }
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()

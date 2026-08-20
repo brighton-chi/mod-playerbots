@@ -327,6 +327,18 @@ bool HasWrathOfTheAstromancer(Player* bot)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
+namespace
+{
+
+GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
+}
+
+}
+
+std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
+
 uint32 GetKaelthasPhase(Unit* kaelthas)
 {
     if (!kaelthas)
@@ -336,7 +348,11 @@ uint32 GetKaelthasPhase(Unit* kaelthas)
     return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
 }
 
-std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
+Creature* GetPhoenixEgg(Player* bot)
+{
+    constexpr float searchRadius = 75.0f;
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+}
 
 // (1) First priority is an assistant Warlock (real player or bot)
 // (2) If no assistant Warlock, then look for any Warlock bot
@@ -429,11 +445,6 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
     }
 
     return guids;
-}
-
-GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
 }
 
 bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI)
