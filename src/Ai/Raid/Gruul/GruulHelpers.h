@@ -52,7 +52,6 @@ inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
 inline Position const OLM_TANK_POSITION      = { 101.050f, 219.359f,  -9.503f };
 inline Position const BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
 inline Position const KROSH_TANK_POSITION    = { 116.880f, 166.208f, -14.231f };
-inline Position const MAULGAR_ROOM_CENTER    = {  88.754f, 150.759f, -11.569f };
 inline Position const GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
 
 bool IsMaulgarTank(Player* bot);

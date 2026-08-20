@@ -130,6 +130,8 @@ bool HighKingMaulgarMageTankAttackKroshAction::AttackAndCast(Unit* krosh)
     return false;
 }
 
+// There is a general spot where the Mage tank tries to hold Krosh; he typically doesn't move right
+// after the pull, and he can be tanked readily in that spot if the Mage gets aggro fairly quickly.
 bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh)
 {
     Position const& position = KROSH_TANK_POSITION;
@@ -155,6 +157,9 @@ bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh
     return MoveAway(krosh, safeDistance - currentDistance);
 }
 
+// Kiggler is kind of a wildcard and also the least important ogre to tank or position anyway so
+// the moonkin tank just grabs him wherever. If the moonkin can grab aggro quickly, Kiggler should
+// remain close to where he starts.
 bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 {
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -176,9 +181,9 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
     return MoveAway(kiggler, safeDistance - currentDistance);
 }
 
+// Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
 bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
     Unit* target = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Unit* krosh = nullptr;
     if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
@@ -245,6 +250,7 @@ bool HighKingMaulgarFleeFromBlastNovaDangerAction::Execute(Event /*event*/)
     return FleePosition(krosh->GetPosition(), safeDistance);
 }
 
+// Banishes are assigned per Warlock
 bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -429,7 +435,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 }
 
 // Ranged will take initial positions around the middle of the room, 25-40 yards from center
-// Ranged should spread out 10 yards from each other
+// Thereafter, ranged should spread out 10 yards from each other
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
@@ -511,6 +517,8 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     return false;
 }
 
+// To achieve no damage on Shatter takes a >18y spread, which isn't realistic. A distance of 10y
+// is plenty to keep damage low.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 10.0f;
