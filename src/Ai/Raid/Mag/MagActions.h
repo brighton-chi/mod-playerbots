@@ -91,7 +91,8 @@ private:
     bool HandleCubeRelease(Unit* magtheridon);
     bool HandleWaitingPhase(MagHelpers::CubeInfo const& cubeInfo);
     bool HandleCubeInteraction(MagHelpers::CubeInfo const& cubeInfo, GameObject* cube);
-    bool FindSafePositionNearCube(MagHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
+    bool FindSafePositionNearCube(
+        MagHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action
