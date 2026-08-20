@@ -10,7 +10,6 @@
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "Position.h"
-#include <ctime>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>

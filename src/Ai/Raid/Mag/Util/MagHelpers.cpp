@@ -18,8 +18,7 @@ std::unordered_map<uint32, uint32> blastNovaTimer;
 std::unordered_map<uint32, uint32> dpsWaitTimer;
 std::unordered_map<uint32, bool> ceilingCollapseApplied;
 std::unordered_map<uint32, bool> lastBlastNovaState;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>>
-    botToCubeAssignments;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
 std::unordered_map<uint32, std::vector<DebrisData>> activeDebrisPositions;
 
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -78,8 +77,7 @@ bool IsMagtheridonActive(Unit* magtheridon)
 
 bool IsBlastNovaCasting(Unit* magtheridon)
 {
-    return magtheridon &&
-        magtheridon->FindCurrentSpellBySpellId(Id(MagSpells::SPELL_BLAST_NOVA));
+    return magtheridon && magtheridon->FindCurrentSpellBySpellId(Id(MagSpells::SPELL_BLAST_NOVA));
 }
 
 bool IsCubeClicker(Player* bot)
@@ -115,7 +113,7 @@ bool IsPositionInActiveDebris(uint32 instanceId, float x, float y, float radius)
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y)
 {
     constexpr float conflagrationHazardRadius = 5.0f;
-    GuidVector const& gameObjects =
+    auto const& gameObjects =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
     for (auto const& goGuid : gameObjects)
     {

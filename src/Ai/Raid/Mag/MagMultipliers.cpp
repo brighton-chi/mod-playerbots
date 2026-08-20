@@ -21,7 +21,6 @@
 #include "ReachTargetActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
-#include <unordered_map>
 
 using namespace MagHelpers;
 
