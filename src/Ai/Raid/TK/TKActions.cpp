@@ -36,23 +36,16 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(Unit*, "find target", "alar"))
     {
-        if (isAlarInPhase2.erase(instanceId) > 0)
-            reset = true;
-
-        if (lastRebirthState.erase(instanceId) > 0)
-            reset = true;
+        reset |= isAlarInPhase2.erase(instanceId) > 0;
+        reset |= lastRebirthState.erase(instanceId) > 0;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "void reaver") &&
-        voidReaverArcaneOrbs.erase(instanceId) > 0)
-    {
-        reset = true;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "void reaver"))
+        reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
 
     if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
     {
-        if (advisorDpsWaitTimer.erase(instanceId) > 0)
-            reset = true;
+        reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
 
         // Clear stale falling movement flag that may linger if a bot dies while falling during
         // Kael's Gravity Lapse and then is not resurrected until after the encounter
