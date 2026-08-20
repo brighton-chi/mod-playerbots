@@ -31,19 +31,13 @@ Player* GetTargetedPlayer(Spell* spell)
     return nullptr;
 }
 
-bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* target)
+bool ShouldInterruptForArchimondeAirBurst(Player* bot, Unit* caster, Player* target)
 {
     if (!target)
         return false;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
-        return false;
-
-    Unit* activeTank = archimonde->GetVictim();
-    Player* bot = botAI->GetBot();
-    if (!activeTank || bot == activeTank)
+    Unit* activeTank = caster->GetVictim();
+    if (!activeTank || activeTank == bot)
         return false;
 
     if (target != activeTank && target != bot)
@@ -116,7 +110,7 @@ public:
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
             if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
-                !ShouldInterruptForArchimondeAirBurst(botAI, target))
+                !ShouldInterruptForArchimondeAirBurst(player, caster, target))
             {
                 continue;
             }
