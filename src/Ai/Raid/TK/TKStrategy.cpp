@@ -82,8 +82,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors", {
         NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar engaged by main tank", {
-        NextAction("kael'thas sunstrider main tank position sanguinar", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar or telonicus is active", {
+        NextAction("kael'thas sunstrider melee tanks position advisors", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar casts bellowing roar", {
         NextAction("kael'thas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 1) }));
@@ -93,9 +93,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("kael'thas sunstrider telonicus engaged by first assist tank", {
-        NextAction("kael'thas sunstrider first assist tank position telonicus", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider bots have specific roles in phase 3", {
         NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));

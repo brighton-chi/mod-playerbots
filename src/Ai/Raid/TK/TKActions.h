@@ -226,11 +226,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionSanguinarAction : public AttackAction
+class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public AttackAction
 {
 public:
-    KaelthasSunstriderMainTankPositionSanguinarAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider main tank position sanguinar") {}
+    KaelthasSunstriderMeleeTanksPositionAdvisorsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kael'thas sunstrider melee tanks position advisors") {}
     bool Execute(Event event) override;
 };
 
@@ -260,14 +260,6 @@ public:
 private:
     bool RangedBotsDisperse(boss_kaelthas* kaelAI, Unit* capernian);
     bool MeleeStayBackFromCapernian(Unit* capernian);
-};
-
-class KaelthasSunstriderFirstAssistTankPositionTelonicusAction : public AttackAction
-{
-public:
-    KaelthasSunstriderFirstAssistTankPositionTelonicusAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider first assist tank position telonicus") {}
-    bool Execute(Event event) override;
 };
 
 class KaelthasSunstriderHandleAdvisorRolesInPhase3Action : public MovementAction

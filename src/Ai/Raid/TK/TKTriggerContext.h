@@ -81,8 +81,8 @@ public:
         creators["kael'thas sunstrider pulling tankable advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
 
-        creators["kael'thas sunstrider sanguinar engaged by main tank"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_engaged_by_main_tank;
+        creators["kael'thas sunstrider sanguinar or telonicus is active"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_or_telonicus_is_active;
 
         creators["kael'thas sunstrider sanguinar casts bellowing roar"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
@@ -92,9 +92,6 @@ public:
 
         creators["kael'thas sunstrider capernian blows up near and far"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_blows_up_near_and_far;
-
-        creators["kael'thas sunstrider telonicus engaged by first assist tank"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank;
 
         creators["kael'thas sunstrider bots have specific roles in phase 3"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_have_specific_roles_in_phase_3;
@@ -205,8 +202,8 @@ private:
     static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) {
         return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_is_active(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) {
         return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI);
@@ -216,9 +213,6 @@ private:
     }
     static Trigger* kaelthas_sunstrider_capernian_blows_up_near_and_far(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(botAI);
-    }
-    static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_bots_have_specific_roles_in_phase_3(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(botAI);

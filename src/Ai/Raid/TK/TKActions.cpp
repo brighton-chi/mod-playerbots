@@ -920,19 +920,30 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
+bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/)
 {
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (!sanguinar)
+    Unit* advisor = nullptr;
+    Position position;
+    if (PlayerbotAI::IsMainTank(bot))
+    {
+        advisor = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        position = SANGUINAR_TANK_POSITION;
+    }
+    else // PlayerbotAI::IsAssistTankOfIndex(bot, 0, false)
+    {
+        advisor = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        position = TELONICUS_TANK_POSITION;
+    }
+
+    if (!advisor)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != sanguinar)
-        return Attack(sanguinar);
+    if (AI_VALUE(Unit*, "current target") != advisor)
+        return Attack(advisor);
 
-    if (sanguinar->GetVictim() != bot || !bot->IsWithinMeleeRange(sanguinar))
+    if (advisor->GetVictim() != bot || !bot->IsWithinMeleeRange(advisor))
         return false;
 
-    Position const& position = SANGUINAR_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
     if (distToPosition <= 2.0f)
         return false;
@@ -944,8 +955,8 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
 
     float const toPosX = posX - botX;
     float const toPosY = posY - botY;
-    float const toBossX = sanguinar->GetPositionX() - botX;
-    float const toBossY = sanguinar->GetPositionY() - botY;
+    float const toBossX = advisor->GetPositionX() - botX;
+    float const toBossY = advisor->GetPositionY() - botY;
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
@@ -1131,44 +1142,6 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
         bot->CastStop();
         return MoveAway(capernian, safeDistance - currentDistance);
     }
-}
-
-bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*event*/)
-{
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (!telonicus)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != telonicus)
-        return Attack(telonicus);
-
-    if (telonicus->GetVictim() != bot || !bot->IsWithinMeleeRange(telonicus))
-        return false;
-
-    Position const& position = TELONICUS_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
-        return false;
-
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-    float const toBossX = telonicus->GetPositionX() - botX;
-    float const toBossY = telonicus->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-    return MoveTo(
-        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)

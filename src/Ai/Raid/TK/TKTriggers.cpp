@@ -251,14 +251,26 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
     return kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR || kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
 }
 
-bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
+bool KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(sanguinar);
+    if (PlayerbotAI::IsMainTank(bot))
+    {
+        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+            !IsFeigningDeath(sanguinar);
+    }
+
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    {
+        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+            !IsFeigningDeath(telonicus);
+    }
+
+    return false;
 }
 
 bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
@@ -301,16 +313,6 @@ bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
         return false;
 
     return true;
-}
-
-bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
-{
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-        return false;
-
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(telonicus);
 }
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
@@ -479,8 +481,11 @@ bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActive()
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "phoenix") ||
-        AI_VALUE2(Unit*, "find target", "phoenix egg");
+    if (AI_VALUE2(Unit*, "find target", "phoenix"))
+        return true;
+
+    constexpr float searchRadius = 75.0f;
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
 }
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()

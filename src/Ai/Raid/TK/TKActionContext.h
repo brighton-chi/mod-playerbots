@@ -90,8 +90,8 @@ public:
         creators["kael'thas sunstrider misdirect advisors to tanks"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_misdirect_advisors_to_tanks;
 
-        creators["kael'thas sunstrider main tank position sanguinar"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_sanguinar;
+        creators["kael'thas sunstrider melee tanks position advisors"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_melee_tanks_position_advisors;
 
         creators["kael'thas sunstrider cast fear ward on sanguinar tank"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
@@ -101,9 +101,6 @@ public:
 
         creators["kael'thas sunstrider spread and move away from capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_and_move_away_from_capernian;
-
-        creators["kael'thas sunstrider first assist tank position telonicus"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_first_assist_tank_position_telonicus;
 
         creators["kael'thas sunstrider handle advisor roles in phase 3"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_advisor_roles_in_phase_3;
@@ -226,8 +223,8 @@ private:
     static Action* kaelthas_sunstrider_misdirect_advisors_to_tanks(PlayerbotAI* botAI) {
         return new KaelthasSunstriderMisdirectAdvisorsToTanksAction(botAI);
     }
-    static Action* kaelthas_sunstrider_main_tank_position_sanguinar(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderMainTankPositionSanguinarAction(botAI);
+    static Action* kaelthas_sunstrider_melee_tanks_position_advisors(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderMeleeTanksPositionAdvisorsAction(botAI);
     }
     static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI);
@@ -237,9 +234,6 @@ private:
     }
     static Action* kaelthas_sunstrider_spread_and_move_away_from_capernian(PlayerbotAI* botAI) {
         return new KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction(botAI);
-    }
-    static Action* kaelthas_sunstrider_first_assist_tank_position_telonicus(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderFirstAssistTankPositionTelonicusAction(botAI);
     }
     static Action* kaelthas_sunstrider_handle_advisor_roles_in_phase_3(PlayerbotAI* botAI) {
         return new KaelthasSunstriderHandleAdvisorRolesInPhase3Action(botAI);

@@ -181,11 +181,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderSanguinarEngagedByMainTankTrigger : public Trigger
+class KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderSanguinarEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider sanguinar engaged by main tank") {}
+    KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider sanguinar or telonicus is active") {}
     bool IsActive() override;
 };
 
@@ -210,14 +210,6 @@ class KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger : public Trigger
 public:
     KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "kael'thas sunstrider capernian blows up near and far") {}
-    bool IsActive() override;
-};
-
-class KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger : public Trigger
-{
-public:
-    KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider telonicus engaged by first assist tank") {}
     bool IsActive() override;
 };
 
