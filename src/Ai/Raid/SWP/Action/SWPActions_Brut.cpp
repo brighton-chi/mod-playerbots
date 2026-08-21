@@ -58,7 +58,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
     if (mainTank == bot)
     {
         if (brutallus->GetVictim() != bot && !mainTankAura &&
-            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
+            ((assistTankAura && assistTankAura->GetStackAmount() >= METEOR_SLASH_SWAP_STACKS) ||
+             !assistTankAura))
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
@@ -94,15 +95,12 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
     else if (assistTank == bot)
     {
         if (brutallus->GetVictim() != bot && !assistTankAura &&
-            mainTankAura && mainTankAura->GetStackAmount() >= 3)
+            mainTankAura && mainTankAura->GetStackAmount() >= METEOR_SLASH_SWAP_STACKS)
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
 
-        float const mainTankAngle = Position::NormalizeOrientation(std::atan2(
-            mainTank->GetPositionY() - brutallus->GetPositionY(),
-            mainTank->GetPositionX() - brutallus->GetPositionX()));
-
+        float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
         float const assistTankAngle = Position::NormalizeOrientation(
             mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
 
@@ -148,30 +146,13 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
-    struct BrutallusMeleeRingLayout
-    {
-        float radius;
-        uint8 slotCount;
-    };
-
-    static constexpr std::array meleeRingLayouts = {
-        BrutallusMeleeRingLayout{ BRUTALLUS_INNERMOST_MELEE_RADIUS, BRUTALLUS_INNERMOST_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_INNER_MELEE_RADIUS, BRUTALLUS_INNER_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_OUTER_MELEE_RADIUS, BRUTALLUS_OUTER_MELEE_POSITIONS },
-        BrutallusMeleeRingLayout{ BRUTALLUS_OUTERMOST_MELEE_RADIUS, BRUTALLUS_OUTERMOST_MELEE_POSITIONS },
-    };
-
-    uint8 totalMeleeSlots = 0;
-    for (auto const& meleeRingLayout : meleeRingLayouts)
-        totalMeleeSlots += meleeRingLayout.slotCount;
-
-    if (meleeIndex >= totalMeleeSlots)
+    if (meleeIndex >= BRUTALLUS_TOTAL_MELEE_POSITIONS)
         return false;
 
     float meleeRadius = 0.0f;
     uint8 localMeleeIndex = meleeIndex;
     uint8 maxMeleeSlots = 0;
-    for (auto const& meleeRingLayout : meleeRingLayouts)
+    for (auto const& meleeRingLayout : BRUTALLUS_MELEE_RING_LAYOUTS)
     {
         if (localMeleeIndex < meleeRingLayout.slotCount)
         {
@@ -183,11 +164,7 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
         localMeleeIndex -= meleeRingLayout.slotCount;
     }
 
-    if (!maxMeleeSlots)
-        return false;
-
-    float const mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
 
     float midpointAngle;
     if (!mainTank || !assistTank)
@@ -197,9 +174,8 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const assistTankAngle = GetBrutallusTankAngle(
-            brutallus, assistTank, Position::NormalizeOrientation(
-                mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+        float const assistTankAngle =
+            GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
 
         float const midpointX =
             (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;

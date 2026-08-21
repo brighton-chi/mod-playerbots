@@ -224,7 +224,16 @@ float BrutallusRestrictTauntMultiplier::GetValue(Action* action)
     if (!IsTauntAction(bot, action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "brutallus") ? 0.0f : 1.0f;
+    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    if (!brutallus)
+        return 1.0f;
+
+    Unit* victim = brutallus->GetVictim();
+    if (!victim)
+        return 1.0f;
+
+    Player* playerVictim = victim->ToPlayer();
+    return playerVictim && PlayerbotAI::IsTank(playerVictim) ? 0.0f : 1.0f;
 }
 
 float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)

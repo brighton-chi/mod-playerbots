@@ -30,17 +30,13 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     if (!AI_VALUE2(Unit*, "find target", "kalecgos") &&
         !AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor"))
     {
-        if (isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0)
-            didSomething = true;
+        didSomething |= isMechanicTracker && kalecgosEncounterStates.erase(instanceId) > 0;
 
-        if (PlayerbotAI::IsTank(bot))
+        Action* kalecAction = context->GetAction("kalecgos disperse ranged");
+        if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
+                kalecAction)->ResetInitialRangedPositionReached())
         {
-            Action* kalecAction = context->GetAction("kalecgos disperse ranged");
-            if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
-                    kalecAction)->ResetInitialRangedPositionReached())
-            {
-                didSomething = true;
-            }
+            didSomething = true;
         }
     }
 
@@ -52,49 +48,35 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
         }
 
-        if (PlayerbotAI::IsRanged(bot) && brutallusRangedBurnStates.erase(guid) > 0)
-            didSomething = true;
+        didSomething |= brutallusRangedBurnStates.erase(guid) > 0;
+        didSomething |= ReleaseBrutallusBurnPad(bot);
 
-        if (PlayerbotAI::IsRanged(bot) && ReleaseBrutallusBurnPad(bot))
-            didSomething = true;
-
-        if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
-            didSomething = true;
-
-        if (isMechanicTracker && brutallusMeleeAssignments.erase(instanceId) > 0)
-            didSomething = true;
-
-        if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
-            didSomething = true;
-
-        if (PlayerbotAI::IsTank(bot))
+        if (isMechanicTracker)
         {
-            Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
-            if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
-                    brutallusAction)->ResetInitialPositionReached())
-            {
-                didSomething = true;
-            }
+            didSomething |= brutallusRangedAssignments.erase(instanceId) > 0;
+            didSomething |= brutallusMeleeAssignments.erase(instanceId) > 0;
+            didSomething |= brutallusRangedBurnPadAssignments.erase(instanceId) > 0;
+        }
+
+        Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
+        if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
+                brutallusAction)->ResetInitialPositionReached())
+        {
+            didSomething = true;
         }
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst") &&
-        felmystEncounterStates.erase(instanceId) > 0)
-    {
-        didSomething = true;
-    }
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "felmyst"))
+        didSomething |= felmystEncounterStates.erase(instanceId) > 0;
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        if (eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0)
-            didSomething = true;
+        if (isMechanicTracker)
+        {
+            didSomething |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
+            didSomething |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
+        }
 
-        if (eredarTwinsDpsHoldStartMs.erase(instanceId) > 0)
-            didSomething = true;
-    }
-
-    if (PlayerbotAI::IsTank(bot) && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-    {
         Action* twinsAction = context->GetAction(
             "eredar twins first assist tank move out of blaze");
         if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
@@ -106,26 +88,17 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "m'uru"))
     {
-        if (muruDarknessStates.erase(instanceId) > 0)
-            didSomething = true;
-
-        if (muruVoidSentinelTankAssignments.erase(instanceId) > 0)
-            didSomething = true;
+        didSomething |= muruDarknessStates.erase(instanceId) > 0;
+        didSomething |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden") &&
-        kiljaedenEncounterStates.erase(instanceId) > 0)
-    {
-        didSomething = true;
-    }
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+        didSomething |= kiljaedenEncounterStates.erase(instanceId) > 0;
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
-        if (ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
-            didSomething = true;
-
-        if (kiljaedenHandTankAssignments.erase(instanceId) > 0)
-            didSomething = true;
+        didSomething |= ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
+        didSomething |= kiljaedenHandTankAssignments.erase(instanceId) > 0;
     }
 
     return didSomething;

@@ -7,8 +7,6 @@
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
 #include <algorithm>
-#include <array>
-#include <cmath>
 #include <vector>
 
 namespace SwpHelpers
@@ -18,9 +16,7 @@ namespace SwpHelpers
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusMeleeAssignments;
-
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedBurnPadAssignments;
-
 std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
 
 namespace
@@ -62,6 +58,9 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
             usedPads[assignment.second] = true;
     }
 
+    static_assert(BRUTALLUS_TOTAL_BURN_PADS == 8,
+        "Burn pad order tables and angle offsets assume exactly 8 pads");
+
     static constexpr std::array<uint8, BRUTALLUS_BURN_PADS_PER_GROUP>
         mainGroupPriority = { 0, 1, 2, 3 };
     static constexpr std::array<uint8, BRUTALLUS_BURN_PADS_PER_GROUP>
@@ -91,9 +90,52 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
 }
 
+void PruneAssignments(
+    std::unordered_map<ObjectGuid, uint8>& assignments,
+    std::vector<ObjectGuid> const& eligibleGuids)
+{
+    for (auto itr = assignments.begin(); itr != assignments.end();)
+    {
+        if (std::find(eligibleGuids.begin(), eligibleGuids.end(), itr->first) ==
+            eligibleGuids.end())
+        {
+            itr = assignments.erase(itr);
+            continue;
+        }
+
+        ++itr;
+    }
+}
+
 void EnsureRangedAssignments(Group* group, Player* bot)
 {
     auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
+
+    std::vector<ObjectGuid> eligibleGuids;
+    std::vector<Player*> healers;
+    std::vector<Player*> rangedDamage;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
+            continue;
+        }
+
+        eligibleGuids.push_back(member->GetGUID());
+
+        if (assignments.find(member->GetGUID()) != assignments.end())
+            continue;
+
+        if (PlayerbotAI::IsHeal(member))
+            healers.push_back(member);
+        else
+            rangedDamage.push_back(member);
+    }
+
+    PruneAssignments(assignments, eligibleGuids);
 
     std::array<bool, BRUTALLUS_TOTAL_RANGED_POSITIONS> usedPositions = {};
     for (auto const& assignment : assignments)
@@ -111,52 +153,27 @@ void EnsureRangedAssignments(Group* group, Player* bot)
 
             assignments[member->GetGUID()] = slotIndex;
             usedPositions[slotIndex] = true;
-            return true;
+            return;
         }
 
+        // If every slot is taken, double up (unlikely even though TBC hates melee, as there are 20)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
-
-        return true;
     };
 
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDamage;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsRanged(member))
-        {
-            continue;
-        }
-
-        if (assignments.find(member->GetGUID()) != assignments.end())
-            continue;
-
-        if (PlayerbotAI::IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDamage.push_back(member);
-    }
-
     for (Player* member : healers)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
+        assignNextOpenSlot(member);
 
     for (Player* member : rangedDamage)
-    {
-        if (!assignNextOpenSlot(member))
-            return;
-    }
+        assignNextOpenSlot(member);
 }
 
 void EnsureMeleeAssignments(Group* group, Player* bot)
 {
     auto& assignments = brutallusMeleeAssignments[bot->GetInstanceId()];
+
+    std::vector<ObjectGuid> eligibleGuids;
+    std::vector<Player*> unassigned;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -170,16 +187,43 @@ void EnsureMeleeAssignments(Group* group, Player* bot)
             continue;
         }
 
-        if (assignments.find(member->GetGUID()) != assignments.end())
-            continue;
+        eligibleGuids.push_back(member->GetGUID());
 
-        assignments[member->GetGUID()] = static_cast<uint8>(assignments.size());
+        if (assignments.find(member->GetGUID()) == assignments.end())
+            unassigned.push_back(member);
     }
+
+    PruneAssignments(assignments, eligibleGuids);
+
+    std::array<bool, BRUTALLUS_TOTAL_MELEE_POSITIONS> usedPositions = {};
+    for (auto const& assignment : assignments)
+    {
+        if (assignment.second < BRUTALLUS_TOTAL_MELEE_POSITIONS)
+            usedPositions[assignment.second] = true;
+    }
+
+    auto const assignNextOpenSlot = [&](Player* member)
+    {
+        for (uint8 slotIndex = 0; slotIndex < BRUTALLUS_TOTAL_MELEE_POSITIONS; ++slotIndex)
+        {
+            if (usedPositions[slotIndex])
+                continue;
+
+            assignments[member->GetGUID()] = slotIndex;
+            usedPositions[slotIndex] = true;
+            return;
+        }
+
+        // If every slot is taken, double up (unlikely since there are 14 and TBC hates melee)
+        assignments[member->GetGUID()] =
+            static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_MELEE_POSITIONS);
+    };
+
+    for (Player* member : unassigned)
+        assignNextOpenSlot(member);
 }
 
-} // end anonymous namespace
-
-float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
+float GetTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
 {
     if (!brutallus || !tank)
         return Position::NormalizeOrientation(fallbackAngle);
@@ -189,7 +233,7 @@ float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
         tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-float GetBrutallusMainTankAngle(Unit* brutallus)
+float GetDefaultMainTankAngle(Unit* brutallus)
 {
     if (!brutallus)
         return 0.0f;
@@ -199,11 +243,21 @@ float GetBrutallusMainTankAngle(Unit* brutallus)
         BRUTALLUS_MAIN_TANK_POSITION.GetPositionX() - brutallus->GetPositionX()));
 }
 
+} // end anonymous namespace
+
+float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank)
+{
+    return GetTankAngle(brutallus, mainTank, GetDefaultMainTankAngle(brutallus));
+}
+
+float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle)
+{
+    return GetTankAngle(brutallus, assistTank, Position::NormalizeOrientation(
+        mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+}
+
 Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, float radius)
 {
-    if (!brutallus)
-        return { 0.0f, 0.0f, 0.0f };
-
     float const x = brutallus->GetPositionX() + std::cos(angle) * radius;
     float const y = brutallus->GetPositionY() + std::sin(angle) * radius;
     return { x, y, bot->GetPositionZ() };
@@ -280,19 +334,17 @@ bool TryGetBrutallusRangedPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    const BrutallusRangedSlotInfo slotInfo = {
-        rangedIndex % 2 == 0,
-        static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP) };
+    bool const isMainTankGroup = rangedIndex % 2 == 0;
+    uint8 const arcPositionIndex =
+        static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP);
 
-    float const mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
-    float const assistTankAngle = GetBrutallusTankAngle(
-        brutallus, assistTank,
-        Position::NormalizeOrientation(mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
+    float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
+    float const assistTankAngle =
+        GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
 
-    float const tankAngle = slotInfo.isMainTankGroup ? mainTankAngle : assistTankAngle;
+    float const tankAngle = isMainTankGroup ? mainTankAngle : assistTankAngle;
     float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
-        slotInfo.arcPositionIndex, BRUTALLUS_RANGED_POSITIONS_PER_GROUP,
+        arcPositionIndex, BRUTALLUS_RANGED_POSITIONS_PER_GROUP,
         BRUTALLUS_RANGED_GROUP_ARC_WIDTH);
 
     float const angle = Position::NormalizeOrientation(tankAngle + angleOffset);
@@ -324,8 +376,7 @@ bool TryGetBrutallusBurnPadPosition(
         170.0f * degreeToRadian
     };
 
-    float const mainTankAngle = GetBrutallusTankAngle(
-        brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    float const mainTankAngle = GetBrutallusMainTankAngle(brutallus, mainTank);
     float const angle = Position::NormalizeOrientation(
         mainTankAngle + burnPadAngleOffsets[padIndex]);
 
