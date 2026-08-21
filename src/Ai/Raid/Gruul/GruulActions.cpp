@@ -88,8 +88,8 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
@@ -118,13 +118,10 @@ bool HighKingMaulgarMageTankAttackKroshAction::AttackAndCast(Unit* krosh)
     if (AI_VALUE(Unit*, "current target") != krosh)
         return Attack(krosh);
 
-    if (!bot->HasAura(Id(GruulSpells::SPELL_SPELL_SHIELD)) &&
-        botAI->CanCastSpell("fire ward", bot))
-    {
-        return botAI->CastSpell("fire ward", bot);
-    }
+    if (bot->HasAura(Id(GruulSpells::SPELL_SPELL_SHIELD)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("fire ward", bot) && botAI->CastSpell("fire ward", bot);
 }
 
 // There is a general spot where the Mage tank tries to hold Krosh; he typically doesn't move right
@@ -291,13 +288,11 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
         return false;
 
     Unit* assignedFelStalker = felStalkers[warlockIndex];
-    if (!botAI->HasAura("banish", assignedFelStalker) &&
-        botAI->CanCastSpell("banish", assignedFelStalker))
-    {
-        return botAI->CastSpell("banish", assignedFelStalker);
-    }
+    if (botAI->HasAura("banish", assignedFelStalker))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("banish", assignedFelStalker) &&
+        botAI->CastSpell("banish", assignedFelStalker);
 }
 
 // Misdirect order: Blindeye, Olm, Kiggler, Krosh
@@ -333,63 +328,60 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == -1)
         return false;
 
-    Unit* ogreTarget = nullptr;
-    Player* tankTarget = nullptr;
+    Unit* ogre = nullptr;
+    Player* tank = nullptr;
     if (hunterIndex == 0)
     {
-        ogreTarget = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-        tankTarget = GetGroupAssistTank(botAI, bot, 1);
+        ogre = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        tank = GetGroupAssistTank(botAI, bot, 1);
     }
     else if (hunterIndex == 1)
     {
-        ogreTarget = AI_VALUE2(Unit*, "find target", "olm the summoner");
+        ogre = AI_VALUE2(Unit*, "find target", "olm the summoner");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             if (Player* member = GetGroupAssistTank(botAI, bot, 0))
             {
-                tankTarget = member;
+                tank = member;
                 break;
             }
         }
     }
     else if (hunterIndex == 2)
     {
-        ogreTarget = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+        ogre = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             if (Player* member = GetKigglerMoonkinTank(bot))
             {
-                tankTarget = member;
+                tank = member;
                 break;
             }
         }
     }
     else if (hunterIndex == 3)
     {
-        ogreTarget = AI_VALUE2(Unit*, "find target", "krosh firehand");
+        ogre = AI_VALUE2(Unit*, "find target", "krosh firehand");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             if (Player* member = GetKroshMageTank(bot))
             {
-                tankTarget = member;
+                tank = member;
                 break;
             }
         }
     }
 
-    if (!ogreTarget || !tankTarget || !tankTarget->IsAlive())
+    if (!ogre || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tankTarget))
-        return botAI->CastSpell("misdirection", tankTarget);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
-    if (bot->HasAura(Id(GruulSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", ogreTarget))
-    {
-        return botAI->CastSpell("steady shot", ogreTarget);
-    }
+    if (!bot->HasAura(Id(GruulSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", ogre) && botAI->CastSpell("steady shot", ogre);
 }
 
 // Gruul the Dragonkiller
@@ -427,8 +419,8 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        GRUUL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Ranged will take initial positions around the middle of the room, 25-40 yards from center

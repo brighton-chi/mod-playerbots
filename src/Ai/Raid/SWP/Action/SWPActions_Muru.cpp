@@ -21,33 +21,32 @@ using namespace SwpHelpers;
 
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {
-    Unit* targetEnemy = nullptr;
-    Unit* targetTank = nullptr;
+    Unit* enemy = nullptr;
+    Unit* tank = nullptr;
 
     if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
-        targetEnemy = voidSentinel;
+        enemy = voidSentinel;
         if (Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0))
-            targetTank = firstAssistTank;
+            tank = firstAssistTank;
     }
     else if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius"))
     {
-        targetEnemy = entropius;
+        enemy = entropius;
         if (Player* mainTank = GetGroupMainTank(botAI, bot))
-            targetTank = mainTank;
+            tank = mainTank;
     }
 
-    if (!targetEnemy || !targetTank)
+    if (!enemy || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", targetTank))
-        return botAI->CastSpell("misdirection", targetTank);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
     if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
         return false;
 
-    return botAI->CanCastSpell("steady shot", targetEnemy) &&
-        botAI->CastSpell("steady shot", targetEnemy);
+    return botAI->CanCastSpell("steady shot", enemy) && botAI->CastSpell("steady shot", enemy);
 }
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
@@ -499,8 +498,8 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(

@@ -27,11 +27,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
         channeler = GetChanneler(bot, EAST_CHANNELER);
 
     if (channeler)
-    {
-        if (AI_VALUE(Unit*, "current target") != channeler)
-            return Attack(channeler);
-        return false;
-    }
+        return AI_VALUE(Unit*, "current target") != channeler && Attack(channeler);
 
     // After first three channelers are dead, wait for Magtheridon to activate
     Position const& position = WAITING_FOR_MAGTHERIDON_POSITION;
@@ -115,16 +111,16 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
     }
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
+    if (!mainTank || !mainTank->IsAlive())
         return false;
 
-    Creature* targetChanneler = nullptr;
+    Creature* channeler = nullptr;
     if (hunterIndex == 0)
-        targetChanneler = GetChanneler(bot, WEST_CHANNELER);
+        channeler = GetChanneler(bot, WEST_CHANNELER);
     else if (hunterIndex == 1)
-        targetChanneler = GetChanneler(bot, EAST_CHANNELER);
+        channeler = GetChanneler(bot, EAST_CHANNELER);
 
-    if (!targetChanneler)
+    if (!channeler)
         return false;
 
     if (botAI->CanCastSpell("misdirection", mainTank))
@@ -133,10 +129,8 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
     if (!bot->HasAura(Id(MagSpells::SPELL_MISDIRECTION)))
         return false;
 
-    if (botAI->CanCastSpell("steady shot", targetChanneler))
-        return botAI->CastSpell("steady shot", targetChanneler);
-
-    return false;
+    return botAI->CanCastSpell("steady shot", channeler) &&
+        botAI->CastSpell("steady shot", channeler);
 }
 
 bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)

@@ -225,13 +225,10 @@ bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
         return false;
 
     uint32 const phase = GetKaelthasPhase(kaelthas);
-    if (phase == PHASE_NONE)
-        return false;
-
     if (PlayerbotAI::IsTank(bot) && phase == PHASE_ALL_ADVISORS)
         return false;
 
-    return true;
+    return phase != PHASE_NONE;
 }
 
 bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
@@ -365,10 +362,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
     if (GetKaelthasPhase(kaelthas) != PHASE_WEAPONS)
         return false;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    return true;
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
@@ -426,8 +420,9 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (it == creatureStore.end())
         return false;
 
+    constexpr float distDoorwaysToKaelthas = 125.0f;
     Creature* kaelthas = it->second;
-    if (!kaelthas || bot->GetExactDist2d(kaelthas) > 125.0f)
+    if (!kaelthas || bot->GetExactDist2d(kaelthas) > distDoorwaysToKaelthas)
         return false;
 
     static constexpr std::array weaponSlots = {
@@ -500,6 +495,7 @@ bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActive()
 
 bool KaelthasSunstriderBossIsManipulatingGravityTrigger::IsActive()
 {
+    constexpr float gravityLapseHpThreshold = 50.0f;
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    return kaelthas && kaelthas->GetHealthPct() <= 50.0f;
+    return kaelthas && kaelthas->GetHealthPct() <= gravityLapseHpThreshold;
 }

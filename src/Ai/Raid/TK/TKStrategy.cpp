@@ -72,7 +72,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian boss casts psychic scream", {
-        NextAction("high astromancer solarian cast fear ward on main tank", ACTION_RAID + 1) }));
+        NextAction("tempest keep cast fear ward on main tank", ACTION_RAID + 1) }));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     triggers.push_back(new TriggerNode("kael'thas sunstrider thaladred is fixated on bot", {
@@ -85,7 +85,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider melee tanks position advisors", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider sanguinar casts bellowing roar", {
-        NextAction("kael'thas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 1) }));
+        NextAction("tempest keep cast fear ward on main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by warlock", {
         NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID) }));

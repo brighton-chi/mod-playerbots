@@ -24,8 +24,7 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAs
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
 // Get the positions of all Manticron Cubes by their database GUIDs
-std::vector<CubeInfo> GetAllCubeInfosByDbGuids(
-    Map* map, std::vector<uint32> const& cubeDbGuids)
+std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids)
 {
     std::vector<CubeInfo> cubes;
     if (!map)

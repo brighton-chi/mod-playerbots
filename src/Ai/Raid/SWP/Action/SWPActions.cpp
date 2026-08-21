@@ -169,7 +169,7 @@ bool SunwellPlateauMisdirectBossToMainTankAction::Execute(Event /*event*/)
         return false;
 
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
+    if (!mainTank || !mainTank->IsAlive())
         return false;
 
     if (botAI->CanCastSpell("misdirection", mainTank))

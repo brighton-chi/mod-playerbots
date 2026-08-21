@@ -65,6 +65,16 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool TempestKeepCastFearWardOnMainTankAction::Execute(Event /*event*/)
+{
+    constexpr uint32 fearWard = Id(TkSpells::SPELL_FEAR_WARD);
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank || mainTank->HasAura(fearWard))
+        return false;
+
+    return botAI->CanCastSpell(fearWard, mainTank) && botAI->CastSpell(fearWard, mainTank);
+}
+
 // Trash
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
@@ -112,13 +122,10 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", alar))
-    {
-        return botAI->CastSpell("steady shot", alar);
-    }
+    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", alar) && botAI->CastSpell("steady shot", alar);
 }
 
 bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
@@ -816,18 +823,6 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
     return priestsPair.second;
 }
 
-bool HighAstromancerSolarianCastFearWardOnMainTankAction::Execute(Event /*event*/)
-{
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || mainTank->HasAura(Id(TkSpells::SPELL_FEAR_WARD)))
-        return false;
-
-    if (!botAI->CanCastSpell(Id(TkSpells::SPELL_FEAR_WARD), mainTank))
-        return false;
-
-    return botAI->CastSpell(Id(TkSpells::SPELL_FEAR_WARD), mainTank);
-}
-
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
@@ -878,38 +873,35 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == -1)
         return false;
 
-    Unit* advisorTarget = nullptr;
-    Player* tankTarget = nullptr;
+    Unit* advisor = nullptr;
+    Player* tank = nullptr;
     if (hunterIndex == 0 || hunterIndex == 2)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-        tankTarget = GetCapernianTank(bot);
+        advisor = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        tank = GetCapernianTank(bot);
     }
     else if (hunterIndex == 1)
     {
-        advisorTarget = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        tankTarget = GetGroupAssistTank(botAI, bot, 0);
+        advisor = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        tank = GetGroupAssistTank(botAI, bot, 0);
     }
 
-    if (!advisorTarget || advisorTarget->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        advisorTarget->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) || IsFeigningDeath(advisorTarget))
+    if (!advisor || advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        advisor->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE) || IsFeigningDeath(advisor))
     {
         return false;
     }
 
-    if (!tankTarget || !tankTarget->IsAlive())
+    if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tankTarget))
-        return botAI->CastSpell("misdirection", tankTarget);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
-    if (bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", advisorTarget))
-    {
-        return botAI->CastSpell("steady shot", advisorTarget);
-    }
+    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", advisor) && botAI->CastSpell("steady shot", advisor);
 }
 
 bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/)
@@ -961,18 +953,6 @@ bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool KaelthasSunstriderCastFearWardOnSanguinarTankAction::Execute(Event /*event*/)
-{
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || mainTank->HasAura(Id(TkSpells::SPELL_FEAR_WARD)))
-        return false;
-
-    if (!botAI->CanCastSpell(Id(TkSpells::SPELL_FEAR_WARD), mainTank))
-        return false;
-
-    return botAI->CastSpell(Id(TkSpells::SPELL_FEAR_WARD), mainTank);
-}
-
 bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event*/)
 {
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -982,8 +962,7 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
     char const* const searingPain = "searing pain";
 
     if (AI_VALUE(Unit*, "current target") != capernian &&
-        botAI->CanCastSpell(searingPain, capernian) &&
-        botAI->CastSpell(searingPain, capernian))
+        botAI->CanCastSpell(searingPain, capernian) && botAI->CastSpell(searingPain, capernian))
     {
         return true;
     }
@@ -2048,28 +2027,35 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
     char const* spell = nullptr;
     switch (bot->getClass())
     {
-        case CLASS_WARRIOR:
-            spell = "hamstring";
+        case CLASS_DEATH_KNIGHT:
+            spell = "blood strike";
             break;
+
         case CLASS_HUNTER:
             spell = "wing clip";
             break;
+
         case CLASS_ROGUE:
             spell = (AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT) ?
                 "shiv" : "sinister strike";
             break;
+
         case CLASS_SHAMAN:
             spell = "stormstrike";
             break;
-        case CLASS_DEATH_KNIGHT:
-            spell = "blood strike";
+
+        case CLASS_WARRIOR:
+            spell = "hamstring";
             break;
+
+        default:
+            return false;
     }
 
-    if (!spell || !botAI->CanCastSpell(spell, mcTarget))
+    if (!spell)
         return false;
 
-    return botAI->CastSpell(spell, mcTarget);
+    return botAI->CanCastSpell(spell, mcTarget) && botAI->CastSpell(spell, mcTarget);
 }
 
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)

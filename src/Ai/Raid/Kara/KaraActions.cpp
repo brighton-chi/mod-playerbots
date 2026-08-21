@@ -94,14 +94,12 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
+    constexpr uint32 fearWard = Id(KaraSpells::SPELL_FEAR_WARD);
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank || mainTank->HasAura(Id(KaraSpells::SPELL_FEAR_WARD)))
+    if (!mainTank || mainTank->HasAura(fearWard))
         return false;
 
-    if (!botAI->CanCastSpell(Id(KaraSpells::SPELL_FEAR_WARD), mainTank))
-        return false;
-
-    return botAI->CastSpell(Id(KaraSpells::SPELL_FEAR_WARD), mainTank);
+    return botAI->CanCastSpell(fearWard, mainTank) && botAI->CastSpell(fearWard, mainTank);
 }
 
 bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
@@ -113,10 +111,8 @@ bool KarazhanCastFearProtectionSpellAction::SetTremorTotem()
     if (AI_VALUE2(bool, "has totem", "tremor totem"))
         return false;
 
-    if (!botAI->CanCastSpell(Id(KaraSpells::SPELL_TREMOR_TOTEM), bot))
-        return false;
-
-    return botAI->CastSpell(Id(KaraSpells::SPELL_TREMOR_TOTEM), bot);
+    constexpr uint32 tremorTotem = Id(KaraSpells::SPELL_TREMOR_TOTEM);
+    return botAI->CanCastSpell(tremorTotem, bot) && botAI->CastSpell(tremorTotem, bot);
 }
 
 // Trash
@@ -516,8 +512,7 @@ bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
     return strawman &&
-        botAI->CanCastSpell("scorch", strawman) &&
-        botAI->CastSpell("scorch", strawman);
+        botAI->CanCastSpell("scorch", strawman) && botAI->CastSpell("scorch", strawman);
 }
 
 // The Curator
@@ -1437,13 +1432,17 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
         return false;
 
     if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z && pet->GetReactState() == REACT_PASSIVE)
+    {
         pet->SetReactState(REACT_DEFENSIVE);
+        return true;
+    }
 
     if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z && pet->GetReactState() != REACT_PASSIVE)
     {
         pet->AttackStop();
         pet->CastStop();
         pet->SetReactState(REACT_PASSIVE);
+        return true;
     }
 
     return false;
@@ -1544,20 +1543,14 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (isMechanicTracker)
         {
-            if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
-                didSomething = true;
-
-            if (nightbaneDpsWaitTimer.try_emplace(instanceId, now).second)
-                didSomething = true;
+            didSomething |= nightbaneFlightPhaseStartTimer.erase(instanceId) > 0;
+            didSomething |= nightbaneDpsWaitTimer.try_emplace(instanceId, now).second;
         }
     }
     else if (isMechanicTracker)
     {
-        if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
-            didSomething = true;
-
-        if (nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now).second)
-            didSomething = true;
+        didSomething |= nightbaneDpsWaitTimer.erase(instanceId) > 0;
+        didSomething |= nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now).second;
     }
 
     return didSomething;

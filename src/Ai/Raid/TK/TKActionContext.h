@@ -19,6 +19,9 @@ public:
         creators["tempest keep reset encounter states"] =
             &RaidTempestKeepActionContext::tempest_keep_reset_encounter_states;
 
+        creators["tempest keep cast fear ward on main tank"] =
+            &RaidTempestKeepActionContext::tempest_keep_cast_fear_ward_on_main_tank;
+
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -80,9 +83,6 @@ public:
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
 
-        creators["high astromancer solarian cast fear ward on main tank"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
-
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider kite thaladred"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
@@ -92,9 +92,6 @@ public:
 
         creators["kael'thas sunstrider melee tanks position advisors"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_melee_tanks_position_advisors;
-
-        creators["kael'thas sunstrider cast fear ward on sanguinar tank"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank;
 
         creators["kael'thas sunstrider warlock tank position capernian"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_warlock_tank_position_capernian;
@@ -146,6 +143,9 @@ private:
     // General
     static Action* tempest_keep_reset_encounter_states(PlayerbotAI* botAI) {
         return new TempestKeepResetEncounterStatesAction(botAI);
+    }
+    static Action* tempest_keep_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
+        return new TempestKeepCastFearWardOnMainTankAction(botAI);
     }
 
     // Trash
@@ -212,9 +212,6 @@ private:
     static Action* high_astromancer_solarian_target_solarium_priests(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI);
     }
-    static Action* high_astromancer_solarian_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianCastFearWardOnMainTankAction(botAI);
-    }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     static Action* kaelthas_sunstrider_kite_thaladred(PlayerbotAI* botAI) {
@@ -225,9 +222,6 @@ private:
     }
     static Action* kaelthas_sunstrider_melee_tanks_position_advisors(PlayerbotAI* botAI) {
         return new KaelthasSunstriderMeleeTanksPositionAdvisorsAction(botAI);
-    }
-    static Action* kaelthas_sunstrider_cast_fear_ward_on_sanguinar_tank(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderCastFearWardOnSanguinarTankAction(botAI);
     }
     static Action* kaelthas_sunstrider_warlock_tank_position_capernian(PlayerbotAI* botAI) {
         return new KaelthasSunstriderWarlockTankPositionCapernianAction(botAI);

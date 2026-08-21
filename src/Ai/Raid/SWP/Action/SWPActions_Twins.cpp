@@ -67,35 +67,34 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == -1)
         return false;
 
-    Unit* bossTarget = nullptr;
-    Player* tankTarget = nullptr;
+    Unit* boss = nullptr;
+    Player* tank = nullptr;
     if (hunterIndex == 0)
     {
-        bossTarget = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        tankTarget = GetGroupAssistTank(botAI, bot, 0);
+        boss = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
+        tank = GetGroupAssistTank(botAI, bot, 0);
     }
     else if (hunterIndex == 1)
     {
-        bossTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-        tankTarget = GetGroupMainTank(botAI, bot);
+        boss = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        tank = GetGroupMainTank(botAI, bot);
     }
     else if (hunterIndex == 2)
     {
-        bossTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-        tankTarget = GetGroupAssistTank(botAI, bot, 1);
+        boss = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+        tank = GetGroupAssistTank(botAI, bot, 1);
     }
 
-    if (!tankTarget || !tankTarget->IsAlive())
+    if (!boss || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tankTarget))
-        return botAI->CastSpell("misdirection", tankTarget);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
     if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
         return false;
 
-    return botAI->CanCastSpell("steady shot", bossTarget) &&
-        botAI->CastSpell("steady shot", bossTarget);
+    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
 }
 
 bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /*event*/)
@@ -132,8 +131,8 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
@@ -154,7 +153,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             uint8 const candidateIndex =
                 static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
 
-            if (IsAlythessTankPositionSafe(botAI, GetAlythessTankPosition(alythess, candidateIndex)))
+            if (IsAlythessTankPositionSafe(
+                    botAI, GetAlythessTankPosition(alythess, candidateIndex)))
             {
                 safeIndex = candidateIndex;
                 return true;

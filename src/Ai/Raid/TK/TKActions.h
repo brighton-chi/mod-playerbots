@@ -26,6 +26,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class TempestKeepCastFearWardOnMainTankAction : public Action
+{
+public:
+    TempestKeepCastFearWardOnMainTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "tempest keep cast fear ward on main tank") {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action
@@ -199,14 +207,6 @@ private:
         std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers);
 };
 
-class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action
-{
-public:
-    HighAstromancerSolarianCastFearWardOnMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "high astromancer solarian cast fear ward on main tank") {}
-    bool Execute(Event event) override;
-};
-
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderKiteThaladredAction : public MovementAction
@@ -230,14 +230,6 @@ class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public AttackAction
 public:
     KaelthasSunstriderMeleeTanksPositionAdvisorsAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "kael'thas sunstrider melee tanks position advisors") {}
-    bool Execute(Event event) override;
-};
-
-class KaelthasSunstriderCastFearWardOnSanguinarTankAction : public Action
-{
-public:
-    KaelthasSunstriderCastFearWardOnSanguinarTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "kael'thas sunstrider cast fear ward on sanguinar tank") {}
     bool Execute(Event event) override;
 };
 
