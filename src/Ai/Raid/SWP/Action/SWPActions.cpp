@@ -111,13 +111,9 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
         bot->RemoveAura(Id(SwpSpells::SPELL_ICE_BLOCK));
         return true;
     }
-    else if (bot->getClass() == CLASS_PALADIN)
-    {
-        bot->RemoveAura(Id(SwpSpells::SPELL_DIVINE_SHIELD));
-        return true;
-    }
 
-    return false;
+    bot->RemoveAura(Id(SwpSpells::SPELL_DIVINE_SHIELD));
+    return true;
 }
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
@@ -129,22 +125,15 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
         return false;
 
     if (PlayerbotAI::IsTank(bot))
-    {
-        if (AI_VALUE(Unit*, "current target") != volatileFiend)
-            return Attack(volatileFiend);
-    }
-    else
-    {
-        constexpr float safeDistance = 20.0f;
-        float const currentDistance = bot->GetDistance(volatileFiend);
-        if (currentDistance < safeDistance)
-        {
-            bot->CastStop();
-            return MoveAway(volatileFiend, safeDistance - currentDistance);
-        }
-    }
+        return AI_VALUE(Unit*, "current target") != volatileFiend && Attack(volatileFiend);
 
-    return false;
+    constexpr float safeDistance = 20.0f;
+    float const currentDistance = bot->GetDistance(volatileFiend);
+    if (currentDistance >= safeDistance)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(volatileFiend, safeDistance - currentDistance);
 }
 
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
@@ -186,11 +175,8 @@ bool SunwellPlateauMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", boss))
-    {
-        return botAI->CastSpell("steady shot", boss);
-    }
+    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
 }

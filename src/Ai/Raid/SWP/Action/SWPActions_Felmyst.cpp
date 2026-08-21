@@ -452,8 +452,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     }
 
     uint32 const now = getMSTime();
-    float const distToDestination = bot->GetExactDist(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    float const distToDestination = bot->GetExactDist(destination);
 
     if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >
         FELMYST_LOCATION_MATCH_DISTANCE)
@@ -503,10 +502,10 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
         return false;
 
     Player* charmedPlayer = GetFelmystCharmedTarget(bot, felmyst);
-    if (!charmedPlayer || AI_VALUE(Unit*, "current target") == charmedPlayer)
+    if (!charmedPlayer)
         return false;
 
-    return Attack(charmedPlayer);
+    return AI_VALUE(Unit*, "current target") != charmedPlayer && Attack(charmedPlayer);
 }
 
 bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)

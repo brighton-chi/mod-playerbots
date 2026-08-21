@@ -91,13 +91,11 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", tankTarget))
         return botAI->CastSpell("misdirection", tankTarget);
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", bossTarget))
-    {
-        return botAI->CastSpell("steady shot", bossTarget);
-    }
+    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", bossTarget) &&
+        botAI->CastSpell("steady shot", bossTarget);
 }
 
 bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /*event*/)
@@ -316,10 +314,7 @@ bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
         return true;
     }
 
-    if (AI_VALUE(Unit*, "current target") != twinTarget)
-        return Attack(twinTarget);
-
-    return false;
+    return AI_VALUE(Unit*, "current target") != twinTarget && Attack(twinTarget);
 }
 
 bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)

@@ -97,10 +97,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
             focusHand = hand;
     }
 
-    if (AI_VALUE(Unit*, "current target") != focusHand)
-        return Attack(focusHand);
-
-    return false;
+    return AI_VALUE(Unit*, "current target") != focusHand && Attack(focusHand);
 }
 
 bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
@@ -609,8 +606,8 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     float const destY = closestOrb->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SWP_MAP_ID, destX, destY, closestOrb->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, closestOrb->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // There is an issue (maybe with the root packets) that causes bots to get stuck with the root

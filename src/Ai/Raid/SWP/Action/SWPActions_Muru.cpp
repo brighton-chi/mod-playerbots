@@ -43,22 +43,20 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", targetTank))
         return botAI->CastSpell("misdirection", targetTank);
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", targetEnemy))
-    {
-        return botAI->CastSpell("steady shot", targetEnemy);
-    }
+    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", targetEnemy) &&
+        botAI->CastSpell("steady shot", targetEnemy);
 }
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!entropius || AI_VALUE(Unit*, "current target") == entropius)
+    if (!entropius)
         return false;
 
-    return Attack(entropius);
+    return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
 }
 
 bool MuruPositionRangedAction::Execute(Event /*event*/)
@@ -182,10 +180,7 @@ bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
     else
         needsAttack = currentTarget != target;
 
-    if (needsAttack)
-        return Attack(target);
-
-    return false;
+    return needsAttack && Attack(target);
 }
 
 Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
@@ -696,10 +691,8 @@ bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
 bool MuruWarlockEnslaveVoidSpawnAction::Execute(Event /*event*/)
 {
     Creature* voidSpawn = FindAvailableVoidSpawnForEnslave(bot);
-    if (!voidSpawn)
-        return false;
-
-    return botAI->CanCastSpell("enslave demon", voidSpawn) &&
+    return voidSpawn &&
+        botAI->CanCastSpell("enslave demon", voidSpawn) &&
         botAI->CastSpell("enslave demon", voidSpawn);
 }
 
