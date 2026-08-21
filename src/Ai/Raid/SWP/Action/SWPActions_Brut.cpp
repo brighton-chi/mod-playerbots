@@ -359,7 +359,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         Position position;
         if (!TryGetBrutallusRangedPosition(
                 bot, brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_INNER_LANE_RADIUS, stepPosition))
+                BRUTALLUS_INNER_LANE_RADIUS, position))
         {
             return false;
         }
