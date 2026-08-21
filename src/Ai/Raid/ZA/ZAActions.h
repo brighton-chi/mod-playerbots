@@ -10,6 +10,21 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include <string>
+
+// General
+
+class ZulamanMisdirectBossToMainTankAction : public Action
+{
+public:
+    ZulamanMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
+    bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
+};
 
 // Trash
 
@@ -22,14 +37,6 @@ public:
 };
 
 // Akil'zon <Eagle Avatar>
-
-class AkilzonMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    AkilzonMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "akil'zon misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
 
 class AkilzonTanksPositionBossAction : public AttackAction
 {
@@ -65,14 +72,6 @@ public:
 
 // Nalorakk <Bear Avatar>
 
-class NalorakkMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    NalorakkMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "nalorakk misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class NalorakkTanksPositionBossAction : public AttackAction
 {
 public:
@@ -94,14 +93,6 @@ public:
 };
 
 // Jan'alai <Dragonhawk Avatar>
-
-class JanalaiMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    JanalaiMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "jan'alai misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
 
 class JanalaiTanksPositionBossAction : public AttackAction
 {
@@ -136,14 +127,6 @@ public:
 
 // Halazzi <Lynx Avatar>
 
-class HalazziMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    HalazziMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "halazzi misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class HalazziMainTankPositionBossAction : public AttackAction
 {
 public:
@@ -169,14 +152,6 @@ public:
 };
 
 // Hex Lord Malacrass
-
-class HexLordMalacrassMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    HexLordMalacrassMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "hex lord malacrass misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
 
 class HexLordMalacrassAssignDpsPriorityAction : public AttackAction
 {
@@ -211,15 +186,6 @@ public:
 };
 
 // Zul'jin
-
-class ZuljinMisdirectBossToMainTankAction : public AttackAction
-{
-public:
-    ZuljinMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "zul'jin misdirect boss to main tank") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class ZuljinTanksPositionBossAction : public AttackAction
 {
 public:

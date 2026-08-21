@@ -11,6 +11,28 @@
 
 using namespace ZulAmanHelpers;
 
+// General
+
+bool ZulamanMisdirectBossToMainTankAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", boss))
+        return botAI->CastSpell("steady shot", boss);
+
+    return false;
+}
+
 // Trash
 
 bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
@@ -31,26 +53,6 @@ bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
 }
 
 // Akil'zon <Eagle Avatar>
-
-bool AkilzonMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", akilzon))
-        return botAI->CastSpell("steady shot", akilzon);
-
-    return false;
-}
 
 bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -130,26 +132,6 @@ bool AkilzonManageElectricalStormTimerAction::Execute(Event /*event*/)
 }
 
 // Nalorakk <Bear Avatar>
-
-bool NalorakkMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
-    if (!nalorakk)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", nalorakk))
-        return botAI->CastSpell("steady shot", nalorakk);
-
-    return false;
-}
 
 bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -237,26 +219,6 @@ bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
 }
 
 // Jan'alai <Dragonhawk Avatar>
-
-bool JanalaiMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", janalai))
-        return botAI->CastSpell("steady shot", janalai);
-
-    return false;
-}
 
 bool JanalaiTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -381,26 +343,6 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
 // Halazzi <Lynx Avatar>
 
-bool HalazziMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
-    if (!halazzi)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", halazzi))
-        return botAI->CastSpell("steady shot", halazzi);
-
-    return false;
-}
-
 bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi");
@@ -520,26 +462,6 @@ bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
 
 // Hex Lord Malacrass
 
-bool HexLordMalacrassMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", malacrass))
-        return botAI->CastSpell("steady shot", malacrass);
-
-    return false;
-}
-
 bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     static constexpr uint32 priorityEntries[] =
@@ -639,26 +561,6 @@ bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
 }
 
 // Zul'jin
-
-bool ZuljinMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", zuljin))
-        return botAI->CastSpell("steady shot", zuljin);
-
-    return false;
-}
 
 bool ZuljinTanksPositionBossAction::Execute(Event /*event*/)
 {

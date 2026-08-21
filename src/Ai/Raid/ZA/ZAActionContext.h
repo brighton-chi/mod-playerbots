@@ -115,7 +115,8 @@ private:
 
     // Akil'zon <Eagle Avatar>
     static Action* akilzon_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new AkilzonMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "akil'zon misdirect boss to main tank", "akil'zon");
     }
     static Action* akilzon_tanks_position_boss(PlayerbotAI* botAI) {
         return new AkilzonTanksPositionBossAction(botAI);
@@ -132,7 +133,8 @@ private:
 
     // Nalorakk <Bear Avatar>
     static Action* nalorakk_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new NalorakkMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "nalorakk misdirect boss to main tank", "nalorakk");
     }
     static Action* nalorakk_tanks_position_boss(PlayerbotAI* botAI) {
         return new NalorakkTanksPositionBossAction(botAI);
@@ -143,7 +145,8 @@ private:
 
     // Jan'alai <Dragonhawk Avatar>
     static Action* janalai_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new JanalaiMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "jan'alai misdirect boss to main tank", "jan'alai");
     }
     static Action* janalai_tanks_position_boss(PlayerbotAI* botAI) {
         return new JanalaiTanksPositionBossAction(botAI);
@@ -160,7 +163,8 @@ private:
 
     // Halazzi <Lynx Avatar>
     static Action* halazzi_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new HalazziMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "halazzi misdirect boss to main tank", "halazzi");
     }
     static Action* halazzi_main_tank_position_boss(PlayerbotAI* botAI) {
         return new HalazziMainTankPositionBossAction(botAI);
@@ -174,7 +178,8 @@ private:
 
     // Hex Lord Malacrass
     static Action* hex_lord_malacrass_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new HexLordMalacrassMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "hex lord malacrass misdirect boss to main tank", "hex lord malacrass");
     }
     static Action* hex_lord_malacrass_assign_dps_priority(PlayerbotAI* botAI) {
         return new HexLordMalacrassAssignDpsPriorityAction(botAI);
@@ -191,7 +196,8 @@ private:
 
     // Zul'jin
     static Action* zuljin_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new ZuljinMisdirectBossToMainTankAction(botAI);
+        return new ZulamanMisdirectBossToMainTankAction(
+            botAI, "zul'jin misdirect boss to main tank", "zul'jin");
     }
     static Action* zuljin_tanks_position_boss(PlayerbotAI* botAI) {
         return new ZuljinTanksPositionBossAction(botAI);
