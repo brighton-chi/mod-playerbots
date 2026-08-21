@@ -21,9 +21,7 @@ namespace
 // Every ground hazard is read through a cached value rather than searched for directly.
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
-    static std::vector<Position> const none;
-    return botAI ? botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet()
-        : none;
+    return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
 
 }
