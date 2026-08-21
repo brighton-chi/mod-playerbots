@@ -5,15 +5,14 @@
  */
 
 #include "ZAHelpers.h"
-#include "Group.h"
 #include "Playerbots.h"
 
-namespace ZulAmanHelpers
+namespace ZaHelpers
 {
 
 // General
 Position FindSafestNearbyPosition(Player* bot,
-    const std::vector<Unit*>& hazards, const Position& safeZoneCenter,
+    std::vector<Unit*> const& hazards, const Position& safeZoneCenter,
     float safeZoneRadius, float hazardRadius, bool requireSafePath)
 {
     constexpr float searchStep = M_PI / 8.0f;
@@ -64,8 +63,8 @@ Position FindSafestNearbyPosition(Player* bot,
     return bestPos;
 }
 
-bool IsPathSafeFromHazards(const Position& start, const Position& end,
-    const std::vector<Unit*>& hazards, float hazardRadius)
+bool IsPathSafeFromHazards(Position const& start, Position const& end,
+    std::vector<Unit*> const& hazards, float hazardRadius)
 {
     constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
@@ -85,7 +84,7 @@ bool IsPathSafeFromHazards(const Position& start, const Position& end,
 }
 
 bool IsPositionSafeFromHazards(
-    float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+    float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)
     {
@@ -112,7 +111,7 @@ std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 entry, float searchR
 }
 
 // Akil'zon <Eagle Avatar>
-const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
+
 std::unordered_map<uint32, time_t> akilzonStormTimer;
 
 bool IsInStormWindow(time_t start, time_t now)
@@ -132,7 +131,7 @@ Player* GetElectricalStormTarget(Player* bot)
     {
         Player* member = ref->GetSource();
         if (member &&
-            member->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_ELECTRICAL_STORM)))
+            member->HasAura(Id(ZaSpells::SPELL_ELECTRICAL_STORM)))
             return member;
     }
 
@@ -140,17 +139,16 @@ Player* GetElectricalStormTarget(Player* bot)
 }
 
 // Nalorakk <Bear Avatar>
-const Position NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
+// N/A
 
 // Jan'alai <Dragonhawk Avatar>
-const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
 
 bool HasFireBombNearby(Player* bot)
 {
     constexpr float searchRadius = 30.0f;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(ZulAmanNPCs::NPC_FIRE_BOMB), searchRadius);
+        creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -171,7 +169,7 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit &&
-            unit->GetEntry() == static_cast<uint32>(ZulAmanNPCs::NPC_AMANISHI_HATCHER))
+            unit->GetEntry() == Id(ZaNpcs::NPC_AMANISHI_HATCHER))
         {
             if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                 lowest = unit;
@@ -185,9 +183,9 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
 }
 
 // Halazzi <Lynx Avatar>
-const Position HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
+// N/A
 
 // Zul'jin
-const Position ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
+// N/A
 
 }
