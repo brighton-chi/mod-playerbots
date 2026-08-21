@@ -108,8 +108,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
         NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 9) }));
 
-    triggers.push_back(new TriggerNode("felmyst manage landing dps timer", {
-        NextAction("felmyst should hold dps while landing", ACTION_EMERGENCY + 8) }));
+    triggers.push_back(new TriggerNode("felmyst should hold dps while landing", {
+        NextAction("felmyst manage landing dps timer", ACTION_EMERGENCY + 8) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
