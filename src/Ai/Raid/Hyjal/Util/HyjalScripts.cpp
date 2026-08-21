@@ -98,7 +98,7 @@ public:
         if (!target)
             return;
 
-        archimondeAirBurstTargets[caster->GetMap()->GetInstanceId()] =
+        archimondeAirBurstTargets[caster->GetInstanceId()] =
             AirBurstData{ target->GetGUID(), getMSTime() };
 
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();

@@ -233,8 +233,8 @@ bool AnyGroupMemberHasDoom(Player* bot);
 
 struct AirBurstData
 {
-    ObjectGuid targetGuid;
-    uint32 castTime;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 castTime = 0;
 };
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 // Up the hill a bit, for space from the World Tree. The tank walks him here at the opening only.
@@ -262,7 +262,7 @@ bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius);
 // just asking whether one is near.
 std::vector<Position> GetDoomfirePositions(PlayerbotAI* botAI);
 extern std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
-AirBurstData* GetPendingAirBurstCast(uint32 instanceId);
+bool GetPendingAirBurstCast(uint32 instanceId, AirBurstData& airBurst);
 
 }
 

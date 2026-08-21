@@ -539,21 +539,24 @@ bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius)
     return false;
 }
 
-AirBurstData* GetPendingAirBurstCast(uint32 instanceId)
+// By value rather than a pointer into the map: any later insert into archimondeAirBurstTargets
+// could rehash and leave a returned pointer dangling.
+bool GetPendingAirBurstCast(uint32 instanceId, AirBurstData& airBurst)
 {
     auto instanceIt = archimondeAirBurstTargets.find(instanceId);
     if (instanceIt == archimondeAirBurstTargets.end())
-        return nullptr;
+        return false;
 
     constexpr uint32 airBurstReactionWindow = 2000;
     uint32 const now = getMSTime();
     if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)
     {
         archimondeAirBurstTargets.erase(instanceIt);
-        return nullptr;
+        return false;
     }
 
-    return &instanceIt->second;
+    airBurst = instanceIt->second;
+    return true;
 }
 
 }

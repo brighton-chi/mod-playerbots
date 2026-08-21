@@ -43,11 +43,11 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
         }
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal") &&
-        botsBelowManaThreshold.erase(guid))
-    {
-        erased = true;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
+        erased |= botsBelowManaThreshold.erase(guid) > 0;
+
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
+        erased |= archimondeAirBurstTargets.erase(bot->GetInstanceId()) > 0;
 
     return erased;
 }
@@ -868,11 +868,11 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (!activeTank)
         return false;
 
-    AirBurstData* data = GetPendingAirBurstCast(bot->GetMap()->GetInstanceId());
-    if (!data)
+    AirBurstData airBurst;
+    if (!GetPendingAirBurstCast(bot->GetInstanceId(), airBurst))
         return false;
 
-    if (data->targetGuid != activeTank->GetGUID() && data->targetGuid != bot->GetGUID())
+    if (airBurst.targetGuid != activeTank->GetGUID() && airBurst.targetGuid != bot->GetGUID())
         return false;
 
     float const distanceToActiveTank = bot->GetExactDist2d(activeTank);

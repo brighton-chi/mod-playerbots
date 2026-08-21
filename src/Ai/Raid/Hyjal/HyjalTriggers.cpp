@@ -355,7 +355,8 @@ bool ArchimondeBossCastingAirBurstTrigger::IsActive()
     if (HasProtectionOfElune(bot))
         return false;
 
-    return GetPendingAirBurstCast(bot->GetMap()->GetInstanceId());
+    AirBurstData airBurst;
+    return GetPendingAirBurstCast(bot->GetInstanceId(), airBurst);
 }
 
 bool ArchimondeRangedShouldSpreadTrigger::IsActive()
