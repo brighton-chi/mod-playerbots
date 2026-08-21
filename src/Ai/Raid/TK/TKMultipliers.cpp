@@ -17,6 +17,7 @@
 #include "ShamanActions.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
+#include "WarlockActions.h"
 #include <ctime>
 
 using namespace TkHelpers;
@@ -320,6 +321,31 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
 
     uint32 const phase = GetKaelthasPhase(kaelthas);
     return phase != PHASE_NONE && phase != PHASE_FINAL ? 0.0f : 1.0f;
+}
+
+// This multiplier is not needed right now because Soulshatter is cast only when there are
+// multiple enemies. That's probably not the right approach and should be fixed, so this
+// multiplier remains in place in anticipation of a future correction to Soulshatter usage.
+float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (!dynamic_cast<CastSoulshatterAction*>(action))
+        return 1.0f;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return 1.0f;
+
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
+        return 1.0f;
+
+    return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* action)
