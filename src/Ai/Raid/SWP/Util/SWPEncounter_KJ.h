@@ -57,6 +57,10 @@ inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
     Id(SwpObjects::GO_DRAGON_ORB_4),
 };
 
+inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
+inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
+inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
+
 inline constexpr uint32 KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 inline constexpr float KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 

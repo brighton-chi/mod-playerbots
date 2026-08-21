@@ -807,7 +807,7 @@ bool KiljaedenBotHasFireBloomTrigger::IsActive()
         return false;
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    return kiljaeden && kiljaeden->GetHealthPct() < 55.0f;
+    return kiljaeden && kiljaeden->GetHealthPct() < KILJAEDEN_PHASE4_HP_THRESHOLD;
 }
 
 bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
@@ -825,7 +825,7 @@ bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActive()
 bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
+    if (!kiljaeden || kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD)
         return false;
 
     if (GetKiljaedenDragonOrbUser(bot) != bot)
@@ -862,7 +862,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-    if (!kiljaeden || kiljaeden->GetHealthPct() > 85.0f)
+    if (!kiljaeden || kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD)
         return false;
 
     if (GetKiljaedenDragonOrbUser(bot) != bot)
