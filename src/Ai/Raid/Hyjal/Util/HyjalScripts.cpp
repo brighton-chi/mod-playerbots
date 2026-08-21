@@ -5,7 +5,6 @@
  */
 
 #include "AllCreatureScript.h"
-#include "DynamicObjectScript.h"
 #include "HyjalHelpers.h"
 #include "Player.h"
 #include "Playerbots.h"
