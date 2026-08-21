@@ -172,7 +172,7 @@ public:
         creators["m'uru flee from singularity"] =
             &RaidSunwellActionContext::muru_flee_from_singularity;
 
-        creators["m'uru cast stun on shadowsword berseker"] =
+        creators["m'uru cast stun on shadowsword berserker"] =
             &RaidSunwellActionContext::muru_cast_stun_on_shadowsword_berserker;
 
         creators["m'uru interrupt fel fireball"] =

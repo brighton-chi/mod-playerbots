@@ -316,9 +316,11 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 
     if (stickyTarget)
     {
+        // A disallowed sticky target indexes past the end, where it would otherwise tie with an
+        // equally absent desired target and win the comparison
         size_t const currentPriority = getPriorityIndex(stickyTarget);
         size_t const desiredPriority = getPriorityIndex(target);
-        if (currentPriority <= desiredPriority)
+        if (currentPriority < priorityTargets.size() && currentPriority <= desiredPriority)
             target = stickyTarget;
     }
 
