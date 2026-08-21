@@ -41,14 +41,14 @@ struct KalecgosEncounterState
     std::unordered_map<ObjectGuid, uint8> playerToGroup;
 };
 
+extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
+
 inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
 inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = 10000;
 inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
 
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
-
-extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 
 bool IsExhausted(Player* bot);
 bool IsInSpectralRealm(Player* bot);

@@ -98,6 +98,8 @@ struct FelmystEncounterState
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
 
+extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
+
 struct FogSafeThreshold
 {
     Position a, b;
@@ -196,8 +198,6 @@ inline std::array const DEMONIC_VAPOR_LANE_REFERENCES = {
     Position{ 1468.328f, 609.417f, 50.329f },
     Position{ 1444.078f, 611.019f, 50.084f },
 };
-
-extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
