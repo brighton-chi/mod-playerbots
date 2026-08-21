@@ -642,8 +642,7 @@ public:
 class KiljaedenControlDragonAction : public Action
 {
 public:
-    KiljaedenControlDragonAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden control dragon") {}
+    KiljaedenControlDragonAction(PlayerbotAI* botAI) : Action(botAI, "kil'jaeden control dragon") {}
     bool Execute(Event event) override;
 
 private:

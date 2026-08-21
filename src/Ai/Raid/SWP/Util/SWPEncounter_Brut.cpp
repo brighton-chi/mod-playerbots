@@ -430,8 +430,6 @@ bool TryGetBrutallusLaneTraversalPosition(
 
 bool ReleaseBrutallusBurnPad(Player* bot)
 {
-    // find rather than operator[]: this runs on cleanup paths that must not materialize state for
-    // an instance that never fought Brutallus
     auto const instanceItr = brutallusEncounterStates.find(bot->GetInstanceId());
     if (instanceItr == brutallusEncounterStates.end())
         return false;

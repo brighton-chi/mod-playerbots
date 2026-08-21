@@ -27,6 +27,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
+    // If either tank is dead, just bail and fall back to standard tank logic. You're screwed
+    // anyway unless Brutallus is almost dead.
     if (!mainTank || !assistTank)
         return false;
 

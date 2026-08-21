@@ -58,8 +58,7 @@ public:
 class KalecgosPullingBossTrigger : public Trigger
 {
 public:
-    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kalecgos pulling boss") {}
+    KalecgosPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kalecgos pulling boss") {}
     bool IsActive() override;
 };
 
@@ -116,8 +115,7 @@ public:
 class BrutallusPullingBossTrigger : public Trigger
 {
 public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus pulling boss") {}
+    BrutallusPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus pulling boss") {}
     bool IsActive() override;
 };
 
@@ -148,8 +146,7 @@ public:
 class BrutallusBotIsBurningTrigger : public Trigger
 {
 public:
-    BrutallusBotIsBurningTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "brutallus bot is burning") {}
+    BrutallusBotIsBurningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus bot is burning") {}
     bool IsActive() override;
 };
 
@@ -158,8 +155,7 @@ public:
 class FelmystPullingBossTrigger : public Trigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "felmyst pulling boss") {}
+    FelmystPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "felmyst pulling boss") {}
     bool IsActive() override;
 };
 
@@ -410,8 +406,7 @@ public:
 class MuruDarknessIsComingTrigger : public Trigger
 {
 public:
-    MuruDarknessIsComingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "m'uru darkness is coming") {}
+    MuruDarknessIsComingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "m'uru darkness is coming") {}
     bool IsActive() override;
 };
 

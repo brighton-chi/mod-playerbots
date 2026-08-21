@@ -50,8 +50,7 @@ struct BrutallusMeleeRingLayout
     uint8 slotCount;
 };
 
-// The assignment maps are raid-wide, so one bot per window rebuilds them for everyone. Only joins,
-// departures and role changes alter the result, none of which need sub-second reaction.
+// Throttle for rebuilding ranged and melee position assignments
 inline constexpr uint32 BRUTALLUS_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 
 inline constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);

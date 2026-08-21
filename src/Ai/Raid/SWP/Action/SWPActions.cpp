@@ -48,8 +48,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
         }
 
-        // Ungated by the tracker so a bot always recovers its own burn state and pad, even when it
-        // is not the one that clears the rest of the encounter
         auto const stateItr = brutallusEncounterStates.find(instanceId);
         if (stateItr != brutallusEncounterStates.end())
             didSomething |= stateItr->second.rangedBurnStates.erase(guid) > 0;
