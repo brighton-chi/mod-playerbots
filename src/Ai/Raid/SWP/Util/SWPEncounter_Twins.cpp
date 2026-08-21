@@ -102,7 +102,7 @@ bool ShouldHoldTwinThreat(
     bool foundTwinTankThreat = false;
     bool foundBotThreat = false;
 
-    auto const threatList = boss->GetThreatMgr().GetSortedThreatList();
+    auto const threatList = boss->GetThreatMgr().GetUnsortedThreatList();
     for (auto itr = threatList.begin(); itr != threatList.end(); ++itr)
     {
         ThreatReference const* threatRef = *itr;
@@ -177,10 +177,9 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
         return false;
 
     ObjectGuid const botGuid = bot->GetGUID();
-    constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        Id(SwpObjects::GO_BLAZE), blazeObjectRadius);
+        Id(SwpObjects::GO_BLAZE), EREDAR_TWINS_BLAZE_UNDERFOOT_RADIUS);
 
     if (!blazeObject)
     {
@@ -215,13 +214,11 @@ void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
     EredarTwinsIncomingConflagrationState& state =
         eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
 
-    constexpr uint32 conflagrationDelayMs = 300;
     if (state.targetGuid != target->GetGUID())
-        state.delayMs = now + conflagrationDelayMs;
+        state.delayMs = now + EREDAR_TWINS_CONFLAGRATION_DELAY_MS;
 
-    constexpr uint32 durationMs = 2000;
     state.targetGuid = target->GetGUID();
-    state.expireMs = now + durationMs;
+    state.expireMs = now + EREDAR_TWINS_CONFLAGRATION_WINDOW_MS;
 }
 
 Player* GetEredarTwinsConflagrationTarget(Player* bot)
@@ -274,8 +271,7 @@ Player* GetEredarTwinsBlazeTarget(Player* bot)
         return nullptr;
 
     EredarTwinsBlazeTargetState const& state = itr->second;
-    constexpr uint32 durationMs = 2000;
-    if (GetMSTimeDiffToNow(state.startMs) >= durationMs)
+    if (GetMSTimeDiffToNow(state.startMs) >= EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS)
     {
         eredarTwinsBlazeTargetStates.erase(itr);
         return nullptr;

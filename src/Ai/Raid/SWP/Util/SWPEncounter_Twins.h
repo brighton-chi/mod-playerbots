@@ -39,8 +39,27 @@ inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 // Grace period for the tanks to build threat before the rest of the raid opens up
 inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 
+// Spell 45246, fired by the Blaze trap GO, deals damage in a 3 yard radius; the extra 1.5 is the
+// usual avoidance padding. The trap itself only activates within 2.5 yards.
 inline constexpr float EREDAR_TWINS_BLAZE_DANGER_RADIUS = 4.5f;
 inline constexpr float EREDAR_TWINS_BLAZE_SEARCH_RADIUS = 30.0f;
+
+// Deliberately wider than the danger radius: this asks "has a new Blaze appeared near me", so it
+// must not miss one that landed while the tank was still moving
+inline constexpr float EREDAR_TWINS_BLAZE_UNDERFOOT_RADIUS = 5.0f;
+
+inline constexpr float SACROLASH_THREAT_HOLD_RATIO = 0.8f;
+inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
+
+inline constexpr float EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE = 10.0f;
+
+// Conflagration is recorded on prepare, so the delay covers the cast before the aura lands
+inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_DELAY_MS = 300;
+inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_WINDOW_MS = 2000;
+inline constexpr uint32 EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS = 2000;
+
+inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
+inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2000;
 
 // Feeds the "eredar twins blaze" value. CalculatedValue reads any interval between 2 and 99 as
 // seconds, so this has to stay at or above 100 to mean milliseconds. Blaze is a GameObject and

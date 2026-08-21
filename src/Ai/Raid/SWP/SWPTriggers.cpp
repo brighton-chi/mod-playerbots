@@ -537,11 +537,11 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
         return false;
 
     Aura* flameSear = bot->GetAura(Id(SwpSpells::SPELL_FLAME_SEAR));
-    if (!flameSear || flameSear->GetDuration() > 2000)  // 2 seconds
+    if (!flameSear || flameSear->GetDuration() > FLAME_SEAR_PROTECT_WINDOW_MS)
         return false;
 
     Aura* flameTouched = bot->GetAura(Id(SwpSpells::SPELL_FLAME_TOUCHED));
-    return flameTouched && flameTouched->GetStackAmount() >= 5;
+    return flameTouched && flameTouched->GetStackAmount() >= FLAME_TOUCHED_PROTECT_STACKS;
 }
 
 bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
