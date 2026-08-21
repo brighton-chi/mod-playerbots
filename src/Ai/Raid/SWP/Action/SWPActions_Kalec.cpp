@@ -9,7 +9,7 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "RaidBossHelpers.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include <algorithm>
 #include <string>
 #include <map>

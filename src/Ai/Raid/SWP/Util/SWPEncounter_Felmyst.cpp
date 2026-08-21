@@ -7,7 +7,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include <algorithm>
 #include <cmath>
 #include <list>

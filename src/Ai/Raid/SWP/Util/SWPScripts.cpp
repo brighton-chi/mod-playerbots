@@ -9,7 +9,7 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"

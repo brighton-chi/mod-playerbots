@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_SWPDATA_H
-#define PLAYERBOTS_SWPDATA_H
+#ifndef PLAYERBOTS_SWPSHAREDCONSTANTS_H
+#define PLAYERBOTS_SWPSHAREDCONSTANTS_H
 
 #include "Common.h"
 #include <type_traits>
@@ -108,7 +108,7 @@ enum class SwpNpcs : uint32
 
     // Felmyst
     NPC_FELMYST                  = 25038,
-    NPC_DEMONIC_VAPOR            = 25265,
+    NPC_DEMONIC_VAPOR            = 25265, // The vapor "head" that chases a player
     NPC_DEMONIC_VAPOR_TRAIL      = 25267,
 
     // Eredar Twins

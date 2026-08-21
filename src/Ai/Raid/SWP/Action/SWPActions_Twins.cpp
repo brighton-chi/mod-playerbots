@@ -8,7 +8,7 @@
 #include "SWPEncounter_Twins.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include <vector>
 
 using namespace SwpHelpers;

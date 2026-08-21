@@ -10,7 +10,7 @@
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
-#include "SWPData.h"
+#include "SWPSharedConstants.h"
 #include "TargetValue.h"
 #include <array>
 #include <cmath>
