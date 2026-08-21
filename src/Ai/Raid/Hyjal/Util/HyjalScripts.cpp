@@ -52,10 +52,11 @@ bool ShouldInterruptForArchimondeAirBurst(Player* bot, Unit* caster, Player* tar
 // every 1.6s, and the Doomfire trigger NPC follows it after each teleport and drops the hazards.
 // The hook reads the Doomfire NPC since it accompanies the visual fire trail. Real players cannot
 // see the spirit so keying off of that would be a cheat.
-class ArchimondeDoomfireTrailScript : public AllCreatureScript
+class ArchimondeDoomfireTrailCreatureScript : public AllCreatureScript
 {
 public:
-    ArchimondeDoomfireTrailScript() : AllCreatureScript("ArchimondeDoomfireTrailScript") {}
+    ArchimondeDoomfireTrailCreatureScript()
+        : AllCreatureScript("ArchimondeDoomfireTrailCreatureScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -145,7 +146,7 @@ public:
 
 void AddSC_HyjalSummitBotScripts()
 {
-    new ArchimondeDoomfireTrailScript();
+    new ArchimondeDoomfireTrailCreatureScript();
     new ArchimondeAirBurstSpellListenerScript();
     new AnetheronInfernoSpellListenerScript();
 }
