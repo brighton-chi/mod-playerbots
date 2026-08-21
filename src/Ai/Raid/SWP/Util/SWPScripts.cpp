@@ -182,10 +182,10 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 
 }
 
-class KalecgosSpellListenerScript : public AllSpellScript
+class KalecgosPortalSpellListenerScript : public AllSpellScript
 {
 public:
-    KalecgosSpellListenerScript() : AllSpellScript("KalecgosSpellListenerScript") {}
+    KalecgosPortalSpellListenerScript() : AllSpellScript("KalecgosPortalSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -315,10 +315,11 @@ public:
     }
 };
 
-class KiljaedenSpellListenerScript : public AllSpellScript
+class KiljaedenDarknessSpellListenerScript : public AllSpellScript
 {
 public:
-    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") {}
+    KiljaedenDarknessSpellListenerScript()
+        : AllSpellScript("KiljaedenDarknessSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -372,11 +373,11 @@ public:
     }
 };
 
-class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
+class KiljaedenArmageddonTargetCreatureScript : public AllCreatureScript
 {
 public:
-    KiljaedenArmageddonTargetTrackerScript()
-        : AllCreatureScript("KiljaedenArmageddonTargetTrackerScript") {}
+    KiljaedenArmageddonTargetCreatureScript()
+        : AllCreatureScript("KiljaedenArmageddonTargetCreatureScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -429,10 +430,10 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
-    new KalecgosSpellListenerScript();
+    new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
-    new KiljaedenSpellListenerScript();
+    new KiljaedenDarknessSpellListenerScript();
     new SunwellBossUpdateScript();
-    new KiljaedenArmageddonTargetTrackerScript();
+    new KiljaedenArmageddonTargetCreatureScript();
 }
