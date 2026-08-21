@@ -50,10 +50,8 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
 
     // Block Charge, etc. for non-tanks when not at a platform
     int8 const currentLocationIndex = GetAlarCurrentLocationIndex(alar);
-    if (currentLocationIndex < PLATFORM_0_IDX || currentLocationIndex > PLATFORM_3_IDX)
-        return 0.0f;
-
-    return 1.0f;
+    return currentLocationIndex < PLATFORM_0_IDX ||
+        currentLocationIndex > PLATFORM_3_IDX ? 0.0f : 1.0f;
 }
 
 float AlarControlMovementMultiplier::GetValue(Action* action)
@@ -78,10 +76,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Enable FollowAction only in non-combat engine in Phase 2
-    if (botAI->GetState() == BOT_STATE_COMBAT)
-        return 0.0f;
-
-    return 1.0f;
+    return botAI->GetState() == BOT_STATE_COMBAT ? 0.0f : 1.0f;
 }
 
 float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
@@ -92,10 +87,7 @@ float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
     if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "al'ar"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "al'ar") ? 0.0f : 1.0f;
 }
 
 float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
@@ -121,10 +113,8 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (alarCreature && alarCreature->GetReactState() == REACT_PASSIVE)
         return 0.0f;
 
-    if (alar->GetHealthPct() <= 5.0f) // Melee dps activate logic for the P2 transition at 5% HP
-        return 0.0f;
-
-    return 1.0f;
+    constexpr float phase1AlmostEndedHpThreshold = 5.0f;
+    return alar->GetHealthPct() <= phase1AlmostEndedHpThreshold ? 0.0f : 1.0f;
 }
 
 float AlarControlTauntingMultiplier::GetValue(Action* action)
@@ -178,10 +168,7 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "void reaver"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "void reaver") ? 0.0f : 1.0f;
 }
 
 // High Astromancer Solarian
@@ -204,10 +191,7 @@ float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
     if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
         return 1.0f;
 
-    if (HasWrathOfTheAstromancer(bot))
-        return 0.0f;
-
-    return 1.0f;
+    return HasWrathOfTheAstromancer(bot) ? 0.0f : 1.0f;
 }
 
 float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* action)
@@ -230,13 +214,11 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
         Creature* astromancerCreature = astromancer->ToCreature();
         if (astromancerCreature && astromancerCreature->GetReactState() != REACT_PASSIVE)
             return 0.0f;
-    }
-    else if (AI_VALUE2(Unit*, "find target", "solarium priest"))
-    {
-        return 0.0f;
+
+        return 1.0f;
     }
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "solarium priest") ? 0.0f : 1.0f;
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
@@ -247,9 +229,6 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<KaelthasSunstriderMisdirectAdvisorsToTanksAction*>(action))
         return 1.0f;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -295,10 +274,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         (isAdvisorActive(telonicus) && !isFirstAssistTank) ||
         (isAdvisorActive(capernian) && !isMainTank && !isWarlockTank);
 
-    if (shouldHoldDps)
-        return 0.0f;
-
-    return 1.0f;
+    return shouldHoldDps ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
@@ -324,10 +300,7 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (thaladred && thaladred->GetVictim() == bot)
-        return 0.0f;
-
-    return 1.0f;
+    return thaladred && thaladred->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
@@ -346,10 +319,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
         return 1.0f;
 
     uint32 const phase = GetKaelthasPhase(kaelthas);
-    if (phase != PHASE_NONE && phase != PHASE_FINAL)
-        return 0.0f;
-
-    return 1.0f;
+    return phase != PHASE_NONE && phase != PHASE_FINAL ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* action)
@@ -374,13 +344,11 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
         return 1.0f;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian))
-    {
-        return 0.0f;
-    }
+    if (!capernian)
+        return 1.0f;
 
-    return 1.0f;
+    return !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !IsFeigningDeath(capernian) ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
@@ -399,10 +367,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (GetKaelthasPhase(kaelthas) == PHASE_WEAPONS)
-        return 0.0f;
-
-    return 1.0f;
+    return GetKaelthasPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
@@ -413,10 +378,7 @@ float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* action)
@@ -444,12 +406,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     if (PlayerbotAI::IsMainTank(bot))
         return 0.0f;
 
-    if (phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS)
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
@@ -463,10 +420,7 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
@@ -524,10 +478,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
     if (isLustAction && phase == PHASE_WEAPONS)
         return 0.0f;
 
-    if (phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION)
-        return 0.0f;
-
-    return 1.0f;
+    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
@@ -544,8 +495,5 @@ float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action*
     if (PlayerbotAI::IsRanged(bot) && dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action) ? 1.0f : 0.0f;
 }
