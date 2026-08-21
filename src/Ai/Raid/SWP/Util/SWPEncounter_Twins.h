@@ -12,6 +12,7 @@
 #include "SWPSharedConstants.h"
 #include <array>
 #include <unordered_map>
+#include <vector>
 
 class Player;
 class PlayerbotAI;
@@ -37,6 +38,14 @@ inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
 // Grace period for the tanks to build threat before the rest of the raid opens up
 inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
+
+inline constexpr float EREDAR_TWINS_BLAZE_DANGER_RADIUS = 4.5f;
+inline constexpr float EREDAR_TWINS_BLAZE_SEARCH_RADIUS = 30.0f;
+
+// Feeds the "eredar twins blaze" value. CalculatedValue reads any interval between 2 and 99 as
+// seconds, so this has to stay at or above 100 to mean milliseconds. Blaze is a GameObject and
+// cannot move once placed, so the only thing a stale window can miss is a spawn or a despawn.
+inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
 
 inline Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
 inline std::array const ALYTHESS_TANK_POSITIONS = {
@@ -69,7 +78,8 @@ bool IsAnySacrolashTank(Player* bot);
 bool IsAlythessTank(Player* bot);
 bool ShouldHoldTwinThreat(
     Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
-bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
+std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
+bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsDpsHoldStart(Player* bot);
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target);

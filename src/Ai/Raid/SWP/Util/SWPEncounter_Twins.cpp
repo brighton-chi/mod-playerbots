@@ -26,6 +26,14 @@ namespace
 
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
+// One grid sweep per cache interval serves every candidate position the Alythess tank tests,
+// instead of one sweep per candidate.
+std::vector<Position> const& GetCachedBlazePositions(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("eredar twins blaze")->RefGet();
+}
+
 // Adjusted positions are to address the occasional bug (?) where Alythess moves
 Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
 {
@@ -131,22 +139,32 @@ bool ShouldHoldTwinThreat(
     return botThreat >= twinTankThreat * threatHoldRatio;
 }
 
-bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
+// Positions rather than GameObject pointers: the value outlives the tick that produced it, and a
+// cached pointer would dangle if the blaze despawned. A blaze cannot move, so a position stays
+// correct for as long as the object exists.
+std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
 {
-    constexpr float blazeDangerRadius = 4.5f;
-    constexpr float blazeSearchRadius = 30.0f;
+    std::list<GameObject*> nearbyObjects;
+    AnyGameObjectInObjectRangeCheck check(bot, EREDAR_TWINS_BLAZE_SEARCH_RADIUS);
+    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(
+        bot, nearbyObjects, check);
+    Cell::VisitObjects(bot, searcher, EREDAR_TWINS_BLAZE_SEARCH_RADIUS);
 
-    std::list<GameObject*> targets;
-    AnyGameObjectInObjectRangeCheck u_check(bot, blazeSearchRadius);
-    Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, blazeSearchRadius);
-
-    for (GameObject* go : targets)
+    std::vector<Position> positions;
+    for (GameObject* nearbyObject : nearbyObjects)
     {
-        if (!go || go->GetEntry() != Id(SwpObjects::GO_BLAZE))
-            continue;
+        if (nearbyObject && nearbyObject->GetEntry() == Id(SwpObjects::GO_BLAZE))
+            positions.push_back(nearbyObject->GetPosition());
+    }
 
-        if (go->GetExactDist2d(position) <= blazeDangerRadius)
+    return positions;
+}
+
+bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
+{
+    for (Position const& blaze : GetCachedBlazePositions(botAI))
+    {
+        if (blaze.GetExactDist2d(position) <= EREDAR_TWINS_BLAZE_DANGER_RADIUS)
             return false;
     }
 

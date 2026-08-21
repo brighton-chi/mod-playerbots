@@ -156,7 +156,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
             uint8 const candidateIndex =
                 static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
 
-            if (IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, candidateIndex)))
+            if (IsAlythessTankPositionSafe(botAI, GetAlythessTankPosition(alythess, candidateIndex)))
             {
                 safeIndex = candidateIndex;
                 return true;
@@ -168,7 +168,7 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 
     uint8 index = _alythessTankStep;
 
-    if (!IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, index)))
+    if (!IsAlythessTankPositionSafe(botAI, GetAlythessTankPosition(alythess, index)))
     {
         uint8 safeIndex = index;
         if (!findSafeAlythessTankIndex(index, false, safeIndex))
