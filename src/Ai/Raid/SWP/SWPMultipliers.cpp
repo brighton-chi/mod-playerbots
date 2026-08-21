@@ -284,7 +284,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto& state = felmystEncounterStates[felmyst->GetMap()->GetInstanceId()];
+    auto& state = felmystEncounterStates[felmyst->GetInstanceId()];
     return state.landingDpsWaitStartMs == 0 ? 1.0f : 0.0f;
 }
 

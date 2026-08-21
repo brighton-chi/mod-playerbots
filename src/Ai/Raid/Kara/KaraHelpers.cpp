@@ -194,7 +194,7 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
 
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
 
     Player* redBlocker = nullptr;
     auto redBlockers = GetRedBlockers(bot);

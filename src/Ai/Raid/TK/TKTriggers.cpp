@@ -41,7 +41,7 @@ bool AlarPullingBossTrigger::IsActive()
 bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return false;
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -64,7 +64,7 @@ bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
 bool AlarIncomingFlameQuillsTrigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return false;
 
     return GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
@@ -77,7 +77,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
     if (!alar || alar->GetHealthPct() > 5.0f)
         return false;
 
-    if (IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (IsAlarInPhase2(alar->GetInstanceId()))
         return false;
 
     return GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
@@ -87,7 +87,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
 bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    return alar && IsAlarInPhase2(alar->GetMap()->GetInstanceId());
+    return alar && IsAlarInPhase2(alar->GetInstanceId());
 }
 
 bool AlarShouldManagePhaseTrackerTrigger::IsActive()
@@ -126,7 +126,7 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return true;
 
@@ -155,7 +155,7 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 

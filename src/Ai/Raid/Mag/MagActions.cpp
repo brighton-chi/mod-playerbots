@@ -279,7 +279,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 
     if (IsCubeClicker(bot))
     {
-        auto timerIt = blastNovaTimer.find(magtheridon->GetMap()->GetInstanceId());
+        auto timerIt = blastNovaTimer.find(magtheridon->GetInstanceId());
         if (timerIt != blastNovaTimer.end() &&
             getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS)
         {
@@ -327,7 +327,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
 
 CubeInfo const* MagtheridonUseManticronCubeAction::GetAssignedCube()
 {
-    auto mapIt = botToCubeAssignments.find(bot->GetMap()->GetInstanceId());
+    auto mapIt = botToCubeAssignments.find(bot->GetInstanceId());
     if (mapIt == botToCubeAssignments.end())
         return nullptr;
 
@@ -356,7 +356,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
 
 bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)
 {
-    auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
+    auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
     if (timerIt == blastNovaTimer.end() ||
         getMSTimeDiff(timerIt->second, getMSTime()) < BLAST_NOVA_INTERIM_MS)
     {
@@ -497,7 +497,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
     if (!magtheridon)
         return false;
 
-    uint32 const instanceId = magtheridon->GetMap()->GetInstanceId();
+    uint32 const instanceId = magtheridon->GetInstanceId();
     uint32 const now = getMSTime();
 
     bool const isCasting = IsBlastNovaCasting(magtheridon);
@@ -537,7 +537,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 
 bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
 
     auto& assignment = botToCubeAssignments[instanceId];
@@ -637,7 +637,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
 
 bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
 
     bool erased = false;
     erased |= blastNovaTimer.erase(instanceId) > 0;

@@ -22,11 +22,8 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high king maulgar") &&
-        ClearTargetIcon(bot, RtiTargetValue::skullIndex))
-    {
-        reset = true;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "high king maulgar"))
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
     if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
     {

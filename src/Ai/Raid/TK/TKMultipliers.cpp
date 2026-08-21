@@ -39,7 +39,7 @@ float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     if (isBlockedMovement)
@@ -72,7 +72,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     if (isDisperseOrFlee)
         return 0.0f;
 
-    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     // Enable FollowAction only in non-combat engine in Phase 2
@@ -106,7 +106,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
-    if (!alar || IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!alar || IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     Creature* alarCreature = alar->ToCreature();
@@ -137,7 +137,7 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
     if (bot->HasAura(Id(TkSpells::SPELL_MELT_ARMOR)) && AI_VALUE(Unit*, "current target") == alar)
         return 0.0f;
 
-    if (IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
     int8 platformIndex = GetAlarPlatformIndex(alar);
@@ -241,7 +241,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     time_t const now = std::time(nullptr);
     constexpr uint8 dpsWaitSeconds = 10;
 
-    auto it = advisorDpsWaitTimer.find(kaelthas->GetMap()->GetInstanceId());
+    auto it = advisorDpsWaitTimer.find(kaelthas->GetInstanceId());
     if (it != advisorDpsWaitTimer.end() && it->second != ADVISOR_DPS_WAIT_NOT_STARTED &&
         (now - it->second) >= dpsWaitSeconds)
     {

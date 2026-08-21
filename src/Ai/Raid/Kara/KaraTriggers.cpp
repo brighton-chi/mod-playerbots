@@ -332,7 +332,7 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
-    uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
+    uint32 const instanceId = nightbane->GetInstanceId();
     time_t const now = std::time(nullptr);
     constexpr uint8 flightPhaseDurationSeconds = 35;
     // After 35s, Nightbane goes to land, and bots freely follow their master

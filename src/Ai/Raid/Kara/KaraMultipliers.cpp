@@ -120,7 +120,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto it = attumenDpsWaitTimer.find(attumen->GetMap()->GetInstanceId());
+    auto it = attumenDpsWaitTimer.find(attumen->GetInstanceId());
     if (it == attumenDpsWaitTimer.end())
         return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
 
@@ -334,7 +334,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    auto it = netherspiteDpsWaitTimer.find(netherspite->GetMap()->GetInstanceId());
+    auto it = netherspiteDpsWaitTimer.find(netherspite->GetInstanceId());
     if (it == netherspiteDpsWaitTimer.end())
         return 0.0f;
 
@@ -468,7 +468,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto it = nightbaneDpsWaitTimer.find(nightbane->GetMap()->GetInstanceId());
+    auto it = nightbaneDpsWaitTimer.find(nightbane->GetInstanceId());
     if (it == nightbaneDpsWaitTimer.end())
         return 0.0f;
 
@@ -524,7 +524,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetMap()->GetInstanceId());
+    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetInstanceId());
     if (it != nightbaneFlightPhaseStartTimer.end())
         return 0.0f;
 

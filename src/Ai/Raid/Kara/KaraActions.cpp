@@ -24,25 +24,19 @@ using namespace KaraHelpers;
 
 bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool reset = false;
 
     if (isMechanicTracker)
     {
-        if (!AI_VALUE2(Unit*, "find target", "midnight") &&
-            attumenDpsWaitTimer.erase(instanceId) > 0)
-        {
-            reset = true;
-        }
+        if (!AI_VALUE2(Unit*, "find target", "midnight"))
+            reset |= attumenDpsWaitTimer.erase(instanceId) > 0;
 
         if (!AI_VALUE2(Unit*, "find target", "nightbane"))
         {
-            if (nightbaneDpsWaitTimer.erase(instanceId) > 0)
-                reset = true;
-
-            if (nightbaneFlightPhaseStartTimer.erase(instanceId) > 0)
-                reset = true;
+            reset |= nightbaneDpsWaitTimer.erase(instanceId) > 0;
+            reset |= nightbaneFlightPhaseStartTimer.erase(instanceId) > 0;
         }
     }
 
@@ -82,14 +76,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
             reset = true;
         }
 
-        if (currentRedBlocker.erase(instanceId) > 0)
-            reset = true;
-
-        if (currentGreenBlocker.erase(instanceId) > 0)
-            reset = true;
-
-        if (currentBlueBlocker.erase(instanceId) > 0)
-            reset = true;
+        reset |= currentRedBlocker.erase(instanceId) > 0;
+        reset |= currentGreenBlocker.erase(instanceId) > 0;
+        reset |= currentBlueBlocker.erase(instanceId) > 0;
     }
 
     return reset;
@@ -273,9 +262,8 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 
 bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
     time_t const now = std::time(nullptr);
-    return attumenDpsWaitTimer.try_emplace(instanceId, now).second;
+    return attumenDpsWaitTimer.try_emplace(bot->GetInstanceId(), now).second;
 }
 
 // Moroes
@@ -1000,7 +988,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    uint32 const instanceId = netherspite->GetMap()->GetInstanceId();
+    uint32 const instanceId = netherspite->GetInstanceId();
     time_t const now = std::time(nullptr);
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
@@ -1540,7 +1528,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!nightbane)
         return false;
 
-    uint32 const instanceId = nightbane->GetMap()->GetInstanceId();
+    uint32 const instanceId = nightbane->GetInstanceId();
     time_t const now = std::time(nullptr);
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;

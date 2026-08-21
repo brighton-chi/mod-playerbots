@@ -539,8 +539,6 @@ bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius)
     return false;
 }
 
-// By value rather than a pointer into the map: any later insert into archimondeAirBurstTargets
-// could rehash and leave a returned pointer dangling.
 bool GetPendingAirBurstCast(uint32 instanceId, AirBurstData& airBurst)
 {
     auto instanceIt = archimondeAirBurstTargets.find(instanceId);

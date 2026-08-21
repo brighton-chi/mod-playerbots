@@ -152,7 +152,7 @@ float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
     if (!IsAoeThreatAction(bot, action))
         return 1.0f;
 
-    constexpr float holdTankAoeRadius = 20.0f; // arbitrary but > AoE threat ability radii
+    constexpr float holdTankAoeRadius = 20.0f; // arbitrary, but > AoE threat ability radii
     Unit* infernal = GetNearestInfernal(bot);
     if (!infernal || infernal->GetExactDist2d(bot) > holdTankAoeRadius)
         return 1.0f;

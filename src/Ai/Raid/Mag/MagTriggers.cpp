@@ -95,7 +95,7 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
         return false;
 
     constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
-    auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
+    auto it = dpsWaitTimer.find(magtheridon->GetInstanceId());
     if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs)
         return false;
 

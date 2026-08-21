@@ -31,7 +31,7 @@ using namespace TkHelpers;
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     bool reset = false;
 
     if (!AI_VALUE2(Unit*, "find target", "alar"))
@@ -231,7 +231,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (!IsAlarInPhase2(alar->GetMap()->GetInstanceId()))
+    if (!IsAlarInPhase2(alar->GetInstanceId()))
         return HandlePhase1Embers(alar);
 
     return HandlePhase2Embers(event);
@@ -536,7 +536,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    uint32 const instanceId = alar->GetMap()->GetInstanceId();
+    uint32 const instanceId = alar->GetInstanceId();
     bool const rebirthActive = alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_PHASE2));
 
     if (!IsAlarInPhase2(instanceId) && lastRebirthState[instanceId] && !rebirthActive)
@@ -638,7 +638,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
     if (it == voidReaverArcaneOrbs.end() || it->second.empty())
         return false;
 
@@ -1274,7 +1274,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    uint32 const instanceId = kaelthas->GetMap()->GetInstanceId();
+    uint32 const instanceId = kaelthas->GetInstanceId();
 
     if (advisorAtFullHp)
     {

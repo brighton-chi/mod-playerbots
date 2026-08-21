@@ -82,7 +82,7 @@ bool IsBlastNovaCasting(Unit* magtheridon)
 
 bool IsCubeClicker(Player* bot)
 {
-    auto mapIt = botToCubeAssignments.find(bot->GetMap()->GetInstanceId());
+    auto mapIt = botToCubeAssignments.find(bot->GetInstanceId());
     return mapIt != botToCubeAssignments.end() &&
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }

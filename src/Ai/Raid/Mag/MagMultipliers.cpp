@@ -44,7 +44,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     if (!IsCubeClicker(bot))
         return 1.0f;
 
-    auto timerIt = blastNovaTimer.find(bot->GetMap()->GetInstanceId());
+    auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
     if (timerIt != blastNovaTimer.end() &&
         getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS)
     {
@@ -74,7 +74,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
         return 1.0f;
 
     constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
-    auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
+    auto it = dpsWaitTimer.find(magtheridon->GetInstanceId());
     if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs)
         return 0.0f;
 

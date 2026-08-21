@@ -27,7 +27,7 @@ public:
             return;
 
         // To account for Blast Nova delay caused by Quake's DelayAll(6999ms)
-        auto it = blastNovaTimer.find(caster->GetMap()->GetInstanceId());
+        auto it = blastNovaTimer.find(caster->GetInstanceId());
         if (it != blastNovaTimer.end())
             it->second += 7 * IN_MILLISECONDS;
     }
