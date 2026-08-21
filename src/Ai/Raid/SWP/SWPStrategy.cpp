@@ -34,6 +34,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos should communicate boss health", {
         NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("kalecgos pulling boss", {
+        NextAction("kalecgos misdirect boss to main tank", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("kalecgos boss requires tank rotation", {
         NextAction("kalecgos surface tank position dragon", ACTION_RAID) }));
 

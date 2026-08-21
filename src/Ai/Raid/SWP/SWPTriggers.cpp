@@ -97,6 +97,15 @@ bool KalecgosShouldCommunicateBossHealthTrigger::IsActive()
     return bot == spectralBot || bot == surfaceBot;
 }
 
+bool KalecgosPullingBossTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    return kalecgos && kalecgos->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
+}
+
 bool KalecgosBossRequiresTankRotationTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))

@@ -55,6 +55,14 @@ public:
     bool IsActive() override;
 };
 
+class KalecgosPullingBossTrigger : public Trigger
+{
+public:
+    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kalecgos pulling boss") {}
+    bool IsActive() override;
+};
+
 class KalecgosBossRequiresTankRotationTrigger : public Trigger
 {
 public:

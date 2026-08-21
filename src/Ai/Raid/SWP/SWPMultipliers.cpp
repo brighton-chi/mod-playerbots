@@ -277,9 +277,6 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
-        return 1.0f;
-
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst)
         return 1.0f;

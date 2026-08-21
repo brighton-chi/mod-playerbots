@@ -17,28 +17,6 @@
 
 using namespace SwpHelpers;
 
-bool FelmystMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", felmyst))
-    {
-        return botAI->CastSpell("steady shot", felmyst);
-    }
-
-    return false;
-}
-
 bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);

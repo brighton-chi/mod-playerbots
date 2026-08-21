@@ -173,3 +173,25 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }
+
+bool SunwellPlateauMisdirectBossToMainTankAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
+        return false;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", mainTank))
+        return botAI->CastSpell("misdirection", mainTank);
+
+    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", boss))
+    {
+        return botAI->CastSpell("steady shot", boss);
+    }
+
+    return false;
+}

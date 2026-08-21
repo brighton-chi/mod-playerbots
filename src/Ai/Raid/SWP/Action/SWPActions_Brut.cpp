@@ -15,28 +15,6 @@
 
 using namespace SwpHelpers;
 
-bool BrutallusMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    if (!brutallus)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", brutallus))
-    {
-        return botAI->CastSpell("steady shot", brutallus);
-    }
-
-    return false;
-}
-
 bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
