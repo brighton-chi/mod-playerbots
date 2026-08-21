@@ -7,6 +7,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "SWPData.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -913,7 +914,7 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
         return false;
 
     // HP threshold to preserve melee targeting during the initial airborne pull
-    if (felmyst->GetHealthPct() > 90.0f)
+    if (felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
         return false;
 
     Position destination;

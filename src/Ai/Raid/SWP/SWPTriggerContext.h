@@ -264,10 +264,10 @@ private:
         return new BrutallusBossEngagedByTanksTrigger(botAI);
     }
     static Trigger* brutallus_melee_should_stand_in_place(PlayerbotAI* botAI) {
-        return new BrutallusMeleeShouldStayInPlaceTrigger(botAI);
+        return new BrutallusMeleeShouldStandInPlaceTrigger(botAI);
     }
     static Trigger* brutallus_ranged_should_soak_meteor_slash(PlayerbotAI* botAI) {
-        return new BrutallusBossEngagedByRangedTrigger(botAI);
+        return new BrutallusRangedShouldSoakMeteorSlashTrigger(botAI);
     }
     static Trigger* brutallus_bot_is_burning(PlayerbotAI* botAI) {
         return new BrutallusBotIsBurningTrigger(botAI);

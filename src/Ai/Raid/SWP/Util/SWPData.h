@@ -149,6 +149,7 @@ enum class SwpObjects : uint32
 };
 
 inline constexpr uint32 SWP_MAP_ID = 580;
+inline constexpr float SWP_PULL_COMPLETE_HP_PERCENT = 95.0f;
 
 }
 

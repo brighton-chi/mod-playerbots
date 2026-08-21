@@ -179,7 +179,7 @@ bool BrutallusPullingBossTrigger::IsActive()
         return false;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetHealthPct() > 95.0f;
+    return brutallus && brutallus->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
 }
 
 bool BrutallusBossEngagedByTanksTrigger::IsActive()
@@ -193,19 +193,19 @@ bool BrutallusBossEngagedByTanksTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-bool BrutallusMeleeShouldStayInPlaceTrigger::IsActive()
+bool BrutallusMeleeShouldStandInPlaceTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-    {
+    if (!PlayerbotAI::IsMelee(bot))
         return false;
-    }
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetVictim() != bot;
+    if (!brutallus || brutallus->GetVictim() == bot)
+        return false;
+
+    return !PlayerbotAI::IsMainTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-bool BrutallusBossEngagedByRangedTrigger::IsActive()
+bool BrutallusRangedShouldSoakMeteorSlashTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -236,7 +236,7 @@ bool FelmystPullingBossTrigger::IsActive()
     if (!felmyst)
         return false;
 
-    if (felmyst->GetHealthPct() > 90.0f)
+    if (felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
         return true;
 
     if (felmyst->IsFlying())
@@ -290,8 +290,11 @@ bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
 
     // On initial landing, let MT get aggro before assuming positions
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && felmyst->GetVictim() != mainTank && felmyst->GetHealthPct() > 90.0f)
+    if (mainTank && felmyst->GetVictim() != mainTank &&
+        felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
+    {
         return false;
+    }
 
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
@@ -454,7 +457,7 @@ bool EredarTwinsPullingBossesTrigger::IsActive()
         return false;
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    return alythess && alythess->GetHealthPct() > 90.0f;
+    return alythess && alythess->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
 }
 
 bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()

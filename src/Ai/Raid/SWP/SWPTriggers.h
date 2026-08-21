@@ -121,18 +121,18 @@ public:
     bool IsActive() override;
 };
 
-class BrutallusMeleeShouldStayInPlaceTrigger : public Trigger
+class BrutallusMeleeShouldStandInPlaceTrigger : public Trigger
 {
 public:
-    BrutallusMeleeShouldStayInPlaceTrigger(PlayerbotAI* botAI)
+    BrutallusMeleeShouldStandInPlaceTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "brutallus melee should stand in place") {}
     bool IsActive() override;
 };
 
-class BrutallusBossEngagedByRangedTrigger : public Trigger
+class BrutallusRangedShouldSoakMeteorSlashTrigger : public Trigger
 {
 public:
-    BrutallusBossEngagedByRangedTrigger(PlayerbotAI* botAI)
+    BrutallusRangedShouldSoakMeteorSlashTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "brutallus ranged should soak meteor slash") {}
     bool IsActive() override;
 };

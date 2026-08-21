@@ -261,7 +261,7 @@ float BrutallusDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    if (brutallus && brutallus->GetHealthPct() > 95.0f)
+    if (brutallus && brutallus->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
         return 0.0f;
 
     return 1.0f;
@@ -444,7 +444,7 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (felmyst && (felmyst->IsFlying() || felmyst->GetHealthPct() > 95.0f))
+    if (felmyst && (felmyst->IsFlying() || felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT))
         return 0.0f;
 
     return 1.0f;
@@ -778,7 +778,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (entropius && entropius->GetHealthPct() < 95.0f)
+    if (entropius && entropius->GetHealthPct() < SWP_PULL_COMPLETE_HP_PERCENT)
         return 1.0f;
 
     if (bot->getClass() == CLASS_SHAMAN &&
