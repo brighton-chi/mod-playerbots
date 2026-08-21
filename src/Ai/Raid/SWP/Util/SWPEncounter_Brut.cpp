@@ -14,27 +14,25 @@ namespace SwpHelpers
 
 // Note: Brutallus's CombatReach is 18.0f
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedAssignments;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusMeleeAssignments;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> brutallusRangedBurnPadAssignments;
-std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
+std::unordered_map<uint32, BrutallusEncounterState> brutallusEncounterStates;
 
 namespace
 {
 
-bool IsBurnPadActive(ObjectGuid ownerGuid)
+bool IsBurnPadActive(BrutallusEncounterState const& state, ObjectGuid ownerGuid)
 {
-    auto const burnStateItr = brutallusRangedBurnStates.find(ownerGuid);
-    return burnStateItr != brutallusRangedBurnStates.end() &&
+    auto const burnStateItr = state.rangedBurnStates.find(ownerGuid);
+    return burnStateItr != state.rangedBurnStates.end() &&
         burnStateItr->second != BrutallusRangedBurnState::None;
 }
 
-bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
+bool TryGetBurnPadIndex(
+    BrutallusEncounterState& state, Player* bot, uint8 rangedIndex, uint8& padIndex)
 {
-    auto& assignments = brutallusRangedBurnPadAssignments[bot->GetInstanceId()];
+    auto& assignments = state.rangedBurnPadAssignments;
     for (auto itr = assignments.begin(); itr != assignments.end();)
     {
-        if (itr->first != bot->GetGUID() && !IsBurnPadActive(itr->first))
+        if (itr->first != bot->GetGUID() && !IsBurnPadActive(state, itr->first))
         {
             itr = assignments.erase(itr);
             continue;
@@ -90,6 +88,23 @@ bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
 }
 
+// Every positioned bot calls the Ensure functions each tick and they all scan the same group to
+// build the same raid-wide result, so the first caller in each window does the work and the rest
+// read what it left behind. Skipping is safe because callers re-read the map and treat a missing
+// entry as "not positioned this tick" rather than as an error.
+bool ShouldRebuildAssignments(uint32& lastRebuildMs)
+{
+    uint32 const now = getMSTime();
+    if (lastRebuildMs &&
+        getMSTimeDiff(lastRebuildMs, now) < BRUTALLUS_ASSIGNMENT_REBUILD_INTERVAL_MS)
+    {
+        return false;
+    }
+
+    lastRebuildMs = now;
+    return true;
+}
+
 void PruneAssignments(
     std::unordered_map<ObjectGuid, uint8>& assignments,
     std::vector<ObjectGuid> const& eligibleGuids)
@@ -107,9 +122,12 @@ void PruneAssignments(
     }
 }
 
-void EnsureRangedAssignments(Group* group, Player* bot)
+void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
 {
-    auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
+    if (!ShouldRebuildAssignments(state.rangedAssignmentRebuildMs))
+        return;
+
+    auto& assignments = state.rangedAssignments;
 
     std::vector<ObjectGuid> eligibleGuids;
     std::vector<Player*> healers;
@@ -168,9 +186,12 @@ void EnsureRangedAssignments(Group* group, Player* bot)
         assignNextOpenSlot(member);
 }
 
-void EnsureMeleeAssignments(Group* group, Player* bot)
+void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
 {
-    auto& assignments = brutallusMeleeAssignments[bot->GetInstanceId()];
+    if (!ShouldRebuildAssignments(state.meleeAssignmentRebuildMs))
+        return;
+
+    auto& assignments = state.meleeAssignments;
 
     std::vector<ObjectGuid> eligibleGuids;
     std::vector<Player*> unassigned;
@@ -297,30 +318,17 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
     if (!group)
         return false;
 
-    if (PlayerbotAI::IsRanged(bot))
-    {
-        EnsureRangedAssignments(group, bot);
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
+    auto& state = brutallusEncounterStates[bot->GetInstanceId()];
 
-        auto const instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
-        if (instanceItr == brutallusRangedAssignments.end())
-            return false;
+    if (isRanged)
+        EnsureRangedAssignments(group, state);
+    else
+        EnsureMeleeAssignments(group, state);
 
-        auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
-        if (assignmentItr == instanceItr->second.end())
-            return false;
-
-        positionIndex = assignmentItr->second;
-        return true;
-    }
-
-    EnsureMeleeAssignments(group, bot);
-
-    auto const instanceItr = brutallusMeleeAssignments.find(bot->GetInstanceId());
-    if (instanceItr == brutallusMeleeAssignments.end())
-        return false;
-
-    auto const assignmentItr = instanceItr->second.find(bot->GetGUID());
-    if (assignmentItr == instanceItr->second.end())
+    auto& assignments = isRanged ? state.rangedAssignments : state.meleeAssignments;
+    auto const assignmentItr = assignments.find(bot->GetGUID());
+    if (assignmentItr == assignments.end())
         return false;
 
     positionIndex = assignmentItr->second;
@@ -361,8 +369,11 @@ bool TryGetBrutallusBurnPadPosition(
         return false;
 
     uint8 padIndex = 0;
-    if (!TryGetBurnPadIndex(bot, rangedIndex, padIndex))
+    if (!TryGetBurnPadIndex(
+            brutallusEncounterStates[bot->GetInstanceId()], bot, rangedIndex, padIndex))
+    {
         return false;
+    }
 
     constexpr float degreeToRadian = M_PI / 180.0f;
     static constexpr std::array burnPadAngleOffsets = {
@@ -419,15 +430,13 @@ bool TryGetBrutallusLaneTraversalPosition(
 
 bool ReleaseBrutallusBurnPad(Player* bot)
 {
-    auto instanceItr = brutallusRangedBurnPadAssignments.find(bot->GetInstanceId());
-    if (instanceItr == brutallusRangedBurnPadAssignments.end())
+    // find rather than operator[]: this runs on cleanup paths that must not materialize state for
+    // an instance that never fought Brutallus
+    auto const instanceItr = brutallusEncounterStates.find(bot->GetInstanceId());
+    if (instanceItr == brutallusEncounterStates.end())
         return false;
 
-    bool const erased = instanceItr->second.erase(bot->GetGUID()) > 0;
-    if (instanceItr->second.empty())
-        brutallusRangedBurnPadAssignments.erase(instanceItr);
-
-    return erased;
+    return instanceItr->second.rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
 }
 
 }

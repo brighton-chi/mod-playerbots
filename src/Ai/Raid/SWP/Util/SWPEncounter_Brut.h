@@ -32,11 +32,27 @@ enum class BrutallusRangedBurnState : uint8
     ReturningToNormalPosition
 };
 
+struct BrutallusEncounterState
+{
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    std::unordered_map<ObjectGuid, uint8> meleeAssignments;
+    std::unordered_map<ObjectGuid, uint8> rangedBurnPadAssignments;
+    std::unordered_map<ObjectGuid, BrutallusRangedBurnState> rangedBurnStates;
+    uint32 rangedAssignmentRebuildMs = 0;
+    uint32 meleeAssignmentRebuildMs = 0;
+};
+
+extern std::unordered_map<uint32, BrutallusEncounterState> brutallusEncounterStates;
+
 struct BrutallusMeleeRingLayout
 {
     float radius;
     uint8 slotCount;
 };
+
+// The assignment maps are raid-wide, so one bot per window rebuilds them for everyone. Only joins,
+// departures and role changes alter the result, none of which need sub-second reaction.
+inline constexpr uint32 BRUTALLUS_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 
 inline constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);
 inline constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 15.0f;
@@ -81,14 +97,6 @@ inline constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
 inline constexpr float BRUTALLUS_BURN_PAD_RADIUS = BRUTALLUS_NORMAL_RANGED_RADIUS;
 
 inline Position const BRUTALLUS_MAIN_TANK_POSITION = { 1483.528f, 595.346f, 23.552f };
-
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    brutallusRangedAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    brutallusMeleeAssignments;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    brutallusRangedBurnPadAssignments;
-extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedBurnStates;
 
 float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank);
 float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle);

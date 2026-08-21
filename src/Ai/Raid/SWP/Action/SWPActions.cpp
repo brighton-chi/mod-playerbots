@@ -48,15 +48,16 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
         }
 
-        didSomething |= brutallusRangedBurnStates.erase(guid) > 0;
+        // Ungated by the tracker so a bot always recovers its own burn state and pad, even when it
+        // is not the one that clears the rest of the encounter
+        auto const stateItr = brutallusEncounterStates.find(instanceId);
+        if (stateItr != brutallusEncounterStates.end())
+            didSomething |= stateItr->second.rangedBurnStates.erase(guid) > 0;
+
         didSomething |= ReleaseBrutallusBurnPad(bot);
 
         if (isMechanicTracker)
-        {
-            didSomething |= brutallusRangedAssignments.erase(instanceId) > 0;
-            didSomething |= brutallusMeleeAssignments.erase(instanceId) > 0;
-            didSomething |= brutallusRangedBurnPadAssignments.erase(instanceId) > 0;
-        }
+            didSomething |= brutallusEncounterStates.erase(instanceId) > 0;
 
         Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
         if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
