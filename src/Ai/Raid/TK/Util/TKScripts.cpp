@@ -13,10 +13,11 @@
 
 using namespace TkHelpers;
 
-class VoidReaverSpellListenerScript : public AllSpellScript
+class VoidReaverArcaneOrbSpellListenerScript : public AllSpellScript
 {
 public:
-    VoidReaverSpellListenerScript() : AllSpellScript("VoidReaverSpellListenerScript") {}
+    VoidReaverArcaneOrbSpellListenerScript()
+        : AllSpellScript("VoidReaverArcaneOrbSpellListenerScript") {}
 
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
@@ -50,5 +51,5 @@ public:
 
 void AddSC_TempestKeepBotScripts()
 {
-    new VoidReaverSpellListenerScript();
+    new VoidReaverArcaneOrbSpellListenerScript();
 }
