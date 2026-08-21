@@ -34,7 +34,9 @@ struct EredarTwinsBlazeTargetState
 };
 
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
-inline constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
+
+// Grace period for the tanks to build threat before the rest of the raid opens up
+inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 
 inline Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
 inline std::array const ALYTHESS_TANK_POSITIONS = {
@@ -69,6 +71,7 @@ bool ShouldHoldTwinThreat(
     Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
 bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
+void RecordEredarTwinsDpsHoldStart(Player* bot);
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target);
 Player* GetEredarTwinsConflagrationTarget(Player* bot);
 void RecordEredarTwinsBlazeTarget(Player* target);

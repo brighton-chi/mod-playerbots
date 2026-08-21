@@ -463,12 +463,12 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
-    uint32 const instanceId = bot->GetInstanceId();
-    uint32 const now = getMSTime();
-    auto const it = eredarTwinsDpsHoldStartMs.try_emplace(instanceId, now).first;
-    constexpr uint32 dpsHoldMs = 8000;
+    // Read only: the window is opened by EredarTwinsDeterminingDpsPriorityTrigger
+    auto const it = eredarTwinsDpsHoldStartMs.find(bot->GetInstanceId());
+    if (it == eredarTwinsDpsHoldStartMs.end())
+        return 1.0f;
 
-    return getMSTimeDiff(it->second, now) < dpsHoldMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(it->second, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS ? 0.0f : 1.0f;
 }
 
 float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
@@ -520,7 +520,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
         !dynamic_cast<CastDisengageAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastKillingSpreeAction*>(action) &&
-        (PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action)))
+        !(PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action)))
     {
         return 1.0f;
     }

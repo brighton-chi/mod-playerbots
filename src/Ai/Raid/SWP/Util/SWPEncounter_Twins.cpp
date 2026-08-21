@@ -179,6 +179,15 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     return true;
 }
 
+// Stamped from a trigger rather than from the multiplier that reads it. Multipliers are applied in
+// registration order and the loop breaks as soon as one zeroes the relevance, so whether any given
+// multiplier runs at all depends on the action and on what the earlier ones did — starting a timer
+// there makes the hold measure from an arbitrary moment.
+void RecordEredarTwinsDpsHoldStart(Player* bot)
+{
+    eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
+}
+
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
 {
     if (!target)

@@ -549,7 +549,13 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
-    return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
+    if (IsAnySacrolashTank(bot) || IsAlythessTank(bot))
+        return false;
+
+    // Triggers are evaluated once per tick ahead of any multiplier, so this is a deterministic
+    // point to open the tank threat window that EredarTwinsHoldDpsAtStartMultiplier reads
+    RecordEredarTwinsDpsHoldStart(bot);
+    return true;
 }
 
 bool EredarTwinsBotHasConflagrationTrigger::IsActive()

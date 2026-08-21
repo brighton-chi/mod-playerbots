@@ -73,6 +73,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker)
         {
             didSomething |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
+            didSomething |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
             didSomething |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
         }
 

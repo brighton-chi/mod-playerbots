@@ -151,10 +151,10 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         [&](uint8 startIndex, bool includeStart, uint8& safeIndex)
     {
         size_t const offsetStart = includeStart ? 0 : 1;
-        for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITION_COUNT; ++offset)
+        for (size_t offset = offsetStart; offset < ALYTHESS_TANK_POSITIONS.size(); ++offset)
         {
             uint8 const candidateIndex =
-                static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITION_COUNT);
+                static_cast<uint8>((startIndex + offset) % ALYTHESS_TANK_POSITIONS.size());
 
             if (IsAlythessTankPositionSafe(bot, GetAlythessTankPosition(alythess, candidateIndex)))
             {
