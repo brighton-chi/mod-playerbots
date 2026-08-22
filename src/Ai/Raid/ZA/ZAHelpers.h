@@ -117,6 +117,9 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
 // Halazzi <Lynx Avatar>
 inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 
+// Hex Lord Malacrass
+inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 20.0f;
+
 // Zul'jin
 inline Position const ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 

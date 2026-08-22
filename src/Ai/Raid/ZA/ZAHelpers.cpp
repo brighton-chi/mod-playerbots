@@ -6,6 +6,9 @@
 
 #include "ZAHelpers.h"
 #include "Playerbots.h"
+#include <cmath>
+#include <limits>
+#include <list>
 
 namespace ZaHelpers
 {
@@ -183,6 +186,9 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
 }
 
 // Halazzi <Lynx Avatar>
+// N/A
+
+// Hex Lord Malacrass
 // N/A
 
 // Zul'jin

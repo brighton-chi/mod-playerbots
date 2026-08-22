@@ -68,7 +68,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 
 float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
@@ -83,11 +83,11 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
     bool shouldTankBoss = false;
 
-    if (botAI->IsMainTank(bot) &&
+    if (PlayerbotAI::IsMainTank(bot) &&
         !nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM)))
         shouldTankBoss = true;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM)))
         shouldTankBoss = true;
 
@@ -118,7 +118,7 @@ float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
 
 float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) ||
+    if (!PlayerbotAI::IsTank(bot) ||
         !AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
@@ -128,11 +128,11 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (bot->GetVictim() == nullptr)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot) &&
+    if (PlayerbotAI::IsMainTank(bot) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    if (botAI->IsAssistTank(bot) &&
+    if (PlayerbotAI::IsAssistTank(bot) &&
         !GetFirstAliveUnitByEntry(
             botAI, Id(ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING)) &&
         dynamic_cast<TankAssistAction*>(action))
@@ -207,18 +207,16 @@ float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action))
-        return 0.0f;
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
 
-    if (bot->GetVictim() != nullptr &&
-        dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<TankFaceAction*>(action))
+        return 1.0f;
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
 }
 
 float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
@@ -237,7 +235,7 @@ float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
 
 float HexLordMalacrassAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
@@ -255,7 +253,7 @@ float HexLordMalacrassAvoidWhirlwindMultiplier::GetValue(Action* action)
 
 float HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsCaster(bot))
+    if (!PlayerbotAI::IsCaster(bot))
         return 1.0f;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
@@ -320,12 +318,11 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
 
 float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin ||
-        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)))
+    if (!zuljin || zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -336,12 +333,11 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
 
 float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin ||
-        !zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
+    if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -355,8 +351,7 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin ||
-        !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
+    if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -371,8 +366,7 @@ float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin ||
-        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
+    if (!zuljin || zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
         return 1.0f;
 
     if (dynamic_cast<CastBloodlustAction*>(action) ||

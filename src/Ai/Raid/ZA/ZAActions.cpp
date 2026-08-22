@@ -8,6 +8,7 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "ZAHelpers.h"
+#include <algorithm>
 
 using namespace ZaHelpers;
 
@@ -26,28 +27,26 @@ bool ZulamanMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(Id(ZaSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", boss))
-        return botAI->CastSpell("steady shot", boss);
+    if (!bot->HasAura(Id(ZaSpells::SPELL_MISDIRECTION)))
+        return false;
 
-    return false;
+    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
 }
 
 // Trash
 
 bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
 {
-    if (Unit* protectiveWard = GetFirstAliveUnitByEntry(
-            botAI, Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD)))
-    {
+    constexpr float searchRadius = 40.0f;
+    Creature* protectiveWard = bot->FindNearestCreature(
+        Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD), searchRadius, true);
+    if (protectiveWard)
         return MarkTargetWithSkull(bot, protectiveWard);
-    }
 
-    if (Unit* healingWard = GetFirstAliveUnitByEntry(
-            botAI, Id(ZaNpcs::NPC_AMANI_HEALING_WARD)))
-    {
+    Creature* healingWard = bot->FindNearestCreature(
+        Id(ZaNpcs::NPC_AMANI_HEALING_WARD), searchRadius, true);
+    if (healingWard)
         return MarkTargetWithSkull(bot, healingWard);
-    }
 
     return false;
 }
@@ -88,9 +87,8 @@ bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
 bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 13.0f;
-    constexpr uint32 minInterval = 1000;
     if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
 }
@@ -98,7 +96,7 @@ bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
 bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 {
     Player* target = GetElectricalStormTarget(bot);
-    if (!target && !botAI->IsMainTank(bot))
+    if (!target && !PlayerbotAI::IsMainTank(bot))
         target = GetGroupMainTank(botAI, bot);
 
     if (target && bot->GetExactDist2d(target) > 2.0f)
@@ -135,17 +133,14 @@ bool AkilzonManageElectricalStormTimerAction::Execute(Event /*event*/)
 
 bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0, true))
-        return false;
-
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
         return false;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return MainTankPositionTrollForm(nalorakk);
-    else
-        return FirstAssistTankPositionBearForm(nalorakk);
+
+    return FirstAssistTankPositionBearForm(nalorakk);
 }
 
 bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
@@ -159,7 +154,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
             return botAI->DoSpecificAction("taunt spell", Event(), true);
     }
 
-    const Position& position = NALORAKK_TANK_POSITION;
+    Position const& position = NALORAKK_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -189,7 +184,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
             return botAI->DoSpecificAction("taunt spell", Event(), true);
     }
 
-    const Position& position = NALORAKK_TANK_POSITION;
+    Position const& position = NALORAKK_TANK_POSITION;
     float distToPosition =
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -211,9 +206,8 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
 bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 11.0f;
-    constexpr uint32 minInterval = 1000;
     if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
 }
@@ -231,7 +225,7 @@ bool JanalaiTanksPositionBossAction::Execute(Event /*event*/)
 
     if (janalai->GetVictim() == bot)
     {
-        const Position& position = JANALAI_TANK_POSITION;
+        Position const& position = JANALAI_TANK_POSITION;
         float distToPosition =
             bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
 
@@ -261,7 +255,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
+        if (!member || !PlayerbotAI::IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -321,7 +315,6 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     Position safestPos =
         FindSafestNearbyPosition(bot, bombs, janalaiCenter, safeZoneRadius, hazardRadius, false);
 
-    bot->AttackStop();
     bot->CastStop();
     return MoveTo(ZA_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
@@ -477,8 +470,7 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
         Id(ZaNpcs::NPC_HEX_LORD_MALACRASS)
     };
 
-    auto const& targets =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
 
     Unit* priorityTarget = nullptr;
 
@@ -511,43 +503,39 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool HexLordMalacrassRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    if (Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
-    {
-        float currentDistance = bot->GetDistance2d(malacrass);
-        constexpr float safeDistance = 9.0f;
-        if (currentDistance < safeDistance)
-        {
-            bot->AttackStop();
-            bot->CastStop();
-            return MoveAway(malacrass, safeDistance - currentDistance);
-        }
-    }
+    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    if (!malacrass)
+        return false;
 
-    return false;
+    float currentDistance = bot->GetDistance2d(malacrass);
+    constexpr float safeDistance = 9.0f;
+    if (currentDistance >= safeDistance)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(malacrass, safeDistance - currentDistance);
 }
 
 bool HexLordMalacrassCastersStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass ||
-        !malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)))
+    if (!malacrass || !malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)))
         return false;
 
-    if (AI_VALUE(Unit*, "current target") == malacrass)
-    {
-        bot->AttackStop();
-        bot->CastStop();
-        return true;
-    }
+    if (AI_VALUE(Unit*, "current target") != malacrass)
+        return false;
 
-    return false;
+    bot->AttackStop();
+    bot->CastStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    bot->SetSelection(ObjectGuid());
+    return true;
 }
 
 bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 20.0f;
-    GameObject* trap =
-        bot->FindNearestGameObject(Id(ZaObjects::GO_FREEZING_TRAP), searchRadius, true);
+    GameObject* trap = bot->FindNearestGameObject(
+        Id(ZaObjects::GO_FREEZING_TRAP), ZA_FREEZING_TRAP_SEARCH_RADIUS, true);
 
     if (!trap)
         return false;
@@ -596,19 +584,17 @@ bool ZuljinTanksPositionBossAction::Execute(Event /*event*/)
 
 bool ZuljinRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
-    {
-        float currentDistance = bot->GetExactDist2d(zuljin);
-        constexpr float safeDistance = 10.0f;
-        if (currentDistance < safeDistance)
-        {
-            bot->AttackStop();
-            bot->CastStop();
-            return MoveAway(zuljin, safeDistance - currentDistance);
-        }
-    }
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin)
+        return false;
 
-    return false;
+    float const currentDistance = bot->GetExactDist2d(zuljin);
+    constexpr float safeDistance = 10.0f;
+    if (currentDistance >= safeDistance)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(zuljin, safeDistance - currentDistance);
 }
 
 bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
@@ -639,7 +625,6 @@ bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
     Position safestPos =
         FindSafestNearbyPosition(bot, cyclones, zuljinCenter, safeZoneRadius, hazardRadius, true);
 
-    bot->AttackStop();
     bot->CastStop();
     return MoveTo(ZA_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
@@ -649,9 +634,8 @@ bool ZuljinAvoidCyclonesAction::Execute(Event /*event*/)
 bool ZuljinSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 6.0f;
-    constexpr uint32 minInterval = 1000;
     if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-        return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
 }
