@@ -8,6 +8,7 @@
 #define PLAYERBOTS_SWPVALUECONTEXT_H
 
 #include "NamedObjectContext.h"
+#include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "Value.h"
 #include "Position.h"
@@ -31,17 +32,38 @@ protected:
     }
 };
 
+// Collapses the four per-tick sweeps of "possible targets no los" this encounter used to run into
+// one per interval. Guids only - see MuruEncounterGuids for why the resolved pointers stay local.
+class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
+{
+public:
+    MuruEncounterTargetsValue(PlayerbotAI* botAI)
+        : CalculatedValue<SwpHelpers::MuruEncounterGuids>(
+              botAI, "muru encounter targets",
+              SwpHelpers::MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS) {}
+
+protected:
+    SwpHelpers::MuruEncounterGuids Calculate() override
+    {
+        return SwpHelpers::FindMuruEncounterGuids(botAI);
+    }
+};
+
 class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
     RaidSunwellValueContext()
     {
         creators["eredar twins blaze"] = &RaidSunwellValueContext::eredar_twins_blaze;
+        creators["muru encounter targets"] = &RaidSunwellValueContext::muru_encounter_targets;
     }
 
 private:
     static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI) {
         return new EredarTwinsBlazePositionsValue(botAI);
+    }
+    static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI) {
+        return new MuruEncounterTargetsValue(botAI);
     }
 };
 

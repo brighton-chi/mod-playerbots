@@ -72,17 +72,14 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
             position.GetPositionZ(), rangedGroupRadius, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    if (TryGetMuruDarknessActiveState(bot, muru))
+        return false;
+
     MuruEncounterTargets targets;
-    targets.muru = muru;
-    targets.entropius = entropius;
     GatherMuruEncounterTargets(botAI, targets);
 
     bool const hasActiveAdds =
         !targets.voidSentinels.empty() || !targets.furyMages.empty() || !targets.berserkers.empty();
-
-    if (TryGetMuruDarknessActiveState(bot, muru))
-        return false;
 
     if (!hasActiveAdds && !_entropiusRangedPositionReached)
     {
@@ -614,8 +611,8 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
 
 bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
 {
-    Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    if (!berserker || berserker->HasUnitState(UNIT_STATE_STUNNED))
+    Unit* berserker = FindMuruBerserkerToStun(botAI);
+    if (!berserker)
         return false;
 
     auto const castStun = [&](const char* spell)
@@ -638,16 +635,18 @@ bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
             return castStun("shadowfury");
 
         case CLASS_WARRIOR:
-            return castStun("concussion blow") || castStun("revenge stun") || castStun("shockwave");
+            return castStun("concussion blow") || castStun("shockwave");
 
         default:
-            return bot->getRace() == RACE_TAUREN && castStun("war stomp");
+            // Selection only yields a berserker here for tauren, the one race outside the cases
+            // above that brings a stun
+            return castStun("war stomp");
     }
 }
 
 bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
 {
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    Unit* furyMage = FindMuruFuryMageToInterrupt(botAI);
     if (!furyMage)
         return false;
 
@@ -667,23 +666,32 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
         case CLASS_MAGE:
             return castInterrupt("counterspell");
 
+        case CLASS_PALADIN:
+            return castInterrupt("avenger's shield");
+
+        case CLASS_PRIEST:
+            return castInterrupt("silence");
+
         case CLASS_ROGUE:
             return castInterrupt("kick");
 
         case CLASS_SHAMAN:
             return castInterrupt("wind shear");
 
+        case CLASS_WARLOCK:
+            return castInterrupt("spell lock");
+
         case CLASS_WARRIOR:
             return castInterrupt("pummel") || castInterrupt("shield bash");
 
         default:
-            return bot->getRace() == RACE_BLOODELF && castInterrupt("arcane torrent");
+            return false;
     }
 }
 
 bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)
 {
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
+    Unit* furyMage = FindMuruFuryMageToSpellsteal(botAI);
     return furyMage &&
         botAI->CanCastSpell(Id(SwpSpells::SPELL_SPELLSTEAL), furyMage) &&
         botAI->CastSpell(Id(SwpSpells::SPELL_SPELLSTEAL), furyMage);

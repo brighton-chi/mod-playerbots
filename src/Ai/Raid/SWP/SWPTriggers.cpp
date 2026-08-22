@@ -683,37 +683,17 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_WARLOCK &&
-        bot->getClass() != CLASS_WARRIOR)
-    {
-        return false;
-    }
-
-    Unit* berserker = AI_VALUE2(Unit*, "find target", "shadowsword berserker");
-    return berserker && berserker->HasAura(Id(SwpSpells::SPELL_FLURRY));
+    return FindMuruBerserkerToStun(botAI);
 }
 
 bool MuruFuryMageCastingFelFireballTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_PALADIN ||
-        bot->getClass() == CLASS_PRIEST || bot->getClass() == CLASS_WARLOCK)
-    {
-        return false;
-    }
-
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
-    return furyMage && furyMage->HasUnitState(UNIT_STATE_CASTING) &&
-        furyMage->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_FEL_FIREBALL));
+    return FindMuruFuryMageToInterrupt(botAI);
 }
 
 bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_MAGE)
-        return false;
-
-    Unit* furyMage = AI_VALUE2(Unit*, "find target", "shadowsword fury mage");
-    return furyMage && furyMage->HasAura(Id(SwpSpells::SPELL_SPELL_FURY));
+    return FindMuruFuryMageToSpellsteal(botAI);
 }
 
 bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
