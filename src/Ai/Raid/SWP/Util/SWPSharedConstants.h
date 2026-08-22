@@ -57,6 +57,7 @@ enum class SwpSpells : uint32
     // M'uru
     SPELL_DARKNESS                     = 45996,
     SPELL_DARKNESS_PRE_EFFECT          = 45999,
+    SPELL_ENTROPIUS_DARKNESS           = 46269,
     SPELL_SHADOW_BOLT_VOLLEY           = 46082,
     SPELL_FEL_FIREBALL                 = 46101,
     SPELL_SPELL_FURY                   = 46102,

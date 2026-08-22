@@ -8,6 +8,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -25,6 +26,7 @@
 #include "ZAHelpers.h"
 
 using namespace ZaHelpers;
+using namespace EncounterHelpers;
 
 // Akil'zon <Eagle Avatar>
 
@@ -49,22 +51,23 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
         !GetElectricalStormTarget(bot)*/)
         return 1.0f;
 
-    auto it = akilzonStormTimer.find(bot->GetMap()->GetInstanceId());
-    if (it == akilzonStormTimer.end() ||
-        !IsInStormWindow(it->second, std::time(nullptr)))
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action) &&
+        !dynamic_cast<CastDisengageAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    auto it = akilzonStormTimer.find(bot->GetInstanceId());
+    if (it == akilzonStormTimer.end())
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<SetBehindTargetAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return IsInStormWindow(it->second, std::time(nullptr)) ? 0.0f ? 1.0f;
 }
 
 // Nalorakk <Bear Avatar>
@@ -77,32 +80,23 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
+    bool const isTauntAction = IsTauntAction(bot, action);
+    bool const isTankAction = dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<TankFaceAction*>(action);
+
+    if (!isTauntAction && !isTankAction)
+        return 1.0f;
+
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action))
+    bool const isNalorakkInBearForm = nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM));
+
+    if (!isNalorakkInBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return 0.0f;
 
-    bool shouldTankBoss = false;
-
-    if (PlayerbotAI::IsMainTank(bot) &&
-        !nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM)))
-        shouldTankBoss = true;
-
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM)))
-        shouldTankBoss = true;
-
-    if (!shouldTankBoss &&
-        (dynamic_cast<TankAssistAction*>(action) ||
-         dynamic_cast<CastTauntAction*>(action) ||
-         dynamic_cast<CastGrowlAction*>(action) ||
-         dynamic_cast<CastHandOfReckoningAction*>(action) ||
-         dynamic_cast<CastDarkCommandAction*>(action)))
-        return 0.0f;
-
-    return 1.0f;
+    return isNalorakkInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
 float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
@@ -126,8 +120,10 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "jan'alai"))
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))

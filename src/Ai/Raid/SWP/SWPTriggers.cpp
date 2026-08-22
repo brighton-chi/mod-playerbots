@@ -652,11 +652,11 @@ bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
 
-    if (AI_VALUE2(Unit*, "find target", "dark fiend"))
+    if (FindMuruVoidZoneToAvoid(botAI))
         return true;
 
-    constexpr float searchRadius = 20.0f;
-    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARKNESS), searchRadius, true);
+    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
+    return darkFiend && darkFiend->GetVictim() == bot;
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()

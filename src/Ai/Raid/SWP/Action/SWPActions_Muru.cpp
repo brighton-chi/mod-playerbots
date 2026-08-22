@@ -434,26 +434,27 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
-    Unit* hazard = AI_VALUE2(Unit*, "find target", "dark fiend");
-    if (!hazard)
+    // Whatever the bot was casting matters less than being somewhere else; the core would cancel it
+    // once the move takes hold anyway, this just makes it immediate
+    bot->CastStop();
+
+    if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
     {
-        constexpr float searchRadius = 20.0f;
-        if (Creature* darkness = bot->FindNearestCreature(
-                Id(SwpNpcs::NPC_DARKNESS), searchRadius, true))
-        {
-            hazard = darkness;
-        }
+        float const distFromVoidZone = bot->GetDistance2d(voidZone);
+        return MoveAway(voidZone, MURU_VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
-    if (!hazard)
+    // Only the fiend's own victim gains anything by moving, so anyone else it happens to threaten
+    // is left alone
+    Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
+    if (!darkFiend || darkFiend->GetVictim() != bot)
         return false;
 
-    constexpr float safeDistance = 15.0f;
-    float const distFromHazard = bot->GetDistance2d(hazard);
-    if (distFromHazard > safeDistance)
+    float const distFromFiend = bot->GetDistance2d(darkFiend);
+    if (distFromFiend > MURU_DARK_FIEND_SAFE_DISTANCE)
         return false;
 
-    return MoveAway(hazard, safeDistance - distFromHazard);
+    return MoveAway(darkFiend, MURU_DARK_FIEND_SAFE_DISTANCE - distFromFiend);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)

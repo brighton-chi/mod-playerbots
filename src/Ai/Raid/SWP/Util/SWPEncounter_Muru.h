@@ -73,11 +73,15 @@ inline constexpr float MURU_SILENCING_SHOT_REACH = 35.0f;
 inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 
 // Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999, whose own tick casts
-// 45996 - a 15 yard persistent area aura that runs 20s. 45996 carries a 2s cast time, but a
-// periodic trigger casts with TRIGGERED_CAST_DIRECTLY, which zeroes it, so these two durations are
-// the entire dangerous window.
+// 45996 - a 15 yard zone doing 3k a second and cutting healing to zero. 45996 also lands on M'uru
+// itself (effect 2 targets the caster), so once it is up the window is read off that aura and
+// these two are only the estimate used during the telegraph, before the aura exists.
 inline constexpr uint32 MURU_DARKNESS_PRE_EFFECT_MS = 3000;
 inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20000;
+
+// Melee are let go this far before the zone actually drops, so the run back overlaps its tail
+// instead of starting after it
+inline constexpr uint32 MURU_DARKNESS_RUN_BACK_ALLOWANCE_MS = 2000;
 
 // How long after a darkness starts tanks are still expected to be running for their holding spot
 inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
@@ -95,6 +99,19 @@ inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 // Radius of Shadow Bolt Volley (46082), which is centred on the enslaved spawn rather than on its
 // target, so it is the spawn's distance that decides whether the cast is worth it
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
+
+// The void zone (25879) carries a permanent 46262, ticking 46264 for 3k in a 3 yard radius, and
+// nothing despawns it - so the margin here is for movement lag, not for the hazard itself
+inline constexpr float MURU_VOID_ZONE_SAFE_DISTANCE = 8.0f;
+inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = 12.0f;
+
+// Feeds the "muru void zones" value. The pools never move and never despawn, so the only thing a
+// stale window can miss is a fresh one, by at most one interval.
+inline constexpr uint32 MURU_VOID_ZONE_CACHE_INTERVAL_MS = 200;
+
+// A dark fiend detonates within two yards of whoever it is chasing, and that blast is 50 yards -
+// so only its own victim can prevent it, and distance is no defence for anybody else
+inline constexpr float MURU_DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
 // Tanks drag nothing further than this from the ranged stack
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
@@ -119,6 +136,8 @@ Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
+GuidVector FindMuruVoidZoneGuids(Player* bot);
+Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 
 }

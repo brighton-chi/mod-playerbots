@@ -26,54 +26,75 @@ bool IsMuruPhaseActive(Unit* muru)
     return muru && muru->GetHealth() > 1;
 }
 
+namespace
+{
+
+// Stamped separately from the answer so every bot in the tick agrees whichever aura it happened to
+// observe, and so the handover from pre-effect to zone leaves no seam.
+void StampMuruDarknessWindow(
+    MuruDarknessState& state, uint32 now, uint32 elapsedMs, uint32 remainingMs)
+{
+    uint32 const startMs = now > elapsedMs ? now - elapsedMs : 0;
+
+    if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
+        state.startMs = startMs;
+
+    state.expireMs = std::max(state.expireMs, now + remainingMs);
+}
+
+} // end anonymous namespace
+
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 {
     if (!muru)
         return false;
 
-    constexpr uint32 darknessTotalMs = MURU_DARKNESS_PRE_EFFECT_MS + MURU_DARKNESS_AURA_MS;
-
     uint32 const instanceId = bot->GetInstanceId();
     uint32 const now = getMSTime();
 
-    // The pre-effect aura is the only observable start. 45996 itself is cast from a periodic
-    // trigger with a zeroed cast time and finishes inside Spell::prepare, so it never occupies a
-    // current-spell slot for a tick to catch.
-    Aura* darknessPreEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT));
-    if (!darknessPreEffect)
+    if (Aura* darkness = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS)))
     {
-        // Nothing new to stamp, so only a window left over from an earlier cast keeps this true.
-        // Looked up rather than default-constructed: this is by far the common path, and operator[]
-        // would allocate and free a node on every call from every trigger, multiplier and
-        // exclusion pass that asks.
-        auto const stateItr = muruDarknessStates.find(instanceId);
-        if (stateItr == muruDarknessStates.end())
-            return false;
+        // 45996 lands on M'uru as well as on the ground, so its remaining duration is the exact
+        // remaining danger - nothing here is modelled
+        int32 const remainingMs = std::max(darkness->GetDuration(), 0);
+        int32 const elapsedZoneMs = std::max(darkness->GetMaxDuration() - remainingMs, 0);
 
-        if (stateItr->second.expireMs > now)
-            return true;
+        StampMuruDarknessWindow(
+            muruDarknessStates[instanceId], now,
+            MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
+            static_cast<uint32>(remainingMs));
+    }
+    else if (Aura* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
+    {
+        // The zone does not exist yet, so the telegraph runs on the estimate
+        int32 const duration = preEffect->GetDuration();
+        uint32 const remainingPreEffectMs = duration < 0 ?
+            MURU_DARKNESS_PRE_EFFECT_MS :
+            std::min(static_cast<uint32>(duration), MURU_DARKNESS_PRE_EFFECT_MS);
 
-        muruDarknessStates.erase(stateItr);
-        return false;
+        StampMuruDarknessWindow(
+            muruDarknessStates[instanceId], now,
+            MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
+            remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
     }
 
-    // How much of the aura's three seconds is left dates the start of the whole window
-    int32 remainingPreEffectMs = darknessPreEffect->GetDuration();
-    if (remainingPreEffectMs < 0)
-        remainingPreEffectMs = MURU_DARKNESS_PRE_EFFECT_MS;
+    // Looked up rather than default-constructed: with neither aura up this is by far the common
+    // path, and operator[] would allocate and free a node on every call from every trigger,
+    // multiplier and exclusion pass that asks.
+    auto const stateItr = muruDarknessStates.find(instanceId);
+    if (stateItr == muruDarknessStates.end())
+        return false;
 
-    uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
-    uint32 const elapsedPreEffectMs = remainingPreEffect < MURU_DARKNESS_PRE_EFFECT_MS ?
-        MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffect : 0;
-    uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
+    uint32 const expireMs = stateItr->second.expireMs;
+    if (expireMs > now + MURU_DARKNESS_RUN_BACK_ALLOWANCE_MS)
+        return true;
 
-    MuruDarknessState& state = muruDarknessStates[instanceId];
+    // Only the answer comes early; the record stays until the zone is genuinely gone so a late
+    // caller cannot restamp a window that has already been released
+    if (expireMs <= now)
+        muruDarknessStates.erase(stateItr);
 
-    if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
-        state.startMs = startMs;
-
-    state.expireMs = std::max(state.expireMs, startMs + darknessTotalMs);
-    return true;
+    return false;
 }
 
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
@@ -321,6 +342,55 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
     }
 
     return false;
+}
+
+GuidVector FindMuruVoidZoneGuids(Player* bot)
+{
+    std::list<Creature*> voidZones;
+    bot->GetCreatureListWithEntryInGrid(
+        voidZones, Id(SwpNpcs::NPC_DARKNESS), MURU_VOID_ZONE_SEARCH_RADIUS);
+
+    GuidVector guids;
+    guids.reserve(voidZones.size());
+    for (Creature* voidZone : voidZones)
+    {
+        if (voidZone && voidZone->IsAlive())
+            guids.push_back(voidZone->GetGUID());
+    }
+
+    return guids;
+}
+
+// Returns only a pool close enough to matter, so the range test is folded into the selection and
+// both the trigger and the action ask exactly the same question
+Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    GuidVector const& guids = botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("muru void zones")->RefGet();
+
+    Creature* nearest = nullptr;
+    float nearestDistance = MURU_VOID_ZONE_SAFE_DISTANCE;
+
+    for (ObjectGuid const& guid : guids)
+    {
+        Unit* unit = ResolveLivingUnit(botAI, guid);
+        if (!unit)
+            continue;
+
+        float const distance = bot->GetDistance2d(unit);
+        if (distance >= nearestDistance)
+            continue;
+
+        Creature* voidZone = unit->ToCreature();
+        if (!voidZone)
+            continue;
+
+        nearest = voidZone;
+        nearestDistance = distance;
+    }
+
+    return nearest;
 }
 
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)

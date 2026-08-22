@@ -49,6 +49,19 @@ protected:
     }
 };
 
+// The pools are static and permanent, so this is a straight cost saving: the trigger and the action
+// both ask every tick for the whole Entropius phase, and the room keeps accumulating them.
+class MuruVoidZonesValue : public CalculatedValue<GuidVector>
+{
+public:
+    MuruVoidZonesValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "muru void zones", SwpHelpers::MURU_VOID_ZONE_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindMuruVoidZoneGuids(bot); }
+};
+
 class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -56,6 +69,7 @@ public:
     {
         creators["eredar twins blaze"] = &RaidSunwellValueContext::eredar_twins_blaze;
         creators["muru encounter targets"] = &RaidSunwellValueContext::muru_encounter_targets;
+        creators["muru void zones"] = &RaidSunwellValueContext::muru_void_zones;
     }
 
 private:
@@ -64,6 +78,9 @@ private:
     }
     static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI) {
         return new MuruEncounterTargetsValue(botAI);
+    }
+    static UntypedValue* muru_void_zones(PlayerbotAI* botAI) {
+        return new MuruVoidZonesValue(botAI);
     }
 };
 
