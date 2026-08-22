@@ -8,13 +8,14 @@
 #define PLAYERBOTS_HYJALVALUECONTEXT_H
 
 #include "HyjalHelpers.h"
+#include "EncounterHelpers.h"
 #include "NamedObjectContext.h"
-#include "RaidBossHelpers.h"
 #include "Value.h"
 #include <string>
 #include <vector>
 
 using HyjalHelpers::HyjalSpells;
+using namespace EncounterHelpers;
 
 class HyjalInfernalsValue : public CalculatedValue<GuidVector>
 {

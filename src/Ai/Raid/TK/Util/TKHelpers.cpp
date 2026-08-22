@@ -5,13 +5,15 @@
  */
 
 #include "TKHelpers.h"
+#include "EncounterHelpers.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "TKActions.h"
 #include "TKKaelthasBossAI.h"
 #include <limits>
 #include <list>
+
+using namespace EncounterHelpers;
 
 namespace TkHelpers
 {

@@ -6,8 +6,8 @@
 
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
@@ -15,6 +15,7 @@
 #include <vector>
 
 using namespace HyjalHelpers;
+using namespace EncounterHelpers;
 
 // General
 

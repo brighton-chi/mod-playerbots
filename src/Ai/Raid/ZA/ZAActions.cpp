@@ -5,12 +5,13 @@
  */
 
 #include "ZAActions.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ZAHelpers.h"
 #include <algorithm>
 
 using namespace ZaHelpers;
+using namespace EncounterHelpers;
 
 // General
 

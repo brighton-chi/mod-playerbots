@@ -6,11 +6,13 @@
 
 #include "MagHelpers.h"
 #include "Creature.h"
+#include "EncounterHelpers.h"
 #include "GameObject.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+
+using namespace EncounterHelpers;
 
 namespace MagHelpers
 {

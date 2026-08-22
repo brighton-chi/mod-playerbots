@@ -4,12 +4,13 @@
  * or (at your option) any later version.
  */
 
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
 #include "CellImpl.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
+#include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "HunterActions.h"
@@ -172,15 +173,14 @@ bool ClearTargetIcon(Player* bot, uint8 iconId)
     return false;
 }
 
-// Set raid target icon to the specified icon on the specified target
-void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
+// For bots to set their raid target icon to the specified icon
+void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName)
 {
-    if (!target)
-        return;
+    Value<std::string>* rtiValue =
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti");
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    context->GetValue<std::string>("rti")->Set(rtiName);
-    context->GetValue<Unit*>("rti target")->Set(target);
+    if (rtiValue->Get() != rtiName)
+        rtiValue->Set(rtiName);
 }
 
 // Return the first alive bot in the specified instance map for purposes of assigning
@@ -207,13 +207,13 @@ bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 }
 
 // Requires the main tank to be alive
-Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
+Player* GetGroupMainTank(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
     if (mainTankGuid.IsEmpty())
         return nullptr;
 
@@ -228,13 +228,13 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
 }
 
 // Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
-Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
+Player* GetGroupAssistTank(Player* bot, uint8 index)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    ObjectGuid const mainTankGuid = PlayerbotAI::GetMainTankGuid(group);
     if (mainTankGuid.IsEmpty())
         return nullptr;
 
@@ -244,7 +244,7 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !botAI->IsTank(member) ||
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) ||
             member->GetGUID() == mainTankGuid)
         {
             continue;
@@ -467,7 +467,7 @@ bool IsTauntAction(Player* bot, Action* action)
     }
 }
 
-// These abilities can be particularly problematic on the pull for a council boss
+// These abilities can be particularly problematic on the pull for a council-type boss
 bool IsAoeThreatAction(Player* bot, Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))

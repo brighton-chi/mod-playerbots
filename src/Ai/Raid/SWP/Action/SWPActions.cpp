@@ -6,8 +6,8 @@
 
 #include "SWPActions.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -18,6 +18,7 @@
 #include <list>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 {

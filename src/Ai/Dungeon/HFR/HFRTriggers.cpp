@@ -3,11 +3,13 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#include "Playerbots.h"
 #include "HFRTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
-#include "RaidBossHelpers.h"
+#include "EncounterHelpers.h"
+#include "Playerbots.h"
+
+using namespace EncounterHelpers;
 
 // Watchkeeper Gargolmar
 

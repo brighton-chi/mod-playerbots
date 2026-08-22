@@ -6,15 +6,16 @@
 
 #include "GruulActions.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "GruulHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
 #include <algorithm>
 #include <limits>
 #include <vector>
 
 using namespace GruulHelpers;
+using namespace EncounterHelpers;
 
 // General
 

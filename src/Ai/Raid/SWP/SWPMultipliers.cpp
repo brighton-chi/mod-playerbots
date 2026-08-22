@@ -7,10 +7,10 @@
 #include "SWPMultipliers.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -27,6 +27,7 @@
 #include "WipeAction.h"
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 // Kalecgos
 

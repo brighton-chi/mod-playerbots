@@ -5,12 +5,13 @@
  */
 
 #include "HyjalTriggers.h"
+#include "EncounterHelpers.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 
 using namespace HyjalHelpers;
+using namespace EncounterHelpers;
 
 // General
 

@@ -5,17 +5,18 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Felmyst.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "RaidBossHelpers.h"
 #include "RtiTargetValue.h"
+#include "SWPEncounter_Felmyst.h"
 #include "SWPSharedConstants.h"
 #include "Timer.h"
 #include <cmath>
 #include <string>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {

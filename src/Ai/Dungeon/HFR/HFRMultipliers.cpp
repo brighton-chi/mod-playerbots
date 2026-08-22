@@ -4,13 +4,15 @@
 */
 
 #include "HFRMultipliers.h"
+#include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "HFRActions.h"
 #include "HFRTriggers.h"
-#include "ChooseTargetActions.h"
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+
+using namespace EncounterHelpers;
 
 // Omor the Unscarred
 

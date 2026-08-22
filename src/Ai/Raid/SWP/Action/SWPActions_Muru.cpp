@@ -5,11 +5,11 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "SWPEncounter_Muru.h"
 #include "SWPSharedConstants.h"
 #include "TargetValue.h"
 #include <array>
@@ -18,6 +18,7 @@
 #include <vector>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 namespace
 {

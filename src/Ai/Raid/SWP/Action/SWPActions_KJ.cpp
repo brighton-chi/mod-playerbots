@@ -5,16 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_KJ.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "RaidBossHelpers.h"
+#include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
 #include <map>
 #include <string>
 #include <vector>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {

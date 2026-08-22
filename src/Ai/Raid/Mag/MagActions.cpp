@@ -6,17 +6,18 @@
 
 #include "MagActions.h"
 #include "Creature.h"
+#include "EncounterHelpers.h"
 #include "MagHelpers.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include <algorithm>
 #include <limits>
 #include <list>
 #include <vector>
 
 using namespace MagHelpers;
+using namespace EncounterHelpers;
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {

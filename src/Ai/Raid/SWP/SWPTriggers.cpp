@@ -5,8 +5,8 @@
  */
 
 #include "SWPTriggers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -16,6 +16,7 @@
 #include "SWPEncounter_Twins.h"
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 // General
 

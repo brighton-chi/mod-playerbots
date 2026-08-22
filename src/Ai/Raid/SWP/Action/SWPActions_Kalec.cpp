@@ -5,16 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Kalec.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "RaidBossHelpers.h"
+#include "SWPEncounter_Kalec.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
 #include <string>
 #include <map>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 {

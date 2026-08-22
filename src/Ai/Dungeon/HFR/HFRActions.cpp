@@ -4,9 +4,11 @@
 */
 
 #include "Playerbots.h"
+#include "EncounterHelpers.h"
 #include "HFRTriggers.h"
 #include "HFRActions.h"
-#include "RaidBossHelpers.h"
+
+using namespace EncounterHelpers;
 
 constexpr uint32 HFR_MAP_ID = 543;
 

@@ -5,15 +5,16 @@
  */
 
 #include "AllCreatureScript.h"
+#include "EncounterHelpers.h"
 #include "HyjalHelpers.h"
 #include "Player.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"
 
-using namespace HyjalHelpers;
+using HyjalHelpers::HyjalSpells;
+using namespace EncounterHelpers;
 
 namespace
 {

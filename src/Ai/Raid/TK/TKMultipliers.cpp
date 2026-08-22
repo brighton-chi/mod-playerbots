@@ -6,12 +6,12 @@
 
 #include "TKMultipliers.h"
 #include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "EquipAction.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -21,6 +21,7 @@
 #include <ctime>
 
 using namespace TkHelpers;
+using namespace EncounterHelpers;
 
 // Al'ar <Phoenix God>
 

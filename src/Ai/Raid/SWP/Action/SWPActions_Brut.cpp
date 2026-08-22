@@ -5,15 +5,16 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Brut.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "SWPEncounter_Brut.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {

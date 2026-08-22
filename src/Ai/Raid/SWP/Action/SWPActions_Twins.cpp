@@ -5,13 +5,14 @@
  */
 
 #include "SWPActions.h"
-#include "SWPEncounter_Twins.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
+#include "SWPEncounter_Twins.h"
 #include "SWPSharedConstants.h"
 #include <vector>
 
 using namespace SwpHelpers;
+using namespace EncounterHelpers;
 
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {

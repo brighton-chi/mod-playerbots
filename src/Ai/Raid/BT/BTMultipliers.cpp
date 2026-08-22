@@ -14,7 +14,6 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PriestActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"

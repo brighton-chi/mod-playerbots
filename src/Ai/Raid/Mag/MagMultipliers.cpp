@@ -8,6 +8,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -17,12 +18,12 @@
 #include "MovementActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
 
 using namespace MagHelpers;
+using namespace EncounterHelpers;
 
 // When a cube clicker is in the handling phase (waiting near cube or moving
 // to use), suppress movement actions that would pull them away from the cube

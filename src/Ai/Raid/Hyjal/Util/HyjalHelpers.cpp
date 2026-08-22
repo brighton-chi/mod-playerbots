@@ -5,13 +5,15 @@
  */
 
 #include "HyjalHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
 #include <string>
+
+using namespace EncounterHelpers;
 
 namespace HyjalHelpers
 {

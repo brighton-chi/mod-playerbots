@@ -6,16 +6,17 @@
 
 #include "GruulMultipliers.h"
 #include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "GruulActions.h"
 #include "GruulHelpers.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 
 using namespace GruulHelpers;
+using namespace EncounterHelpers;
 
 float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {

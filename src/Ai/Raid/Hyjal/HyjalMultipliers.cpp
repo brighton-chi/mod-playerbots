@@ -9,16 +9,17 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidBearActions.h"
+#include "EncounterHelpers.h"
 #include "HunterActions.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
 #include "PaladinActions.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
 #include "WarriorActions.h"
 
 using namespace HyjalHelpers;
+using namespace EncounterHelpers;
 
 // Note: BOT_STATE_NON_COMBAT checks cannot be used by any multiplier that could result in a bot
 // having no valid targets as it will then swap to the non-combat engine, even during a boss fight.
