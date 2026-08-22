@@ -45,13 +45,10 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         return 1.0f;
 
     auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
-    if (timerIt != blastNovaTimer.end() &&
-        getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS)
-    {
+    if (timerIt != blastNovaTimer.end())
         return 0.0f;
-    }
 
-    return 1.0f;
+    return getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS ? 0.0f : 1.0f;
 }
 
 // Wait for 6 seconds after Magtheridon becomes attackable before engaging
@@ -75,10 +72,10 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 
     constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
     auto it = dpsWaitTimer.find(magtheridon->GetInstanceId());
-    if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs)
+    if (it == dpsWaitTimer.end())
         return 0.0f;
 
-    return 1.0f;
+    return getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs ? 0.0f : 1.0f;
 }
 
 float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
@@ -110,10 +107,10 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (isReachTargetSpell && !PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    if (GetChanneler(bot, NORTHWEST_CHANNELER) || GetChanneler(bot, NORTHEAST_CHANNELER))
+    if (GetChanneler(bot, NORTHWEST_CHANNELER))
         return 0.0f;
 
-    return 1.0f;
+    return GetChanneler(bot, NORTHEAST_CHANNELER) ? 0.0f : 1.0f;
 }
 
 float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
