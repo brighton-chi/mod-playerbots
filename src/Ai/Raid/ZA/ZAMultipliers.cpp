@@ -30,6 +30,9 @@ using namespace ZaHelpers;
 
 float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return 1.0f;
 
@@ -68,6 +71,9 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 
 float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -77,9 +83,6 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
-
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
 
     bool shouldTankBoss = false;
 
@@ -104,29 +107,31 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
 float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER ||
-        !AI_VALUE2(Unit*, "find target", "nalorakk"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 0.0f;
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
 
-    return 1.0f;
+    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "nalorakk") ? 0.0f : 1.0f;
 }
 
 // Jan'alai <Dragonhawk Avatar>
 
 float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot) ||
         !AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
-
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
 
     if (PlayerbotAI::IsMainTank(bot) &&
         dynamic_cast<TankAssistAction*>(action))
@@ -143,6 +148,9 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
 
 float JanalaiDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
@@ -175,6 +183,9 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "amani'shi hatcher"))
         return 1.0f;
 
@@ -187,6 +198,9 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
 
 float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
@@ -221,14 +235,16 @@ float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
 
 float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER ||
-        !AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 0.0f;
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
 
-    return 1.0f;
+    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
 }
 
 // Hex Lord Malacrass
@@ -275,6 +291,9 @@ float HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier::GetValue(Act
 
 float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_PRIEST &&
         bot->getClass() != CLASS_PALADIN &&
         bot->getClass() != CLASS_WARLOCK)
@@ -318,6 +337,9 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
 
 float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -350,6 +372,9 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 
 float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
         return 1.0f;
@@ -362,6 +387,9 @@ float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
 
 float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
