@@ -5,18 +5,19 @@
  */
 
 #include "SethMultipliers.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "SethActions.h"
 #include "SethData.h"
 #include "ShamanActions.h"
 
 using namespace SethData;
+using namespace EncounterHelpers;
 
 float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)
 {

@@ -5,10 +5,10 @@
  */
 
 #include "KaraActions.h"
+#include "EncounterHelpers.h"
 #include "KaraHelpers.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "RaidBossHelpers.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -19,6 +19,7 @@
 #include <string>
 
 using namespace KaraHelpers;
+using namespace EncounterHelpers;
 
 // General
 

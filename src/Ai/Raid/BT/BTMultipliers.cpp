@@ -8,25 +8,22 @@
 #include "BTActions.h"
 #include "BTHelpers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidActions.h"
-#include "DruidBearActions.h"
 #include "DruidShapeshiftActions.h"
+#include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
-#include "PaladinActions.h"
 #include "PriestActions.h"
 #include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "WarlockActions.h"
-#include "WarriorActions.h"
 #include "WipeAction.h"
 #include <array>
+#include <ctime>
 
 using namespace BlackTempleHelpers;
+using namespace EncounterHelpers;
 
 // General
 
