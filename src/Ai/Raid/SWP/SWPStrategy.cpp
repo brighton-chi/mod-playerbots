@@ -308,10 +308,14 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
         return;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealth() <= 1)
+    if (!IsMuruPhaseActive(muru))
         return;
 
-    constexpr float maxTargetDistFromStack = 25.0f;
+    // Loop invariant: while darkness is out the sentinel tank chases whatever it likes, so only
+    // M'uru itself stays excluded
+    bool const distanceUnrestricted = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
+        TryGetMuruDarknessActiveState(bot, muru);
+    ObjectGuid const muruGuid = muru->GetGUID();
 
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
@@ -319,19 +323,16 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
         if (!attacker || attacker->GetEntry() == Id(SwpNpcs::NPC_VOID_SENTINEL))
             continue;
 
-        if (guid == muru->GetGUID())
+        if (guid == muruGuid)
         {
             exclusions.insert(guid);
             continue;
         }
 
-        if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-            TryGetMuruDarknessActiveState(bot, muru))
-        {
+        if (distanceUnrestricted)
             continue;
-        }
 
-        if (attacker->GetExactDist2d(MURU_STACK_POSITION) > maxTargetDistFromStack)
+        if (attacker->GetExactDist2d(MURU_STACK_POSITION) > MURU_MAX_TARGET_DIST_FROM_STACK)
             exclusions.insert(guid);
     }
 }

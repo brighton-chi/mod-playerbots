@@ -72,18 +72,54 @@ inline constexpr float MURU_SILENCING_SHOT_REACH = 35.0f;
 // cached; every state read (Flurry, casting, health) comes from the freshly resolved unit.
 inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 
+// Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999, whose own tick casts
+// 45996 - a 15 yard persistent area aura that runs 20s. 45996 carries a 2s cast time, but a
+// periodic trigger casts with TRIGGERED_CAST_DIRECTLY, which zeroes it, so these two durations are
+// the entire dangerous window.
+inline constexpr uint32 MURU_DARKNESS_PRE_EFFECT_MS = 3000;
+inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20000;
+
+// How long after a darkness starts tanks are still expected to be running for their holding spot
+inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
+
+// Darkness damages within 15 yards of M'uru; the rest is the usual avoidance padding
+inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
+
+// How far from its own holding spot a target may sit and still count as worth reaching for. Shares
+// a value with the safe distance above but not a meaning - these tune independently.
+inline constexpr float MURU_HOLDING_POSITION_RADIUS = 20.0f;
+
+// Nearest wins the DPS slot, but only by a clear margin
+inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
+
+// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved spawn rather than on its
+// target, so it is the spawn's distance that decides whether the cast is worth it
+inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
+
+// Tanks drag nothing further than this from the ranged stack
+inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
+
+// Misdirect is worth a cooldown only on a target the raid has barely started on
+inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
+
+// DPS cooldowns are held until M'uru is chipped past the opening threat build
+inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
+
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
     muruVoidSentinelTankAssignments;
 
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
-bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
+bool IsMuruPhaseActive(Unit* muru);
+bool TryGetMuruDarknessEarlyState(
+    Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
-Creature* FindAvailableVoidSpawnForEnslave(Player* bot);
+bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 
 }
 

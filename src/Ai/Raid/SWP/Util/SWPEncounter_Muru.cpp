@@ -19,54 +19,61 @@ namespace SwpHelpers
 std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
 
+bool IsMuruPhaseActive(Unit* muru)
+{
+    // DamageTaken caps M'uru at exactly 1 health when it transitions, and it is invisible and
+    // unselectable from then on, so the health is the phase
+    return muru && muru->GetHealth() > 1;
+}
+
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
 {
     if (!muru)
         return false;
 
-    constexpr uint32 darknessPreEffectMs = 3000;
-    constexpr uint32 darknessCastMs = 2000;
-    constexpr uint32 darknessPostCastDangerMs = 18000;
-    constexpr uint32 darknessTotalMs =
-        darknessPreEffectMs + darknessCastMs + darknessPostCastDangerMs;
+    constexpr uint32 darknessTotalMs = MURU_DARKNESS_PRE_EFFECT_MS + MURU_DARKNESS_AURA_MS;
+
     uint32 const instanceId = bot->GetInstanceId();
     uint32 const now = getMSTime();
+
+    // The pre-effect aura is the only observable start. 45996 itself is cast from a periodic
+    // trigger with a zeroed cast time and finishes inside Spell::prepare, so it never occupies a
+    // current-spell slot for a tick to catch.
+    Aura* darknessPreEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT));
+    if (!darknessPreEffect)
+    {
+        // Nothing new to stamp, so only a window left over from an earlier cast keeps this true.
+        // Looked up rather than default-constructed: this is by far the common path, and operator[]
+        // would allocate and free a node on every call from every trigger, multiplier and
+        // exclusion pass that asks.
+        auto const stateItr = muruDarknessStates.find(instanceId);
+        if (stateItr == muruDarknessStates.end())
+            return false;
+
+        if (stateItr->second.expireMs > now)
+            return true;
+
+        muruDarknessStates.erase(stateItr);
+        return false;
+    }
+
+    // How much of the aura's three seconds is left dates the start of the whole window
+    int32 remainingPreEffectMs = darknessPreEffect->GetDuration();
+    if (remainingPreEffectMs < 0)
+        remainingPreEffectMs = MURU_DARKNESS_PRE_EFFECT_MS;
+
+    uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
+    uint32 const elapsedPreEffectMs = remainingPreEffect < MURU_DARKNESS_PRE_EFFECT_MS ?
+        MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffect : 0;
+    uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
+
     MuruDarknessState& state = muruDarknessStates[instanceId];
 
-    if (Aura* darknessPreEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
-    {
-        int32 remainingPreEffectMs = darknessPreEffect->GetDuration();
-        if (remainingPreEffectMs < 0)
-            remainingPreEffectMs = darknessPreEffectMs;
+    if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
+        state.startMs = startMs;
 
-        uint32 const remainingPreEffect = static_cast<uint32>(remainingPreEffectMs);
-        uint32 const elapsedPreEffectMs = remainingPreEffect < darknessPreEffectMs ?
-            darknessPreEffectMs - remainingPreEffect : 0;
-        uint32 const startMs = now > elapsedPreEffectMs ? now - elapsedPreEffectMs : 0;
-
-        if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
-            state.startMs = startMs;
-
-        state.expireMs = std::max(state.expireMs, startMs + darknessTotalMs);
-        return true;
-    }
-
-    if (muru->HasUnitState(UNIT_STATE_CASTING) &&
-        muru->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_DARKNESS)))
-    {
-        uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
-        if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
-            state.startMs = startMs;
-
-        state.expireMs = std::max(state.expireMs, now + darknessCastMs + darknessPostCastDangerMs);
-        return true;
-    }
-
-    if (state.expireMs > now)
-        return true;
-
-    muruDarknessStates.erase(instanceId);
-    return false;
+    state.expireMs = std::max(state.expireMs, startMs + darknessTotalMs);
+    return true;
 }
 
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
@@ -91,12 +98,20 @@ MuruEncounterGuids const& GetCachedMuruEncounterGuids(PlayerbotAI* botAI)
         ->GetValue<MuruEncounterGuids>("muru encounter targets")->RefGet();
 }
 
-void ResolveUnits(PlayerbotAI* botAI, GuidVector const& guids, std::vector<Unit*>& units)
+// The guid list is only refreshed once an interval, so anything on it can have died since. Every
+// consumer wants the living, and one of them takes the first candidate before checking.
+Unit* ResolveLivingUnit(PlayerbotAI* botAI, ObjectGuid const& guid)
+{
+    Unit* unit = botAI->GetUnit(guid);
+    return unit && unit->IsAlive() ? unit : nullptr;
+}
+
+void ResolveLivingUnits(PlayerbotAI* botAI, GuidVector const& guids, std::vector<Unit*>& units)
 {
     units.reserve(guids.size());
     for (ObjectGuid const& guid : guids)
     {
-        if (Unit* unit = botAI->GetUnit(guid))
+        if (Unit* unit = ResolveLivingUnit(botAI, guid))
             units.push_back(unit);
     }
 }
@@ -253,12 +268,12 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 {
     MuruEncounterGuids const& guids = GetCachedMuruEncounterGuids(botAI);
 
-    targets.muru = botAI->GetUnit(guids.muru);
-    targets.entropius = botAI->GetUnit(guids.entropius);
-    ResolveUnits(botAI, guids.voidSentinels, targets.voidSentinels);
-    ResolveUnits(botAI, guids.voidSpawns, targets.voidSpawns);
-    ResolveUnits(botAI, guids.furyMages, targets.furyMages);
-    ResolveUnits(botAI, guids.berserkers, targets.berserkers);
+    targets.muru = ResolveLivingUnit(botAI, guids.muru);
+    targets.entropius = ResolveLivingUnit(botAI, guids.entropius);
+    ResolveLivingUnits(botAI, guids.voidSentinels, targets.voidSentinels);
+    ResolveLivingUnits(botAI, guids.voidSpawns, targets.voidSpawns);
+    ResolveLivingUnits(botAI, guids.furyMages, targets.furyMages);
+    ResolveLivingUnits(botAI, guids.berserkers, targets.berserkers);
 }
 
 // Deliberately not FindTargetValue: that walks the bot's own threatened-by-me list and returns the
@@ -295,30 +310,39 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
         &IsSpellFuryBuffedFuryMage);
 }
 
-Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
+bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& units = AI_VALUE(GuidVector, "possible targets no los");
+    Player* bot = botAI->GetBot();
+    for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSentinels)
+    {
+        Unit* voidSentinel = ResolveLivingUnit(botAI, guid);
+        if (voidSentinel && voidSentinel->GetVictim() == bot)
+            return true;
+    }
+
+    return false;
+}
+
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
 
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
 
-    for (ObjectGuid const& guid : units)
+    // The cached list is already filtered to void spawns, so only availability is left to check
+    for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSpawns)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || unit->GetEntry() != Id(SwpNpcs::NPC_VOID_SPAWN) ||
-            unit->IsCharmed() || unit->GetCharmer())
-        {
-            continue;
-        }
-
-        float distance = bot->GetExactDist2d(unit);
-        if (distance >= closestDistance)
+        Unit* unit = ResolveLivingUnit(botAI, guid);
+        if (!unit || unit->IsCharmed() || unit->GetCharmer())
             continue;
 
         Creature* creature = unit->ToCreature();
         if (!creature)
+            continue;
+
+        float const distance = bot->GetExactDist2d(unit);
+        if (distance >= closestDistance)
             continue;
 
         bestSpawn = creature;

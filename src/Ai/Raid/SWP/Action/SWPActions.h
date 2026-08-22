@@ -427,9 +427,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
-    Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const;
+    Unit* ResolveMuruDpsTarget(Unit* currentTarget);
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
@@ -507,25 +505,25 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruWarlockEnslaveVoidSpawnAction : public MovementAction
+class MuruWarlockEnslaveVoidSpawnAction : public Action
 {
 public:
     MuruWarlockEnslaveVoidSpawnAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru warlock enslave void spawn") {}
+        : Action(botAI, "m'uru warlock enslave void spawn") {}
     bool Execute(Event event) override;
 };
 
 class MuruEnslavedVoidSpawnAttackAction : public Action
 {
 public:
-    MuruEnslavedVoidSpawnAttackAction(
-        PlayerbotAI* botAI, std::string const name = "m'uru enslaved void spawn attack")
+    // Abstract: only the derived names are registered, so there is no default to fall back on
+    MuruEnslavedVoidSpawnAttackAction(PlayerbotAI* botAI, std::string const name)
         : Action(botAI, name) {}
 
 protected:
     Unit* GetControlledVoidSpawn() const;
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
-    Unit* GetVoidSpawnVolleyPriorityTarget() const;
+    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
 class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction

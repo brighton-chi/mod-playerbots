@@ -617,13 +617,9 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    constexpr float searchRadius = 40.0f;
-    Creature* voidSpawn = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
-    if (!voidSpawn)
-        return 1.0f;
-
     // Disable secondary dots on void spawn
-    return AI_VALUE(Unit*, "current target") == voidSpawn ? 0.0f : 1.0f;
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
+    return currentTarget && currentTarget->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN) ? 0.0f : 1.0f;
 }
 
 float MuruControlMisdirectionMultiplier::GetValue(Action* action)
@@ -693,9 +689,9 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         float const targetDistFromRef = actionTarget->GetExactDist2d(refPosition);
-        constexpr float targetDistThreshold = 20.0f;
 
-        return targetDistFromMuru > targetDistThreshold && targetDistFromRef < targetDistThreshold;
+        return targetDistFromMuru > MURU_DARKNESS_SAFE_DISTANCE &&
+            targetDistFromRef < MURU_HOLDING_POSITION_RADIUS;
     };
 
     if (isReachTargetSafeFromDarkness(action))
@@ -726,8 +722,7 @@ float MuruDelayCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    constexpr float maxDpsHpThreshold = 97.0f;
-    return muru->GetHealthPct() > maxDpsHpThreshold ? 0.0f : 1.0f;
+    return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
 }
 
 // Kil'jaeden <The Deceiver>

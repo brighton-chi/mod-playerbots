@@ -10,11 +10,9 @@
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SWPSharedConstants.h"
-#include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
-#include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include <unordered_set>
 #include <vector>

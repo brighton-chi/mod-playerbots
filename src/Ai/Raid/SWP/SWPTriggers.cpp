@@ -584,12 +584,12 @@ bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (entropius && entropius->GetHealthPct() > 80.0f)
+    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    if (voidSentinel && voidSentinel->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
         return true;
 
-    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
-    return voidSentinel && voidSentinel->GetHealthPct() > 80.0f;
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    return entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT;
 }
 
 bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
@@ -619,13 +619,13 @@ bool MuruVoidSentinelPulsesShadowTrigger::IsActive()
         return false;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    return muru && muru->GetHealth() > 1;
+    return IsMuruPhaseActive(muru);
 }
 
 bool MuruAddsSpawnAtEntranceTrigger::IsActive()
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealth() == 1)
+    if (!IsMuruPhaseActive(muru))
         return false;
 
     if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
@@ -665,7 +665,7 @@ bool MuruDarknessIsComingTrigger::IsActive()
         return false;
 
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru || muru->GetHealth() == 1)
+    if (!IsMuruPhaseActive(muru))
         return false;
 
     return TryGetMuruDarknessActiveState(bot, muru);
@@ -707,7 +707,7 @@ bool MuruVoidSpawnAvailableForEnslaveTrigger::IsActive()
     if (bot->GetCharm())
         return false;
 
-    return FindAvailableVoidSpawnForEnslave(bot);
+    return FindAvailableVoidSpawnForEnslave(botAI);
 }
 
 bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
