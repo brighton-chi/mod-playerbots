@@ -89,14 +89,13 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    bool const isTaunt = IsTauntAction(bot, action);
     bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
     bool const isReachTargetSpell =
         dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    if (!isTaunt && !isAvoidAoe && !isReachTargetSpell &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<TankAssistAction*>(action))
+    if (!isAvoidAoe && !isReachTargetSpell && !IsTauntAction(bot, action) &&
+        !dynamic_cast<TankAssistAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
     }
@@ -111,11 +110,8 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (isReachTargetSpell && !PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    if (GetChanneler(bot, NORTHWEST_CHANNELER) ||
-        GetChanneler(bot, NORTHEAST_CHANNELER))
-    {
+    if (GetChanneler(bot, NORTHWEST_CHANNELER) || GetChanneler(bot, NORTHEAST_CHANNELER))
         return 0.0f;
-    }
 
     return 1.0f;
 }
