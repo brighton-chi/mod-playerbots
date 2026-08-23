@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+class Creature;
+
 // General
 
 class SunwellPlateauResetEncounterStatesAction : public Action
@@ -578,7 +580,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool PickUpSinisterReflections();
+    bool PickUpSinisterReflections(Creature* reflection);
 };
 
 class KiljaedenPositionMeleeAction : public MovementAction

@@ -93,8 +93,13 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         didSomething |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "kil'jaeden"))
-        didSomething |= kiljaedenEncounterStates.erase(instanceId) > 0;
+    if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    {
+        didSomething |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
+
+        if (isMechanicTracker)
+            didSomething |= kiljaedenEncounterStates.erase(instanceId) > 0;
+    }
 
     if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {

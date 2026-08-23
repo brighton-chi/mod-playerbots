@@ -835,8 +835,8 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
 
     for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
-        constexpr float searchRadius = 200.0f;
-        GameObject* orb = bot->FindNearestGameObject(orbEntry, searchRadius, true);
+        GameObject* orb = bot->FindNearestGameObject(
+            orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true);
         if (!orb)
             continue;
 
@@ -867,9 +867,11 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
-    constexpr uint32 orbUseGraceMs = 2000;
-    if (HasKiljaedenDragonAura(bot) || HasRecentKiljaedenDragonOrbUse(bot, orbUseGraceMs))
+    if (HasKiljaedenDragonAura(bot) ||
+        HasRecentKiljaedenDragonOrbUse(bot, KILJAEDEN_ORB_USE_GRACE_MS))
+    {
         return false;
+    }
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }
