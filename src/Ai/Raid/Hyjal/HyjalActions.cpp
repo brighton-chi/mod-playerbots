@@ -113,7 +113,7 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
 // Rage Winterchill
 
 // This is essentially a forced "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in the
-// config being 15 yards; avoidance works fine without this strategy if it is set to 20+ yards.
+// config being 15 yards; avoid aoe works fine without this strategy if it is set to 20+ yards.
 bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Position pool;
