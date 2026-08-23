@@ -7,7 +7,6 @@
 #include "ACMultipliers.h"
 #include "ACActions.h"
 #include "ACTriggers.h"
-#include "AiObjectContext.h"
 #include "FollowActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
@@ -21,8 +20,10 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return 1.0f;
 
+    constexpr float searchRadius = 20.0f;
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), searchRadius);
 
     for (Creature* flare : creatureList)
     {
@@ -47,5 +48,6 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
             }
         }
     }
+
     return 1.0f;
 }
