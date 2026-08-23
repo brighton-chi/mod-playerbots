@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <ctime>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -300,7 +299,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     Unit* ember = nullptr;
     if (IsPrimaryEmberTank(bot))
         ember = firstEmber;
-    else if (GetPhase2SecondEmberTank(bot) == bot)
+    else if (GetSecondaryEmberTank(bot) == bot)
         ember = secondEmber;
 
     if (!ember)
@@ -462,7 +461,7 @@ bool AlarSwapTanksOnBossAction::Execute(Event event)
     if (!alar)
         return false;
 
-    if (GetPhase2SecondEmberTank(bot) == bot)
+    if (GetSecondaryEmberTank(bot) == bot)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != alar)
@@ -1266,7 +1265,7 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
     if (it == advisorDpsWaitTimer.end() || it->second != ADVISOR_DPS_WAIT_NOT_STARTED)
         return false;
 
-    it->second = std::time(nullptr);
+    it->second = getMSTime();
     return true;
 }
 
@@ -2145,7 +2144,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     if (!aura)
         return false;
 
-    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
+    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(aura->GetApplyTime());
 
     constexpr float minHoverHeight = 5.0f;
     constexpr float maxHoverHeight = 35.0f;

@@ -18,7 +18,6 @@
 #include "TKActions.h"
 #include "TKHelpers.h"
 #include "WarlockActions.h"
-#include <ctime>
 
 using namespace TkHelpers;
 using namespace EncounterHelpers;
@@ -240,12 +239,11 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 10;
+    constexpr uint32 dpsWaitMs = 10 * IN_MILLISECONDS;
 
     auto it = advisorDpsWaitTimer.find(kaelthas->GetInstanceId());
     if (it != advisorDpsWaitTimer.end() && it->second != ADVISOR_DPS_WAIT_NOT_STARTED &&
-        (now - it->second) >= dpsWaitSeconds)
+        getMSTimeDiff(it->second, getMSTime()) >= dpsWaitMs)
     {
         return 1.0f;
     }

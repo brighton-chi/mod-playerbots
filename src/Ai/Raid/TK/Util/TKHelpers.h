@@ -11,7 +11,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
-#include <ctime>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -196,7 +195,7 @@ void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, P
 bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
-Player* GetPhase2SecondEmberTank(Player* bot);
+Player* GetSecondaryEmberTank(Player* bot);
 
 // Void Reaver
 
@@ -246,8 +245,8 @@ inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
-inline constexpr time_t ADVISOR_DPS_WAIT_NOT_STARTED = -1;
-extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
+inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
+extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
 uint32 GetKaelthasPhase(Unit* kaelthas);
 Creature* GetPhoenixEgg(Player* bot);
