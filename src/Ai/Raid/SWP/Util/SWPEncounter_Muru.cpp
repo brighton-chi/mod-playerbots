@@ -344,6 +344,14 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
     return false;
 }
 
+ObjectGuid FindMuruSingularityGuid(Player* bot)
+{
+    Creature* singularity = bot->FindNearestCreature(
+        Id(SwpNpcs::NPC_SINGULARITY), MURU_SINGULARITY_SEARCH_RADIUS, true);
+
+    return singularity ? singularity->GetGUID() : ObjectGuid::Empty;
+}
+
 GuidVector FindMuruVoidZoneGuids(Player* bot)
 {
     std::list<Creature*> voidZones;

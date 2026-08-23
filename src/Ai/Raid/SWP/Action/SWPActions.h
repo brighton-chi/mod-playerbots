@@ -10,12 +10,22 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include <limits>
 #include <string>
 #include <vector>
 
 class Creature;
+
+namespace SwpHelpers
+{
+
+// Backs the "swp volatile fiend" value. Trash has no encounter helper file of its own, so it lives
+// beside the action that consumes it.
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+
+}
 
 // General
 

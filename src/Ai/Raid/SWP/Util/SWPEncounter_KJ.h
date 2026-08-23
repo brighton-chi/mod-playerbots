@@ -97,6 +97,12 @@ inline constexpr float KILJAEDEN_HAND_TANK_SEPARATION = 15.0f;
 // Bots with Fire Bloom hold clear of the stack until the same point.
 inline constexpr int32 KILJAEDEN_SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
 inline constexpr float KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS = 200.0f;
+
+// Feeds the "kiljaeden dragon orbs" value. Four entries were being searched for in the trigger and
+// searched for again in the action, so this is eight grid visits a tick collapsing into four an
+// interval. Only membership is cached; GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are read from the
+// freshly resolved object.
+inline constexpr uint32 KILJAEDEN_DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 inline constexpr float KILJAEDEN_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
 // Grace after using an orb before a lingering root can count as the stale one worth clearing
 inline constexpr uint32 KILJAEDEN_ORB_USE_GRACE_MS = 2000;
@@ -142,6 +148,7 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);

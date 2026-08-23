@@ -122,12 +122,23 @@ bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
     return true;
 }
 
+namespace SwpHelpers
+{
+
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
+{
+    Creature* fiend = bot->FindNearestCreature(
+        Id(SwpNpcs::NPC_VOLATILE_FIEND), SWP_VOLATILE_FIEND_SEARCH_RADIUS, true);
+
+    return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
+}
+
+}
+
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 25.0f;
-    Creature* volatileFiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
-    if (!volatileFiend)
+    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (!volatileFiend || !volatileFiend->IsAlive())
         return false;
 
     if (PlayerbotAI::IsTank(bot))

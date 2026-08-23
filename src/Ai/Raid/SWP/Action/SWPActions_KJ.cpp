@@ -580,10 +580,9 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     float closestInUseOrbDistance = 0.0f;
     bool orbInUse = false;
 
-    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
     {
-        GameObject* orb = bot->FindNearestGameObject(
-            orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true);
+        GameObject* orb = botAI->GetGameObject(orbGuid);
         if (!orb)
             continue;
 

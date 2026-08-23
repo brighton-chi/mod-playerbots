@@ -852,17 +852,22 @@ FogPassState const* AdvanceFelmystFogPassTracker(Unit* felmyst)
     return &tracker;
 }
 
-bool IsPostThirdPassWindowOpen(FogPassState const& tracker, FogLane& lane)
+bool IsPostThirdPassWindowOpen(FogPassState const& tracker)
 {
-    lane = FogLane::None;
-    if (tracker.completedPassCount < 3 || tracker.lastCompletedLane == FogLane::None ||
-        tracker.thirdPassWindowExpireMs <= getMSTime())
-    {
-        return false;
-    }
+    return tracker.completedPassCount >= 3 && tracker.lastCompletedLane != FogLane::None &&
+        tracker.thirdPassWindowExpireMs > getMSTime();
+}
 
-    lane = tracker.lastCompletedLane;
-    return true;
+// Shared opening of the two read-only fog queries below. Returns nothing while she is grounded,
+// since every fog stage they test only means anything mid-flight, and reads the record rather
+// than indexing it so a query cannot create one.
+FelmystEncounterState const* GetFelmystAirborneState(Unit* felmyst)
+{
+    if (!felmyst || !felmyst->IsFlying())
+        return nullptr;
+
+    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
+    return stateItr != felmystEncounterStates.end() ? &stateItr->second : nullptr;
 }
 
 } // end anonymous namespace
@@ -872,22 +877,20 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
     lane = FogLane::None;
 
     FogPassState const* tracker = AdvanceFelmystFogPassTracker(felmyst);
-    if (!tracker)
+    if (!tracker || !IsPostThirdPassWindowOpen(*tracker))
         return false;
 
-    return IsPostThirdPassWindowOpen(*tracker, lane);
+    lane = tracker->lastCompletedLane;
+    return true;
 }
 
 bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst)
 {
-    if (!felmyst || !felmyst->IsFlying())
+    FelmystEncounterState const* state = GetFelmystAirborneState(felmyst);
+    if (!state)
         return false;
 
-    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
-    if (stateItr == felmystEncounterStates.end())
-        return false;
-
-    FogOfCorruptionState const& fog = stateItr->second.fogOfCorruption;
+    FogOfCorruptionState const& fog = state->fogOfCorruption;
     if (fog.phase == FogPhase::None || fog.phase == FogPhase::Recovery ||
         fog.lane == FogLane::None)
     {
@@ -899,18 +902,12 @@ bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst)
 
 bool IsFelmystFogMovementSuppressed(Unit* felmyst)
 {
-    if (!felmyst || !felmyst->IsFlying())
+    FelmystEncounterState const* state = GetFelmystAirborneState(felmyst);
+    if (!state)
         return false;
 
-    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
-    if (stateItr == felmystEncounterStates.end())
-        return false;
-
-    if (stateItr->second.fogOfCorruption.phase != FogPhase::None)
-        return true;
-
-    FogLane ignoredLane = FogLane::None;
-    return IsPostThirdPassWindowOpen(stateItr->second.fogPass, ignoredLane);
+    return state->fogOfCorruption.phase != FogPhase::None ||
+        IsPostThirdPassWindowOpen(state->fogPass);
 }
 
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)

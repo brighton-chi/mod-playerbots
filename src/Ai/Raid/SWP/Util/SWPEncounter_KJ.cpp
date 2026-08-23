@@ -508,6 +508,23 @@ bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
         kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
+GuidVector FindKiljaedenDragonOrbGuids(Player* bot)
+{
+    GuidVector guids;
+    guids.reserve(KILJAEDEN_DRAGON_ORB_ENTRIES.size());
+
+    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    {
+        if (GameObject* orb =
+                bot->FindNearestGameObject(orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true))
+        {
+            guids.push_back(orb->GetGUID());
+        }
+    }
+
+    return guids;
+}
+
 Player* GetKiljaedenDragonOrbUser(Player* bot)
 {
     Group* group = bot->GetGroup();

@@ -106,6 +106,13 @@ inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = 12.0f;
 // Feeds the "muru void zones" value.
 inline constexpr uint32 MURU_VOID_ZONE_CACHE_INTERVAL_MS = 200;
 
+inline constexpr float MURU_SINGULARITY_SEARCH_RADIUS = 30.0f;
+
+// Feeds the "muru singularity" value. Only one exists at a time - Entropius casts Black Hole every
+// 29 seconds and npc_singularity despawns itself after 18 - so caching the nearest cannot pick the
+// wrong one. It chases a player, but only the guid is cached.
+inline constexpr uint32 MURU_SINGULARITY_CACHE_INTERVAL_MS = 200;
+
 // A Dark Fiend detonates within 2 yards of whoever it is chasing. The safe distance is
 // deliberately wide as touching a single Dark Fiend is almost a guaranteed wipe.
 inline constexpr float MURU_DARK_FIEND_SAFE_DISTANCE = 10.0f;
@@ -133,6 +140,7 @@ Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
 GuidVector FindMuruVoidZoneGuids(Player* bot);
+ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 

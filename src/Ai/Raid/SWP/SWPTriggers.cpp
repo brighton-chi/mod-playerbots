@@ -45,9 +45,8 @@ bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    constexpr float searchRadius = 25.0f;
-    Unit* fiend = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
-    if (!fiend)
+    Unit* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (!fiend || !fiend->IsAlive())
         return false;
 
     // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck
@@ -128,8 +127,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
     if (!ShouldEnterKalecgosPortal(bot))
         return false;
 
-    constexpr float searchRadius = 75.0f;
-    return bot->FindNearestGameObject(Id(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+    return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift"));
 }
 
 bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
@@ -676,8 +674,8 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
     if (!entropius)
         return false;
 
-    constexpr float searchRadius = 30.0f;
-    return bot->FindNearestCreature(Id(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
+    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    return singularity && singularity->IsAlive();
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
@@ -831,10 +829,9 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     bool orbInUse = false;
     bool result = false;
 
-    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
     {
-        GameObject* orb = bot->FindNearestGameObject(
-            orbEntry, KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS, true);
+        GameObject* orb = botAI->GetGameObject(orbGuid);
         if (!orb)
             continue;
 

@@ -115,9 +115,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot) && !ShouldTankEnter())
         return false;
 
-    constexpr float searchRadius = 75.0f;
-    GameObject* rift = bot->FindNearestGameObject(
-        Id(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+    GameObject* rift = botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift"));
     if (!rift)
         return false;
 

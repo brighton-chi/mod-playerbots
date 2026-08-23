@@ -55,6 +55,14 @@ inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;
 // How long assist tanks stay off Kalecgos so the opening tank keeps the lead
 inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5000;
 
+// Shared by the trigger and the action so the two cannot drift apart
+inline constexpr float KALECGOS_SPECTRAL_RIFT_SEARCH_RADIUS = 75.0f;
+
+// Feeds the "kalecgos spectral rift" value. A GameObject cannot move once placed, so the only
+// thing a stale window can miss is a spawn or a despawn, and the action resolves the guid before
+// it uses it.
+inline constexpr uint32 KALECGOS_SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
+
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
 
@@ -62,12 +70,13 @@ bool IsExhausted(Player* bot);
 bool IsInSpectralRealm(Player* bot);
 bool IsKalecgosDecurser(Player* bot);
 void EnsureKalecgosRaidAssignments(Player* bot);
+Player* FindKalecgosDesignatedTank(Player* player);
 Player* GetKalecgosDesignatedTank(Player* player);
-Player* PeekKalecgosDesignatedTank(Player* player);
 Player* GetNextSurfaceTankInOrder(
     Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
     ObjectGuid afterGuid, ObjectGuid excludedGuid = ObjectGuid::Empty,
     bool fallbackToFirst = false);
+ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot);
 bool ShouldEnterKalecgosPortal(Player* bot);
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
 void RecordSpectralRealmEnter(Player* player);
