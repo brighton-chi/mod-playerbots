@@ -88,10 +88,6 @@ bool TryGetBurnPadIndex(
     return assignFromOrder(assistGroupPriority) || assignFromOrder(assistGroupOverflow);
 }
 
-// Every positioned bot calls the Ensure functions each tick and they all scan the same group to
-// build the same raid-wide result, so the first caller in each window does the work and the rest
-// read what it left behind. Skipping is safe because callers re-read the map and treat a missing
-// entry as "not positioned this tick" rather than as an error.
 bool ShouldRebuildAssignments(uint32& lastRebuildMs)
 {
     uint32 const now = getMSTime();
@@ -174,7 +170,7 @@ void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // If every slot is taken, double up (unlikely even though TBC hates melee, as there are 20)
+        // Double up if every slot is taken (unlikely even though TBC hates melee, as there are 20)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
     };
@@ -235,7 +231,7 @@ void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // If every slot is taken, double up (unlikely since there are 14 and TBC hates melee)
+        // Double up if every slot is taken (unlikely since there are 14 and TBC hates melee)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_MELEE_POSITIONS);
     };

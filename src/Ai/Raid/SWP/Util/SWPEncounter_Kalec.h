@@ -47,6 +47,14 @@ inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
 inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = 10000;
 inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
 
+// Curse of Boundless Agony doubles its tick every five ticks and, on removal, recasts itself on
+// somebody else - so a dispel relocates the curse rather than ending it. Holding until this much
+// remains lets it run on a target the healers are already watching.
+inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;
+
+// How long assist tanks stay off Kalecgos so the opening tank keeps the lead
+inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5000;
+
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
 
@@ -55,6 +63,7 @@ bool IsInSpectralRealm(Player* bot);
 bool IsKalecgosDecurser(Player* bot);
 void EnsureKalecgosRaidAssignments(Player* bot);
 Player* GetKalecgosDesignatedTank(Player* player);
+Player* PeekKalecgosDesignatedTank(Player* player);
 Player* GetNextSurfaceTankInOrder(
     Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
     ObjectGuid afterGuid, ObjectGuid excludedGuid = ObjectGuid::Empty,

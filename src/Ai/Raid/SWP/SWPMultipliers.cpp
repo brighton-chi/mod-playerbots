@@ -74,8 +74,7 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
     if (!aura)
         aura = target->GetAura(Id(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
 
-    constexpr uint32 dispelRemainingMs = 15000;
-    return aura && aura->GetDuration() >= dispelRemainingMs ? 0.0f : 1.0f;
+    return aura && aura->GetDuration() >= KALECGOS_DISPEL_REMAINING_MS ? 0.0f : 1.0f;
 }
 
 float KalecgosControlMovementMultiplier::GetValue(Action* action)
@@ -110,7 +109,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (IsInSpectralRealm(bot))
         return 1.0f;
 
-    return GetKalecgosDesignatedTank(bot) == bot ? 1.0f : 0.0f;
+    return PeekKalecgosDesignatedTank(bot) == bot ? 1.0f : 0.0f;
 }
 
 float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
@@ -128,9 +127,8 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
     if (stateItr == kalecgosEncounterStates.end() || !stateItr->second.encounterStartMs)
         return 1.0f;
 
-    constexpr uint32 pullThreatSuppressionMs = 5000;
     return getMSTimeDiff(stateItr->second.encounterStartMs, getMSTime()) <
-        pullThreatSuppressionMs ? 0.0f : 1.0f;
+        KALECGOS_PULL_THREAT_SUPPRESSION_MS ? 0.0f : 1.0f;
 }
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
@@ -285,8 +283,9 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto& state = felmystEncounterStates[felmyst->GetInstanceId()];
-    return state.landingDpsWaitStartMs == 0 ? 1.0f : 0.0f;
+    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
+    return stateItr != felmystEncounterStates.end() && stateItr->second.landingDpsWaitStartMs ?
+        0.0f : 1.0f;
 }
 
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
@@ -328,11 +327,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     if (!felmyst || !felmyst->IsFlying())
         return 1.0f;
 
-    FogOfCorruptionState fogState;
-    FogLane thirdPassLane = FogLane::None;
-
-    return TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
-        TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane) ? 0.0f : 1.0f;
+    return IsFelmystFogMovementSuppressed(felmyst) ? 0.0f : 1.0f;
 }
 
 float FelmystPrioritizeDemonicVaporAvoidanceMultiplier::GetValue(Action* action)
@@ -348,8 +343,7 @@ float FelmystPrioritizeDemonicVaporAvoidanceMultiplier::GetValue(Action* action)
     if (!felmyst || !felmyst->IsFlying())
         return 1.0f;
 
-    FogOfCorruptionState fogState;
-    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
+    if (IsFelmystFogActiveForBot(bot, felmyst))
         return 1.0f;
 
     return IsFelmystLanding(felmyst) ? 1.0f : 0.0f;
@@ -369,16 +363,20 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!felmyst)
         return 1.0f;
 
-    Player* charmedTarget = GetFelmystCharmedTarget(bot, felmyst);
-    if (!charmedTarget)
+    Player* charmedPlayer = GetFelmystCharmedTarget(bot, felmyst);
+    if (!charmedPlayer)
         return 1.0f;
 
-    if (PlayerbotAI::IsMelee(bot) && !felmyst->IsFlying() && bot->IsWithinMeleeRange(charmedTarget))
+    // Melee: attack only during flight phase when the charmed player is in melee range
+    if (PlayerbotAI::IsMelee(bot) &&
+        (!felmyst->IsFlying() || !bot->IsWithinMeleeRange(charmedPlayer)))
+    {
         return 0.0f;
+    }
 
-    constexpr float standardSpellRange = 30.0f;
+    // Ranged: attack at any time the charmed player is in general spell range
     return PlayerbotAI::IsRanged(bot) &&
-        bot->GetExactDist2d(charmedTarget) > standardSpellRange ? 0.0f : 1.0f;
+        bot->GetExactDist2d(charmedPlayer) < FELMYST_CHARMED_TARGET_RANGE ? 0.0f : 1.0f;
 }
 
 float FelmystDontDotAddsMultiplier::GetValue(Action* action)
@@ -569,8 +567,7 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // Block movement actions generally when too close to the Conflagration target
-    constexpr float dangerDist = 10.0f;
-    return bot->GetExactDist2d(victim) < dangerDist ? 0.0f : 1.0f;
+    return bot->GetExactDist2d(victim) < EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE ? 0.0f : 1.0f;
 }
 
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
@@ -589,8 +586,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
     if (!sacrolash)
         return 1.0f;
 
-    constexpr float maxDpsHpThreshold = 80.0f;
-    return sacrolash->GetHealthPct() > maxDpsHpThreshold ? 0.0f : 1.0f;
+    return sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
 }
 
 // M'uru

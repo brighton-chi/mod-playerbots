@@ -89,15 +89,13 @@ inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
 // Darkness damages within 15 yards of M'uru; the rest is the usual avoidance padding
 inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
 
-// How far from its own holding spot a target may sit and still count as worth reaching for. Shares
-// a value with the safe distance above but not a meaning - these tune independently.
+// How far from its own holding spot a target may sit and still count as worth reaching for.
 inline constexpr float MURU_HOLDING_POSITION_RADIUS = 20.0f;
 
 // Nearest wins the DPS slot, but only by a clear margin
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 
-// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved spawn rather than on its
-// target, so it is the spawn's distance that decides whether the cast is worth it
+// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 
 // The void zone (25879) carries a permanent 46262, ticking 46264 for 3k in a 3 yard radius, and
@@ -105,21 +103,19 @@ inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 inline constexpr float MURU_VOID_ZONE_SAFE_DISTANCE = 8.0f;
 inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = 12.0f;
 
-// Feeds the "muru void zones" value. The pools never move and never despawn, so the only thing a
-// stale window can miss is a fresh one, by at most one interval.
+// Feeds the "muru void zones" value.
 inline constexpr uint32 MURU_VOID_ZONE_CACHE_INTERVAL_MS = 200;
 
-// A dark fiend detonates within two yards of whoever it is chasing, and that blast is 50 yards -
-// so only its own victim can prevent it, and distance is no defence for anybody else
+// A Dark Fiend detonates within 2 yards of whoever it is chasing. The safe distance is
+// deliberately wide as touching a single Dark Fiend is almost a guaranteed wipe.
 inline constexpr float MURU_DARK_FIEND_SAFE_DISTANCE = 10.0f;
 
 // Tanks drag nothing further than this from the ranged stack
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
 
-// Misdirect is worth a cooldown only on a target the raid has barely started on
 inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 
-// DPS cooldowns are held until M'uru is chipped past the opening threat build
+// DPS cooldowns are held until 97% to allow for initial positioning
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;

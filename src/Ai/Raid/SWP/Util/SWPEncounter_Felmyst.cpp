@@ -852,6 +852,19 @@ FogPassState const* AdvanceFelmystFogPassTracker(Unit* felmyst)
     return &tracker;
 }
 
+bool IsPostThirdPassWindowOpen(FogPassState const& tracker, FogLane& lane)
+{
+    lane = FogLane::None;
+    if (tracker.completedPassCount < 3 || tracker.lastCompletedLane == FogLane::None ||
+        tracker.thirdPassWindowExpireMs <= getMSTime())
+    {
+        return false;
+    }
+
+    lane = tracker.lastCompletedLane;
+    return true;
+}
+
 } // end anonymous namespace
 
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
@@ -862,15 +875,42 @@ bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane)
     if (!tracker)
         return false;
 
-    uint32 const now = getMSTime();
-    if (tracker->completedPassCount < 3 || tracker->lastCompletedLane == FogLane::None ||
-        tracker->thirdPassWindowExpireMs <= now)
+    return IsPostThirdPassWindowOpen(*tracker, lane);
+}
+
+bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst)
+{
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
+    if (stateItr == felmystEncounterStates.end())
+        return false;
+
+    FogOfCorruptionState const& fog = stateItr->second.fogOfCorruption;
+    if (fog.phase == FogPhase::None || fog.phase == FogPhase::Recovery ||
+        fog.lane == FogLane::None)
     {
         return false;
     }
 
-    lane = tracker->lastCompletedLane;
-    return true;
+    return !IsPastFogThreshold(bot, fog.lane);
+}
+
+bool IsFelmystFogMovementSuppressed(Unit* felmyst)
+{
+    if (!felmyst || !felmyst->IsFlying())
+        return false;
+
+    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
+    if (stateItr == felmystEncounterStates.end())
+        return false;
+
+    if (stateItr->second.fogOfCorruption.phase != FogPhase::None)
+        return true;
+
+    FogLane ignoredLane = FogLane::None;
+    return IsPostThirdPassWindowOpen(stateItr->second.fogPass, ignoredLane);
 }
 
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
@@ -1216,8 +1256,8 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
     return lowestHpTarget;
 }
 
-// Bots will follow this player during the vapor phase. Return the first eligible assistant,
-// if no eligible assistant is found, return the first eligible bot in the group.
+// Bots will follow this player during the vapor phase. Return the first eligible assistant, and
+// if no eligible assistant is found, return the first eligible bot.
 Player* GetFelmystFlightLeader(Player* player)
 {
     Group* group = player->GetGroup();
@@ -1232,9 +1272,9 @@ Player* GetFelmystFlightLeader(Player* player)
             !GetFelmystDemonicVaporSummonedByBot(member);
     };
 
-    // Keep the then-current flight leader if still eligible to maintain consistency (e.g., if
-    // the leader is targeted by vapor, a new leader is assigned, and we should not switch
-    // back to the original after the vapor head is gone, or chaos will ensue).
+    // Keep the then-current flight leader if still eligible to maintain consistency. Notably, if
+    // the leader is targeted by vapor and a new leader is assigned, we should not switch back to
+    // the original leader after the vapor head is gone, as they will be clear across the map.
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();

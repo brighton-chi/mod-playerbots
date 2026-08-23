@@ -604,6 +604,34 @@ void EnsureKalecgosRaidAssignments(Player* player)
         state.activeRiftGroup = ResolveActivePortalGroup(group, state);
 }
 
+// Read-only companion to GetKalecgosDesignatedTank below. That one prepares the encounter record
+// and caches the tank it settles on; the portal triggers step the same record every tick, and
+// Engine::DoNextAction runs ProcessTriggers before it scores any action, so a multiplier can read
+// the answer they already produced instead of producing one itself - which would make the result
+// depend on which action was being scored.
+Player* PeekKalecgosDesignatedTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return nullptr;
+
+    auto const stateItr = kalecgosEncounterStates.find(player->GetInstanceId());
+    if (stateItr == kalecgosEncounterStates.end())
+        return nullptr;
+
+    KalecgosEncounterState const& state = stateItr->second;
+
+    if (Player* tank = ResolveSurfaceTank(group, state.currentTankGuid))
+    {
+        if (Player* replacementTank = GetSurfaceTankAfterCurrentHandOff(group, state))
+            return replacementTank;
+
+        return tank;
+    }
+
+    return GetKalecgosCurrentVictimTank(player, group, state);
+}
+
 Player* GetKalecgosDesignatedTank(Player* player)
 {
     Group* group = player->GetGroup();
