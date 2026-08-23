@@ -331,7 +331,7 @@ bool HasWrathOfTheAstromancer(Player* bot)
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
+std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
 uint32 GetKaelthasPhase(Unit* kaelthas)
 {
