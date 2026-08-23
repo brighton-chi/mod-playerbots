@@ -51,7 +51,7 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
         return false;
 
     // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck
-    // due to proximity to the volatile fiends below, if you decide to try to skip them
+    // due to proximity to the volatile fiends below, in case the player decides to skip them.
     constexpr float verticalOffset = 10.0f;
     return std::abs(bot->GetPositionZ() - fiend->GetPositionZ()) < verticalOffset;
 }
@@ -298,7 +298,7 @@ bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
-    // On initial landing, let MT get aggro before assuming positions
+    // On initial landing, let the MT get aggro before assuming positions
     Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && felmyst->GetVictim() != mainTank &&
         felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
@@ -553,8 +553,6 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
     if (IsAnySacrolashTank(bot) || IsAlythessTank(bot))
         return false;
 
-    // Triggers are evaluated once per tick ahead of any multiplier, so this is a deterministic
-    // point to open the tank threat window that EredarTwinsHoldDpsAtStartMultiplier reads
     RecordEredarTwinsDpsHoldStart(bot);
     return true;
 }
@@ -783,7 +781,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 
     // Allow Demo Lock to AoE the Reflections
     if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
-        return AI_VALUE2(Unit*, "find target", "sinister reflection");
+        return !AI_VALUE2(Unit*, "find target", "sinister reflection");
 
     return true;
 }

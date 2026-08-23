@@ -26,8 +26,6 @@ namespace
 
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
-// One grid sweep per cache interval serves every candidate position the Alythess tank tests,
-// instead of one sweep per candidate.
 std::vector<Position> const& GetCachedBlazePositions(PlayerbotAI* botAI)
 {
     return botAI->GetAiObjectContext()
@@ -139,9 +137,6 @@ bool ShouldHoldTwinThreat(
     return botThreat >= twinTankThreat * threatHoldRatio;
 }
 
-// Positions rather than GameObject pointers: the value outlives the tick that produced it, and a
-// cached pointer would dangle if the blaze despawned. A blaze cannot move, so a position stays
-// correct for as long as the object exists.
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
 {
     std::list<GameObject*> nearbyObjects;
@@ -196,10 +191,6 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     return true;
 }
 
-// Stamped from a trigger rather than from the multiplier that reads it. Multipliers are applied in
-// registration order and the loop breaks as soon as one zeroes the relevance, so whether any given
-// multiplier runs at all depends on the action and on what the earlier ones did — starting a timer
-// there makes the hold measure from an arbitrary moment.
 void RecordEredarTwinsDpsHoldStart(Player* bot)
 {
     eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
