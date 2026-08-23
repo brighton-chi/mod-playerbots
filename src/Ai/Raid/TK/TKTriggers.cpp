@@ -399,7 +399,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
-    bool HasUsableLegendaryWeapon =
+    bool const HasUsableLegendaryWeapon =
         bot->HasItemCount(Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
         bot->HasItemCount(Id(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
         bot->HasItemCount(Id(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);

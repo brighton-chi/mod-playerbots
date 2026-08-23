@@ -312,8 +312,10 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    // Embers' Rebirth has a range of 15 yards (16.5y damage radius), though more space is
-    // needed since this movement is tank-to-player. Embers have a CombatReach of 3 yards.
+    // The Embers' Rebirth has a range of 15 yards (16.5y damage radius), though more space is
+    // needed since this movement is tank-to-player.
+    // Embers have a CombatReach of 3 yards, though the 20-yard distance is more of an arbitrarily
+    // tested in-game distance.
     constexpr float safeDistance = 20.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
@@ -332,8 +334,8 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
     if (ember)
     {
         target = ember;
-        constexpr float safeDistance = 15.0f;
-        float const currentDistance = bot->GetDistance2d(ember);
+        constexpr float safeDistance = 20.0f;
+        float const currentDistance = bot->GetExactDist2d(ember);
         if (currentDistance < safeDistance)
         {
             bot->CastStop();
@@ -367,13 +369,12 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED);
     }
 
-    constexpr float distMeleeFromPos = 5.0f;
-    constexpr float distRangedFromPos = 10.0f;
+    constexpr float distFromPos = 10.0f;
     bool const isFirstAlarTank = IsFirstAlarTank(bot);
     bool const isSecondAlarTank = IsSecondAlarTank(bot);
     bool const isTank = PlayerbotAI::IsTank(bot);
 
-    if (isFirstAlarTank)
+    if (isFirstAlarTank) // Having no distance check on Al'ar tanks is intentional here.
     {
         return MoveTo(
             TK_MAP_ID, ALAR_SW_RAMP_BASE.GetPositionX(), ALAR_SW_RAMP_BASE.GetPositionY(),
@@ -390,28 +391,28 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
     }
 
     if (isTank && !isFirstAlarTank && !isSecondAlarTank && bot->GetExactDist2d(
-        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distMeleeFromPos)
-    {   // Distance check due to potential of an Ember still being alive during Flame Quills
+        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distFromPos)
+    {
         return MoveTo(
             TK_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
             ALAR_POINT_MIDDLE.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (PlayerbotAI::IsMelee(bot) && !isTank && bot->GetExactDist2d(
-        ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > distMeleeFromPos)
+    if (!isTank && PlayerbotAI::IsMelee(bot) && bot->GetExactDist2d(
+        ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY()) > distFromPos)
     {
         return MoveInside(
             TK_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
-            ALAR_ROOM_S_CENTER.GetPositionZ(), distMeleeFromPos, MovementPriority::MOVEMENT_FORCED);
+            ALAR_ROOM_S_CENTER.GetPositionZ(), distFromPos, MovementPriority::MOVEMENT_FORCED);
     }
 
     if (PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d( // Ranged
-        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distRangedFromPos)
+        ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY()) > distFromPos)
     {
         return MoveInside(
             TK_MAP_ID, ALAR_POINT_MIDDLE.GetPositionX(), ALAR_POINT_MIDDLE.GetPositionY(),
-            ALAR_POINT_MIDDLE.GetPositionZ(), distRangedFromPos, MovementPriority::MOVEMENT_FORCED);
+            ALAR_POINT_MIDDLE.GetPositionZ(), distFromPos, MovementPriority::MOVEMENT_FORCED);
     }
 
     return false;
@@ -431,7 +432,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // On the other hand, melee dps jumps off at 5% HP because Burning Crusade hates melee dps
+    // On the other hand, melee dps jumps off at 5% HP because TBC hates melee dps
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         int8 closestPlatform;
@@ -444,7 +445,6 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             position.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 
-    // Everybody stays away from the center
     constexpr float safeDistance = 35.0f;
     float const currentDistance = bot->GetExactDist2d(ALAR_ROOM_CENTER);
     if (currentDistance >= safeDistance)
@@ -509,12 +509,12 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 {
-    // After Dive Bomb, before reapperance
+    // Avoidance after Dive Bomb, before reapperance
     if (alar->HasAura(Id(TkSpells::SPELL_MODEL_INVISIBILITY)) ||
         alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_DIVE)))
     {
-        constexpr float safeDistance = 20.0f;
-        float const currentDistance = bot->GetDistance2d(alar);
+        constexpr float safeDistance = 25.0f;
+        float const currentDistance = bot->GetExactDist2d(alar);
         if (currentDistance >= safeDistance)
             return false;
 
@@ -522,19 +522,19 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         return MoveAway(alar, safeDistance - currentDistance);
     }
 
-    // During Dive Bomb sequence
     if (GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
         GetAlarDestinationLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX)
     {
         return false;
     }
 
+    // Avoidance during Dive Bomb sequence
     constexpr float safeDistance = 10.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (!nearestPlayer)
         return false;
 
-    float const currentDistance = bot->GetDistance2d(nearestPlayer);
+    float const currentDistance = bot->GetExactDist2d(nearestPlayer);
     return MoveAway(nearestPlayer, safeDistance - currentDistance);
 }
 
@@ -1055,14 +1055,14 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     {
         auto findIt = std::find(healers.begin(), healers.end(), bot);
         botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-        radius = 42.0f;
+        radius = 42.0f; // 36 yards of actual distance
         count = healers.size();
     }
     else
     {
         auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
         botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-        radius = 34.0f;
+        radius = 34.0f; // 28 yards of actual distance
         count = rangedDps.size();
     }
 
@@ -1093,7 +1093,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
     Unit* capernian)
 {
     // Main tank purposely stays in range to bait Conflagration in Phase 1
-    if (PlayerbotAI::IsMainTank(bot))
+    /* if (PlayerbotAI::IsMainTank(bot))
     {
         constexpr float targetDist = 20.0f;
         float const angle = capernian->GetAngle(bot);
@@ -1105,15 +1105,15 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCa
             false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
-    {
-        constexpr float safeDistance = 42.0f;
-        float const currentDistance = bot->GetDistance2d(capernian);
+    { */
+        constexpr float safeDistance = 50.0f; // There's no need to be anywhere closeby
+        float const currentDistance = bot->GetExactDist2d(capernian);
         if (currentDistance >= safeDistance)
             return true;
 
         bot->CastStop();
         return MoveAway(capernian, safeDistance - currentDistance);
-    }
+    // }
 }
 
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
@@ -1393,7 +1393,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
     {
-        // In case melee ends up on the axe despite the target exclusion
+        // Just in case melee ends up on the axe despite the target exclusion...
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         bot->CastStop();
@@ -1480,7 +1480,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
             return PlayerbotAI::IsHeal(bot);
 
         // Fury Warriors could use the axe, but their DPS is terrible at 70 so they're better off
-        // looting the dagger to break MC (and DW 1H is better dps than Titan Grip at 70 anyway)
+        // looting the dagger to break MC (and DW 1H is better dps than Titan Grip at 70 anyway!?)
         case TkNpcs::NPC_DEVASTATION: // Arms Warrior, Blood/Unholy DK, Ret Paladin
             return isArmsWarrior || (isDk && !isFrostDk) || (isPaladin && PlayerbotAI::IsDps(bot));
 
@@ -1488,7 +1488,8 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
             return isRogue || isHunter || (isWarrior && !isArmsWarrior) || isFrostDk ||
                 (isShaman && tab == SHAMAN_TAB_ENHANCEMENT);
 
-        // Sublety will probably want to use the Sword, but the spec is currently unimplemented
+        // Sublety will probably want to use the Sword, but the spec is currently unimplemented,
+        // and what kind of madman is going to raid with Sub anyway?
         case TkNpcs::NPC_WARP_SLICER: // Prot Paladin, Frost DK, Combat Rogue
             return (isPaladin && PlayerbotAI::IsTank(bot)) || isFrostDk ||
                 (isRogue && tab == ROGUE_TAB_COMBAT);
@@ -1636,7 +1637,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     bot->CastStop();
 
-    bool ohCleared = false;  // If a 2H is blocking the target OH slot, unequip the 2H first
+    bool ohCleared = false; // If a 2H is blocking the target OH slot, unequip the 2H first
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
         Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -1968,8 +1969,8 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 {
     if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
     {
-        constexpr float safeDistance = 10.0f;
-        float const currentDistance = bot->GetDistance2d(phoenix);
+        constexpr float safeDistance = 15.0f;
+        float const currentDistance = bot->GetExactDist2d(phoenix);
         if (currentDistance < safeDistance)
             return MoveAway(phoenix, safeDistance - currentDistance);
     }
@@ -2140,8 +2141,8 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return (hash >> 8) / static_cast<float>(1 << 24);
     };
 
-    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
-    if (!lapse)
+    Aura* aura = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    if (!aura)
         return false;
 
     uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
@@ -2158,7 +2159,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     int32 const reactionDelayMs = minReactionMs + static_cast<int32>(roll(seed, reactionSalt) *
         (maxReactionMs - minReactionMs));
 
-    if (lapse->GetMaxDuration() - lapse->GetDuration() < reactionDelayMs)
+    if (aura->GetMaxDuration() - aura->GetDuration() < reactionDelayMs)
         return false;
 
     Group* group = bot->GetGroup();

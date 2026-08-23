@@ -282,14 +282,14 @@ void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Positio
     ground = ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
-// Main tank rotates between W (where Al'ar initially lands) and NE platforms in Phase 1
-// and starts on Al'ar in Phase 2
+// Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
+// and starts on Al'ar in phase 2
 bool IsFirstAlarTank(Player* bot)
 {
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// First assist tank rotates between NW and E platforms in Phase 1
+// First assist tank rotates between NW and E platforms in phase 1
 bool IsSecondAlarTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -301,9 +301,10 @@ bool IsPrimaryEmberTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
 }
 
-// When Al'ar melts the armor of whoever is tanking it, the other tank taunts, and the melted tank
-// picks up the 2nd Ember (the 2nd AT, who tanked Embers in phase 1, picks up the 1st Ember).
-Player* GetPhase2SecondEmberTank(Player* bot)
+// The secondary Ember Tank is needed only during phase 2, and it is initially the first assist
+// tank (i.e., the SecondAlarTank). When Al'ar melts the armor of the main tank, then the main
+// tank becomes the secondary Ember tank. The two tanks swap from then on.
+Player* GetSecondaryEmberTank(Player* bot)
 {
     Player* mainTank = GetGroupMainTank(bot);
     Player* assistTank = GetGroupAssistTank(bot, 0);
@@ -322,6 +323,7 @@ Player* GetPhase2SecondEmberTank(Player* bot)
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
 // High Astromancer Solarian
+
 bool HasWrathOfTheAstromancer(Player* bot)
 {
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
@@ -375,7 +377,8 @@ Player* GetCapernianTank(Player* bot)
     return fallbackWarlock;
 }
 
-// One Hunter will start on Sanguinar in Phase 3 with melee to apply Armor Disruption
+// One Hunter will start on Sanguinar in phase 3 (with melee) to apply Armor Disruption from the
+// Netherstrand Longbow.
 // (1) First priority is an assistant Hunter (real player or bot)
 // (2) If no assistant Hunter, then look for any Hunter bot
 bool IsSanguinarDebuffHunter(Player* bot)
@@ -408,8 +411,8 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
-// Captures the aura that advisors have when they are "killed" in phase 1 until they are
-// "resurrected" in phase 2.
+// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
+// "killed" in phase 1 until they are "resurrected" in phase 3.
 bool IsFeigningDeath(Unit* advisor)
 {
     return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
