@@ -70,7 +70,7 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
 // Nearby bots should flee 15 yards from the tank if it has Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 {
-    Player* tank = GetGroupMainTank(botAI, bot);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank)
         return false;
 

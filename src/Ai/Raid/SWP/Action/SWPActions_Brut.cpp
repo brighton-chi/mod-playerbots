@@ -25,8 +25,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != brutallus)
         return Attack(brutallus);
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     // If either tank is dead, just bail and fall back to standard tank logic. You're screwed
     // anyway unless Brutallus is almost dead.
@@ -106,8 +106,8 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
     if (!brutallus)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     uint8 meleeIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(bot, meleeIndex))
@@ -197,8 +197,8 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
     if (!brutallus)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     ObjectGuid const guid = bot->GetGUID();
     uint8 rangedIndex = 0;
@@ -327,8 +327,8 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
 
     ObjectGuid const guid = bot->GetGUID();
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
     uint8 rangedIndex = 0;
 
     if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))

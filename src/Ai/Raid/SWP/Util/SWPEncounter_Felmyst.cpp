@@ -711,7 +711,7 @@ float GetFelmystFrontAngle(Player* bot, Unit* felmyst)
     float frontX = defaultTankPosition.GetPositionX();
     float frontY = defaultTankPosition.GetPositionY();
 
-    Player* mainTank = GetGroupMainTank(GET_PLAYERBOT_AI(bot), bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && mainTank->IsAlive() && mainTank->GetMapId() == felmyst->GetMapId())
     {
         frontX = mainTank->GetPositionX();

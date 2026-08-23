@@ -96,7 +96,7 @@ bool KarazhanCastFearProtectionSpellAction::Execute(Event /*event*/)
 bool KarazhanCastFearProtectionSpellAction::CastFearWardOnMainTank()
 {
     constexpr uint32 fearWard = Id(KaraSpells::SPELL_FEAR_WARD);
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(fearWard))
         return false;
 

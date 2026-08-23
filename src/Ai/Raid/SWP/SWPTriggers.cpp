@@ -252,7 +252,7 @@ bool FelmystPullingBossTrigger::IsActive()
     if (felmyst->IsFlying())
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     return mainTank && felmyst->GetVictim() != mainTank;
 }
 
@@ -299,7 +299,7 @@ bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
         return false;
 
     // On initial landing, let MT get aggro before assuming positions
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && felmyst->GetVictim() != mainTank &&
         felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
     {

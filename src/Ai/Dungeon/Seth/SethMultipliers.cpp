@@ -53,7 +53,7 @@ float AnzuControlSpellCastingWithSpellBombMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // For healer
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return 1.0f;
 

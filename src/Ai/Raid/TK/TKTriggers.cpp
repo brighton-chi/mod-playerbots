@@ -385,7 +385,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActive()
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return IsAnyLegendaryWeaponDead(botAI);
+    return !GetDeadLegendaryWeaponGuids(botAI).empty();
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
@@ -421,9 +421,8 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (it == creatureStore.end())
         return false;
 
-    constexpr float distDoorwaysToKaelthas = 125.0f;
     Creature* kaelthas = it->second;
-    if (!kaelthas || bot->GetExactDist2d(kaelthas) > distDoorwaysToKaelthas)
+    if (!kaelthas || bot->GetExactDist2d(kaelthas) > KAELTHAS_ROOM_SEARCH_DISTANCE)
         return false;
 
     static constexpr std::array weaponSlots = {

@@ -13,7 +13,7 @@
 #include "Spell.h"
 #include "Timer.h"
 
-using HyjalHelpers::HyjalSpells;
+using namespace HyjalHelpers;
 using namespace EncounterHelpers;
 
 namespace

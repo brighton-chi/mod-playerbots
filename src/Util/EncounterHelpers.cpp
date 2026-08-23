@@ -26,6 +26,9 @@
 #include <cmath>
 #include <list>
 
+namespace EncounterHelpers
+{
+
 // Asks whether a short step towards a destination is one the bot can actually take, and returns
 // where it lands. This is a verdict, not a movement helper: a caller that simply wants to walk
 // somewhere should project the step itself and hand MoveTo the bot's own Z, which re-derives the
@@ -495,4 +498,6 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         default:
             return false;
     }
+}
+
 }

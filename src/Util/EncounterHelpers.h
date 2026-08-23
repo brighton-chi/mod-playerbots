@@ -18,7 +18,6 @@ class PlayerbotAI;
 class Unit;
 
 namespace EncounterHelpers
-
 {
 
 // Answers whether the bot can take one short step towards a destination, and where that step

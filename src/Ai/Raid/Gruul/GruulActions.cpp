@@ -334,14 +334,14 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         ogre = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-        tank = GetGroupAssistTank(botAI, bot, 1);
+        tank = GetGroupAssistTank(bot, 1);
     }
     else if (hunterIndex == 1)
     {
         ogre = AI_VALUE2(Unit*, "find target", "olm the summoner");
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (Player* member = GetGroupAssistTank(botAI, bot, 0))
+            if (Player* member = GetGroupAssistTank(bot, 0))
             {
                 tank = member;
                 break;

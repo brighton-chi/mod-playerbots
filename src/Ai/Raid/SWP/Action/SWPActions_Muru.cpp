@@ -69,12 +69,12 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     if (voidSentinel && voidSentinel->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
         enemy = voidSentinel;
-        tank = GetGroupAssistTank(botAI, bot, 0);
+        tank = GetGroupAssistTank(bot, 0);
     }
     else if (entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
         enemy = entropius;
-        tank = GetGroupMainTank(botAI, bot);
+        tank = GetGroupMainTank(bot);
     }
 
     if (!enemy || !tank || !tank->IsAlive())

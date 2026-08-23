@@ -471,7 +471,7 @@ bool IsDoomguardTank(Player* bot)
 
     // The second assist tank takes over if the first assist tank is Doomed. GetGroupAssistTank()
     // requires a live tank, so if the first dies, the second becomes the Doomguard tank.
-    Player* firstAssistTank = GetGroupAssistTank(GET_PLAYERBOT_AI(bot), bot, 0);
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
     return !firstAssistTank || IsDoomed(firstAssistTank);
 }
 

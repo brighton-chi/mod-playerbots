@@ -177,6 +177,7 @@ bool IsPathSafeFromHazards(
 std::unordered_map<uint32, bool> lastRebirthState;
 std::unordered_map<uint32, bool> isAlarInPhase2;
 
+// Entry into phase 2 is measured as the moment that Rebirth (34342) finishes casting.
 bool IsAlarInPhase2(uint32 instanceId)
 {
     auto const it = isAlarInPhase2.find(instanceId);
@@ -304,9 +305,8 @@ bool IsPrimaryEmberTank(Player* bot)
 // picks up the 2nd Ember (the 2nd AT, who tanked Embers in phase 1, picks up the 1st Ember).
 Player* GetPhase2SecondEmberTank(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* mainTank = GetGroupMainTank(bot);
+    Player* assistTank = GetGroupAssistTank(bot, 0);
 
     if (!mainTank || !assistTank)
         return nullptr;
@@ -328,16 +328,6 @@ bool HasWrathOfTheAstromancer(Player* bot)
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
-
-namespace
-{
-
-GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
-}
-
-}
 
 std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
@@ -418,6 +408,8 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
+// Captures the aura that advisors have when they are "killed" in phase 1 until they are
+// "resurrected" in phase 2.
 bool IsFeigningDeath(Unit* advisor)
 {
     return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
@@ -436,7 +428,7 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
     };
 
     std::list<Creature*> weapons;
-    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntries, LEGENDARY_WEAPON_SEARCH_RADIUS);
+    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntries, KAELTHAS_ROOM_SEARCH_DISTANCE);
 
     GuidVector guids;
     guids.reserve(weapons.size());
@@ -449,9 +441,9 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
     return guids;
 }
 
-bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI)
+GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
 {
-    return !GetDeadLegendaryWeaponGuids(botAI).empty();
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
 }
 
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
@@ -472,8 +464,8 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
-        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END :
-            (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END
+            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
         {

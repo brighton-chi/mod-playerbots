@@ -59,7 +59,7 @@ bool HyjalSummitMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!boss)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || !mainTank->IsAlive())
         return false;
 
@@ -244,7 +244,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
     Unit* enemy = nullptr;
     if (anetheron->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
     {
-        tank = GetGroupMainTank(botAI, bot);
+        tank = GetGroupMainTank(bot);
         enemy = anetheron;
     }
     else if (Unit* infernal = GetLooseInfernal(bot))
@@ -419,7 +419,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
 {
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -808,7 +808,7 @@ bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
 bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
 {
     constexpr uint32 fearWard = Id(HyjalSpells::SPELL_FEAR_WARD);
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(fearWard))
         return false;
 

@@ -73,17 +73,17 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         boss = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        tank = GetGroupAssistTank(botAI, bot, 0);
+        tank = GetGroupAssistTank(bot, 0);
     }
     else if (hunterIndex == 1)
     {
         boss = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-        tank = GetGroupMainTank(botAI, bot);
+        tank = GetGroupMainTank(bot);
     }
     else if (hunterIndex == 2)
     {
         boss = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-        tank = GetGroupAssistTank(botAI, bot, 1);
+        tank = GetGroupAssistTank(bot, 1);
     }
 
     if (!boss || !tank || !tank->IsAlive())

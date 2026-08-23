@@ -40,7 +40,7 @@ float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
     if (!omor)
         return 1.0f;
 
-    Player* tank = GetGroupMainTank(botAI, bot);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank)
         return 1.0f;
 

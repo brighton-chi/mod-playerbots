@@ -93,7 +93,7 @@ bool McMoveFromLavaAction::Execute(Event /*event*/)
     if (!dryTarget)
         return false;
 
-    botAI->InterruptSpell();
+    bot->CastStop();
 
     if (!MoveTo(dryTarget->GetMapId(), dryTarget->GetPositionX(), dryTarget->GetPositionY(),
                 dryTarget->GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED))
@@ -120,7 +120,7 @@ bool McGolemaggBackOffAction::Execute(Event /*event*/)
 
     // Out of swing range the stack stops growing and expires 30s after
     // the last application; the multiplier blocks re-engaging until then.
-    botAI->InterruptSpell();
+    bot->CastStop();
 
     float distToTravel = MAGMA_SPLASH_BACK_OFF_DISTANCE - bot->GetDistance2d(boss);
     if (distToTravel <= 0.0f)

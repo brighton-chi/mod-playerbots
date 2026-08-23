@@ -45,7 +45,7 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
     if (botAI->IsTank(bot))
         return false;
 
-    Player* tank = GetGroupMainTank(botAI, bot);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank)
         return false;
 

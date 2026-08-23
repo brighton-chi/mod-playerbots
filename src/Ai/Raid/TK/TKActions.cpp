@@ -69,7 +69,7 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 bool TempestKeepCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
     constexpr uint32 fearWard = Id(TkSpells::SPELL_FEAR_WARD);
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank || mainTank->HasAura(fearWard))
         return false;
 
@@ -116,7 +116,7 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
         return false;
 
@@ -884,7 +884,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 1)
     {
         advisor = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        tank = GetGroupAssistTank(botAI, bot, 0);
+        tank = GetGroupAssistTank(bot, 0);
     }
 
     if (!advisor || advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
