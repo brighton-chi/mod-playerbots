@@ -63,26 +63,34 @@ bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != akilzon)
         return Attack(akilzon);
 
-    if (akilzon->GetVictim() == bot)
-    {
-        const Position& position = AKILZON_TANK_POSITION;
-        float distToPosition =
-            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+    if (akilzon->GetVictim() != bot || !bot->IsWithinMeleeRange(akilzon))
+        return false;
 
-        if (distToPosition > 2.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(10.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    Position const& position = AKILZON_TANK_POSITION;
+    float const distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= 3.0f)
+        return false;
 
-            return MoveTo(ZA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-    }
+    float const posX = position.GetPositionX();
+    float const posY = position.GetPositionY();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
 
-    return false;
+    float const toPosX = posX - botX;
+    float const toPosY = posY - botY;
+    float const toBossX = target->GetPositionX() - botX;
+    float const toBossY = target->GetPositionY() - botY;
+    // A step that leads away from the target is walked backwards so the tank keeps facing it
+    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+
+    return MoveTo(
+        ZA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
