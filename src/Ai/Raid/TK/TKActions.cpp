@@ -32,12 +32,6 @@ using namespace EncounterHelpers;
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
-
-    // No per-boss guard here. The trigger already requires that neither this bot nor any group
-    // member within reactDistance is in combat, so there is no encounter left to protect and every
-    // boss's state goes at once. Anything added on top would have to be a narrower signal than the
-    // one the trigger uses -- this bot's own threat list, or what it can see -- so it could only
-    // ever fail open on a bot that is alive but disengaged.
     bool reset = false;
     reset |= isAlarInPhase2.erase(instanceId) > 0;
     reset |= lastRebirthState.erase(instanceId) > 0;
@@ -138,7 +132,6 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 }
 
 // Al'ar <Phoenix God>
-// CombatReach is 15 yards
 
 bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
@@ -573,7 +566,6 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 }
 
 // Void Reaver
-// CombatReach is 15 yards
 
 bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -963,9 +955,6 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     if (!group)
         return false;
 
-    // The dead are left in deliberately. Dropping them renumbers every slot behind them, so one
-    // death would shuffle the whole arc and a resurrection would shuffle it back. A gap where
-    // somebody died costs nothing; everyone sliding across twice costs the spread it is here for
     std::vector<Player*> healers;
     std::vector<Player*> rangedDps;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -980,7 +969,6 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
             rangedDps.push_back(member);
     }
 
-    // Healers and ranged dps each get their own arc, so the bot only ever indexes into its own
     bool const isHeal = PlayerbotAI::IsHeal(bot);
     std::vector<Player*> const& ring = isHeal ? healers : rangedDps;
 
@@ -989,7 +977,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         return false;
 
     // Spread is 90-degree arc for healers and 120-degree arc for ranged DPS.
-    // Capernian's CombatReach is 4.5y, so the radii are 6y longer than the distance they buy
+    // Capernian's CombatReach is 4.5y + standard player CombatReach (without Bloodlust) is 1.5y
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
     float const radius = isHeal ? 42.0f : 34.0f; // 36 and 28 yards of actual distance
     constexpr float arcCenter = 2.9f;
@@ -1086,8 +1074,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     bool const isActiveCapernianTank = isPhase3 && bot->getClass() == CLASS_WARLOCK &&
         GetCapernianTank(bot) == bot;
 
-    // Each advisor is looked up only once the ones above have been ruled out, so a bot that settles
-    // on Thaladred never asks about the other three
     Unit* target = nullptr;
 
     // Target priority 1: Thaladred, except Capernian tank during all advisors phase
@@ -1126,8 +1112,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    // Target priority 4: Telonicus. Held past the chain because the melee repositioning below is
-    // his alone, and stays null when an earlier advisor was taken -- which reads as "not Telonicus"
+    // Target priority 4: Telonicus. Initialized as nullptr for melee positioning below.
     Unit* telonicus = nullptr;
     if (!target)
     {
@@ -1225,7 +1210,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     // Priority 0: Everybody other than the main tank needs to stay away from the axe
     // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
-    // Variable return allows failure to MoveAway not to exit the function
+    // Variable return allows failure to MoveAway not to exit the function.
     bool didAvoidDevastation = false;
     if (axe && HandleDevastationAvoidance(axe, mace, dagger, sword, isTank, isMeleeDps))
         didAvoidDevastation = true;
@@ -1235,10 +1220,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     constexpr float safeDistance = 12.0f;
 
-    // Melee dps has to stand on a weapon to hit it, so any weapon parked next to the axe is passed
-    // over for the next one down. Marking still happens first: the skull is the raid's kill order,
-    // which one bot declining to walk into Whirlwind should not rewrite.
-    // The axe needs no special case -- only ranged dps ever reach it, and this is false for them
+    // Melee dps obviously has to stand near a weapon to hit it, so any weapon too close to the axe
+    // is skipped temporarily.
     auto const isTooCloseToAxe = [&](Unit* candidate)
     {
         return isMeleeDps && axe && candidate->GetDistance2d(axe) <= safeDistance;
@@ -1247,9 +1230,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     struct WeaponPriority
     {
         char const* name;
-        // The axe is crossed rather than skulled because the main tank holds it away from the
-        // raid, so the mark says stay clear rather than kill next. Ranged are the only ones who
-        // take it at all, melee having no way to damage it from outside its Whirlwind
+        // The axe is marked with a cross instead of skull as it is outside the full priority
+        // chain (only ranged dps attacks it).
         bool markWithCross;
         bool rangedDpsOnly;
     };
@@ -1274,8 +1256,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (!candidate)
             continue;
 
-        if (weapon.markWithCross ? MarkTargetWithCross(bot, candidate)
-                                 : MarkTargetWithSkull(bot, candidate))
+        if (weapon.markWithCross ?
+                MarkTargetWithCross(bot, candidate) : MarkTargetWithSkull(bot, candidate))
         {
             return true;
         }
@@ -1290,8 +1272,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (!target)
         return didAvoidDevastation;
 
-    return didAvoidDevastation ||
-        (AI_VALUE(Unit*, "current target") != target && Attack(target));
+    return didAvoidDevastation || (AI_VALUE(Unit*, "current target") != target && Attack(target));
 }
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastationAvoidance(
@@ -1949,6 +1930,10 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
     return botAI->CanCastSpell(spell, mcTarget) && botAI->CastSpell(spell, mcTarget);
 }
 
+// The vast majority of this action is not to address avoidance but actually to implement the
+// Gravity Lapse mechanic, which does not otherwise properly affect bots due to the fact that bots
+// do not have a packet handler for flight and instead toggle their flight flags manually upon
+// movement.
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))

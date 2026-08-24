@@ -266,9 +266,7 @@ int8 GetAlarPlatformIndex(Unit* alar)
     return locationIndex;
 }
 
-// The ground spots run parallel to the landing platforms, so the nearest platform's index is also
-// the ground spot beneath it. Seeded from the first platform rather than from a sentinel, so there
-// is no index that could reach past the end
+// The nearest platform's index is also the ground (landing) spot beneath it
 static_assert(ALAR_GROUND_POSITIONS.size() == ALAR_LANDING_PLATFORM_POSITIONS.size());
 
 Position const& GetClosestGroundPosition(Position const& botPos)
@@ -452,16 +450,13 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
+// The non-attackable unit flag covers the period in phase 1 before the advisor activates.
 // The ironically named "Permanent Feign Death" is the aura that advisors have when they are
 // "killed" in phase 1 until they are "resurrected" in phase 3.
-bool IsFeigningDeath(Unit* advisor)
-{
-    return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
-}
-
 bool IsAdvisorActive(Unit* advisor)
 {
-    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !IsFeigningDeath(advisor);
+    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)

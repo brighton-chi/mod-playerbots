@@ -120,6 +120,7 @@ bool IsPathSafeFromHazards(
     float hazardRadius);
 
 // Al'ar <Phoenix God>
+// CombatReach is 15 yards
 
 enum AlarLocationIndex
 {
@@ -199,6 +200,7 @@ bool IsSecondAlarTank(Player* bot);
 Player* GetSecondaryEmberTank(Player* bot);
 
 // Void Reaver
+// CombatReach is 15 yards
 
 struct ArcaneOrbData
 {
@@ -214,8 +216,6 @@ inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f 
 
 extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
-// Orbs are recorded by the spell script and aged out here, so callers never handle cast times.
-// The single-point form fetches for itself; the pair suits a caller that needs the set anyway.
 std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId);
 bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius);
 bool IsNearActiveArcaneOrb(Player* bot, float radius);
@@ -262,9 +262,6 @@ bool IsSanguinarDebuffHunter(Player* bot);
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
 GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
-bool IsFeigningDeath(Unit* advisor);
-// An advisor counts as active while it is attackable and has not feigned death, which is how the
-// core parks one that has been killed until Kael revives them all
 bool IsAdvisorActive(Unit* advisor);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 

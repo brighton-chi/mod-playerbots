@@ -26,9 +26,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Three tanks in the raid hold something on a fixed mark: Void Reaver, Sanguinar and Telonicus,
-// and Kael himself. All of them close on that mark a step at a time rather than in one MoveTo, so
-// the boss is dragged along instead of being swung around the room.
+// For Void Reaver, Sanguinar, Telonicus, and Kael'thas.
 class TempestKeepTankPositionAction : public AttackAction
 {
 public:
@@ -36,8 +34,8 @@ public:
         : AttackAction(botAI, name) {}
 
 protected:
-    // shouldAttack is false for a tank that should be repositioned if the target lands on it but
-    // must not pull the target off whoever currently holds it
+    // shouldAttack is false for a tank that is not assigned to the target but is coded to
+    // reposition if it ends up with aggro
     bool MoveToTankPosition(
         Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
 };
