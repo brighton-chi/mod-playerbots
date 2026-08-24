@@ -266,20 +266,27 @@ int8 GetAlarPlatformIndex(Unit* alar)
     return locationIndex;
 }
 
-void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Position& ground)
+// The ground spots run parallel to the landing platforms, so the nearest platform's index is also
+// the ground spot beneath it. Seeded from the first platform rather than from a sentinel, so there
+// is no index that could reach past the end
+static_assert(ALAR_GROUND_POSITIONS.size() == ALAR_LANDING_PLATFORM_POSITIONS.size());
+
+Position const& GetClosestGroundPosition(Position const& botPos)
 {
-    float minDist = std::numeric_limits<float>::max();
-    closestPlatform = -1;
-    for (int8 i = 0; i < 4; ++i)
+    size_t closestPlatform = 0;
+    float minDistSq = botPos.GetExactDist2dSq(ALAR_LANDING_PLATFORM_POSITIONS[0]);
+
+    for (size_t i = 1; i < ALAR_LANDING_PLATFORM_POSITIONS.size(); ++i)
     {
-        float dist = botPos.GetExactDist2d(&ALAR_LANDING_PLATFORM_POSITIONS[i]);
-        if (dist < minDist)
+        float const distSq = botPos.GetExactDist2dSq(ALAR_LANDING_PLATFORM_POSITIONS[i]);
+        if (distSq < minDistSq)
         {
-            minDist = dist;
+            minDistSq = distSq;
             closestPlatform = i;
         }
     }
-    ground = ALAR_GROUND_POSITIONS[closestPlatform];
+
+    return ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
 // Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
@@ -321,6 +328,40 @@ Player* GetSecondaryEmberTank(Player* bot)
 // Void Reaver
 
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
+
+std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId)
+{
+    std::vector<Position> activeOrbs;
+
+    auto const it = voidReaverArcaneOrbs.find(instanceId);
+    if (it == voidReaverArcaneOrbs.end())
+        return activeOrbs;
+
+    uint32 const now = getMSTime();
+    for (ArcaneOrbData const& orb : it->second)
+    {
+        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS)
+            activeOrbs.push_back(orb.destination);
+    }
+
+    return activeOrbs;
+}
+
+bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius)
+{
+    for (Position const& orb : orbs)
+    {
+        if (bot->GetExactDist2d(orb.GetPositionX(), orb.GetPositionY()) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+bool IsNearActiveArcaneOrb(Player* bot, float radius)
+{
+    return IsNearArcaneOrb(bot, GetActiveArcaneOrbs(bot->GetInstanceId()), radius);
+}
 
 // High Astromancer Solarian
 
@@ -416,6 +457,11 @@ bool IsSanguinarDebuffHunter(Player* bot)
 bool IsFeigningDeath(Unit* advisor)
 {
     return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
+}
+
+bool IsAdvisorActive(Unit* advisor)
+{
+    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) && !IsFeigningDeath(advisor);
 }
 
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)

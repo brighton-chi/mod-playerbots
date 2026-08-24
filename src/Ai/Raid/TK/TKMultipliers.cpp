@@ -252,27 +252,21 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
 
-    auto isAdvisorActive = [](Unit* advisor)
-    {
-        return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-            !IsFeigningDeath(advisor);
-    };
-
     bool const isMainTank = PlayerbotAI::IsMainTank(bot);
     bool const isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
     bool const isWarlockTank = bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
 
-    if ((isAdvisorActive(sanguinar) && isMainTank) ||
-        (isAdvisorActive(telonicus) && isFirstAssistTank) ||
-        (isAdvisorActive(capernian) && (isMainTank || isWarlockTank)))
+    if ((IsAdvisorActive(sanguinar) && isMainTank) ||
+        (IsAdvisorActive(telonicus) && isFirstAssistTank) ||
+        (IsAdvisorActive(capernian) && (isMainTank || isWarlockTank)))
     {
         return 1.0f;
     }
 
     bool shouldHoldDps =
-        (isAdvisorActive(sanguinar) && !isMainTank) ||
-        (isAdvisorActive(telonicus) && !isFirstAssistTank) ||
-        (isAdvisorActive(capernian) && !isMainTank && !isWarlockTank);
+        (IsAdvisorActive(sanguinar) && !isMainTank) ||
+        (IsAdvisorActive(telonicus) && !isFirstAssistTank) ||
+        (IsAdvisorActive(capernian) && !isMainTank && !isWarlockTank);
 
     return shouldHoldDps ? 0.0f : 1.0f;
 }
@@ -372,8 +366,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
     if (!capernian)
         return 1.0f;
 
-    return !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian) ? 0.0f : 1.0f;
+    return IsAdvisorActive(capernian) ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)

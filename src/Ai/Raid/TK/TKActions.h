@@ -26,6 +26,22 @@ public:
     bool Execute(Event event) override;
 };
 
+// Three tanks in the raid hold something on a fixed mark: Void Reaver, Sanguinar and Telonicus,
+// and Kael himself. All of them close on that mark a step at a time rather than in one MoveTo, so
+// the boss is dragged along instead of being swung around the room.
+class TempestKeepTankPositionAction : public AttackAction
+{
+public:
+    TempestKeepTankPositionAction(PlayerbotAI* botAI, std::string const name)
+        : AttackAction(botAI, name) {}
+
+protected:
+    // shouldAttack is false for a tank that should be repositioned if the target lands on it but
+    // must not pull the target off whoever currently holds it
+    bool MoveToTankPosition(
+        Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
+};
+
 class TempestKeepCastFearWardOnMainTankAction : public Action
 {
 public:
@@ -144,11 +160,11 @@ public:
 
 // Void Reaver
 
-class VoidReaverTanksPositionBossAction : public AttackAction
+class VoidReaverTanksPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
     VoidReaverTanksPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "void reaver tanks position boss") {}
+        : TempestKeepTankPositionAction(botAI, "void reaver tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -225,11 +241,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public AttackAction
+class KaelthasSunstriderMeleeTanksPositionAdvisorsAction : public TempestKeepTankPositionAction
 {
 public:
     KaelthasSunstriderMeleeTanksPositionAdvisorsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider melee tanks position advisors") {}
+        : TempestKeepTankPositionAction(
+              botAI, "kael'thas sunstrider melee tanks position advisors") {}
     bool Execute(Event event) override;
 };
 
@@ -340,11 +357,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionBossAction : public AttackAction
+class KaelthasSunstriderMainTankPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
     KaelthasSunstriderMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider main tank position boss") {}
+        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider main tank position boss") {}
     bool Execute(Event event) override;
 };
 

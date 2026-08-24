@@ -127,24 +127,7 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
-    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
-        return true;
-
-    uint32 const now = getMSTime();
-
-    for (auto const& orb : it->second)
-    {
-        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
-            bot->GetExactDist2d(
-                orb.destination.GetPositionX(),
-                orb.destination.GetPositionY()) < ARCANE_ORB_BUFFER_DISTANCE)
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return !IsNearActiveArcaneOrb(bot, ARCANE_ORB_BUFFER_DISTANCE);
 }
 
 bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
@@ -156,24 +139,7 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
-    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
-        return false;
-
-    uint32 const now = getMSTime();
-
-    for (auto const& orb : it->second)
-    {
-        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
-            bot->GetExactDist2d(
-                orb.destination.GetPositionX(),
-                orb.destination.GetPositionY()) < ARCANE_ORB_SAFE_DISTANCE)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return IsNearActiveArcaneOrb(bot, ARCANE_ORB_SAFE_DISTANCE);
 }
 
 // High Astromancer Solarian
@@ -252,16 +218,12 @@ bool KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger::IsActive()
 
     if (PlayerbotAI::IsMainTank(bot))
     {
-        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-        return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-            !IsFeigningDeath(sanguinar);
+        return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar"));
     }
 
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
-        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-            !IsFeigningDeath(telonicus);
+        return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus"));
     }
 
     return false;
@@ -286,19 +248,13 @@ bool KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK || GetCapernianTank(bot) != bot)
         return false;
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian);
+    return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian"));
 }
 
 bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        IsFeigningDeath(capernian))
-    {
+    if (!IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
         return false;
-    }
 
     if (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot)
         return false;

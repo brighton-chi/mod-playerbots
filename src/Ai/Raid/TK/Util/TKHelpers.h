@@ -191,7 +191,8 @@ bool IsAlarInPhase2(uint32 instanceId);
 int8 GetAlarDestinationLocationIndex(Unit* alar);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
 int8 GetAlarPlatformIndex(Unit* alar);
-void GetClosestPlatformAndGround(Position const botPos, int8& closestPlatform, Position& ground);
+// The spot on the floor under the nearest landing platform, for jumping down off the balcony
+Position const& GetClosestGroundPosition(Position const& botPos);
 bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
@@ -212,6 +213,12 @@ inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = 30.0f;
 inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
 
 extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
+
+// Orbs are recorded by the spell script and aged out here, so callers never handle cast times.
+// The single-point form fetches for itself; the pair suits a caller that needs the set anyway.
+std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId);
+bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius);
+bool IsNearActiveArcaneOrb(Player* bot, float radius);
 
 // High Astromancer Solarian
 
@@ -256,6 +263,9 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
 GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 bool IsFeigningDeath(Unit* advisor);
+// An advisor counts as active while it is attackable and has not feigned death, which is how the
+// core parks one that has been killed until Kael revives them all
+bool IsAdvisorActive(Unit* advisor);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 
 }
