@@ -1221,84 +1221,57 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         return didAvoidDevastation;
 
     constexpr float safeDistance = 12.0f;
-    Unit* target = nullptr;
 
     // Melee dps has to stand on a weapon to hit it, so any weapon parked next to the axe is passed
     // over for the next one down. Marking still happens first: the skull is the raid's kill order,
-    // which one bot declining to walk into Whirlwind should not rewrite
+    // which one bot declining to walk into Whirlwind should not rewrite.
+    // The axe needs no special case -- only ranged dps ever reach it, and this is false for them
     auto const isTooCloseToAxe = [&](Unit* candidate)
     {
         return isMeleeDps && axe && candidate->GetDistance2d(axe) <= safeDistance;
     };
 
-    // Priority 1: Staff of Disintegration
-    if (Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration"))
+    struct WeaponPriority
     {
-        target = staff;
-        if (MarkTargetWithSkull(bot, staff))
-            return true;
+        char const* name;
+        // The axe is crossed rather than skulled because the main tank holds it away from the
+        // raid, so the mark says stay clear rather than kill next. Ranged are the only ones who
+        // take it at all, melee having no way to damage it from outside its Whirlwind
+        bool markWithCross;
+        bool rangedDpsOnly;
+    };
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
-    }
-    // Priority 2: Cosmic Infuser
-    if (!target && mace)
-    {
-        target = mace;
-        if (MarkTargetWithSkull(bot, mace))
-            return true;
+    static constexpr std::array weaponPriorities = {
+        WeaponPriority{ "staff of disintegration", false, false },
+        WeaponPriority{ "cosmic infuser",          false, false },
+        WeaponPriority{ "netherstrand longbow",    false, false },
+        WeaponPriority{ "devastation",             true,  true  },
+        WeaponPriority{ "infinity blades",         false, false },
+        WeaponPriority{ "warp slicer",             false, false },
+        WeaponPriority{ "phaseshift bulwark",      false, false },
+    };
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
-    }
-    // Priority 3: Netherstrand Longbow
-    if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow");
-        longbow && !target)
+    Unit* target = nullptr;
+    for (WeaponPriority const& weapon : weaponPriorities)
     {
-        target = longbow;
-        if (MarkTargetWithSkull(bot, longbow))
-            return true;
+        if (weapon.rangedDpsOnly && !isRangedDps)
+            continue;
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
-    }
-    // Priority 4: Devastation - ranged only
-    if (isRangedDps && !target && axe)
-    {
-        target = axe;
-        if (MarkTargetWithCross(bot, axe))
-            return true;
-    }
-    // Priority 5: Infinity Blades
-    if (!target && dagger)
-    {
-        target = dagger;
-        if (MarkTargetWithSkull(bot, dagger))
-            return true;
+        Unit* candidate = AI_VALUE2(Unit*, "find target", weapon.name);
+        if (!candidate)
+            continue;
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
-    }
-    // Priority 6: Warp Slicer
-    if (!target && sword)
-    {
-        target = sword;
-        if (MarkTargetWithSkull(bot, sword))
+        if (weapon.markWithCross ? MarkTargetWithCross(bot, candidate)
+                                 : MarkTargetWithSkull(bot, candidate))
+        {
             return true;
+        }
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
-    }
-    // Priority 7: Phaseshift Bulwark
-    if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark");
-        shield && !target)
-    {
-        target = shield;
-        if (MarkTargetWithSkull(bot, shield))
-            return true;
+        if (isTooCloseToAxe(candidate))
+            continue;
 
-        if (isTooCloseToAxe(target))
-            target = nullptr;
+        target = candidate;
+        break;
     }
 
     if (!target)
