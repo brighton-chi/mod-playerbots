@@ -42,8 +42,8 @@ public:
         : AttackAction(botAI, name) {}
 
 protected:
-    // shouldAttack is false for a tank that is not assigned to the target but is coded to
-    // reposition if it ends up with aggro
+    // shouldAttack is false for a tank that is not assigned to the target but that is included
+    // in the action solely to reposition if it ends up with aggro.
     bool MoveToTankPosition(
         Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
 };
@@ -182,11 +182,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class VoidReaverKeepRangedInGoldilocksZoneAction : public MovementAction
+class VoidReaverRangedBackOffAndSpreadAction : public MovementAction
 {
 public:
-    VoidReaverKeepRangedInGoldilocksZoneAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "void reaver keep ranged in goldilocks zone") {}
+    VoidReaverRangedBackOffAndSpreadAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "void reaver ranged back off and spread") {}
     bool Execute(Event event) override;
 };
 

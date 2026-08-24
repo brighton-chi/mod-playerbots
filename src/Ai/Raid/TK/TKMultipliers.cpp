@@ -24,7 +24,7 @@ using namespace EncounterHelpers;
 
 // Al'ar <Phoenix God>
 
-float AlarMoveBetweenPlatformsMultiplier::GetValue(Action* action)
+float AlarSuppressGapClosersMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -445,7 +445,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return 1.0f;
 
-    // Proxy for revival/Kael talk phase (could pick any advisor here)
+    // The Thaladred check is a proxy for revival/Kael talk phase (you could pick any advisor here).
     Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
     if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
@@ -461,7 +461,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Bloodlust/Heroism and other major cooldowns should be saved until Phase 3
+// Bloodlust/Heroism and other major cooldowns should be saved until Phase 3.
 float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

@@ -266,7 +266,7 @@ int8 GetAlarPlatformIndex(Unit* alar)
     return locationIndex;
 }
 
-// The nearest platform's index is also the ground (landing) spot beneath it
+// The nearest platform's index is also the ground (landing) spot beneath it.
 static_assert(ALAR_GROUND_POSITIONS.size() == ALAR_LANDING_PLATFORM_POSITIONS.size());
 
 Position const& GetClosestGroundPosition(Position const& botPos)
@@ -288,13 +288,13 @@ Position const& GetClosestGroundPosition(Position const& botPos)
 }
 
 // Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
-// and starts on Al'ar in phase 2
+// and starts on Al'ar in phase 2.
 bool IsFirstAlarTank(Player* bot)
 {
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// First assist tank rotates between NW and E platforms in phase 1
+// First assist tank rotates between NW and E platforms in phase 1.
 bool IsSecondAlarTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);

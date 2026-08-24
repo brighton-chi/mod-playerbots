@@ -572,6 +572,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 
 // Void Reaver
 
+// Pounding is part of why the spot is fixed, though he needs holding either way
 bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -603,7 +604,7 @@ bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)
     return false;
 }
 
-bool VoidReaverKeepRangedInGoldilocksZoneAction::Execute(Event /*event*/)
+bool VoidReaverRangedBackOffAndSpreadAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     if (!voidReaver)
@@ -1252,6 +1253,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     };
 
     Unit* target = nullptr;
+    bool markClaimed = false;
     for (WeaponPriority const& weapon : weaponPriorities)
     {
         if (weapon.rangedDpsOnly && !isRangedDps)
@@ -1261,10 +1263,17 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (!candidate)
             continue;
 
-        if (weapon.markWithCross ?
-                MarkTargetWithCross(bot, candidate) : MarkTargetWithSkull(bot, candidate))
+        // The mark is the raid's kill order, so it belongs to the first weapon still standing and
+        // to no other. Marking further down the list because this bot personally will not stand
+        // next to the axe leaves melee and ranged dragging the icon between two weapons every tick
+        if (!markClaimed)
         {
-            return true;
+            markClaimed = true;
+            if (weapon.markWithCross ?
+                    MarkTargetWithCross(bot, candidate) : MarkTargetWithSkull(bot, candidate))
+            {
+                return true;
+            }
         }
 
         if (isTooCloseToAxe(candidate))
