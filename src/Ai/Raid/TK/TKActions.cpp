@@ -128,7 +128,7 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    bot->CastStop()
+    bot->CastStop();
 
     if (!botAI->CanCastSpell("polymorph", target))
         return false;

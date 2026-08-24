@@ -78,8 +78,8 @@ bool AkilzonTanksPositionBossAction::Execute(Event /*event*/)
 
     float const toPosX = posX - botX;
     float const toPosY = posY - botY;
-    float const toBossX = target->GetPositionX() - botX;
-    float const toBossY = target->GetPositionY() - botY;
+    float const toBossX = akilzon->GetPositionX() - botX;
+    float const toBossY = akilzon->GetPositionY() - botY;
     // A step that leads away from the target is walked backwards so the tank keeps facing it
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
