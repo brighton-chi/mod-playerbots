@@ -390,7 +390,6 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         Position const& ground = GetClosestGroundPosition(bot->GetPosition());
-
         bot->CastStop();
         return JumpTo(
             TK_MAP_ID, ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(),
@@ -420,8 +419,8 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             ALAR_POINT_MIDDLE.GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    // Melee dps
-    if (PlayerbotAI::IsMelee(bot))
+
+    if (PlayerbotAI::IsMelee(bot)) // Melee dps
     {
         return MoveTo(
             TK_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
@@ -450,11 +449,10 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // On the other hand, melee dps jumps off at 5% HP because TBC hates melee dps
+    // On the other hand, melee dps jumps off at 5% HP because TBC hates them
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         Position const& ground = GetClosestGroundPosition(bot->GetPosition());
-
         bot->CastStop();
         return JumpTo(
             TK_MAP_ID, ground.GetPositionX(), ground.GetPositionY(), ground.GetPositionZ(),
@@ -883,7 +881,7 @@ bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/
         advisor = AI_VALUE2(Unit*, "find target", "lord sanguinar");
         position = SANGUINAR_TANK_POSITION;
     }
-    else // PlayerbotAI::IsAssistTankOfIndex(bot, 0, false)
+    else // PlayerbotAI::IsAssistTankOfIndex(bot, 0, true)
     {
         advisor = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
         position = TELONICUS_TANK_POSITION;

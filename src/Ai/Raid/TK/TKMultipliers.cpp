@@ -247,10 +247,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    // Only the bot holding the advisor that is out keeps acting; the rest wait out the timer.
-    // Kael sends the advisors one at a time and the next activates only once the previous one is
-    // down, so exactly one of these can be up -- which is what lets this stop at the first match
-    // rather than weighing all three, and each of the role checks below walks the group
+    // Only the applicable tank may attack during the first 10 seconds of an advisor in phase 1
     if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar")))
         return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 
@@ -258,9 +255,8 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot ? 1.0f : 0.0f;
 
     if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus")))
-        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ? 1.0f : 0.0f;
+        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ? 1.0f : 0.0f;
 
-    // Between advisors, or before the first one, there is nothing to wait on
     return 1.0f;
 }
 
@@ -455,8 +451,8 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
         return 1.0f;
 
     if (PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
+        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot))
     {
         return 0.0f;

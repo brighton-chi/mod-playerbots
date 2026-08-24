@@ -217,14 +217,10 @@ bool KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger::IsActive()
         return false;
 
     if (PlayerbotAI::IsMainTank(bot))
-    {
         return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar"));
-    }
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus"));
-    }
 
     return false;
 }
@@ -277,18 +273,15 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
         return false;
 
     return PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
+        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (PlayerbotAI::IsHeal(bot) || PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
+    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return false;
-    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
