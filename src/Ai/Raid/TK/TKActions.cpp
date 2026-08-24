@@ -1088,43 +1088,58 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     bool const isActiveCapernianTank = isPhase3 && bot->getClass() == CLASS_WARLOCK &&
         GetCapernianTank(bot) == bot;
 
+    // Each advisor is looked up only once the ones above have been ruled out, so a bot that settles
+    // on Thaladred never asks about the other three
     Unit* target = nullptr;
 
     // Target priority 1: Thaladred, except Capernian tank during all advisors phase
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!isActiveCapernianTank && IsAdvisorActive(thaladred))
+    if (!isActiveCapernianTank)
     {
-        target = thaladred;
-        if (isPhase3 && MarkTargetWithSkull(bot, thaladred))
-            return true;
+        Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+        if (IsAdvisorActive(thaladred))
+        {
+            target = thaladred;
+            if (isPhase3 && MarkTargetWithSkull(bot, thaladred))
+                return true;
+        }
     }
 
     // Target priority 2: Capernian for ranged only (excluding debuff hunter)
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!target && IsAdvisorActive(capernian) && PlayerbotAI::IsRangedDps(bot) &&
-        !IsSanguinarDebuffHunter(bot))
+    if (!target && PlayerbotAI::IsRangedDps(bot) && !IsSanguinarDebuffHunter(bot))
     {
-        target = capernian;
-        if (isPhase3 && MarkTargetWithCross(bot, capernian))
-            return true;
+        Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+        if (IsAdvisorActive(capernian))
+        {
+            target = capernian;
+            if (isPhase3 && MarkTargetWithCross(bot, capernian))
+                return true;
+        }
     }
 
     // Target priority 3: Sanguinar (debuff hunter and melee move here after Thaladred)
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (!target && IsAdvisorActive(sanguinar))
+    if (!target)
     {
-        target = sanguinar;
-        if (isPhase3 && MarkTargetWithSkull(bot, sanguinar))
-            return true;
+        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+        if (IsAdvisorActive(sanguinar))
+        {
+            target = sanguinar;
+            if (isPhase3 && MarkTargetWithSkull(bot, sanguinar))
+                return true;
+        }
     }
 
-    // Target priority 4: Telonicus
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (!target && IsAdvisorActive(telonicus))
+    // Target priority 4: Telonicus. Held past the chain because the melee repositioning below is
+    // his alone, and stays null when an earlier advisor was taken -- which reads as "not Telonicus"
+    Unit* telonicus = nullptr;
+    if (!target)
     {
-        target = telonicus;
-        if (isPhase3 && MarkTargetWithSkull(bot, telonicus))
-            return true;
+        telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+        if (IsAdvisorActive(telonicus))
+        {
+            target = telonicus;
+            if (isPhase3 && MarkTargetWithSkull(bot, telonicus))
+                return true;
+        }
     }
 
     if (!target)
