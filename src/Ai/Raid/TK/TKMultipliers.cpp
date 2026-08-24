@@ -240,7 +240,6 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     constexpr uint32 dpsWaitMs = 10 * IN_MILLISECONDS;
-
     auto it = advisorDpsWaitTimer.find(kaelthas->GetInstanceId());
     if (it != advisorDpsWaitTimer.end() && it->second != ADVISOR_DPS_WAIT_NOT_STARTED &&
         getMSTimeDiff(it->second, getMSTime()) >= dpsWaitMs)
@@ -248,27 +247,21 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    // Only the bot holding the advisor that is out keeps acting; the rest wait out the timer.
+    // Kael sends the advisors one at a time and the next activates only once the previous one is
+    // down, so exactly one of these can be up -- which is what lets this stop at the first match
+    // rather than weighing all three, and each of the role checks below walks the group
+    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar")))
+        return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 
-    bool const isMainTank = PlayerbotAI::IsMainTank(bot);
-    bool const isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
-    bool const isWarlockTank = bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot;
+    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
+        return bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot ? 1.0f : 0.0f;
 
-    if ((IsAdvisorActive(sanguinar) && isMainTank) ||
-        (IsAdvisorActive(telonicus) && isFirstAssistTank) ||
-        (IsAdvisorActive(capernian) && (isMainTank || isWarlockTank)))
-    {
-        return 1.0f;
-    }
+    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus")))
+        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ? 1.0f : 0.0f;
 
-    bool shouldHoldDps =
-        (IsAdvisorActive(sanguinar) && !isMainTank) ||
-        (IsAdvisorActive(telonicus) && !isFirstAssistTank) ||
-        (IsAdvisorActive(capernian) && !isMainTank && !isWarlockTank);
-
-    return shouldHoldDps ? 0.0f : 1.0f;
+    // Between advisors, or before the first one, there is nothing to wait on
+    return 1.0f;
 }
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
