@@ -19,6 +19,9 @@ public:
         creators["tempest keep bot is not in combat"] =
             &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
 
+        creators["tempest keep bot is stuck falling"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_stuck_falling;
+
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
@@ -134,6 +137,9 @@ private:
     // General
     static Trigger* tempest_keep_bot_is_not_in_combat(PlayerbotAI* botAI) {
         return new TempestKeepBotIsNotInCombatTrigger(botAI);
+    }
+    static Trigger* tempest_keep_bot_is_stuck_falling(PlayerbotAI* botAI) {
+        return new TempestKeepBotIsStuckFallingTrigger(botAI);
     }
 
     // Trash

@@ -19,6 +19,9 @@ public:
         creators["tempest keep reset encounter states"] =
             &RaidTempestKeepActionContext::tempest_keep_reset_encounter_states;
 
+        creators["tempest keep clear stale falling flag"] =
+            &RaidTempestKeepActionContext::tempest_keep_clear_stale_falling_flag;
+
         creators["tempest keep cast fear ward on main tank"] =
             &RaidTempestKeepActionContext::tempest_keep_cast_fear_ward_on_main_tank;
 
@@ -143,6 +146,9 @@ private:
     // General
     static Action* tempest_keep_reset_encounter_states(PlayerbotAI* botAI) {
         return new TempestKeepResetEncounterStatesAction(botAI);
+    }
+    static Action* tempest_keep_clear_stale_falling_flag(PlayerbotAI* botAI) {
+        return new TempestKeepClearStaleFallingFlagAction(botAI);
     }
     static Action* tempest_keep_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
         return new TempestKeepCastFearWardOnMainTankAction(botAI);

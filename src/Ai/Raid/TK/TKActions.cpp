@@ -38,21 +38,24 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
     reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
 
-    // Clear stale falling movement flag that may linger if a bot dies while falling during
-    // Kael's Gravity Lapse and then is not resurrected until after the encounter
-    if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) || !bot->movespline->Finalized())
-        return reset;
+    return reset;
+}
 
+// Split out from the reset above because it is per-bot where that is per-instance: the reset only
+// needs one bot to run it, and its trigger says so, which left this fixing only that one bot
+bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
+{
+    // Only once the bot is back on the floor, or it would be cleared mid-descent
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ > 1.0f)
-        return reset;
+        return false;
 
     bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
     if (!bot->IsRooted())
         bot->SendMovementFlagUpdate();
 
-    return reset;
+    return true;
 }
 
 bool TempestKeepTankPositionAction::MoveToTankPosition(
@@ -86,8 +89,8 @@ bool TempestKeepTankPositionAction::MoveToTankPosition(
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool TempestKeepCastFearWardOnMainTankAction::Execute(Event /*event*/)
@@ -124,6 +127,8 @@ bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 
     if (!target)
         return false;
+
+    bot->CastStop()
 
     if (!botAI->CanCastSpell("polymorph", target))
         return false;
@@ -536,7 +541,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
     }
 
     // Avoidance during Dive Bomb sequence
-    constexpr float safeDistance = 10.0f;
+    constexpr float safeDistance = 15.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (!nearestPlayer)
         return false;
@@ -1340,21 +1345,24 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         WeaponInfo{ TkNpcs::NPC_PHASESHIFT_BULWARK, TkItems::ITEM_PHASESHIFT_BULWARK },
     };
 
+    // A bot can be entitled to more than one, so equipping is not the end of the walk. Whether it
+    // happened still has to reach the engine, or a tick that put a weapon on reports as a failure
+    bool equipped = false;
     for (auto const& weapon : weapons)
     {
-        if (ShouldBotLootWeapon(weapon.npcEntry))
-        {
-            if (bot->HasItemCount(Id(weapon.itemId), 1, false))
-            {
-                EquipLegendaryWeapon(Id(weapon.itemId));
-                continue;
-            }
+        if (!ShouldBotLootWeapon(weapon.npcEntry))
+            continue;
 
-            return LootWeapon(Id(weapon.npcEntry), Id(weapon.itemId));
+        if (bot->HasItemCount(Id(weapon.itemId), 1, false))
+        {
+            equipped |= EquipLegendaryWeapon(Id(weapon.itemId));
+            continue;
         }
+
+        return LootWeapon(Id(weapon.npcEntry), Id(weapon.itemId)) || equipped;
     }
 
-    return false;
+    return equipped;
 }
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs weaponEntry)
@@ -1410,6 +1418,13 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId)
 {
+    // Checked before the walk over rather than at the corpse: with no room the autostore below
+    // fails silently, and the bot would spend every tick travelling to loot something it cannot
+    // hold
+    ItemPosCountVec dest;
+    if (bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1) != EQUIP_ERR_OK)
+        return false;
+
     Creature* weapon = GetDeadLegendaryWeapon(botAI, weaponEntry);
     if (!weapon)
         return false;
@@ -1483,9 +1498,9 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     {
         for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
         {
-            if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+            if (Bag const* pBag = bot->GetBagByPos(bag))
             {
-                for (uint32 slot = 0; slot < pBag->GetBagSize(); ++slot)
+                for (uint8 slot = 0; slot < pBag->GetBagSize(); ++slot)
                 {
                     if (checkSlot(bag, slot))
                         break;
@@ -1524,12 +1539,9 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     {
         if (Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
         {
-            uint32 mhEntry = mhItem->GetEntry();
-            if (mhEntry >= ITEM_LEGENDARY_WEAPON_MIN && mhEntry <= ITEM_LEGENDARY_WEAPON_MAX &&
-                mhEntry != itemId)
-            {
+            uint32 const mhEntry = mhItem->GetEntry();
+            if (IsLegendaryWeaponItem(mhEntry) && mhEntry != itemId)
                 dstSlot = EQUIPMENT_SLOT_OFFHAND;
-            }
         }
     }
 
@@ -1539,18 +1551,33 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     bot->CastStop();
 
-    bool ohCleared = false; // If a 2H is blocking the target OH slot, unequip the 2H first
+    // Moves an equipped item into the first free backpack slot so the slot it leaves can be
+    // filled. False means the backpack is full and nothing could be freed
+    auto const stowEquippedItem = [&](uint8 equipSlot)
+    {
+        uint16 const from = (INVENTORY_SLOT_BAG_0 << 8) | equipSlot;
+        for (uint8 bpSlot = INVENTORY_SLOT_ITEM_START; bpSlot < INVENTORY_SLOT_ITEM_END; ++bpSlot)
+        {
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bpSlot))
+                continue;
+
+            bot->SwapItem(from, (INVENTORY_SLOT_BAG_0 << 8) | bpSlot);
+            return true;
+        }
+
+        return false;
+    };
+
+    // A two-hander occupies the offhand as well, so it has to come off before the legendary can go
+    // in. It is stowed rather than swapped with the legendary: a swap would put the legendary in
+    // the main hand, the slot it was just ruled out of -- and for a shield the core would reject
+    // that half of the swap and silently do nothing at all. The legendary goes in on a later tick,
+    // once the offhand is free
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
         Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
         if (mhItem && mhItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
-        {
-            uint16 const mhPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_MAINHAND;
-            uint16 const srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
-            bot->SwapItem(mhPos, srcPos);
-            ohCleared = true;
-            return true;
-        }
+            return stowEquippedItem(EQUIPMENT_SLOT_MAINHAND);
     }
 
     uint16 srcPos = (legendaryItem->GetBagSlot() << 8) | legendaryItem->GetSlot();
@@ -1567,19 +1594,12 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     bot->SwapItem(srcPos, dstPos);
 
+    // Changing between a two-hander and a one-hander leaves a stale offhand behind
+    bool ohCleared = false;
     if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
          (!oldIs2H && newIs2H)) && bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
-        uint16 const ohPos = (INVENTORY_SLOT_BAG_0 << 8) | EQUIPMENT_SLOT_OFFHAND;
-        for (uint8 bpSlot = INVENTORY_SLOT_ITEM_START; bpSlot < INVENTORY_SLOT_ITEM_END; ++bpSlot)
-        {
-            if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bpSlot))
-            {
-                bot->SwapItem(ohPos, (INVENTORY_SLOT_BAG_0 << 8) | bpSlot);
-                ohCleared = true;
-                break;
-            }
-        }
+        ohCleared = stowEquippedItem(EQUIPMENT_SLOT_OFFHAND);
     }
 
     // If using a 2H before equipping a 1H legendary, try to equip the best OH from the inventory
@@ -1616,6 +1636,11 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
                 continue;
             }
 
+            // A one-hander only counts for a bot that can hold one in the off hand. CanUseItem
+            // answers class, race and skill, not which slot the item may go in
+            if (invType == INVTYPE_WEAPON && !bot->CanDualWield())
+                continue;
+
             if (bot->CanUseItem(itemProto) != EQUIP_ERR_OK)
                 continue;
 
@@ -1632,7 +1657,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     scanSlots(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, INVENTORY_SLOT_ITEM_END);
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
-        if (Bag const* pBag = static_cast<Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag)))
+        if (Bag const* pBag = bot->GetBagByPos(bag))
             scanSlots(bag, 0, pBag->GetBagSize());
     }
 
@@ -1669,11 +1694,9 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UsePhaseshiftBulwark()
     if (bot->HasAura(Id(TkSpells::SPELL_ARCANE_BARRIER)))
         return false;
 
-    Item* offHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-    if (!offHand || offHand->GetEntry() != Id(TkItems::ITEM_PHASESHIFT_BULWARK))
-        return false;
-
-    if (bot->CanUseItem(offHand) != EQUIP_ERR_OK)
+    Item* offHand = GetEquippedItemInSlot(
+        bot, EQUIPMENT_SLOT_OFFHAND, Id(TkItems::ITEM_PHASESHIFT_BULWARK));
+    if (!offHand)
         return false;
 
     return UseEquippedItemWithPacket(offHand);
@@ -1684,11 +1707,9 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
     if (bot->HasAura(Id(TkSpells::SPELL_MENTAL_PROTECTION_FIELD)))
         return false;
 
-    Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-    if (!mainHand || mainHand->GetEntry() != Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION))
-        return false;
-
-    if (bot->CanUseItem(mainHand) != EQUIP_ERR_OK)
+    Item* mainHand = GetEquippedItemInSlot(
+        bot, EQUIPMENT_SLOT_MAINHAND, Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION));
+    if (!mainHand)
         return false;
 
     return UseEquippedItemWithPacket(mainHand);
@@ -1699,11 +1720,9 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
     if (bot->HasItemCount(Id(TkItems::ITEM_NETHER_SPIKES), 1, false))
         return false;
 
-    Item* ranged = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-    if (!ranged || ranged->GetEntry() != Id(TkItems::ITEM_NETHERSTRAND_LONGBOW))
-        return false;
-
-    if (bot->CanUseItem(ranged) != EQUIP_ERR_OK)
+    Item* ranged = GetEquippedItemInSlot(
+        bot, EQUIPMENT_SLOT_RANGED, Id(TkItems::ITEM_NETHERSTRAND_LONGBOW));
+    if (!ranged)
         return false;
 
     return UseEquippedItemWithPacket(ranged);

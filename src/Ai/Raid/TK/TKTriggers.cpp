@@ -6,6 +6,7 @@
 
 #include "TKTriggers.h"
 #include "EncounterHelpers.h"
+#include "MoveSpline.h"
 #include "Playerbots.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
@@ -18,6 +19,16 @@ using namespace EncounterHelpers;
 bool TempestKeepBotIsNotInCombatTrigger::IsActive()
 {
     return IsMechanicTrackerBot(bot, TK_MAP_ID) && !AI_VALUE2(bool, "combat", "self target");
+}
+
+// The flag test leads because it is false for all but the stuck bot, which keeps the usual case to
+// one field read rather than the group walk the combat value does. The map check is load-bearing
+// rather than defensive: the strategy is meant to come off when bots zone out, but that removal is
+// not always saved, so a reboot can leave it running outside the instance
+bool TempestKeepBotIsStuckFallingTrigger::IsActive()
+{
+    return bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && bot->movespline->Finalized() &&
+        bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash
@@ -348,12 +359,12 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
-    bool const HasUsableLegendaryWeapon =
-        bot->HasItemCount(Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
-        bot->HasItemCount(Id(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
-        bot->HasItemCount(Id(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
-
-    return HasUsableLegendaryWeapon;
+    return GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_MAINHAND, Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION)) ||
+        GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_RANGED, Id(TkItems::ITEM_NETHERSTRAND_LONGBOW)) ||
+        GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_OFFHAND, Id(TkItems::ITEM_PHASESHIFT_BULWARK));
 }
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()

@@ -19,6 +19,14 @@ public:
     bool IsActive() override;
 };
 
+class TempestKeepBotIsStuckFallingTrigger : public Trigger
+{
+public:
+    TempestKeepBotIsStuckFallingTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "tempest keep bot is stuck falling") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger

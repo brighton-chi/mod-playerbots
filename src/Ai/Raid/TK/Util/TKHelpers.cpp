@@ -381,10 +381,13 @@ uint32 GetKaelthasPhase(Unit* kaelthas)
     return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
 }
 
-Creature* GetPhoenixEgg(Player* bot)
+// The non-attackable unit flag covers the period in phase 1 before the advisor activates.
+// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
+// "killed" in phase 1 until they are "resurrected" in phase 3.
+bool IsAdvisorActive(Unit* advisor)
 {
-    constexpr float searchRadius = 75.0f;
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
 // (1) First priority is an assistant Warlock (real player or bot)
@@ -450,15 +453,6 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
-// The non-attackable unit flag covers the period in phase 1 before the advisor activates.
-// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
-// "killed" in phase 1 until they are "resurrected" in phase 3.
-bool IsAdvisorActive(Unit* advisor)
-{
-    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
-}
-
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
@@ -502,6 +496,27 @@ Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
     return nullptr;
 }
 
+bool IsLegendaryWeaponItem(uint32 itemId)
+{
+    static constexpr std::array legendaryItems = {
+        TkItems::ITEM_WARP_SLICER,
+        TkItems::ITEM_INFINITY_BLADE,
+        TkItems::ITEM_STAFF_OF_DISINTEGRATION,
+        TkItems::ITEM_PHASESHIFT_BULWARK,
+        TkItems::ITEM_DEVASTATION,
+        TkItems::ITEM_COSMIC_INFUSER,
+        TkItems::ITEM_NETHERSTRAND_LONGBOW,
+    };
+
+    for (TkItems item : legendaryItems)
+    {
+        if (Id(item) == itemId)
+            return true;
+    }
+
+    return false;
+}
+
 bool HasEquippableItemForSlot(Player* bot, uint8 slot)
 {
     for (uint8 i = 0; i < 5; ++i)
@@ -524,6 +539,18 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     }
 
     return false;
+}
+
+Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId)
+{
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    return item && item->GetEntry() == itemId ? item : nullptr;
+}
+
+Creature* GetPhoenixEgg(Player* bot)
+{
+    constexpr float searchRadius = 75.0f;
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
 }
 
 }

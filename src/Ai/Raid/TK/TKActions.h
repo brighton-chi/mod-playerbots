@@ -26,6 +26,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class TempestKeepClearStaleFallingFlagAction : public Action
+{
+public:
+    TempestKeepClearStaleFallingFlagAction(PlayerbotAI* botAI)
+        : Action(botAI, "tempest keep clear stale falling flag") {}
+    bool Execute(Event event) override;
+};
+
 // For Void Reaver, Sanguinar, Telonicus, and Kael'thas.
 class TempestKeepTankPositionAction : public AttackAction
 {

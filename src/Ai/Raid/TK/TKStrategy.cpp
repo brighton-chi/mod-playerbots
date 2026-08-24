@@ -16,6 +16,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("tempest keep bot is not in combat", {
         NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("tempest keep bot is stuck falling", {
+        NextAction("tempest keep clear stale falling flag", ACTION_EMERGENCY + 10) }));
+
     // Trash
     triggers.push_back(new TriggerNode("crimson hand centurion casts arcane volley", {
         NextAction("crimson hand centurion cast polymorph", ACTION_RAID) }));

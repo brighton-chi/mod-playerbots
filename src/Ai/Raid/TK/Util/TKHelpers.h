@@ -17,6 +17,7 @@
 #include <vector>
 
 class Creature;
+class Item;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -99,6 +100,7 @@ enum class TkItems : uint32
     ITEM_INFINITY_BLADE             = 30312,
     ITEM_STAFF_OF_DISINTEGRATION    = 30313,
     ITEM_PHASESHIFT_BULWARK         = 30314,
+    // ITEM_DRAENETHYST_MINE_CRYSTAL= 30315, // Noting that the ids are not all contiguous
     ITEM_DEVASTATION                = 30316,
     ITEM_COSMIC_INFUSER             = 30317,
     ITEM_NETHERSTRAND_LONGBOW       = 30318,
@@ -238,9 +240,6 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-// 30311-30318 is the item entry ID range for the legendary weapons
-inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MIN = 30311;
-inline constexpr uint32 ITEM_LEGENDARY_WEAPON_MAX = 30318;
 // About the exact distance from Kael to the entrances to his room
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 
@@ -256,14 +255,16 @@ inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
 uint32 GetKaelthasPhase(Unit* kaelthas);
-Creature* GetPhoenixEgg(Player* bot);
+bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
 GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
-bool IsAdvisorActive(Unit* advisor);
+bool IsLegendaryWeaponItem(uint32 itemId);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
+Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
+Creature* GetPhoenixEgg(Player* bot);
 
 }
 
