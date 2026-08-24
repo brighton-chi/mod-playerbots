@@ -11,11 +11,11 @@
 
 // General
 
-class SunwellPlateauBotIsNotInCombatTrigger : public Trigger
+class SunwellPlateauNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    SunwellPlateauBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau bot is not in combat") {}
+    SunwellPlateauNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell plateau no encounter in progress") {}
     bool IsActive() override;
 };
 

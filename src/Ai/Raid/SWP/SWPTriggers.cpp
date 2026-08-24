@@ -6,6 +6,7 @@
 
 #include "SWPTriggers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
 #include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
@@ -20,9 +21,18 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
+bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
 {
-    return bot->GetMapId() == SWP_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != SWP_MAP_ID)
+        return false;
+
+    // Raid-authoritative rather than per-bot: a bot can legitimately be out of combat while the
+    // raid is still fighting - dropped threat, feigned, or just never engaged - and the reset it
+    // gates erases state the rest of the raid is still using. InstanceScript reports IN_PROGRESS
+    // for every SWP boss from JustEngagedWith until the kill or the evade, and M'uru caps damage
+    // at GetHealth() - 1 rather than dying, so the Entropius phase stays inside the encounter.
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
