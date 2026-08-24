@@ -7,6 +7,8 @@
 #include "ACMultipliers.h"
 #include "ACActions.h"
 #include "ACTriggers.h"
+#include "HunterActions.h"
+#include "MageActions.h"
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
@@ -16,35 +18,30 @@
 // Flee from Focus Fire and dont run back in
 float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
-        return 1.0f;
-
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    bool const isMovementAction = dynamic_cast<MovementAction*>(action);
-    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
-    if (!isMovementAction && !isReachTargetSpell)
+    bool const isMovementSpell = dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action);
+
+    if (!isMovementSpell && !dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return 1.0f;
 
     if (dynamic_cast<ShirrakFleeFocusFireAction*>(action))
         return 1.0f;
 
-    Creature* flare = bot->FindNearestCreature(
-        static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f, true);
+    Creature* flare = bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS, true);
+    if (!flare)
+        return 1.0f;
 
-    if (flare)
-    {
-        if (isReachTargetSpell)
-            return 0.0f;
+    if (isMovementSpell)
+        return 0.0f;
 
-        float currentDistance = bot->GetDistance2d(flare);
-        constexpr float safeDistance = 12.0f;
-        constexpr float buffer = 5.0f;
-
-        if (isMovementAction && currentDistance < safeDistance + buffer)
-            return 0.0f;
-    }
-
-    return 1.0f;
+    float currentDistance = bot->GetExactDist2d(flare);
+    constexpr float safeDistance = 12.0f;
+    constexpr float buffer = 2.0f;
+    return currentDistance < safeDistance + buffer ? 0.0f : 1.0f;
 }

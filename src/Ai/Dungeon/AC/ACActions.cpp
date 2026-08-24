@@ -6,14 +6,11 @@
 
 #include "ACActions.h"
 #include "ACTriggers.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <iterator>
-
-// Shirrak the Dead Watcher
-
-static const Position SHIRRAK_RANGED_POSITION = { -21.777f, -162.700f, 26.062f };
-static const Position SHIRRAK_TANK_POSITION = { -65.171f, -162.920f, 26.504f };
+#include <vector>
 
 // Tank will position Shirrak at the specified coordinates, up the stairs
 bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
@@ -25,61 +22,64 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
     if (bot->GetVictim() != shirrak)
         return Attack(shirrak);
 
-    if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak) &&
-        bot->GetHealthPct() > 30.0f)
+    if (shirrak->GetVictim() != bot || !bot->IsWithinMeleeRange(shirrak) ||
+        bot->GetHealthPct() < 30.0f)
     {
-        const Position& position = SHIRRAK_TANK_POSITION;
-        float distToPosition = bot->GetExactDist2d(position);
-        if (distToPosition > 6.0f)
-        {
-            float dX = position.GetPositionX() - bot->GetPositionX();
-            float dY = position.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(2.0f, distToPosition);
-            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
+        return false;
     }
 
-    return false;
+    Position const& position = SHIRRAK_TANK_POSITION;
+    float distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= 3.0f)
+        return false;
+
+    float dX = position.GetPositionX() - bot->GetPositionX();
+    float dY = position.GetPositionY() - bot->GetPositionY();
+    float moveDist = std::min(2.0f, distToPosition);
+    float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+    float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+    return MoveTo(
+        bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
 {
-    Creature* flare = bot->FindNearestCreature(
-        static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f, true);
+    Creature* flare = bot->FindNearestCreature(NPC_FOCUS_FIRE, FLARE_SEARCH_RADIUS, true);
+    if (!flare)
+        return false;
 
-    if (flare)
-    {
-        float currentDistance = bot->GetDistance2d(flare);
-        constexpr float safeDistance = 12.0f;
-        constexpr float buffer = 5.0f;
+    float currentDistance = bot->GetExactDist2d(flare);
+    constexpr float safeDistance = 12.0f;
+    if (currentDistance >= safeDistance)
+        return false;
 
-        if (currentDistance < safeDistance)
-        {
-            bot->CastStop();
-            float distanceToMove = safeDistance - currentDistance + buffer;
-            return MoveAway(flare, distanceToMove);
-        }
-    }
-
-    return false;
+    bot->CastStop();
+    float distanceToMove = safeDistance - currentDistance;
+    return MoveAway(flare, distanceToMove);
 }
 
 // Ranged should keep distance from Shirrak, staying at the edge of the stairs
 bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
 {
+    Unit* shirrak = AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
+    if (!shirrak)
+        return false;
+
+    if (bot->GetExactDist(shirrak) - shirrak->GetCombatReach() > sPlayerbotAIConfig.spellDistance)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     std::vector<Player*> rangedBots;
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && PlayerbotAI::IsRanged(member))
-                rangedBots.push_back(member);
-        }
+        Player* member = ref->GetSource();
+        if (member && PlayerbotAI::IsRanged(member))
+            rangedBots.push_back(member);
     }
 
     auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
@@ -89,27 +89,25 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
     constexpr float arcSpan = M_PI / 2.0f;
     float arcCenter = M_PI;
     float arcStart = arcCenter - (arcSpan / 2.0f);
-
     float angle = (count <= 1)
         ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
 
+    Position const& position = SHIRRAK_RANGED_POSITION;
     constexpr float spreadRadius = 3.0f;
-    float targetX = SHIRRAK_RANGED_POSITION.GetPositionX() + cos(angle) * spreadRadius;
-    float targetY = SHIRRAK_RANGED_POSITION.GetPositionY() + sin(angle) * spreadRadius;
+    float targetX = position.GetPositionX() + cos(angle) * spreadRadius;
+    float targetY = position.GetPositionY() + sin(angle) * spreadRadius;
 
     float distToSpot = bot->GetExactDist2d(targetX, targetY);
+    if (distToSpot <= 4.0f)
+        return false;
 
-    if (distToSpot > 4.0f)
-    {
-        float dX = targetX - bot->GetPositionX();
-        float dY = targetY - bot->GetPositionY();
-        float moveDist = std::min(2.0f, distToSpot);
-        float moveX = bot->GetPositionX() + (dX / distToSpot) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToSpot) * moveDist;
+    float dX = targetX - bot->GetPositionX();
+    float dY = targetY - bot->GetPositionY();
+    float moveDist = std::min(2.0f, distToSpot);
+    float moveX = bot->GetPositionX() + (dX / distToSpot) * moveDist;
+    float moveY = bot->GetPositionY() + (dY / distToSpot) * moveDist;
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    return false;
+    return MoveTo(
+        bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
