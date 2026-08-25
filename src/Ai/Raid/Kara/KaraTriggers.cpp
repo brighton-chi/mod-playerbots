@@ -15,9 +15,13 @@ using namespace EncounterHelpers;
 
 // General
 
-bool KarazhanBotIsNotInCombatTrigger::IsActive()
+bool KarazhanNoEncounterInProgressTrigger::IsActive()
 {
-    return bot->GetMapId() == KARA_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != KARA_MAP_ID)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 bool KarazhanEnemiesCastFearTrigger::IsActive()

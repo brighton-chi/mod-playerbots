@@ -16,8 +16,8 @@ public:
     RaidKarazhanTriggerContext()
     {
         // General
-        creators["karazhan bot is not in combat"] =
-            &RaidKarazhanTriggerContext::karazhan_bot_is_not_in_combat;
+        creators["karazhan no encounter in progress"] =
+            &RaidKarazhanTriggerContext::karazhan_no_encounter_in_progress;
 
         creators["karazhan enemies cast fear"] =
             &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
@@ -146,8 +146,8 @@ public:
 
 private:
     // General
-    static Trigger* karazhan_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new KarazhanBotIsNotInCombatTrigger(botAI);
+    static Trigger* karazhan_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new KarazhanNoEncounterInProgressTrigger(botAI);
     }
     static Trigger* karazhan_enemies_cast_fear(PlayerbotAI* botAI) {
         return new KarazhanEnemiesCastFearTrigger(botAI);

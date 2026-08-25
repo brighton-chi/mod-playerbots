@@ -9,11 +9,11 @@
 
 #include "Trigger.h"
 
-class KarazhanBotIsNotInCombatTrigger : public Trigger
+class KarazhanNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    KarazhanBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "karazhan bot is not in combat") {}
+    KarazhanNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "karazhan no encounter in progress") {}
     bool IsActive() override;
 };
 
