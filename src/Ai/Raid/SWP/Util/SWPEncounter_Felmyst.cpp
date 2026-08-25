@@ -39,7 +39,7 @@ void ResetDemonicVaporFlightState(uint32 instanceId)
 void ResetDemonicVaporFlightStateIfGrounded(Player* bot)
 {
     constexpr float searchRadius = 250.0f;
-    Creature* felmyst = bot->FindNearestCreature(Id(SwpNpcs::NPC_FELMYST), searchRadius, true);
+    Creature* felmyst = bot->FindNearestCreature(Id(SwpNpcs::NPC_FELMYST), searchRadius);
     if (!felmyst || !felmyst->IsFlying())
         ResetDemonicVaporFlightState(bot->GetInstanceId());
 }

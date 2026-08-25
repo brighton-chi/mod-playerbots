@@ -5,8 +5,6 @@
  */
 
 #include "SWPStrategy.h"
-#include "AiObjectContext.h"
-#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SWPSharedConstants.h"
 #include "SWPEncounter_Felmyst.h"

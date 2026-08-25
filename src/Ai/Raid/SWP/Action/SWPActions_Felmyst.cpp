@@ -8,7 +8,6 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "RtiTargetValue.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPSharedConstants.h"
 #include "Timer.h"

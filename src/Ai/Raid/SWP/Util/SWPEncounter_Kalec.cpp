@@ -256,10 +256,7 @@ Player* GetKalecgosCurrentVictimTank(
 
     constexpr float searchRadius = 200.0f;
     if (!kalecgos)
-    {
-        kalecgos = player->FindNearestCreature(
-            Id(SwpNpcs::NPC_KALECGOS_DRAGON), searchRadius, true);
-    }
+        kalecgos = player->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_DRAGON), searchRadius);
 
     if (kalecgos)
     {

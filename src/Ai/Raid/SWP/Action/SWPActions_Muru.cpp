@@ -11,7 +11,6 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPSharedConstants.h"
-#include "TargetValue.h"
 #include <array>
 #include <cmath>
 #include <list>
@@ -390,7 +389,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
         for (Creature* creature : darkFiends)
         {
             if (creature && creature->IsAlive() &&
-                creature->GetExactDist2d(muru) <= massDispelRange)
+                creature->GetExactDist2d(muru) < massDispelRange)
             {
                 darkFiendNearMuru = creature;
                 break;

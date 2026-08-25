@@ -10,7 +10,6 @@
 #include "SWPEncounter_Brut.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
 
 using namespace SwpHelpers;
@@ -306,7 +305,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) < 0.5f)
+    if (bot->GetExactDist2d(position) <= 0.5f)
         return false;
 
     return MoveTo(

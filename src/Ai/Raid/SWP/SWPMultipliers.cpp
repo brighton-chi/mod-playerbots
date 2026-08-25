@@ -9,6 +9,7 @@
 #include "DruidActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
+#include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "ReachTargetActions.h"
@@ -22,7 +23,6 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "TargetValue.h"
 #include "Timer.h"
 #include "WipeAction.h"
 

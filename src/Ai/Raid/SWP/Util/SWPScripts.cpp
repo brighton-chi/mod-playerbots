@@ -14,7 +14,7 @@
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Twins.h"
-#include <unordered_set>
+#include <list>
 #include <vector>
 
 using namespace SwpHelpers;

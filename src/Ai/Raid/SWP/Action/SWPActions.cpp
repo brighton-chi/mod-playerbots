@@ -5,7 +5,6 @@
  */
 
 #include "SWPActions.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPSharedConstants.h"
@@ -24,7 +23,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
-    bool const isMechanicTracker = IsMechanicTrackerBot(bot, SWP_MAP_ID);
 
     bool didSomething = false;
 
@@ -70,10 +68,10 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     // Kil'jaeden
     didSomething |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
 
-    if (!isMechanicTracker)
+    // Records shared across the raid, so one bot clears them all
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return didSomething;
 
-    // Records shared across the raid, so one bot clears them rather than all twenty-five
     didSomething |= kalecgosEncounterStates.erase(instanceId) > 0;
     didSomething |= brutallusEncounterStates.erase(instanceId) > 0;
     didSomething |= felmystEncounterStates.erase(instanceId) > 0;

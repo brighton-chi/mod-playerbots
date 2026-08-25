@@ -239,7 +239,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     // Anchored on the caster, so the hand has to be inside the radius for the cast to do anything
     auto const castSelfAoe = [&](char const* spell, float radius)
     {
-        return bot->GetExactDist(hand) <= radius && castSpell(spell);
+        return bot->GetExactDist(hand) < radius && castSpell(spell);
     };
 
     switch (bot->getClass())
@@ -290,7 +290,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
         default:
             // Arcane Torrent is centred on the caster too, so it needs the same guard
             return bot->getRace() == RACE_BLOODELF &&
-                bot->GetExactDist(hand) <= KILJAEDEN_SELF_AOE_RACIAL_RADIUS &&
+                bot->GetExactDist(hand) < KILJAEDEN_SELF_AOE_RACIAL_RADIUS &&
                 castSpell("arcane torrent");
     }
 }
@@ -303,7 +303,7 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
         // seconds in which a reflection is passive and on nobody's threat list, so neither the
         // threat-list lookup nor tank assist can see it yet
         if (Creature* reflection = bot->FindNearestCreature(
-                Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS, true))
+                Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
             // Once aggressive it is on a threat list and therefore in attackers, so failing here
             // yields the tick to the tank's own assist logic rather than marching it back
@@ -333,7 +333,7 @@ bool KiljaedenPositionTanksAction::PickUpSinisterReflections(Creature* reflectio
     float const distance = bot->GetExactDist(reflection);
     auto const castSpell = [&](char const* spell, float reach)
     {
-        return distance <= reach && botAI->CanCastSpell(spell, reflection) &&
+        return distance < reach && botAI->CanCastSpell(spell, reflection) &&
             botAI->CastSpell(spell, reflection);
     };
 
@@ -563,7 +563,7 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         }
     }
 
-    if (bot->GetExactDist2d(destX, destY) < 1.0f)
+    if (bot->GetExactDist2d(destX, destY) <= 1.0f)
         return false;
 
     bot->CastStop();

@@ -6,7 +6,6 @@
 
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
-#include "CharmInfo.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <list>
@@ -347,7 +346,7 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 ObjectGuid FindMuruSingularityGuid(Player* bot)
 {
     Creature* singularity = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_SINGULARITY), MURU_SINGULARITY_SEARCH_RADIUS, true);
+        Id(SwpNpcs::NPC_SINGULARITY), MURU_SINGULARITY_SEARCH_RADIUS);
 
     return singularity ? singularity->GetGUID() : ObjectGuid::Empty;
 }
