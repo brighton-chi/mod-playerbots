@@ -385,14 +385,6 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjTaintedCoreIsUnusableTrigger : public Trigger
-{
-public:
-    LadyVashjTaintedCoreIsUnusableTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj tainted core is unusable") {}
-    bool IsActive() override;
-};
-
 class LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger : public Trigger
 {
 public:

@@ -199,7 +199,7 @@ bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot)
         if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
             continue;
 
-        if (botAI->IsMainTank(member))
+        if (PlayerbotAI::IsMainTank(member))
             return true;
     }
 
@@ -275,24 +275,20 @@ Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == leader)
+        if (!member || !member->IsAlive() || member == leader || !GET_PLAYERBOT_AI(member))
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI)
-            continue;
-
-        if (!meleeDpsAssistant && memberAI->IsMelee(member) &&
-            memberAI->IsDps(member) && group->IsAssistant(member->GetGUID()))
+        if (!meleeDpsAssistant && PlayerbotAI::IsMelee(member) &&
+            PlayerbotAI::IsDps(member) && group->IsAssistant(member->GetGUID()))
         {
             meleeDpsAssistant = member;
             break;
         }
 
-        if (!meleeDps && memberAI->IsMelee(member) && memberAI->IsDps(member))
+        if (!meleeDps && PlayerbotAI::IsMelee(member) && PlayerbotAI::IsDps(member))
             meleeDps = member;
 
-        if (!rangedDps && memberAI->IsRangedDps(member))
+        if (!rangedDps && PlayerbotAI::IsRangedDps(member))
             rangedDps = member;
     }
 
@@ -319,8 +315,7 @@ Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
         if (!member || !member->IsAlive() || member == designatedLooter)
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (memberAI && memberAI->IsAssistHealOfIndex(member, 0, true))
+        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
             return member;
     }
 
@@ -328,7 +323,7 @@ Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !botAI->IsTank(member) && member != designatedLooter)
+            !PlayerbotAI::IsTank(member) && member != designatedLooter)
             return member;
     }
 
@@ -348,11 +343,10 @@ Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == designatedLooter ||
-            member == firstCorePasser)
+            member == firstCorePasser || !GET_PLAYERBOT_AI(member))
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (memberAI && memberAI->IsAssistHealOfIndex(member, 1, true))
+        if (PlayerbotAI::IsAssistHealOfIndex(member, 1, true))
             return member;
     }
 
@@ -360,7 +354,7 @@ Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !botAI->IsTank(member) && member != designatedLooter &&
+            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
             member != firstCorePasser)
             return member;
     }
@@ -382,11 +376,10 @@ Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == designatedLooter ||
-            member == firstCorePasser || member == secondCorePasser)
+            member == firstCorePasser || member == secondCorePasser || !GET_PLAYERBOT_AI(member))
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (memberAI && memberAI->IsAssistHealOfIndex(member, 2, true))
+        if (PlayerbotAI::IsAssistHealOfIndex(member, 2, true))
             return member;
     }
 
@@ -394,7 +387,7 @@ Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !botAI->IsTank(member) && member != designatedLooter &&
+            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
             member != firstCorePasser && member != secondCorePasser)
             return member;
     }
@@ -418,11 +411,10 @@ Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == designatedLooter ||
             member == firstCorePasser || member == secondCorePasser ||
-            member == thirdCorePasser)
+            member == thirdCorePasser || !GET_PLAYERBOT_AI(member))
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (memberAI && memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
+        if (PlayerbotAI::IsAssistRangedDpsOfIndex(member, 0, true))
             return member;
     }
 
@@ -430,7 +422,7 @@ Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !botAI->IsTank(member) && member != designatedLooter &&
+            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
             member != firstCorePasser && member != secondCorePasser &&
             member != thirdCorePasser)
             return member;
@@ -563,7 +555,7 @@ Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
 const GeneratorInfo* GetNearestGeneratorToBot(
     Player* bot, const std::vector<GeneratorInfo>& generators)
 {
-    if (!bot || generators.empty())
+    if (generators.empty())
         return nullptr;
 
     const GeneratorInfo* nearest = nullptr;

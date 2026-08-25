@@ -158,9 +158,6 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
 
-        creators["lady vashj tainted core is unusable"] =
-            &RaidSSCTriggerContext::lady_vashj_tainted_core_is_unusable;
-
         creators["lady vashj toxic sporebats are spewing poison clouds"] =
             &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
 
@@ -318,9 +315,6 @@ private:
     }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
-    }
-    static Trigger* lady_vashj_tainted_core_is_unusable(PlayerbotAI* botAI) {
-        return new LadyVashjTaintedCoreIsUnusableTrigger(botAI);
     }
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) {
         return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI);

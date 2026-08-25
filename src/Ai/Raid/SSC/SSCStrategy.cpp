@@ -147,9 +147,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted", {
         NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("lady vashj tainted core is unusable", {
-        NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1) }));
-
     triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3", {
         NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1) }));
 

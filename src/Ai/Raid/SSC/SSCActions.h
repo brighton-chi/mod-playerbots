@@ -423,15 +423,7 @@ private:
     bool IsSecondCorePasserInPosition(Player* secondCorePasser);
     bool IsThirdCorePasserInPosition(Player* thirdCorePasser);
     bool IsFourthCorePasserInPosition(Player* fourthCorePasser);
-    void ScheduleTransferCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool UseCoreOnNearestGenerator(const uint32 instanceId);
-};
-
-class LadyVashjDestroyTaintedCoreAction : public Action
-{
-public:
-    LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI, std::string const name = "lady vashj destroy tainted core") : Action(botAI, name) {}
-    bool Execute(Event event) override;
 };
 
 class LadyVashjAvoidToxicSporesAction : public MovementAction
