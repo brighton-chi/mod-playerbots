@@ -1865,7 +1865,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    constexpr float hazardRadius = 12.0f;
+    constexpr float hazardRadius = 10.0f;
     Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, hazardRadius);
     if (!flameStrike)
         return false;
@@ -1931,7 +1931,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
 
         // A Phoenix is survivable and a Flame Strike is not, so don't try to avoid Phoenixes when
         // too close to a Flame Strike
-        constexpr float flameStrikeRadius = 20.0f;
+        constexpr float flameStrikeRadius = 15.0f;
         if (currentDistance < safeDistance &&
             !GetNearestFlameStrikeInRadius(bot, flameStrikeRadius))
         {

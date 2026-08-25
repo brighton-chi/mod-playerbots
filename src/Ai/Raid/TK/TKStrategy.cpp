@@ -5,6 +5,7 @@
  */
 
 #include "TKStrategy.h"
+#include "Playerbots.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -161,4 +162,17 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
+}
+
+// Used only to exclude melee dps from Kael'thas Phoenixes
+void RaidTempestKeepStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType /*type*/)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+        return;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
+        exclusions.insert(phoenix->GetGUID());
 }

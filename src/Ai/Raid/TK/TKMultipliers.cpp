@@ -327,6 +327,10 @@ float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValue(Action
     if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
         return 1.0f;
 
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!IsAdvisorActive(capernian))
+        return 1.0f;
+
     return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
 }
 
@@ -447,8 +451,15 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
     if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
-        return sanguinar && sanguinar->IsAlive() ? 0.0f : 1.0f;
+    {
+        if (dynamic_cast<KaelthasSunstriderKiteThaladredAction*>(action))
+            return 1.0f;
 
+        return sanguinar && sanguinar->IsAlive() ? 0.0f : 1.0f;
+    }
+
+    // The Sanguinar check is a proxy for the revival/Kael talk phase (any non-selectable advisor
+    // would do, since all four revive together, but Sanguinar is already needed for the healer).
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
 

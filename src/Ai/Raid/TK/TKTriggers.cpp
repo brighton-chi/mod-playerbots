@@ -290,14 +290,13 @@ bool KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger::IsActive()
         return false;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-
-    // The healer holds its spot from the start of the revival until Sanguinar dies, since that spot
-    // is what keeps both melee tanks in range.
+    // The healer holds its spot from the start of the revival until Sanguinar dies, since that
+    // spot is what keeps both melee tanks in range.
     if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return sanguinar && sanguinar->IsAlive();
 
-    // The Sanguinar check is a proxy for the revival/Kael talk phase (any advisor would do,
-    // since all four come back together, but Sanguinar is already needed for the healer above).
+    // The Sanguinar check is a proxy for the revival/Kael talk phase (any non-selectable advisor
+    // would do, since all four revive together, but Sanguinar is already needed for the healer).
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
