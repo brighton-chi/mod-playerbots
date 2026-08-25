@@ -11,11 +11,11 @@
 
 // General
 
-class BlackTempleBotIsNotInCombatTrigger : public Trigger
+class BlackTempleNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    BlackTempleBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "black temple bot is not in combat") {}
+    BlackTempleNoEncounterInProgressTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "black temple no encounter in progress") {}
     bool IsActive() override;
 };
 

@@ -23,17 +23,13 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high king maulgar"))
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
-    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+    Action* action = context->GetAction("gruul the dragonkiller spread ranged");
+    if (action &&
+        static_cast<GruulTheDragonkillerSpreadRangedAction*>(action)->ResetInitialPosition())
     {
-        Action* action = context->GetAction("gruul the dragonkiller spread ranged");
-        if (action &&
-            static_cast<GruulTheDragonkillerSpreadRangedAction*>(action)->ResetInitialPosition())
-        {
-            reset = true;
-        }
+        reset = true;
     }
 
     return reset;

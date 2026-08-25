@@ -18,9 +18,13 @@ using namespace SerpentShrineCavernHelpers;
 using namespace EncounterHelpers;
 
 // General
-bool SerpentShrineCavernBotIsNotInCombatTrigger::IsActive()
+bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
 {
-    return bot->GetMapId() == SSC_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != SSC_TEMPLE_MAP_ID)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 // Trash Mobs

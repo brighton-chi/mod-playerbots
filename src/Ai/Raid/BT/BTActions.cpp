@@ -16,75 +16,42 @@ using namespace EncounterHelpers;
 
 // General
 
-bool BlackTempleEraseTimersAndTrackersAction::Execute(Event /*event*/)
+bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    const ObjectGuid guid = bot->GetGUID();
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    ObjectGuid const guid = bot->GetGUID();
+    uint32 const instanceId = bot->GetInstanceId();
 
-    if (botAI->IsTank(bot))
+    bool reset = false;
+
+    reset |= flameTankWaypointIndex.erase(guid) > 0;
+    reset |= hasReachedAkamaChannelerPosition.erase(guid) > 0;
+
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
+        !AI_VALUE2(bool, "combat", "self target"))
     {
-        bool erased = false;
-        if (!AI_VALUE2(Unit*, "find target", "illidan stormrage") &&
-            !AI_VALUE2(Unit*, "find target", "flame of azzinoth"))
-        {
-            if (illidanBossDpsWaitTimer.erase(instanceId) > 0)
-                erased = true;
-            if (illidanFlameDpsWaitTimer.erase(instanceId) > 0)
-                erased = true;
-            if (illidanLastPhase.erase(instanceId) > 0)
-                erased = true;
-            if (illidanShadowTrapGuid.erase(guid) > 0)
-                erased = true;
-            if (illidanShadowTrapDestination.erase(guid) > 0)
-                erased = true;
-            if (flameTankWaypointIndex.erase(guid) > 0)
-                erased = true;
-            if (westFlameGuid.erase(instanceId) > 0)
-                erased = true;
-            if (eastFlameGuid.erase(instanceId) > 0)
-                erased = true;
-        }
-        if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        {
-            if (councilDpsWaitTimer.erase(instanceId) > 0)
-                erased = true;
-            if (gathiosTankStep.erase(guid) > 0)
-                erased = true;
-        }
-        if (!AI_VALUE2(Unit*, "find target", "mother shahraz") &&
-            shahrazTankStep.erase(guid) > 0)
-        {
-            erased = true;
-        }
-        return erased;
-    }
-    else if (botAI->IsHeal(bot))
-    {
+        if (councilDpsWaitTimer.erase(instanceId) > 0)
+            reset = true;
+        if (gathiosTankStep.erase(guid) > 0)
+            reset = true;
         if (zerevorHealStep.erase(guid) > 0)
-            return true;
-        else
-            return false;
+            reset = true;
     }
-    else
-    {
-        bool erased = false;
-        if (!AI_VALUE2(Unit*, "find target", "supremus") &&
-            supremusPhaseTimer.erase(instanceId) > 0)
-        {
-            erased = true;
-        }
-        if (!AI_VALUE2(Unit*, "find target", "ashtongue channeler") &&
-            hasReachedAkamaChannelerPosition.erase(guid) > 0)
-        {
-            erased = true;
-        }
-        if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
-            gurtoggPhaseTimer.erase(instanceId) > 0)
-        {
-            erased = true;
-        }
-        return erased;
-    }
+
+    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
+        return reset;
+
+    reset |= illidanBossDpsWaitTimer.erase(instanceId) > 0;
+    reset |= illidanFlameDpsWaitTimer.erase(instanceId) > 0;
+    reset |= illidanLastPhase.erase(instanceId) > 0;
+    reset |= illidanShadowTrapGuid.erase(guid) > 0;
+    reset |= illidanShadowTrapDestination.erase(guid) > 0;
+    reset |= westFlameGuid.erase(instanceId) > 0;
+    reset |= eastFlameGuid.erase(instanceId) > 0;
+    reset |= shahrazTankStep.erase(guid) > 0;
+    reset |= gurtoggPhaseTimer.erase(instanceId) > 0;
+    reset |= supremusPhaseTimer.erase(instanceId) > 0;
+
+    return reset;
 }
 
 // High Warlord Naj'entus

@@ -10,8 +10,8 @@
 void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("serpent shrine cavern bot is not in combat", {
-        NextAction("serpent shrine cavern erase timers and trackers", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("serpent shrine cavern no encounter in progress", {
+        NextAction("serpent shrine cavern reset encounter states", ACTION_EMERGENCY + 11) }));
 
     // Trash Mobs
     triggers.push_back(new TriggerNode("underbog colossus spawned toxic pool after death", {

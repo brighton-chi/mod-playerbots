@@ -15,6 +15,9 @@ class RaidMagtheridonTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidMagtheridonTriggerContext() : NamedObjectContext<Trigger>()
     {
+        creators["magtheridon no encounter in progress"] =
+            &RaidMagtheridonTriggerContext::magtheridon_no_encounter_in_progress;
+
         creators["magtheridon first three channelers engaged by main tank"] =
             &RaidMagtheridonTriggerContext::magtheridon_first_three_channelers_engaged_by_main_tank;
 
@@ -44,12 +47,12 @@ public:
 
         creators["magtheridon need to manage timers and assignments"] =
             &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
-
-        creators["magtheridon bot is not in combat"] =
-            &RaidMagtheridonTriggerContext::magtheridon_bot_is_not_in_combat;
     }
 
 private:
+    static Trigger* magtheridon_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new MagtheridonNoEncounterInProgressTrigger(botAI);
+    }
     static Trigger* magtheridon_first_three_channelers_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new MagtheridonFirstThreeChannelersEngagedByMainTankTrigger(botAI);
     }
@@ -79,9 +82,6 @@ private:
     }
     static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI);
-    }
-    static Trigger* magtheridon_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new MagtheridonBotIsNotInCombatTrigger(botAI);
     }
 };
 

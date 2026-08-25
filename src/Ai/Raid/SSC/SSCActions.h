@@ -13,11 +13,11 @@
 
 // General
 
-class SerpentShrineCavernEraseTimersAndTrackersAction : public Action
+class SerpentShrineCavernResetEncounterStatesAction : public Action
 {
 public:
-    SerpentShrineCavernEraseTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern erase timers and trackers") : Action(botAI, name) {}
+    SerpentShrineCavernResetEncounterStatesAction(
+        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern reset encounter states") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

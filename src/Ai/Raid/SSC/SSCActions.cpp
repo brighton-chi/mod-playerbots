@@ -20,71 +20,33 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
+bool SerpentShrineCavernResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
-    const ObjectGuid guid = bot->GetGUID();
+    uint32 const instanceId = bot->GetInstanceId();
+    ObjectGuid const guid = bot->GetGUID();
 
-    bool erased = false;
+    bool reset = false;
 
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
-    {
-        if (hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
-            erased = true;
+    reset |= hasReachedVashjRangedPosition.erase(guid) > 0;
+    reset |= intendedLineup.erase(guid) > 0;
+    reset |= lastCoreInInventoryTime.erase(guid) > 0;
+    reset |= tidewalkerTankStep.erase(guid) > 0;
+    reset |= tidewalkerRangedStep.erase(guid) > 0;
+    reset |= lurkerRangedPositions.erase(guid) > 0;
 
-        if (hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
-            erased = true;
+    if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
+        return reset;
 
-        if (hydrossNatureDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
+    reset |= lastImbueAttempt.erase(instanceId) > 0;
+    reset |= nearestTriggerGuid.erase(instanceId) > 0;
+    reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
+    reset |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
+    reset |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
+    reset |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
+    reset |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+    reset |= lurkerSpoutTimer.erase(instanceId) > 0;
 
-        if (hydrossFrostDpsWaitTimer.erase(instanceId) > 0)
-            erased = true;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
-    {
-        if (lurkerRangedPositions.erase(guid) > 0)
-            erased = true;
-
-        if (lurkerSpoutTimer.erase(instanceId) > 0)
-            erased = true;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
-        karathressDpsWaitTimer.erase(instanceId) > 0)
-    {
-        erased = true;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
-    {
-        if (tidewalkerTankStep.erase(guid) > 0)
-            erased = true;
-
-        if (tidewalkerRangedStep.erase(guid) > 0)
-            erased = true;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
-    {
-        if (hasReachedVashjRangedPosition.erase(guid) > 0)
-            erased = true;
-
-        if (intendedLineup.erase(guid) > 0)
-            erased = true;
-
-        if (lastImbueAttempt.erase(instanceId) > 0)
-            erased = true;
-
-        if (lastCoreInInventoryTime.erase(guid) > 0)
-            erased = true;
-
-        if (nearestTriggerGuid.erase(instanceId) > 0)
-            erased = true;
-    }
-
-    return erased;
+    return reset;
 }
 
 // Trash Mobs

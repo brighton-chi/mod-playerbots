@@ -9,11 +9,11 @@
 
 #include "Trigger.h"
 
-class GruulsLairBotIsNotInCombatTrigger : public Trigger
+class GruulsLairNoEncounterInProgress : public Trigger
 {
 public:
-    GruulsLairBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "gruul's lair bot is not in combat") {}
+    GruulsLairNoEncounterInProgress(PlayerbotAI* botAI)
+        : Trigger(botAI, "gruul's lair no encounter in progress") {}
     bool IsActive() override;
 };
 

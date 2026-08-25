@@ -89,11 +89,11 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonBotIsNotInCombatTrigger : public Trigger
+class MagtheridonNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    MagtheridonBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "magtheridon bot is not in combat") {};
+    MagtheridonNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "magtheridon no encounter in progress") {};
     bool IsActive() override;
 };
 

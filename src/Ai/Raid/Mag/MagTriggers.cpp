@@ -12,6 +12,15 @@
 using namespace MagHelpers;
 using namespace EncounterHelpers;
 
+bool MagtheridonNoEncounterInProgressTrigger::IsActive()
+{
+    if (bot->GetMapId() != MAG_MAP_ID)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
+}
+
 bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMainTank(bot))
@@ -121,11 +130,4 @@ bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
     return IsMechanicTrackerBot(bot, MAG_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "magtheridon");
-}
-
-bool MagtheridonBotIsNotInCombatTrigger::IsActive()
-{
-    return bot->GetMapId() == MAG_MAP_ID && !AI_VALUE2(bool, "combat", "self target") &&
-        !AI_VALUE2(Unit*, "find target", "magtheridon") &&
-        !AI_VALUE2(Unit*, "find target", "hellfire channeler");
 }

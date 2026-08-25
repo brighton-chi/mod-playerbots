@@ -11,11 +11,11 @@
 
 // General
 
-class SerpentShrineCavernBotIsNotInCombatTrigger : public Trigger
+class SerpentShrineCavernNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    SerpentShrineCavernBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "serpent shrine cavern bot is not in combat") {}
+    SerpentShrineCavernNoEncounterInProgressTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "serpent shrine cavern no encounter in progress") {}
     bool IsActive() override;
 };
 

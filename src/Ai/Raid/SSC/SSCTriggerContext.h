@@ -16,8 +16,8 @@ public:
     RaidSSCTriggerContext()
     {
         // General
-        creators["serpent shrine cavern bot is not in combat"] =
-            &RaidSSCTriggerContext::serpent_shrine_cavern_bot_is_not_in_combat;
+        creators["serpent shrine cavern no encounter in progress"] =
+            &RaidSSCTriggerContext::serpent_shrine_cavern_no_encounter_in_progress;
 
         // Trash
         creators["underbog colossus spawned toxic pool after death"] =
@@ -170,8 +170,8 @@ public:
 
 private:
     // General
-    static Trigger* serpent_shrine_cavern_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new SerpentShrineCavernBotIsNotInCombatTrigger(botAI);
+    static Trigger* serpent_shrine_cavern_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new SerpentShrineCavernNoEncounterInProgressTrigger(botAI);
     }
 
     // Trash

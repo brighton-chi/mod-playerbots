@@ -19,11 +19,11 @@ namespace BlackTempleHelpers
 
 // General
 
-class BlackTempleEraseTimersAndTrackersAction : public Action
+class BlackTempleResetEncounterStatesAction : public Action
 {
 public:
-    BlackTempleEraseTimersAndTrackersAction(
-        PlayerbotAI* botAI) : Action(botAI, "black temple erase timers and trackers") {}
+    BlackTempleResetEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "black temple reset encounter states") {}
     bool Execute(Event event) override;
 };
 

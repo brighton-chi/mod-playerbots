@@ -16,8 +16,8 @@ public:
     RaidSSCActionContext()
     {
         // General
-        creators["serpent shrine cavern erase timers and trackers"] =
-            &RaidSSCActionContext::serpent_shrine_cavern_erase_timers_and_trackers;
+        creators["serpent shrine cavern reset encounter states"] =
+            &RaidSSCActionContext::serpent_shrine_cavern_reset_encounter_states;
 
         // Trash
         creators["underbog colossus escape toxic pool"] =
@@ -176,8 +176,8 @@ public:
 
 private:
     // General
-    static Action* serpent_shrine_cavern_erase_timers_and_trackers(PlayerbotAI* botAI) {
-        return new SerpentShrineCavernEraseTimersAndTrackersAction(botAI);
+    static Action* serpent_shrine_cavern_reset_encounter_states(PlayerbotAI* botAI) {
+        return new SerpentShrineCavernResetEncounterStatesAction(botAI);
     }
 
     // Trash
