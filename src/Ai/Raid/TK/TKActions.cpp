@@ -42,10 +42,10 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// This is needed in the event of a wipe during Kael's Gravity Lapse phase
+// This is needed in the event of a wipe during Kael's Gravity Lapse phase.
 bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
 {
-    // Clear only once the bot is back on the floor, or it would be cleared mid-descent
+    // Clear the flag only once the bot is back on the floor, or it would be cleared mid-descent.
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ > 1.0f)
@@ -80,7 +80,7 @@ bool TempestKeepTankPositionAction::MoveToTankPosition(
     float const toPosY = posY - botY;
     float const toBossX = target->GetPositionX() - botX;
     float const toBossY = target->GetPositionY() - botY;
-    // A step that leads away from the target is walked backwards so the tank keeps facing it
+    // Walk forwards toward the target and walk backwards away.
     bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
 
     float const maxMoveDist = backwards ? 2.25f : 3.5f;
@@ -171,7 +171,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
         return Attack(alar);
 
     int8 alarPlatformIndex = GetAlarPlatformIndex(alar);
-    int8 tankPlatformIndex; // Determine which platform the tank goes to based on Al'ar's platform
+    int8 tankPlatformIndex; // Determine which platform the tank goes to based on Al'ar's platform.
     if (isFirstAlarTank)
     {
         tankPlatformIndex =
@@ -273,7 +273,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event event)
     return HandlePhase2Embers(event);
 }
 
-// Embers will be tanked by only the second assist tank in Phase 1
+// Embers will be tanked by only the second assist tank in Phase 1.
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 {
     if (!IsPrimaryEmberTank(bot))
@@ -320,7 +320,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 }
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
-// the main tank or first assist tank (whichever is not tanking Al'ar).
+// the main tank or first assist tank (whichever is not tanking Al'ar, see helpers for more info).
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 {
     auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
@@ -340,10 +340,8 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    // The Embers' Rebirth has a range of 15 yards (16.5y damage radius), though more space is
-    // needed since this movement is tank-to-player.
-    // Embers have a CombatReach of 3 yards, though the 20-yard distance is more of an arbitrarily
-    // tested in-game distance.
+    // The Embers' Rebirth has a range of 15 yards (16.5y damage radius), but more space is
+    // needed since this movement is tank-to-player, not Ember.
     constexpr float safeDistance = 20.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
@@ -383,6 +381,7 @@ bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
+// During Flame Quills
 bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
 {
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
@@ -439,7 +438,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    // Ranged/tanks wait until Al'ar actually "dies" to activate this P1->P2 transition action
+    // Ranged/tanks wait until Al'ar actually "dies" to activate this P1->P2 transition action.
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
     {
         Creature* alarCreature = alar->ToCreature();
@@ -447,7 +446,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // On the other hand, melee dps jumps off at 5% HP because TBC hates them
+    // On the other hand, melee dps jumps off at 5% HP because TBC hates them.
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         Position const& ground = GetClosestGroundPosition(bot->GetPosition());
@@ -572,7 +571,7 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 
 // Void Reaver
 
-// Pounding is part of why the spot is fixed, though he needs holding either way
+// Pounding is part of why the spot is fixed, though tanking is needed in any case.
 bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
@@ -618,7 +617,7 @@ bool VoidReaverRangedBackOffAndSpreadAction::Execute(Event /*event*/)
     if (voidReaver->GetHealthPct() > 90.0f)
         return false;
 
-    // Maintain small spread after pull to discourage clumping from avoiding orbs
+    // Maintain small spread after pull to discourage clumping from avoiding orbs.
     constexpr float minDistFromPlayer = 3.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistFromPlayer);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minDistFromPlayer);
@@ -641,7 +640,6 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     constexpr float maxDistFromBoss = 28.5f;
     constexpr uint8 numAngles = 24;
     constexpr uint8 numDistSteps = 39;
-    // Compared squared, since the sweep below tests up to 960 candidates against every live orb
     constexpr float safeDistanceSq = ARCANE_ORB_SAFE_DISTANCE * ARCANE_ORB_SAFE_DISTANCE;
 
     std::vector<Position> bestCandidates;
@@ -715,6 +713,8 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != astromancer && Attack(astromancer);
 }
 
+// Even though Solarian mainly spams Arcane Missiles at random targets, she is tankable and needs
+// to be tanked to hold her in position.
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 15.0f;
@@ -727,9 +727,6 @@ bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 
 bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/)
 {
-    // GetTargetUnitPair reads a value that already excludes the dead, and reports the same unit as
-    // both ends of the pair when only one is up -- so a lone survivor needs no special case here:
-    // ranged take it, and both halves of the melee split land on it
     auto const& priestsPair = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_SOLARIUM_PRIEST));
     if (!priestsPair.first)
         return false;
@@ -740,7 +737,7 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/
             Attack(priestsPair.first);
     }
 
-    // Split melee into two groups, one on each Solarium Priest
+    // Split melee into two groups, one on each Solarium Priest.
     Unit* targetPriest = AssignSolariumPriestsToMeleeBots(priestsPair, GetMeleeBots());
     if (!targetPriest)
         return false;
@@ -872,11 +869,9 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/)
 {
-    bool const isMainTank = PlayerbotAI::IsMainTank(bot);
-
     Unit* advisor = nullptr;
     Position position;
-    if (isMainTank)
+    if (PlayerbotAI::IsMainTank(bot))
     {
         advisor = AI_VALUE2(Unit*, "find target", "lord sanguinar");
         position = SANGUINAR_TANK_POSITION;
@@ -984,7 +979,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     if (findIt == ring.end())
         return false;
 
-    // Spread is 90-degree arc for healers and 120-degree arc for ranged DPS.
+    // The spread is a 90-degree arc for healers and a 120-degree arc for ranged DPS.
     // Capernian's CombatReach is 4.5y + standard player CombatReach (without Bloodlust) is 1.5y.
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
     float const radius = isHeal ? 42.0f : 34.0f; // 36 and 28 yards of actual distance
@@ -1037,7 +1032,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
         position = SANGUINAR_WAITING_POSITION;
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         position = TELONICUS_WAITING_POSITION;
-    else // Capernian Tank
+    else // GetCapernianTank(bot) == bot
         position = CAPERNIAN_WAITING_POSITION;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -1081,7 +1076,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    // Target priority 2: Capernian for ranged only (excluding debuff hunter)
+    // Target priority 2: Capernian for ranged only (excluding debuff Hunter)
     if (!target && PlayerbotAI::IsRangedDps(bot) && !IsSanguinarDebuffHunter(bot))
     {
         Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -1093,7 +1088,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    // Target priority 3: Sanguinar (debuff hunter and melee move here after Thaladred)
+    // Target priority 3: Sanguinar (debuff Hunter and melee move here after Thaladred)
     if (!target)
     {
         Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
@@ -1105,7 +1100,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    // Target priority 4: Telonicus. Initialized as nullptr for melee positioning below.
+    // Target priority 4: Telonicus; initialized as nullptr for melee positioning below
     Unit* telonicus = nullptr;
     if (!target)
     {
@@ -1127,7 +1122,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (target != telonicus || telonicus->GetVictim() == bot)
         return false;
 
-    // Melee DPS need to stay at max-ish melee range behind Telonicus to avoid bombs
+    // Melee DPS need to stay at max-ish melee range behind Telonicus to avoid bombs.
     return MeleeDpsPositionOutsideBombRange(telonicus);
 }
 
@@ -1201,7 +1196,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     bool const isRangedDps = PlayerbotAI::IsRangedDps(bot);
     bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
 
-    // Priority 0: Everybody other than the main tank needs to stay away from the axe
+    // Priority 0: Everybody other than the main tank needs to stay away from the axe.
     // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
     // Variable return allows failure to MoveAway not to exit the function.
     bool didAvoidDevastation = false;
@@ -1229,8 +1224,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         bool rangedDpsOnly;
     };
 
-    // Resolved by creature entry rather than by name through the threat list, so that every bot
-    // walks the same list and settles on the same weapon -- see GetLegendaryWeapon
     static constexpr std::array weaponPriorities = {
         WeaponPriority{ TkNpcs::NPC_STAFF_OF_DISINTEGRATION, false, false },
         WeaponPriority{ TkNpcs::NPC_COSMIC_INFUSER,          false, false },
@@ -1253,9 +1246,6 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (!candidate)
             continue;
 
-        // The mark is the raid's kill order, so it belongs to the first weapon still standing and
-        // to no other. Marking further down the list because this bot personally will not stand
-        // next to the axe leaves melee and ranged dragging the icon between two weapons every tick
         if (!markClaimed)
         {
             markClaimed = true;
@@ -1281,9 +1271,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (!skippedForAxe)
             return didAvoidDevastation;
 
-        // Every weapon still standing is inside the axe's reach, so melee hold off rather than
-        // running in and being dragged straight back out by the avoidance above. The target is
-        // dropped too, or the movement that chases it keeps pulling them in
+        // If every weapon still standing is inside the axe's reach, then melee should hold and
+        // attacking nothing rather than get into Whirlwind range.
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         bot->CastStop();
@@ -1315,7 +1304,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
     {
-        // Just in case melee ends up on the axe despite the target exclusion...
+        // Just in case melee ends up on the axe despite the priority list leaving them off
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         bot->CastStop();
@@ -1360,8 +1349,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
         WeaponInfo{ TkNpcs::NPC_PHASESHIFT_BULWARK, TkItems::ITEM_PHASESHIFT_BULWARK },
     };
 
-    // A bot can be entitled to more than one, so equipping is not the end of the walk. Whether it
-    // happened still has to reach the engine, or a tick that put a weapon on reports as a failure
     bool equipped = false;
     for (auto const& weapon : weapons)
     {
@@ -1433,9 +1420,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry, uint32 itemId)
 {
-    // Checked before the walk over rather than at the corpse: with no room the autostore below
-    // fails silently, and the bot would spend every tick travelling to loot something it cannot
-    // hold
     ItemPosCountVec dest;
     if (bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1) != EQUIP_ERR_OK)
         return false;
@@ -1567,7 +1551,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     bot->CastStop();
 
     // Moves an equipped item into the first free backpack slot so the slot it leaves can be
-    // filled. False means the backpack is full and nothing could be freed
+    // filled. False means the backpack is full and nothing could be freed.
     auto const stowEquippedItem = [&](uint8 equipSlot)
     {
         uint16 const from = (INVENTORY_SLOT_BAG_0 << 8) | equipSlot;
@@ -1583,11 +1567,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
         return false;
     };
 
-    // A two-hander occupies the offhand as well, so it has to come off before the legendary can go
-    // in. It is stowed rather than swapped with the legendary: a swap would put the legendary in
-    // the main hand, the slot it was just ruled out of -- and for a shield the core would reject
-    // that half of the swap and silently do nothing at all. The legendary goes in on a later tick,
-    // once the offhand is free
+    // A 2h occupies the offhand, so it has to be unequipped before the legendary can be equipped.
     if (dstSlot == EQUIPMENT_SLOT_OFFHAND)
     {
         Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -1609,16 +1589,14 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
 
     bot->SwapItem(srcPos, dstPos);
 
-    // Changing between a two-hander and a one-hander leaves a stale offhand behind
+    // Changing between a 2H and a 1H leaves a stale offhand behind.
     if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
          (!oldIs2H && newIs2H)) && bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
         stowEquippedItem(EQUIPMENT_SLOT_OFFHAND);
     }
 
-    // Fill the off hand from the bags if it is free, which covers both having just emptied it and
-    // coming off a two-hander that was occupying it all along. Gating on having cleared something
-    // missed the second case entirely -- the slot was already empty, so nothing was there to clear
+    // If the bot swapped from a 2H to a 1H, fill the OH from the inventory if one is available.
     if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         return true;
 
@@ -1652,8 +1630,6 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
                 continue;
             }
 
-            // A one-hander only counts for a bot that can hold one in the off hand. CanUseItem
-            // answers class, race and skill, not which slot the item may go in
             if (invType == INVTYPE_WEAPON && !bot->CanDualWield())
                 continue;
 
@@ -1733,6 +1709,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseStaffOfDisintegration()
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::UseNetherstrandLongbow()
 {
+    // Make legendary arrows if none are left.
     if (bot->HasItemCount(Id(TkItems::ITEM_NETHER_SPIKES), 1, false))
         return false;
 
@@ -1789,7 +1766,7 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    // Off-tanks are repositioned if Kael lands on them, but only the main tank picks him up
+    // Off-tanks are repositioned if Kael aggroes them, but only the main tank picks him up.
     constexpr float tolerance = 4.0f;
     return MoveToTankPosition(
         kaelthas, KAELTHAS_TANK_POSITION, tolerance, PlayerbotAI::IsMainTank(bot));
@@ -1965,10 +1942,9 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
     return botAI->CanCastSpell(spell, mcTarget) && botAI->CastSpell(spell, mcTarget);
 }
 
-// The vast majority of this action is not to address avoidance but actually to implement the
-// Gravity Lapse mechanic, which does not otherwise properly affect bots due to the fact that bots
-// do not have a packet handler for flight and instead toggle their flight flags manually upon
-// movement.
+// The vast majority of this action is not to address avoidance but to implement the Gravity Lapse
+// mechanic, which does not otherwise properly affect bots due to bots not having a packet handler
+// for flight and instead toggling their flight flags manually upon movement.
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
@@ -2056,6 +2032,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 
     uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(aura->GetApplyTime());
 
+    // Target height is between 10 and 35 yards
     constexpr float minHoverHeight = 10.0f;
     constexpr float maxHoverHeight = 35.0f;
     constexpr uint32 heightSalt = 1u;

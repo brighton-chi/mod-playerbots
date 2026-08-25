@@ -76,7 +76,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     if (!IsAlarInPhase2(alar->GetInstanceId()))
         return 1.0f;
 
-    // Enable FollowAction only in non-combat engine in Phase 2
+    // Enable FollowAction only in the non-combat engine in Phase 2.
     return botAI->GetState() == BOT_STATE_COMBAT ? 0.0f : 1.0f;
 }
 
@@ -102,7 +102,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     if (dynamic_cast<AlarMoveAwayFromRebirthAction*>(action))
         return 1.0f;
 
-    // Don't block Flame Quills avoidance in case of bad timing for the transition
+    // Don't block Flame Quills avoidance in case of bad timing for the transition.
     if (dynamic_cast<AlarJumpFromPlatformAction*>(action))
         return 1.0f;
 
@@ -446,13 +446,9 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    // Mirrors the trigger: the healer maintains position from the start of the revival until
-    // Sanguinar is dead, while the tanks are freed once the revival window ends
     if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return sanguinar && sanguinar->IsAlive() ? 0.0f : 1.0f;
 
-    // The Sanguinar check is a proxy for revival/Kael talk phase (you could pick any advisor here,
-    // but Sanguinar is needed for the AssistHealOfIndex anyway).
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
 

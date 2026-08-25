@@ -17,11 +17,9 @@ using namespace TkHelpers;
 using namespace EncounterHelpers;
 
 // General
-// The instance's own encounter state rather than the bot's combat state: a summon, a resurrection
-// or a feign can each put one bot out of combat mid-fight, and combat state reads that as the
-// encounter being over. BossAI sets IN_PROGRESS on engage and clears it on kill or evade, and
-// all four Eye bosses go through it -- worth confirming per raid before reusing the pattern,
-// since a boss that overrides JustEngagedWith without chaining never registers
+
+// Read the instance's own encounter state rather than the bot's combat state to determine when
+// it is safe to erase encounter maps.
 bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
@@ -31,10 +29,6 @@ bool TempestKeepNoEncounterInProgressTrigger::IsActive()
     return instance && !instance->IsEncounterInProgress();
 }
 
-// The flag test leads because it is false for all but the stuck bot, which keeps the usual case to
-// one field read rather than the group walk the combat value does. The map check is load-bearing
-// rather than defensive: the strategy is meant to come off when bots zone out, but that removal is
-// not always saved, so a reboot can leave it running outside the instance
 bool TempestKeepBotIsStuckFallingTrigger::IsActive()
 {
     if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) || !bot->movespline->Finalized())
@@ -299,14 +293,12 @@ bool KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger::IsActive()
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
 
     // The healer holds its spot from the start of the revival until Sanguinar dies, since that spot
-    // is what keeps both melee tanks in range. IsAdvisorActive is false for the whole revival
-    // window (the advisors carry NON_ATTACKABLE until they activate), which put the healer in
-    // position only after the tanks had already left theirs
+    // is what keeps both melee tanks in range.
     if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return sanguinar && sanguinar->IsAlive();
 
-    // The Sanguinar check is a proxy for revival/Kael talk phase (any advisor would do, since all
-    // four come back together, but Sanguinar is already in hand for the healer above)
+    // The Sanguinar check is a proxy for the revival/Kael talk phase (any advisor would do,
+    // since all four come back together, but Sanguinar is already needed for the healer above).
     if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
