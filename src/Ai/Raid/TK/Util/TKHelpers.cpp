@@ -266,30 +266,35 @@ int8 GetAlarPlatformIndex(Unit* alar)
     return locationIndex;
 }
 
-void GetClosestPlatformAndGround(Position botPos, int8& closestPlatform, Position& ground)
+// The nearest platform's index is also the ground (landing) spot beneath it.
+static_assert(ALAR_GROUND_POSITIONS.size() == ALAR_LANDING_PLATFORM_POSITIONS.size());
+
+Position const& GetClosestGroundPosition(Position const& botPos)
 {
-    float minDist = std::numeric_limits<float>::max();
-    closestPlatform = -1;
-    for (int8 i = 0; i < 4; ++i)
+    size_t closestPlatform = 0;
+    float minDistSq = botPos.GetExactDist2dSq(ALAR_LANDING_PLATFORM_POSITIONS[0]);
+
+    for (size_t i = 1; i < ALAR_LANDING_PLATFORM_POSITIONS.size(); ++i)
     {
-        float dist = botPos.GetExactDist2d(&ALAR_LANDING_PLATFORM_POSITIONS[i]);
-        if (dist < minDist)
+        float const distSq = botPos.GetExactDist2dSq(ALAR_LANDING_PLATFORM_POSITIONS[i]);
+        if (distSq < minDistSq)
         {
-            minDist = dist;
+            minDistSq = distSq;
             closestPlatform = i;
         }
     }
-    ground = ALAR_GROUND_POSITIONS[closestPlatform];
+
+    return ALAR_GROUND_POSITIONS[closestPlatform];
 }
 
 // Main tank rotates between W (where Al'ar initially lands) and NE platforms in phase 1
-// and starts on Al'ar in phase 2
+// and starts on Al'ar in phase 2.
 bool IsFirstAlarTank(Player* bot)
 {
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// First assist tank rotates between NW and E platforms in phase 1
+// First assist tank rotates between NW and E platforms in phase 1.
 bool IsSecondAlarTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -322,6 +327,40 @@ Player* GetSecondaryEmberTank(Player* bot)
 
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
+std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId)
+{
+    std::vector<Position> activeOrbs;
+
+    auto const it = voidReaverArcaneOrbs.find(instanceId);
+    if (it == voidReaverArcaneOrbs.end())
+        return activeOrbs;
+
+    uint32 const now = getMSTime();
+    for (ArcaneOrbData const& orb : it->second)
+    {
+        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS)
+            activeOrbs.push_back(orb.destination);
+    }
+
+    return activeOrbs;
+}
+
+bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius)
+{
+    for (Position const& orb : orbs)
+    {
+        if (bot->GetExactDist2d(orb.GetPositionX(), orb.GetPositionY()) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+bool IsNearActiveArcaneOrb(Player* bot, float radius)
+{
+    return IsNearArcaneOrb(bot, GetActiveArcaneOrbs(bot->GetInstanceId()), radius);
+}
+
 // High Astromancer Solarian
 
 bool HasWrathOfTheAstromancer(Player* bot)
@@ -342,10 +381,13 @@ uint32 GetKaelthasPhase(Unit* kaelthas)
     return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
 }
 
-Creature* GetPhoenixEgg(Player* bot)
+// The non-attackable unit flag covers the period in phase 1 before the advisor activates.
+// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
+// "killed" in phase 1 until they are "resurrected" in phase 3.
+bool IsAdvisorActive(Unit* advisor)
 {
-    constexpr float searchRadius = 75.0f;
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+    return advisor && !advisor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
 // (1) First priority is an assistant Warlock (real player or bot)
@@ -411,13 +453,6 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
-// The ironically named "Permanent Feign Death" is the aura that advisors have when they are
-// "killed" in phase 1 until they are "resurrected" in phase 3.
-bool IsFeigningDeath(Unit* advisor)
-{
-    return advisor && advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
-}
-
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
@@ -461,6 +496,27 @@ Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
     return nullptr;
 }
 
+bool IsLegendaryWeaponItem(uint32 itemId)
+{
+    static constexpr std::array legendaryItems = {
+        TkItems::ITEM_WARP_SLICER,
+        TkItems::ITEM_INFINITY_BLADE,
+        TkItems::ITEM_STAFF_OF_DISINTEGRATION,
+        TkItems::ITEM_PHASESHIFT_BULWARK,
+        TkItems::ITEM_DEVASTATION,
+        TkItems::ITEM_COSMIC_INFUSER,
+        TkItems::ITEM_NETHERSTRAND_LONGBOW,
+    };
+
+    for (TkItems item : legendaryItems)
+    {
+        if (Id(item) == itemId)
+            return true;
+    }
+
+    return false;
+}
+
 bool HasEquippableItemForSlot(Player* bot, uint8 slot)
 {
     for (uint8 i = 0; i < 5; ++i)
@@ -483,6 +539,18 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     }
 
     return false;
+}
+
+Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId)
+{
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    return item && item->GetEntry() == itemId ? item : nullptr;
+}
+
+Creature* GetPhoenixEgg(Player* bot)
+{
+    constexpr float searchRadius = 75.0f;
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
 }
 
 }

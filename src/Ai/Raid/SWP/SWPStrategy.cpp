@@ -17,7 +17,7 @@
 void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
+    triggers.push_back(new TriggerNode("sunwell plateau no encounter in progress", {
         NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {

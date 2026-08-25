@@ -34,6 +34,7 @@ struct EredarTwinsBlazeTargetState
     uint32 startMs = 0;
 };
 
+// Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
 // Grace period for the tanks to build threat before the rest of the raid opens up
@@ -51,9 +52,13 @@ inline constexpr float EREDAR_TWINS_BLAZE_UNDERFOOT_RADIUS = 5.0f;
 inline constexpr float SACROLASH_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
 
+// DPS cooldowns are held until Sacrolash is at 80%. Eredar Twins is a very threat-sensitive fight
+// due to Sacrolash dropping threat on tanks and Alythess targeting Conflagration based on
+// Sacrolash's threat table.
+inline constexpr float EREDAR_TWINS_MAX_DPS_HP_PERCENT = 80.0f;
+
 inline constexpr float EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE = 10.0f;
 
-// Conflagration is recorded on prepare, so the delay covers the cast before the aura lands
 inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_DELAY_MS = 300;
 inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_WINDOW_MS = 2000;
 inline constexpr uint32 EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS = 2000;
@@ -75,13 +80,13 @@ inline std::array const ALYTHESS_TANK_POSITIONS = {
     Position{ 1830.007f, 620.924f, 33.404f }
 };
 
-// Phase 1 positions
+// Phase 1 positions (ranged up top, melee on Sacrolash)
 inline Position const SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
 inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
 inline Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 inline Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
 
-// Phase 2 positions
+// Phase 2 positions (everybody stack behind Alythess)
 inline Position const EREDAR_TWINS_P2_MELEE_POSITION =       { 1814.327f, 625.645f, 33.404f };
 inline Position const EREDAR_TWINS_P2_RANGED_POSITION =      { 1805.587f, 625.653f, 33.404f };
 

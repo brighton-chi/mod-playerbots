@@ -108,6 +108,9 @@ struct FogSafeThreshold
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
 
+// How close ranged have to be before a charmed player is worth committing to
+inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
+
 struct DemonicVaporAnchor
 {
     Position position;
@@ -220,6 +223,8 @@ bool TryGetFelmystFogSafeDestination(
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
+bool IsFelmystFogMovementSuppressed(Unit* felmyst);
+bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);
 bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState& state);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);

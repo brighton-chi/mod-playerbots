@@ -50,7 +50,6 @@ struct BrutallusMeleeRingLayout
     uint8 slotCount;
 };
 
-// Throttle for rebuilding ranged and melee position assignments
 inline constexpr uint32 BRUTALLUS_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 
 inline constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);

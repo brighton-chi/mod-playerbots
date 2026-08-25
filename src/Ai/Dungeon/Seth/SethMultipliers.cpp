@@ -13,10 +13,10 @@
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 #include "SethActions.h"
-#include "SethData.h"
+#include "SethShared.h"
 #include "ShamanActions.h"
 
-using namespace SethData;
+using namespace SethShared;
 using namespace EncounterHelpers;
 
 float SethekkProphetSetTremorTotemMultiplier::GetValue(Action* action)

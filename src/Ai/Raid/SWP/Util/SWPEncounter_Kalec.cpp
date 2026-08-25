@@ -275,6 +275,22 @@ Player* GetKalecgosCurrentVictimTank(
     return GetFirstResolvedSurfaceTank(group, state.tankAssignmentGuids);
 }
 
+// The read half shared by FindKalecgosDesignatedTank and GetKalecgosDesignatedTank, so the two
+// cannot answer differently. Only the caller decides whether the answer is written back.
+Player* ResolveKalecgosDesignatedTank(
+    Player* player, Group* group, KalecgosEncounterState const& state)
+{
+    if (Player* tank = ResolveSurfaceTank(group, state.currentTankGuid))
+    {
+        if (Player* replacementTank = GetSurfaceTankAfterCurrentHandOff(group, state))
+            return replacementTank;
+
+        return tank;
+    }
+
+    return GetKalecgosCurrentVictimTank(player, group, state);
+}
+
 Player* SelectOutgoingTankForRift(Group* group, KalecgosEncounterState const& state)
 {
     if (!state.activeRiftOpenedMs ||
@@ -604,6 +620,24 @@ void EnsureKalecgosRaidAssignments(Player* player)
         state.activeRiftGroup = ResolveActivePortalGroup(group, state);
 }
 
+// Read-only companion to GetKalecgosDesignatedTank below. That one prepares the encounter record
+// and caches the tank it settles on; the portal triggers step the same record every tick, and
+// Engine::DoNextAction runs ProcessTriggers before it scores any action, so a multiplier can read
+// the answer they already produced instead of producing one itself - which would make the result
+// depend on which action was being scored.
+Player* FindKalecgosDesignatedTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return nullptr;
+
+    auto const stateItr = kalecgosEncounterStates.find(player->GetInstanceId());
+    if (stateItr == kalecgosEncounterStates.end())
+        return nullptr;
+
+    return ResolveKalecgosDesignatedTank(player, group, stateItr->second);
+}
+
 Player* GetKalecgosDesignatedTank(Player* player)
 {
     Group* group = player->GetGroup();
@@ -611,23 +645,22 @@ Player* GetKalecgosDesignatedTank(Player* player)
         return nullptr;
 
     KalecgosEncounterState& state = GetPreparedEncounterState(player);
+    Player* const tank = ResolveKalecgosDesignatedTank(player, group, state);
 
-    if (Player* tank = ResolveSurfaceTank(group, state.currentTankGuid))
-    {
-        if (Player* replacementTank = GetSurfaceTankAfterCurrentHandOff(group, state))
-            return replacementTank;
+    // Only the fallback is worth writing back; the currentTankGuid branch already held the answer.
+    // Re-testing it costs a second group lookup, but keeps the branch out of the shared resolver.
+    if (!ResolveSurfaceTank(group, state.currentTankGuid))
+        state.currentTankGuid = tank ? tank->GetGUID() : ObjectGuid::Empty;
 
-        return tank;
-    }
+    return tank;
+}
 
-    if (Player* fallbackTank = GetKalecgosCurrentVictimTank(player, group, state))
-    {
-        state.currentTankGuid = fallbackTank->GetGUID();
-        return fallbackTank;
-    }
+ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
+{
+    GameObject* rift = bot->FindNearestGameObject(
+        Id(SwpObjects::GO_SPECTRAL_RIFT), KALECGOS_SPECTRAL_RIFT_SEARCH_RADIUS, true);
 
-    state.currentTankGuid = ObjectGuid::Empty;
-    return nullptr;
+    return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }
 
 bool ShouldEnterKalecgosPortal(Player* bot)
