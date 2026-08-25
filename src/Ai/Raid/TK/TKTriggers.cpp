@@ -6,6 +6,8 @@
 
 #include "TKTriggers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
+#include "MoveSpline.h"
 #include "Playerbots.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
@@ -15,14 +17,33 @@ using namespace TkHelpers;
 using namespace EncounterHelpers;
 
 // General
-bool TempestKeepBotIsNotInCombatTrigger::IsActive()
+// The instance's own encounter state rather than the bot's combat state: a summon, a resurrection
+// or a feign can each put one bot out of combat mid-fight, and combat state reads that as the
+// encounter being over. BossAI sets IN_PROGRESS on engage and clears it on kill or evade, and
+// all four Eye bosses go through it -- worth confirming per raid before reusing the pattern,
+// since a boss that overrides JustEngagedWith without chaining never registers
+bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, TK_MAP_ID) && !AI_VALUE2(bool, "combat", "self target");
+    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
+}
+
+// The flag test leads because it is false for all but the stuck bot, which keeps the usual case to
+// one field read rather than the group walk the combat value does. The map check is load-bearing
+// rather than defensive: the strategy is meant to come off when bots zone out, but that removal is
+// not always saved, so a reboot can leave it running outside the instance
+bool TempestKeepBotIsStuckFallingTrigger::IsActive()
+{
+    return bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && bot->movespline->Finalized() &&
+        bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
 }
 
 // Trash
 
-bool CrimsonHandCenturionCastsArcaneVolleyTrigger::IsActive()
+bool CrimsonHandCenturionCastsArcaneFlurryTrigger::IsActive()
 {
     return bot->getClass() == CLASS_MAGE &&
         AI_VALUE2(Unit*, "find target", "crimson hand centurion");
@@ -52,12 +73,12 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
     return locationIndex != POINT_QUILL_OR_DIVE_IDX && locationIndex != POINT_MIDDLE_IDX;
 }
 
-bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
+bool AlarEmbersExplodeUponDeathTrigger::IsActive()
 {
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
 
-bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
+bool AlarKillingEmbersDamagesBossTrigger::IsActive()
 {
     return PlayerbotAI::IsRangedDps(bot) && AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
@@ -85,7 +106,7 @@ bool AlarRisingFromTheAshesTrigger::IsActive()
         GetAlarDestinationLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX;
 }
 
-bool AlarEverythingIsOnFireInPhase2Trigger::IsActive()
+bool AlarIsInPhase2Trigger::IsActive()
 {
     Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar");
     return alar && IsAlarInPhase2(alar->GetInstanceId());
@@ -98,12 +119,12 @@ bool AlarShouldManagePhaseTrackerTrigger::IsActive()
 
 // Void Reaver
 
-bool VoidReaverBossCastsPoundingTrigger::IsActive()
+bool VoidReaverShouldBeTankedTrigger::IsActive()
 {
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "void reaver");
 }
 
-bool VoidReaverKnockAwayReducesTankAggroTrigger::IsActive()
+bool VoidReaverKnockAwayPullsAggroToNonTanksTrigger::IsActive()
 {
     if (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_DRUID ||
         bot->getClass() == CLASS_SHAMAN || bot->getClass() == CLASS_WARRIOR)
@@ -127,24 +148,7 @@ bool VoidReaverRangedShouldStandBackTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
-    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
-        return true;
-
-    uint32 const now = getMSTime();
-
-    for (auto const& orb : it->second)
-    {
-        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
-            bot->GetExactDist2d(
-                orb.destination.GetPositionX(),
-                orb.destination.GetPositionY()) < ARCANE_ORB_BUFFER_DISTANCE)
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return !IsNearActiveArcaneOrb(bot, ARCANE_ORB_BUFFER_DISTANCE);
 }
 
 bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
@@ -156,29 +160,12 @@ bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
     if (!voidReaver || voidReaver->GetVictim() == bot)
         return false;
 
-    auto const it = voidReaverArcaneOrbs.find(bot->GetInstanceId());
-    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
-        return false;
-
-    uint32 const now = getMSTime();
-
-    for (auto const& orb : it->second)
-    {
-        if (getMSTimeDiff(orb.castTime, now) <= ARCANE_ORB_DURATION_MS &&
-            bot->GetExactDist2d(
-                orb.destination.GetPositionX(),
-                orb.destination.GetPositionY()) < ARCANE_ORB_SAFE_DISTANCE)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return IsNearActiveArcaneOrb(bot, ARCANE_ORB_SAFE_DISTANCE);
 }
 
 // High Astromancer Solarian
 
-bool HighAstromancerSolarianEngagedByMainTankTrigger::IsActive()
+bool HighAstromancerSolarianShouldBeTankedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMainTank(bot))
         return false;
@@ -245,24 +232,16 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
     return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS;
 }
 
-bool KaelthasSunstriderSanguinarOrTelonicusIsActiveTrigger::IsActive()
+bool KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
     if (PlayerbotAI::IsMainTank(bot))
-    {
-        Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-        return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-            !IsFeigningDeath(sanguinar);
-    }
+        return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar"));
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
-        Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-        return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-            !IsFeigningDeath(telonicus);
-    }
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+        return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus"));
 
     return false;
 }
@@ -277,8 +256,10 @@ bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
         return false;
 
     uint32 const phase = GetKaelthasPhase(kaelthas);
-    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ||
-        phase == PHASE_ALL_ADVISORS;
+    if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_TRANSITION && phase != PHASE_ALL_ADVISORS)
+        return false;
+
+    return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar"));
 }
 
 bool KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger::IsActive()
@@ -286,19 +267,13 @@ bool KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK || GetCapernianTank(bot) != bot)
         return false;
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-        !IsFeigningDeath(capernian);
+    return IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian"));
 }
 
 bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        IsFeigningDeath(capernian))
-    {
+    if (!IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
         return false;
-    }
 
     if (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot)
         return false;
@@ -306,7 +281,7 @@ bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
     return true;
 }
 
-bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
+bool KaelthasSunstriderAdvisorsAreRevivingTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -321,18 +296,15 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
         return false;
 
     return PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
+        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (PlayerbotAI::IsHeal(bot) || PlayerbotAI::IsMainTank(bot) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
+    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return false;
-    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -399,12 +371,12 @@ bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
         return false;
 
-    bool const HasUsableLegendaryWeapon =
-        bot->HasItemCount(Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION), 1, false) ||
-        bot->HasItemCount(Id(TkItems::ITEM_NETHERSTRAND_LONGBOW), 1, false) ||
-        bot->HasItemCount(Id(TkItems::ITEM_PHASESHIFT_BULWARK), 1, false);
-
-    return HasUsableLegendaryWeapon;
+    return GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_MAINHAND, Id(TkItems::ITEM_STAFF_OF_DISINTEGRATION)) ||
+        GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_RANGED, Id(TkItems::ITEM_NETHERSTRAND_LONGBOW)) ||
+        GetEquippedItemInSlot(
+               bot, EQUIPMENT_SLOT_OFFHAND, Id(TkItems::ITEM_PHASESHIFT_BULWARK));
 }
 
 bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()

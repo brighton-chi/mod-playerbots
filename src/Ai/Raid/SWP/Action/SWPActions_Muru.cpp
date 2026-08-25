@@ -596,10 +596,8 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    constexpr float searchRadius = 30.0f;
-    Creature* singularity = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
-    if (!singularity)
+    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    if (!singularity || !singularity->IsAlive())
         return false;
 
     float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;

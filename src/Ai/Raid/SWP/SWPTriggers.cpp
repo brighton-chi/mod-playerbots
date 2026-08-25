@@ -6,6 +6,7 @@
 
 #include "SWPTriggers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
 #include "SWPSharedConstants.h"
 #include "SWPEncounter_Brut.h"
@@ -20,9 +21,18 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SunwellPlateauBotIsNotInCombatTrigger::IsActive()
+bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
 {
-    return bot->GetMapId() == SWP_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != SWP_MAP_ID)
+        return false;
+
+    // Raid-authoritative rather than per-bot: a bot can legitimately be out of combat while the
+    // raid is still fighting - dropped threat, feigned, or just never engaged - and the reset it
+    // gates erases state the rest of the raid is still using. InstanceScript reports IN_PROGRESS
+    // for every SWP boss from JustEngagedWith until the kill or the evade, and M'uru caps damage
+    // at GetHealth() - 1 rather than dying, so the Entropius phase stays inside the encounter.
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
@@ -45,13 +55,12 @@ bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    constexpr float searchRadius = 25.0f;
-    Unit* fiend = bot->FindNearestCreature(Id(SwpNpcs::NPC_VOLATILE_FIEND), searchRadius, true);
-    if (!fiend)
+    Unit* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (!fiend || !fiend->IsAlive())
         return false;
 
     // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck
-    // due to proximity to the volatile fiends below, if you decide to try to skip them
+    // due to proximity to the volatile fiends below, in case the player decides to skip them.
     constexpr float verticalOffset = 10.0f;
     return std::abs(bot->GetPositionZ() - fiend->GetPositionZ()) < verticalOffset;
 }
@@ -128,8 +137,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
     if (!ShouldEnterKalecgosPortal(bot))
         return false;
 
-    constexpr float searchRadius = 75.0f;
-    return bot->FindNearestGameObject(Id(SwpObjects::GO_SPECTRAL_RIFT), searchRadius, true);
+    return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift"));
 }
 
 bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
@@ -298,7 +306,7 @@ bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
-    // On initial landing, let MT get aggro before assuming positions
+    // On initial landing, let the MT get aggro before assuming positions
     Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && felmyst->GetVictim() != mainTank &&
         felmyst->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT)
@@ -553,8 +561,6 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
     if (IsAnySacrolashTank(bot) || IsAlythessTank(bot))
         return false;
 
-    // Triggers are evaluated once per tick ahead of any multiplier, so this is a deterministic
-    // point to open the tank threat window that EredarTwinsHoldDpsAtStartMultiplier reads
     RecordEredarTwinsDpsHoldStart(bot);
     return true;
 }
@@ -678,8 +684,8 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
     if (!entropius)
         return false;
 
-    constexpr float searchRadius = 30.0f;
-    return bot->FindNearestCreature(Id(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
+    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    return singularity && singularity->IsAlive();
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()
@@ -783,7 +789,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
 
     // Allow Demo Lock to AoE the Reflections
     if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
-        return AI_VALUE2(Unit*, "find target", "sinister reflection");
+        return !AI_VALUE2(Unit*, "find target", "sinister reflection");
 
     return true;
 }
@@ -833,10 +839,9 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     bool orbInUse = false;
     bool result = false;
 
-    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    for (ObjectGuid const& orbGuid : AI_VALUE(GuidVector, "kiljaeden dragon orbs"))
     {
-        constexpr float searchRadius = 200.0f;
-        GameObject* orb = bot->FindNearestGameObject(orbEntry, searchRadius, true);
+        GameObject* orb = botAI->GetGameObject(orbGuid);
         if (!orb)
             continue;
 
@@ -867,9 +872,11 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
-    constexpr uint32 orbUseGraceMs = 2000;
-    if (HasKiljaedenDragonAura(bot) || HasRecentKiljaedenDragonOrbUse(bot, orbUseGraceMs))
+    if (HasKiljaedenDragonAura(bot) ||
+        HasRecentKiljaedenDragonOrbUse(bot, KILJAEDEN_ORB_USE_GRACE_MS))
+    {
         return false;
+    }
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }

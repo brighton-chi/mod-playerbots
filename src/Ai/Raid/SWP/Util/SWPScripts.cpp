@@ -405,6 +405,11 @@ public:
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
 
+        // Fires on every update of every armageddon target for its whole eight to ten second life,
+        // and everything below is first-sight work, so bail before scanning the player list
+        if (kiljaedenTrackedArmageddonTargets.count(creature->GetGUID()))
+            return;
+
         bool hasSunwellStrategy = false;
         std::vector<PlayerbotAI*> botsToInterrupt;
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
@@ -426,11 +431,11 @@ public:
             }
         }
 
-        if (!hasSunwellStrategy ||
-            !kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID()).second)
-        {
+        // Left untracked when no bot is running the strategy, so a later update can pick it up
+        if (!hasSunwellStrategy)
             return;
-        }
+
+        kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID());
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),

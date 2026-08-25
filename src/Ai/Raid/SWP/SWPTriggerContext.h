@@ -16,8 +16,8 @@ public:
     RaidSunwellTriggerContext()
     {
         // General
-        creators["sunwell plateau bot is not in combat"] =
-            &RaidSunwellTriggerContext::sunwell_plateau_bot_is_not_in_combat;
+        creators["sunwell plateau no encounter in progress"] =
+            &RaidSunwellTriggerContext::sunwell_plateau_no_encounter_in_progress;
 
         creators["sunwell plateau bot has protective aura"] =
             &RaidSunwellTriggerContext::sunwell_plateau_bot_has_protective_aura;
@@ -221,8 +221,8 @@ public:
 
 private:
     // General
-    static Trigger* sunwell_plateau_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new SunwellPlateauBotIsNotInCombatTrigger(botAI);
+    static Trigger* sunwell_plateau_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new SunwellPlateauNoEncounterInProgressTrigger(botAI);
     }
     static Trigger* sunwell_plateau_bot_has_protective_aura(PlayerbotAI* botAI) {
         return new SunwellPlateauBotHasProtectiveAuraTrigger(botAI);
