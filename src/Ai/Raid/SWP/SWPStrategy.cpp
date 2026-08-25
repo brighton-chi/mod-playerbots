@@ -309,8 +309,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
     if (!IsMuruPhaseActive(muru))
         return;
 
-    // Loop invariant: while darkness is out the sentinel tank chases whatever it likes, so only
-    // M'uru itself stays excluded
+    // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels
     bool const distanceUnrestricted = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         TryGetMuruDarknessActiveState(bot, muru);
     ObjectGuid const muruGuid = muru->GetGUID();

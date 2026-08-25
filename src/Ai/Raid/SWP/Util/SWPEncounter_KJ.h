@@ -63,10 +63,7 @@ inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
-// Both assignment passes rebuild shared per-instance state from scratch, and every ranged bot runs
-// them every tick, so a timestamp throttle is the tool rather than a per-bot value. The canonical
-// slots only move when raid membership does; the armageddon reshuffle is on a shorter leash
-// because the missile lands six seconds after its target creature spawns.
+// Throttle assigned ranged position rebuilds since they should be stable during the encounter.
 inline constexpr uint32 KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 inline constexpr uint32 KILJAEDEN_ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS = 250;
 
@@ -78,7 +75,7 @@ inline constexpr float KILJAEDEN_REFLECTION_SHOUT_REACH = 10.0f;
 inline constexpr float KILJAEDEN_REFLECTION_CONSECRATION_REACH = 8.0f;
 inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 
-// Radii for the hand pickup abilities that are anchored on the caster rather than on the Hand.
+// Radii for the tank abilities that are anchored on the caster rather than on the Hand.
 // 8 yards covers War Stomp (20549) and all 3 Arcane Torrent variants.
 inline constexpr float KILJAEDEN_SELF_AOE_RACIAL_RADIUS = 8.0f;
 inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
@@ -89,7 +86,7 @@ inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
 inline constexpr float KILJAEDEN_HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
 inline constexpr float KILJAEDEN_HAND_STUN_MAX_HP_PERCENT = 80.0f;
 
-// How far apart the Hands are kept apart by tanks
+// How far apart the Hands are kept by tanks
 inline constexpr float KILJAEDEN_HAND_TANK_SEPARATION = 15.0f;
 
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
@@ -98,19 +95,16 @@ inline constexpr float KILJAEDEN_HAND_TANK_SEPARATION = 15.0f;
 inline constexpr int32 KILJAEDEN_SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
 inline constexpr float KILJAEDEN_DRAGON_ORB_SEARCH_RADIUS = 200.0f;
 
-// Feeds the "kiljaeden dragon orbs" value. Four entries were being searched for in the trigger and
-// searched for again in the action, so this is eight grid visits a tick collapsing into four an
-// interval. Only membership is cached; GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are read from the
-// freshly resolved object.
+// The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
 inline constexpr uint32 KILJAEDEN_DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 inline constexpr float KILJAEDEN_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
-// Grace after using an orb before a lingering root can count as the stale one worth clearing
+// Grace after using an Orb before a lingering root is considered stale and is cleared.
 inline constexpr uint32 KILJAEDEN_ORB_USE_GRACE_MS = 2000;
 inline constexpr uint32 KILJAEDEN_ORB_ANNOUNCEMENT_RESET_MS = 10000;
-// Bots with Fire Bloom hold this far off the Darkness stack until the Shield is nearly up
+// Bots with Fire Bloom hold this far off the Darkness stack until the Shield casts.
 inline constexpr float KILJAEDEN_FIRE_BLOOM_STANDOFF = 15.0f;
 
-// Breath: Haste and Breath: Revitalize are 13-yard cones on allies, so the dragon parks a little
+// Breath: Haste and Breath: Revitalize are 13-yard cones on allies, so the dragon stops a little
 // under half that from its target and looks for a cluster of roughly the same to cover at once.
 inline constexpr float KILJAEDEN_DRAGON_BREATH_STANDOFF = 6.0f;
 inline constexpr float KILJAEDEN_DRAGON_STANDOFF_TOLERANCE = 1.0f;

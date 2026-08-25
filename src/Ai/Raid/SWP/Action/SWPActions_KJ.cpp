@@ -75,8 +75,6 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     if (hands.empty())
         return false;
 
-    // "possible targets no los" is filled in grid-visit order, which differs from bot to bot, so
-    // the list needs an order every tank agrees on before anything indexes into it
     std::sort(hands.begin(), hands.end(),
         [](Unit* left, Unit* right) { return left->GetGUID() < right->GetGUID(); });
 
@@ -129,9 +127,6 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignme
 
     if (assignedGuid.IsEmpty())
     {
-        // Claim the first hand no other slot already holds rather than indexing by slot. Every
-        // tank walks the same guid-sorted list, so the three slots fill without two of them
-        // landing on one hand and leaving a third untanked.
         for (Unit* hand : hands)
         {
             ObjectGuid const handGuid = hand->GetGUID();
@@ -236,7 +231,6 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
         return botAI->CanCastSpell(spell, hand) && botAI->CastSpell(spell, hand);
     };
 
-    // Anchored on the caster, so the hand has to be inside the radius for the cast to do anything
     auto const castSelfAoe = [&](char const* spell, float radius)
     {
         return bot->GetExactDist(hand) < radius && castSpell(spell);
@@ -299,14 +293,14 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
-        // A grid search rather than "find target": the pickup path exists only to bridge the three
-        // seconds in which a reflection is passive and on nobody's threat list, so neither the
-        // threat-list lookup nor tank assist can see it yet
+        // This grid search exists only to bridge the three seconds after spawn, during which a
+        // Reflection is passive and on nobody's threat list, meaning neither FindTargetValue nor
+        // standard bot target acquisition through "attackers" can locate it
         if (Creature* reflection = bot->FindNearestCreature(
                 Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
-            // Once aggressive it is on a threat list and therefore in attackers, so failing here
-            // yields the tick to the tank's own assist logic rather than marching it back
+            // Once aggressive it is on a threat list and therefore in "attackers,"" so failing
+            // here is intended to allow TankAssistAction to take over.
             return reflection->GetReactState() == REACT_PASSIVE &&
                 PickUpSinisterReflections(reflection);
         }
@@ -321,10 +315,9 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Whatever lands first owns the reflection: its three second aggro comes from
-// SMART_ACTION_ATTACK_START, which sets a victim without adding any threat, so the following
-// UpdateVictim hands it to whoever actually built some. Longest reach first, so the tank fires as
-// soon as it has closed enough rather than waiting to arrive.
+// When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
+// a random victim. Thus, the first landed hit after activation should immediately grab aggro, and
+// we want that to be a tank, so hopefully they can get in range to start attacking before 3s pass.
 bool KiljaedenPositionTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)
@@ -542,8 +535,6 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     float destX = darknessPosition.GetPositionX();
     float destY = darknessPosition.GetPositionY();
 
-    // Bots with Fire Bloom wait 15y away from the Darkness stack spot until the cast is nearly
-    // done, on the same threshold the bot dragon uses to fire Shield of the Blue
     if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
     {
         Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");

@@ -358,8 +358,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         return;
     }
 
-    // Placed after the clear above so bots snap back to their canonical slots the moment the
-    // last armageddon expires, and only the reshuffle itself is rate limited
+    // For bots to return to their normal positions once Armageddons stop.
     if (!ShouldRebuildKiljaedenAssignments(
             state.rangedArmageddonRebuildMs,
             KILJAEDEN_ARMAGEDDON_ASSIGNMENT_REBUILD_INTERVAL_MS))
@@ -712,10 +711,6 @@ bool HasAtLeastThreeBotTanks(
     std::vector<Player*> assistantTanks;
     std::vector<Player*> nonAssistantTanks;
 
-    // Walked to the end rather than stopping at two: an assistant further down the list would be
-    // left unclassified, and the assistants-first order below is what decides hand ownership.
-    // Not filtered on IsAlive either: a death would renumber every tank behind the corpse and the
-    // survivors would swap hands. Callers check liveness where it actually matters.
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();

@@ -272,8 +272,6 @@ Player* GetKalecgosCurrentVictimTank(
     return GetFirstResolvedSurfaceTank(group, state.tankAssignmentGuids);
 }
 
-// The read half shared by FindKalecgosDesignatedTank and GetKalecgosDesignatedTank, so the two
-// cannot answer differently. Only the caller decides whether the answer is written back.
 Player* ResolveKalecgosDesignatedTank(
     Player* player, Group* group, KalecgosEncounterState const& state)
 {
@@ -617,11 +615,7 @@ void EnsureKalecgosRaidAssignments(Player* player)
         state.activeRiftGroup = ResolveActivePortalGroup(group, state);
 }
 
-// Read-only companion to GetKalecgosDesignatedTank below. That one prepares the encounter record
-// and caches the tank it settles on; the portal triggers step the same record every tick, and
-// Engine::DoNextAction runs ProcessTriggers before it scores any action, so a multiplier can read
-// the answer they already produced instead of producing one itself - which would make the result
-// depend on which action was being scored.
+// Read-only companion to GetKalecgosDesignatedTank below.
 Player* FindKalecgosDesignatedTank(Player* player)
 {
     Group* group = player->GetGroup();
@@ -644,8 +638,6 @@ Player* GetKalecgosDesignatedTank(Player* player)
     KalecgosEncounterState& state = GetPreparedEncounterState(player);
     Player* const tank = ResolveKalecgosDesignatedTank(player, group, state);
 
-    // Only the fallback is worth writing back; the currentTankGuid branch already held the answer.
-    // Re-testing it costs a second group lookup, but keeps the branch out of the shared resolver.
     if (!ResolveSurfaceTank(group, state.currentTankGuid))
         state.currentTankGuid = tank ? tank->GetGUID() : ObjectGuid::Empty;
 

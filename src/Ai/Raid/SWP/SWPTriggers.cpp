@@ -26,11 +26,7 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     if (bot->GetMapId() != SWP_MAP_ID)
         return false;
 
-    // Raid-authoritative rather than per-bot: a bot can legitimately be out of combat while the
-    // raid is still fighting - dropped threat, feigned, or just never engaged - and the reset it
-    // gates erases state the rest of the raid is still using. InstanceScript reports IN_PROGRESS
-    // for every SWP boss from JustEngagedWith until the kill or the evade, and M'uru caps damage
-    // at GetHealth() - 1 rather than dying, so the Entropius phase stays inside the encounter.
+    // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade.
     InstanceScript* instance = bot->GetInstanceScript();
     return instance && !instance->IsEncounterInProgress();
 }
@@ -787,7 +783,7 @@ bool KiljaedenBossEngagedByRangedTrigger::IsActive()
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden))
         return false;
 
-    // Allow Demo Lock to AoE the Reflections
+    // Allow Demo Locks to AoE the Reflections
     if (bot->getClass() == CLASS_WARLOCK && bot->HasAura(Id(SwpSpells::SPELL_METAMORPHOSIS)))
         return !AI_VALUE2(Unit*, "find target", "sinister reflection");
 

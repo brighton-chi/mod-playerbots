@@ -22,9 +22,6 @@ using namespace EncounterHelpers;
 namespace
 {
 
-// Nearest to the origin wins, but only by MURU_TARGET_SWITCH_MARGIN: without the margin a target a
-// yard closer would yank everyone off mid-cast every time the adds shuffle. The origin differs by
-// caller - raid DPS measure from the ranged stack, an enslaved spawn measures from itself.
 Unit* SelectNearestByEntry(
     Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates, Position const& origin)
 {
@@ -60,8 +57,6 @@ bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
     Unit* enemy = nullptr;
     Unit* tank = nullptr;
 
-    // Same order and the same health gate as MuruVoidSentinelOrEntropiusHasAppearedTrigger, so
-    // the target the trigger qualified on is the one the misdirect lands on
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
 
@@ -269,7 +264,7 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
                 if (!isMuruPhase)
                     return false;
 
-                // Ranged and shadow priests stay on M'uru through darkness; melee peel off
+                // Shadow Priests stay on M'uru through all of phase 1
                 return isOtherRanged || isShadowPriest || !darknessActive;
 
             case Id(SwpNpcs::NPC_ENTROPIUS):

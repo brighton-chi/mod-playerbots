@@ -349,8 +349,6 @@ class MuruVoidZoneSpellListenerScript : public AllSpellScript
 public:
     MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
 
-    // Entropius picks the player, the missile fixes the pool where they are standing now, and the
-    // pool is permanent once it lands - so the cast that gets dropped here buys the flight time
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
@@ -405,8 +403,6 @@ public:
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
 
-        // Fires on every update of every armageddon target for its whole eight to ten second life,
-        // and everything below is first-sight work, so bail before scanning the player list
         if (kiljaedenTrackedArmageddonTargets.count(creature->GetGUID()))
             return;
 
@@ -431,7 +427,6 @@ public:
             }
         }
 
-        // Left untracked when no bot is running the strategy, so a later update can pick it up
         if (!hasSunwellStrategy)
             return;
 

@@ -21,8 +21,6 @@ class Creature;
 namespace SwpHelpers
 {
 
-// Backs the "swp volatile fiend" value. Trash has no encounter helper file of its own, so it lives
-// beside the action that consumes it.
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
 
 }

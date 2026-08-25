@@ -59,7 +59,7 @@ inline constexpr uint8 METEOR_SLASH_SWAP_STACKS = 3;
 inline constexpr float BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH = M_PI / 3.0f;
 
 // Concentric arcs behind the boss, innermost first. The spacing is what keeps Burn from
-// spreading between neighbours, so melee hold these positions rather than moving when burning.
+// spreading between neighbors, so melee hold these positions rather than moving when burning.
 inline constexpr std::array BRUTALLUS_MELEE_RING_LAYOUTS = {
     BrutallusMeleeRingLayout{ 4.0f, 2 },
     BrutallusMeleeRingLayout{ 8.0f, 3 },

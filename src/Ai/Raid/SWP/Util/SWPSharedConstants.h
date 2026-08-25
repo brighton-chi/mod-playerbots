@@ -155,9 +155,7 @@ inline constexpr float SWP_PULL_COMPLETE_HP_PERCENT = 95.0f;
 // Shared by the trigger and the action so the two cannot drift apart
 inline constexpr float SWP_VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;
 
-// Feeds the "swp volatile fiend" value. Nothing scopes the trash triggers to a trash pull, so this
-// search also runs through every boss fight, where it can only ever miss - and a miss costs the
-// full grid visit.
+// Feeds the "swp volatile fiend" value
 inline constexpr uint32 SWP_VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 
 }

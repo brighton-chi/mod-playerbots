@@ -37,11 +37,11 @@ struct EredarTwinsBlazeTargetState
 // Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
-// Grace period for the tanks to build threat before the rest of the raid opens up
+// Grace period for the tanks to build threat before the rest of the raid opens fire
 inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 
-// Spell 45246, fired by the Blaze trap GO, deals damage in a 3 yard radius; the extra 1.5 is the
-// usual avoidance padding. The trap itself only activates within 2.5 yards.
+// The Blaze trap GO casts 45246, dealing damage in a 3y radius; the extra 1.5y is avoidance
+// buffer.
 inline constexpr float EREDAR_TWINS_BLAZE_DANGER_RADIUS = 4.5f;
 inline constexpr float EREDAR_TWINS_BLAZE_SEARCH_RADIUS = 30.0f;
 
@@ -66,9 +66,7 @@ inline constexpr uint32 EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS = 2000;
 inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2000;
 
-// Feeds the "eredar twins blaze" value. CalculatedValue reads any interval between 2 and 99 as
-// seconds, so this has to stay at or above 100 to mean milliseconds. Blaze is a GameObject and
-// cannot move once placed, so the only thing a stale window can miss is a spawn or a despawn.
+// Feeds the "eredar twins blaze" value.
 inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
 
 inline Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };

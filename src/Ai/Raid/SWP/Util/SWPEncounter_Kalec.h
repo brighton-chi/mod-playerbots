@@ -44,24 +44,17 @@ struct KalecgosEncounterState
 extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 
 inline constexpr uint8 KALECGOS_GROUP_COUNT = 4;
+// Rifts remain active for 10s after spawning. There is a 1s delay after a player enters the Rift
+// before the next player can enter.
 inline constexpr uint32 RIFT_ENTRY_WINDOW_MS = 10000;
-inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
-
-// Curse of Boundless Agony doubles its tick every five ticks and, on removal, recasts itself on
-// somebody else - so a dispel relocates the curse rather than ending it. Holding until this much
-// remains lets it run on a target the healers are already watching.
-inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;
-
-// How long assist tanks stay off Kalecgos so the opening tank keeps the lead
-inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5000;
-
-// Shared by the trigger and the action so the two cannot drift apart
 inline constexpr float KALECGOS_SPECTRAL_RIFT_SEARCH_RADIUS = 75.0f;
-
-// Feeds the "kalecgos spectral rift" value. A GameObject cannot move once placed, so the only
-// thing a stale window can miss is a spawn or a despawn, and the action resolves the guid before
-// it uses it.
 inline constexpr uint32 KALECGOS_SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
+inline constexpr float KALECGOS_SPECTRAL_REALM_Z = -74.5f;
+// Curse of Boundless Agony doubles its tick damage every 5 ticks and, when removed by dispel or
+// expiration, bounces to another player. Hold off on dispelling while damage is low (until 15s).
+inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;
+// How long assist tanks hold off on attacking after the pull
+inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5000;
 
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
 inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };

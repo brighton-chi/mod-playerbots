@@ -17,10 +17,6 @@
 #include "Position.h"
 #include <vector>
 
-// Cache positions, never object pointers. CalculatedValue holds whatever Calculate() returned until
-// the interval lapses, and only UnitCalculatedValue::Get() carries an IsInWorld guard - RefGet and
-// every non-Unit specialisation have none, so a stored Creature*/GameObject* would be a dangling
-// dereference waiting on a despawn.
 class EredarTwinsBlazePositionsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -35,8 +31,7 @@ protected:
     }
 };
 
-// Collapses the four per-tick sweeps of "possible targets no los" this encounter used to run into
-// one per interval. Guids only - see MuruEncounterGuids for why the resolved pointers stay local.
+// Collapses four per-tick sweeps of "possible targets no los"
 class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
 {
 public:
@@ -52,8 +47,8 @@ protected:
     }
 };
 
-// The pools are static and permanent, so this is a straight cost saving: the trigger and the action
-// both ask every tick for the whole Entropius phase, and the room keeps accumulating them.
+// The four values below replace grid searches that are otherwise run by corresponding triggers and
+// actions each tick.
 class MuruVoidZonesValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -65,11 +60,6 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindMuruVoidZoneGuids(bot); }
 };
 
-// The four values below all replace a grid search that a trigger ran and then the action it gates
-// ran again with the same entry and the same radius. Guids only, so a despawn inside the window
-// resolves to null at the call site rather than dangling. FindNearestCreature filters the dead by
-// default, which caching a guid would otherwise discard, so the creature values are re-tested with
-// IsAlive() where they are resolved.
 class SwpVolatileFiendValue : public CalculatedValue<ObjectGuid>
 {
 public:

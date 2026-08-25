@@ -296,9 +296,6 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     ResolveLivingUnits(botAI, guids.berserkers, targets.berserkers);
 }
 
-// Deliberately not FindTargetValue: that walks the bot's own threatened-by-me list and returns the
-// first name match, so it answers "one arbitrary berserker that happens to be attacking me" - with
-// four per wave it routinely misses the one that actually has Flurry.
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI)
 {
     float const reach = GetBerserkerStunReach(botAI->GetBot());
@@ -319,7 +316,6 @@ Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI)
         botAI, GetCachedMuruEncounterGuids(botAI).furyMages, reach, &IsCastingFelFireball);
 }
 
-// Mage-only, so the class gate is inline rather than a reach table: Spellsteal is the whole list
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
 {
     if (botAI->GetBot()->getClass() != CLASS_MAGE)
@@ -368,8 +364,6 @@ GuidVector FindMuruVoidZoneGuids(Player* bot)
     return guids;
 }
 
-// Returns only a pool close enough to matter, so the range test is folded into the selection and
-// both the trigger and the action ask exactly the same question
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -407,7 +401,6 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
 
-    // The cached list is already filtered to void spawns, so only availability is left to check
     for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSpawns)
     {
         Unit* unit = ResolveLivingUnit(botAI, guid);
