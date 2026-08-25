@@ -15,9 +15,13 @@ using namespace EncounterHelpers;
 
 // General
 
-bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
+bool HyjalSummitNoEncounterInProgress::IsActive()
 {
-    return bot->GetMapId() == HYJAL_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != HYJAL_MAP_ID)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 bool HyjalPullingBossTrigger::IsActive()

@@ -21,36 +21,26 @@ using namespace EncounterHelpers;
 
 bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    ObjectGuid const guid = bot->GetGUID();
+    bool reset = false;
 
-    bool erased = false;
-    if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
+    Action* action = context->GetAction("rage winterchill spread ranged in circle");
+    if (action && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
+            action)->ResetWinterchillPositionReached())
     {
-        Action* action = context->GetAction("rage winterchill spread ranged in circle");
-        if (action && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
-                action)->ResetWinterchillPositionReached())
-        {
-            erased = true;
-        }
+        reset = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+    Action* action = context->GetAction("anetheron spread ranged in circle");
+    if (action && static_cast<AnetheronSpreadRangedInCircleAction*>(
+            action)->ResetAnetheronPositionReached())
     {
-        Action* action = context->GetAction("anetheron spread ranged in circle");
-        if (action && static_cast<AnetheronSpreadRangedInCircleAction*>(
-                action)->ResetAnetheronPositionReached())
-        {
-            erased = true;
-        }
+        reset = true;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
-        erased |= botsBelowManaThreshold.erase(guid) > 0;
+    reset |= botsBelowManaThreshold.erase(bot->GetGUID()) > 0;
+    reset |= archimondeAirBurstTargets.erase(bot->GetInstanceId()) > 0;
 
-    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
-        erased |= archimondeAirBurstTargets.erase(bot->GetInstanceId()) > 0;
-
-    return erased;
+    return reset;
 }
 
 bool HyjalSummitMisdirectBossToMainTankAction::Execute(Event /*event*/)

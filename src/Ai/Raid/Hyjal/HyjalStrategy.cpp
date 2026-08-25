@@ -10,7 +10,7 @@
 void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("hyjal summit bot is not in combat", {
+    triggers.push_back(new TriggerNode("hyjal summit no encounter in progress", {
         NextAction("hyjal summit reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Rage Winterchill

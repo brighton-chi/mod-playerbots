@@ -12,11 +12,11 @@
 
 // General
 
-class HyjalSummitBotIsNotInCombatTrigger : public Trigger
+class HyjalSummitNoEncounterInProgress : public Trigger
 {
 public:
-    HyjalSummitBotIsNotInCombatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hyjal summit bot is not in combat") {}
+    HyjalSummitNoEncounterInProgress(PlayerbotAI* botAI)
+        : Trigger(botAI, "hyjal summit no encounter in progress") {}
     bool IsActive() override;
 };
 

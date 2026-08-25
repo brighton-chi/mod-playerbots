@@ -17,8 +17,8 @@ public:
     RaidHyjalSummitTriggerContext()
     {
         // General
-        creators["hyjal summit bot is not in combat"] =
-            &RaidHyjalSummitTriggerContext::hyjal_summit_bot_is_not_in_combat;
+        creators["hyjal summit no encounter in progress"] =
+            &RaidHyjalSummitTriggerContext::hyjal_summit_no_encounter_in_progress;
 
         // Rage Winterchill
         creators["rage winterchill pulling boss"] =
@@ -133,8 +133,8 @@ public:
 
 private:
     // General
-    static Trigger* hyjal_summit_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new HyjalSummitBotIsNotInCombatTrigger(botAI);
+    static Trigger* hyjal_summit_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new HyjalSummitNoEncounterInProgress(botAI);
     }
 
     // Rage Winterchill
