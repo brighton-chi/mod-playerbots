@@ -217,8 +217,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         //
         // (1) Whatever the claim, the bot may attack if it (a) is in a raid/group and has a master
         //     holding nonzero threat on the creature, (b) has, or has a raid/group member that has,
-        //     already tapped it, (c) is already in combat with the creature, or (d) has the "attack
-        //     tagged" strategy, which is automatically applied in battlegrounds and arenas.
+        //     already tapped it, or (c) is already in combat with the creature.
         if (leaderHasThreat || c->isTappedBy(bot) || c->IsInCombatWith(bot))
             return true;
 
