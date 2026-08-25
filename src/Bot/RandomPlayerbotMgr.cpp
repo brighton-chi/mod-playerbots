@@ -697,14 +697,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
         for (uint32 accountId : accountsToUse)
         {
-            // CHAR_SEL_CHARS_BY_ACCOUNT_ID selects guid only, so class and race have to be asked
-            // for explicitly -- reading fields[1] and fields[2] off it ran past the end of the row.
-            // Deleted characters are excluded here, unlike in that statement, which omits the
-            // filter deliberately because AccountMgr uses it to wipe an account
-            QueryResult result = CharacterDatabase.Query(
-                "SELECT guid, class, race FROM characters "
-                "WHERE account = {} AND deleteDate IS NULL",
-                accountId);
+            CharacterDatabasePreparedStatement* stmt =
+                CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
+            stmt->SetData(0, accountId);
+            PreparedQueryResult result = CharacterDatabase.Query(stmt);
             if (!result)
                 continue;
 
