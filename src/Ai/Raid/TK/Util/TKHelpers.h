@@ -113,13 +113,6 @@ inline constexpr uint32 TK_MAP_ID = 550;
 
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
-std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
-Position FindSafestNearbyPosition(
-    Player* bot, std::vector<Unit*> const& hazards,
-    float hazardRadius, Position const* center = nullptr);
-bool IsPathSafeFromHazards(
-    Position const start, Position const end, std::vector<Unit*> const& hazards,
-    float hazardRadius);
 
 // Al'ar <Phoenix God>
 // CombatReach is 15 yards
@@ -265,6 +258,7 @@ Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 bool IsLegendaryWeaponItem(uint32 itemId);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
+Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius);
 Creature* GetPhoenixEgg(Player* bot);
 
 }

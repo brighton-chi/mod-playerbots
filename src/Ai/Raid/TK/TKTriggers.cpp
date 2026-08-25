@@ -9,7 +9,6 @@
 #include "InstanceScript.h"
 #include "MoveSpline.h"
 #include "Playerbots.h"
-#include "TKActions.h"
 #include "TKHelpers.h"
 #include <array>
 

@@ -154,6 +154,11 @@ public:
 private:
     bool AvoidFlamePatch();
     bool HandleDiveBomb(Unit* alar);
+    std::vector<Unit*> GetFlamePatches(float searchRadius);
+    Position FindSafestNearbyPosition(
+        std::vector<Unit*> const& flamePatches, float hazardRadius);
+    bool IsPathSafe(
+        Position const& end, std::vector<Unit*> const& flamePatches, float hazardRadius);
 };
 
 class AlarManagePhaseTrackerAction : public Action

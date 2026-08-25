@@ -7,13 +7,11 @@
 #include "TKActions.h"
 #include "AiFactory.h"
 #include "EncounterHelpers.h"
-#include "EquipAction.h"
 #include "ItemPackets.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
@@ -34,9 +32,12 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
 
     bool reset = false;
+    // Al'ar
     reset |= isAlarInPhase2.erase(instanceId) > 0;
     reset |= lastRebirthState.erase(instanceId) > 0;
+    // Void Reaver
     reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
+    // Kael'thas Sunstrider
     reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
 
     return reset;
@@ -497,8 +498,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
     constexpr float searchRadius = 40.0f;
-    std::vector<Unit*> flamePatches = GetAllHazardTriggers(
-        bot, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+    std::vector<Unit*> flamePatches = GetFlamePatches(searchRadius);
 
     constexpr float hazardRadius = 8.0f;
 
@@ -506,7 +506,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
     {
         if (bot->GetExactDist2d(flamePatch) < hazardRadius)
         {
-            Position safestPos = FindSafestNearbyPosition(bot, flamePatches, hazardRadius);
+            Position safestPos = FindSafestNearbyPosition(flamePatches, hazardRadius);
             bot->CastStop();
             return MoveTo(
                 TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
@@ -516,6 +516,97 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
     }
 
     return false;
+}
+
+std::vector<Unit*> AlarAvoidFlamePatchesAndDiveBombsAction::GetFlamePatches(float searchRadius)
+{
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+
+    std::vector<Unit*> flamePatches;
+    flamePatches.reserve(creatureList.size());
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            flamePatches.push_back(creature);
+    }
+
+    return flamePatches;
+}
+
+// Al'ar is the one fight in TK with multiple ground AoEs active at once, so where to run has to be
+// specifically weighed, rather than just "run away to a generally sensible position," which is
+// essentially what FleePosition() does. This action searches rings going outward from the bot, with
+// the first candidate clear of every patch that is reachable without crossing a patch being the
+// one selected (with a fallback to the nearest safe spot, regardless of whether the path is safe).
+Position AlarAvoidFlamePatchesAndDiveBombsAction::FindSafestNearbyPosition(
+    std::vector<Unit*> const& flamePatches, float hazardRadius)
+{
+    constexpr float searchStep = M_PI / 12.0f;
+    constexpr float minDistance = 2.0f;
+    constexpr float distanceStep = 1.0f;
+    constexpr uint8 numAngles = 24;
+    constexpr uint8 numDistSteps = 28;
+
+    Position const botPos = bot->GetPosition();
+    Position fallback;
+    bool haveFallback = false;
+
+    for (uint8 i = 0; i <= numDistSteps; ++i)
+    {
+        float const distance = minDistance + i * distanceStep;
+        for (uint8 j = 0; j < numAngles; ++j)
+        {
+            float const angle = j * searchStep;
+            Position const testPos(
+                botPos.GetPositionX() + distance * std::cos(angle),
+                botPos.GetPositionY() + distance * std::sin(angle),
+                botPos.GetPositionZ());
+
+            auto const inPatch = [&](Unit* flamePatch)
+            {
+                return flamePatch->GetExactDist2d(
+                    testPos.GetPositionX(), testPos.GetPositionY()) < hazardRadius;
+            };
+
+            if (std::any_of(flamePatches.begin(), flamePatches.end(), inPatch))
+                continue;
+
+            if (IsPathSafe(testPos, flamePatches, hazardRadius))
+                return testPos;
+
+            if (!haveFallback)
+            {
+                fallback = testPos;
+                haveFallback = true;
+            }
+        }
+    }
+
+    return haveFallback ? fallback : botPos;
+}
+
+bool AlarAvoidFlamePatchesAndDiveBombsAction::IsPathSafe(
+    Position const& end, std::vector<Unit*> const& flamePatches, float hazardRadius)
+{
+    constexpr uint8 numChecks = 10;
+    float const dx = end.GetPositionX() - bot->GetPositionX();
+    float const dy = end.GetPositionY() - bot->GetPositionY();
+
+    for (uint8 i = 1; i <= numChecks; ++i)
+    {
+        float const ratio = static_cast<float>(i) / numChecks;
+        float const checkX = bot->GetPositionX() + dx * ratio;
+        float const checkY = bot->GetPositionY() + dy * ratio;
+
+        for (Unit* flamePatch : flamePatches)
+        {
+            if (flamePatch->GetExactDist2d(checkX, checkY) < hazardRadius)
+                return false;
+        }
+    }
+
+    return true;
 }
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
@@ -1774,33 +1865,14 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 40.0f;
-    std::vector<Unit*> flameStrikes = GetAllHazardTriggers(
-        bot, Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER), searchRadius);
-
-    if (flameStrikes.empty())
-        return false;
-
     constexpr float hazardRadius = 12.0f;
-    bool inDanger = false;
-    for (Unit* flameStrike : flameStrikes)
-    {
-        if (bot->GetExactDist2d(flameStrike) < hazardRadius)
-        {
-            inDanger = true;
-            break;
-        }
-    }
-
-    if (!inDanger)
+    Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, hazardRadius);
+    if (!flameStrike)
         return false;
-
-    Position safestPos = FindSafestNearbyPosition(bot, flameStrikes, hazardRadius);
 
     bot->CastStop();
-    return MoveTo(
-        TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(), safestPos.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    constexpr uint32 minInterval = 0;
+    return FleePosition(flameStrike->GetPosition(), hazardRadius, minInterval);
 }
 
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
@@ -1856,8 +1928,15 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
     {
         constexpr float safeDistance = 15.0f;
         float const currentDistance = bot->GetExactDist2d(phoenix);
-        if (currentDistance < safeDistance)
+
+        // A Phoenix is survivable and a Flame Strike is not, so don't try to avoid Phoenixes when
+        // too close to a Flame Strike
+        constexpr float flameStrikeRadius = 20.0f;
+        if (currentDistance < safeDistance &&
+            !GetNearestFlameStrikeInRadius(bot, flameStrikeRadius))
+        {
             return MoveAway(phoenix, safeDistance - currentDistance);
+        }
     }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
