@@ -453,6 +453,23 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
+// Threat-scoped lookups such as "find target" cannot be used for the weapons. A bot that was dead
+// when they called SetInCombatWithZone, or that died and was resurrected afterwards, holds no
+// threat entry on them and never regains one, so it sees a different set of weapons from everyone
+// else, which leaves the raid disagreeing on the kill order and dragging the icon between two
+// weapons
+Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry)
+{
+    std::list<Creature*> weapons;
+    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntry, KAELTHAS_ROOM_SEARCH_DISTANCE);
+
+    for (Creature* weapon : weapons)
+        if (weapon && weapon->IsAlive())
+            return weapon;
+
+    return nullptr;
+}
+
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {

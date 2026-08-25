@@ -445,14 +445,19 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
     if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return 1.0f;
 
-    // The Thaladred check is a proxy for revival/Kael talk phase (you could pick any advisor here).
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    // Mirrors the trigger: the healer maintains position from the start of the revival until
+    // Sanguinar is dead, while the tanks are freed once the revival window ends
+    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+        return sanguinar && sanguinar->IsAlive() ? 0.0f : 1.0f;
+
+    // The Sanguinar check is a proxy for revival/Kael talk phase (you could pick any advisor here,
+    // but Sanguinar is needed for the AssistHealOfIndex anyway).
+    if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return 1.0f;
 
     if (PlayerbotAI::IsMainTank(bot) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot))
     {
         return 0.0f;

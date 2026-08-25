@@ -37,8 +37,14 @@ bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 // not always saved, so a reboot can leave it running outside the instance
 bool TempestKeepBotIsStuckFallingTrigger::IsActive()
 {
-    return bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) && bot->movespline->Finalized() &&
-        bot->GetMapId() == TK_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) || !bot->movespline->Finalized())
+        return false;
+
+    if (bot->GetMapId() != TK_MAP_ID)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && !instance->IsEncounterInProgress();
 }
 
 // Trash
@@ -281,7 +287,7 @@ bool KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger::IsActive()
     return true;
 }
 
-bool KaelthasSunstriderAdvisorsAreRevivingTrigger::IsActive()
+bool KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger::IsActive()
 {
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
@@ -290,14 +296,22 @@ bool KaelthasSunstriderAdvisorsAreRevivingTrigger::IsActive()
     if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return false;
 
-    // Proxy for revival/Kael talk phase (can pick any advisor here)
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred || !thaladred->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+
+    // The healer holds its spot from the start of the revival until Sanguinar dies, since that spot
+    // is what keeps both melee tanks in range. IsAdvisorActive is false for the whole revival
+    // window (the advisors carry NON_ATTACKABLE until they activate), which put the healer in
+    // position only after the tanks had already left theirs
+    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+        return sanguinar && sanguinar->IsAlive();
+
+    // The Sanguinar check is a proxy for revival/Kael talk phase (any advisor would do, since all
+    // four come back together, but Sanguinar is already in hand for the healer above)
+    if (!sanguinar || !sanguinar->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
     return PlayerbotAI::IsMainTank(bot) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ||
         (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
@@ -340,7 +354,8 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "devastation");
+    return PlayerbotAI::IsMainTank(bot) &&
+        GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActive()
@@ -353,7 +368,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActive()
     if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
         return false;
 
-    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
     if (axe && axe->GetVictim() == bot)
         return false;
 

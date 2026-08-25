@@ -258,6 +258,7 @@ uint32 GetKaelthasPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
+Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry);
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
 GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);

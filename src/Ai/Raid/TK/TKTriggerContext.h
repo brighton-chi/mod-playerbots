@@ -97,8 +97,8 @@ public:
         creators["kael'thas sunstrider capernian blows up near and far"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_blows_up_near_and_far;
 
-        creators["kael'thas sunstrider advisors are reviving"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_advisors_are_reviving;
+        creators["kael'thas sunstrider bots should hold phase 3 positions"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_should_hold_phase_3_positions;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
@@ -222,8 +222,8 @@ private:
     static Trigger* kaelthas_sunstrider_capernian_blows_up_near_and_far(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_advisors_are_reviving(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderAdvisorsAreRevivingTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_bots_should_hold_phase_3_positions(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) {
         return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI);

@@ -97,7 +97,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider advisors are reviving", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider bots should hold phase 3 positions", {
         NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order", {
@@ -171,11 +171,12 @@ namespace
 
 using namespace TkHelpers;
 
-void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendKaelthasDevastationMeleeDpsExclusions(Player* bot, GuidSet& exclusions, Unit* kaelthas)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
+        return;
+
+    if (!PlayerbotAI::IsDps(bot)) // Ranged check is at the top of AppendTargetExclusions()
         return;
 
     uint32 const phase = GetKaelthasPhase(kaelthas);
@@ -183,15 +184,29 @@ void AppendKaelthasDevastationExclusions(PlayerbotAI* botAI, GuidSet& exclusions
         return;
 
     constexpr float searchRadius = 75.0f;
-    if (Creature* axe = botAI->GetBot()->FindNearestCreature(
-            Id(TkNpcs::NPC_DEVASTATION), searchRadius))
-    {
+    if (Creature* axe = bot->FindNearestCreature(Id(TkNpcs::NPC_DEVASTATION), searchRadius))
         exclusions.insert(axe->GetGUID());
-    }
 }
 
-void AppendEmberOfAlarExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendKaelthasGravityLapseMeleeExclusions(Player* bot, GuidSet& exclusions, Unit* kaelthas)
 {
+    if (!kaelthas)
+        return;
+
+    // Ranged check is at the top of AppendTargetExclusions()
+    uint32 const phase = GetKaelthasPhase(kaelthas);
+    if (phase != PHASE_FINAL)
+        return;
+
+    if (bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+        exclusions.insert(kaelthas->GetGUID());
+}
+
+void AppendEmberOfAlarMeleeDpsExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+{
+    if (!PlayerbotAI::IsDps(bot)) // Ranged check is at the top of AppendTargetExclusions()
+        return;
+
     AiObjectContext* context = botAI->GetAiObjectContext();
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
@@ -207,9 +222,15 @@ void RaidTempestKeepStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
+    if (PlayerbotAI::IsRanged(bot))
         return;
 
-    AppendKaelthasDevastationExclusions(botAI, exclusions);
-    AppendEmberOfAlarExclusions(botAI, exclusions);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return;
+
+    AppendKaelthasDevastationMeleeDpsExclusions(bot, exclusions, kaelthas);
+    AppendKaelthasGravityLapseMeleeExclusions(bot, exclusions, kaelthas);
+    AppendEmberOfAlarMeleeDpsExclusions(botAI, bot, exclusions);
 }

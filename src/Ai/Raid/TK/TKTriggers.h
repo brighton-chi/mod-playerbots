@@ -225,11 +225,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderAdvisorsAreRevivingTrigger : public Trigger
+class KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger : public Trigger
 {
 public:
-    KaelthasSunstriderAdvisorsAreRevivingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kael'thas sunstrider advisors are reviving") {}
+    KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kael'thas sunstrider bots should hold phase 3 positions") {}
     bool IsActive() override;
 };
 

@@ -32,6 +32,7 @@ using namespace EncounterHelpers;
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
+
     bool reset = false;
     reset |= isAlarInPhase2.erase(instanceId) > 0;
     reset |= lastRebirthState.erase(instanceId) > 0;
@@ -41,11 +42,10 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// Split out from the reset above because it is per-bot where that is per-instance: the reset only
-// needs one bot to run it, and its trigger says so, which left this fixing only that one bot
+// This is needed in the event of a wipe during Kael's Gravity Lapse phase
 bool TempestKeepClearStaleFallingFlagAction::Execute(Event /*event*/)
 {
-    // Only once the bot is back on the floor, or it would be cleared mid-descent
+    // Clear only once the bot is back on the floor, or it would be cleared mid-descent
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ > 1.0f)
@@ -872,9 +872,11 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/)
 {
+    bool const isMainTank = PlayerbotAI::IsMainTank(bot);
+
     Unit* advisor = nullptr;
     Position position;
-    if (PlayerbotAI::IsMainTank(bot))
+    if (isMainTank)
     {
         advisor = AI_VALUE2(Unit*, "find target", "lord sanguinar");
         position = SANGUINAR_TANK_POSITION;
@@ -983,7 +985,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         return false;
 
     // Spread is 90-degree arc for healers and 120-degree arc for ranged DPS.
-    // Capernian's CombatReach is 4.5y + standard player CombatReach (without Bloodlust) is 1.5y
+    // Capernian's CombatReach is 4.5y + standard player CombatReach (without Bloodlust) is 1.5y.
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
     float const radius = isHeal ? 42.0f : 34.0f; // 36 and 28 yards of actual distance
     constexpr float arcCenter = 2.9f;
@@ -1017,28 +1019,13 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCapernian(
     Unit* capernian)
 {
-    // Main tank purposely stays in range to bait Conflagration in Phase 1
-    /* if (PlayerbotAI::IsMainTank(bot))
-    {
-        constexpr float targetDist = 20.0f;
-        float const angle = capernian->GetAngle(bot);
-        float const targetX = capernian->GetPositionX() + std::cos(angle) * targetDist;
-        float const targetY = capernian->GetPositionY() + std::sin(angle) * targetDist;
+    constexpr float safeDistance = 50.0f; // There's no need for melee to be anywhere nearby.
+    float const currentDistance = bot->GetExactDist2d(capernian);
+    if (currentDistance >= safeDistance)
+        return true;
 
-        return MoveTo(
-            TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-    else
-    { */
-        constexpr float safeDistance = 50.0f; // There's no need to be anywhere closeby
-        float const currentDistance = bot->GetExactDist2d(capernian);
-        if (currentDistance >= safeDistance)
-            return true;
-
-        bot->CastStop();
-        return MoveAway(capernian, safeDistance - currentDistance);
-    // }
+    bot->CastStop();
+    return MoveAway(capernian, safeDistance - currentDistance);
 }
 
 bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/)
@@ -1205,10 +1192,10 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
-    Unit* mace = AI_VALUE2(Unit*, "find target", "cosmic infuser");
-    Unit* dagger = AI_VALUE2(Unit*, "find target", "infinity blades");
-    Unit* sword = AI_VALUE2(Unit*, "find target", "warp slicer");
+    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
+    Unit* mace = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_COSMIC_INFUSER));
+    Unit* dagger = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_INFINITY_BLADES));
+    Unit* sword = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_WARP_SLICER));
 
     bool const isTank = PlayerbotAI::IsTank(bot);
     bool const isRangedDps = PlayerbotAI::IsRangedDps(bot);
@@ -1235,31 +1222,34 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     struct WeaponPriority
     {
-        char const* name;
+        TkNpcs entry;
         // The axe is marked with a cross instead of skull as it is outside the full priority
         // chain (only ranged dps attacks it).
         bool markWithCross;
         bool rangedDpsOnly;
     };
 
+    // Resolved by creature entry rather than by name through the threat list, so that every bot
+    // walks the same list and settles on the same weapon -- see GetLegendaryWeapon
     static constexpr std::array weaponPriorities = {
-        WeaponPriority{ "staff of disintegration", false, false },
-        WeaponPriority{ "cosmic infuser",          false, false },
-        WeaponPriority{ "netherstrand longbow",    false, false },
-        WeaponPriority{ "devastation",             true,  true  },
-        WeaponPriority{ "infinity blades",         false, false },
-        WeaponPriority{ "warp slicer",             false, false },
-        WeaponPriority{ "phaseshift bulwark",      false, false },
+        WeaponPriority{ TkNpcs::NPC_STAFF_OF_DISINTEGRATION, false, false },
+        WeaponPriority{ TkNpcs::NPC_COSMIC_INFUSER,          false, false },
+        WeaponPriority{ TkNpcs::NPC_NETHERSTRAND_LONGBOW,    false, false },
+        WeaponPriority{ TkNpcs::NPC_DEVASTATION,             true,  true  },
+        WeaponPriority{ TkNpcs::NPC_INFINITY_BLADES,         false, false },
+        WeaponPriority{ TkNpcs::NPC_WARP_SLICER,             false, false },
+        WeaponPriority{ TkNpcs::NPC_PHASESHIFT_BULWARK,      false, false },
     };
 
     Unit* target = nullptr;
     bool markClaimed = false;
+    bool skippedForAxe = false;
     for (WeaponPriority const& weapon : weaponPriorities)
     {
         if (weapon.rangedDpsOnly && !isRangedDps)
             continue;
 
-        Unit* candidate = AI_VALUE2(Unit*, "find target", weapon.name);
+        Unit* candidate = GetLegendaryWeapon(bot, Id(weapon.entry));
         if (!candidate)
             continue;
 
@@ -1277,14 +1267,30 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         }
 
         if (isTooCloseToAxe(candidate))
+        {
+            skippedForAxe = true;
             continue;
+        }
 
         target = candidate;
         break;
     }
 
     if (!target)
-        return didAvoidDevastation;
+    {
+        if (!skippedForAxe)
+            return didAvoidDevastation;
+
+        // Every weapon still standing is inside the axe's reach, so melee hold off rather than
+        // running in and being dragged straight back out by the avoidance above. The target is
+        // dropped too, or the movement that chases it keeps pulling them in
+        bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        bot->CastStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+        return true;
+    }
 
     return didAvoidDevastation || (AI_VALUE(Unit*, "current target") != target && Attack(target));
 }
@@ -1322,7 +1328,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
 {
-    Unit* axe = AI_VALUE2(Unit*, "find target", "devastation");
+    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
     if (!axe)
         return false;
 
@@ -1604,15 +1610,16 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::EquipLegendaryWeapon(uint32 i
     bot->SwapItem(srcPos, dstPos);
 
     // Changing between a two-hander and a one-hander leaves a stale offhand behind
-    bool ohCleared = false;
     if (((oldIs2H && !newIs2H && proto->InventoryType != INVTYPE_SHIELD) ||
          (!oldIs2H && newIs2H)) && bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
     {
-        ohCleared = stowEquippedItem(EQUIPMENT_SLOT_OFFHAND);
+        stowEquippedItem(EQUIPMENT_SLOT_OFFHAND);
     }
 
-    // If using a 2H before equipping a 1H legendary, try to equip the best OH from the inventory
-    if (!ohCleared || bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+    // Fill the off hand from the bags if it is free, which covers both having just emptied it and
+    // coming off a two-hander that was occupying it all along. Gating on having cleared something
+    // missed the second case entirely -- the slot was already empty, so nothing was there to clear
+    if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
         return true;
 
     Item* mhItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -2049,7 +2056,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 
     uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(aura->GetApplyTime());
 
-    constexpr float minHoverHeight = 5.0f;
+    constexpr float minHoverHeight = 10.0f;
     constexpr float maxHoverHeight = 35.0f;
     constexpr uint32 heightSalt = 1u;
     float const desiredHeight =
