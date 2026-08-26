@@ -40,15 +40,14 @@ class HyjalSummitMainTankPositionBossAction : public AttackAction
 public:
     HyjalSummitMainTankPositionBossAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
-        Position const& position, float arrivalDistance, float bailBelowHealthPct = 0.0f)
+        Position const& position, float bailBelowHealthPct = 0.0f)
         : AttackAction(botAI, name), _bossName(bossName), _position(position),
-          _arrivalDistance(arrivalDistance), _bailBelowHealthPct(bailBelowHealthPct) {}
+          _bailBelowHealthPct(bailBelowHealthPct) {}
     bool Execute(Event event) override;
 
 private:
     std::string const _bossName;
     Position const& _position;
-    float const _arrivalDistance;
     float const _bailBelowHealthPct;
 };
 

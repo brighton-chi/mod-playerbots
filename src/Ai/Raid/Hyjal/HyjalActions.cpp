@@ -78,7 +78,7 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     float const distToPosition = bot->GetExactDist2d(_position);
-    if (distToPosition <= _arrivalDistance)
+    if (distToPosition <= 4.0f)
         return false;
 
     float const botX = bot->GetPositionX();

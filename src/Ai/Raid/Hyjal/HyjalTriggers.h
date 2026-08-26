@@ -34,10 +34,10 @@ private:
 };
 
 // This covers all five MT actions, and activeAboveHealthPct is used for Archimonde only
-class HyjalBossEngagedByMainTankTrigger : public Trigger
+class HyjalBossShouldBeTankedTrigger : public Trigger
 {
 public:
-    HyjalBossEngagedByMainTankTrigger(
+    HyjalBossShouldBeTankedTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
         float activeAboveHealthPct = 0.0f)
         : Trigger(botAI, name), _bossName(bossName), _activeAboveHealthPct(activeAboveHealthPct) {}

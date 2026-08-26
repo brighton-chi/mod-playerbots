@@ -145,7 +145,7 @@ private:
     static Action* rage_winterchill_main_tank_position_boss(PlayerbotAI* botAI) {
         return new HyjalSummitMainTankPositionBossAction(
             botAI, "rage winterchill main tank position boss", "rage winterchill",
-            HyjalHelpers::WINTERCHILL_TANK_POSITION, 4.0f);
+            HyjalHelpers::WINTERCHILL_TANK_POSITION);
     }
     static Action* rage_winterchill_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new RageWinterchillSpreadRangedInCircleAction(botAI);
@@ -164,7 +164,7 @@ private:
     static Action* anetheron_main_tank_position_boss(PlayerbotAI* botAI) {
         return new HyjalSummitMainTankPositionBossAction(
             botAI, "anetheron main tank position boss", "anetheron",
-            HyjalHelpers::ANETHERON_TANK_POSITION, 4.0f);
+            HyjalHelpers::ANETHERON_TANK_POSITION);
     }
     static Action* anetheron_spread_ranged_in_circle(PlayerbotAI* botAI) {
         return new AnetheronSpreadRangedInCircleAction(botAI);
@@ -190,7 +190,7 @@ private:
     static Action* kazrogal_main_tank_position_boss(PlayerbotAI* botAI) {
         return new HyjalSummitMainTankPositionBossAction(
             botAI, "kaz'rogal main tank position boss", "kaz'rogal",
-            HyjalHelpers::KAZROGAL_TANK_POSITION, 2.0f);
+            HyjalHelpers::KAZROGAL_TANK_POSITION);
     }
     static Action* kazrogal_assist_tanks_move_in_front_of_boss(PlayerbotAI* botAI) {
         return new KazrogalAssistTanksMoveInFrontOfBossAction(botAI);
@@ -219,7 +219,7 @@ private:
     static Action* azgalor_main_tank_position_boss(PlayerbotAI* botAI) {
         return new HyjalSummitMainTankPositionBossAction(
             botAI, "azgalor main tank position boss", "azgalor",
-            HyjalHelpers::AZGALOR_TANK_POSITION, 2.0f, 60.0f);
+            HyjalHelpers::AZGALOR_TANK_POSITION, 60.0f);
     }
     static Action* azgalor_disperse_ranged(PlayerbotAI* botAI) {
         return new AzgalorDisperseRangedAction(botAI);
@@ -248,7 +248,7 @@ private:
     static Action* archimonde_move_boss_to_initial_position(PlayerbotAI* botAI) {
         return new HyjalSummitMainTankPositionBossAction(
             botAI, "archimonde move boss to initial position", "archimonde",
-            HyjalHelpers::ARCHIMONDE_INITIAL_POSITION, 3.0f, 60.0f);
+            HyjalHelpers::ARCHIMONDE_INITIAL_POSITION, 60.0f);
     }
     static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
         return new ArchimondeCastFearImmunitySpellAction(botAI);

@@ -34,7 +34,7 @@ bool HyjalPullingBossTrigger::IsActive()
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
-bool HyjalBossEngagedByMainTankTrigger::IsActive()
+bool HyjalBossShouldBeTankedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMainTank(bot))
         return false;
