@@ -661,7 +661,7 @@ Player* GetKalecgosDesignatedTank(Player* player)
 ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
 {
     GameObject* rift = bot->FindNearestGameObject(
-        Id(SwpObjects::GO_SPECTRAL_RIFT), KALECGOS_SPECTRAL_RIFT_SEARCH_RADIUS, true);
+        Id(SwpObjects::GO_SPECTRAL_RIFT), SPECTRAL_RIFT_SEARCH_RADIUS, true);
 
     return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }

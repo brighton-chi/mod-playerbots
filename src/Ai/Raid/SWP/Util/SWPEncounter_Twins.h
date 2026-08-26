@@ -55,9 +55,9 @@ inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
 // DPS cooldowns are held until Sacrolash is at 80%. Eredar Twins is a very threat-sensitive fight
 // due to Sacrolash dropping threat on tanks and Alythess targeting Conflagration based on
 // Sacrolash's threat table.
-inline constexpr float EREDAR_TWINS_MAX_DPS_HP_PERCENT = 80.0f;
+inline constexpr float MAX_DPS_HP_PERCENT = 80.0f;
 
-inline constexpr float EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE = 10.0f;
+inline constexpr float CONFLAGRATION_SAFE_DISTANCE = 10.0f;
 
 // Bots wait 300ms to react to Conflagration (to make the action look less artificial).
 inline constexpr uint32 CONFLAGRATION_DELAY_MS = 300;

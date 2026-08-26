@@ -420,7 +420,7 @@ public:
                 if (!player->IsAlive() || HasKiljaedenDragonAura(player))
                     continue;
 
-                if (creature->GetExactDist2d(player) > KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE)
+                if (creature->GetExactDist2d(player) > ARMAGEDDON_SAFE_DISTANCE)
                     continue;
 
                 botsToInterrupt.push_back(botAI);
@@ -434,7 +434,7 @@ public:
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
-            KILJAEDEN_ARMAGEDDON_HAZARD_DURATION_MS, KILJAEDEN_ARMAGEDDON_SAFE_DISTANCE);
+            ARMAGEDDON_HAZARD_DURATION_MS, ARMAGEDDON_SAFE_DISTANCE);
 
         for (PlayerbotAI* botAI : botsToInterrupt)
             botAI->RequestSpellInterrupt();

@@ -600,7 +600,7 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // Block movement actions generally when too close to the Conflagration target
-    return bot->GetExactDist2d(victim) < EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE ? 0.0f : 1.0f;
+    return bot->GetExactDist2d(victim) < CONFLAGRATION_SAFE_DISTANCE ? 0.0f : 1.0f;
 }
 
 float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
@@ -619,7 +619,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
     if (!sacrolash)
         return 1.0f;
 
-    return sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
+    return sacrolash->GetHealthPct() > MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
 }
 
 // M'uru
@@ -720,7 +720,7 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         float const targetDistFromRef = actionTarget->GetExactDist2d(refPosition);
 
-        return targetDistFromMuru > MURU_DARKNESS_SAFE_DISTANCE &&
+        return targetDistFromMuru > DARKNESS_SAFE_DISTANCE &&
             targetDistFromRef < MURU_HOLDING_POSITION_RADIUS;
     };
 

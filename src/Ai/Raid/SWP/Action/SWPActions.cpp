@@ -116,7 +116,7 @@ namespace SwpHelpers
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
 {
     Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), SWP_VOLATILE_FIEND_SEARCH_RADIUS, true);
+        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS, true);
 
     return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
 }

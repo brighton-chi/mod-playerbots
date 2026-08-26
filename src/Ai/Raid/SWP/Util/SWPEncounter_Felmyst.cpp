@@ -1110,9 +1110,8 @@ void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs)
     IncomingEncapsulateState& state =
         felmystEncounterStates[target->GetInstanceId()].incomingEncapsulate;
 
-    constexpr uint32 encapsulateDelayMs = 500;
     if (state.targetGuid != target->GetGUID())
-        state.delayMs = now + encapsulateDelayMs;
+        state.delayMs = now + ENCAPSULATE_DELAY_MS;
 
     state.targetGuid = target->GetGUID();
     state.expireMs = now + durationMs;

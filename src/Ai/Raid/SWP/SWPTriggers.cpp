@@ -184,8 +184,8 @@ bool KalecgosBotsDontObserveGravityTrigger::IsActive()
         return false;
 
     constexpr float verticalOffset = 5.0f;
-    return bot->GetPositionZ() > KALECGOS_SPECTRAL_REALM_Z + verticalOffset ||
-        bot->GetPositionZ() < KALECGOS_SPECTRAL_REALM_Z - verticalOffset;
+    return bot->GetPositionZ() > SPECTRAL_REALM_Z + verticalOffset ||
+        bot->GetPositionZ() < SPECTRAL_REALM_Z - verticalOffset;
 }
 
 // Brutallus
@@ -894,11 +894,8 @@ bool KiljaedenBotHasStaleRootAfterDragonTrigger::IsActive()
     if (!bot->IsRooted() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
-    if (HasKiljaedenDragonAura(bot) ||
-        HasRecentKiljaedenDragonOrbUse(bot, KILJAEDEN_ORB_USE_GRACE_MS))
-    {
+    if (HasKiljaedenDragonAura(bot) || HasRecentKiljaedenDragonOrbUse(bot, DRAGON_ORB_USE_GRACE_MS))
         return false;
-    }
 
     return bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == NULL_MOTION_TYPE;
 }

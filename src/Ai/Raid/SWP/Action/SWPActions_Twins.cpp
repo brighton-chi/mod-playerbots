@@ -339,17 +339,16 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    Player* nearestPlayer = GetNearestPlayerInRadius(
-        bot, EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CONFLAGRATION_SAFE_DISTANCE);
     if (!nearestPlayer)
         return false;
 
     float const distanceToPlayer = bot->GetExactDist2d(nearestPlayer);
-    if (distanceToPlayer >= EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE)
+    if (distanceToPlayer >= CONFLAGRATION_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(nearestPlayer, EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE - distanceToPlayer);
+    return MoveAway(nearestPlayer, CONFLAGRATION_SAFE_DISTANCE - distanceToPlayer);
 }
 
 bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
@@ -362,9 +361,9 @@ bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
     if (!victim)
         return false;
 
-    if (bot->GetDistance2d(victim) >= EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE)
+    if (bot->GetDistance2d(victim) >= CONFLAGRATION_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveFromGroup(EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE);
+    return MoveFromGroup(CONFLAGRATION_SAFE_DISTANCE);
 }

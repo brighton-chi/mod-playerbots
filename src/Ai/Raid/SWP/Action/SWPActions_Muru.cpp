@@ -521,7 +521,7 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
     Position const& stackPosition = MURU_STACK_POSITION;
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (currentTarget && muru->GetExactDist2d(currentTarget) > MURU_DARKNESS_SAFE_DISTANCE)
+    if (currentTarget && muru->GetExactDist2d(currentTarget) > DARKNESS_SAFE_DISTANCE)
     {
         Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             entrancePosition : stackPosition;
@@ -547,10 +547,10 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         }
 
         constexpr uint32 minInterval = 0;
-        if (bot->GetExactDist2d(muru) > MURU_DARKNESS_SAFE_DISTANCE)
+        if (bot->GetExactDist2d(muru) > DARKNESS_SAFE_DISTANCE)
             return false;
 
-        return FleePosition(muru->GetPosition(), MURU_DARKNESS_SAFE_DISTANCE, minInterval);
+        return FleePosition(muru->GetPosition(), DARKNESS_SAFE_DISTANCE, minInterval);
     }
 
     constexpr float stackArrivalDistance = 3.0f;
@@ -761,7 +761,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
     if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
     {
         float const distFromVoidZone = bot->GetDistance2d(voidZone);
-        return MoveAway(voidZone, MURU_VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
+        return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
@@ -769,10 +769,10 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
         return false;
 
     float const distFromFiend = bot->GetDistance2d(darkFiend);
-    if (distFromFiend > MURU_DARK_FIEND_SAFE_DISTANCE)
+    if (distFromFiend > DARK_FIEND_SAFE_DISTANCE)
         return false;
 
-    return MoveAway(darkFiend, MURU_DARK_FIEND_SAFE_DISTANCE - distFromFiend);
+    return MoveAway(darkFiend, DARK_FIEND_SAFE_DISTANCE - distFromFiend);
 }
 
 bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)

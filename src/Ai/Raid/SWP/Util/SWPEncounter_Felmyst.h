@@ -113,6 +113,8 @@ struct FelmystEncounterState
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
+// Bots wait 300ms to react to Encapsulate (to make the action look less artificial)
+inline constexpr uint32 ENCAPSULATE_DELAY_MS = 300;
 
 // How close ranged have to be to a charmed player to attack
 inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
