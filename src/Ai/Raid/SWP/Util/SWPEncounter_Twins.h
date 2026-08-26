@@ -42,12 +42,12 @@ inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8000;
 
 // The Blaze trap GO casts 45246, dealing damage in a 3y radius; the extra 1.5y is avoidance
 // buffer.
-inline constexpr float EREDAR_TWINS_BLAZE_DANGER_RADIUS = 4.5f;
-inline constexpr float EREDAR_TWINS_BLAZE_SEARCH_RADIUS = 30.0f;
+inline constexpr float BLAZE_DANGER_RADIUS = 4.5f;
+inline constexpr float BLAZE_SEARCH_RADIUS = 30.0f;
 
 // Deliberately wider than the danger radius: this asks "has a new Blaze appeared near me", so it
 // must not miss one that landed while the tank was still moving
-inline constexpr float EREDAR_TWINS_BLAZE_UNDERFOOT_RADIUS = 5.0f;
+inline constexpr float BLAZE_UNDERFOOT_RADIUS = 5.0f;
 
 inline constexpr float SACROLASH_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
@@ -59,9 +59,11 @@ inline constexpr float EREDAR_TWINS_MAX_DPS_HP_PERCENT = 80.0f;
 
 inline constexpr float EREDAR_TWINS_CONFLAGRATION_SAFE_DISTANCE = 10.0f;
 
-inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_DELAY_MS = 300;
-inline constexpr uint32 EREDAR_TWINS_CONFLAGRATION_WINDOW_MS = 2000;
-inline constexpr uint32 EREDAR_TWINS_BLAZE_TARGET_WINDOW_MS = 2000;
+// Bots wait 300ms to react to Conflagration (to make the action look less artificial).
+inline constexpr uint32 CONFLAGRATION_DELAY_MS = 300;
+// Conflagration is a 3.5s cast, and Blaze is a 2.5s cast.
+inline constexpr uint32 CONFLAGRATION_WINDOW_MS = 3500;
+inline constexpr uint32 BLAZE_TARGET_WINDOW_MS = 2500;
 
 inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2000;
