@@ -563,7 +563,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     return PlayerbotAI::IsRanged(bot) || IsAlythessTank(bot) ? 0.0f : 1.0f;
 }
 
-float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
+float EredarTwinsIsolateConflagrationMultiplier::GetValue(Action* action)
 {
     bool const isReachSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
 

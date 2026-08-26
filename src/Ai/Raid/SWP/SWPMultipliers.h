@@ -217,11 +217,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class EredarTwinsNoMovingIntoConflagrationMultiplier : public Multiplier
+class EredarTwinsIsolateConflagrationMultiplier : public Multiplier
 {
 public:
-    EredarTwinsNoMovingIntoConflagrationMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "eredar twins no moving into conflagration") {}
+    EredarTwinsIsolateConflagrationMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "eredar twins isolate conflagration") {}
     float GetValue(Action* action) override;
 };
 

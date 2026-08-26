@@ -253,7 +253,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsNoMovingIntoConflagrationMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsIsolateConflagrationMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
 
     // M'uru
