@@ -15,6 +15,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include <cmath>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

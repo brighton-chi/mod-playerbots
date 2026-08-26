@@ -9,7 +9,7 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPSharedConstants.h"
-#include <vector>
+#include <algorithm>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

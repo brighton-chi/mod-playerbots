@@ -11,9 +11,8 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
+#include <cmath>
 #include <map>
-#include <string>
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

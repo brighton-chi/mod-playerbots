@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include <vector>
 
 using namespace EncounterHelpers;
 

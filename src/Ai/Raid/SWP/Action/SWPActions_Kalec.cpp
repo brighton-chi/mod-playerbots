@@ -11,7 +11,7 @@
 #include "SWPEncounter_Kalec.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
-#include <string>
+#include <cmath>
 #include <map>
 
 using namespace SwpHelpers;

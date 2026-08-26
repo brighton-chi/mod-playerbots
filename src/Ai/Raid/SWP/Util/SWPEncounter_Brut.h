@@ -11,7 +11,6 @@
 #include "Position.h"
 #include "SWPSharedConstants.h"
 #include <array>
-#include <cmath>
 #include <unordered_map>
 
 class Player;

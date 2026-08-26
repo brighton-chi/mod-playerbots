@@ -12,7 +12,6 @@
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
 #include "ThreatManager.h"
-#include "Timer.h"
 #include <list>
 
 namespace SwpHelpers

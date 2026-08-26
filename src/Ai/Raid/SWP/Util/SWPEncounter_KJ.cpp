@@ -7,9 +7,9 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
-#include "Timer.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace SwpHelpers
 {

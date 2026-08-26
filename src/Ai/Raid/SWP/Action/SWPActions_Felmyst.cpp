@@ -10,9 +10,8 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPSharedConstants.h"
-#include "Timer.h"
+#include <algorithm>
 #include <cmath>
-#include <string>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -184,21 +183,25 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
     Player* leader = GetFelmystFlightLeader(bot);
+    if (!leader)
+        return MoveAwayFromVapor(false);
 
-    if (leader == bot && MarkTargetWithDiamond(bot, leader))
-        return true;
-
-    if (leader && leader->GetGUID() != _announcedFlightLeaderGuid)
+    if (leader == bot)
     {
-        _announcedFlightLeaderGuid = leader->GetGUID();
-        AnnounceFlightLeader(leader);
+        if (MarkTargetWithDiamond(bot, leader))
+            return true;
+
+        if (leader->GetGUID() != _announcedFlightLeaderGuid)
+        {
+            _announcedFlightLeaderGuid = leader->GetGUID();
+            AnnounceFlightLeader(leader);
+        }
+
+        return MoveAwayFromVapor(false);
     }
 
-    if (!leader || leader == bot)
-        return MoveAwayFromVapor();
-
-    constexpr float farDistance = 20.0f;
-    if (bot->GetDistance2d(leader) > farDistance && MoveAwayFromVapor(true))
+    constexpr float tooFarDistance = 20.0f;
+    if (bot->GetExactDist2d(leader) > tooFarDistance && MoveAwayFromVapor(true))
         return true;
 
     return MoveToFlightLeader(leader);
@@ -401,6 +404,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     Position destination;
     Position const referencePoint(
         felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
+
     if (!TryGetFelmystFogSafeDestination(
             bot, shouldRepositionAfterThirdPass ? thirdPassLane : fogState.lane,
             destination, shouldRepositionAfterThirdPass ? &referencePoint : nullptr))
@@ -421,7 +425,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
-    // Try CCing skeletons in place before first pass move
+    // Try ccing skeletons in place before first pass move
     if (bot->getClass() == CLASS_MAGE &&
         botAI->CanCastSpell("frost nova", bot) && botAI->CastSpell("frost nova", bot))
     {

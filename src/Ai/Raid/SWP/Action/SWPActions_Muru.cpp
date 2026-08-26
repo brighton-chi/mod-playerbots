@@ -11,10 +11,12 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPSharedConstants.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <iterator>
 #include <list>
-#include <vector>
+#include <utility>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

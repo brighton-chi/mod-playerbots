@@ -7,6 +7,7 @@
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 namespace SwpHelpers

@@ -8,7 +8,6 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include "Timer.h"
 #include <algorithm>
 #include <map>
 #include <string>

@@ -8,6 +8,7 @@
 #include "AiObjectContext.h"
 #include "Playerbots.h"
 #include <algorithm>
+#include <limits>
 #include <list>
 
 namespace SwpHelpers
