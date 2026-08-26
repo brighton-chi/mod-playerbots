@@ -557,17 +557,21 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
-    if (IsAnySacrolashTank(bot) || IsAlythessTank(bot))
-        return false;
+    if (PlayerbotAI::IsDps(bot) || PlayerbotAI::IsHeal(bot))
+        return true;
 
-    RecordEredarTwinsDpsHoldStart(bot);
-    return true;
+    return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
 }
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
-        GetEredarTwinsConflagrationTarget(bot) == bot;
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
+        return false;
+
+    if (bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot))
+        return false;
+
+    return GetEredarTwinsConflagrationTarget(bot) == bot;
 }
 
 bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActive()

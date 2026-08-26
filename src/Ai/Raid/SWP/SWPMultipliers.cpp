@@ -480,7 +480,8 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+    // No AttackAction block. Commencing auto-attack gets bots positioned, but don't use abilities.
+    if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<CastHealingSpellAction*>(action))
@@ -495,20 +496,19 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
-    // Read only: the window is opened by EredarTwinsShouldFocusDpsTrigger
     auto const it = eredarTwinsDpsHoldStartMs.find(bot->GetInstanceId());
     if (it == eredarTwinsDpsHoldStartMs.end())
-        return 1.0f;
+        return 0.0f;
 
     return getMSTimeDiff(it->second, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS ? 0.0f : 1.0f;
 }
 
 float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+    if (PlayerbotAI::IsHeal(bot)) // early return; already excluded from ShouldHoldTwinThreat()
         return 1.0f;
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<EredarTwinsDpsPrioritizeSacrolashAction*>(action))
@@ -517,10 +517,10 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 
-    bool const shouldHoldSacrolashThreat = sacrolash && ShouldHoldTwinThreat(
-        bot, sacrolash, SACROLASH_THREAT_HOLD_RATIO, IsAnySacrolashTank);
-    bool const shouldHoldAlythessThreat = alythess && ShouldHoldTwinThreat(
-        bot, alythess, ALYTHESS_THREAT_HOLD_RATIO, IsAlythessTank);
+    bool const shouldHoldSacrolashThreat = sacrolash && !PlayerbotAI::IsTank(bot) &&
+        ShouldHoldTwinThreat(bot, sacrolash, SACROLASH_THREAT_HOLD_RATIO, IsAnySacrolashTank);
+    bool const shouldHoldAlythessThreat = alythess &&
+        ShouldHoldTwinThreat(bot, alythess, ALYTHESS_THREAT_HOLD_RATIO, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -565,9 +565,9 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
 
 float EredarTwinsIsolateConflagrationMultiplier::GetValue(Action* action)
 {
-    bool const isReachSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    if (!isReachSpell && !dynamic_cast<MovementAction*>(action))
+    if (!isReachTargetSpell && !dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<EredarTwinsConflagrationTargetMoveFromGroupAction*>(action) ||
@@ -583,23 +583,24 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValue(Action* action)
     if (!conflagTarget)
         return 1.0f;
 
-    // Block movement for bot targeted by Conflagration
+    // Block movement for bot targeted by Conflagration, unless the target is a Rogue that has
+    // vanished and caused Alythess to drop the target.
     if (conflagTarget == bot)
-        return 0.0f;
+        return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
 
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (!sacrolash)
         return 1.0f;
 
-    // When Sacrolash's target is targeted by Conflagration, block actions that move toward them
+    // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
     Unit* victim = sacrolash->GetVictim();
     if (!victim || victim == bot || conflagTarget != victim)
         return 1.0f;
 
-    if (isReachSpell)
+    if (isReachTargetSpell)
         return 0.0f;
 
-    // Block movement actions generally when too close to the Conflagration target
+    // Block movement actions generally when too close to the Conflagration target.
     return bot->GetExactDist2d(victim) < CONFLAGRATION_SAFE_DISTANCE ? 0.0f : 1.0f;
 }
 

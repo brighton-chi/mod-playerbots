@@ -291,6 +291,8 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 {
+    RecordEredarTwinsDpsHoldStart(bot);
+
     Unit* twinTarget = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     float threatHoldRatio = SACROLASH_THREAT_HOLD_RATIO;
     bool (*isTwinTank)(Player*) = IsAnySacrolashTank;
@@ -305,6 +307,8 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
     if (!twinTarget)
         return false;
 
+    // Healers are excluded from ShouldHoldTwinThreat() but need this action so that they focus
+    // their "healer dps"/wanding on Sacrolash in phase 1.
     if (ShouldHoldTwinThreat(bot, twinTarget, threatHoldRatio, isTwinTank))
     {
         bot->AttackStop();

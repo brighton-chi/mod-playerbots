@@ -90,7 +90,7 @@ bool IsAlythessTank(Player* bot)
 bool ShouldHoldTwinThreat(
     Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*))
 {
-    if (!boss || isTwinTank(bot))
+    if (!boss || PlayerbotAI::IsHeal(bot) || isTwinTank(bot))
         return false;
 
     float twinTankThreat = 0.0f;
@@ -171,9 +171,8 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
 
     ObjectGuid const botGuid = bot->GetGUID();
 
-    GameObject* blazeObject = bot->FindNearestGameObject(
-        Id(SwpObjects::GO_BLAZE), BLAZE_UNDERFOOT_RADIUS);
-
+    GameObject* blazeObject =
+        bot->FindNearestGameObject(Id(SwpObjects::GO_BLAZE), BLAZE_DANGER_RADIUS);
     if (!blazeObject)
     {
         alythessTankLastBlazeGuid.erase(botGuid);
