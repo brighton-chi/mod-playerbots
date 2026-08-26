@@ -111,7 +111,7 @@ void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player*
     }
 }
 
-void RequestInterruptForBotsWithDelayedFelmystEncapsulate(Creature* felmyst)
+void RequestInterruptForBotsWithFelmystEncapsulate(Creature* felmyst)
 {
     if (!felmyst || felmyst->IsFlying())
         return;
@@ -379,7 +379,7 @@ public:
         {
             case Id(SwpNpcs::NPC_FELMYST):
                 RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
-                RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
+                RequestInterruptForBotsWithFelmystEncapsulate(creature);
                 break;
 
             case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
