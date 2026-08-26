@@ -115,13 +115,16 @@ std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 entry, float searchR
 
 // Akil'zon <Eagle Avatar>
 
-std::unordered_map<uint32, time_t> akilzonStormTimer;
+std::unordered_map<uint32, uint32> akilzonStormTimer;
 
-bool IsInStormWindow(time_t start, time_t now)
+bool IsInStormWindow(uint32 startMs)
 {
-    time_t elapsed = now - start;
-    uint32 seconds = elapsed % 60;
-    return elapsed >= 55 && (seconds >= 55 || seconds < 10);
+    uint32 const elapsed = GetMSTimeDiffToNow(startMs);
+    if (elapsed < AKILZON_STORM_PERIOD_MS - AKILZON_STORM_LEAD_MS)
+        return false;
+
+    uint32 const phase = (elapsed + AKILZON_STORM_LEAD_MS) % AKILZON_STORM_PERIOD_MS;
+    return phase < AKILZON_STORM_LEAD_MS + AKILZON_STORM_DURATION_MS;
 }
 
 Player* GetElectricalStormTarget(Player* bot)

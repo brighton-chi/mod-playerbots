@@ -21,8 +21,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("akil'zon pulling boss", {
         NextAction("akil'zon misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("akil'zon boss engaged by main tank", {
-        NextAction("akil'zon main tank position boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("akil'zon boss engaged by tanks", {
+        NextAction("akil'zon tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("akil'zon boss casts static disruption", {
         NextAction("akil'zon spread ranged", ACTION_RAID) }));
@@ -47,8 +47,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("jan'alai pulling boss", {
         NextAction("jan'alai misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("jan'alai boss engaged by main tank", {
-        NextAction("jan'alai main tank position boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("jan'alai boss engaged by tanks", {
+        NextAction("jan'alai tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("jan'alai boss casts flame breath", {
         NextAction("jan'alai spread ranged in circle", ACTION_RAID) }));

@@ -102,8 +102,14 @@ std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 entry, float searchR
 
 // Akil'zon <Eagle Avatar>
 inline Position const AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
-extern std::unordered_map<uint32, time_t> akilzonStormTimer;
-bool IsInStormWindow(time_t start, time_t now);
+// Electrical Storm runs on a fixed 60s cycle once the encounter starts. Bots react from
+// AKILZON_STORM_LEAD_MS before each cast until the storm itself has expired.
+inline constexpr uint32 AKILZON_STORM_PERIOD_MS = 60000;
+inline constexpr uint32 AKILZON_STORM_LEAD_MS = 5000;
+inline constexpr uint32 AKILZON_STORM_DURATION_MS = 10000;
+// Instance id -> getMSTime() stamp of the first storm cycle.
+extern std::unordered_map<uint32, uint32> akilzonStormTimer;
+bool IsInStormWindow(uint32 startMs);
 Player* GetElectricalStormTarget(Player* bot);
 
 // Nalorakk <Bear Avatar>

@@ -69,7 +69,7 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
     if (it == akilzonStormTimer.end())
         return true;
 
-    return !IsInStormWindow(it->second, std::time(nullptr));
+    return !IsInStormWindow(it->second);
 }
 
 bool AkilzonElectricalStormIncomingTrigger::IsActive()
@@ -81,7 +81,7 @@ bool AkilzonElectricalStormIncomingTrigger::IsActive()
     if (it == akilzonStormTimer.end())
         return false;
 
-    return IsInStormWindow(it->second, std::time(nullptr));
+    return IsInStormWindow(it->second);
 }
 
 bool AkilzonBotsNeedToPrepareForElectricalStormTrigger::IsActive()

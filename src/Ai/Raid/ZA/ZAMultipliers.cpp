@@ -111,7 +111,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (it == akilzonStormTimer.end())
         return 1.0f;
 
-    return IsInStormWindow(it->second, std::time(nullptr)) ? 0.0f : 1.0f;
+    return IsInStormWindow(it->second) ? 0.0f : 1.0f;
 }
 
 // Nalorakk <Bear Avatar>

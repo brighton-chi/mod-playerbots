@@ -138,11 +138,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 
 bool AkilzonManageElectricalStormTimerAction::Execute(Event /*event*/)
 {
-    time_t const now = std::time(nullptr);
-    uint32 const instanceId = bot->GetInstanceId();
-
-    auto [it, inserted] = akilzonStormTimer.try_emplace(instanceId, now);
-    return inserted;
+    return akilzonStormTimer.try_emplace(bot->GetInstanceId(), getMSTime()).second;
 }
 
 // Nalorakk <Bear Avatar>
