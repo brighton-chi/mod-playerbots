@@ -133,8 +133,7 @@ Player* GetElectricalStormTarget(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member &&
-            member->HasAura(Id(ZaSpells::SPELL_ELECTRICAL_STORM)))
+        if (member && member->HasAura(Id(ZaSpells::SPELL_ELECTRICAL_STORM)))
             return member;
     }
 
@@ -142,7 +141,11 @@ Player* GetElectricalStormTarget(Player* bot)
 }
 
 // Nalorakk <Bear Avatar>
-// N/A
+
+bool IsNalorakkInBearForm(Unit* nalorakk)
+{
+    return nalorakk && nalorakk->HasAura(Id(ZaSpells::SPELL_BEARFORM));
+}
 
 // Jan'alai <Dragonhawk Avatar>
 
@@ -150,8 +153,7 @@ bool HasFireBombNearby(Player* bot)
 {
     constexpr float searchRadius = 30.0f;
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), searchRadius);
+    bot->GetCreatureListWithEntryInGrid(creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -167,12 +169,11 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
     Unit* lowest = nullptr;
     Unit* highest = nullptr;
 
-    for (auto const& guid :
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit &&
-            unit->GetEntry() == Id(ZaNpcs::NPC_AMANISHI_HATCHER))
+        Unit* unit = botAI->GetUnit(targetGuid);
+        if (unit && unit->GetEntry() == Id(ZaNpcs::NPC_AMANISHI_HATCHER))
         {
             if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                 lowest = unit;

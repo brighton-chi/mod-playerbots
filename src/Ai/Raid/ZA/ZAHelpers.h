@@ -108,6 +108,7 @@ Player* GetElectricalStormTarget(Player* bot);
 
 // Nalorakk <Bear Avatar>
 inline Position const NALORAKK_TANK_POSITION = { -80.208f, 1324.530f, 40.942f };
+bool IsNalorakkInBearForm(Unit* nalorakk);
 
 // Jan'alai <Dragonhawk Avatar>
 inline Position const JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };

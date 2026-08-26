@@ -9,6 +9,10 @@
 
 void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // General
+    triggers.push_back(new TriggerNode("zul'aman no encounter in progress", {
+        NextAction("zul'aman reset encounter states", ACTION_EMERGENCY + 10) }));
+
     // Trash
     triggers.push_back(new TriggerNode("amani'shi medicine man summoned ward", {
         NextAction("amani'shi medicine man mark ward", ACTION_RAID) }));
@@ -59,27 +63,24 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("halazzi pulling boss", {
         NextAction("halazzi misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("halazzi boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("halazzi should be tanked", {
         NextAction("halazzi main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("halazzi boss summons spirit lynx", {
+    triggers.push_back(new TriggerNode("halazzi spirit lynx has appeared", {
         NextAction("halazzi first assist tank attack spirit lynx", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("halazzi determining dps target", {
-        NextAction("halazzi assign dps priority", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("halazzi should focus dps", {
+        NextAction("halazzi dps attack totem and boss", ACTION_RAID) }));
 
     // Hex Lord Malacrass
     triggers.push_back(new TriggerNode("hex lord malacrass pulling boss", {
         NextAction("hex lord malacrass misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("hex lord malacrass determining kill order", {
+    triggers.push_back(new TriggerNode("hex lord malacrass should prioritize adds", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass boss is channeling whirlwind", {
         NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 6) }));
-
-    triggers.push_back(new TriggerNode("hex lord malacrass boss has spell reflection", {
-        NextAction("hex lord malacrass casters stop attacking", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass boss placed freezing trap", {
         NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
@@ -88,8 +89,8 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'jin main tank needs aggro upon pull or phase change", {
         NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("zul'jin boss engaged by main tank", {
-        NextAction("zul'jin main tank position boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("zul'jin boss engaged by tanks", {
+        NextAction("zul'jin tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is channeling whirlwind in troll form", {
         NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 6) }));
@@ -103,8 +104,11 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // General
+    multipliers.push_back(new ZulAmanAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new ZulAmanDisableCombatFormationMoveMultiplier(botAI));
+
     // Akil'zon <Eagle Avatar>
-    multipliers.push_back(new AkilzonDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new AkilzonStayInEyeOfTheStormMultiplier(botAI));
 
     // Nalorakk <Bear Avatar>
@@ -113,7 +117,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Jan'alai <Dragonhawk Avatar>
     multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new JanalaiDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
     multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));
@@ -121,15 +124,14 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Halazzi <Lynx Avatar>
     multipliers.push_back(new HalazziDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HalazziControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new HalazziDisableAutoDpsTargetingMultiplier(botAI));
 
     // Hex Lord Malacrass
-    multipliers.push_back(new HexLordMalacrassAvoidWhirlwindMultiplier(botAI));
-    multipliers.push_back(new HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier(botAI));
-    multipliers.push_back(new HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(botAI));
+    multipliers.push_back(new HexLordMalacrassUnstableAfflictionMultiplier(botAI));
+    multipliers.push_back(new HexLordMalacrassSpellReflectionMultiplier(botAI));
 
     // Zul'jin
     multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
-    multipliers.push_back(new ZuljinAvoidWhirlwindMultiplier(botAI));
-    multipliers.push_back(new ZuljinDisableAvoidAoeMultiplier(botAI));
+    multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
 }

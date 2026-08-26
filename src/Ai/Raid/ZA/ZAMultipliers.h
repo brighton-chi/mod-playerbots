@@ -9,15 +9,25 @@
 
 #include "Multiplier.h"
 
-// Akil'zon <Eagle Avatar>
+// General
 
-class AkilzonDisableCombatFormationMoveMultiplier : public Multiplier
+class ZulAmanAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
-    AkilzonDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "akil'zon disable combat formation move") {}
+    ZulAmanAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman avoid whirlwind") {}
     float GetValue(Action* action) override;
 };
+
+class ZulAmanDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    ZulAmanDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman disable combat formation move") {}
+    float GetValue(Action* action) override;
+};
+
+// Akil'zon <Eagle Avatar>
 
 class AkilzonStayInEyeOfTheStormMultiplier : public Multiplier
 {
@@ -52,14 +62,6 @@ class JanalaiDisableTankActionsMultiplier : public Multiplier
 public:
     JanalaiDisableTankActionsMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "jan'alai disable tank actions") {}
-    float GetValue(Action* action) override;
-};
-
-class JanalaiDisableCombatFormationMoveMultiplier : public Multiplier
-{
-public:
-    JanalaiDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "jan'alai disable combat formation move") {}
     float GetValue(Action* action) override;
 };
 
@@ -105,29 +107,29 @@ public:
     float GetValue(Action* action) override;
 };
 
+class HalazziDisableAutoDpsTargetingMultiplier : public Multiplier
+{
+public:
+    HalazziDisableAutoDpsTargetingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "halazzi disable auto dps targeting") {}
+    float GetValue(Action* action) override;
+};
+
 // Hex Lord Malacrass
 
-class HexLordMalacrassAvoidWhirlwindMultiplier : public Multiplier
+class HexLordMalacrassUnstableAfflictionMultiplier : public Multiplier
 {
 public:
-    HexLordMalacrassAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "hex lord malacrass avoid whirlwind") {}
+    HexLordMalacrassUnstableAfflictionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "hex lord malacrass unstable affliction") {}
     float GetValue(Action* action) override;
 };
 
-class HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier : public Multiplier
+class HexLordMalacrassSpellReflectionMultiplier : public Multiplier
 {
 public:
-    HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "hex lord malacrass do not dispel unstable affliction") {}
-    float GetValue(Action* action) override;
-};
-
-class HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier : public Multiplier
-{
-public:
-    HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "hex lord malacrass stop attacking during spell reflection") {}
+    HexLordMalacrassSpellReflectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "hex lord malacrass spell reflection") {}
     float GetValue(Action* action) override;
 };
 
@@ -141,19 +143,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class ZuljinAvoidWhirlwindMultiplier : public Multiplier
+class ZuljinEagleDisableAvoidAoeMultiplier : public Multiplier
 {
 public:
-    ZuljinAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "zul'jin avoid whirlwind") {}
-    float GetValue(Action* action) override;
-};
-
-class ZuljinDisableAvoidAoeMultiplier : public Multiplier
-{
-public:
-    ZuljinDisableAvoidAoeMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "zul'jin disable avoid aoe") {}
+    ZuljinEagleDisableAvoidAoeMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'jin eagle disable avoid aoe") {}
     float GetValue(Action* action) override;
 };
 

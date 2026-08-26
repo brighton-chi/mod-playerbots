@@ -15,6 +15,10 @@ class RaidZulAmanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidZulAmanTriggerContext()
     {
+        // General
+        creators["zul'aman no encounter in progress"] =
+            &RaidZulAmanTriggerContext::zulaman_no_encounter_in_progress;
+
         // Trash
         creators["amani'shi medicine man summoned ward"] =
             &RaidZulAmanTriggerContext::amanishi_medicine_man_summoned_ward;
@@ -65,28 +69,25 @@ public:
         creators["halazzi pulling boss"] =
             &RaidZulAmanTriggerContext::halazzi_pulling_boss;
 
-        creators["halazzi boss engaged by main tank"] =
-            &RaidZulAmanTriggerContext::halazzi_boss_engaged_by_main_tank;
+        creators["halazzi should be tanked"] =
+            &RaidZulAmanTriggerContext::halazzi_should_be_tanked;
 
-        creators["halazzi boss summons spirit lynx"] =
-            &RaidZulAmanTriggerContext::halazzi_boss_summons_spirit_lynx;
+        creators["halazzi spirit lynx has appeared"] =
+            &RaidZulAmanTriggerContext::halazzi_spirit_lynx_has_appeared;
 
-        creators["halazzi determining dps target"] =
-            &RaidZulAmanTriggerContext::halazzi_determining_dps_target;
+        creators["halazzi should focus dps"] =
+            &RaidZulAmanTriggerContext::halazzi_should_focus_dps;
 
         // Hex Lord Malacrass
 
         creators["hex lord malacrass pulling boss"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_pulling_boss;
 
-        creators["hex lord malacrass determining kill order"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_determining_kill_order;
+        creators["hex lord malacrass should prioritize adds"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_should_prioritize_adds;
 
         creators["hex lord malacrass boss is channeling whirlwind"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_is_channeling_whirlwind;
-
-        creators["hex lord malacrass boss has spell reflection"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_has_spell_reflection;
 
         creators["hex lord malacrass boss placed freezing trap"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_placed_freezing_trap;
@@ -110,6 +111,11 @@ public:
     }
 
 private:
+    // General
+    static Trigger* zulaman_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new ZulAmanNoEncounterInProgressTrigger(botAI);
+    }
+
     // Trash
     static Trigger* amanishi_medicine_man_summoned_ward(PlayerbotAI* botAI) {
         return new AmanishiMedicineManSummonedWardTrigger(botAI);
@@ -164,39 +170,36 @@ private:
     static Trigger* halazzi_pulling_boss(PlayerbotAI* botAI) {
         return new HalazziPullingBossTrigger(botAI);
     }
-    static Trigger* halazzi_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new HalazziBossEngagedByMainTankTrigger(botAI);
+    static Trigger* halazzi_should_be_tanked(PlayerbotAI* botAI) {
+        return new HalazziShouldBeTankedTrigger(botAI);
     }
-    static Trigger* halazzi_boss_summons_spirit_lynx(PlayerbotAI* botAI) {
-        return new HalazziBossSummonsSpiritLynxTrigger(botAI);
+    static Trigger* halazzi_spirit_lynx_has_appeared(PlayerbotAI* botAI) {
+        return new HalazziSpiritLynxHasAppearedTrigger(botAI);
     }
-    static Trigger* halazzi_determining_dps_target(PlayerbotAI* botAI) {
-        return new HalazziDeterminingDpsTargetTrigger(botAI);
+    static Trigger* halazzi_should_focus_dps(PlayerbotAI* botAI) {
+        return new HalazziShouldFocusDpsTrigger(botAI);
     }
 
     // Hex Lord Malacrass
     static Trigger* hex_lord_malacrass_pulling_boss(PlayerbotAI* botAI) {
         return new HexLordMalacrassPullingBossTrigger(botAI);
     }
-    static Trigger* hex_lord_malacrass_determining_kill_order(PlayerbotAI* botAI) {
-        return new HexLordMalacrassDeterminingKillOrderTrigger(botAI);
+    static Trigger* hex_lord_malacrass_should_prioritize_adds(PlayerbotAI* botAI) {
+        return new HexLordMalacrassShouldPrioritizeAddsTrigger(botAI);
     }
     static Trigger* hex_lord_malacrass_boss_is_channeling_whirlwind(PlayerbotAI* botAI) {
         return new HexLordMalacrassBossIsChannelingWhirlwindTrigger(botAI);
-    }
-    static Trigger* hex_lord_malacrass_boss_has_spell_reflection(PlayerbotAI* botAI) {
-        return new HexLordMalacrassBossHasSpellReflectionTrigger(botAI);
     }
     static Trigger* hex_lord_malacrass_boss_placed_freezing_trap(PlayerbotAI* botAI) {
         return new HexLordMalacrassBossPlacedFreezingTrapTrigger(botAI);
     }
 
     // Zul'jin
-    static Trigger* zuljin_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new ZuljinBossEngagedByTanksTrigger(botAI);
-    }
     static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(PlayerbotAI* botAI) {
         return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI);
+    }
+    static Trigger* zuljin_boss_engaged_by_tanks(PlayerbotAI* botAI) {
+        return new ZuljinBossEngagedByTanksTrigger(botAI);
     }
     static Trigger* zuljin_boss_is_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI) {
         return new ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(botAI);

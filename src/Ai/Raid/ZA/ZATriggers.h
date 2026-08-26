@@ -9,6 +9,16 @@
 
 #include "Trigger.h"
 
+// General
+
+class ZulAmanNoEncounterInProgressTrigger : public Trigger
+{
+public:
+    ZulAmanNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "zul'aman no encounter in progress") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class AmanishiMedicineManSummonedWardTrigger : public Trigger
@@ -139,27 +149,27 @@ public:
     bool IsActive() override;
 };
 
-class HalazziBossEngagedByMainTankTrigger : public Trigger
+class HalazziShouldBeTankedTrigger : public Trigger
 {
 public:
-    HalazziBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi boss engaged by main tank") {}
+    HalazziShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "halazzi should be tanked") {}
     bool IsActive() override;
 };
 
-class HalazziBossSummonsSpiritLynxTrigger : public Trigger
+class HalazziSpiritLynxHasAppearedTrigger : public Trigger
 {
 public:
-    HalazziBossSummonsSpiritLynxTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi boss summons spirit lynx") {}
+    HalazziSpiritLynxHasAppearedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "halazzi spirit lynx has appeared") {}
     bool IsActive() override;
 };
 
-class HalazziDeterminingDpsTargetTrigger : public Trigger
+class HalazziShouldFocusDpsTrigger : public Trigger
 {
 public:
-    HalazziDeterminingDpsTargetTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi determining dps target") {}
+    HalazziShouldFocusDpsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "halazzi should focus dps") {}
     bool IsActive() override;
 };
 
@@ -173,11 +183,11 @@ public:
     bool IsActive() override;
 };
 
-class HexLordMalacrassDeterminingKillOrderTrigger : public Trigger
+class HexLordMalacrassShouldPrioritizeAddsTrigger : public Trigger
 {
 public:
-    HexLordMalacrassDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass determining kill order") {}
+    HexLordMalacrassShouldPrioritizeAddsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "hex lord malacrass should prioritize adds") {}
     bool IsActive() override;
 };
 
@@ -186,14 +196,6 @@ class HexLordMalacrassBossIsChannelingWhirlwindTrigger : public Trigger
 public:
     HexLordMalacrassBossIsChannelingWhirlwindTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "hex lord malacrass boss is channeling whirlwind") {}
-    bool IsActive() override;
-};
-
-class HexLordMalacrassBossHasSpellReflectionTrigger : public Trigger
-{
-public:
-    HexLordMalacrassBossHasSpellReflectionTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass boss has spell reflection") {}
     bool IsActive() override;
 };
 
