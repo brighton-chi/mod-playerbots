@@ -167,7 +167,7 @@ extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedLineup;
 extern std::unordered_map<uint32, time_t> lastImbueAttempt;
 extern std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
-bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot);
+bool IsMainTankInSameSubgroup(Player* bot);
 bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
 bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
 bool IsLadyVashjInPhase3(PlayerbotAI* botAI);

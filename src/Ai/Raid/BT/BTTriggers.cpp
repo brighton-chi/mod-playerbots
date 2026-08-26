@@ -6,9 +6,9 @@
 
 #include "BTTriggers.h"
 #include "AiFactory.h"
-#include "BTActions.h"
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 

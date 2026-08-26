@@ -23,16 +23,16 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
-    Action* action = context->GetAction("rage winterchill spread ranged in circle");
-    if (action && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
-            action)->ResetWinterchillPositionReached())
+    Action* winterchillAction = context->GetAction("rage winterchill spread ranged in circle");
+    if (winterchillAction && static_cast<RageWinterchillSpreadRangedInCircleAction*>(
+            winterchillAction)->ResetWinterchillPositionReached())
     {
         reset = true;
     }
 
-    Action* action = context->GetAction("anetheron spread ranged in circle");
-    if (action && static_cast<AnetheronSpreadRangedInCircleAction*>(
-            action)->ResetAnetheronPositionReached())
+    Action* anetheronAction = context->GetAction("anetheron spread ranged in circle");
+    if (anetheronAction && static_cast<AnetheronSpreadRangedInCircleAction*>(
+            anetheronAction)->ResetAnetheronPositionReached())
     {
         reset = true;
     }

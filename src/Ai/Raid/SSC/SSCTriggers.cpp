@@ -8,6 +8,7 @@
 #include "AiFactory.h"
 #include "Corpse.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -20,7 +21,7 @@ using namespace EncounterHelpers;
 // General
 bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != SSC_TEMPLE_MAP_ID)
+    if (bot->GetMapId() != SSC_MAP_ID)
         return false;
 
     InstanceScript* instance = bot->GetInstanceScript();
@@ -422,7 +423,7 @@ bool LadyVashjCastsShockBlastOnHighestAggroTrigger::IsActive()
         IsLadyVashjInPhase2(botAI))
         return false;
 
-    return IsMainTankInSameSubgroup(botAI, bot);
+    return IsMainTankInSameSubgroup(bot);
 }
 
 bool LadyVashjBotHasStaticChargeTrigger::IsActive()

@@ -6,6 +6,7 @@
 
 #include "KaraTriggers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"

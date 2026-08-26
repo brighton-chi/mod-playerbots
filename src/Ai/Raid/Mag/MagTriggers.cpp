@@ -6,6 +6,7 @@
 
 #include "MagTriggers.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "MagHelpers.h"
 #include "Playerbots.h"
 

@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
 
 using namespace HyjalHelpers;

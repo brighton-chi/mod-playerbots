@@ -6,6 +6,7 @@
 
 #include "GruulTriggers.h"
 #include "GruulHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
 
 using namespace GruulHelpers;
