@@ -74,10 +74,6 @@ inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DARKNESS_PRE_EFFECT_MS = 3000;
 inline constexpr uint32 DARKNESS_AURA_MS = 20000;
 
-// This long before Darkness expires, melee are allowed to run back in (to account for run distance,
-// finishing current actions, tick delay).
-inline constexpr uint32 DARKNESS_RUN_BACK_ALLOWANCE_MS = 1000;
-
 // This is an arbitrary window to allow tanks a bit more time to get positioned after Darkness.
 inline constexpr uint32 DARKNESS_EARLY_WINDOW_MS = 10000;
 
