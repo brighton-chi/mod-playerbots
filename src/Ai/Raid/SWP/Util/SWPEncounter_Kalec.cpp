@@ -31,7 +31,7 @@ void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
     if (!state.activeRiftOpenedMs)
         return;
 
-    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= RIFT_ENTRY_WINDOW_MS)
+    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= RIFT_ACTIVE_WINDOW_MS)
         return;
 
     state.activeRiftOpenedMs = 0;
@@ -71,7 +71,7 @@ bool IsPortalEligibleCandidate(Player* bot)
     if (!bot->IsAlive() || bot->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(bot))
         return false;
 
-    return CanReachPortalBeforeExpiry(bot) && !IsInSpectralRealm(bot);
+    return !IsInSpectralRealm(bot) && CanReachPortalBeforeExpiry(bot);
 }
 
 void AnnounceTankTransition(

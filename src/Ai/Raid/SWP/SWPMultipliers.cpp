@@ -141,6 +141,29 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
         KALECGOS_PULL_THREAT_SUPPRESSION_MS ? 0.0f : 1.0f;
 }
 
+float KalecgosEnterSpectralRiftMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<KalecgosEnterSpectralRiftAction*>(action))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
+        return 1.0f;
+
+    if (!ShouldEnterKalecgosPortal(bot))
+        return 1.0f;
+
+    return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift")) ? 0.0f : 1.0f;
+}
+
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

@@ -56,8 +56,8 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
@@ -372,8 +372,8 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     float const moveY = botY + (toPosY / distToDestination) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)

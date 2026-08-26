@@ -26,9 +26,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
     bool didSomething = false;
 
-    // The trigger gates this on InstanceScript reporting no encounter in progress, so nothing here
-    // needs a per-boss check of its own - no SWP boss is engaged while this runs.
-
     // Kalecgos
     Action* kalecAction = context->GetAction("kalecgos disperse ranged");
     if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
@@ -38,6 +35,9 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Brutallus
+    // It is Blizzlike for this aura to persist after the kill, but bots will murder the raid
+    // without a dedicated non-combat strategy for this. It's no fun to do that and wait around
+    // for expiry so I'm just wiping the aura after the encounter.
     if (bot->HasAura(Id(SwpSpells::SPELL_BURN)))
     {
         bot->RemoveAura(Id(SwpSpells::SPELL_BURN));

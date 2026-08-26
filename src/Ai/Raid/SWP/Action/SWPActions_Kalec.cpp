@@ -100,8 +100,8 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
         float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
     if (GetKalecgosDesignatedTank(bot) == bot && kalecgos->GetVictim() != bot)
@@ -110,6 +110,7 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
     return false;
 }
 
+// FYI, there is a (Blizzlike) delay of 1s after a player clicks a rift before the next can click.
 bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 {
     // Special conditions for tanks only
@@ -132,8 +133,8 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     float const destY = rift->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()

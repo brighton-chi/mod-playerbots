@@ -51,6 +51,14 @@ public:
     float GetValue(Action* action) override;
 };
 
+class KalecgosEnterSpectralRiftMultiplier : public Multiplier
+{
+public:
+    KalecgosEnterSpectralRiftMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "kalecgos enter spectral rift") {}
+    float GetValue(Action* action) override;
+};
+
 class KalecgosDelayCooldownsForSathrovarrMultiplier : public Multiplier
 {
 public:
