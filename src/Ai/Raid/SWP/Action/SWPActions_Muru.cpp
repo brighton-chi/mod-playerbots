@@ -92,7 +92,7 @@ bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != entropius && Attack(entropius);
 }
 
-bool MuruPositionRangedAction::Execute(Event /*event*/)
+bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
     if (IsMuruPhaseActive(muru))
@@ -140,7 +140,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
+bool MuruPositionRangedByPhaseAction::TryGetEntropiusInitialRangedPosition(
     Position& position) const
 {
     Group* group = bot->GetGroup();
@@ -557,7 +557,7 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
-bool MuruCastStunOnShadowswordBerserkerAction::Execute(Event /*event*/)
+bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)
 {
     Unit* berserker = FindMuruBerserkerToStun(botAI);
     if (!berserker)
@@ -696,7 +696,7 @@ bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
     return true;
 }
 
-bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
+bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 {
     Unit* voidSpawn = GetControlledVoidSpawn();
     if (!voidSpawn)
@@ -752,7 +752,7 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(Unit* 
     return nullptr;
 }
 
-bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
+bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
 {
     bot->CastStop();
 
@@ -773,7 +773,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     return MoveAway(darkFiend, MURU_DARK_FIEND_SAFE_DISTANCE - distFromFiend);
 }
 
-bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
+bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
 {
     Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (!entropius)

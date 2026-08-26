@@ -495,7 +495,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
-    // Read only: the window is opened by EredarTwinsDeterminingDpsPriorityTrigger
+    // Read only: the window is opened by EredarTwinsShouldFocusDpsTrigger
     auto const it = eredarTwinsDpsHoldStartMs.find(bot->GetInstanceId());
     if (it == eredarTwinsDpsHoldStartMs.end())
         return 1.0f;
@@ -511,7 +511,7 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action))
+    if (dynamic_cast<EredarTwinsDpsPrioritizeSacrolashAction*>(action))
         return 1.0f;
 
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
@@ -570,8 +570,8 @@ float EredarTwinsNoMovingIntoConflagrationMultiplier::GetValue(Action* action)
     if (!isReachSpell && !dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<EredarTwinsConflagratedBotMoveFromGroupAction*>(action) ||
-        dynamic_cast<EredarTwinsMoveFromConflagSacrolashVictimAction*>(action))
+    if (dynamic_cast<EredarTwinsConflagrationTargetMoveFromGroupAction*>(action) ||
+        dynamic_cast<EredarTwinsMoveAwayFromSacrolashVictimAction*>(action))
     {
         return 1.0f;
     }
@@ -852,7 +852,7 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (dynamic_cast<KiljaedenControlDragonAction*>(action))
+    if (dynamic_cast<KiljaedenDragonBuffAndProtectRaidAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))

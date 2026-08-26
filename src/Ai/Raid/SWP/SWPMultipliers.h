@@ -304,7 +304,7 @@ class KiljaedenControlDragonMultiplier : public Multiplier
 {
 public:
     KiljaedenControlDragonMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden control dragon") {}
+        : Multiplier(botAI, "kil'jaeden dragon buff and protect raid") {}
     float GetValue(Action* action) override;
 };
 

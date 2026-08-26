@@ -52,7 +52,7 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
     return botAI->SayToRaid(text);
 }
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     // Fewer than 3 bot tanks makes this a headache so just skip in that case;
     // it's not vital anyway
@@ -87,7 +87,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
 }
 
-bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
+bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
     std::vector<Unit*> const& hands,
     Player* mainTank, Player* firstAssistTank, Player* secondAssistTank)
 {
@@ -289,7 +289,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
     }
 }
 
-bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
+bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
@@ -318,7 +318,7 @@ bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
 // a random victim. Thus, the first landed hit after activation should immediately grab aggro, and
 // we want that to be a tank, so hopefully they can get in range to start attacking before 3s pass.
-bool KiljaedenPositionTanksAction::PickUpSinisterReflections(Creature* reflection)
+bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)
         return Attack(reflection);
@@ -459,7 +459,7 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
     return position != Position();
 }
 
-bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
     if (!TryGetPosition(position))
@@ -476,7 +476,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const
 {
     EnsureKiljaedenRangedAssignments(bot);
 
@@ -491,7 +491,7 @@ bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
 }
 
-bool KiljaedenPositionRangedAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
     auto const armageddonAssignmentItr =
@@ -644,7 +644,7 @@ bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
     return true;
 }
 
-bool KiljaedenControlDragonAction::Execute(Event /*event*/)
+bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
 {
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden)
@@ -672,7 +672,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     return ExecuteOutsideDarknessOfAThousandSouls(dragon);
 }
 
-bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
+bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteDuringDarknessOfAThousandSouls(
     Unit* kiljaeden, Unit* dragon)
 {
     Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
@@ -717,7 +717,7 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
     return false;
 }
 
-bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
+bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
 {
     if (dragon->IsNonMeleeSpellCast(false))
         return false;

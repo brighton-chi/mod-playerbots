@@ -148,7 +148,7 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
     return !ShouldEnterKalecgosPortal(bot);
 }
 
-bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
+bool KalecgosTooManyArcaneBuffetStacksTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
@@ -196,7 +196,7 @@ bool BrutallusPullingBossTrigger::IsActive()
     return brutallus && brutallus->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
 }
 
-bool BrutallusBossEngagedByTanksTrigger::IsActive()
+bool BrutallusRequiresTwoTanksTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -260,7 +260,7 @@ bool FelmystPullingBossTrigger::IsActive()
     return mainTank && felmyst->GetVictim() != mainTank;
 }
 
-bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
+bool FelmystGroundPhaseShouldBeTankedTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMainTank(bot))
         return false;
@@ -281,7 +281,7 @@ bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
     return true;
 }
 
-bool FelmystRangedShouldSplitInThreeTrigger::IsActive()
+bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -420,7 +420,7 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     return TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 }
 
-bool FelmystMeleeCannotReachBossTrigger::IsActive()
+bool FelmystMeleeCannotReachFlyingBossTrigger::IsActive()
 {
     if (!PlayerbotAI::IsMelee(bot))
         return false;
@@ -474,7 +474,7 @@ bool EredarTwinsPullingBossesTrigger::IsActive()
     return alythess && alythess->GetHealthPct() > SWP_PULL_COMPLETE_HP_PERCENT;
 }
 
-bool EredarTwinsSacrolashEngagedByTwoTanksTrigger::IsActive()
+bool EredarTwinsSacrolashRequiresTwoTanksTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -502,7 +502,7 @@ bool EredarTwinsAlythessCastsBlazeOnTankTrigger::IsActive()
     return IsAlythessTank(bot);
 }
 
-bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
+bool EredarTwinsRangedNeedsLosTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -513,7 +513,7 @@ bool EredarTwinsBossesEngagedByRangedTrigger::IsActive()
     return GetEredarTwinsConflagrationTarget(bot) != bot;
 }
 
-bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
+bool EredarTwinsOnlyAlythessRemainsTrigger::IsActive()
 {
     if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
@@ -530,7 +530,7 @@ bool EredarTwinsOnlyOneBossRemainsTrigger::IsActive()
     return !IsAlythessTank(bot);
 }
 
-bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
+bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
         bot->getClass() != CLASS_PALADIN)
@@ -549,7 +549,7 @@ bool EredarTwinsBotHasTooManyFlameTouchedStacksTrigger::IsActive()
     return flameTouched && flameTouched->GetStackAmount() >= FLAME_TOUCHED_PROTECT_STACKS;
 }
 
-bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
+bool EredarTwinsShouldFocusDpsTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
@@ -561,7 +561,7 @@ bool EredarTwinsDeterminingDpsPriorityTrigger::IsActive()
     return true;
 }
 
-bool EredarTwinsBotHasConflagrationTrigger::IsActive()
+bool EredarTwinsActiveConflagrationTargetTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "lady sacrolash") &&
         GetEredarTwinsConflagrationTarget(bot) == bot;
@@ -600,7 +600,7 @@ bool MuruBossTransformedIntoEntropiusTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "entropius");
 }
 
-bool MuruBossesEngagedByRangedTrigger::IsActive()
+bool MuruRangedShouldStackOrSpreadTrigger::IsActive()
 {
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }
@@ -726,7 +726,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActive()
     return charm && charm->IsAlive() && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN);
 }
 
-bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
+bool MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
@@ -761,7 +761,7 @@ bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
-bool KiljaedenBossEngagedByTanksTrigger::IsActive()
+bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;

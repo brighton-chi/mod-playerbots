@@ -58,8 +58,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Eredar Twins
-    Action* twinsAction = context->GetAction("eredar twins first assist tank move out of blaze");
-    if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
+    Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
+    if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(
             twinsAction)->ResetAlythessTankStep())
     {
         didSomething = true;
