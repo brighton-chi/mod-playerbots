@@ -95,7 +95,7 @@ float KalecgosControlMovementMultiplier::GetValue(Action* action)
     return kalecgos && !kalecgos->IsFriendlyTo(bot) ? 0.0f : 1.0f;
 }
 
-// Separate paths to avoid dueling taunts in the surface and spectral realms
+// Avoid dueling taunts in the surface and spectral realms
 float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

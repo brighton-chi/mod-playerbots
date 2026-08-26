@@ -227,6 +227,22 @@ Player* GetNextSurfaceTankForPortal(
         group, state.tankAssignmentGuids, firstExcludedGuid, secondExcludedGuid);
 }
 
+// The next tank in the rotation is the surface tank that has been out of the Spectral Realm
+// longest.
+Player* GetReplacementSurfaceTank(
+    Group* group, KalecgosEncounterState const& state, ObjectGuid departingGuid,
+    ObjectGuid excludedGuid = ObjectGuid::Empty)
+{
+    if (Player* replacement = GetFirstResolvedSurfaceTank(
+            group, state.tankPortalRotationGuids, departingGuid, excludedGuid))
+    {
+        return replacement;
+    }
+
+    return GetFirstResolvedSurfaceTank(
+        group, state.tankAssignmentGuids, departingGuid, excludedGuid);
+}
+
 Player* GetSurfaceTankAfterCurrentHandOff(Group* group, KalecgosEncounterState const& state)
 {
     ObjectGuid const currentTankGuid = state.currentTankGuid;
@@ -239,8 +255,7 @@ Player* GetSurfaceTankAfterCurrentHandOff(Group* group, KalecgosEncounterState c
         return nullptr;
     }
 
-    return GetNextSurfaceTankInOrder(
-        group, state.tankAssignmentGuids, currentTankGuid, ObjectGuid::Empty, true);
+    return GetReplacementSurfaceTank(group, state, currentTankGuid);
 }
 
 Player* GetKalecgosCurrentVictimTank(
@@ -740,8 +755,8 @@ void RecordSpectralRealmEnter(Player* player)
 
     if (wasCurrentTank)
     {
-        replacementTank = GetNextSurfaceTankInOrder(
-            group, state.tankAssignmentGuids, guid, state.activeRiftOutgoingTankGuid, true);
+        replacementTank =
+            GetReplacementSurfaceTank(group, state, guid, state.activeRiftOutgoingTankGuid);
     }
 
     if (state.activeRiftOpenedMs && state.activeRiftGroup == KALECGOS_INVALID_GROUP)
