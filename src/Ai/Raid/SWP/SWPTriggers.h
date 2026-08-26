@@ -19,11 +19,11 @@ public:
     bool IsActive() override;
 };
 
-class SunwellPlateauBotHasProtectiveAuraTrigger : public Trigger
+class SunwellPlateauBotHasAuraToRemoveTrigger : public Trigger
 {
 public:
-    SunwellPlateauBotHasProtectiveAuraTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau bot has protective aura") {}
+    SunwellPlateauBotHasAuraToRemoveTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell plateau bot has aura to remove") {}
     bool IsActive() override;
 };
 

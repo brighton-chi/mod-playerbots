@@ -32,20 +32,22 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     return instance && !instance->IsEncounterInProgress();
 }
 
-bool SunwellPlateauBotHasProtectiveAuraTrigger::IsActive()
+bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_MAGE)
+    if (bot->getClass() == CLASS_MAGE && bot->HasAura(Id(SwpSpells::SPELL_ICE_BLOCK)))
+        return true;
+
+    if (bot->getClass() == CLASS_PALADIN && !PlayerbotAI::IsHeal(bot) &&
+        bot->HasAura(Id(SwpSpells::SPELL_DIVINE_SHIELD)))
     {
-        if (bot->HasAura(Id(SwpSpells::SPELL_ICE_BLOCK)))
-            return true;
-    }
-    else if (bot->getClass() == CLASS_PALADIN && !PlayerbotAI::IsHeal(bot))
-    {
-        if (bot->HasAura(Id(SwpSpells::SPELL_DIVINE_SHIELD)))
-            return true;
+        return true;
     }
 
-    return false;
+    InstanceScript* instance = bot->GetInstanceScript();
+    if (!instance || instance->IsEncounterInProgress())
+        return false;
+
+    return HasBrutallusBurn(bot);
 }
 
 // Trash
@@ -225,7 +227,7 @@ bool BrutallusRangedShouldSoakMeteorSlashTrigger::IsActive()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_BURN)))
+    if (HasBrutallusBurn(bot))
         return false;
 
     Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
@@ -234,7 +236,7 @@ bool BrutallusRangedShouldSoakMeteorSlashTrigger::IsActive()
 
 bool BrutallusBotIsBurningTrigger::IsActive()
 {
-    if (!bot->HasAura(Id(SwpSpells::SPELL_BURN)))
+    if (!HasBrutallusBurn(bot))
         return false;
 
     return !PlayerbotAI::IsMainTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);

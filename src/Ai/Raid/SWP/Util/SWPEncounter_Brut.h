@@ -110,6 +110,7 @@ bool TryGetBrutallusLaneTraversalPosition(
     Player* bot, Unit* brutallus, float targetX, float targetY, float radius,
     float currentX, float currentY, Position& position);
 bool ReleaseBrutallusBurnPad(Player* bot);
+bool HasBrutallusBurn(Player* bot);
 
 }
 

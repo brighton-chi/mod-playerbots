@@ -19,8 +19,8 @@ public:
         creators["sunwell plateau no encounter in progress"] =
             &RaidSunwellTriggerContext::sunwell_plateau_no_encounter_in_progress;
 
-        creators["sunwell plateau bot has protective aura"] =
-            &RaidSunwellTriggerContext::sunwell_plateau_bot_has_protective_aura;
+        creators["sunwell plateau bot has aura to remove"] =
+            &RaidSunwellTriggerContext::sunwell_plateau_bot_has_aura_to_remove;
 
         // Trash
         creators["volatile fiend self destructs when near"] =
@@ -224,8 +224,8 @@ private:
     static Trigger* sunwell_plateau_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new SunwellPlateauNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* sunwell_plateau_bot_has_protective_aura(PlayerbotAI* botAI) {
-        return new SunwellPlateauBotHasProtectiveAuraTrigger(botAI);
+    static Trigger* sunwell_plateau_bot_has_aura_to_remove(PlayerbotAI* botAI) {
+        return new SunwellPlateauBotHasAuraToRemoveTrigger(botAI);
     }
 
     // Trash

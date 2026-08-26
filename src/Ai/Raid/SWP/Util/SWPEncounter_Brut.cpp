@@ -434,4 +434,9 @@ bool ReleaseBrutallusBurnPad(Player* bot)
     return instanceItr->second.rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
 }
 
+bool HasBrutallusBurn(Player* bot)
+{
+    return bot->HasAura(Id(SwpSpells::SPELL_BURN));
+}
+
 }

@@ -18,13 +18,6 @@
 
 class Creature;
 
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
-
-}
-
 // General
 
 class SunwellPlateauResetEncounterStatesAction : public Action
@@ -35,15 +28,22 @@ public:
     bool Execute(Event event) override;
 };
 
-class SunwellPlateauRemoveProtectiveAuraAction : public Action
+class SunwellPlateauRemoveAuraAction : public Action
 {
 public:
-    SunwellPlateauRemoveProtectiveAuraAction(PlayerbotAI* botAI)
-        : Action(botAI, "sunwell plateau remove protective aura") {}
+    SunwellPlateauRemoveAuraAction(PlayerbotAI* botAI)
+        : Action(botAI, "sunwell plateau remove aura") {}
     bool Execute(Event event) override;
 };
 
 // Trash
+
+namespace SwpHelpers
+{
+
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+
+}
 
 class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction
 {

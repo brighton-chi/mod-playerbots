@@ -18,8 +18,8 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sunwell plateau no encounter in progress", {
         NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {
-        NextAction("sunwell plateau remove protective aura", ACTION_EMERGENCY) }));
+    triggers.push_back(new TriggerNode("sunwell plateau bot has aura to remove", {
+        NextAction("sunwell plateau remove aura", ACTION_EMERGENCY) }));
 
     // Trash
     triggers.push_back(new TriggerNode("volatile fiend self destructs when near", {

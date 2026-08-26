@@ -19,8 +19,8 @@ public:
         creators["sunwell plateau reset encounter states"] =
             &RaidSunwellActionContext::sunwell_plateau_reset_encounter_states;
 
-        creators["sunwell plateau remove protective aura"] =
-            &RaidSunwellActionContext::sunwell_plateau_remove_protective_aura;
+        creators["sunwell plateau remove aura"] =
+            &RaidSunwellActionContext::sunwell_plateau_remove_aura;
 
         // Trash
         creators["volatile fiend keep enemy away from group"] =
@@ -227,8 +227,8 @@ private:
     static Action* sunwell_plateau_reset_encounter_states(PlayerbotAI* botAI) {
         return new SunwellPlateauResetEncounterStatesAction(botAI);
     }
-    static Action* sunwell_plateau_remove_protective_aura(PlayerbotAI* botAI) {
-        return new SunwellPlateauRemoveProtectiveAuraAction(botAI);
+    static Action* sunwell_plateau_remove_aura(PlayerbotAI* botAI) {
+        return new SunwellPlateauRemoveAuraAction(botAI);
     }
 
     // Trash
