@@ -521,19 +521,25 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
     uint32 const instanceId = felmyst->GetInstanceId();
     auto& state = felmystEncounterStates[instanceId];
 
-    if (felmyst->IsFlying() && IsFelmystLanding(felmyst))
+    auto const clearTimers = [&state]
     {
+        if (!state.landingDpsWaitStartMs && !state.landingTouchdownMs)
+            return false;
+
+        state.landingDpsWaitStartMs = 0;
+        state.landingTouchdownMs = 0;
+        return true;
+    };
+
+    if (felmyst->IsFlying())
+    {
+        if (!IsFelmystLanding(felmyst))
+            return clearTimers();
+
         if (state.landingDpsWaitStartMs)
             return false;
 
         state.landingDpsWaitStartMs = getMSTime();
-        state.landingTouchdownMs = 0;
-        return true;
-    }
-
-    if (felmyst->IsFlying())
-    {
-        state.landingDpsWaitStartMs = 0;
         state.landingTouchdownMs = 0;
         return true;
     }
@@ -548,11 +554,8 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
         return true;
     }
 
-    constexpr uint32 groundedDpsWaitMs = 3000;
-    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < groundedDpsWaitMs)
+    if (GetMSTimeDiffToNow(state.landingTouchdownMs) < FELMYST_GROUNDED_DPS_WAIT_MS)
         return false;
 
-    state.landingDpsWaitStartMs = 0;
-    state.landingTouchdownMs = 0;
-    return true;
+    return clearTimers();
 }
