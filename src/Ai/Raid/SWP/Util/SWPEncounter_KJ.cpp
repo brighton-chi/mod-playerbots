@@ -138,17 +138,65 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
     return true;
 }
 
+GuidVector const& GetCachedFelfireHazards(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("kiljaeden felfire hazards")->RefGet();
+}
+
 } // end anonymous namespace
 
-std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-
 std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-
 std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> kiljaedenHandControlClaims;
+std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
+std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
-// Read rather than indexed: with no claim outstanding this is the common answer, and operator[]
-// would allocate a node per Hand per bot on every pass.
+GuidVector FindKiljaedenHandGuids(Player* bot)
+{
+    GuidVector guids;
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(
+        creatures, Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER), HAND_SEARCH_RADIUS);
+
+    for (Creature* creature : creatures)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+
+    return guids;
+}
+
+std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> hands;
+
+    for (ObjectGuid const& guid : botAI->GetAiObjectContext()
+             ->GetValue<GuidVector>("kiljaeden hands")->RefGet())
+    {
+        Unit* hand = botAI->GetUnit(guid);
+        if (hand && hand->IsAlive())
+            hands.push_back(hand);
+    }
+
+    return hands;
+}
+
+bool IsKiljaedenHandSpreadFromOtherHands(Unit* hand, std::vector<Unit*> const& hands)
+{
+    for (Unit* other : hands)
+    {
+        if (other != hand && hand->GetExactDist2d(other) < HAND_STUN_SPREAD_DISTANCE)
+            return false;
+    }
+
+    return true;
+}
+
 bool IsKiljaedenHandControlClaimed(Unit* hand)
 {
     auto const instanceItr = kiljaedenHandControlClaims.find(hand->GetInstanceId());
@@ -192,21 +240,6 @@ GuidVector FindKiljaedenFelfireHazardGuids(Player* bot)
     return guids;
 }
 
-namespace
-{
-
-// Only membership is cached; entry, life and position all come from the freshly resolved creature
-GuidVector const& GetCachedFelfireHazards(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("kiljaeden felfire hazards")->RefGet();
-}
-
-} // end anonymous namespace
-
-// Anchored rather than always measured from the bot: the stun gate asks about the Hand's
-// surroundings, since what matters there is where the Hand would be pinned, not where the bot
-// casting the stun happens to be standing.
 Unit* FindNearestKiljaedenFelfire(
     PlayerbotAI* botAI, Position const& anchor, uint32 entry, float maxDistance)
 {
@@ -229,8 +262,6 @@ Unit* FindNearestKiljaedenFelfire(
 
     return best;
 }
-
-std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance)

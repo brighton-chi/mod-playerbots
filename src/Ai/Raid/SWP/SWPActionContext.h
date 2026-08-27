@@ -194,8 +194,14 @@ public:
         creators["kil'jaeden assign hands of the deceiver"] =
             &RaidSunwellActionContext::kiljaeden_assign_hands_of_the_deceiver;
 
-        creators["kil'jaeden stun hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_stun_hands_of_the_deceiver;
+        creators["kil'jaeden spread ranged"] =
+            &RaidSunwellActionContext::kiljaeden_spread_ranged;
+
+        creators["kil'jaeden focus felfire fiends"] =
+            &RaidSunwellActionContext::kiljaeden_focus_felfire_fiends;
+
+        creators["kil'jaeden control hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_control_hands_of_the_deceiver;
 
         creators["kil'jaeden position and move tanks"] =
             &RaidSunwellActionContext::kiljaeden_position_and_move_tanks;
@@ -412,8 +418,14 @@ private:
     static Action* kiljaeden_assign_hands_of_the_deceiver(PlayerbotAI* botAI) {
         return new KiljaedenAssignHandsOfTheDeceiverAction(botAI);
     }
-    static Action* kiljaeden_stun_hands_of_the_deceiver(PlayerbotAI* botAI) {
-        return new KiljaedenStunHandsOfTheDeceiverAction(botAI);
+    static Action* kiljaeden_spread_ranged(PlayerbotAI* botAI) {
+        return new KiljaedenSpreadRangedAction(botAI);
+    }
+    static Action* kiljaeden_focus_felfire_fiends(PlayerbotAI* botAI) {
+        return new KiljaedenFocusFelfireFiendsAction(botAI);
+    }
+    static Action* kiljaeden_control_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenControlHandsOfTheDeceiverAction(botAI);
     }
     static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionAndMoveTanksAction(botAI);

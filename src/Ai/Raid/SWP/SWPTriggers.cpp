@@ -774,6 +774,15 @@ bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
+bool KiljaedenRangedShouldFocusFelfireFiendsTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsRangedDps(bot))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "hand of the deceiver") ||
+        AI_VALUE2(Unit*, "find target", "volatile felfire fiend");
+}
+
 bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))

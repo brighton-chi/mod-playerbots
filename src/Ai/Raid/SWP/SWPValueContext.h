@@ -31,7 +31,6 @@ protected:
     }
 };
 
-// Collapses four per-tick sweeps of "possible targets no los"
 class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
 {
 public:
@@ -47,8 +46,6 @@ protected:
     }
 };
 
-// The four values below replace grid searches that are otherwise run by corresponding triggers and
-// actions each tick.
 class MuruVoidZonesValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -104,8 +101,17 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenDragonOrbGuids(bot); }
 };
 
-// Portals are static once placed and fiends move, so only membership is cached here; every
-// consumer re-resolves the guid and reads entry, life and position from the live creature.
+class KiljaedenHandsValue : public CalculatedValue<GuidVector>
+{
+public:
+    KiljaedenHandsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "kiljaeden hands", SwpHelpers::HAND_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindKiljaedenHandGuids(bot); }
+};
+
 class KiljaedenFelfireHazardsValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -129,6 +135,7 @@ public:
         creators["kalecgos spectral rift"] = &RaidSunwellValueContext::kalecgos_spectral_rift;
         creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
         creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
+        creators["kiljaeden hands"] = &RaidSunwellValueContext::kiljaeden_hands;
         creators["kiljaeden felfire hazards"] =
             &RaidSunwellValueContext::kiljaeden_felfire_hazards;
     }
@@ -154,6 +161,9 @@ private:
     }
     static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbsValue(botAI);
+    }
+    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
+        return new KiljaedenHandsValue(botAI);
     }
     static UntypedValue* kiljaeden_felfire_hazards(PlayerbotAI* botAI) {
         return new KiljaedenFelfireHazardsValue(botAI);

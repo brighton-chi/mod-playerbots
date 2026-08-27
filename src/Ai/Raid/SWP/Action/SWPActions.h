@@ -575,11 +575,27 @@ private:
         Player* mainTank, Player* firstAssistTank, Player* secondAssistTank);
 };
 
-class KiljaedenStunHandsOfTheDeceiverAction : public Action
+class KiljaedenSpreadRangedAction : public MovementAction
 {
 public:
-    KiljaedenStunHandsOfTheDeceiverAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden stun hands of the deceiver") {}
+    KiljaedenSpreadRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden spread ranged") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenFocusFelfireFiendsAction : public AttackAction
+{
+public:
+    KiljaedenFocusFelfireFiendsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kil'jaeden focus felfire fiends") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenControlHandsOfTheDeceiverAction : public Action
+{
+public:
+    KiljaedenControlHandsOfTheDeceiverAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden control hands of the deceiver") {}
     bool Execute(Event event) override;
 
 private:

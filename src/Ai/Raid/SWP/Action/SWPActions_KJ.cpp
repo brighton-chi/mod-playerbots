@@ -10,7 +10,6 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
-#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -53,41 +52,15 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
 bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> hands;
-    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
-
-    for (ObjectGuid const& targetGuid : targets)
-    {
-        Unit* target = botAI->GetUnit(targetGuid);
-        if (target && target->GetEntry() == Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
-            hands.push_back(target);
-    }
-
+    std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
     if (hands.empty())
         return false;
-
-    std::sort(hands.begin(), hands.end(),
-        [](Unit* left, Unit* right) { return left->GetGUID() < right->GetGUID(); });
 
     if (IsMechanicTrackerBot(bot, SWP_MAP_ID) && MarkTargetWithSkull(bot, hands.front()))
         return true;
 
     if (!PlayerbotAI::IsTank(bot))
-    {
-        // Begin test ranged prioritize felfire fiends
-        if (PlayerbotAI::IsRangedDps(bot))
-        {
-            if (Unit* felfireFiend = FindNearestKiljaedenFelfire(
-                    botAI, bot->GetPosition(), Id(SwpNpcs::NPC_VOLATILE_FELFIRE_FIEND),
-                    FELFIRE_SEARCH_RADIUS))
-            {
-                return AI_VALUE(Unit*, "current target") != felfireFiend && Attack(felfireFiend);
-            }
-        }
-        // End test ranged prioritize felfire fiends
-
         return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
-    }
 
     Player* secondAssistTank = GetGroupAssistTank(bot, 1);
     if (!secondAssistTank)
@@ -185,9 +158,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
         return false;
     }
 
-    // Begin test portal movement
-    // Searching only as far as the keep-away distance: the old 20 yard search then discarded
-    // anything past 15, so this asks the question directly
     if (Unit* portal = FindNearestKiljaedenFelfire(
             botAI, bot->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL), FELFIRE_SAFE_DISTANCE))
     {
@@ -195,7 +165,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
         if (MoveAway(portal, FELFIRE_SAFE_DISTANCE - distFromPortal, true))
             return true;
     }
-    // End test portal movement
 
     for (size_t i = 0; i < tanks.size(); ++i)
     {
@@ -222,36 +191,55 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
     return false;
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
+bool KiljaedenSpreadRangedAction::Execute(Event /*event*/)
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, HAND_RANGED_SPREAD_DISTANCE);
+    if (!nearestPlayer)
+        return false;
+
+    return FleePosition(nearestPlayer->GetPosition(), HAND_RANGED_SPREAD_DISTANCE);
+}
+
+bool KiljaedenFocusFelfireFiendsAction::Execute(Event /*event*/)
+{
+    Unit* felfireFiend = FindNearestKiljaedenFelfire(
+        botAI, bot->GetPosition(), Id(SwpNpcs::NPC_VOLATILE_FELFIRE_FIEND), FELFIRE_SEARCH_RADIUS);
+
+    if (!felfireFiend)
+        return false;
+
+    return AI_VALUE(Unit*, "current target") != felfireFiend && Attack(felfireFiend);
+}
+
+bool KiljaedenControlHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_SHAMAN)
         return false;
 
-    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
+    std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
 
-    for (ObjectGuid const& targetGuid : targets)
+    for (Unit* target : hands)
     {
-        Unit* target = botAI->GetUnit(targetGuid);
-        if (!target || target->GetHealthPct() <= HAND_STUN_IMMUNE_HP_PERCENT ||
-            target->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
-        {
+        if (target->GetHealthPct() <= HAND_CC_IMMUNE_HP_PERCENT)
             continue;
-        }
 
-        // The claim covers the window where a control spell is in flight but its aura has not
-        // applied yet, which HasUnitState cannot see. A Hand beside a portal is left mobile so its
-        // tank can still drag it clear; fiends are not checked, since they close far too quickly
-        // for their position a moment ago to say anything useful.
         if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura() ||
-            IsKiljaedenHandControlClaimed(target) ||
-            FindNearestKiljaedenFelfire(
-                botAI, target->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL),
-                FELFIRE_SAFE_DISTANCE))
+            IsKiljaedenHandControlClaimed(target))
         {
             continue;
         }
 
-        if (CastStunOnHand(target) || CastSilenceOnHand(target))
+        bool const portalTooClose = FindNearestKiljaedenFelfire(
+            botAI, target->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL), FELFIRE_SAFE_DISTANCE);
+
+        bool const stunPlacementIsGood =
+            (!portalTooClose && IsKiljaedenHandSpreadFromOtherHands(target, hands)) ||
+             target->GetHealthPct() <= HAND_STUN_UNCONDITIONAL_HP_PERCENT;
+
+        if ((stunPlacementIsGood && CastStunOnHand(target)) || CastSilenceOnHand(target))
         {
             ClaimKiljaedenHandControl(target);
             return true;
@@ -261,11 +249,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     return false;
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
+bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 {
-    if (hand->GetHealthPct() > HAND_STUN_MAX_HP_PERCENT)
-        return false;
-
     auto const castSpell = [&](char const* spell)
     {
         return botAI->CanCastSpell(spell, hand) && botAI->CastSpell(spell, hand);
@@ -296,15 +281,15 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 
         case CLASS_WARRIOR:
             return castSpell("concussion blow") ||
-                castSelfAoe("shockwave", KILJAEDEN_SHOCKWAVE_RADIUS);
+                castSelfAoe("shockwave", HAND_SHOCKWAVE_RADIUS);
 
         default:
             return bot->getRace() == RACE_TAUREN &&
-                castSelfAoe("war stomp", KILJAEDEN_SELF_AOE_RACIAL_RADIUS);
+                castSelfAoe("war stomp", HAND_SELF_AOE_RACIAL_RADIUS);
     }
 }
 
-bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
+bool KiljaedenControlHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 {
     auto const castSpell = [&](char const* spell)
     {
@@ -323,9 +308,8 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
             return castSpell("strangulate");
 
         default:
-            // Arcane Torrent is centred on the caster too, so it needs the same guard
             return bot->getRace() == RACE_BLOODELF &&
-                bot->GetExactDist(hand) < KILJAEDEN_SELF_AOE_RACIAL_RADIUS &&
+                bot->GetExactDist(hand) < HAND_SELF_AOE_RACIAL_RADIUS &&
                 castSpell("arcane torrent");
     }
 }
@@ -334,14 +318,13 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
-        // This grid search exists only to bridge the three seconds after spawn, during which a
+        // This grid search exists only to capture the 3s after spawn, during which a
         // Reflection is passive and on nobody's threat list, meaning neither FindTargetValue nor
-        // standard bot target acquisition through "attackers" can locate it
+        // standard target acquisition through "attackers" can locate it.
         if (Creature* reflection = bot->FindNearestCreature(
                 Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
-            // Once aggressive it is on a threat list and therefore in "attackers,"" so failing
-            // here is intended to allow TankAssistAction to take over.
+            // Once aggressive, Reflections are in "attackers" so tank assist can take over.
             return reflection->GetReactState() == REACT_PASSIVE &&
                 PickUpSinisterReflections(reflection);
         }
@@ -509,19 +492,12 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position) > 2.0f)
-    {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    if (bot->GetExactDist2d(position) <= 2.0f)
+        return false;
 
-    // On slot, so shed the last of the clumping. Felfire Fission and Shadow Bolt Volley both
-    // punish a tight stack, and the arc slots alone still leave neighbours on top of each other.
-    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, RANGED_SPREAD_DISTANCE))
-        return FleePosition(nearestPlayer->GetPosition(), RANGED_SPREAD_DISTANCE);
-
-    return false;
+    return MoveTo(
+        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const
