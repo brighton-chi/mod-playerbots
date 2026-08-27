@@ -574,6 +574,22 @@ private:
     bool CastSilenceOnHand(Unit* hand);
 };
 
+class KiljaedenMarkHandOfTheDeceiverAction : public Action
+{
+public:
+    KiljaedenMarkHandOfTheDeceiverAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden mark hand of the deceiver") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenMoveHolyPaladinIntoStunRangeAction : public MovementAction
+{
+public:
+    KiljaedenMoveHolyPaladinIntoStunRangeAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden move holy paladin into stun range") {}
+    bool Execute(Event event) override;
+};
+
 class KiljaedenPositionAndMoveTanksAction : public AttackAction
 {
 public:

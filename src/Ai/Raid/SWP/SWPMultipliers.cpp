@@ -802,7 +802,7 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
 }
 
-float KiljaedenDpsFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
+float KiljaedenSingleTargetHandsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -820,6 +820,9 @@ float KiljaedenDpsFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
+
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
+        return 1.0;
 
     return AI_VALUE(GuidVector, "kiljaeden hands").empty() ? 1.0f : 0.0f;
 }

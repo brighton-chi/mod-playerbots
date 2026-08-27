@@ -64,13 +64,15 @@ inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
-// Feeds the "kiljaeden hands" value. The radius must be wide because if any bot cannot see a
-// Hand, the bots disagree about the creature list, and the guid-ordered assignment diverges.
-inline constexpr float HAND_SEARCH_RADIUS = 100.0f;
-inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
-
 // Position check to gate trying to find Hands.
-inline constexpr float KILJAEDEN_PLATFORM_RADIUS = 200.0f;
+inline constexpr float SUNWELL_CENTER_RADIUS = 100.0f;
+// Feeds the "kiljaeden hands" value.
+inline constexpr float HAND_SEARCH_RADIUS = 75.0f;
+inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
+// Hammer of Justice is a single-target spell that counts both CombatReaches so its actual range is
+// its tooltip range of 10y + 1.5y (player) + 2.5y (Hand) = 14y. Holding a little inside that
+// threshold leaves room for the Hand to shift between the range check and the cast landing.
+inline constexpr float HOLY_PALADIN_STUN_STANDOFF = 12.0f;
 // Timing between stuns for bots to coordinate them. A gate based purely on UNIT_STATE_STUNNED
 // still results in spam stuns due to the delay between a spell casting and resolving.
 inline constexpr uint32 HAND_CONTROL_CLAIM_MS = 1500;
@@ -125,7 +127,7 @@ inline constexpr uint8 KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT = 2;
 inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10000;
 inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 
-inline Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+inline Position const SUNWELL_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };

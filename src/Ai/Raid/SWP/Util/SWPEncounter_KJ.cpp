@@ -98,8 +98,8 @@ float GetRangedSlotAngle(uint8 slotIndex)
         return 0.0f;
 
     return Position::NormalizeOrientation(std::atan2(
-        position.GetPositionY() - KILJAEDEN_CENTER_POSITION.GetPositionY(),
-        position.GetPositionX() - KILJAEDEN_CENTER_POSITION.GetPositionX()));
+        position.GetPositionY() - SUNWELL_CENTER_POSITION.GetPositionY(),
+        position.GetPositionX() - SUNWELL_CENTER_POSITION.GetPositionX()));
 }
 
 bool IsRangedSlotSafeFromArmageddons(
@@ -155,7 +155,7 @@ GuidVector FindKiljaedenHandGuids(Player* bot)
 
     for (Creature* creature : creatures)
     {
-        if (creature && creature->IsAlive())
+        if (creature && creature->IsAlive() && creature->IsInCombat())
             guids.push_back(creature->GetGUID());
     }
 
@@ -282,7 +282,7 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     float const angle = Position::NormalizeOrientation(
         KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
 
-    Position const& center = KILJAEDEN_CENTER_POSITION;
+    Position const& center = SUNWELL_CENTER_POSITION;
     float const positionX = center.GetPositionX() + std::cos(angle) * radius;
     float const positionY = center.GetPositionY() + std::sin(angle) * radius;
 

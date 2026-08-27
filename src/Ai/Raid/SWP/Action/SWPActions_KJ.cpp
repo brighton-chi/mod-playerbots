@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "RtiTargetValue.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
 #include <algorithm>
@@ -17,11 +18,6 @@
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
-
-// Note re Hands of the Deceiver: The high complexity of the methods relating to the Hands is
-// totally unnecessary if you do not use mod-individual-progression (IP). IP fixes the Hands so that
-// they each spam Shadow Bolt Volley every 2-6s and can quickly wipe the raid. What is an easy phase
-// for players (and for bots in stock AC) becomes probably the most difficult part of the encounter.
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
@@ -55,6 +51,55 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
     }
 
     return botAI->SayToRaid(text);
+}
+
+bool KiljaedenMarkHandOfTheDeceiverAction::Execute(Event /*event*/)
+{
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    // The standard FindTargetValue doesn't work here because zone combat isn't set when the Hands
+    // are pulled so individual bots need to take action to get the Hands on their threat lists
+    // for FindTargetValue. This is particularly problematic if the MechanicTracker is a healer.
+    std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
+    if (hands.empty())
+        return false;
+
+    ObjectGuid const markedGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    if (std::any_of(hands.begin(), hands.end(),
+            [&markedGuid](Unit* hand) { return hand->GetGUID() == markedGuid; }))
+    {
+        return false;
+    }
+
+    Unit* target = *std::min_element(hands.begin(), hands.end(),
+        [](Unit* left, Unit* right) { return left->GetHealth() < right->GetHealth(); });
+
+    return MarkTargetWithSkull(bot, target);
+}
+
+// Hammer of Justice!
+bool KiljaedenMoveHolyPaladinIntoStunRangeAction::Execute(Event /*event*/)
+{
+    if (bot->getClass() != CLASS_PALADIN || !PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Unit* hand = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
+    if (!hand || !hand->IsAlive() || hand->GetEntry() != Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
+        return false;
+
+    if (bot->GetExactDist2d(hand) <= HOLY_PALADIN_STUN_STANDOFF)
+        return false;
+
+    return MoveTo(hand, HOLY_PALADIN_STUN_STANDOFF, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool KiljaedenControlHandsOfTheDeceiverAction::Execute(Event /*event*/)

@@ -191,7 +191,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden announce dragon orb user", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
-        NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY) }));
+        NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY),
+        NextAction("kil'jaeden mark hand of the deceiver", ACTION_RAID + 1),
+        NextAction("kil'jaeden move holy paladin into stun range", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden tanks should hold boss and reflections", {
         NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
@@ -266,7 +268,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
-    multipliers.push_back(new KiljaedenDpsFocusAssignedHandOnlyMultiplier(botAI));
+    multipliers.push_back(new KiljaedenSingleTargetHandsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));

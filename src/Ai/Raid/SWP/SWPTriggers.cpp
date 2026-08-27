@@ -33,7 +33,7 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     if (!instance || instance->IsEncounterInProgress())
         return false;
 
-    if (bot->GetExactDist2d(KILJAEDEN_CENTER_POSITION) > KILJAEDEN_PLATFORM_RADIUS)
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
         return true;
 
     return AI_VALUE(GuidVector, "kiljaeden hands").empty();
@@ -780,7 +780,10 @@ bool KiljaedenShouldCoordinateOrbUseTrigger::IsActive()
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
+        return false;
+
+    return !AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
 bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActive()
