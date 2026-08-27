@@ -67,10 +67,6 @@ bool IsKalecgosDecurser(Player* bot);
 void EnsureKalecgosRaidAssignments(Player* bot);
 Player* FindKalecgosDesignatedTank(Player* player);
 Player* GetKalecgosDesignatedTank(Player* player);
-Player* GetNextSurfaceTankInOrder(
-    Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
-    ObjectGuid afterGuid, ObjectGuid excludedGuid = ObjectGuid::Empty,
-    bool fallbackToFirst = false);
 ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot);
 bool ShouldEnterKalecgosPortal(Player* bot);
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
