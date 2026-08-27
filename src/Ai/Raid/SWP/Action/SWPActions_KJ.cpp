@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPSharedConstants.h"
+#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -161,9 +162,12 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
     if (Unit* portal = FindNearestKiljaedenFelfire(
             botAI, bot->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL), FELFIRE_SAFE_DISTANCE))
     {
-        float const distFromPortal = bot->GetExactDist2d(portal);
-        if (MoveAway(portal, FELFIRE_SAFE_DISTANCE - distFromPortal, true))
+        float const remaining = FELFIRE_SAFE_DISTANCE - bot->GetExactDist2d(portal);
+        if (remaining > HAND_TANK_MOVE_DEADZONE &&
+            MoveAway(portal, std::min(remaining, HAND_TANK_MOVE_STEP), true))
+        {
             return true;
+        }
     }
 
     for (size_t i = 0; i < tanks.size(); ++i)
@@ -183,9 +187,9 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
         if (!otherHand || !otherHand->IsAlive())
             continue;
 
-        float const distFromTank = bot->GetExactDist2d(otherTank);
-        if (distFromTank < HAND_TANK_SEPARATION)
-            return MoveAway(otherTank, HAND_TANK_SEPARATION - distFromTank, true);
+        float const remaining = HAND_TANK_SEPARATION - bot->GetExactDist2d(otherTank);
+        if (remaining > HAND_TANK_MOVE_DEADZONE)
+            return MoveAway(otherTank, std::min(remaining, HAND_TANK_MOVE_STEP), true);
     }
 
     return false;

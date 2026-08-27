@@ -73,6 +73,17 @@ inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 inline constexpr float HAND_RANGED_SPREAD_DISTANCE = 3.0f;
 // How far apart the Hands are kept by tanks.
 inline constexpr float HAND_TANK_SEPARATION = 20.0f;
+
+// MoveAway hands the whole distance to one spline and passes lessDelay = false, so the move lock
+// it stamps is the full travel time. A 20 yard backpedal at the 4.5 yd/s backward run speed locks
+// for over four seconds, and ReachCombatTo issues at the same MOVEMENT_COMBAT priority, so it is
+// refused for all of it: the tank keeps running long after its Hand has stopped following. Calling
+// MoveAway one step at a time bounds that to a single step, since it re-aims from the bot's current
+// position every time. 2.25 yards is half a second of backward travel, above the per-tick floor
+// even on a heavily staggered bot. The deadzone keeps the last step from falling under that floor,
+// where the bot would arrive, stop and idle out the tick.
+inline constexpr float HAND_TANK_MOVE_STEP = 2.25f;
+inline constexpr float HAND_TANK_MOVE_DEADZONE = 1.5f;
 // Hold stuns until the tanks having dragged the Hands this far apart to avoid Hands (and thus
 // Shadow Bolt Volleys) from stacking too much. The unconditional HP threshold is the fallback for
 // a raid with player tanks who might never spread.
