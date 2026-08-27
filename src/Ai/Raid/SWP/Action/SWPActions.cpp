@@ -83,6 +83,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= kiljaedenEncounterStates.erase(instanceId) > 0;
     reset |= ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
     reset |= kiljaedenHandTankAssignments.erase(instanceId) > 0;
+    reset |= kiljaedenHandControlClaims.erase(instanceId) > 0;
 
     return reset;
 }

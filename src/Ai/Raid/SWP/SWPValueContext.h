@@ -104,6 +104,19 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenDragonOrbGuids(bot); }
 };
 
+// Portals are static once placed and fiends move, so only membership is cached here; every
+// consumer re-resolves the guid and reads entry, life and position from the live creature.
+class KiljaedenFelfireHazardsValue : public CalculatedValue<GuidVector>
+{
+public:
+    KiljaedenFelfireHazardsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "kiljaeden felfire hazards", SwpHelpers::FELFIRE_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindKiljaedenFelfireHazardGuids(bot); }
+};
+
 class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -116,6 +129,8 @@ public:
         creators["kalecgos spectral rift"] = &RaidSunwellValueContext::kalecgos_spectral_rift;
         creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
         creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
+        creators["kiljaeden felfire hazards"] =
+            &RaidSunwellValueContext::kiljaeden_felfire_hazards;
     }
 
 private:
@@ -139,6 +154,9 @@ private:
     }
     static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbsValue(botAI);
+    }
+    static UntypedValue* kiljaeden_felfire_hazards(PlayerbotAI* botAI) {
+        return new KiljaedenFelfireHazardsValue(botAI);
     }
 };
 

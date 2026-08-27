@@ -129,6 +129,8 @@ enum class SwpNpcs : uint32
     // Kil'jaeden <The Deceiver>
     NPC_SHIELD_ORB               = 25502,
     NPC_HAND_OF_THE_DECEIVER     = 25588,
+    NPC_VOLATILE_FELFIRE_FIEND   = 25598,
+    NPC_FELFIRE_PORTAL           = 25603,
     NPC_POWER_OF_THE_BLUE_FLIGHT = 25653,
     NPC_SINISTER_REFLECTION      = 25708,
     NPC_ARMAGEDDON_TARGET        = 25735,

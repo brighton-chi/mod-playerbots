@@ -35,17 +35,16 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
         std::map<std::string, std::string> placeholders = {{"%bot", orbUser->GetName()}};
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "kiljaeden_designated_dragon_orb_user",
-            "%bot is the first assistant and the designated dragon orb user!",
+            "%bot is the first assistant bot and the designated dragon orb user. If you would "
+            "like only players to control dragons, please remove assistant flags from all bots.",
             placeholders);
     }
     else
     {
         text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "kiljaeden_no_designated_dragon_orb_user",
-            "No bot has been assigned as the designated dragon orb user, "
-            "and therefore a player must control the dragons. "
-            "If you would like a bot to use the dragon orbs, "
-            "please set the assistant flag for a bot.",
+            "No bot has an assistant flag, and therefore a player must control the dragons. If you "
+            "would like a bot to control the dragons, please set the assistant flag for a bot.",
             {});
     }
 
@@ -74,7 +73,21 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
         return true;
 
     if (!PlayerbotAI::IsTank(bot))
+    {
+        // Begin test ranged prioritize felfire fiends
+        if (PlayerbotAI::IsRangedDps(bot))
+        {
+            if (Unit* felfireFiend = FindNearestKiljaedenFelfire(
+                    botAI, bot->GetPosition(), Id(SwpNpcs::NPC_VOLATILE_FELFIRE_FIEND),
+                    FELFIRE_SEARCH_RADIUS))
+            {
+                return AI_VALUE(Unit*, "current target") != felfireFiend && Attack(felfireFiend);
+            }
+        }
+        // End test ranged prioritize felfire fiends
+
         return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
+    }
 
     Player* secondAssistTank = GetGroupAssistTank(bot, 1);
     if (!secondAssistTank)
@@ -172,6 +185,18 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
         return false;
     }
 
+    // Begin test portal movement
+    // Searching only as far as the keep-away distance: the old 20 yard search then discarded
+    // anything past 15, so this asks the question directly
+    if (Unit* portal = FindNearestKiljaedenFelfire(
+            botAI, bot->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL), FELFIRE_SAFE_DISTANCE))
+    {
+        float const distFromPortal = bot->GetExactDist2d(portal);
+        if (MoveAway(portal, FELFIRE_SAFE_DISTANCE - distFromPortal, true))
+            return true;
+    }
+    // End test portal movement
+
     for (size_t i = 0; i < tanks.size(); ++i)
     {
         if (i == myIndex)
@@ -213,14 +238,24 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
             continue;
         }
 
-        if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura())
+        // The claim covers the window where a control spell is in flight but its aura has not
+        // applied yet, which HasUnitState cannot see. A Hand beside a portal is left mobile so its
+        // tank can still drag it clear; fiends are not checked, since they close far too quickly
+        // for their position a moment ago to say anything useful.
+        if (target->HasUnitState(UNIT_STATE_STUNNED) || target->HasSilenceAura() ||
+            IsKiljaedenHandControlClaimed(target) ||
+            FindNearestKiljaedenFelfire(
+                botAI, target->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL),
+                FELFIRE_SAFE_DISTANCE))
+        {
             continue;
+        }
 
-        if (CastStunOnHand(target))
+        if (CastStunOnHand(target) || CastSilenceOnHand(target))
+        {
+            ClaimKiljaedenHandControl(target);
             return true;
-
-        if (CastSilenceOnHand(target))
-            return true;
+        }
     }
 
     return false;
@@ -474,12 +509,19 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position) <= 2.0f)
-        return false;
+    if (bot->GetExactDist2d(position) > 2.0f)
+    {
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
 
-    return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+    // On slot, so shed the last of the clumping. Felfire Fission and Shadow Bolt Volley both
+    // punish a tight stack, and the arc slots alone still leave neighbours on top of each other.
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, RANGED_SPREAD_DISTANCE))
+        return FleePosition(nearestPlayer->GetPosition(), RANGED_SPREAD_DISTANCE);
+
+    return false;
 }
 
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const

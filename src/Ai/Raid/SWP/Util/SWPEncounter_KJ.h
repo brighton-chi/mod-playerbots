@@ -86,6 +86,27 @@ inline constexpr float KILJAEDEN_SHOCKWAVE_RADIUS = 10.0f;
 inline constexpr float HAND_STUN_IMMUNE_HP_PERCENT = 20.0f;
 inline constexpr float HAND_STUN_MAX_HP_PERCENT = 90.0f;
 
+// Bridges the gap between a control spell being cast on a Hand and its aura landing. Every
+// eligible bot evaluates the same Hand against HasUnitState, which only turns true once the aura
+// applies, so without a claim they all fire into the same window and burn the chain at once.
+// Hands are not flagged CREATURE_FLAG_EXTRA_ALL_DIMINISH, so stuns on them do not diminish and
+// chaining one after another is worth more than overlapping them.
+inline constexpr uint32 HAND_CONTROL_CLAIM_MS = 1500;
+
+// Hands cast Felfire Portal (46875) every 25-30 seconds; the portal spawns Volatile Felfire
+// Fiends, which cast Felfire Fission on reaching a player or on dying. A Hand stunned beside one
+// cannot be dragged clear, so proximity to either blocks the stun as well as pushing tanks off.
+inline constexpr float FELFIRE_SEARCH_RADIUS = 40.0f;
+inline constexpr float FELFIRE_SAFE_DISTANCE = 15.0f;
+
+// Feeds the "kiljaeden felfire hazards" value, shared by the stun gate, the tank keep-away and
+// the ranged fiend priority so the three do not each run their own grid search every tick.
+inline constexpr uint32 FELFIRE_CACHE_INTERVAL_MS = 200;
+
+// Deliberately small: ranged still hold their assigned arc slots, and this only breaks up the
+// neighbours that end up standing on each other once they arrive
+inline constexpr float RANGED_SPREAD_DISTANCE = 3.0f;
+
 // How far apart the Hands are kept by tanks
 inline constexpr float HAND_TANK_SEPARATION = 20.0f;
 
@@ -132,6 +153,8 @@ inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.70
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
 extern std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
+    kiljaedenHandControlClaims;
 extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(
@@ -142,6 +165,11 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+bool IsKiljaedenHandControlClaimed(Unit* hand);
+void ClaimKiljaedenHandControl(Unit* hand);
+GuidVector FindKiljaedenFelfireHazardGuids(Player* bot);
+Unit* FindNearestKiljaedenFelfire(
+    PlayerbotAI* botAI, Position const& anchor, uint32 entry, float maxDistance);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
