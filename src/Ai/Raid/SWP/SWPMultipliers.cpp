@@ -11,23 +11,38 @@
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
+#include "InstanceScript.h"
 #include "MageActions.h"
+#include "NonCombatActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "SWPActions.h"
-#include "SWPSharedConstants.h"
-#include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include "SWPSharedConstants.h"
 #include "Timer.h"
 #include "WipeAction.h"
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
+
+// General
+
+float SunwellPlateauNoEncounterDrinkingMultiplier::GetValue(Action* action)
+{
+    if (bot->GetMapId() != SWP_MAP_ID)
+        return 1.0f;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    if (!instance || !instance->IsEncounterInProgress())
+        return 1.0f;
+
+    return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
+}
 
 // Kalecgos
 
@@ -317,8 +332,8 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
-    return stateItr != felmystEncounterStates.end() && stateItr->second.landingDpsWaitStartMs ?
-        0.0f : 1.0f;
+    return stateItr != felmystEncounterStates.end() &&
+        stateItr->second.landingDpsWaitStartMs ? 0.0f : 1.0f;
 }
 
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
@@ -796,8 +811,8 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) /* &&
-        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action) */)
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
         return 1.0f;
     }
@@ -817,7 +832,7 @@ float KiljaedenDpsFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) &&
+    if (/* !dynamic_cast<DpsAssistAction*>(action) && */
         action->getThreatType() != Action::ActionThreatType::Aoe)
     {
         return 1.0f;

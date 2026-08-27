@@ -68,9 +68,13 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 // Hand, the bots disagree about the creature list, and the guid-ordered assignment diverges.
 inline constexpr float HAND_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
+
+// The Hands never leave the Controller's platform, so a bot anywhere else in the instance can rule
+// them out on a distance check and skip the search behind the value entirely.
+inline constexpr float KILJAEDEN_PLATFORM_RADIUS = 200.0f;
 // A small spread during the Hand phase is maintained to try to mitigate Felfire Fission and
 // Shadow Bolt Volley damage.
-inline constexpr float HAND_RANGED_SPREAD_DISTANCE = 3.0f;
+inline constexpr float HAND_RANGED_SPREAD_DISTANCE = 2.0f;
 // How far apart the Hands are kept by tanks.
 inline constexpr float HAND_TANK_SEPARATION = 20.0f;
 // Step movement for MoveAway() to address tanks losing aggro while pulling their Hands away.
@@ -97,7 +101,7 @@ inline constexpr uint32 FELFIRE_CACHE_INTERVAL_MS = 200;
 // Fiends, which cast Felfire Fission on reaching a player or on dying. These distances are used
 // for both the portals and fiends.
 inline constexpr float FELFIRE_SEARCH_RADIUS = 40.0f;
-inline constexpr float FELFIRE_SAFE_DISTANCE = 15.0f;
+inline constexpr float FELFIRE_SAFE_DISTANCE = 10.0f;
 
 // Throttle assigned ranged position rebuilds since they should be stable during the encounter.
 inline constexpr uint32 RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;

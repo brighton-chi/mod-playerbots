@@ -9,6 +9,16 @@
 
 #include "Multiplier.h"
 
+// General
+
+class SunwellPlateauNoEncounterDrinkingMultiplier : public Multiplier
+{
+public:
+    SunwellPlateauNoEncounterDrinkingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "sunwell plateau no encounter drinking") {}
+    float GetValue(Action* action) override;
+};
+
 // Kalecgos
 
 class KalecgosControlMisdirectionMultiplier : public Multiplier

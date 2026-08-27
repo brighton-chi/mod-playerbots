@@ -20,7 +20,7 @@ using namespace EncounterHelpers;
 
 // Note re Hands of the Deceiver: The high complexity of the methods relating to the Hands is
 // totally unnecessary if you do not use mod-individual-progression (IP). IP fixes the Hands so that
-// they each spam Shadow Bolt Volley every 3s and can quickly wipe the raid. What is an easy phase
+// they each spam Shadow Bolt Volley every 2-6s and can quickly wipe the raid. What is an easy phase
 // for players (and for bots in stock AC) becomes probably the most difficult part of the encounter.
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
@@ -69,6 +69,7 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (!PlayerbotAI::IsTank(bot))
         return AI_VALUE(Unit*, "current target") != hands.front() && Attack(hands.front());
 
+    // Need to have 3+ tanks to run the tank assignment methods. Otherwise, it's a mess.
     std::vector<Player*> const tanks = {
         GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
 
@@ -152,6 +153,10 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::KeepTankClearOfHazards(
             return true;
     }
 
+    // Main tank holds position; other tanks move away.
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
     auto const& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
 
     for (size_t i = 0; i < tanks.size(); ++i)
@@ -208,14 +213,14 @@ bool KiljaedenControlHandsOfTheDeceiverAction::Execute(Event /*event*/)
             continue;
         }
 
-        bool const portalTooClose = FindNearestKiljaedenFelfire(
+        /* bool const portalTooClose = FindNearestKiljaedenFelfire(
             botAI, target->GetPosition(), Id(SwpNpcs::NPC_FELFIRE_PORTAL), FELFIRE_SAFE_DISTANCE);
 
         bool const stunPlacementIsGood =
             (!portalTooClose && IsKiljaedenHandSpreadFromOtherHands(target, hands)) ||
-             target->GetHealthPct() <= HAND_STUN_UNCONDITIONAL_HP_PERCENT;
+             target->GetHealthPct() <= HAND_STUN_UNCONDITIONAL_HP_PERCENT; */
 
-        if ((stunPlacementIsGood && CastStunOnHand(target)) || CastSilenceOnHand(target))
+        if ((/* stunPlacementIsGood && */ CastStunOnHand(target)) || CastSilenceOnHand(target))
         {
             ClaimKiljaedenHandControl(target);
             return true;
@@ -241,7 +246,8 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     {
         case CLASS_DRUID:
             return (botAI->HasStrategy("bear", BOT_STATE_COMBAT) && castSpell("bash")) ||
-                (botAI->HasStrategy("cat", BOT_STATE_COMBAT) && castSpell("maim"));
+                (botAI->HasStrategy("cat", BOT_STATE_COMBAT) &&
+                 bot->GetComboPoints() >= 4 && castSpell("maim"));
 
         case CLASS_MAGE:
             return castSpell("deep freeze");
@@ -250,7 +256,7 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
             return castSpell("hammer of justice");
 
         case CLASS_ROGUE:
-            return castSpell("kidney shot");
+            return bot->GetComboPoints() >= 4 && castSpell("kidney shot");
 
         case CLASS_WARLOCK:
             return castSpell("shadowfury");
@@ -294,13 +300,12 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsMainTank(bot))
     {
-        // This grid search exists only to capture the 3s after spawn, during which a
-        // Reflection is passive and on nobody's threat list, meaning neither FindTargetValue nor
-        // standard target acquisition through "attackers" can locate it.
+        // This grid search captures the 3s after spawn, during which Reflections are passive and
+        // neither "find target" nor standard target acquisition through "attackers" can locate it.
         if (Creature* reflection = bot->FindNearestCreature(
                 Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
         {
-            // Once aggressive, Reflections are in "attackers" so tank assist can take over.
+            // Once Reflections are aggressive, tank assist can take over.
             return reflection->GetReactState() == REACT_PASSIVE &&
                 PickUpSinisterReflections(reflection);
         }
@@ -316,8 +321,7 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
 }
 
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
-// a random victim. Thus, the first landed hit after activation should immediately grab aggro, and
-// we want that to be a tank, so hopefully they can get in range to start attacking before 3s pass.
+// a random victim. Thus, the first hit after activation should immediately grab aggro.
 bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* reflection)
 {
     if (AI_VALUE(Unit*, "current target") != reflection)
