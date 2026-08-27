@@ -55,7 +55,7 @@ inline constexpr float SPECTRAL_REALM_Z = -74.5f;
 // Curse of Boundless Agony doubles its tick damage every 5 ticks and, when removed by dispel or
 // expiration, bounces to another player. Hold off on dispelling while damage is low (until 15s).
 inline constexpr uint32 KALECGOS_DISPEL_REMAINING_MS = 15000;
-// How long assist tanks hold off on attacking after the pull
+// How long assist tanks hold off on attacking after the pull.
 inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5000;
 
 inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
