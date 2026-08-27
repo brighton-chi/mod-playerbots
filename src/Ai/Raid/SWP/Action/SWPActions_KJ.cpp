@@ -51,10 +51,10 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
     return botAI->SayToRaid(text);
 }
+
 bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
-    // Fewer than 3 bot tanks makes this a headache so just skip in that case;
-    // it's not vital anyway
+    // Fewer than 3 bot tanks makes this a headache so just skip in that case. Not vital anyway.
     Player* mainTank = nullptr;
     Player* firstAssistTank = nullptr;
     Player* secondAssistTank = nullptr;
