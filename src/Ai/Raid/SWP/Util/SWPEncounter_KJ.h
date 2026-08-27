@@ -69,39 +69,18 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 inline constexpr float HAND_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 
-// The Hands never leave the Controller's platform, so a bot anywhere else in the instance can rule
-// them out on a distance check and skip the search behind the value entirely.
+// Position check to gate trying to find Hands.
 inline constexpr float KILJAEDEN_PLATFORM_RADIUS = 200.0f;
-// A small spread during the Hand phase is maintained to try to mitigate Felfire Fission and
-// Shadow Bolt Volley damage.
-inline constexpr float HAND_RANGED_SPREAD_DISTANCE = 2.0f;
-// How far apart the Hands are kept by tanks.
-inline constexpr float HAND_TANK_SEPARATION = 20.0f;
-// Step movement for MoveAway() to address tanks losing aggro while pulling their Hands away.
-inline constexpr float HAND_TANK_MOVE_STEP = 2.25f;
-inline constexpr float HAND_TANK_MOVE_DEADZONE = 1.5f;
-// Hold stuns until the tanks having dragged the Hands this far apart to avoid Hands (and thus
-// Shadow Bolt Volleys) from stacking too much. The unconditional HP threshold is the fallback for
-// a raid with player tanks who might never spread.
-inline constexpr float HAND_STUN_SPREAD_DISTANCE = 10.0f;
-inline constexpr float HAND_STUN_UNCONDITIONAL_HP_PERCENT = 60.0f;
-// Hands cast Shadow Infusion (45772) at or below 20% HP, which makes them permanently immune
-// to both stun and silence.
 // Timing between stuns for bots to coordinate them. A gate based purely on UNIT_STATE_STUNNED
 // still results in spam stuns due to the delay between a spell casting and resolving.
 inline constexpr uint32 HAND_CONTROL_CLAIM_MS = 1500;
+// Hands cast Shadow Infusion (45772) at or below 20% HP, which makes them permanently immune
+// to both stun and silence.
 inline constexpr float HAND_CC_IMMUNE_HP_PERCENT = 20.0f;
-// Feeds the "kiljaeden felfire hazards" value.
 // Radii for the tank abilities that are anchored on the caster rather than on the Hand.
 // 8 yards covers War Stomp (20549) and all 3 Arcane Torrent variants.
 inline constexpr float HAND_SELF_AOE_RACIAL_RADIUS = 8.0f;
 inline constexpr float HAND_SHOCKWAVE_RADIUS = 10.0f;
-inline constexpr uint32 FELFIRE_CACHE_INTERVAL_MS = 200;
-// Hands cast Felfire Portal (46875) every 25-30 seconds; the portal spawns Volatile Felfire
-// Fiends, which cast Felfire Fission on reaching a player or on dying. These distances are used
-// for both the portals and fiends.
-inline constexpr float FELFIRE_SEARCH_RADIUS = 40.0f;
-inline constexpr float FELFIRE_SAFE_DISTANCE = 10.0f;
 
 // Throttle assigned ranged position rebuilds since they should be stable during the encounter.
 inline constexpr uint32 RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
@@ -153,7 +132,6 @@ inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.78
 inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-extern std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
     kiljaedenHandControlClaims;
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
@@ -161,12 +139,8 @@ extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTime
 
 GuidVector FindKiljaedenHandGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
-bool IsKiljaedenHandSpreadFromOtherHands(Unit* hand, std::vector<Unit*> const& hands);
 bool IsKiljaedenHandControlClaimed(Unit* hand);
 void ClaimKiljaedenHandControl(Unit* hand);
-GuidVector FindKiljaedenFelfireHazardGuids(Player* bot);
-Unit* FindNearestKiljaedenFelfire(
-    PlayerbotAI* botAI, Position const& anchor, uint32 entry, float maxDistance);
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);

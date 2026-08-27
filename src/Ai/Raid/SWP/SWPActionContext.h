@@ -191,15 +191,6 @@ public:
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
 
-        creators["kil'jaeden assign hands of the deceiver"] =
-            &RaidSunwellActionContext::kiljaeden_assign_hands_of_the_deceiver;
-
-        creators["kil'jaeden spread ranged"] =
-            &RaidSunwellActionContext::kiljaeden_spread_ranged;
-
-        creators["kil'jaeden focus felfire fiends"] =
-            &RaidSunwellActionContext::kiljaeden_focus_felfire_fiends;
-
         creators["kil'jaeden control hands of the deceiver"] =
             &RaidSunwellActionContext::kiljaeden_control_hands_of_the_deceiver;
 
@@ -414,15 +405,6 @@ private:
     // Kil'jaeden <The Deceiver>
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
         return new KiljaedenAnnounceDragonOrbUserAction(botAI);
-    }
-    static Action* kiljaeden_assign_hands_of_the_deceiver(PlayerbotAI* botAI) {
-        return new KiljaedenAssignHandsOfTheDeceiverAction(botAI);
-    }
-    static Action* kiljaeden_spread_ranged(PlayerbotAI* botAI) {
-        return new KiljaedenSpreadRangedAction(botAI);
-    }
-    static Action* kiljaeden_focus_felfire_fiends(PlayerbotAI* botAI) {
-        return new KiljaedenFocusFelfireFiendsAction(botAI);
     }
     static Action* kiljaeden_control_hands_of_the_deceiver(PlayerbotAI* botAI) {
         return new KiljaedenControlHandsOfTheDeceiverAction(botAI);

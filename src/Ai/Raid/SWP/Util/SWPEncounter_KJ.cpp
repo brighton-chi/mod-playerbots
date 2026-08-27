@@ -138,16 +138,9 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
     return true;
 }
 
-GuidVector const& GetCachedFelfireHazards(PlayerbotAI* botAI)
-{
-    return botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("kiljaeden felfire hazards")->RefGet();
-}
-
 } // end anonymous namespace
 
 std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> kiljaedenHandControlClaims;
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
@@ -186,17 +179,6 @@ std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
     return hands;
 }
 
-bool IsKiljaedenHandSpreadFromOtherHands(Unit* hand, std::vector<Unit*> const& hands)
-{
-    for (Unit* other : hands)
-    {
-        if (other != hand && hand->GetExactDist2d(other) < HAND_STUN_SPREAD_DISTANCE)
-            return false;
-    }
-
-    return true;
-}
-
 bool IsKiljaedenHandControlClaimed(Unit* hand)
 {
     auto const instanceItr = kiljaedenHandControlClaims.find(hand->GetInstanceId());
@@ -218,49 +200,6 @@ void ClaimKiljaedenHandControl(Unit* hand)
 {
     kiljaedenHandControlClaims[hand->GetInstanceId()][hand->GetGUID()] =
         getMSTime() + HAND_CONTROL_CLAIM_MS;
-}
-
-GuidVector FindKiljaedenFelfireHazardGuids(Player* bot)
-{
-    GuidVector guids;
-
-    for (uint32 const entry :
-         { Id(SwpNpcs::NPC_FELFIRE_PORTAL), Id(SwpNpcs::NPC_VOLATILE_FELFIRE_FIEND) })
-    {
-        std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, FELFIRE_SEARCH_RADIUS);
-
-        for (Creature* creature : creatures)
-        {
-            if (creature && creature->IsAlive())
-                guids.push_back(creature->GetGUID());
-        }
-    }
-
-    return guids;
-}
-
-Unit* FindNearestKiljaedenFelfire(
-    PlayerbotAI* botAI, Position const& anchor, uint32 entry, float maxDistance)
-{
-    Unit* best = nullptr;
-    float bestDistance = maxDistance;
-
-    for (ObjectGuid const& guid : GetCachedFelfireHazards(botAI))
-    {
-        Unit* hazard = botAI->GetUnit(guid);
-        if (!hazard || !hazard->IsAlive() || hazard->GetEntry() != entry)
-            continue;
-
-        float const distance = anchor.GetExactDist2d(hazard);
-        if (distance >= bestDistance)
-            continue;
-
-        bestDistance = distance;
-        best = hazard;
-    }
-
-    return best;
 }
 
 void AddKiljaedenArmageddon(

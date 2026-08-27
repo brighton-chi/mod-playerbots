@@ -476,14 +476,6 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenRangedShouldFocusFelfireFiendsTrigger : public Trigger
-{
-public:
-    KiljaedenRangedShouldFocusFelfireFiendsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden ranged should focus felfire fiends") {}
-    bool IsActive() override;
-};
-
 class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public Trigger
 {
 public:

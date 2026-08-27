@@ -562,35 +562,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenAssignHandsOfTheDeceiverAction : public AttackAction
-{
-public:
-    KiljaedenAssignHandsOfTheDeceiverAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kil'jaeden assign hands of the deceiver") {}
-    bool Execute(Event event) override;
-
-private:
-    ObjectGuid ClaimHandForTank(std::vector<Unit*> const& hands, size_t myIndex);
-    bool StepToStandoff(Unit* from, float standoff);
-    bool KeepTankClearOfHazards(std::vector<Player*> const& tanks, size_t myIndex);
-};
-
-class KiljaedenSpreadRangedAction : public MovementAction
-{
-public:
-    KiljaedenSpreadRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "kil'jaeden spread ranged") {}
-    bool Execute(Event event) override;
-};
-
-class KiljaedenFocusFelfireFiendsAction : public AttackAction
-{
-public:
-    KiljaedenFocusFelfireFiendsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kil'jaeden focus felfire fiends") {}
-    bool Execute(Event event) override;
-};
-
 class KiljaedenControlHandsOfTheDeceiverAction : public Action
 {
 public:

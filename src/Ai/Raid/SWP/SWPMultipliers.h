@@ -286,14 +286,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class KiljaedenTanksFocusAssignedHandOnlyMultiplier : public Multiplier
-{
-public:
-    KiljaedenTanksFocusAssignedHandOnlyMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
-    float GetValue(Action* action) override;
-};
-
 class KiljaedenDpsFocusAssignedHandOnlyMultiplier : public Multiplier
 {
 public:

@@ -802,47 +802,26 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
 }
 
-float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
-    {
-        return 1.0f;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
-        return 1.0f;
-
-    return GetGroupAssistTank(bot, 1) && GetGroupAssistTank(bot, 0) &&
-        GetGroupMainTank(bot) ? 0.0f : 1.0f;
-}
-
 float KiljaedenDpsFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    // Shaman have no spreading DoTs, and their only spell classified as ActionThreatType::Aoe is
+    // Chain Lightning, which is a strong single-target spell in addition to providing AoE damage.
+    if (bot->getClass() == CLASS_SHAMAN)
+        return 1.0f;
+
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
-    if (/* !dynamic_cast<DpsAssistAction*>(action) && */
+    if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) &&
         action->getThreatType() != Action::ActionThreatType::Aoe)
     {
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
-        return 1.0f;
-
-    return GetGroupAssistTank(bot, 1) && GetGroupAssistTank(bot, 0) &&
-        GetGroupMainTank(bot) ? 0.0f : 1.0f;
+    return AI_VALUE(GuidVector, "kiljaeden hands").empty() ? 1.0f : 0.0f;
 }
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)

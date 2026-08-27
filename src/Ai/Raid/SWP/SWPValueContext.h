@@ -112,17 +112,6 @@ protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenHandGuids(bot); }
 };
 
-class KiljaedenFelfireHazardsValue : public CalculatedValue<GuidVector>
-{
-public:
-    KiljaedenFelfireHazardsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-              botAI, "kiljaeden felfire hazards", SwpHelpers::FELFIRE_CACHE_INTERVAL_MS) {}
-
-protected:
-    GuidVector Calculate() override { return SwpHelpers::FindKiljaedenFelfireHazardGuids(bot); }
-};
-
 class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -136,8 +125,6 @@ public:
         creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
         creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
         creators["kiljaeden hands"] = &RaidSunwellValueContext::kiljaeden_hands;
-        creators["kiljaeden felfire hazards"] =
-            &RaidSunwellValueContext::kiljaeden_felfire_hazards;
     }
 
 private:
@@ -164,9 +151,6 @@ private:
     }
     static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
         return new KiljaedenHandsValue(botAI);
-    }
-    static UntypedValue* kiljaeden_felfire_hazards(PlayerbotAI* botAI) {
-        return new KiljaedenFelfireHazardsValue(botAI);
     }
 };
 

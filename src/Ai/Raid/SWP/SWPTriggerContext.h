@@ -194,9 +194,6 @@ public:
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSunwellTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
-        creators["kil'jaeden ranged should focus felfire fiends"] =
-            &RaidSunwellTriggerContext::kiljaeden_ranged_should_focus_felfire_fiends;
-
         creators["kil'jaeden tanks should hold boss and reflections"] =
             &RaidSunwellTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
 
@@ -408,9 +405,6 @@ private:
     }
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI) {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
-    }
-    static Trigger* kiljaeden_ranged_should_focus_felfire_fiends(PlayerbotAI* botAI) {
-        return new KiljaedenRangedShouldFocusFelfireFiendsTrigger(botAI);
     }
     static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI) {
         return new KiljaedenTanksShouldHoldBossAndReflectionsTrigger(botAI);
