@@ -570,9 +570,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool ExecuteTankHandAssignment(
-        std::vector<Unit*> const& hands,
-        Player* mainTank, Player* firstAssistTank, Player* secondAssistTank);
+    ObjectGuid ClaimHandForTank(std::vector<Unit*> const& hands, size_t myIndex);
+    bool StepToStandoff(Unit* from, float standoff);
+    bool KeepTankClearOfHazards(std::vector<Player*> const& tanks, size_t myIndex);
 };
 
 class KiljaedenSpreadRangedAction : public MovementAction
