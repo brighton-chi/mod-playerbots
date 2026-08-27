@@ -12,10 +12,16 @@
 #include "SWPSharedConstants.h"
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <map>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
+
+// Note re Hands of the Deceiver: The high complexity of the methods relating to the Hands is
+// totally unnecessary if you do not use mod-individual-progression (IP). IP fixes the Hands so that
+// they each spam Shadow Bolt Volley every 3s and can quickly wipe the raid. What is an easy phase
+// for players (and for bots in stock AC) becomes probably the most difficult part of the encounter.
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
@@ -66,8 +72,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
     std::vector<Player*> const tanks = {
         GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
 
-    // Everything below addresses the tanks by index, so the whole scheme needs all three present,
-    // and this bot has nothing to do here unless it is one of them.
     if (std::any_of(tanks.begin(), tanks.end(), [](Player* tank) { return !tank; }))
         return false;
 
@@ -83,8 +87,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != assignedHand)
         return Attack(assignedHand);
 
-    // Dragging only works while the Hand is actually following. A tank that has lost it, or that is
-    // out of melee range, would walk away alone, and one whose Hand is stunned cannot move it.
     if (assignedHand->GetVictim() != bot || !bot->IsWithinMeleeRange(assignedHand) ||
         assignedHand->HasUnitState(UNIT_STATE_STUNNED))
     {
@@ -94,8 +96,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::Execute(Event /*event*/)
     return KeepTankClearOfHazards(tanks, myIndex);
 }
 
-// A tank holds its Hand until that Hand dies, so the three never converge on one. An unheld Hand is
-// taken in the list's guid order, which is the same order every bot sees.
 ObjectGuid KiljaedenAssignHandsOfTheDeceiverAction::ClaimHandForTank(
     std::vector<Unit*> const& hands, size_t myIndex)
 {
@@ -133,8 +133,6 @@ ObjectGuid KiljaedenAssignHandsOfTheDeceiverAction::ClaimHandForTank(
     return assignedGuid;
 }
 
-// Both keep-aways are the same move: close whatever is left of a standoff the bot owes, one capped
-// step per tick, so the move lock never outlasts the reason for moving.
 bool KiljaedenAssignHandsOfTheDeceiverAction::StepToStandoff(Unit* from, float standoff)
 {
     float const remaining = standoff - bot->GetExactDist2d(from);
@@ -144,8 +142,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::StepToStandoff(Unit* from, float s
     return MoveAway(from, std::min(remaining, HAND_TANK_MOVE_STEP), true);
 }
 
-// Portals before neighbours: a Felfire Fission costs more than two Hands being close, and since
-// both are single steps, whichever loses a tick gets the next one.
 bool KiljaedenAssignHandsOfTheDeceiverAction::KeepTankClearOfHazards(
     std::vector<Player*> const& tanks, size_t myIndex)
 {
@@ -160,7 +156,6 @@ bool KiljaedenAssignHandsOfTheDeceiverAction::KeepTankClearOfHazards(
 
     for (size_t i = 0; i < tanks.size(); ++i)
     {
-        // A tank holding no live Hand of its own is nothing to be spread away from.
         Unit* otherHand = botAI->GetUnit(assignments[i]);
         if (i == myIndex || !tanks[i]->IsAlive() || !otherHand || !otherHand->IsAlive())
             continue;
