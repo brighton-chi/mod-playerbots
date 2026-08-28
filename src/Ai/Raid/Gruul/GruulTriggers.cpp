@@ -99,6 +99,11 @@ bool HighKingMaulgarPullingOgreCouncilTrigger::IsActive()
     return blindeye && blindeye->GetHealthPct() > BLINDEYE_PULL_COMPLETE_HP_PERCENT;
 }
 
+bool HighKingMaulgarBossCastsIntimidatingRoarTrigger::IsActive()
+{
+    return bot->getClass() == CLASS_PRIEST && AI_VALUE2(Unit*, "find target", "high king maulgar");
+}
+
 // Gruul the Dragonkiller
 
 bool GruulTheDragonkillerShouldBeTankedTrigger::IsActive()
@@ -113,5 +118,5 @@ bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActive()
 
 bool GruulTheDragonkillerIncomingShatterTrigger::IsActive()
 {
-    return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM));
+    return HasGroundSlam(bot);
 }

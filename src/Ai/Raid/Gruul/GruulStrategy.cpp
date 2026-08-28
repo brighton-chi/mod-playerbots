@@ -30,13 +30,16 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("high king maulgar run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("high king maulgar krosh casts blast wave", {
-        NextAction("high king maulgar flee from blast nova danger", ACTION_RAID + 2) }));
+        NextAction("high king maulgar flee from blast wave danger", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("high king maulgar wild fel stalker spawned", {
         NextAction("high king maulgar banish fel stalker", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high king maulgar pulling ogre council", {
         NextAction("high king maulgar misdirect ogres to tanks", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("high king maulgar boss casts intimidating roar", {
+        NextAction("high king maulgar cast fear ward on main tank", ACTION_RAID + 2) }));
 
     // Gruul the Dragonkiller
     triggers.push_back(new TriggerNode("gruul the dragonkiller should be tanked", {

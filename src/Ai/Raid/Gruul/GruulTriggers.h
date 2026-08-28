@@ -81,6 +81,14 @@ public:
     bool IsActive() override;
 };
 
+class HighKingMaulgarBossCastsIntimidatingRoarTrigger : public Trigger
+{
+public:
+    HighKingMaulgarBossCastsIntimidatingRoarTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "high king maulgar boss casts intimidating roar") {}
+    bool IsActive() override;
+};
+
 class GruulTheDragonkillerShouldBeTankedTrigger : public Trigger
 {
 public:

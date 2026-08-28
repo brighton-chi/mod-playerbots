@@ -35,14 +35,17 @@ public:
         creators["high king maulgar run away from whirlwind"] =
             &RaidGruulsLairActionContext::high_king_maulgar_run_away_from_whirlwind;
 
-        creators["high king maulgar flee from blast nova danger"] =
-            &RaidGruulsLairActionContext::high_king_maulgar_flee_from_blast_nova_danger;
+        creators["high king maulgar flee from blast wave danger"] =
+            &RaidGruulsLairActionContext::high_king_maulgar_flee_from_blast_wave_danger;
 
         creators["high king maulgar banish fel stalker"] =
             &RaidGruulsLairActionContext::high_king_maulgar_banish_fel_stalker;
 
         creators["high king maulgar misdirect ogres to tanks"] =
             &RaidGruulsLairActionContext::high_king_maulgar_misdirect_ogres_to_tanks;
+
+        creators["high king maulgar cast fear ward on main tank"] =
+            &RaidGruulsLairActionContext::high_king_maulgar_cast_fear_ward_on_main_tank;
 
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller tanks position boss"] =
@@ -77,14 +80,17 @@ private:
     static Action* high_king_maulgar_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new HighKingMaulgarRunAwayFromWhirlwindAction(botAI);
     }
-    static Action* high_king_maulgar_flee_from_blast_nova_danger(PlayerbotAI* botAI) {
-        return new HighKingMaulgarFleeFromBlastNovaDangerAction(botAI);
+    static Action* high_king_maulgar_flee_from_blast_wave_danger(PlayerbotAI* botAI) {
+        return new HighKingMaulgarFleeFromBlastWaveDangerAction(botAI);
     }
     static Action* high_king_maulgar_banish_fel_stalker(PlayerbotAI* botAI) {
         return new HighKingMaulgarBanishFelStalkerAction(botAI);
     }
     static Action* high_king_maulgar_misdirect_ogres_to_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarMisdirectOgresToTanksAction(botAI);
+    }
+    static Action* high_king_maulgar_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
+        return new HighKingMaulgarCastFearWardOnMainTankAction(botAI);
     }
 
     // Gruul the Dragonkiller

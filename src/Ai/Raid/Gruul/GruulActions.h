@@ -64,11 +64,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarFleeFromBlastNovaDangerAction : public MovementAction
+class HighKingMaulgarFleeFromBlastWaveDangerAction : public MovementAction
 {
 public:
-    HighKingMaulgarFleeFromBlastNovaDangerAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "high king maulgar flee from blast nova danger") {}
+    HighKingMaulgarFleeFromBlastWaveDangerAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high king maulgar flee from blast wave danger") {}
     bool Execute(Event event) override;
 };
 
@@ -80,11 +80,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarMisdirectOgresToTanksAction : public AttackAction
+class HighKingMaulgarMisdirectOgresToTanksAction : public Action
 {
 public:
     HighKingMaulgarMisdirectOgresToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "high king maulgar misdirect ogres to tanks") {}
+        : Action(botAI, "high king maulgar misdirect ogres to tanks") {}
+    bool Execute(Event event) override;
+};
+
+class HighKingMaulgarCastFearWardOnMainTankAction : public Action
+{
+public:
+    HighKingMaulgarCastFearWardOnMainTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "high king maulgar cast fear ward on main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -104,19 +112,17 @@ public:
     bool Execute(Event event) override;
     bool ResetInitialPosition()
     {
-        if (!_hasReachedInitialPosition && _initialPosition.GetPositionX() == 0.0f &&
-            _initialPosition.GetPositionY() == 0.0f)
-        {
+        if (!_hasReachedInitialPosition && !_hasInitialPosition)
             return false;
-        }
 
         _hasReachedInitialPosition = false;
-        _initialPosition = Position();
+        _hasInitialPosition = false;
         return true;
     }
 
 private:
     Position _initialPosition;
+    bool _hasInitialPosition = false;
     bool _hasReachedInitialPosition = false;
 };
 

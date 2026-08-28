@@ -114,4 +114,10 @@ bool IsKigglerMoonkinTank(Player* bot)
     return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(bot) == bot;
 }
 
+bool HasGroundSlam(Player* bot)
+{
+    return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
+        bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
+}
+
 }

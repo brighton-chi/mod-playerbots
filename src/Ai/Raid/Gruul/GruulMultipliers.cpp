@@ -146,10 +146,7 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
 
     // Arcane Shot removes Spell Shield, which the mage tank needs to survive
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (!krosh)
-        return 1.0f;
-
-    return action->GetTarget() == krosh ? 0.0f : 1.0f;
+    return krosh && action->GetTarget() == krosh ? 0.0f : 1.0f;
 }
 
 // If Krosh is still alive, do not use AoE abilities or cast Ice Block or Invisibility
@@ -194,7 +191,7 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM)))
+    if (!HasGroundSlam(bot))
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&
