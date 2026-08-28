@@ -51,7 +51,7 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
+float HighKingMaulgarRestrictTauntingMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -60,21 +60,28 @@ float HighKingMaulgarDontTauntKigglerMultiplier::GetValue(Action* action)
         return 1.0f;
 
     bool const isAoeThreat = IsAoeThreatAction(bot, action);
-
-    if (!IsTauntAction(bot, action) && !isAoeThreat)
+    if (!isAoeThreat && !IsTauntAction(bot, action))
         return 1.0f;
 
+    // The main tank stays on Maulgar the whole time so it can do whatever.
+    if (PlayerbotAI::IsMainTank(bot))
+        return 1.0f;
+
+    // Blindeye and Olm are tanked next to each other by separate tanks; until Blindeye is dead,
+    // don't use AoE threat abilities.
+    if (isAoeThreat && AI_VALUE2(Unit*, "find target", "blindeye the seer"))
+        return 0.0f;
+
+    // Kiggler is the only ogre for which taunting is a problem because he is the only one that is
+    // both (1) tanked by a non-traditional-tank and (2) directed to be attacked by traditional
+    // tanks (the Blindeye and Olm tanks after both are down).
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (!kiggler)
         return 1.0f;
 
-    // The check for Kiggler presumes that Blindeye and Olm are already dead; aoe threat abilities
-    // are okay only when Maulgar and Krosh are left
-    if (isAoeThreat)
-        return 0.0f;
+    if (!GetKigglerMoonkinTank(bot))
+        return 1.0f;
 
-    // Kiggler is the only ogre for which taunting is a problem because he is the only one that is
-    // both (1) tanked by a non-tank and (2) attacked by tanks (after Blindeye and Olm are down)
     return AI_VALUE(Unit*, "current target") == kiggler ? 0.0f : 1.0f;
 }
 
@@ -83,7 +90,7 @@ float HighKingMaulgarDisableDpsAssistMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsDps(bot))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     if (!dynamic_cast<DpsAssistAction*>(action))

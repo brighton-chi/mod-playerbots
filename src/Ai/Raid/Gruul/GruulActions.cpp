@@ -26,6 +26,7 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
     bool reset = false;
 
     reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
 
     Action* action = context->GetAction("gruul the dragonkiller spread ranged");
     if (action &&
@@ -177,9 +178,13 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
 bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    Unit* target = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* krosh = nullptr;
-    if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
+    if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
+    {
+        target = blindeye;
+    }
+    else if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
     {
         target = olm;
     }
@@ -191,10 +196,6 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
     else if (Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed"))
     {
         target = kiggler;
-    }
-    else if (Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar"))
-    {
-        target = maulgar;
     }
 
     if (!target)

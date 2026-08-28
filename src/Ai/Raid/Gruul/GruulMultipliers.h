@@ -25,11 +25,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class HighKingMaulgarDontTauntKigglerMultiplier : public Multiplier
+class HighKingMaulgarRestrictTauntingMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDontTauntKigglerMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "high king maulgar don't taunt kiggler") {}
+    HighKingMaulgarRestrictTauntingMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "high king maulgar restrict taunting") {}
     float GetValue(Action* action) override;
 };
 

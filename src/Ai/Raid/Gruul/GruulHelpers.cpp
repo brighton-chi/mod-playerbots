@@ -13,7 +13,10 @@ namespace GruulHelpers
 
 bool IsMaulgarTank(Player* bot)
 {
-    return PlayerbotAI::IsMainTank(bot);
+    // Note: IsMainTank() is not necessarily a tank (by either strategy or spec). It can be anybody
+    // with the main tank flag. Raid strategies will have problems with non-tank main tanks so this
+    // assumes you are using a real tank for your main tank.
+    return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
 }
 
 bool IsOlmTank(Player* bot)
@@ -23,7 +26,7 @@ bool IsOlmTank(Player* bot)
 
 bool IsBlindeyeTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 Player* GetKroshMageTank(Player* bot)
@@ -63,6 +66,11 @@ Player* GetKroshMageTank(Player* bot)
     return highestHpBotMage;
 }
 
+bool IsKroshMageTank(Player* bot)
+{
+    return bot->getClass() == CLASS_MAGE && GetKroshMageTank(bot) == bot;
+}
+
 Player* GetKigglerMoonkinTank(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -100,6 +108,11 @@ Player* GetKigglerMoonkinTank(Player* bot)
     }
 
     return highestHpBotMoonkin;
+}
+
+bool IsKigglerMoonkinTank(Player* bot)
+{
+    return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(bot) == bot;
 }
 
 }

@@ -59,7 +59,9 @@ bool IsMaulgarTank(Player* bot);
 bool IsOlmTank(Player* bot);
 bool IsBlindeyeTank(Player* bot);
 Player* GetKroshMageTank(Player* bot);
+bool IsKroshMageTank(Player* bot);
 Player* GetKigglerMoonkinTank(Player* bot);
+bool IsKigglerMoonkinTank(Player* bot);
 
 }
 

@@ -17,27 +17,27 @@ public:
     bool IsActive() override;
 };
 
-class HighKingMaulgarBossesEngagedByMeleeTanksTrigger : public Trigger
+class HighKingMaulgarThreeOgresNeedMeleeTanksTrigger : public Trigger
 {
 public:
-    HighKingMaulgarBossesEngagedByMeleeTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "high king maulgar bosses engaged by melee tanks") {}
+    HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "high king maulgar three ogres need melee tanks") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarKroshEngagedByMageTankTrigger : public Trigger
+class HighKingMaulgarKroshNeedsMageTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarKroshEngagedByMageTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "high king maulgar krosh engaged by mage tank") {}
+    HighKingMaulgarKroshNeedsMageTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "high king maulgar krosh needs mage tank") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarKigglerEngagedByMoonkinTankTrigger : public Trigger
+class HighKingMaulgarKigglerNeedsMoonkinTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarKigglerEngagedByMoonkinTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "high king maulgar kiggler engaged by moonkin tank") {}
+    HighKingMaulgarKigglerNeedsMoonkinTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "high king maulgar kiggler needs moonkin tank") {}
     bool IsActive() override;
 };
 
@@ -81,11 +81,11 @@ public:
     bool IsActive() override;
 };
 
-class GruulTheDragonkillerBossEngagedByTanksTrigger : public Trigger
+class GruulTheDragonkillerShouldBeTankedTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "gruul the dragonkiller boss engaged by tanks") {}
+    GruulTheDragonkillerShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "gruul the dragonkiller should be tanked") {}
     bool IsActive() override;
 };
 
