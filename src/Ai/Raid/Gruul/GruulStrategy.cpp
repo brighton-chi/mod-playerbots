@@ -68,4 +68,5 @@ void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multiplie
     // Gruul the Dragonkiller
     multipliers.push_back(new GruulTheDragonkillerControlTankMovementMultiplier(botAI));
     multipliers.push_back(new GruulTheDragonkillerStaySpreadForShatterMultiplier(botAI));
+    multipliers.push_back(new GruulTheDragonkillerHoldWhileSnaredMultiplier(botAI));
 }

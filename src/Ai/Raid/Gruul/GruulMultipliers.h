@@ -81,4 +81,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class GruulTheDragonkillerHoldWhileSnaredMultiplier : public Multiplier
+{
+public:
+    GruulTheDragonkillerHoldWhileSnaredMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "gruul the dragonkiller hold while snared") {}
+    float GetValue(Action* action) override;
+};
+
 #endif
