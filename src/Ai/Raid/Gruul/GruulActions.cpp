@@ -24,8 +24,11 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
-    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-    reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+    if (!AI_VALUE2(bool, "combat", "self target"))
+    {
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+    }
 
     Action* action = context->GetAction("gruul the dragonkiller spread ranged");
     if (action &&

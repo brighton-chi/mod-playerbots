@@ -203,7 +203,7 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* actio
 }
 
 // MoveTo does not check speed, and thus even with a snare of -100% or more, it starts a spline
-// and derives IsWaitingForLastMove from distance / speed, which is infinite in that case and
+// and calculates IsWaitingForLastMove from distance / speed, which is infinite in that case and
 // clamps to MaxWaitForMove (5s), blocking all movements for that duration. This multiplier is
 // needed to solve the issue for Gruul because the snare he applies (Gronn Lord's Grasp) persists
 // 300ms beyond the Shatter sequence, meaning that bots would otherwise be unable to move for 5s
@@ -211,6 +211,9 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* actio
 float GruulTheDragonkillerHoldWhileSnaredMultiplier::GetValue(Action* action)
 {
     if (bot->GetSpeed(MOVE_RUN) > 0.0f)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
         return 1.0f;
 
     return dynamic_cast<MovementAction*>(action) ? 0.0f : 1.0f;
