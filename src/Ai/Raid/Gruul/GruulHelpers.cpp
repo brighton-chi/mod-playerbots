@@ -6,7 +6,6 @@
 
 #include "GruulHelpers.h"
 #include "AiFactory.h"
-#include "GroupReference.h"
 #include "Playerbots.h"
 
 namespace GruulHelpers

@@ -86,10 +86,16 @@ bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActive()
 
 bool HighKingMaulgarKroshCastsBlastWaveTrigger::IsActive()
 {
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
     if (!AI_VALUE2(Unit*, "find target", "krosh firehand"))
         return false;
 
-    return !PlayerbotAI::IsTank(bot) && GetKroshMageTank(bot) != bot;
+    if (bot->getClass() == CLASS_MAGE)
+        return GetKroshMageTank(bot) != bot;
+
+    return true;
 }
 
 bool HighKingMaulgarWildFelStalkerSpawnedTrigger::IsActive()
@@ -103,7 +109,7 @@ bool HighKingMaulgarPullingOgreCouncilTrigger::IsActive()
         return false;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    return blindeye && blindeye->GetHealthPct() > 80.0f;
+    return blindeye && blindeye->GetHealthPct() > BLINDEYE_PULL_COMPLETE_HP_PERCENT;
 }
 
 // Gruul the Dragonkiller

@@ -31,10 +31,7 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    if (!blindeye)
-        return 1.0f;
-
-    return blindeye->GetHealthPct() > 75.0f ? 0.0f : 1.0f;
+    return blindeye && blindeye->GetHealthPct() > BLINDEYE_PULL_COMPLETE_HP_PERCENT ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
@@ -103,6 +100,9 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
     if (dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action))
         return 1.0f;
 
@@ -145,6 +145,7 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
     return action->GetTarget() == krosh ? 0.0f : 1.0f;
 }
 
+// If Krosh is still alive, do not use AoE abilities or cast Ice Block or Invisibility
 float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -153,11 +154,7 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (!castSpellAction)
-        return 1.0f;
-
-    if (castSpellAction->getThreatType() != Action::ActionThreatType::Aoe &&
+    if (action->getThreatType() != Action::ActionThreatType::Aoe &&
         !dynamic_cast<CastIceBlockAction*>(action) &&
         !dynamic_cast<CastInvisibilityAction*>(action))
     {
@@ -185,10 +182,7 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action
     }
 
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (!gruul)
-        return 1.0f;
-
-    return gruul->GetVictim() == bot ? 0.0f : 1.0f;
+    return gruul && gruul->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* action)

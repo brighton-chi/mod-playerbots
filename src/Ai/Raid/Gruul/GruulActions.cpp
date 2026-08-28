@@ -11,7 +11,9 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include <algorithm>
+#include <iterator>
 #include <limits>
+#include <list>
 #include <vector>
 
 using namespace GruulHelpers;
@@ -335,38 +337,17 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 1)
     {
         ogre = AI_VALUE2(Unit*, "find target", "olm the summoner");
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            if (Player* member = GetGroupAssistTank(bot, 0))
-            {
-                tank = member;
-                break;
-            }
-        }
+        tank = GetGroupAssistTank(bot, 0);
     }
     else if (hunterIndex == 2)
     {
         ogre = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            if (Player* member = GetKigglerMoonkinTank(bot))
-            {
-                tank = member;
-                break;
-            }
-        }
+        tank = GetKigglerMoonkinTank(bot);
     }
     else if (hunterIndex == 3)
     {
         ogre = AI_VALUE2(Unit*, "find target", "krosh firehand");
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            if (Player* member = GetKroshMageTank(bot))
-            {
-                tank = member;
-                break;
-            }
-        }
+        tank = GetKroshMageTank(bot);
     }
 
     if (!ogre || !tank || !tank->IsAlive())
@@ -482,7 +463,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        constexpr float maxMoveDist = 10.0f;
+        constexpr float maxMoveDist = 3.5f;
         float const moveDist = std::min(maxMoveDist, distToTarget);
         float const botX = bot->GetPositionX();
         float const botY = bot->GetPositionY();
@@ -497,10 +478,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float minSpreadDistance = 10.0f;
-    if (closestMember && closestDist < minSpreadDistance)
-        return FleePosition(closestMember->GetPosition(), minSpreadDistance);
+    if (!closestMember || closestDist >= minSpreadDistance)
+        return false;
 
-    return false;
+    return FleePosition(closestMember->GetPosition(), minSpreadDistance);
 }
 
 // To achieve no damage on Shatter takes a >18y spread, which isn't realistic. A distance of 10y
@@ -512,6 +493,5 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
     if (!nearestPlayer)
         return false;
 
-    constexpr uint32 minInterval = 500;
-    return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
+    return FleePosition(nearestPlayer->GetPosition(), safeDistance);
 }
