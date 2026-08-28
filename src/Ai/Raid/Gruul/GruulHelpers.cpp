@@ -77,8 +77,6 @@ Player* GetKigglerMoonkinTank(Player* bot)
     if (!group)
         return nullptr;
 
-    uint8 const tab = AiFactory::GetPlayerSpecTab(bot);
-
     // If an assistant Balance Druid (player or bot) is found, return immediately.
     // Otherwise, return the bot Balance Druid with the highest HP as fallback.
     Player* highestHpBotMoonkin = nullptr;
@@ -88,7 +86,8 @@ Player* GetKigglerMoonkinTank(Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
-            member->getClass() != CLASS_DRUID || tab != DRUID_TAB_BALANCE)
+            member->getClass() != CLASS_DRUID ||
+            AiFactory::GetPlayerSpecTab(member) != DRUID_TAB_BALANCE)
         {
             continue;
         }
