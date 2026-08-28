@@ -10,6 +10,7 @@
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
+#include "Timer.h"
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;
@@ -338,14 +339,13 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
-    uint32 const instanceId = nightbane->GetInstanceId();
-    time_t const now = std::time(nullptr);
-    constexpr uint8 flightPhaseDurationSeconds = 35;
+    constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    if (nightbaneFlightPhaseStartTimer.find(instanceId) == nightbaneFlightPhaseStartTimer.end())
+    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetInstanceId());
+    if (it == nightbaneFlightPhaseStartTimer.end())
         return false;
 
-    return now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds;
+    return getMSTimeDiff(it->second, getMSTime()) < flightPhaseDurationMs;
 }
 
 bool NightbaneBotWentOutOfBoundsTrigger::IsActive()

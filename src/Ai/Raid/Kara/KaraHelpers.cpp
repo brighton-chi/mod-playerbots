@@ -29,7 +29,7 @@ bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float h
 
 // Attumen the Huntsman
 
-std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+std::unordered_map<uint32, uint32> attumenDpsWaitTimer;
 
 Unit* GetAttumenMounted(Player* bot)
 {
@@ -75,7 +75,7 @@ bool IsFlameWreathActive(Player* bot)
 
 // Netherspite
 
-std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+std::unordered_map<uint32, uint32> netherspiteDpsWaitTimer;
 std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
 std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
 std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
@@ -442,7 +442,7 @@ bool TryFindSafePositionWithSafePath(
 
 // Nightbane
 
-std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+std::unordered_map<uint32, uint32> nightbaneDpsWaitTimer;
+std::unordered_map<uint32, uint32> nightbaneFlightPhaseStartTimer;
 
 }

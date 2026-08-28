@@ -9,10 +9,10 @@
 #include "KaraHelpers.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "Timer.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <ctime>
 #include <limits>
 #include <list>
 #include <map>
@@ -245,7 +245,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 
 bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
 {
-    time_t const now = std::time(nullptr);
+    uint32 const now = getMSTime();
     return attumenDpsWaitTimer.try_emplace(bot->GetInstanceId(), now).second;
 }
 
@@ -663,7 +663,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     {
         if (!_redBeamTimerWasSet)
         {
-            _redBeamMoveTimer = std::time(nullptr);
+            _redBeamMoveTimer = getMSTime();
             _redBeamTimerWasSet = true;
         }
     }
@@ -682,11 +682,11 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingRedBeam = true;
 
-    constexpr uint8 intervalSecs = 5;
-    if (_redBeamTimerWasSet && std::time(nullptr) - _redBeamMoveTimer >= intervalSecs)
+    constexpr uint32 intervalMs = 5 * IN_MILLISECONDS;
+    if (_redBeamTimerWasSet && GetMSTimeDiffToNow(_redBeamMoveTimer) >= intervalMs)
     {
         _lastBeamMoveSideways = !_lastBeamMoveSideways;
-        _redBeamMoveTimer = std::time(nullptr);
+        _redBeamMoveTimer = getMSTime();
     }
 
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -971,7 +971,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
         return false;
 
     uint32 const instanceId = netherspite->GetInstanceId();
-    time_t const now = std::time(nullptr);
+    uint32 const now = getMSTime();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
 
@@ -1515,7 +1515,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return false;
 
     uint32 const instanceId = nightbane->GetInstanceId();
-    time_t const now = std::time(nullptr);
+    uint32 const now = getMSTime();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
 

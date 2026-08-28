@@ -11,7 +11,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
-#include <ctime>
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
@@ -97,7 +96,7 @@ bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float 
 
 // Attumen the Huntsman
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
-extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> attumenDpsWaitTimer;
 Unit* GetAttumenMounted(Player* bot);
 
 // Maiden of Virtue
@@ -139,7 +138,7 @@ bool IsAranCastingArcaneExplosion(Unit* aran);
 bool IsFlameWreathActive(Player* bot);
 
 // Netherspite
-extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> netherspiteDpsWaitTimer;
 extern std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
 extern std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
 extern std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
@@ -178,8 +177,8 @@ inline std::array const NIGHTBANE_RAIN_OF_BONES_POSITIONS = {
     Position{ -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
 };
 inline Position const NIGHTBANE_TELEPORT_POSITION = { -11159.555f, -1893.526f, 91.473f };
-extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+extern std::unordered_map<uint32, uint32> nightbaneDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> nightbaneFlightPhaseStartTimer;
 
 }
 

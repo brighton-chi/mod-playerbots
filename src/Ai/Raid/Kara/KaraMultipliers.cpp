@@ -21,8 +21,8 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "Timer.h"
 #include "WarriorActions.h"
-#include <ctime>
 
 using namespace KaraHelpers;
 
@@ -124,9 +124,8 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (it == attumenDpsWaitTimer.end())
         return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 5;
-    return (now - it->second) < dpsWaitSeconds ? 0.0f : 1.0f;
+    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
+    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Maiden of Virtue
@@ -338,9 +337,8 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (it == netherspiteDpsWaitTimer.end())
         return 0.0f;
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 5;
-    return (now - it->second) < dpsWaitSeconds ? 0.0f : 1.0f;
+    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
+    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Prince Malchezaar
@@ -472,9 +470,8 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (it == nightbaneDpsWaitTimer.end())
         return 0.0f;
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 8;
-    return (now - it->second) < dpsWaitSeconds ? 0.0f : 1.0f;
+    constexpr uint32 dpsWaitMs = 8 * IN_MILLISECONDS;
+    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
@@ -525,10 +522,9 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 
     // After 35s, Nightbane goes to land, and bots freely follow their master
     auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetInstanceId());
-    if (it != nightbaneFlightPhaseStartTimer.end())
+    if (it == nightbaneFlightPhaseStartTimer.end())
         return 0.0f;
 
-    time_t const now = std::time(nullptr);
-    constexpr uint8 flightPhaseDurationSeconds = 35;
-    return (now - it->second) < flightPhaseDurationSeconds ? 0.0f : 1.0f;
+    constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
+    return getMSTimeDiff(it->second, getMSTime()) < flightPhaseDurationMs ? 0.0f : 1.0f;
 }
