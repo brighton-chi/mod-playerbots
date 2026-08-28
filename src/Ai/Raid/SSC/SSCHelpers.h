@@ -10,7 +10,6 @@
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
-#include <ctime>
 #include <unordered_map>
 
 namespace SerpentShrineCavernHelpers
@@ -116,10 +115,10 @@ constexpr uint32 SSC_MAP_ID = 548;
 // Hydross the Unstable <Duke of Currents>
 extern const Position HYDROSS_FROST_TANK_POSITION;
 extern const Position HYDROSS_NATURE_TANK_POSITION;
-extern std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
-extern std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
+extern std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
+extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 bool HasMarkOfHydrossAt100Percent(Player* bot);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* bot);
@@ -127,14 +126,16 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
 extern const Position LURKER_MAIN_TANK_POSITION;
-extern std::unordered_map<uint32, time_t> lurkerSpoutTimer;
+// Stores the time the current Spout cast started; the entry is erased once it expires
+constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
+extern std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 bool IsLurkerCastingSpout(Unit* lurker);
 
 // Leotheras the Blind
-extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 Unit* GetLeotherasHuman(Player* bot);
 Unit* GetPhase2LeotherasDemon(Player* bot);
 Unit* GetPhase3LeotherasDemon(Player* bot);
@@ -148,7 +149,7 @@ extern const Position SHARKKIS_TANK_POSITION;
 extern const Position CARIBDIS_TANK_POSITION;
 extern const Position CARIBDIS_HEALER_POSITION;
 extern const Position CARIBDIS_RANGED_DPS_POSITION;
-extern std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
 extern const Position TIDEWALKER_PHASE_1_TANK_POSITION;
@@ -165,8 +166,8 @@ extern const Position VASHJ_PLATFORM_CENTER_POSITION;
 extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
 extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedLineup;
-extern std::unordered_map<uint32, time_t> lastImbueAttempt;
-extern std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
+extern std::unordered_map<uint32, uint32> lastImbueAttempt;
+extern std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
 bool IsMainTankInSameSubgroup(Player* bot);
 bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
 bool IsLadyVashjInPhase2(PlayerbotAI* botAI);

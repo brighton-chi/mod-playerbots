@@ -9,6 +9,7 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "Timer.h"
 
 namespace SerpentShrineCavernHelpers
 {
@@ -18,10 +19,10 @@ namespace SerpentShrineCavernHelpers
 const Position HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
 const Position HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
 
-std::unordered_map<uint32, time_t> hydrossFrostDpsWaitTimer;
-std::unordered_map<uint32, time_t> hydrossNatureDpsWaitTimer;
-std::unordered_map<uint32, time_t> hydrossChangeToFrostPhaseTimer;
-std::unordered_map<uint32, time_t> hydrossChangeToNaturePhaseTimer;
+std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
+std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
+std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
+std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
 bool HasMarkOfHydrossAt100Percent(Player* bot)
 {
@@ -61,7 +62,7 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 const Position LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
-std::unordered_map<uint32, time_t> lurkerSpoutTimer;
+std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 
 bool IsLurkerCastingSpout(Unit* lurker)
@@ -81,9 +82,9 @@ bool IsLurkerCastingSpout(Unit* lurker)
 
 // Leotheras the Blind
 
-std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
-std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
-std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
 Unit* GetLeotherasHuman(Player* bot)
 {
@@ -158,7 +159,7 @@ const Position CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
 const Position CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
 const Position CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
 
-std::unordered_map<uint32, time_t> karathressDpsWaitTimer;
+std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
 
@@ -177,8 +178,8 @@ const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
 std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
 std::unordered_map<ObjectGuid, Position> intendedLineup;
-std::unordered_map<uint32, time_t> lastImbueAttempt;
-std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
+std::unordered_map<uint32, uint32> lastImbueAttempt;
+std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot)
 {
@@ -462,8 +463,8 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
     if (myIndex == -1)
         return false;
 
-    const time_t now = std::time(nullptr);
-    constexpr uint8 lookbackSeconds = 3;
+    const uint32 now = getMSTime();
+    constexpr uint32 lookbackMs = 3 * IN_MILLISECONDS;
 
     for (int8 i = 0; i <= myIndex; ++i)
     {
@@ -476,7 +477,7 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
 
         auto it = lastCoreInInventoryTime.find(handler->GetGUID());
         if (it != lastCoreInInventoryTime.end() &&
-            (now - it->second) <= static_cast<time_t>(lookbackSeconds))
+            getMSTimeDiff(it->second, now) <= lookbackMs)
             return true;
     }
 
