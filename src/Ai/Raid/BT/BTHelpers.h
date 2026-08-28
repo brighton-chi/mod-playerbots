@@ -138,7 +138,7 @@ constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 extern const Position NAJENTUS_TANK_POSITION;
 
 // Supremus
-extern std::unordered_map<uint32, time_t> supremusPhaseTimer;
+extern std::unordered_map<uint32, uint32> supremusPhaseTimer;
 bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
 
 // Shade of Akama
@@ -153,7 +153,7 @@ extern const Position GOREFIEND_DIE_POSITION;
 extern const Position GURTOGG_TANK_POSITION;
 extern const Position GURTOGG_RANGED_POSITION;
 extern const Position GURTOGG_SOAKER_POSITION;
-extern std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
+extern std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
 int GetGurtoggActiveRotationGroup(Unit* gurtogg);
 
@@ -170,7 +170,7 @@ extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
 extern const Position MALANDE_TANK_POSITION;
 extern const Position ZEREVOR_TANK_POSITION;
 extern const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS;
-extern std::unordered_map<uint32, time_t> councilDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 Player* GetZerevorMageTank(Player* bot);
@@ -190,8 +190,8 @@ extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
 extern std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
 extern std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
 extern std::unordered_map<uint32, int> illidanLastPhase;
-extern std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
-extern std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> illidanBossDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
 extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 int GetIllidanPhase(Unit* illidan);

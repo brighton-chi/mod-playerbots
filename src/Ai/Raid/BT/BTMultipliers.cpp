@@ -17,9 +17,9 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "Timer.h"
 #include "WipeAction.h"
 #include <array>
-#include <ctime>
 
 using namespace BlackTempleHelpers;
 using namespace EncounterHelpers;
@@ -410,11 +410,12 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<IllidariCouncilMisdirectBossesToTanksAction*>(action))
         return 1.0f;
 
-    const time_t now = std::time(nullptr);
-    constexpr uint8 dpsWaitSeconds = 5;
+    const uint32 now = getMSTime();
+    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
 
     auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
-    if (it == councilDpsWaitTimer.end() || (now - it->second) >= dpsWaitSeconds)
+    if (it == councilDpsWaitTimer.end() ||
+        getMSTimeDiff(it->second, now) >= dpsWaitMs)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
@@ -615,7 +616,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<IllidanStormrageMisdirectToTankAction*>(action))
         return 1.0f;
 
-    const time_t now = std::time(nullptr);
+    const uint32 now = getMSTime();
     const uint32 instanceId = illidan->GetMap()->GetInstanceId();
 
     int phase = GetIllidanPhase(illidan);
@@ -623,11 +624,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     if ((phase == 1 || phase == 3 || phase == 5) &&
         !botAI->IsMainTank(bot))
     {
-        constexpr uint8 humanoidPhaseDpsWaitSeconds = 3;
+        constexpr uint32 humanoidPhaseDpsWaitMs = 3 * IN_MILLISECONDS;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
         if ((it == illidanBossDpsWaitTimer.end() ||
-             (now - it->second) < humanoidPhaseDpsWaitSeconds) &&
+             getMSTimeDiff(it->second, now) < humanoidPhaseDpsWaitMs) &&
               (dynamic_cast<AttackAction*>(action) ||
                (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action))))
@@ -638,11 +639,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
 
     if (phase == 4 && GetIllidanWarlockTank(bot) != bot)
     {
-        constexpr uint8 demonPhaseDpsWaitSeconds = 8;
+        constexpr uint32 demonPhaseDpsWaitMs = 8 * IN_MILLISECONDS;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
 
         if ((it == illidanBossDpsWaitTimer.end() ||
-             (now - it->second) < demonPhaseDpsWaitSeconds) &&
+             getMSTimeDiff(it->second, now) < demonPhaseDpsWaitMs) &&
               (dynamic_cast<AttackAction*>(action) ||
                (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action))))
@@ -655,11 +656,11 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
         !botAI->IsAssistTankOfIndex(bot, 0, true) &&
         !botAI->IsAssistTankOfIndex(bot, 1, true))
     {
-        constexpr uint8 flamePhaseDpsWaitSeconds = 6;
+        constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
 
         if ((it == illidanFlameDpsWaitTimer.end() ||
-             (now - it->second) < flamePhaseDpsWaitSeconds) &&
+             getMSTimeDiff(it->second, now) < flamePhaseDpsWaitMs) &&
               (dynamic_cast<AttackAction*>(action) ||
                (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action))))

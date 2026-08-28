@@ -7,6 +7,7 @@
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "Timer.h"
 
 using namespace EncounterHelpers;
 
@@ -17,7 +18,7 @@ namespace BlackTempleHelpers
 const Position NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
 // Supremus
-std::unordered_map<uint32, time_t> supremusPhaseTimer;
+std::unordered_map<uint32, uint32> supremusPhaseTimer;
 
 bool HasSupremusVolcanoNearby(PlayerbotAI*, Player* bot)
 {
@@ -50,7 +51,7 @@ const Position GURTOGG_TANK_POSITION    = { 735.987f, 272.451f, 063.554f };
 const Position GURTOGG_RANGED_POSITION  = { 762.265f, 277.183f, 063.781f };
 const Position GURTOGG_SOAKER_POSITION  = { 769.348f, 280.116f, 063.780f };
 
-std::unordered_map<uint32, time_t> gurtoggPhaseTimer;
+std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
 
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 {
@@ -91,9 +92,10 @@ int GetGurtoggActiveRotationGroup(Unit* gurtogg)
     if (it == gurtoggPhaseTimer.end())
         return -1;
 
-    const time_t now = std::time(nullptr);
-    const time_t elapsed = now - it->second;
-    const int groupIndex = (elapsed % 30) / 10; // 3 groups, swapping every 10 seconds
+    constexpr uint32 groupSwapIntervalMs = 10 * IN_MILLISECONDS;
+    constexpr uint32 rotationCycleMs = 3 * groupSwapIntervalMs;
+    const uint32 elapsed = GetMSTimeDiffToNow(it->second);
+    const int groupIndex = (elapsed % rotationCycleMs) / groupSwapIntervalMs;
 
     return groupIndex;
 }
@@ -131,7 +133,7 @@ const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS = {{
 }};
 const Position MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
 
-std::unordered_map<uint32, time_t> councilDpsWaitTimer;
+std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
@@ -216,8 +218,8 @@ std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
 std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
 std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
 std::unordered_map<uint32, int> illidanLastPhase;
-std::unordered_map<uint32, time_t> illidanBossDpsWaitTimer;
-std::unordered_map<uint32, time_t> illidanFlameDpsWaitTimer;
+std::unordered_map<uint32, uint32> illidanBossDpsWaitTimer;
+std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
 std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 

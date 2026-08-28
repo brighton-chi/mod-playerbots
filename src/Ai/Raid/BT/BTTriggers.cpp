@@ -11,6 +11,7 @@
 #include "InstanceScript.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include "Timer.h"
 
 using namespace BlackTempleHelpers;
 using namespace EncounterHelpers;
@@ -131,11 +132,13 @@ bool SupremusPullingBossOrChangingPhaseTrigger::IsActive()
     if (it == supremusPhaseTimer.end())
         return false;
 
-    const time_t now = time(nullptr);
-    const time_t elapsed = now - it->second;
+    constexpr uint32 activeWindowMs = 10 * IN_MILLISECONDS;
+    constexpr uint32 phaseCycleMs = 60 * IN_MILLISECONDS;
+    const uint32 elapsed = GetMSTimeDiffToNow(it->second);
 
     // Active during first 10 seconds, or during 60-70, 120-130, etc.
-    return (elapsed < 10) || ((elapsed % 60) < 10 && elapsed >= 60);
+    return (elapsed < activeWindowMs) ||
+           ((elapsed % phaseCycleMs) < activeWindowMs && elapsed >= phaseCycleMs);
 }
 
 bool SupremusBossEngagedByRangedTrigger::IsActive()
@@ -278,8 +281,8 @@ bool GurtoggBloodboilPullingBossTrigger::IsActive()
     if (it == gurtoggPhaseTimer.end())
         return false;
 
-    const time_t elapsed = std::time(nullptr) - it->second;
-    return elapsed < 10;
+    constexpr uint32 engageWindowMs = 10 * IN_MILLISECONDS;
+    return GetMSTimeDiffToNow(it->second) < engageWindowMs;
 }
 
 bool GurtoggBloodboilBossEngagedByTanksTrigger::IsActive()
