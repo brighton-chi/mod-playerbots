@@ -29,20 +29,14 @@
 namespace EncounterHelpers
 {
 
-// Asks whether a short step towards a destination is one the bot can actually take, and returns
-// where it lands. This is a verdict, not a movement helper: a caller that simply wants to walk
-// somewhere should project the step itself and hand MoveTo the bot's own Z, which re-derives the
-// real height through SearchForBestPath for none of the map queries below. Use this only where a
-// false answer means something--enumerating candidate destinations and moving on to the next.
-//
-// The step has to be short. The candidate's height comes from a downward search seeded at the
-// bot, so a long hop can outrun the ground it is measured against.
+// For validating ground and collision in connection with issuing incremental movement. This helper
+// checks whether a step towards a destination is one the bot can actually take, and it returns
+// where the step lands. A movement action that calls this helper needs to project the step itself
+// and pass `bot->GetPositionZ()` for the destination Z coordinates.
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
-    // Not worth the map queries, and the caller's own arrival deadzone is what governs the final
-    // approach; this only rules out a degenerate step
     constexpr float minMoveDistance = 0.5f;
 
     float const distance = bot->GetExactDist2d(destinationX, destinationY);
@@ -58,20 +52,17 @@ bool CanTakeStepTowards(
     float candidateY = botY + (destinationY - botY) * ratio;
     float candidateZ = bot->GetMapWaterOrGroundLevel(candidateX, candidateY, botZ);
 
-    // No ground in that column. Keep the bot's Z as the candidate and let the reach check rule on
-    // it rather than silently reporting an ungrounded position as reachable
     if (candidateZ <= INVALID_HEIGHT)
         candidateZ = botZ;
 
-    // IsWalkableClimb measures abs(dz), so it turns down a descent as harshly as a climb. Only ask
-    // for it where the step actually rises; walking downhill is always possible
+    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
+    // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
+    // check needlessly rejects descents. This variable gets around that problem.
     bool const failOnSlopes = candidateZ > botZ;
 
-    // Fail on collision rather than clamping to the contact point. Clamping reports success for a
-    // step that ends against whatever is in the way, which stops a caller enumerating candidates
-    // dead on the first blocked one--it walks into the obstacle, then repeats the same clamped
-    // point until MoveTo rejects it as a duplicate. A refusal sends the caller to its next
-    // candidate, which is the whole reason this returns a verdict
+    // This helper will return false on collision rather than clamping to the contact point so that
+    // the caller can try a different path. Clamping is useless for avoidance since the bot will die
+    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
     float const requestedX = candidateX;
     float const requestedY = candidateY;
 
@@ -81,14 +72,6 @@ bool CanTakeStepTowards(
         return false;
     }
 
-    // The reach check answers true for a step it silently shortened. Its raycast accepts
-    // PATHFIND_INCOMPLETE and then overwrites the destination with wherever the ray stopped, so a
-    // step into anything the navmesh has carved out--scenery, a building--comes back as a success
-    // that ends against the obstruction. failOnCollision does not cover it: that governs the model
-    // trees, and static models are not consulted at all for a bot walking on the ground.
-    //
-    // A caller with somewhere else to try needs this to read as a refusal, or it commits to the
-    // first direction and walks into the thing forever
     constexpr float truncationTolerance = 1.0f;
     if (std::hypot(candidateX - requestedX, candidateY - requestedY) > truncationTolerance)
         return false;
@@ -99,8 +82,8 @@ bool CanTakeStepTowards(
     return true;
 }
 
-// Functions to mark targets with raid target icons
-// Note that these functions do not allow the player to change the icon during the encounter
+// Functions to mark targets with raid target icons.
+// Note that these functions do not allow the player to change the icon during the encounter.
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
@@ -160,6 +143,8 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
     return MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
+// For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
+// behind an out of combat check (such as with IsInCombatValue).
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -273,7 +258,7 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     return nullptr;
 }
 
-// Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+// Return the first matching alive unit from PossibleTargetsValue within .sightDistance from config
 // Note that PossibleTargetsValue picks up only hostile units
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
@@ -290,7 +275,8 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 }
 
 // Return the nearest alive player (human or bot) within the specified radius. Distance is
-// measured by GetExactDist2d(), which does not take into account player hitboxes (1.5y).
+// measured by GetExactDist2d(), which does not take into account either player's CombatReach
+// (i.e., their hitboxes), which are 1.5y for all races (or 1.95y with Bloodlust/Heroism active).
 Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
     Group* group = bot->GetGroup();
@@ -317,7 +303,7 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
     return nearestPlayer;
 }
 
-// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards.
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId)
 {
     std::list<WorldObject*> objs;
@@ -344,7 +330,7 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
 }
 
 // This function is primarily for use in multipliers during encounters where it is desirable
-// for bots to save cooldowns for particular phases (or for a bit after the pull)
+// for bots to save cooldowns for particular phases (or for a bit after the pull).
 bool IsDpsCooldownAction(Player* bot, Action* action)
 {
     if (bot->getClass() == CLASS_SHAMAN && // Before dps gate to capture Resto
@@ -470,7 +456,7 @@ bool IsTauntAction(Player* bot, Action* action)
     }
 }
 
-// These abilities can be particularly problematic on the pull for a council-type boss
+// These abilities can be particularly problematic on the pull for a council-type boss.
 bool IsAoeThreatAction(Player* bot, Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
