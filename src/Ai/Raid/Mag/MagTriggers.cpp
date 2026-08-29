@@ -15,7 +15,7 @@ using namespace EncounterHelpers;
 
 bool MagtheridonNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != MAG_MAP_ID)
+    if (!IsMechanicTrackerBot(bot, MAG_MAP_ID))
         return false;
 
     InstanceScript* instance = bot->GetInstanceScript();
