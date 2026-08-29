@@ -114,7 +114,9 @@ bool GetTankPositionStep(
     // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
     // step be farther than the distance that can be covered in a single tick. But this helper
     // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
-    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain.
+    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain, but if you
+    // are moving steeply uphill and find that movement is failing, it may be possible that the step
+    // distances would need to be even shorter (in which case you couldn't use this helper).
     constexpr float backwardDistancePerStep = 2.25f;
     constexpr float forwardDistancePerStep = 3.5f;
     float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
