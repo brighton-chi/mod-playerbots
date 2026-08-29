@@ -377,7 +377,8 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     constexpr float arrivalDist = 3.0f;
-    float moveX, moveY;
+    float moveX;
+    float moveY;
     bool backwards;
     if (!GetTankPositionStep(bot, GRUUL_TANK_POSITION, arrivalDist, gruul, moveX, moveY, backwards))
         return false;
