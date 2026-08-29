@@ -149,11 +149,11 @@ public:
 
 // Kaz'rogal
 
-class KazrogalAssistTanksMoveInFrontOfBossAction : public AttackAction
+class KazrogalAssistTanksMoveInFrontAction : public AttackAction
 {
 public:
-    KazrogalAssistTanksMoveInFrontOfBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kaz'rogal assist tanks move in front of boss") {}
+    KazrogalAssistTanksMoveInFrontAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kaz'rogal assist tanks move in front") {}
     bool Execute(Event event) override;
 };
 
@@ -184,8 +184,7 @@ public:
 class KazrogalCancelMarkAction : public Action
 {
 public:
-    KazrogalCancelMarkAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal cancel mark") {}
+    KazrogalCancelMarkAction(PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cancel mark") {}
     bool Execute(Event event) override;
 };
 
@@ -261,11 +260,11 @@ private:
     bool SetTremorTotem();
 };
 
-class ArchimondeSpreadToAvoidAirBurstAction : public MovementAction
+class ArchimondeKeepAirBurstAwayFromMainTankAction : public MovementAction
 {
 public:
-    ArchimondeSpreadToAvoidAirBurstAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "archimonde spread to avoid air burst") {}
+    ArchimondeKeepAirBurstAwayFromMainTankAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "archimonde keep air burst away from main tank") {}
     bool Execute(Event event) override;
 };
 

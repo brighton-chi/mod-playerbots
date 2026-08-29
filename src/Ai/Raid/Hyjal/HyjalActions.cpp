@@ -407,7 +407,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 // Kaz'rogal
 // CombatReach is 7.875 yards
 
-bool KazrogalAssistTanksMoveInFrontOfBossAction::Execute(Event /*event*/)
+bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(bot);
     if (!mainTank)
@@ -817,7 +817,7 @@ bool ArchimondeCastFearImmunitySpellAction::SetTremorTotem()
 // Air Burst knocks everyone around its target into the air. Losing the whole melee group at once
 // is what has to be avoided, since Archimonde turns to a ranged one-shot when nobody is left in
 // melee range. Thus, the avoidance is to get away from the tank.
-bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
+bool ArchimondeKeepAirBurstAwayFromMainTankAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)

@@ -390,7 +390,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
     }
 
     if (dynamic_cast<ArchimondeAvoidDoomfireAction*>(action) ||
-        dynamic_cast<ArchimondeSpreadToAvoidAirBurstAction*>(action))
+        dynamic_cast<ArchimondeKeepAirBurstAwayFromMainTankAction*>(action))
     {
         return 1.0f;
     }

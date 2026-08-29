@@ -59,7 +59,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal can split malevolent cleave damage", {
-        NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID) }));
+        NextAction("kaz'rogal assist tanks move in front", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal ranged should avoid war stomp", {
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
@@ -112,7 +112,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
-        NextAction("archimonde spread to avoid air burst", ACTION_EMERGENCY + 8) }));
+        NextAction("archimonde keep air burst away from main tank", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));

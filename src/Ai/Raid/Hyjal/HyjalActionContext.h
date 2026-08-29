@@ -65,8 +65,8 @@ public:
         creators["kaz'rogal main tank position boss"] =
             &RaidHyjalSummitActionContext::kazrogal_main_tank_position_boss;
 
-        creators["kaz'rogal assist tanks move in front of boss"] =
-            &RaidHyjalSummitActionContext::kazrogal_assist_tanks_move_in_front_of_boss;
+        creators["kaz'rogal assist tanks move in front"] =
+            &RaidHyjalSummitActionContext::kazrogal_assist_tanks_move_in_front;
 
         creators["kaz'rogal spread ranged in arc"] =
             &RaidHyjalSummitActionContext::kazrogal_spread_ranged_in_arc;
@@ -118,8 +118,8 @@ public:
         creators["archimonde cast fear immunity spell"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
 
-        creators["archimonde spread to avoid air burst"] =
-            &RaidHyjalSummitActionContext::archimonde_spread_to_avoid_air_burst;
+        creators["archimonde keep air burst away from main tank"] =
+            &RaidHyjalSummitActionContext::archimonde_keep_air_burst_away_from_main_tank;
 
         creators["archimonde spread ranged"] =
             &RaidHyjalSummitActionContext::archimonde_spread_ranged;
@@ -192,8 +192,8 @@ private:
             botAI, "kaz'rogal main tank position boss", "kaz'rogal",
             HyjalHelpers::KAZROGAL_TANK_POSITION);
     }
-    static Action* kazrogal_assist_tanks_move_in_front_of_boss(PlayerbotAI* botAI) {
-        return new KazrogalAssistTanksMoveInFrontOfBossAction(botAI);
+    static Action* kazrogal_assist_tanks_move_in_front(PlayerbotAI* botAI) {
+        return new KazrogalAssistTanksMoveInFrontAction(botAI);
     }
     static Action* kazrogal_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new KazrogalSpreadRangedInArcAction(botAI);
@@ -253,8 +253,8 @@ private:
     static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
         return new ArchimondeCastFearImmunitySpellAction(botAI);
     }
-    static Action* archimonde_spread_to_avoid_air_burst(PlayerbotAI* botAI) {
-        return new ArchimondeSpreadToAvoidAirBurstAction(botAI);
+    static Action* archimonde_keep_air_burst_away_from_main_tank(PlayerbotAI* botAI) {
+        return new ArchimondeKeepAirBurstAwayFromMainTankAction(botAI);
     }
     static Action* archimonde_spread_ranged(PlayerbotAI* botAI) {
         return new ArchimondeSpreadRangedAction(botAI);
