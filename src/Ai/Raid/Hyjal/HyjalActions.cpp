@@ -116,23 +116,21 @@ bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 // Spread ranged DPS in a circle initially. After the initial spread, movement is free.
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
-    RangedGroups groups = GetRangedGroups(bot);
-    if (groups.healers.empty() && groups.rangedDps.empty())
-        return false;
-
     if (_winterchillPositionReached)
         return false;
 
+    RangedGroups groups = GetRangedGroups(bot);
     auto [botIndex, count] = GetBotCircleIndexAndCount(bot, groups);
-    float const radius = PlayerbotAI::IsHeal(bot) ? 25.0f : 35.0f;
-    float angle = 0.0f;
+    if (count == 0)
+        return false;
 
+    float const radius = PlayerbotAI::IsHeal(bot) ? 25.0f : 35.0f;
     constexpr float arcSpan = 2.0f * M_PI;
     constexpr float arcCenter = 0.0f;
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-    angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+    float const angle = (count == 1) ? arcCenter :
+        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
 
     Position const& position = WINTERCHILL_TANK_POSITION;
     constexpr float moveDist = 3.5f;
@@ -258,10 +256,6 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
 // try to spread a bit throughout the fight because of Carrion Swarm
 bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
-    RangedGroups groups = GetRangedGroups(bot);
-    if (groups.healers.empty() && groups.rangedDps.empty())
-        return false;
-
     if (_anetheronPositionReached)
     {
         constexpr float safeDistFromPlayer = 6.0f;
@@ -272,16 +266,18 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
         return false;
     }
 
+    RangedGroups groups = GetRangedGroups(bot);
     auto [botIndex, count] = GetBotCircleIndexAndCount(bot, groups);
-    float const radius = PlayerbotAI::IsHeal(bot) ? 27.0f : 34.0f;
-    float angle = 0.0f;
+    if (count == 0)
+        return false;
 
+    float const radius = PlayerbotAI::IsHeal(bot) ? 27.0f : 34.0f;
     constexpr float arcSpan = M_PI * 2.0f;
     constexpr float arcCenter = 0.0f;
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-    angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+    float const angle = (count == 1) ? arcCenter :
+        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
 
     Position const& position = ANETHERON_TANK_POSITION;
 
@@ -374,28 +370,28 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Melee stay on Anetheron throughout. Ranged attack Infernals if they are reasonably nearby (50y).
+// A live Infernal burns everything within 10y of itself, so anybody who is not holding it leaves.
+bool AnetheronGetOutOfImmolationAction::Execute(Event /*event*/)
+{
+    Unit* infernal = GetNearestInfernal(bot);
+    if (!infernal || infernal->GetVictim() == bot)
+        return false;
+
+    constexpr uint32 minInterval = 0;
+    return FleePosition(infernal->GetPosition(), INFERNAL_DANGER_RADIUS, minInterval);
+}
+
+// Melee stay on Anetheron throughout. Ranged attack Infernals if they are reasonably nearby.
 bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    if (Unit* nearest = GetNearestInfernal(bot))
-    {
-        constexpr uint32 minInterval = 0;
-        if (nearest->GetVictim() != bot && bot->GetExactDist2d(nearest) < INFERNAL_DANGER_RADIUS)
-            return FleePosition(nearest->GetPosition(), INFERNAL_DANGER_RADIUS, minInterval);
-    }
-
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron)
         return false;
 
-    if (PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsHeal(bot))
+    if (PlayerbotAI::IsMelee(bot))
         return AI_VALUE(Unit*, "current target") != anetheron && Attack(anetheron);
 
-    // Ranged within 50y of an Infernal will attack it. This is an arbitrary percentage to keep
-    // ranged from bunding up too much due to Carrion Swarm risk.
-    Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > BURN_BOSS_HEALTH_PCT &&
-        bot->GetDistance2d(infernal) < 50.0f)
+    if (Unit* infernal = GetInfernalToAttack(botAI, anetheron))
     {
         // Wait for the tank to pick up the Infernal before attacking directly
         Player* infernalTank = GetInfernalTank(bot);
@@ -435,20 +431,7 @@ bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
 
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    std::vector<Player*> rangedMembers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != HYJAL_MAP_ID || !PlayerbotAI::IsRanged(member))
-            continue;
-
-        rangedMembers.push_back(member);
-    }
-
+    std::vector<Player*> const rangedMembers = GetRangedMembers(bot);
     auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
     if (findIt == rangedMembers.end())
         return false;
@@ -517,13 +500,18 @@ bool KazrogalActivateAspectOfTheViperAction::Execute(Event /*event*/)
 
 bool KazrogalCancelMarkAction::Execute(Event /*event*/)
 {
-    uint32 const spellId = bot->getClass() == CLASS_MAGE
-        ? Id(HyjalSpells::SPELL_ICE_BLOCK) : Id(HyjalSpells::SPELL_DIVINE_SHIELD);
+    uint32 const spellId = GetKazrogalImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
 
-    if (!PlayerbotAI::IsHeal(bot)) // Remove bubble/ice block to resume dps immediately
-        bot->RemoveAura(spellId);
+bool KazrogalCancelImmunityAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetKazrogalImmunitySpell(bot);
+    if (!spellId || !bot->HasAura(spellId))
+        return false;
 
-    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+    bot->RemoveAura(spellId);
+    return true;
 }
 
 // Life Tap first, then cast Shadow Ward if there isn't enough health to do so

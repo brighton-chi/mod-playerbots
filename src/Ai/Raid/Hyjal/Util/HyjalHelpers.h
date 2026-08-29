@@ -128,6 +128,8 @@ bool FindStepToCircle(
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
+// Every ranged raid member on the map, in group order.
+std::vector<Player*> GetRangedMembers(Player* bot);
 RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
 
@@ -156,18 +158,22 @@ inline Position const ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1
 inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 // A landing Infernal stuns everybody within 10y for 2s (31302) and then burns everything within
-// 10y of itself for as long as it lives (31304 triggering 31303).
+// 10y of itself for as long as it lives with Immolation (31304 triggering 31303).
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
 inline constexpr float INFERNAL_ESCAPE_DISTANCE = INFERNAL_DANGER_RADIUS + 2.0f;
+// Past this, ranged stay on the boss rather than switching to the Infernal. Arbitrary, but near
+// enough that ranged do not bunch up and risk too many getting hit by a Carrion Swarm.
+inline constexpr float INFERNAL_RANGED_ENGAGE_DISTANCE = 50.0f;
 Player* GetInfernoTarget(Unit* anetheron);
 // Every living Towering Infernal, oldest first, read through the "hyjal infernals" value
 GuidVector FindInfernalGuids(Player* bot);
 GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
-// The Infernal the raid kills (oldest alive). In practice, a viable raid should have only one up.
-Unit* GetFocusedInfernal(PlayerbotAI* botAI);
 // The first Infernal that the Infernal tank does not have aggro on.
 Unit* GetLooseInfernal(Player* bot);
 Unit* GetNearestInfernal(Player* bot);
+// The Infernal a ranged bot should attack instead of the boss, if any. It is the oldest Infernal
+// alive, but in practice, a raid should have only one up at a time.
+Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron);
 Unit* GetInfernalTargetingBot(Player* bot);
 bool IsInfernalTank(Player* bot);
 Player* GetInfernalTank(Player* bot); // First Assist Tank
@@ -203,6 +209,7 @@ float GetKazrogalRangedArcRadius(Unit* kazrogal);
 float GetKazrogalRangedArcSpan(float radius);
 bool IsKazrogalManaUser(Player* bot);
 bool HasMarkOfKazrogal(Player* bot);
+uint32 GetKazrogalImmunitySpell(Player* bot);
 
 // Azgalor
 

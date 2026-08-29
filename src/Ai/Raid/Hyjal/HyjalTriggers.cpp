@@ -100,14 +100,7 @@ bool AnetheronRangedShouldSpreadTrigger::IsActive()
     if (GetInfernoTarget(anetheron) == bot)
         return false;
 
-    Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > BURN_BOSS_HEALTH_PCT &&
-        bot->GetDistance2d(infernal) < 50.0f)
-    {
-        return false;
-    }
-
-    return true;
+    return !GetInfernalToAttack(botAI, anetheron);
 }
 
 bool AnetheronBotIsNearInfernoTargetTrigger::IsActive()
@@ -138,7 +131,20 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     return GetInfernalTargetingBot(bot);
 }
 
-bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
+bool AnetheronInfernalsPulseImmolationTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "anetheron"))
+        return false;
+
+    Unit* infernal = GetNearestInfernal(bot);
+    return infernal && infernal->GetVictim() != bot &&
+        bot->GetExactDist2d(infernal) < INFERNAL_DANGER_RADIUS;
+}
+
+bool AnetheronInfernalsShouldBeTankedAwayTrigger::IsActive()
 {
     if (!IsInfernalTank(bot))
         return false;
@@ -152,7 +158,7 @@ bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
 
 bool AnetheronShouldDivideDpsTrigger::IsActive()
 {
-    return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 // Kaz'rogal
@@ -174,9 +180,6 @@ bool KazrogalCanSplitMalevolentCleaveDamageTrigger::IsActive()
 bool KazrogalRangedShouldAvoidWarStompTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
-        return false;
-
-    if (!IsKazrogalManaUser(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
@@ -241,13 +244,12 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActive()
         return false;
 
     // Blowing Ice Block/Divine Shield is worth it only where the Mark outlasts mana.
-    //   2401-3000  needs 4s left      1201-1800  needs 2s left      0-600  cast regardless
-    //   1801-2400  needs 3s left       601-1200  needs 1s left
+    //   2400-2999  needs 5s left      1200-1799  needs 3s left      0-599  needs 1s left
+    //   1800-2399  needs 4s left       600-1199  needs 2s left
     uint32 const tickDrain = static_cast<uint32>(MARK_TICK_DRAIN);
-    int32 const requiredMs =
-        (static_cast<int32>((mana + tickDrain - 1) / tickDrain) - 1) * IN_MILLISECONDS;
+    int32 const requiredMs = static_cast<int32>(mana / tickDrain + 1) * IN_MILLISECONDS;
 
-    return requiredMs <= 0 || aura->GetDuration() >= requiredMs;
+    return aura->GetDuration() >= requiredMs;
 }
 
 bool KazrogalWarlockShouldManageManaTrigger::IsActive()
@@ -268,6 +270,30 @@ bool KazrogalWarlockShouldManageManaTrigger::IsActive()
         return false;
 
     return bot->GetPower(POWER_MANA) <= MARK_TICK_DRAIN;
+}
+
+bool KazrogalImmunityNoLongerNeededTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE &&
+        (bot->getClass() != CLASS_PALADIN || PlayerbotAI::IsHeal(bot)))
+    {
+        return false;
+    }
+
+    uint32 const spellId = GetKazrogalImmunitySpell(bot);
+    if (!spellId || !bot->HasAura(spellId))
+        return false;
+
+    if (HasMarkOfKazrogal(bot))
+        return false;
+
+    // 50% is a proxy for the bot potentially being in range of getting blown up by other bots,
+    // so don't wipe the immunity if below that HP.
+    constexpr float keepImmunityHealthPct = 50.0f;
+    if (bot->GetHealthPct() <= keepImmunityHealthPct)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "kaz'rogal");
 }
 
 // Azgalor
@@ -329,13 +355,10 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorShouldControlDoomguardsTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsTank(bot))
+    if (!IsDoomguardTank(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
-        return false;
-
-    if (!IsDoomguardTank(bot))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);

@@ -169,19 +169,28 @@ bool GetHazardEscapeStep(
         bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ, isAcceptable);
 }
 
-RangedGroups GetRangedGroups(Player* bot)
+std::vector<Player*> GetRangedMembers(Player* bot)
 {
-    RangedGroups result;
+    std::vector<Player*> members;
     Group* group = bot->GetGroup();
     if (!group)
-        return result;
+        return members;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != HYJAL_MAP_ID || !PlayerbotAI::IsRanged(member))
-            continue;
+        if (member && member->GetMapId() == HYJAL_MAP_ID && PlayerbotAI::IsRanged(member))
+            members.push_back(member);
+    }
 
+    return members;
+}
+
+RangedGroups GetRangedGroups(Player* bot)
+{
+    RangedGroups result;
+    for (Player* member : GetRangedMembers(bot))
+    {
         if (PlayerbotAI::IsHeal(member))
             result.healers.push_back(member);
         else
@@ -272,17 +281,6 @@ GuidVector const& GetInfernalGuids(PlayerbotAI* botAI)
     return botAI->GetAiObjectContext()->GetValue<GuidVector>("hyjal infernals")->RefGet();
 }
 
-Unit* GetFocusedInfernal(PlayerbotAI* botAI)
-{
-    for (ObjectGuid const guid : GetInfernalGuids(botAI))
-    {
-        if (Unit* infernal = botAI->GetUnit(guid))
-            return infernal;
-    }
-
-    return nullptr;
-}
-
 Unit* GetLooseInfernal(Player* bot)
 {
     Player* infernalTank = GetInfernalTank(bot);
@@ -320,6 +318,25 @@ Unit* GetNearestInfernal(Player* bot)
     }
 
     return nearest;
+}
+
+Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
+{
+    if (!anetheron || anetheron->GetHealthPct() <= BURN_BOSS_HEALTH_PCT)
+        return nullptr;
+
+    Unit* infernal = nullptr;
+    for (ObjectGuid const guid : GetInfernalGuids(botAI))
+    {
+        infernal = botAI->GetUnit(guid);
+        if (infernal)
+            break;
+    }
+
+    if (!infernal || botAI->GetBot()->GetDistance2d(infernal) >= INFERNAL_RANGED_ENGAGE_DISTANCE)
+        return nullptr;
+
+    return infernal;
 }
 
 Unit* GetInfernalTargetingBot(Player* bot)
@@ -405,6 +422,21 @@ bool IsKazrogalManaUser(Player* bot)
 bool HasMarkOfKazrogal(Player* bot)
 {
     return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+}
+
+uint32 GetKazrogalImmunitySpell(Player* bot)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return Id(HyjalSpells::SPELL_ICE_BLOCK);
+
+        case CLASS_PALADIN:
+            return Id(HyjalSpells::SPELL_DIVINE_SHIELD);
+
+        default:
+            return 0;
+    }
 }
 
 // Azgalor

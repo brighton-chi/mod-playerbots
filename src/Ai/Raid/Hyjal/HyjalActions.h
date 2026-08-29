@@ -139,6 +139,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AnetheronGetOutOfImmolationAction : public MovementAction
+{
+public:
+    AnetheronGetOutOfImmolationAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "anetheron get out of immolation") {}
+    bool Execute(Event event) override;
+};
+
 class AnetheronAssignDpsPriorityAction : public AttackAction
 {
 public:
@@ -185,6 +193,13 @@ class KazrogalCancelMarkAction : public Action
 {
 public:
     KazrogalCancelMarkAction(PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cancel mark") {}
+    bool Execute(Event event) override;
+};
+
+class KazrogalCancelImmunityAction : public Action
+{
+public:
+    KazrogalCancelImmunityAction(PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cancel immunity") {}
     bool Execute(Event event) override;
 };
 

@@ -113,11 +113,19 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronInfernalsShouldBeKeptAwayTrigger : public Trigger
+class AnetheronInfernalsPulseImmolationTrigger : public Trigger
 {
 public:
-    AnetheronInfernalsShouldBeKeptAwayTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron infernals should be kept away") {}
+    AnetheronInfernalsPulseImmolationTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron infernals pulse immolation") {}
+    bool IsActive() override;
+};
+
+class AnetheronInfernalsShouldBeTankedAwayTrigger : public Trigger
+{
+public:
+    AnetheronInfernalsShouldBeTankedAwayTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "anetheron infernals should be tanked away") {}
     bool IsActive() override;
 };
 
@@ -168,6 +176,14 @@ class KazrogalMarkOnMageOrPaladinTrigger : public Trigger
 public:
     KazrogalMarkOnMageOrPaladinTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "kaz'rogal mark on mage or paladin") {}
+    bool IsActive() override;
+};
+
+class KazrogalImmunityNoLongerNeededTrigger : public Trigger
+{
+public:
+    KazrogalImmunityNoLongerNeededTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "kaz'rogal immunity no longer needed") {}
     bool IsActive() override;
 };
 

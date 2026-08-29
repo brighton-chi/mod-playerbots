@@ -52,8 +52,11 @@ public:
         creators["anetheron bot is targeted by infernal"] =
             &RaidHyjalSummitTriggerContext::anetheron_bot_is_targeted_by_infernal;
 
-        creators["anetheron infernals should be kept away"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_should_be_kept_away;
+        creators["anetheron infernals pulse immolation"] =
+            &RaidHyjalSummitTriggerContext::anetheron_infernals_pulse_immolation;
+
+        creators["anetheron infernals should be tanked away"] =
+            &RaidHyjalSummitTriggerContext::anetheron_infernals_should_be_tanked_away;
 
         creators["anetheron should divide dps"] =
             &RaidHyjalSummitTriggerContext::anetheron_should_divide_dps;
@@ -79,6 +82,9 @@ public:
 
         creators["kaz'rogal mark on mage or paladin"] =
             &RaidHyjalSummitTriggerContext::kazrogal_mark_on_mage_or_paladin;
+
+        creators["kaz'rogal immunity no longer needed"] =
+            &RaidHyjalSummitTriggerContext::kazrogal_immunity_no_longer_needed;
 
         creators["kaz'rogal warlock should manage mana"] =
             &RaidHyjalSummitTriggerContext::kazrogal_warlock_should_manage_mana;
@@ -173,8 +179,11 @@ private:
     static Trigger* anetheron_bot_is_targeted_by_infernal(PlayerbotAI* botAI) {
         return new AnetheronBotIsTargetedByInfernalTrigger(botAI);
     }
-    static Trigger* anetheron_infernals_should_be_kept_away(PlayerbotAI* botAI) {
-        return new AnetheronInfernalsShouldBeKeptAwayTrigger(botAI);
+    static Trigger* anetheron_infernals_pulse_immolation(PlayerbotAI* botAI) {
+        return new AnetheronInfernalsPulseImmolationTrigger(botAI);
+    }
+    static Trigger* anetheron_infernals_should_be_tanked_away(PlayerbotAI* botAI) {
+        return new AnetheronInfernalsShouldBeTankedAwayTrigger(botAI);
     }
     static Trigger* anetheron_should_divide_dps(PlayerbotAI* botAI) {
         return new AnetheronShouldDivideDpsTrigger(botAI);
@@ -202,6 +211,9 @@ private:
     }
     static Trigger* kazrogal_mark_on_mage_or_paladin(PlayerbotAI* botAI) {
         return new KazrogalMarkOnMageOrPaladinTrigger(botAI);
+    }
+    static Trigger* kazrogal_immunity_no_longer_needed(PlayerbotAI* botAI) {
+        return new KazrogalImmunityNoLongerNeededTrigger(botAI);
     }
     static Trigger* kazrogal_warlock_should_manage_mana(PlayerbotAI* botAI) {
         return new KazrogalWarlockShouldManageManaTrigger(botAI);

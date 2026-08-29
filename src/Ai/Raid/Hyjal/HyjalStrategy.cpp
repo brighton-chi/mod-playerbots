@@ -24,7 +24,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill melee near death and decay", {
-        NextAction("rage winterchill melee maneuver through death and decay", ACTION_EMERGENCY + 1) }));
+        NextAction(
+            "rage winterchill melee maneuver through death and decay", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("rage winterchill ranged in death and decay", {
         NextAction("rage winterchill ranged get out of death and decay", ACTION_EMERGENCY + 1) }));
@@ -45,7 +46,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron bot is near inferno target", {
         NextAction("anetheron move away from inferno target", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("anetheron infernals should be kept away", {
+    triggers.push_back(new TriggerNode("anetheron infernals pulse immolation", {
+        NextAction("anetheron get out of immolation", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("anetheron infernals should be tanked away", {
         NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron should divide dps", {
@@ -72,6 +76,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kaz'rogal mark on mage or paladin", {
         NextAction("kaz'rogal cancel mark", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("kaz'rogal immunity no longer needed", {
+        NextAction("kaz'rogal cancel immunity", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal warlock should manage mana", {
         NextAction("kaz'rogal warlock manage mana", ACTION_EMERGENCY + 6) }));

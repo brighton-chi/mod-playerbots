@@ -55,6 +55,8 @@ public:
         creators["anetheron infernal tank take position"] =
             &RaidHyjalSummitActionContext::anetheron_infernal_tank_take_position;
 
+        creators["anetheron get out of immolation"] =
+            &RaidHyjalSummitActionContext::anetheron_get_out_of_immolation;
         creators["anetheron assign dps priority"] =
             &RaidHyjalSummitActionContext::anetheron_assign_dps_priority;
 
@@ -80,6 +82,8 @@ public:
         creators["kaz'rogal cancel mark"] =
             &RaidHyjalSummitActionContext::kazrogal_cancel_mark;
 
+        creators["kaz'rogal cancel immunity"] =
+            &RaidHyjalSummitActionContext::kazrogal_cancel_immunity;
         creators["kaz'rogal warlock manage mana"] =
             &RaidHyjalSummitActionContext::kazrogal_warlock_manage_mana;
 
@@ -178,6 +182,9 @@ private:
     static Action* anetheron_infernal_tank_take_position(PlayerbotAI* botAI) {
         return new AnetheronInfernalTankTakePositionAction(botAI);
     }
+    static Action* anetheron_get_out_of_immolation(PlayerbotAI* botAI) {
+        return new AnetheronGetOutOfImmolationAction(botAI);
+    }
     static Action* anetheron_assign_dps_priority(PlayerbotAI* botAI) {
         return new AnetheronAssignDpsPriorityAction(botAI);
     }
@@ -206,6 +213,9 @@ private:
     }
     static Action* kazrogal_cancel_mark(PlayerbotAI* botAI) {
         return new KazrogalCancelMarkAction(botAI);
+    }
+    static Action* kazrogal_cancel_immunity(PlayerbotAI* botAI) {
+        return new KazrogalCancelImmunityAction(botAI);
     }
     static Action* kazrogal_warlock_manage_mana(PlayerbotAI* botAI) {
         return new KazrogalWarlockManageManaAction(botAI);
