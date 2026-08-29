@@ -20,7 +20,8 @@ public:
     bool IsActive() override;
 };
 
-// For Misdirection. Anetheron is not included because Hunters also Misdirect the Infernals.
+// For Misdirection to the boss. Anetheron is not included because Misdirection is used there for
+// picking up Infernals as well.
 class HyjalPullingBossTrigger : public Trigger
 {
 public:
@@ -33,19 +34,23 @@ private:
     std::string const _bossName;
 };
 
-// This covers all five MT actions, and activeAboveHealthPct is used for Archimonde only
+// This covers all five boss tanking actions, and activeAboveHealthPct is used for Archimonde
+// only. Anetheron, Kaz'rogal, and Azgalor need their offtanks free for the Infernals, the
+// Malevolent Cleave split, and the Doomguards, respectively, so those three are main tank only.
 class HyjalBossShouldBeTankedTrigger : public Trigger
 {
 public:
     HyjalBossShouldBeTankedTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
-        float activeAboveHealthPct = 0.0f)
-        : Trigger(botAI, name), _bossName(bossName), _activeAboveHealthPct(activeAboveHealthPct) {}
+        float activeAboveHealthPct = 0.0f, bool mainTankOnly = true)
+        : Trigger(botAI, name), _bossName(bossName), _activeAboveHealthPct(activeAboveHealthPct),
+          _mainTankOnly(mainTankOnly) {}
     bool IsActive() override;
 
 private:
     std::string const _bossName;
     float const _activeAboveHealthPct;
+    bool const _mainTankOnly;
 };
 
 // Rage Winterchill

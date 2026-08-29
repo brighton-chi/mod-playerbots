@@ -36,7 +36,12 @@ bool HyjalPullingBossTrigger::IsActive()
 
 bool HyjalBossShouldBeTankedTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    // IsMainTank() does not require an actual tank (by strategy or spec), but the raid strategy
+    // assumes the main tank will be a tank.
+    if (_mainTankOnly && !PlayerbotAI::IsMainTank(bot))
         return false;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);

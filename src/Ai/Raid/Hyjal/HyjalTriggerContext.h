@@ -144,7 +144,7 @@ private:
     }
     static Trigger* rage_winterchill_should_be_tanked(PlayerbotAI* botAI) {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "rage winterchill should be tanked", "rage winterchill");
+            botAI, "rage winterchill should be tanked", "rage winterchill", 0.0f, false);
     }
     static Trigger* rage_winterchill_ranged_should_spread(PlayerbotAI* botAI) {
         return new RageWinterchillRangedShouldSpreadTrigger(botAI);
@@ -241,7 +241,7 @@ private:
     static Trigger* archimonde_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new HyjalBossShouldBeTankedTrigger(
             botAI, "archimonde should be tanked", "archimonde",
-            HyjalHelpers::BOSS_ENGAGED_HEALTH_PCT);
+            HyjalHelpers::BOSS_ENGAGED_HEALTH_PCT, false);
     }
     static Trigger* archimonde_boss_casts_fear(PlayerbotAI* botAI) {
         return new ArchimondeBossCastsFearTrigger(botAI);
