@@ -7,6 +7,7 @@
 #include "ZAActions.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "ZAHelpers.h"
 #include <algorithm>
 #include <array>
@@ -20,7 +21,12 @@ using namespace EncounterHelpers;
 
 bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    return akilzonStormTimer.erase(bot->GetInstanceId()) > 0;
+    bool reset = false;
+    reset |= akilzonStormTimer.erase(bot->GetInstanceId()) > 0;
+    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearTargetIcon(bot, RtiTargetValue::moonIndex);
+
+    return reset;
 }
 
 bool ZulAmanMisdirectBossToMainTankAction::Execute(Event /*event*/)
@@ -54,25 +60,12 @@ bool ZulAmanTanksPositionBossAction::Execute(Event /*event*/)
     if (boss->GetVictim() != bot || !bot->IsWithinMeleeRange(boss))
         return false;
 
-    Position position = _position;
-
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = boss->GetPositionX() - botX;
-    float const toBossY = boss->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         ZA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -168,25 +161,17 @@ bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
             return false;
     }
 
-    Position const& position = NALORAKK_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    // Both tanks walk to the position, so the backpedal is left to GetTankPositionStep(), which
+    // takes it only while the bot actually has Nalorakk on it.
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, NALORAKK_TANK_POSITION, arrivalDist, nalorakk, moveX, moveY, backwards))
+    {
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = nalorakk->GetPositionX() - botX;
-    float const toBossY = nalorakk->GetPositionY() - botY;
-    bool const backwards = nalorakkTank && nalorakkTank == bot &&
-        (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         ZA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
