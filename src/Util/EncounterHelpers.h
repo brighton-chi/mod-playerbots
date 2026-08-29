@@ -23,6 +23,9 @@ namespace EncounterHelpers
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
+bool GetTankPositionStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);
 bool MarkTargetWithSquare(Player* bot, Unit* target);

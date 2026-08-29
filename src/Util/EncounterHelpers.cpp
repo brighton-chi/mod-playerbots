@@ -29,10 +29,10 @@
 namespace EncounterHelpers
 {
 
-// For validating ground and collision in connection with issuing incremental movement. This helper
-// checks whether a step towards a destination is one the bot can actually take, and it returns
-// where the step lands. A movement action that calls this helper needs to project the step itself
-// and pass `bot->GetPositionZ()` for the destination Z coordinates.
+// For validating ground and collision in connection with issuing incremental movement. The caller
+// gives a destination and how far to travel towards it per tick. The helper projects that step,
+// checks whether the bot can actually take it, and returns where it lands. The returned stepZ is
+// snapped to the ground, so a MoveTo() using this helper should pass stepZ rather than the bot's Z.
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ)
@@ -79,6 +79,50 @@ bool CanTakeStepTowards(
     stepX = candidateX;
     stepY = candidateY;
     stepZ = candidateZ;
+    return true;
+}
+
+// Calculate incremental movement to a tank position. No ground or collision is validated, unlike
+// CanTakeStepTowards(). The Z position passed for the MoveTo() action using this helper should
+// use the bot's Z, not the position's. Returns false once the bot is within arrivalDist.
+bool GetTankPositionStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards)
+{
+    float const distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= arrivalDist)
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
+
+    // Move backwards only when the bot (1) has aggro on the mob it is tanking, (2) is in melee
+    // range of the mob, and (3) the destination is on the opposite side of the bot from the mob.
+    // Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
+    // exceptions and thus the checks are made again in the helper.
+    backwards = false;
+    if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
+    {
+        float const toFacingX = facing->GetPositionX() - botX;
+        float const toFacingY = facing->GetPositionY() - botY;
+        backwards = (toPosX * toFacingX + toPosY * toFacingY) < 0.0f;
+    }
+
+    // Default time between AI ticks is 100ms, and base movement speed for players is 7y/s forwards
+    // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
+    // step be farther than the distance that can be covered in a single tick. But this helper
+    // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
+    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain.
+    constexpr float backwardDistancePerStep = 2.25f;
+    constexpr float forwardDistancePerStep = 3.5f;
+    float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
+    float const ratio = std::min(maxMoveDist, distToPosition) / distToPosition;
+
+    stepX = botX + toPosX * ratio;
+    stepY = botY + toPosY * ratio;
+
     return true;
 }
 

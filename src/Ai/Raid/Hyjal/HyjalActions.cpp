@@ -76,23 +76,11 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
     if (bot->GetHealthPct() < _bailBelowHealthPct)
         return false;
 
-    float const distToPosition = bot->GetExactDist2d(_position);
-    if (distToPosition <= 4.0f)
+    constexpr float arrivalDist = 4.0f;
+    float moveX, moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = _position.GetPositionX() - botX;
-    float const toPosY = _position.GetPositionY() - botY;
-
-    float const toBossX = boss->GetPositionX() - botX;
-    float const toBossY = boss->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -341,29 +329,15 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 // Note that Infernals cannot be taunted.
 bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
 {
-    Position const& position = GetInfernalTankPosition(bot);
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 3.0f)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    bool backwards = false;
-    if (Unit* held = GetInfernalTargetingBot(bot))
+    constexpr float arrivalDist = 3.0f;
+    float moveX, moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, GetInfernalTankPosition(bot), arrivalDist, GetInfernalTargetingBot(bot), moveX,
+            moveY, backwards))
     {
-        float const toHeldX = held->GetPositionX() - botX;
-        float const toHeldY = held->GetPositionY() - botY;
-        backwards = (toPosX * toHeldX + toPosY * toHeldY) < 0.0f;
+        return false;
     }
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -411,18 +385,14 @@ bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    float const distToMainTank = bot->GetExactDist2d(mainTank);
-    if (distToMainTank <= 4.0f)
+    constexpr float arrivalDist = 4.0f;
+    float moveX, moveY;
+    bool backwards;
+    if (!GetTankPositionStep(
+            bot, mainTank->GetPosition(), arrivalDist, nullptr, moveX, moveY, backwards))
+    {
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const mtX = mainTank->GetPositionX();
-    float const mtY = mainTank->GetPositionY();
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToMainTank);
-    float const moveX = botX + ((mtX - botX) / distToMainTank) * moveDist;
-    float const moveY = botY + ((mtY - botY) / distToMainTank) * moveDist;
+    }
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -450,17 +420,17 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     float angle = (count == 1) ? KAZROGAL_RANGED_ARC_CENTER :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-    float targetX = kazrogal->GetPositionX() + arcRadius * std::cos(angle);
-    float targetY = kazrogal->GetPositionY() + arcRadius * std::sin(angle);
+    float const targetX = kazrogal->GetPositionX() + arcRadius * std::cos(angle);
+    float const targetY = kazrogal->GetPositionY() + arcRadius * std::sin(angle);
 
     float const distToTarget = bot->GetExactDist2d(targetX, targetY);
     if (distToTarget <= 0.5f)
         return false;
 
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToTarget);
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
+    constexpr float maxMoveDist = 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToTarget);
     float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
     float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
 
@@ -692,50 +662,28 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
 {
     Position const& position = AZGALOR_DOOMGUARD_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
+    constexpr float arrivalDist = 3.0f;
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    bool shouldMove = false;
-    bool backwards = false;
-
-    if (Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    if (doomguard)
     {
         if (AI_VALUE(Unit*, "current target") != doomguard)
             return Attack(doomguard);
 
         if (doomguard->GetVictim() != bot || !bot->IsWithinMeleeRange(doomguard))
             return false;
-
-        if (distToPosition <= 3.0f)
-            return false;
-
-        float const toDoomguardX = doomguard->GetPositionX() - botX;
-        float const toDoomguardY = doomguard->GetPositionY() - botY;
-        backwards = (toPosX * toDoomguardX + toPosY * toDoomguardY) < 0.0f;
-        shouldMove = true;
     }
-    else if (distToPosition > 3.0f)
-    {
-        // If no Doomguard is spawned, preemptively move to the tanking position.
-        shouldMove = true;
-    }
-    else
+    else if (bot->GetExactDist2d(position) <= arrivalDist)
     {
         // If at position and still no Doomguard, just wait.
         return true;
     }
 
-    if (!shouldMove)
+    // With no Doomguard up, this moves to the tanking position preemptively.
+    float moveX, moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, doomguard, moveX, moveY, backwards))
         return false;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
