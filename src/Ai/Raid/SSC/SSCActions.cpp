@@ -96,7 +96,8 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
         return false;
 
     float safeDist = radius + bufferDist;
-    float moveX, moveY;
+    float moveX;
+    float moveY;
 
     if (distToObj == 0.0f)
     {
