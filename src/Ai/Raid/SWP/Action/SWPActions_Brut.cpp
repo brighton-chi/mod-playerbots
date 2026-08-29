@@ -55,7 +55,7 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
             return false;
         }
 
-        if (!bot->IsWithinMeleeRange(brutallus))
+        if (brutallus->GetVictim() != bot || !bot->IsWithinMeleeRange(brutallus))
             return false;
 
         float moveX;
