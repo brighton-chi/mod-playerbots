@@ -9,7 +9,7 @@
 #include "KaraHelpers.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "Timer.h"
+#include "RtiTargetValue.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -62,6 +62,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return reset;
+
+    if (!AI_VALUE2(bool, "combat", "self target"))
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
     reset |= attumenDpsWaitTimer.erase(instanceId) > 0;
     reset |= netherspiteDpsWaitTimer.erase(instanceId) > 0;
@@ -199,31 +202,21 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
         return false;
 
     Position const& position = ATTUMEN_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f || !bot->IsWithinLOS(
+    if (!bot->IsWithinLOS(
             position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
     {
         return false;
     }
 
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-    float const toBossX = attumen->GetPositionX() - botX;
-    float const toBossY = attumen->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, attumen, moveX, moveY, backwards))
+        return false;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -311,28 +304,15 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = MAIDEN_OF_VIRTUE_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, maiden, moveX, moveY, backwards))
         return false;
 
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-
-    float const toBossX = maiden->GetPositionX() - botX;
-    float const toBossY = maiden->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -405,28 +385,15 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = BIG_BAD_WOLF_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, wolf, moveX, moveY, backwards))
         return false;
 
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-
-    float const toBossX = wolf->GetPositionX() - botX;
-    float const toBossY = wolf->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -523,28 +490,15 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = THE_CURATOR_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, position, arrivalDist, curator, moveX, moveY, backwards))
         return false;
 
-    float const posX = position.GetPositionX();
-    float const posY = position.GetPositionY();
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = posX - botX;
-    float const toPosY = posY - botY;
-
-    float const toBossX = curator->GetPositionX() - botX;
-    float const toBossY = curator->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1220,26 +1174,16 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
         thetaN -= 2.0f * M_PI;
 
     float const thetaClamped = std::max(arcStart, std::min(arcEnd, thetaN));
-    float const destX = domeCenter.GetPositionX() + radius * cos(thetaClamped);
-    float const destY = domeCenter.GetPositionY() + radius * sin(thetaClamped);
-    float const distToPosition = bot->GetExactDist2d(destX, destY);
+    Position const destination(
+        domeCenter.GetPositionX() + radius * cos(thetaClamped),
+        domeCenter.GetPositionY() + radius * sin(thetaClamped), bot->GetPositionZ());
 
-    if (distToPosition <= 0.5f)
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetTankPositionStep(bot, destination, arrivalDist, nightbane, moveX, moveY, backwards))
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = destX - botX;
-    float const toPosY = destY - botY;
-
-    float const toBossX = nightbane->GetPositionX() - botX;
-    float const toBossY = nightbane->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,

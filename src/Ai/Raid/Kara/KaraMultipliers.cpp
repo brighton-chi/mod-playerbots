@@ -21,7 +21,6 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "Timer.h"
 #include "WarriorActions.h"
 
 using namespace KaraHelpers;
