@@ -65,7 +65,7 @@ bool RageWinterchillMeleeNearDeathAndDecayTrigger::IsActive()
     return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
 }
 
-bool RageWinterchillRangedIsStandingInDeathAndDecayTrigger::IsActive()
+bool RageWinterchillRangedInDeathAndDecayTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -142,14 +142,14 @@ bool AnetheronInfernalsShouldBeKeptAwayTrigger::IsActive()
     return infernal && bot->IsWithinMeleeRange(infernal);
 }
 
-bool AnetheronShouldDetermineDpsPriorityTrigger::IsActive()
+bool AnetheronShouldDivideDpsTrigger::IsActive()
 {
     return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 // Kaz'rogal
 
-bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
+bool KazrogalCanSplitMalevolentCleaveDamageTrigger::IsActive()
 {
     if (!PlayerbotAI::IsAssistTank(bot))
         return false;
@@ -163,7 +163,7 @@ bool KazrogalMalevolentCleaveSplitsDamageTrigger::IsActive()
     return !botsBelowManaThreshold.contains(bot->GetGUID());
 }
 
-bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
+bool KazrogalRangedShouldAvoidWarStompTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -264,7 +264,7 @@ bool KazrogalWarlockShouldManageManaTrigger::IsActive()
 
 // Azgalor
 
-bool AzgalorBossEngagedByRangedTrigger::IsActive()
+bool AzgalorRangedShouldSpreadTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -292,15 +292,15 @@ bool AzgalorMeleeNearRainOfFireTrigger::IsActive()
         return false;
 
     // The Doomguard tank is excluded due to needing to hold at the Doomguard tanking position.
-    // This isn't ideal, but special avoidance for one role that needs specific positioning would
-    // be very difficult, and it's not hard to heal through the damage for one bot.
+    // This isn't ideal, but special avoidance of a not-that-dangerous ability for one role that
+    // needs specific positioning is not worth the time and effort.
     if (IsDoomguardTank(bot))
         return false;
 
     return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
 }
 
-bool AzgalorRangedIsStandingInRainOfFireTrigger::IsActive()
+bool AzgalorRangedInRainOfFireTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -319,7 +319,7 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
     return IsDoomed(bot);
 }
 
-bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
+bool AzgalorShouldControlDoomguardsTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -399,7 +399,7 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
     if (HasProtectionOfElune(bot))
         return false;
 
-    return bot->GetHealthPct() < 40.0f &&
+    return bot->GetHealthPct() < 40.0f && // Arbitrary high risk-of-death threshold
         (bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE)) ||
          bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE_DOT)));
 }
