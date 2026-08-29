@@ -77,7 +77,8 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     constexpr float arrivalDist = 4.0f;
-    float moveX, moveY;
+    float moveX;
+    float moveY;
     bool backwards;
     if (!GetTankPositionStep(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
         return false;
@@ -330,7 +331,8 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
 {
     constexpr float arrivalDist = 3.0f;
-    float moveX, moveY;
+    float moveX;
+    float moveY;
     bool backwards;
     if (!GetTankPositionStep(
             bot, GetInfernalTankPosition(bot), arrivalDist, GetInfernalTargetingBot(bot), moveX,
@@ -386,7 +388,8 @@ bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
         return false;
 
     constexpr float arrivalDist = 4.0f;
-    float moveX, moveY;
+    float moveX;
+    float moveY;
     bool backwards;
     if (!GetTankPositionStep(
             bot, mainTank->GetPosition(), arrivalDist, nullptr, moveX, moveY, backwards))
@@ -680,7 +683,8 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
     }
 
     // With no Doomguard up, this moves to the tanking position preemptively.
-    float moveX, moveY;
+    float moveX;
+    float moveY;
     bool backwards;
     if (!GetTankPositionStep(bot, position, arrivalDist, doomguard, moveX, moveY, backwards))
         return false;
