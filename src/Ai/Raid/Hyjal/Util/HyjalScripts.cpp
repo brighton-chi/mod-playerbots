@@ -11,15 +11,15 @@
 #include "Playerbots.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
-#include "Timer.h"
 
 using namespace HyjalHelpers;
 using namespace EncounterHelpers;
 
+// Both spell listeners are driven by DoCastRandomTarget, which always has an explicit unit target.
+
 namespace
 {
-// Both spell listeners below are driven by DoCastRandomTarget, which always supplies an explicit
-// unit target
+
 Player* GetTargetedPlayer(Spell* spell)
 {
     if (!spell)
@@ -83,7 +83,7 @@ public:
     }
 };
 
-// Air Burst is a 2s cast that hits all players within 13y of the target
+// Air Burst is a 2s cast that hits all players within 13y of the target.
 class ArchimondeAirBurstSpellListenerScript : public AllSpellScript
 {
 public:
@@ -121,7 +121,7 @@ public:
     }
 };
 
-// Inferno summons a Towering Infernal at its target's then-current position after a 3.5s cast
+// Inferno summons a Towering Infernal at its target's then-current position after a 3.5s cast.
 class AnetheronInfernoSpellListenerScript : public AllSpellScript
 {
 public:

@@ -7,7 +7,6 @@
 #include "HyjalHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "Timer.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
@@ -410,7 +409,7 @@ bool HasMarkOfKazrogal(Player* bot)
 
 // Azgalor
 
-// Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time
+// Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time.
 std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI)
 {
     return GetCachedHazardPositions(botAI, "hyjal rain of fire");

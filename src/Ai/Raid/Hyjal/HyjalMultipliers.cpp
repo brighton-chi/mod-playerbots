@@ -5,18 +5,13 @@
  */
 
 #include "HyjalMultipliers.h"
-#include "AiFactory.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidBearActions.h"
 #include "EncounterHelpers.h"
 #include "HunterActions.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
-#include "PaladinActions.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
-#include "WarriorActions.h"
 
 using namespace HyjalHelpers;
 using namespace EncounterHelpers;
@@ -30,10 +25,10 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (bot->GetMapId() != HYJAL_MAP_ID) // Needed in case strategy isn't cleared outside
+    if (bot->GetMapId() != HYJAL_MAP_ID) // In case strategy persists outside (e.g., server reset)
         return 1.0f;
 
-    if (!IsDpsCooldownAction(bot, action)) // This includes Bloodlust & Heroism
+    if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
     Unit* boss = nullptr;
@@ -53,8 +48,8 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
              dynamic_cast<CastHeroismAction*>(action)) ? 0.0f : 1.0f;
     }
 
-    // Suppress all dps cooldowns when boss is above 90% health
-    return boss->GetHealthPct() > 90.0f ? 0.0f : 1.0f;
+    // Suppress all dps cooldowns when boss is above 90% health.
+    return boss->GetHealthPct() > BOSS_POSITIONED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Rage Winterchill
@@ -292,7 +287,7 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
         return 1.0f;
     }
 
-    // Disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
+    // SBTA is still disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
@@ -390,7 +385,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
     }
 
     if (dynamic_cast<ArchimondeAvoidDoomfireAction*>(action) ||
-        dynamic_cast<ArchimondeKeepAirBurstAwayFromMainTankAction*>(action))
+        dynamic_cast<ArchimondeKeepAirBurstAwayFromTankAction*>(action))
     {
         return 1.0f;
     }
@@ -424,7 +419,7 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
     }
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() > 90.0f)
+    if (!archimonde || archimonde->GetHealthPct() > BOSS_POSITIONED_HEALTH_PCT)
         return 1.0f;
 
     return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;

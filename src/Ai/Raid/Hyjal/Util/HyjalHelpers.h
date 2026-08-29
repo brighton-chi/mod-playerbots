@@ -96,6 +96,10 @@ inline constexpr float HAZARD_RANGED_CONTROL_MARGIN = 7.0f;
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
 // 95% HP is a cheap proxy for "the boss is still being positioned."
 inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
+// 90% HP is a cheap proxy for "the boss is in position"
+inline constexpr float BOSS_POSITIONED_HEALTH_PCT = 90.0f;
+// Ignore any adds still alive at this point. It's time to finish this.
+inline constexpr float BURN_BOSS_HEALTH_PCT = 10.0f;
 struct RangedGroups
 {
     std::vector<Player*> healers;
@@ -120,7 +124,7 @@ bool FindStepToCircle(
     float& stepX, float& stepY, float& stepZ,
     std::function<bool(float, float)> const& isAcceptable = {},
     float* chosenX = nullptr, float* chosenY = nullptr);
-// The same search, aimed straight out of a hazard.
+// The same search, except aimed straight out of a hazard.
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
@@ -138,7 +142,7 @@ inline constexpr float DEATH_AND_DECAY_RANGED_CONTROL_RADIUS =
     DEATH_AND_DECAY_RADIUS + HAZARD_RANGED_CONTROL_MARGIN;
 inline constexpr float DEATH_AND_DECAY_SEARCH_RADIUS =
     DEATH_AND_DECAY_MELEE_CONTROL_RADIUS + HAZARD_SEARCH_MARGIN;
-// Back towards the centre of the base
+// Back towards the center of the base
 inline Position const WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
 bool GetDeathAndDecayPosition(PlayerbotAI* botAI, Position& deathAndDecay);
 bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius);
@@ -146,12 +150,12 @@ bool IsInDeathAndDecay(PlayerbotAI* botAI);
 
 // Anetheron
 
-// Back towards the centre of the base, near the crossroads
+// Back towards the center of the base, near the crossroads
 inline Position const ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
 inline Position const ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
 inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
-// A landing Infernal stuns everybody within 10y for 2s (31302), and then burns everything within
+// A landing Infernal stuns everybody within 10y for 2s (31302) and then burns everything within
 // 10y of itself for as long as it lives (31304 triggering 31303).
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
 inline constexpr float INFERNAL_ESCAPE_DISTANCE = INFERNAL_DANGER_RADIUS + 2.0f;
@@ -159,14 +163,14 @@ Player* GetInfernoTarget(Unit* anetheron);
 // Every living Towering Infernal, oldest first, read through the "hyjal infernals" value
 GuidVector FindInfernalGuids(Player* bot);
 GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
-// The one the raid kills (oldest alive). In practice, a viable raid should have only one up.
+// The Infernal the raid kills (oldest alive). In practice, a viable raid should have only one up.
 Unit* GetFocusedInfernal(PlayerbotAI* botAI);
-// The first Infernal the Infernal tank does not have, which is the one worth handing over.
+// The first Infernal that the Infernal tank does not have aggro on.
 Unit* GetLooseInfernal(Player* bot);
 Unit* GetNearestInfernal(Player* bot);
 Unit* GetInfernalTargetingBot(Player* bot);
 bool IsInfernalTank(Player* bot);
-Player* GetInfernalTank(Player* bot);
+Player* GetInfernalTank(Player* bot); // First Assist Tank
 // Whichever of the two spots the Infernal tank stands nearer.
 Position const& GetInfernalTankPosition(Player* bot);
 
@@ -182,8 +186,6 @@ inline constexpr float KAZROGAL_RANGED_ARC_APPROACH_RADIUS = 25.0f;
 inline constexpr float KAZROGAL_RANGED_ARC_CENTER = 4.225f;
 // This is about the maximum width that allows reasonable escape paths due to obstacles
 inline constexpr float KAZROGAL_RANGED_ARC_HALF_WIDTH = 10.0f;
-float GetKazrogalRangedArcRadius(Unit* kazrogal);
-float GetKazrogalRangedArcSpan(float radius);
 // Mark of Kaz'rogal (31447) drains 600 mana a tick, five 1s ticks for 3000 in all. It detonates on
 // the first tick where the victim has less than 600 mana.
 inline constexpr float MARK_TICK_DRAIN = 600.0f;
@@ -197,6 +199,8 @@ inline constexpr float MARK_ESCAPE_DISTANCE = 16.0f;
 // This set allows for a gap between the mana threshold to run away and the mana threshold to come
 // back to the group to avoid bouncing back and forth.
 extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
+float GetKazrogalRangedArcRadius(Unit* kazrogal);
+float GetKazrogalRangedArcSpan(float radius);
 bool IsKazrogalManaUser(Player* bot);
 bool HasMarkOfKazrogal(Player* bot);
 
@@ -238,12 +242,12 @@ struct AirBurstData
 };
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 // Up the hill a bit, for space from the World Tree. The tank walks him here at the opening only.
-// Archimonde slaps so the tank will pause whenever dropping below 60% HP.
+// Archimonde slaps so the tank will pause moving whenever below 60% HP.
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 // Where the ground actually burns. Doomfire (31495) is a 1s periodic that drops a Doomfire (31943)
 // pool, which has a persistent area aura of 6y (plus 1.95y CombatReach).
 inline constexpr float DOOMFIRE_BURN_RADIUS = 8.0f;
-// Where the avoidance parks the bot.
+// How far from Doomfires will avoidance place the bot.
 inline constexpr float DOOMFIRE_DANGER_RADIUS = DOOMFIRE_BURN_RADIUS + 2.0f;
 // Out to this distance, movement is controlled only by the avoidance action.
 inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 2.0f;
@@ -253,7 +257,7 @@ inline constexpr float DOOMFIRE_SEARCH_RADIUS =
     DOOMFIRE_FIELD_RADIUS + DOOMFIRE_DANGER_RADIUS + HAZARD_SEARCH_MARGIN; // 30y
 // General spread to prevent clumping due to the risk of Air Burst.
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
-// Invincibility applied by Tyrande when Archimonde is at 10% HP. Used to stop boss strategies
+// Invincibility applied by Tyrande when Archimonde is at 10% HP. Used to cut off boss strategies
 // since the fight is effectively over at this point.
 bool HasProtectionOfElune(Player* bot);
 bool IsNearDoomfire(PlayerbotAI* botAI, float radius);

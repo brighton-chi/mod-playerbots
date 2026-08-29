@@ -118,8 +118,8 @@ public:
         creators["archimonde cast fear immunity spell"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
 
-        creators["archimonde keep air burst away from main tank"] =
-            &RaidHyjalSummitActionContext::archimonde_keep_air_burst_away_from_main_tank;
+        creators["archimonde keep air burst away from tank"] =
+            &RaidHyjalSummitActionContext::archimonde_keep_air_burst_away_from_tank;
 
         creators["archimonde spread ranged"] =
             &RaidHyjalSummitActionContext::archimonde_spread_ranged;
@@ -253,8 +253,8 @@ private:
     static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
         return new ArchimondeCastFearImmunitySpellAction(botAI);
     }
-    static Action* archimonde_keep_air_burst_away_from_main_tank(PlayerbotAI* botAI) {
-        return new ArchimondeKeepAirBurstAwayFromMainTankAction(botAI);
+    static Action* archimonde_keep_air_burst_away_from_tank(PlayerbotAI* botAI) {
+        return new ArchimondeKeepAirBurstAwayFromTankAction(botAI);
     }
     static Action* archimonde_spread_ranged(PlayerbotAI* botAI) {
         return new ArchimondeSpreadRangedAction(botAI);

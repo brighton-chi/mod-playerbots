@@ -8,7 +8,6 @@
 #include "HyjalHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "Timer.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
@@ -392,8 +391,11 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsHeal(bot))
         return AI_VALUE(Unit*, "current target") != anetheron && Attack(anetheron);
 
+    // Ranged within 50y of an Infernal will attack it. This is an arbitrary percentage to keep
+    // ranged from bunding up too much due to Carrion Swarm risk.
     Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > 10.0f && bot->GetDistance2d(infernal) < 50.0f)
+    if (infernal && anetheron->GetHealthPct() > BURN_BOSS_HEALTH_PCT &&
+        bot->GetDistance2d(infernal) < 50.0f)
     {
         // Wait for the tank to pick up the Infernal before attacking directly
         Player* infernalTank = GetInfernalTank(bot);
@@ -765,7 +767,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
         return AI_VALUE(Unit*, "current target") != azgalor && Attack (azgalor);
 
     Unit* target = nullptr;
-    if (azgalor->GetHealthPct() < 10.0f)
+    if (azgalor->GetHealthPct() < BURN_BOSS_HEALTH_PCT)
     {
         target = azgalor;
     }
@@ -815,9 +817,9 @@ bool ArchimondeCastFearImmunitySpellAction::SetTremorTotem()
 }
 
 // Air Burst knocks everyone around its target into the air. Losing the whole melee group at once
-// is what has to be avoided, since Archimonde turns to a ranged one-shot when nobody is left in
-// melee range. Thus, the avoidance is to get away from the tank.
-bool ArchimondeKeepAirBurstAwayFromMainTankAction::Execute(Event /*event*/)
+// is what has to be avoided, since Archimonde starts wagging his fat finger and one-shotting ranged
+// when nobody is left in melee range. Thus, the avoidance is to get away from the tank.
+bool ArchimondeKeepAirBurstAwayFromTankAction::Execute(Event /*event*/)
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde)

@@ -96,8 +96,11 @@ bool AnetheronRangedShouldSpreadTrigger::IsActive()
         return false;
 
     Unit* infernal = GetFocusedInfernal(botAI);
-    if (infernal && anetheron->GetHealthPct() > 10.0f && bot->GetDistance2d(infernal) < 50.0f)
+    if (infernal && anetheron->GetHealthPct() > BURN_BOSS_HEALTH_PCT &&
+        bot->GetDistance2d(infernal) < 50.0f)
+    {
         return false;
+    }
 
     return true;
 }
@@ -210,7 +213,7 @@ bool KazrogalHunterShouldPreserveManaTrigger::IsActive()
     if (bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)))
         return false;
 
-    // Activate at 3200 mana; switch back based on normal Hunter aspect strategies
+    // Activate at 3200 mana; switch back based on normal Hunter aspect strategies.
     return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA;
 }
 
@@ -346,7 +349,7 @@ bool ArchimondeBossCastsFearTrigger::IsActive()
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() > 90.0f) // Wait for initial positioning
+    if (!archimonde || archimonde->GetHealthPct() > BOSS_POSITIONED_HEALTH_PCT)
         return false;
 
     return !HasProtectionOfElune(bot);
@@ -378,8 +381,7 @@ bool ArchimondeRangedShouldSpreadTrigger::IsActive()
 
 bool ArchimondeBotIsNearDoomfireTrigger::IsActive()
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
         return false;
 
     if (HasProtectionOfElune(bot))

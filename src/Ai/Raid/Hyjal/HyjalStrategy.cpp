@@ -112,7 +112,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
-        NextAction("archimonde keep air burst away from main tank", ACTION_EMERGENCY + 8) }));
+        NextAction("archimonde keep air burst away from tank", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));

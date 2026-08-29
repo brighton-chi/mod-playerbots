@@ -260,11 +260,11 @@ private:
     bool SetTremorTotem();
 };
 
-class ArchimondeKeepAirBurstAwayFromMainTankAction : public MovementAction
+class ArchimondeKeepAirBurstAwayFromTankAction : public MovementAction
 {
 public:
-    ArchimondeKeepAirBurstAwayFromMainTankAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "archimonde keep air burst away from main tank") {}
+    ArchimondeKeepAirBurstAwayFromTankAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "archimonde keep air burst away from tank") {}
     bool Execute(Event event) override;
 };
 
