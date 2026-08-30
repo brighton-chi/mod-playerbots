@@ -10,6 +10,7 @@
 #include "SWPValueContext.h"
 #include "TKValueContext.h"
 #include "UBValueContext.h"
+#include "ZAValueContext.h"
 #include "ValueContext.h"
 
 void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
@@ -20,4 +21,5 @@ void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<Unty
     valueContexts.Add(new RaidHyjalSummitValueContext());
     valueContexts.Add(new RaidTempestKeepValueContext());
     valueContexts.Add(new RaidSunwellValueContext());
+    valueContexts.Add(new RaidZulAmanValueContext());
 }

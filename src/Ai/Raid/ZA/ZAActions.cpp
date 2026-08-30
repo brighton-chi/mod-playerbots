@@ -221,7 +221,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 {
-    auto const& bombs = GetNearbyFireBombs(bot);
+    auto const& bombs = GetNearbyFireBombs(botAI);
 
     if (bombs.empty())
         return false;

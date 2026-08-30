@@ -202,30 +202,43 @@ bool IsNalorakkInBearForm(Unit* nalorakk)
 
 // Jan'alai <Dragonhawk Avatar>
 
-std::vector<Unit*> GetNearbyFireBombs(Player* bot)
+GuidVector FindNearbyFireBombGuids(Player* bot)
 {
-    std::vector<Unit*> bombs;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
         creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), JANALAI_FIRE_BOMB_SEARCH_RADIUS);
 
+    GuidVector guids;
+    guids.reserve(creatureList.size());
     for (Creature* creature : creatureList)
     {
         if (creature && creature->IsAlive())
-            bombs.push_back(creature);
+            guids.push_back(creature->GetGUID());
+    }
+
+    return guids;
+}
+
+std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("jan'alai fire bombs")->RefGet();
+
+    std::vector<Unit*> bombs;
+    bombs.reserve(guids.size());
+    for (ObjectGuid const& guid : guids)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive())
+            bombs.push_back(unit);
     }
 
     return bombs;
 }
 
-bool HasFireBombNearby(Player* bot)
+bool IsJanalaiBombing(Unit* janalai)
 {
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), JANALAI_FIRE_BOMB_SEARCH_RADIUS);
-
-    return std::any_of(creatureList.begin(), creatureList.end(),
-        [](Creature* creature) { return creature && creature->IsAlive(); });
+    return janalai && janalai->HasAura(Id(ZaSpells::SPELL_FIRE_BOMB_CHANNEL));
 }
 
 std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)

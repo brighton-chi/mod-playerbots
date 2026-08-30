@@ -237,13 +237,14 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
     if (!IsHazardousMovement(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
         return 1.0f;
 
     if (dynamic_cast<JanalaiAvoidFireBombsAction*>(action))
         return 1.0f;
 
-    return HasFireBombNearby(bot) ? 0.0f : 1.0f;
+    return IsJanalaiBombing(janalai) ? 0.0f : 1.0f;
 }
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)

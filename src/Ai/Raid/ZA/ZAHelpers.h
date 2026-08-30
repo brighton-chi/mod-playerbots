@@ -8,6 +8,7 @@
 #define PLAYERBOTS_ZAHELPERS_H
 
 #include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
 #include "Unit.h"
 #include <array>
@@ -36,6 +37,9 @@ enum class ZaSpells : uint32
 
     // Nalorakk <Bear Avatar>
     SPELL_BEARFORM                  = 42377,
+
+    // Jan'alai <Dragonhawk Avatar>
+    SPELL_FIRE_BOMB_CHANNEL         = 42621,
 
     // Hex Lord Malacrass
     SPELL_HEX_LORD_WHIRLWIND        = 43442,
@@ -183,14 +187,25 @@ inline constexpr uint32 JANALAI_BLOODLUST_HATCHLING_COUNT = 6;
 // The bombs blanket the whole platform, so a search only has to reach as far as the avoidance can
 // move (20 yd) plus the blast radius (4, padded to 5). 30 covers that with room to spare.
 inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 30.0f;
+// Feeds the "jan'alai fire bombs" value. Longer than the 200ms the other raids use for hazards,
+// because bombs are unusually well behaved: they all spawn at once at their final positions, never
+// move, and detonate on a fixed 11s timer (StartBombing() in boss_janalai.cpp). Staleness costs
+// only detection latency against that 11s, and the value holds GUIDs rather than pointers, so a
+// despawned bomb resolves to nullptr instead of dangling however far behind the cache runs.
+inline constexpr uint32 FIRE_BOMB_CACHE_INTERVAL_MS = 1000;
 // Jan'alai hatches every remaining egg at once at 35% HP so that opens the door for Bloodlust in
 // any case. Using 33% to account for some delay for the event to actually complete.
 inline constexpr float JANALAI_HATCH_ALL_HEALTH_PCT = 33.0f;
-// GetNearbyFireBombs() is for the avoidance search, which needs the bombs themselves.
-// HasFireBombNearby() answers the cheaper "is the bomb phase running" question that the triggers
-// and the multiplier ask, and stops at the first live bomb rather than building a list.
-std::vector<Unit*> GetNearbyFireBombs(Player* bot);
-bool HasFireBombNearby(Player* bot);
+// The grid search, run once per cache interval behind the "jan'alai fire bombs" value.
+GuidVector FindNearbyFireBombGuids(Player* bot);
+// GetNearbyFireBombs() resolves that value for the avoidance search, which is the only caller that
+// needs the bombs themselves. Everything else asks IsJanalaiBombing() instead.
+std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI);
+// Jan'alai carries this channel for exactly as long as the bombs are dangerous: StartBombing()
+// applies it alongside the spawn and the Boom() task removes it in the same moment it detonates
+// them. The bomb creatures themselves linger 4s past that on a 15s despawn, so counting them keeps
+// the raid frozen after the damage has already landed.
+bool IsJanalaiBombing(Unit* janalai);
 std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
 
 // Halazzi <Lynx Avatar>
