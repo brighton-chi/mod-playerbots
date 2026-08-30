@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_HYJALTRIGGERCONTEXT_H
 #define PLAYERBOTS_HYJALTRIGGERCONTEXT_H
 
+#include "EncounterHelpers.h"
 #include "HyjalHelpers.h"
 #include "HyjalTriggers.h"
 #include "NamedObjectContext.h"
@@ -253,7 +254,7 @@ private:
     static Trigger* archimonde_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
         return new HyjalBossShouldBeTankedTrigger(
             botAI, "archimonde should be tanked", "archimonde",
-            HyjalHelpers::BOSS_ENGAGED_HEALTH_PCT, false);
+            EncounterHelpers::BOSS_ENGAGED_HEALTH_PCT, false);
     }
     static Trigger* archimonde_boss_casts_fear(PlayerbotAI* botAI) {
         return new ArchimondeBossCastsFearTrigger(botAI);

@@ -94,12 +94,7 @@ inline constexpr float HAZARD_RANGED_CONTROL_MARGIN = 7.0f;
 // This distance is subtracted from the edge of melee range so rounding and drift cannot leave a
 // bot just out of reach.
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
-// 95% HP is a cheap proxy for "the boss is still being positioned."
-inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
-// 90% HP is a cheap proxy for "the boss is in position"
-inline constexpr float BOSS_POSITIONED_HEALTH_PCT = 90.0f;
-// Ignore any adds still alive at this point. It's time to finish this.
-inline constexpr float BURN_BOSS_HEALTH_PCT = 10.0f;
+
 struct RangedGroups
 {
     std::vector<Player*> healers;

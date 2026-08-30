@@ -707,7 +707,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
         return AI_VALUE(Unit*, "current target") != azgalor && Attack (azgalor);
 
     Unit* target = nullptr;
-    if (azgalor->GetHealthPct() < BURN_BOSS_HEALTH_PCT)
+    if (azgalor->GetHealthPct() < BOSS_BURN_HEALTH_PCT)
     {
         target = azgalor;
     }

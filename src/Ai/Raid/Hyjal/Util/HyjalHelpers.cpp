@@ -322,7 +322,7 @@ Unit* GetNearestInfernal(Player* bot)
 
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
 {
-    if (!anetheron || anetheron->GetHealthPct() <= BURN_BOSS_HEALTH_PCT)
+    if (!anetheron || anetheron->GetHealthPct() < BOSS_BURN_HEALTH_PCT)
         return nullptr;
 
     Unit* infernal = nullptr;

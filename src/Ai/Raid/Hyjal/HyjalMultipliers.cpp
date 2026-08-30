@@ -48,8 +48,7 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
              dynamic_cast<CastHeroismAction*>(action)) ? 0.0f : 1.0f;
     }
 
-    // Suppress all dps cooldowns when boss is above 90% health.
-    return boss->GetHealthPct() > BOSS_POSITIONED_HEALTH_PCT ? 0.0f : 1.0f;
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Rage Winterchill
@@ -419,7 +418,7 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
     }
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() > BOSS_POSITIONED_HEALTH_PCT)
+    if (!archimonde || archimonde->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 1.0f;
 
     return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;
