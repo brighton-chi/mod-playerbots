@@ -19,14 +19,14 @@ public:
         creators["zul'aman no encounter in progress"] =
             &RaidZulAmanTriggerContext::zulaman_no_encounter_in_progress;
 
+        creators["zul'aman pulling boss"] =
+            &RaidZulAmanTriggerContext::zulaman_pulling_boss;
+
         // Trash
         creators["amani'shi medicine man summoned ward"] =
             &RaidZulAmanTriggerContext::amanishi_medicine_man_summoned_ward;
 
         // Akil'zon <Eagle Avatar>
-        creators["akil'zon pulling boss"] =
-            &RaidZulAmanTriggerContext::akilzon_pulling_boss;
-
         creators["akil'zon boss engaged by tanks"] =
             &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_tanks;
 
@@ -40,9 +40,6 @@ public:
             &RaidZulAmanTriggerContext::akilzon_bots_need_to_prepare_for_electrical_storm;
 
         // Nalorakk <Bear Avatar>
-        creators["nalorakk pulling boss"] =
-            &RaidZulAmanTriggerContext::nalorakk_pulling_boss;
-
         creators["nalorakk boss casts surge"] =
             &RaidZulAmanTriggerContext::nalorakk_boss_casts_surge;
 
@@ -50,9 +47,6 @@ public:
             &RaidZulAmanTriggerContext::nalorakk_boss_switches_forms;
 
         // Jan'alai <Dragonhawk Avatar>
-        creators["jan'alai pulling boss"] =
-            &RaidZulAmanTriggerContext::janalai_pulling_boss;
-
         creators["jan'alai boss engaged by tanks"] =
             &RaidZulAmanTriggerContext::janalai_boss_engaged_by_tanks;
 
@@ -66,9 +60,6 @@ public:
             &RaidZulAmanTriggerContext::janalai_amanishi_hatchers_spawned;
 
         // Halazzi <Lynx Avatar>
-        creators["halazzi pulling boss"] =
-            &RaidZulAmanTriggerContext::halazzi_pulling_boss;
-
         creators["halazzi should be tanked"] =
             &RaidZulAmanTriggerContext::halazzi_should_be_tanked;
 
@@ -80,9 +71,6 @@ public:
 
         // Hex Lord Malacrass
 
-        creators["hex lord malacrass pulling boss"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_pulling_boss;
-
         creators["hex lord malacrass should prioritize adds"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_should_prioritize_adds;
 
@@ -93,9 +81,6 @@ public:
             &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_placed_freezing_trap;
 
         // Zul'jin
-
-        creators["zul'jin main tank needs aggro upon pull or phase change"] =
-            &RaidZulAmanTriggerContext::zuljin_main_tank_needs_aggro_upon_pull_or_phase_change;
 
         creators["zul'jin boss engaged by tanks"] =
             &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_tanks;
@@ -115,6 +100,9 @@ private:
     static Trigger* zulaman_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new ZulAmanNoEncounterInProgressTrigger(botAI);
     }
+    static Trigger* zulaman_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI);
+    }
 
     // Trash
     static Trigger* amanishi_medicine_man_summoned_ward(PlayerbotAI* botAI) {
@@ -122,9 +110,6 @@ private:
     }
 
     // Akil'zon <Eagle Avatar>
-    static Trigger* akilzon_pulling_boss(PlayerbotAI* botAI) {
-        return new AkilzonPullingBossTrigger(botAI);
-    }
     static Trigger* akilzon_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new AkilzonBossEngagedByTanksTrigger(botAI);
     }
@@ -139,9 +124,6 @@ private:
     }
 
     // Nalorakk <Bear Avatar>
-    static Trigger* nalorakk_pulling_boss(PlayerbotAI* botAI) {
-        return new NalorakkPullingBossTrigger(botAI);
-    }
     static Trigger* nalorakk_boss_casts_surge(PlayerbotAI* botAI) {
         return new NalorakkBossCastsSurgeTrigger(botAI);
     }
@@ -150,9 +132,6 @@ private:
     }
 
     // Jan'alai <Dragonhawk Avatar>
-    static Trigger* janalai_pulling_boss(PlayerbotAI* botAI) {
-        return new JanalaiPullingBossTrigger(botAI);
-    }
     static Trigger* janalai_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new JanalaiBossEngagedByTanksTrigger(botAI);
     }
@@ -167,9 +146,6 @@ private:
     }
 
     // Halazzi <Lynx Avatar>
-    static Trigger* halazzi_pulling_boss(PlayerbotAI* botAI) {
-        return new HalazziPullingBossTrigger(botAI);
-    }
     static Trigger* halazzi_should_be_tanked(PlayerbotAI* botAI) {
         return new HalazziShouldBeTankedTrigger(botAI);
     }
@@ -181,9 +157,6 @@ private:
     }
 
     // Hex Lord Malacrass
-    static Trigger* hex_lord_malacrass_pulling_boss(PlayerbotAI* botAI) {
-        return new HexLordMalacrassPullingBossTrigger(botAI);
-    }
     static Trigger* hex_lord_malacrass_should_prioritize_adds(PlayerbotAI* botAI) {
         return new HexLordMalacrassShouldPrioritizeAddsTrigger(botAI);
     }
@@ -195,9 +168,6 @@ private:
     }
 
     // Zul'jin
-    static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(PlayerbotAI* botAI) {
-        return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI);
-    }
     static Trigger* zuljin_boss_engaged_by_tanks(PlayerbotAI* botAI) {
         return new ZuljinBossEngagedByTanksTrigger(botAI);
     }

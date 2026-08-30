@@ -43,16 +43,64 @@ bool const IsHazardousMovement(Action* action)
 
 // General
 
-float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
+float ZulAmanDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<ReachTargetAction*>(action))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->GetMapId() != ZA_MAP_ID) // In case strategy persists outside (e.g., server reset)
+        return 1.0f;
+
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    // Every Zul'Aman boss, and nothing else in the instance, runs a BossAI.
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss)
+        return 1.0f;
+
+    if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+        return 0.0f;
+
+    // Further restrictions on Bloodlust for Zul'jin and Jan'alai below
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastBloodlustAction*>(action) &&
+        !dynamic_cast<CastHeroismAction*>(action))
     {
         return 1.0f;
     }
 
-    constexpr float hazardRadius = 15.0f;
+    // Zul'jin: hold until Phase 3 (or later)
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN))
+    {
+        return (boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ||
+            boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_LYNX)) ||
+            boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK))) ? 1.0f : 0.0f;
+    }
+
+    // Jan'alai: hold until time to burn Hatchlings (see comments to the constants in ZAHelpers.h)
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_JANALAI))
+    {
+        if (boss->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
+            return 1.0f;
+
+        return CountAttackersByEntry(botAI, Id(ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING)) >=
+            JANALAI_BLOODLUST_HATCHLING_COUNT ? 1.0f : 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action))
+    {
+        return 1.0f;
+    }
 
     if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
     {
@@ -62,7 +110,7 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
         if (!zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
             return 1.0f;
 
-        return bot->GetDistance2d(zuljin) <= hazardRadius ? 0.0f : 1.0f;
+        return bot->GetDistance2d(zuljin) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
     }
 
     if (Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
@@ -73,7 +121,7 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
         if (!malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND)))
             return 1.0f;
 
-        return bot->GetDistance2d(malacrass) <= hazardRadius ? 0.0f : 1.0f;
+        return bot->GetDistance2d(malacrass) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
     }
 
     return 1.0f;
@@ -138,12 +186,12 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // IsTauntAction
-    bool const inBearForm = IsNalorakkInBearForm(nalorakk);
+    bool const isInBearForm = IsNalorakkInBearForm(nalorakk);
 
-    if (!inBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+    if (!isInBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return 0.0f;
 
-    return inBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+    return isInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
 float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
@@ -209,26 +257,6 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "amani'shi hatcher") ? 0.0f : 1.0f;
 }
 
-float JanalaiDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling") ? 1.0f : 0.0f;
-}
-
 // Halazzi <Lynx Avatar>
 
 float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
@@ -265,7 +293,7 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (!PlayerbotAI::IsDps(bot))
-        return false;
+        return 1.0f;
 
     if (!dynamic_cast<DpsAssistAction*>(action) &&
         !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
@@ -279,7 +307,7 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValue(Action* action)
 
 // Hex Lord Malacrass
 
-// Unstable Affliction is considered a magic effect, not a curse
+// Unstable Affliction is considered a magic effect, not a curse.
 float HexLordMalacrassUnstableAfflictionMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -311,10 +339,7 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
-    if (!target)
-        return 1.0f;
-
-    return target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
+    return target && target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
 }
 
 float HexLordMalacrassSpellReflectionMultiplier::GetValue(Action* action)
@@ -329,10 +354,8 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
-        return 1.0f;
-
-    return malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
+    return malacrass &&
+        malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
 }
 
 // Zul'jin
@@ -349,10 +372,7 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return 1.0f;
-
-    return zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 1.0f : 0.0f;
+    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 1.0f : 0.0f;
 }
 
 float ZuljinEagleDisableAvoidAoeMultiplier::GetValue(Action* action)
@@ -364,29 +384,5 @@ float ZuljinEagleDisableAvoidAoeMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return 1.0f;
-
-    return zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
-}
-
-float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin)
-        return 1.0f;
-
-    return zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 1.0f : 0.0f;
+    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 }

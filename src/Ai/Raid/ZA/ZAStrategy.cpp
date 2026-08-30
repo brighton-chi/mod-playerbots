@@ -13,14 +13,17 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'aman no encounter in progress", {
         NextAction("zul'aman reset encounter states", ACTION_EMERGENCY + 10) }));
 
+    // Every boss wants the same misdirect on the pull. Past the pull, the stock hunter
+    // "low tank threat" trigger covers it - including after a threat wipe, since it fires on
+    // tankThreat == 0.
+    triggers.push_back(new TriggerNode("zul'aman pulling boss", {
+        NextAction("zul'aman misdirect boss to main tank", ACTION_RAID + 1) }));
+
     // Trash
     triggers.push_back(new TriggerNode("amani'shi medicine man summoned ward", {
         NextAction("amani'shi medicine man mark ward", ACTION_RAID) }));
 
     // Akil'zon <Eagle Avatar>
-    triggers.push_back(new TriggerNode("akil'zon pulling boss", {
-        NextAction("akil'zon misdirect boss to main tank", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("akil'zon boss engaged by tanks", {
         NextAction("akil'zon tanks position boss", ACTION_RAID) }));
 
@@ -34,9 +37,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("akil'zon manage electrical storm timer", ACTION_EMERGENCY + 10) }));
 
     // Nalorakk <Bear Avatar>
-    triggers.push_back(new TriggerNode("nalorakk pulling boss", {
-        NextAction("nalorakk misdirect boss to main tank", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("nalorakk boss switches forms", {
         NextAction("nalorakk tanks position boss", ACTION_EMERGENCY + 1) }));
 
@@ -44,9 +44,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("nalorakk spread ranged", ACTION_RAID) }));
 
     // Jan'alai <Dragonhawk Avatar>
-    triggers.push_back(new TriggerNode("jan'alai pulling boss", {
-        NextAction("jan'alai misdirect boss to main tank", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("jan'alai boss engaged by tanks", {
         NextAction("jan'alai tanks position boss", ACTION_RAID) }));
 
@@ -60,9 +57,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("jan'alai mark amani'shi hatchers", ACTION_RAID + 1) }));
 
     // Halazzi <Lynx Avatar>
-    triggers.push_back(new TriggerNode("halazzi pulling boss", {
-        NextAction("halazzi misdirect boss to main tank", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("halazzi should be tanked", {
         NextAction("halazzi main tank position boss", ACTION_RAID) }));
 
@@ -73,9 +67,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("halazzi dps attack totem and boss", ACTION_RAID) }));
 
     // Hex Lord Malacrass
-    triggers.push_back(new TriggerNode("hex lord malacrass pulling boss", {
-        NextAction("hex lord malacrass misdirect boss to main tank", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("hex lord malacrass should prioritize adds", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID) }));
 
@@ -86,9 +77,6 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
 
     // Zul'jin
-    triggers.push_back(new TriggerNode("zul'jin main tank needs aggro upon pull or phase change", {
-        NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("zul'jin boss engaged by tanks", {
         NextAction("zul'jin tanks position boss", ACTION_RAID) }));
 
@@ -96,7 +84,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is summoning cyclones in eagle form", {
-        NextAction("zul'jin avoid cyclones", ACTION_EMERGENCY + 1) }));
+        NextAction("zul'jin spread raid for cyclones", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities in dragonhawk form", {
         NextAction("zul'jin spread ranged", ACTION_RAID) }));
@@ -105,8 +93,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new ZulAmanAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new ZulAmanDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ZulAmanDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new ZulAmanAvoidWhirlwindMultiplier(botAI));
 
     // Akil'zon <Eagle Avatar>
     multipliers.push_back(new AkilzonStayInEyeOfTheStormMultiplier(botAI));
@@ -119,7 +108,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
-    multipliers.push_back(new JanalaiDelayBloodlustAndHeroismMultiplier(botAI));
 
     // Halazzi <Lynx Avatar>
     multipliers.push_back(new HalazziDisableTankActionsMultiplier(botAI));
@@ -133,5 +121,4 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Zul'jin
     multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));
-    multipliers.push_back(new ZuljinDelayBloodlustAndHeroismMultiplier(botAI));
 }

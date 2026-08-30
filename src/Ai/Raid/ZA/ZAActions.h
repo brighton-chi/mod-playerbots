@@ -25,13 +25,9 @@ public:
 class ZulAmanMisdirectBossToMainTankAction : public Action
 {
 public:
-    ZulAmanMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+    ZulAmanMisdirectBossToMainTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "zul'aman misdirect boss to main tank") {}
     bool Execute(Event event) override;
-
-private:
-    std::string const _bossName;
 };
 
 class ZulAmanTanksPositionBossAction : public AttackAction
@@ -64,14 +60,12 @@ class ZulAmanRunAwayFromWhirlwindAction : public MovementAction
 {
 public:
     ZulAmanRunAwayFromWhirlwindAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
-        float safeDistance)
-        : MovementAction(botAI, name), _bossName(bossName), _safeDistance(safeDistance) {}
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : MovementAction(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
 
 private:
     std::string const _bossName;
-    float const _safeDistance;
 };
 
 // Trash
@@ -176,11 +170,11 @@ public:
 
 // Zul'jin
 
-class ZuljinAvoidCyclonesAction : public MovementAction
+class ZuljinSpreadRaidForCyclonesAction : public MovementAction
 {
 public:
-    ZuljinAvoidCyclonesAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "zul'jin avoid cyclones") {}
+    ZuljinSpreadRaidForCyclonesAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "zul'jin spread raid for cyclones") {}
     bool Execute(Event event) override;
 };
 

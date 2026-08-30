@@ -29,15 +29,15 @@ public:
     bool IsActive() override;
 };
 
-// Akil'zon <Eagle Avatar>
-
-class AkilzonPullingBossTrigger : public Trigger
+class ZulAmanPullingBossTrigger : public Trigger
 {
 public:
-    AkilzonPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon pulling boss") {}
+    ZulAmanPullingBossTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "zul'aman pulling boss") {}
     bool IsActive() override;
 };
+
+// Akil'zon <Eagle Avatar>
 
 class AkilzonBossEngagedByTanksTrigger : public Trigger
 {
@@ -73,14 +73,6 @@ public:
 
 // Nalorakk <Bear Avatar>
 
-class NalorakkPullingBossTrigger : public Trigger
-{
-public:
-    NalorakkPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nalorakk pulling boss") {}
-    bool IsActive() override;
-};
-
 class NalorakkBossSwitchesFormsTrigger : public Trigger
 {
 public:
@@ -98,14 +90,6 @@ public:
 };
 
 // Jan'alai <Dragonhawk Avatar>
-
-class JanalaiPullingBossTrigger : public Trigger
-{
-public:
-    JanalaiPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai pulling boss") {}
-    bool IsActive() override;
-};
 
 class JanalaiBossEngagedByTanksTrigger : public Trigger
 {
@@ -141,14 +125,6 @@ public:
 
 // Halazzi <Lynx Avatar>
 
-class HalazziPullingBossTrigger : public Trigger
-{
-public:
-    HalazziPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi pulling boss") {}
-    bool IsActive() override;
-};
-
 class HalazziShouldBeTankedTrigger : public Trigger
 {
 public:
@@ -175,14 +151,6 @@ public:
 
 // Hex Lord Malacrass
 
-class HexLordMalacrassPullingBossTrigger : public Trigger
-{
-public:
-    HexLordMalacrassPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass pulling boss") {}
-    bool IsActive() override;
-};
-
 class HexLordMalacrassShouldPrioritizeAddsTrigger : public Trigger
 {
 public:
@@ -208,14 +176,6 @@ public:
 };
 
 // Zul'jin
-
-class ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger : public Trigger
-{
-public:
-    ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin main tank needs aggro upon pull or phase change") {}
-    bool IsActive() override;
-};
 
 class ZuljinBossEngagedByTanksTrigger : public Trigger
 {

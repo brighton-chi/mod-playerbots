@@ -11,11 +11,11 @@
 
 // General
 
-class ZulAmanAvoidWhirlwindMultiplier : public Multiplier
+class ZulAmanDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
-    ZulAmanAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "zul'aman avoid whirlwind") {}
+    ZulAmanDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman delay dps cooldowns") {}
     float GetValue(Action* action) override;
 };
 
@@ -24,6 +24,14 @@ class ZulAmanDisableCombatFormationMoveMultiplier : public Multiplier
 public:
     ZulAmanDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "zul'aman disable combat formation move") {}
+    float GetValue(Action* action) override;
+};
+
+class ZulAmanAvoidWhirlwindMultiplier : public Multiplier
+{
+public:
+    ZulAmanAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman avoid whirlwind") {}
     float GetValue(Action* action) override;
 };
 
@@ -78,14 +86,6 @@ class JanalaiDoNotCrowdControlHatchersMultiplier : public Multiplier
 public:
     JanalaiDoNotCrowdControlHatchersMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "jan'alai do not crowd control hatchers") {}
-    float GetValue(Action* action) override;
-};
-
-class JanalaiDelayBloodlustAndHeroismMultiplier : public Multiplier
-{
-public:
-    JanalaiDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "jan'alai delay bloodlust and heroism") {}
     float GetValue(Action* action) override;
 };
 
@@ -148,14 +148,6 @@ class ZuljinEagleDisableAvoidAoeMultiplier : public Multiplier
 public:
     ZuljinEagleDisableAvoidAoeMultiplier(PlayerbotAI* botAI)
         : Multiplier(botAI, "zul'jin eagle disable avoid aoe") {}
-    float GetValue(Action* action) override;
-};
-
-class ZuljinDelayBloodlustAndHeroismMultiplier : public Multiplier
-{
-public:
-    ZuljinDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "zul'jin delay bloodlust and heroism") {}
     float GetValue(Action* action) override;
 };
 
