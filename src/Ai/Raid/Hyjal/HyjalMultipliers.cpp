@@ -18,7 +18,7 @@ using namespace EncounterHelpers;
 
 // Note: BOT_STATE_NON_COMBAT checks cannot be used by any multiplier that could result in a bot
 // having no valid targets as it will then swap to the non-combat engine, even during a boss fight.
-// This implicates much any avoidance action that could hold the bot out of attack range.
+// This implicates any avoidance action that could hold the bot out of attack range.
 
 float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
@@ -31,16 +31,8 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    Unit* boss = nullptr;
-    for (char const* name : // In reverse instance order
-         { "archimonde", "azgalor", "kaz'rogal", "anetheron", "rage winterchill" })
-    {
-        boss = AI_VALUE2(Unit*, "find target", name);
-        if (boss)
-            break;
-    }
-
     // Suppress Bloodlust/Heroism during all trash waves. It's blown on CD otherwise.
+    Unit* boss = AI_VALUE(Unit*, "boss target");
     if (!boss)
     {
         return bot->getClass() == CLASS_SHAMAN &&
