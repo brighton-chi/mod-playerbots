@@ -27,7 +27,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("akil'zon boss engaged by tanks", {
         NextAction("akil'zon tanks position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("akil'zon boss casts static disruption", {
+    triggers.push_back(new TriggerNode("akil'zon spread for static disruption", {
         NextAction("akil'zon spread ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("akil'zon electrical storm incoming", {
@@ -40,14 +40,14 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("nalorakk boss switches forms", {
         NextAction("nalorakk tanks position boss", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("nalorakk boss casts surge", {
+    triggers.push_back(new TriggerNode("nalorakk spread for surge", {
         NextAction("nalorakk spread ranged", ACTION_RAID) }));
 
     // Jan'alai <Dragonhawk Avatar>
     triggers.push_back(new TriggerNode("jan'alai boss engaged by tanks", {
         NextAction("jan'alai tanks position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("jan'alai boss casts flame breath", {
+    triggers.push_back(new TriggerNode("jan'alai spread for flame breath", {
         NextAction("jan'alai spread ranged in circle", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("jan'alai boss summoning fire bombs", {
@@ -86,7 +86,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'jin boss is summoning cyclones in eagle form", {
         NextAction("zul'jin spread raid for cyclones", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("zul'jin boss casts aoe abilities in dragonhawk form", {
+    triggers.push_back(new TriggerNode("zul'jin spread for dragonhawk aoe", {
         NextAction("zul'jin spread ranged", ACTION_RAID) }));
 }
 

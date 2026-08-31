@@ -34,6 +34,9 @@ bool ZulAmanPullingBossTrigger::IsActive()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
+    if (bot->GetMapId() != ZA_MAP_ID) // In case strategy persists outside (e.g., server reset)
+        return false;
+
     Unit* boss = AI_VALUE(Unit*, "boss target");
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
@@ -59,7 +62,7 @@ bool AkilzonBossEngagedByTanksTrigger::IsActive()
     return !GetElectricalStormTarget(bot);
 }
 
-bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
+bool AkilzonSpreadForStaticDisruptionTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -104,7 +107,7 @@ bool NalorakkBossSwitchesFormsTrigger::IsActive()
     return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-bool NalorakkBossCastsSurgeTrigger::IsActive()
+bool NalorakkSpreadForSurgeTrigger::IsActive()
 {
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "nalorakk");
 }
@@ -121,7 +124,7 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
     return janalai && !IsJanalaiBombing(janalai);
 }
 
-bool JanalaiBossCastsFlameBreathTrigger::IsActive()
+bool JanalaiSpreadForFlameBreathTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -225,7 +228,7 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE));
 }
 
-bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
+bool ZuljinSpreadForDragonhawkAoeTrigger::IsActive()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;

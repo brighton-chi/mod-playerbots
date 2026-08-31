@@ -47,11 +47,11 @@ public:
     bool IsActive() override;
 };
 
-class AkilzonBossCastsStaticDisruptionTrigger : public Trigger
+class AkilzonSpreadForStaticDisruptionTrigger : public Trigger
 {
 public:
-    AkilzonBossCastsStaticDisruptionTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon boss casts static disruption") {}
+    AkilzonSpreadForStaticDisruptionTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "akil'zon spread for static disruption") {}
     bool IsActive() override;
 };
 
@@ -81,11 +81,11 @@ public:
     bool IsActive() override;
 };
 
-class NalorakkBossCastsSurgeTrigger : public Trigger
+class NalorakkSpreadForSurgeTrigger : public Trigger
 {
 public:
-    NalorakkBossCastsSurgeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nalorakk boss casts surge") {}
+    NalorakkSpreadForSurgeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "nalorakk spread for surge") {}
     bool IsActive() override;
 };
 
@@ -99,11 +99,11 @@ public:
     bool IsActive() override;
 };
 
-class JanalaiBossCastsFlameBreathTrigger : public Trigger
+class JanalaiSpreadForFlameBreathTrigger : public Trigger
 {
 public:
-    JanalaiBossCastsFlameBreathTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai boss casts flame breath") {}
+    JanalaiSpreadForFlameBreathTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "jan'alai spread for flame breath") {}
     bool IsActive() override;
 };
 
@@ -201,11 +201,11 @@ public:
     bool IsActive() override;
 };
 
-class ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger : public Trigger
+class ZuljinSpreadForDragonhawkAoeTrigger : public Trigger
 {
 public:
-    ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin boss casts aoe abilities in dragonhawk form") {}
+    ZuljinSpreadForDragonhawkAoeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "zul'jin spread for dragonhawk aoe") {}
     bool IsActive() override;
 };
 

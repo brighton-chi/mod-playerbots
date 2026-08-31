@@ -48,7 +48,6 @@ enum class ZaSpells : uint32
 
     // Zul'jin
     SPELL_ZULJIN_WHIRLWIND          = 17207,
-    SPELL_SHAPE_OF_THE_BEAR         = 42594,
     SPELL_SHAPE_OF_THE_EAGLE        = 42606,
     SPELL_SHAPE_OF_THE_LYNX         = 42607,
     SPELL_SHAPE_OF_THE_DRAGONHAWK   = 42608,
@@ -63,6 +62,9 @@ enum class ZaNpcs : uint32
     // Trash
     NPC_AMANI_HEALING_WARD          = 23757,
     NPC_AMANI_PROTECTIVE_WARD       = 23822,
+
+    // Akil'zon <Eagle Avatar>
+    NPC_AKILZON                     = 23574,
 
     // Jan'alai <Dragonhawk Avatar>
     NPC_JANALAI                     = 23578,
@@ -86,7 +88,6 @@ enum class ZaNpcs : uint32
 
     // Zul'jin
     NPC_ZULJIN                      = 23863,
-    NPC_FEATHER_VORTEX              = 24136,
 };
 
 enum class ZaObjects : uint32

@@ -30,7 +30,7 @@ using namespace EncounterHelpers;
 namespace
 {
 
-bool const IsHazardousMovement(Action* action)
+bool IsHazardousMovement(Action* action)
 {
     return (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action)) ||
         dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -138,8 +138,12 @@ float ZulAmanDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "jan'alai") ||
-        AI_VALUE2(Unit*, "find target", "akil'zon") ? 0.0f : 1.0f;
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss)
+        return 1.0f;
+
+    uint32 const entry = boss->GetEntry();
+    return entry == Id(ZaNpcs::NPC_JANALAI) || entry == Id(ZaNpcs::NPC_AKILZON) ? 0.0f : 1.0f;
 }
 
 // Akil'zon <Eagle Avatar>
@@ -237,14 +241,10 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
     if (!IsHazardousMovement(action))
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-    if (!janalai)
-        return 1.0f;
-
     if (dynamic_cast<JanalaiAvoidFireBombsAction*>(action))
         return 1.0f;
 
-    return IsJanalaiBombing(janalai) ? 0.0f : 1.0f;
+    return IsJanalaiBombing(AI_VALUE2(Unit*, "find target", "jan'alai")) ? 0.0f : 1.0f;
 }
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
@@ -376,6 +376,9 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
     return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 1.0f : 0.0f;
 }
 
+// AvoidAoeAction is otherwise triggered by the Feather Vortices, and it is useless as they chase
+// players at player run speed (the bot runs away when it gets hit, and the vortex just chases the
+// bot at the same speed).
 float ZuljinEagleDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
