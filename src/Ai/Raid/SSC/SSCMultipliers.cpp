@@ -34,12 +34,16 @@ using namespace SerpentShrineCavernHelpers;
 
 float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(SPELL_TOXIC_POOL) &&
-        dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
-        return 0.0f;
+    if (!bot->HasAura(SPELL_TOXIC_POOL))
+        return 1.0f;
 
-    return 1.0f;
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    return dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action) ? 1.0f : 0.0f;
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -275,7 +279,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValue(Action* action)
     if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action) ||
+    return dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<DpsAssistAction*>(action) ||
         dynamic_cast<CastHealingSpellAction*>(action) ||
         dynamic_cast<CastCureSpellAction*>(action) ||
@@ -285,10 +289,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValue(Action* action)
         dynamic_cast<PartyMemberActionNameSupport*>(action) ||
         dynamic_cast<CastBearFormAction*>(action) ||
         dynamic_cast<CastDireBearFormAction*>(action) ||
-        dynamic_cast<CastTreeFormAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+        dynamic_cast<CastTreeFormAction*>(action) ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValue(Action* action)

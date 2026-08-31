@@ -16,8 +16,8 @@
 class SerpentShrineCavernResetEncounterStatesAction : public Action
 {
 public:
-    SerpentShrineCavernResetEncounterStatesAction(
-        PlayerbotAI* botAI, std::string const name = "serpent shrine cavern reset encounter states") : Action(botAI, name) {}
+    SerpentShrineCavernResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "serpent shrine cavern reset encounter states") {}
     bool Execute(Event event) override;
 };
 
@@ -26,16 +26,16 @@ public:
 class UnderbogColossusEscapeToxicPoolAction : public MovementAction
 {
 public:
-    UnderbogColossusEscapeToxicPoolAction(
-        PlayerbotAI* botAI, std::string const name = "underbog colossus escape toxic pool") : MovementAction(botAI, name) {}
+    UnderbogColossusEscapeToxicPoolAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "underbog colossus escape toxic pool") {}
     bool Execute(Event event) override;
 };
 
 class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
 {
 public:
-    GreyheartTidecallerMarkWaterElementalTotemAction(
-        PlayerbotAI* botAI, std::string const name = "greyheart tidecaller mark water elemental totem") : Action(botAI, name) {}
+    GreyheartTidecallerMarkWaterElementalTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "greyheart tidecaller mark water elemental totem") {}
     bool Execute(Event event) override;
 };
 

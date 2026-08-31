@@ -10,12 +10,19 @@
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"
+#include <type_traits>
 #include <unordered_map>
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
 
 namespace SerpentShrineCavernHelpers
 {
 
-enum SerpentShrineCavernSpells
+enum SscSpells
 {
     // Trash Mobs
     SPELL_TOXIC_POOL             = 38718,
@@ -72,7 +79,7 @@ enum SerpentShrineCavernSpells
     SPELL_CURSE_OF_EXHAUSTION    = 18223,
 };
 
-enum SerpentShrineCavernNPCs
+enum SscNpcs
 {
     // Trash Mobs
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
@@ -104,13 +111,13 @@ enum SerpentShrineCavernNPCs
     NPC_SPORE_DROP_TRIGGER       = 22207,
 };
 
-enum SerpentShrineCavernItems
+enum SscItems
 {
     // Lady Vashj <Coilfang Matron>
     ITEM_TAINTED_CORE            = 31088,
 };
 
-constexpr uint32 SSC_MAP_ID = 548;
+inline constexpr uint32 SSC_MAP_ID = 548;
 
 // Hydross the Unstable <Duke of Currents>
 extern const Position HYDROSS_FROST_TANK_POSITION;
@@ -127,7 +134,7 @@ bool HasNoMarkOfCorruption(Player* bot);
 // The Lurker Below
 extern const Position LURKER_MAIN_TANK_POSITION;
 // Stores the time the current Spout cast started; the entry is erased once it expires
-constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
+inline constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
 extern std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 bool IsLurkerCastingSpout(Unit* lurker);
