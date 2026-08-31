@@ -102,29 +102,107 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss)
+        return 1.0f;
+
+    uint32 whirlwind = 0;
+    switch (boss->GetEntry())
     {
-        if (zuljin->GetVictim() == bot)
+        case Id(ZaNpcs::NPC_ZULJIN):
+            whirlwind = Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND);
+            break;
+        case Id(ZaNpcs::NPC_HEX_LORD_MALACRASS):
+            whirlwind = Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND);
+            break;
+        default:
             return 1.0f;
-
-        if (!zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
-            return 1.0f;
-
-        return bot->GetDistance2d(zuljin) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
     }
 
-    if (Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+    if (boss->GetVictim() == bot)
+        return 1.0f;
+
+    if (!boss->HasAura(whirlwind))
+        return 1.0f;
+
+    return bot->GetDistance2d(boss) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
+}
+
+float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    bool const isTankFace = dynamic_cast<TankFaceAction*>(action) != nullptr;
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) != nullptr;
+    bool const isTaunt = !isTankFace && !isTankAssist && IsTauntAction(bot, action);
+
+    if (!isTankFace && !isTankAssist && !isTaunt)
+        return 1.0f;
+
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss)
+        return 1.0f;
+
+    // Nalorakk is the only one that taunts from a ZA action, so his is the only taunt suppressed -
+    // and only for whichever tank is meant to be holding him in the current form.
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_NALORAKK))
     {
-        if (malacrass->GetVictim() == bot)
-            return 1.0f;
+        if (!isTaunt)
+            return 0.0f;
 
-        if (!malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND)))
-            return 1.0f;
+        bool const isInBearForm = IsNalorakkInBearForm(boss);
 
-        return bot->GetDistance2d(malacrass) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
+        if (!isInBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+            return 0.0f;
+
+        return isInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+    }
+
+    if (isTaunt)
+        return 1.0f;
+
+    // Jan'alai: the offtank still needs its assist for the Hatchers, so only the main tank's is
+    // suppressed. Facing is driven by the ZA action either way.
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_JANALAI))
+        return isTankFace || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI))
+        return 0.0f;
+
+    // Zul'jin is the one case that hands tanking back to the generic system: in dragonhawk form
+    // nothing positions him, so the tank is left to face him itself.
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN))
+    {
+        return isTankFace &&
+            !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 0.0f : 1.0f;
     }
 
     return 1.0f;
+}
+
+// Both fights pass the boss between tanks, so a misdirect aimed at the main tank would pull it
+// off whichever tank is supposed to have it.
+float ZulAmanControlMisdirectionMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_HUNTER)
+        return 1.0f;
+
+    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 1.0f;
+
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss)
+        return 1.0f;
+
+    uint32 const entry = boss->GetEntry();
+    return entry == Id(ZaNpcs::NPC_NALORAKK) || entry == Id(ZaNpcs::NPC_HALAZZI) ? 0.0f : 1.0f;
 }
 
 float ZulAmanDisableCombatFormationMoveMultiplier::GetValue(Action* action)
@@ -153,7 +231,8 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
     if (!IsHazardousMovement(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss || boss->GetEntry() != Id(ZaNpcs::NPC_AKILZON))
         return 1.0f;
 
     if (dynamic_cast<AkilzonMoveToEyeOfTheStormAction*>(action))
@@ -168,73 +247,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 
 // Nalorakk <Bear Avatar>
 
-float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    bool const isTankAction = dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<TankFaceAction*>(action);
-
-    if (!isTankAction && !IsTauntAction(bot, action))
-        return 1.0f;
-
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
-    if (!nalorakk)
-        return 1.0f;
-
-    if (isTankAction)
-        return 0.0f;
-
-    // IsTauntAction
-    bool const isInBearForm = IsNalorakkInBearForm(nalorakk);
-
-    if (!isInBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        return 0.0f;
-
-    return isInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
-}
-
-float NalorakkControlMisdirectionMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "nalorakk") ? 0.0f : 1.0f;
-}
-
 // Jan'alai <Dragonhawk Avatar>
-
-float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    bool const isTankFaceAction = dynamic_cast<TankFaceAction*>(action);
-    if (!isTankFaceAction && !dynamic_cast<TankAssistAction*>(action))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
-        return 1.0f;
-
-    if (isTankFaceAction)
-        return 0.0f;
-
-    // TankAssistAction
-    return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
-}
 
 float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
 {
@@ -244,7 +257,11 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
     if (dynamic_cast<JanalaiAvoidFireBombsAction*>(action))
         return 1.0f;
 
-    return IsJanalaiBombing(AI_VALUE2(Unit*, "find target", "jan'alai")) ? 0.0f : 1.0f;
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss || boss->GetEntry() != Id(ZaNpcs::NPC_JANALAI))
+        return 1.0f;
+
+    return IsJanalaiBombing(boss) ? 0.0f : 1.0f;
 }
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
@@ -255,38 +272,14 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
     if (!dynamic_cast<CastCrowdControlSpellAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "amani'shi hatcher") ? 0.0f : 1.0f;
+    // The Hatchers never fight back - npc_janalai_hatcher overrides AttackStart to do nothing - so
+    // they only appear in a threat list once someone has already hit one, which is too late to be
+    // asking. Reading the cast's own target sidesteps that, and blocks only the casts that matter.
+    Unit* target = action->GetTarget();
+    return target && target->GetEntry() == Id(ZaNpcs::NPC_AMANISHI_HATCHER) ? 0.0f : 1.0f;
 }
 
 // Halazzi <Lynx Avatar>
-
-float HalazziDisableTankActionsMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<TankAssistAction*>(action) && !dynamic_cast<TankFaceAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
-}
-
-float HalazziControlMisdirectionMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
-}
 
 float HalazziDisableAutoDpsTargetingMultiplier::GetValue(Action* action)
 {
@@ -302,7 +295,8 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    return boss && boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI) ? 0.0f : 1.0f;
 }
 
 
@@ -336,7 +330,8 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    if (!boss || boss->GetEntry() != Id(ZaNpcs::NPC_HEX_LORD_MALACRASS))
         return 1.0f;
 
     Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
@@ -354,27 +349,12 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValue(Action* action)
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    return malacrass &&
-        malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    return boss && boss->GetEntry() == Id(ZaNpcs::NPC_HEX_LORD_MALACRASS) &&
+        boss->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
 }
 
 // Zul'jin
-
-float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<TankFaceAction*>(action))
-        return 1.0f;
-
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 1.0f : 0.0f;
-}
 
 // AvoidAoeAction is otherwise triggered by the Feather Vortices, and it is useless as they chase
 // players at player run speed (the bot runs away when it gets hit, and the vortex just chases the
@@ -387,6 +367,7 @@ float ZuljinEagleDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
+    Unit* boss = AI_VALUE(Unit*, "boss target");
+    return boss && boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN) &&
+        boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 }

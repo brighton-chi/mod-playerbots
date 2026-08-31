@@ -19,6 +19,22 @@ public:
     float GetValue(Action* action) override;
 };
 
+class ZulAmanDisableTankActionsMultiplier : public Multiplier
+{
+public:
+    ZulAmanDisableTankActionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman disable tank actions") {}
+    float GetValue(Action* action) override;
+};
+
+class ZulAmanControlMisdirectionMultiplier : public Multiplier
+{
+public:
+    ZulAmanControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "zul'aman control misdirection") {}
+    float GetValue(Action* action) override;
+};
+
 class ZulAmanDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
@@ -47,31 +63,7 @@ public:
 
 // Nalorakk <Bear Avatar>
 
-class NalorakkDisableTankActionsMultiplier : public Multiplier
-{
-public:
-    NalorakkDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "nalorakk disable tank actions") {}
-    float GetValue(Action* action) override;
-};
-
-class NalorakkControlMisdirectionMultiplier : public Multiplier
-{
-public:
-    NalorakkControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "nalorakk control misdirection") {}
-    float GetValue(Action* action) override;
-};
-
 // Jan'alai <Dragonhawk Avatar>
-
-class JanalaiDisableTankActionsMultiplier : public Multiplier
-{
-public:
-    JanalaiDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "jan'alai disable tank actions") {}
-    float GetValue(Action* action) override;
-};
 
 class JanalaiStayAwayFromFireBombsMultiplier : public Multiplier
 {
@@ -90,22 +82,6 @@ public:
 };
 
 // Halazzi <Lynx Avatar>
-
-class HalazziDisableTankActionsMultiplier : public Multiplier
-{
-public:
-    HalazziDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "halazzi disable tank actions") {}
-    float GetValue(Action* action) override;
-};
-
-class HalazziControlMisdirectionMultiplier : public Multiplier
-{
-public:
-    HalazziControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "halazzi control misdirection") {}
-    float GetValue(Action* action) override;
-};
 
 class HalazziDisableAutoDpsTargetingMultiplier : public Multiplier
 {
@@ -134,14 +110,6 @@ public:
 };
 
 // Zul'jin
-
-class ZuljinDisableTankFaceMultiplier : public Multiplier
-{
-public:
-    ZuljinDisableTankFaceMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "zul'jin disable tank face") {}
-    float GetValue(Action* action) override;
-};
 
 class ZuljinEagleDisableAvoidAoeMultiplier : public Multiplier
 {

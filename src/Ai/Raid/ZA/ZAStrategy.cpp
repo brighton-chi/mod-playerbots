@@ -94,24 +94,19 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
     multipliers.push_back(new ZulAmanDelayDpsCooldownsMultiplier(botAI));
+    multipliers.push_back(new ZulAmanDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new ZulAmanControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new ZulAmanDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new ZulAmanAvoidWhirlwindMultiplier(botAI));
 
     // Akil'zon <Eagle Avatar>
     multipliers.push_back(new AkilzonStayInEyeOfTheStormMultiplier(botAI));
 
-    // Nalorakk <Bear Avatar>
-    multipliers.push_back(new NalorakkDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new NalorakkControlMisdirectionMultiplier(botAI));
-
     // Jan'alai <Dragonhawk Avatar>
-    multipliers.push_back(new JanalaiDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new JanalaiStayAwayFromFireBombsMultiplier(botAI));
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
 
     // Halazzi <Lynx Avatar>
-    multipliers.push_back(new HalazziDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new HalazziControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new HalazziDisableAutoDpsTargetingMultiplier(botAI));
 
     // Hex Lord Malacrass
@@ -119,6 +114,5 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HexLordMalacrassSpellReflectionMultiplier(botAI));
 
     // Zul'jin
-    multipliers.push_back(new ZuljinDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));
 }

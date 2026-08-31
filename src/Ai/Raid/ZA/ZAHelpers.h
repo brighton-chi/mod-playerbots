@@ -66,6 +66,9 @@ enum class ZaNpcs : uint32
     // Akil'zon <Eagle Avatar>
     NPC_AKILZON                     = 23574,
 
+    // Nalorakk <Bear Avatar>
+    NPC_NALORAKK                    = 23576,
+
     // Jan'alai <Dragonhawk Avatar>
     NPC_JANALAI                     = 23578,
     NPC_AMANI_DRAGONHAWK_HATCHLING  = 23598,
@@ -73,6 +76,7 @@ enum class ZaNpcs : uint32
     NPC_FIRE_BOMB                   = 23920,
 
     // Halazzi <Lynx Avatar>
+    NPC_HALAZZI                     = 23577,
     NPC_CORRUPTED_LIGHTNING_TOTEM   = 24224,
 
     // Hex Lord Malacrass
