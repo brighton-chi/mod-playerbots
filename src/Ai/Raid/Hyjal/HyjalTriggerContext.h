@@ -12,130 +12,130 @@
 #include "HyjalTriggers.h"
 #include "NamedObjectContext.h"
 
-class RaidHyjalSummitTriggerContext : public NamedObjectContext<Trigger>
+class RaidHyjalTriggerContext : public NamedObjectContext<Trigger>
 {
 public:
-    RaidHyjalSummitTriggerContext()
+    RaidHyjalTriggerContext()
     {
         // General
         creators["hyjal summit no encounter in progress"] =
-            &RaidHyjalSummitTriggerContext::hyjal_summit_no_encounter_in_progress;
+            &RaidHyjalTriggerContext::hyjal_summit_no_encounter_in_progress;
 
         // Rage Winterchill
         creators["rage winterchill pulling boss"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_pulling_boss;
+            &RaidHyjalTriggerContext::rage_winterchill_pulling_boss;
 
         creators["rage winterchill should be tanked"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_should_be_tanked;
+            &RaidHyjalTriggerContext::rage_winterchill_should_be_tanked;
 
         creators["rage winterchill ranged should spread"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_should_spread;
+            &RaidHyjalTriggerContext::rage_winterchill_ranged_should_spread;
 
         creators["rage winterchill melee near death and decay"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_melee_near_death_and_decay;
+            &RaidHyjalTriggerContext::rage_winterchill_melee_near_death_and_decay;
 
         creators["rage winterchill ranged in death and decay"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_ranged_in_death_and_decay;
+            &RaidHyjalTriggerContext::rage_winterchill_ranged_in_death_and_decay;
 
         // Anetheron
         creators["anetheron pulling boss or infernal"] =
-            &RaidHyjalSummitTriggerContext::anetheron_pulling_boss_or_infernal;
+            &RaidHyjalTriggerContext::anetheron_pulling_boss_or_infernal;
 
         creators["anetheron should be tanked"] =
-            &RaidHyjalSummitTriggerContext::anetheron_should_be_tanked;
+            &RaidHyjalTriggerContext::anetheron_should_be_tanked;
 
         creators["anetheron ranged should spread"] =
-            &RaidHyjalSummitTriggerContext::anetheron_ranged_should_spread;
+            &RaidHyjalTriggerContext::anetheron_ranged_should_spread;
 
         creators["anetheron bot is near inferno target"] =
-            &RaidHyjalSummitTriggerContext::anetheron_bot_is_near_inferno_target;
+            &RaidHyjalTriggerContext::anetheron_bot_is_near_inferno_target;
 
         creators["anetheron bot is targeted by infernal"] =
-            &RaidHyjalSummitTriggerContext::anetheron_bot_is_targeted_by_infernal;
+            &RaidHyjalTriggerContext::anetheron_bot_is_targeted_by_infernal;
 
         creators["anetheron infernals pulse immolation"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_pulse_immolation;
+            &RaidHyjalTriggerContext::anetheron_infernals_pulse_immolation;
 
         creators["anetheron infernals should be tanked away"] =
-            &RaidHyjalSummitTriggerContext::anetheron_infernals_should_be_tanked_away;
+            &RaidHyjalTriggerContext::anetheron_infernals_should_be_tanked_away;
 
         creators["anetheron should divide dps"] =
-            &RaidHyjalSummitTriggerContext::anetheron_should_divide_dps;
+            &RaidHyjalTriggerContext::anetheron_should_divide_dps;
 
         // Kaz'rogal
         creators["kaz'rogal pulling boss"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_pulling_boss;
+            &RaidHyjalTriggerContext::kazrogal_pulling_boss;
 
         creators["kaz'rogal should be tanked"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_should_be_tanked;
+            &RaidHyjalTriggerContext::kazrogal_should_be_tanked;
 
         creators["kaz'rogal can split malevolent cleave damage"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_can_split_malevolent_cleave_damage;
+            &RaidHyjalTriggerContext::kazrogal_can_split_malevolent_cleave_damage;
 
         creators["kaz'rogal ranged should avoid war stomp"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_ranged_should_avoid_war_stomp;
+            &RaidHyjalTriggerContext::kazrogal_ranged_should_avoid_war_stomp;
 
         creators["kaz'rogal bot is low on mana"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_bot_is_low_on_mana;
+            &RaidHyjalTriggerContext::kazrogal_bot_is_low_on_mana;
 
         creators["kaz'rogal hunter should preserve mana"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_hunter_should_preserve_mana;
+            &RaidHyjalTriggerContext::kazrogal_hunter_should_preserve_mana;
 
         creators["kaz'rogal mark on mage or paladin"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_mark_on_mage_or_paladin;
+            &RaidHyjalTriggerContext::kazrogal_mark_on_mage_or_paladin;
 
         creators["kaz'rogal immunity no longer needed"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_immunity_no_longer_needed;
+            &RaidHyjalTriggerContext::kazrogal_immunity_no_longer_needed;
 
         creators["kaz'rogal warlock should manage mana"] =
-            &RaidHyjalSummitTriggerContext::kazrogal_warlock_should_manage_mana;
+            &RaidHyjalTriggerContext::kazrogal_warlock_should_manage_mana;
 
         // Azgalor
         creators["azgalor pulling boss"] =
-            &RaidHyjalSummitTriggerContext::azgalor_pulling_boss;
+            &RaidHyjalTriggerContext::azgalor_pulling_boss;
 
         creators["azgalor should be tanked"] =
-            &RaidHyjalSummitTriggerContext::azgalor_should_be_tanked;
+            &RaidHyjalTriggerContext::azgalor_should_be_tanked;
 
         creators["azgalor ranged should spread"] =
-            &RaidHyjalSummitTriggerContext::azgalor_ranged_should_spread;
+            &RaidHyjalTriggerContext::azgalor_ranged_should_spread;
 
         creators["azgalor melee near rain of fire"] =
-            &RaidHyjalSummitTriggerContext::azgalor_melee_near_rain_of_fire;
+            &RaidHyjalTriggerContext::azgalor_melee_near_rain_of_fire;
 
         creators["azgalor ranged in rain of fire"] =
-            &RaidHyjalSummitTriggerContext::azgalor_ranged_in_rain_of_fire;
+            &RaidHyjalTriggerContext::azgalor_ranged_in_rain_of_fire;
 
         creators["azgalor bot is doomed"] =
-            &RaidHyjalSummitTriggerContext::azgalor_bot_is_doomed;
+            &RaidHyjalTriggerContext::azgalor_bot_is_doomed;
 
         creators["azgalor should control doomguards"] =
-            &RaidHyjalSummitTriggerContext::azgalor_should_control_doomguards;
+            &RaidHyjalTriggerContext::azgalor_should_control_doomguards;
 
         creators["azgalor should divide dps"] =
-            &RaidHyjalSummitTriggerContext::azgalor_should_divide_dps;
+            &RaidHyjalTriggerContext::azgalor_should_divide_dps;
 
         // Archimonde
         creators["archimonde pulling boss"] =
-            &RaidHyjalSummitTriggerContext::archimonde_pulling_boss;
+            &RaidHyjalTriggerContext::archimonde_pulling_boss;
 
         creators["archimonde should be tanked"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_main_tank;
+            &RaidHyjalTriggerContext::archimonde_boss_engaged_by_main_tank;
 
         creators["archimonde boss casts fear"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
+            &RaidHyjalTriggerContext::archimonde_boss_casts_fear;
 
         creators["archimonde boss casting air burst"] =
-            &RaidHyjalSummitTriggerContext::archimonde_boss_casting_air_burst;
+            &RaidHyjalTriggerContext::archimonde_boss_casting_air_burst;
 
         creators["archimonde ranged should spread"] =
-            &RaidHyjalSummitTriggerContext::archimonde_ranged_should_spread;
+            &RaidHyjalTriggerContext::archimonde_ranged_should_spread;
 
         creators["archimonde bot is near doomfire"] =
-            &RaidHyjalSummitTriggerContext::archimonde_bot_is_near_doomfire;
+            &RaidHyjalTriggerContext::archimonde_bot_is_near_doomfire;
 
         creators["archimonde bot stood in doomfire"] =
-            &RaidHyjalSummitTriggerContext::archimonde_bot_stood_in_doomfire;
+            &RaidHyjalTriggerContext::archimonde_bot_stood_in_doomfire;
     }
 
 private:

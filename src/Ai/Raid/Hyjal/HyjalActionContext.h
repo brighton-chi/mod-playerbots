@@ -11,128 +11,128 @@
 #include "HyjalHelpers.h"
 #include "NamedObjectContext.h"
 
-class RaidHyjalSummitActionContext : public NamedObjectContext<Action>
+class RaidHyjalActionContext : public NamedObjectContext<Action>
 {
 public:
-    RaidHyjalSummitActionContext()
+    RaidHyjalActionContext()
     {
         // General
         creators["hyjal summit reset encounter states"] =
-            &RaidHyjalSummitActionContext::hyjal_summit_reset_encounter_states;
+            &RaidHyjalActionContext::hyjal_summit_reset_encounter_states;
 
         // Rage Winterchill
         creators["rage winterchill misdirect boss to main tank"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_misdirect_boss_to_main_tank;
+            &RaidHyjalActionContext::rage_winterchill_misdirect_boss_to_main_tank;
 
         creators["rage winterchill main tank position boss"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_main_tank_position_boss;
+            &RaidHyjalActionContext::rage_winterchill_main_tank_position_boss;
 
         creators["rage winterchill spread ranged in circle"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_spread_ranged_in_circle;
+            &RaidHyjalActionContext::rage_winterchill_spread_ranged_in_circle;
 
         creators["rage winterchill ranged get out of death and decay"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_ranged_get_out_of_death_and_decay;
+            &RaidHyjalActionContext::rage_winterchill_ranged_get_out_of_death_and_decay;
 
         creators["rage winterchill melee maneuver through death and decay"] =
-            &RaidHyjalSummitActionContext::rage_winterchill_melee_maneuver_through_death_and_decay;
+            &RaidHyjalActionContext::rage_winterchill_melee_maneuver_through_death_and_decay;
 
         // Anetheron
         creators["anetheron misdirect boss and infernals to tanks"] =
-            &RaidHyjalSummitActionContext::anetheron_misdirect_boss_and_infernals_to_tanks;
+            &RaidHyjalActionContext::anetheron_misdirect_boss_and_infernals_to_tanks;
 
         creators["anetheron main tank position boss"] =
-            &RaidHyjalSummitActionContext::anetheron_main_tank_position_boss;
+            &RaidHyjalActionContext::anetheron_main_tank_position_boss;
 
         creators["anetheron spread ranged in circle"] =
-            &RaidHyjalSummitActionContext::anetheron_spread_ranged_in_circle;
+            &RaidHyjalActionContext::anetheron_spread_ranged_in_circle;
 
         creators["anetheron move away from inferno target"] =
-            &RaidHyjalSummitActionContext::anetheron_move_away_from_inferno_target;
+            &RaidHyjalActionContext::anetheron_move_away_from_inferno_target;
 
         creators["anetheron bring infernal to infernal tank"] =
-            &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
+            &RaidHyjalActionContext::anetheron_bring_infernal_to_infernal_tank;
 
         creators["anetheron infernal tank take position"] =
-            &RaidHyjalSummitActionContext::anetheron_infernal_tank_take_position;
+            &RaidHyjalActionContext::anetheron_infernal_tank_take_position;
 
         creators["anetheron get out of immolation"] =
-            &RaidHyjalSummitActionContext::anetheron_get_out_of_immolation;
+            &RaidHyjalActionContext::anetheron_get_out_of_immolation;
         creators["anetheron assign dps priority"] =
-            &RaidHyjalSummitActionContext::anetheron_assign_dps_priority;
+            &RaidHyjalActionContext::anetheron_assign_dps_priority;
 
         // Kaz'rogal
         creators["kaz'rogal misdirect boss to main tank"] =
-            &RaidHyjalSummitActionContext::kazrogal_misdirect_boss_to_main_tank;
+            &RaidHyjalActionContext::kazrogal_misdirect_boss_to_main_tank;
 
         creators["kaz'rogal main tank position boss"] =
-            &RaidHyjalSummitActionContext::kazrogal_main_tank_position_boss;
+            &RaidHyjalActionContext::kazrogal_main_tank_position_boss;
 
         creators["kaz'rogal assist tanks move in front"] =
-            &RaidHyjalSummitActionContext::kazrogal_assist_tanks_move_in_front;
+            &RaidHyjalActionContext::kazrogal_assist_tanks_move_in_front;
 
         creators["kaz'rogal spread ranged in arc"] =
-            &RaidHyjalSummitActionContext::kazrogal_spread_ranged_in_arc;
+            &RaidHyjalActionContext::kazrogal_spread_ranged_in_arc;
 
         creators["kaz'rogal move away from group"] =
-            &RaidHyjalSummitActionContext::kazrogal_move_away_from_group;
+            &RaidHyjalActionContext::kazrogal_move_away_from_group;
 
         creators["kaz'rogal activate aspect of the viper"] =
-            &RaidHyjalSummitActionContext::kazrogal_activate_aspect_of_the_viper;
+            &RaidHyjalActionContext::kazrogal_activate_aspect_of_the_viper;
 
         creators["kaz'rogal cancel mark"] =
-            &RaidHyjalSummitActionContext::kazrogal_cancel_mark;
+            &RaidHyjalActionContext::kazrogal_cancel_mark;
 
         creators["kaz'rogal cancel immunity"] =
-            &RaidHyjalSummitActionContext::kazrogal_cancel_immunity;
+            &RaidHyjalActionContext::kazrogal_cancel_immunity;
         creators["kaz'rogal warlock manage mana"] =
-            &RaidHyjalSummitActionContext::kazrogal_warlock_manage_mana;
+            &RaidHyjalActionContext::kazrogal_warlock_manage_mana;
 
         // Azgalor
         creators["azgalor misdirect boss to main tank"] =
-            &RaidHyjalSummitActionContext::azgalor_misdirect_boss_to_main_tank;
+            &RaidHyjalActionContext::azgalor_misdirect_boss_to_main_tank;
 
         creators["azgalor main tank position boss"] =
-            &RaidHyjalSummitActionContext::azgalor_main_tank_position_boss;
+            &RaidHyjalActionContext::azgalor_main_tank_position_boss;
 
         creators["azgalor disperse ranged"] =
-            &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
+            &RaidHyjalActionContext::azgalor_disperse_ranged;
 
         creators["azgalor melee maneuver through fire"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_maneuver_through_fire;
+            &RaidHyjalActionContext::azgalor_melee_maneuver_through_fire;
 
         creators["azgalor ranged get out of rain of fire"] =
-            &RaidHyjalSummitActionContext::azgalor_ranged_get_out_of_rain_of_fire;
+            &RaidHyjalActionContext::azgalor_ranged_get_out_of_rain_of_fire;
 
         creators["azgalor move to doomguard tank"] =
-            &RaidHyjalSummitActionContext::azgalor_move_to_doomguard_tank;
+            &RaidHyjalActionContext::azgalor_move_to_doomguard_tank;
 
         creators["azgalor first assist tank position doomguard"] =
-            &RaidHyjalSummitActionContext::azgalor_first_assist_tank_position_doomguard;
+            &RaidHyjalActionContext::azgalor_first_assist_tank_position_doomguard;
 
         creators["azgalor determine dps priority"] =
-            &RaidHyjalSummitActionContext::azgalor_determine_dps_priority;
+            &RaidHyjalActionContext::azgalor_determine_dps_priority;
 
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
-            &RaidHyjalSummitActionContext::archimonde_misdirect_boss_to_main_tank;
+            &RaidHyjalActionContext::archimonde_misdirect_boss_to_main_tank;
 
         creators["archimonde move boss to initial position"] =
-            &RaidHyjalSummitActionContext::archimonde_move_boss_to_initial_position;
+            &RaidHyjalActionContext::archimonde_move_boss_to_initial_position;
 
         creators["archimonde cast fear immunity spell"] =
-            &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
+            &RaidHyjalActionContext::archimonde_cast_fear_immunity_spell;
 
         creators["archimonde keep air burst away from tank"] =
-            &RaidHyjalSummitActionContext::archimonde_keep_air_burst_away_from_tank;
+            &RaidHyjalActionContext::archimonde_keep_air_burst_away_from_tank;
 
         creators["archimonde spread ranged"] =
-            &RaidHyjalSummitActionContext::archimonde_spread_ranged;
+            &RaidHyjalActionContext::archimonde_spread_ranged;
 
         creators["archimonde avoid doomfire"] =
-            &RaidHyjalSummitActionContext::archimonde_avoid_doomfire;
+            &RaidHyjalActionContext::archimonde_avoid_doomfire;
 
         creators["archimonde remove doomfire dot"] =
-            &RaidHyjalSummitActionContext::archimonde_remove_doomfire_dot;
+            &RaidHyjalActionContext::archimonde_remove_doomfire_dot;
     }
 
 private:

@@ -178,7 +178,7 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
     }
 }
 
-}
+} // end anonymous namespace
 
 class KalecgosPortalSpellListenerScript : public AllSpellScript
 {
@@ -313,6 +313,27 @@ public:
     }
 };
 
+class MuruVoidZoneSpellListenerScript : public AllSpellScript
+{
+public:
+    MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (spellInfo->Id != Id(SwpSpells::SPELL_ENTROPIUS_DARKNESS))
+            return;
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (!target)
+            return;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            botAI->RequestSpellInterrupt();
+    }
+};
+
 class KiljaedenDarknessSpellListenerScript : public AllSpellScript
 {
 public:
@@ -344,31 +365,10 @@ public:
     }
 };
 
-class MuruVoidZoneSpellListenerScript : public AllSpellScript
+class SunwellPlateauBossUpdateScript : public AllCreatureScript
 {
 public:
-    MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
-
-    void OnSpellCast(
-        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
-    {
-        if (spellInfo->Id != Id(SwpSpells::SPELL_ENTROPIUS_DARKNESS))
-            return;
-
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
-            return;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            botAI->RequestSpellInterrupt();
-    }
-};
-
-class SunwellBossUpdateScript : public AllCreatureScript
-{
-public:
-    SunwellBossUpdateScript() : AllCreatureScript("SunwellBossUpdateScript") {}
+    SunwellPlateauBossUpdateScript() : AllCreatureScript("SunwellPlateauBossUpdateScript") {}
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
@@ -451,11 +451,13 @@ public:
 
 void AddSC_SunwellPlateauBotScripts()
 {
+    // AllSpellScript
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
     new MuruVoidZoneSpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
-    new SunwellBossUpdateScript();
+    // AllCreatureScript
+    new SunwellPlateauBossUpdateScript();
     new KiljaedenArmageddonTargetCreatureScript();
 }

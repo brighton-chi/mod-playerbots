@@ -10,159 +10,159 @@
 #include "NamedObjectContext.h"
 #include "SSCTriggers.h"
 
-class RaidSSCTriggerContext : public NamedObjectContext<Trigger>
+class RaidSscTriggerContext : public NamedObjectContext<Trigger>
 {
 public:
-    RaidSSCTriggerContext()
+    RaidSscTriggerContext()
     {
         // General
         creators["serpent shrine cavern no encounter in progress"] =
-            &RaidSSCTriggerContext::serpent_shrine_cavern_no_encounter_in_progress;
+            &RaidSscTriggerContext::serpent_shrine_cavern_no_encounter_in_progress;
 
         // Trash
         creators["underbog colossus spawned toxic pool after death"] =
-            &RaidSSCTriggerContext::underbog_colossus_spawned_toxic_pool_after_death;
+            &RaidSscTriggerContext::underbog_colossus_spawned_toxic_pool_after_death;
 
         creators["greyheart tidecaller water elemental totem spawned"] =
-            &RaidSSCTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
+            &RaidSscTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
 
         // Hydross the Unstable <Duke of Currents>
         creators["hydross the unstable bot is frost tank"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_bot_is_frost_tank;
+            &RaidSscTriggerContext::hydross_the_unstable_bot_is_frost_tank;
 
         creators["hydross the unstable bot is nature tank"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_bot_is_nature_tank;
+            &RaidSscTriggerContext::hydross_the_unstable_bot_is_nature_tank;
 
         creators["hydross the unstable elementals spawned"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_elementals_spawned;
+            &RaidSscTriggerContext::hydross_the_unstable_elementals_spawned;
 
         creators["hydross the unstable danger from water tombs"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_danger_from_water_tombs;
+            &RaidSscTriggerContext::hydross_the_unstable_danger_from_water_tombs;
 
         creators["hydross the unstable tank needs aggro upon phase change"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
+            &RaidSscTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
 
         creators["hydross the unstable aggro resets upon phase change"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
+            &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
 
         creators["hydross the unstable need to manage timers"] =
-            &RaidSSCTriggerContext::hydross_the_unstable_need_to_manage_timers;
+            &RaidSscTriggerContext::hydross_the_unstable_need_to_manage_timers;
 
         // The Lurker Below
         creators["the lurker below spout is active"] =
-            &RaidSSCTriggerContext::the_lurker_below_spout_is_active;
+            &RaidSscTriggerContext::the_lurker_below_spout_is_active;
 
         creators["the lurker below boss is active for main tank"] =
-            &RaidSSCTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
+            &RaidSscTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
 
         creators["the lurker below boss casts geyser"] =
-            &RaidSSCTriggerContext::the_lurker_below_boss_casts_geyser;
+            &RaidSscTriggerContext::the_lurker_below_boss_casts_geyser;
 
         creators["the lurker below boss is submerged"] =
-            &RaidSSCTriggerContext::the_lurker_below_boss_is_submerged;
+            &RaidSscTriggerContext::the_lurker_below_boss_is_submerged;
 
         creators["the lurker below need to prepare timer for spout"] =
-            &RaidSSCTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
+            &RaidSscTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
 
         // Leotheras the Blind
         creators["leotheras the blind boss is inactive"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_boss_is_inactive;
+            &RaidSscTriggerContext::leotheras_the_blind_boss_is_inactive;
 
         creators["leotheras the blind boss transformed into demon form"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_boss_transformed_into_demon_form;
+            &RaidSscTriggerContext::leotheras_the_blind_boss_transformed_into_demon_form;
 
         creators["leotheras the blind only warlock should tank demon form"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
+            &RaidSscTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
 
         creators["leotheras the blind boss engaged by ranged"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
+            &RaidSscTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
 
         creators["leotheras the blind boss channeling whirlwind"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
+            &RaidSscTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
 
         creators["leotheras the blind bot has too many chaos blast stacks"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_bot_has_too_many_chaos_blast_stacks;
+            &RaidSscTriggerContext::leotheras_the_blind_bot_has_too_many_chaos_blast_stacks;
 
         creators["leotheras the blind inner demon has awakened"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
+            &RaidSscTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
 
         creators["leotheras the blind entered final phase"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_entered_final_phase;
+            &RaidSscTriggerContext::leotheras_the_blind_entered_final_phase;
 
         creators["leotheras the blind demon form tank needs aggro"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
+            &RaidSscTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
 
         creators["leotheras the blind boss wipes aggro upon phase change"] =
-            &RaidSSCTriggerContext::leotheras_the_blind_boss_wipes_aggro_upon_phase_change;
+            &RaidSscTriggerContext::leotheras_the_blind_boss_wipes_aggro_upon_phase_change;
 
         // Fathom-Lord Karathress
         creators["fathom-lord karathress boss engaged by main tank"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_boss_engaged_by_main_tank;
+            &RaidSscTriggerContext::fathom_lord_karathress_boss_engaged_by_main_tank;
 
         creators["fathom-lord karathress caribdis engaged by first assist tank"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_caribdis_engaged_by_first_assist_tank;
+            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_engaged_by_first_assist_tank;
 
         creators["fathom-lord karathress sharkkis engaged by second assist tank"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_sharkkis_engaged_by_second_assist_tank;
+            &RaidSscTriggerContext::fathom_lord_karathress_sharkkis_engaged_by_second_assist_tank;
 
         creators["fathom-lord karathress tidalvess engaged by third assist tank"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_tidalvess_engaged_by_third_assist_tank;
+            &RaidSscTriggerContext::fathom_lord_karathress_tidalvess_engaged_by_third_assist_tank;
 
         creators["fathom-lord karathress caribdis tank needs dedicated healer"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_caribdis_tank_needs_dedicated_healer;
+            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_tank_needs_dedicated_healer;
 
         creators["fathom-lord karathress pulling bosses"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_pulling_bosses;
+            &RaidSscTriggerContext::fathom_lord_karathress_pulling_bosses;
 
         creators["fathom-lord karathress determining kill order"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_determining_kill_order;
+            &RaidSscTriggerContext::fathom_lord_karathress_determining_kill_order;
 
         creators["fathom-lord karathress tanks need to establish aggro"] =
-            &RaidSSCTriggerContext::fathom_lord_karathress_tanks_need_to_establish_aggro;
+            &RaidSscTriggerContext::fathom_lord_karathress_tanks_need_to_establish_aggro;
 
         // Morogrim Tidewalker
         creators["morogrim tidewalker boss engaged by main tank"] =
-            &RaidSSCTriggerContext::morogrim_tidewalker_boss_engaged_by_main_tank;
+            &RaidSscTriggerContext::morogrim_tidewalker_boss_engaged_by_main_tank;
 
         creators["morogrim tidewalker pulling boss"] =
-            &RaidSSCTriggerContext::morogrim_tidewalker_pulling_boss;
+            &RaidSscTriggerContext::morogrim_tidewalker_pulling_boss;
 
         creators["morogrim tidewalker water globules are incoming"] =
-            &RaidSSCTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
+            &RaidSscTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj boss engaged by main tank"] =
-            &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_main_tank;
+            &RaidSscTriggerContext::lady_vashj_boss_engaged_by_main_tank;
 
         creators["lady vashj boss engaged by ranged in phase 1"] =
-            &RaidSSCTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1;
+            &RaidSscTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1;
 
         creators["lady vashj casts shock blast on highest aggro"] =
-            &RaidSSCTriggerContext::lady_vashj_casts_shock_blast_on_highest_aggro;
+            &RaidSscTriggerContext::lady_vashj_casts_shock_blast_on_highest_aggro;
 
         creators["lady vashj bot has static charge"] =
-            &RaidSSCTriggerContext::lady_vashj_bot_has_static_charge;
+            &RaidSscTriggerContext::lady_vashj_bot_has_static_charge;
 
         creators["lady vashj pulling boss in phase 1 and phase 3"] =
-            &RaidSSCTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
+            &RaidSscTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
 
         creators["lady vashj adds spawn in phase 2 and phase 3"] =
-            &RaidSSCTriggerContext::lady_vashj_adds_spawn_in_phase_2_and_phase_3;
+            &RaidSscTriggerContext::lady_vashj_adds_spawn_in_phase_2_and_phase_3;
 
         creators["lady vashj coilfang strider is approaching"] =
-            &RaidSSCTriggerContext::lady_vashj_coilfang_strider_is_approaching;
+            &RaidSscTriggerContext::lady_vashj_coilfang_strider_is_approaching;
 
         creators["lady vashj tainted elemental cheat"] =
-            &RaidSSCTriggerContext::lady_vashj_tainted_elemental_cheat;
+            &RaidSscTriggerContext::lady_vashj_tainted_elemental_cheat;
 
         creators["lady vashj tainted core was looted"] =
-            &RaidSSCTriggerContext::lady_vashj_tainted_core_was_looted;
+            &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
         creators["lady vashj toxic sporebats are spewing poison clouds"] =
-            &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
+            &RaidSscTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
 
         creators["lady vashj bot is entangled in toxic spores or static charge"] =
-            &RaidSSCTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
+            &RaidSscTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
     }
 
 private:

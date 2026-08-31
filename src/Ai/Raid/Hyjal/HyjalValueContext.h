@@ -47,15 +47,15 @@ private:
     float const _searchRadius;
 };
 
-class RaidHyjalSummitValueContext : public NamedObjectContext<UntypedValue>
+class RaidHyjalValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
-    RaidHyjalSummitValueContext()
+    RaidHyjalValueContext()
     {
-        creators["hyjal infernals"] = &RaidHyjalSummitValueContext::hyjal_infernals;
-        creators["hyjal death and decay"] = &RaidHyjalSummitValueContext::hyjal_death_and_decay;
-        creators["hyjal rain of fire"] = &RaidHyjalSummitValueContext::hyjal_rain_of_fire;
-        creators["hyjal doomfire trail"] = &RaidHyjalSummitValueContext::hyjal_doomfire_trail;
+        creators["hyjal infernals"] = &RaidHyjalValueContext::hyjal_infernals;
+        creators["hyjal death and decay"] = &RaidHyjalValueContext::hyjal_death_and_decay;
+        creators["hyjal rain of fire"] = &RaidHyjalValueContext::hyjal_rain_of_fire;
+        creators["hyjal doomfire trail"] = &RaidHyjalValueContext::hyjal_doomfire_trail;
     }
 
 private:

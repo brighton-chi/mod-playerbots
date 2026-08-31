@@ -12,7 +12,7 @@
 #include "SWPMultipliers.h"
 #include "SWPSharedConstants.h"
 
-void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("sunwell plateau no encounter in progress", {
@@ -220,7 +220,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kil'jaeden dragon buff and protect raid", ACTION_RAID + 3) }));
 }
 
-void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
     multipliers.push_back(new SunwellPlateauNoEncounterDrinkingMultiplier(botAI));
@@ -360,7 +360,7 @@ void AppendKiljaedenShieldOrbExclusions(
 
 } // end anonymous namespace
 
-void RaidSunwellStrategy::AppendTargetExclusions(
+void RaidSwpStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();

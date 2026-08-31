@@ -10,165 +10,165 @@
 #include "NamedObjectContext.h"
 #include "SSCActions.h"
 
-class RaidSSCActionContext : public NamedObjectContext<Action>
+class RaidSscActionContext : public NamedObjectContext<Action>
 {
 public:
-    RaidSSCActionContext()
+    RaidSscActionContext()
     {
         // General
         creators["serpent shrine cavern reset encounter states"] =
-            &RaidSSCActionContext::serpent_shrine_cavern_reset_encounter_states;
+            &RaidSscActionContext::serpent_shrine_cavern_reset_encounter_states;
 
         // Trash
         creators["underbog colossus escape toxic pool"] =
-            &RaidSSCActionContext::underbog_colossus_escape_toxic_pool;
+            &RaidSscActionContext::underbog_colossus_escape_toxic_pool;
 
         creators["greyheart tidecaller mark water elemental totem"] =
-            &RaidSSCActionContext::greyheart_tidecaller_mark_water_elemental_totem;
+            &RaidSscActionContext::greyheart_tidecaller_mark_water_elemental_totem;
 
         // Hydross the Unstable <Duke of Currents>
         creators["hydross the unstable position frost tank"] =
-            &RaidSSCActionContext::hydross_the_unstable_position_frost_tank;
+            &RaidSscActionContext::hydross_the_unstable_position_frost_tank;
 
         creators["hydross the unstable position nature tank"] =
-            &RaidSSCActionContext::hydross_the_unstable_position_nature_tank;
+            &RaidSscActionContext::hydross_the_unstable_position_nature_tank;
 
         creators["hydross the unstable prioritize elemental adds"] =
-            &RaidSSCActionContext::hydross_the_unstable_prioritize_elemental_adds;
+            &RaidSscActionContext::hydross_the_unstable_prioritize_elemental_adds;
 
         creators["hydross the unstable frost phase spread out"] =
-            &RaidSSCActionContext::hydross_the_unstable_frost_phase_spread_out;
+            &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_out;
 
         creators["hydross the unstable misdirect boss to tank"] =
-            &RaidSSCActionContext::hydross_the_unstable_misdirect_boss_to_tank;
+            &RaidSscActionContext::hydross_the_unstable_misdirect_boss_to_tank;
 
         creators["hydross the unstable stop dps upon phase change"] =
-            &RaidSSCActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
+            &RaidSscActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
 
         creators["hydross the unstable manage timers"] =
-            &RaidSSCActionContext::hydross_the_unstable_manage_timers;
+            &RaidSscActionContext::hydross_the_unstable_manage_timers;
 
         // The Lurker Below
         creators["the lurker below run around behind boss"] =
-            &RaidSSCActionContext::the_lurker_below_run_around_behind_boss;
+            &RaidSscActionContext::the_lurker_below_run_around_behind_boss;
 
         creators["the lurker below position main tank"] =
-            &RaidSSCActionContext::the_lurker_below_position_main_tank;
+            &RaidSscActionContext::the_lurker_below_position_main_tank;
 
         creators["the lurker below spread ranged in arc"] =
-            &RaidSSCActionContext::the_lurker_below_spread_ranged_in_arc;
+            &RaidSscActionContext::the_lurker_below_spread_ranged_in_arc;
 
         creators["the lurker below tanks pick up adds"] =
-            &RaidSSCActionContext::the_lurker_below_tanks_pick_up_adds;
+            &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
 
         creators["the lurker below manage spout timer"] =
-            &RaidSSCActionContext::the_lurker_below_manage_spout_timer;
+            &RaidSscActionContext::the_lurker_below_manage_spout_timer;
 
         // Leotheras the Blind
         creators["leotheras the blind target spellbinders"] =
-            &RaidSSCActionContext::leotheras_the_blind_target_spellbinders;
+            &RaidSscActionContext::leotheras_the_blind_target_spellbinders;
 
         creators["leotheras the blind demon form tank attack boss"] =
-            &RaidSSCActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
+            &RaidSscActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
 
         creators["leotheras the blind melee tanks don't attack demon form"] =
-            &RaidSSCActionContext::leotheras_the_blind_melee_tanks_dont_attack_demon_form;
+            &RaidSscActionContext::leotheras_the_blind_melee_tanks_dont_attack_demon_form;
 
         creators["leotheras the blind position ranged"] =
-            &RaidSSCActionContext::leotheras_the_blind_position_ranged;
+            &RaidSscActionContext::leotheras_the_blind_position_ranged;
 
         creators["leotheras the blind run away from whirlwind"] =
-            &RaidSSCActionContext::leotheras_the_blind_run_away_from_whirlwind;
+            &RaidSscActionContext::leotheras_the_blind_run_away_from_whirlwind;
 
         creators["leotheras the blind melee dps run away from boss"] =
-            &RaidSSCActionContext::leotheras_the_blind_melee_dps_run_away_from_boss;
+            &RaidSscActionContext::leotheras_the_blind_melee_dps_run_away_from_boss;
 
         creators["leotheras the blind destroy inner demon"] =
-            &RaidSSCActionContext::leotheras_the_blind_destroy_inner_demon;
+            &RaidSscActionContext::leotheras_the_blind_destroy_inner_demon;
 
         creators["leotheras the blind final phase assign dps priority"] =
-            &RaidSSCActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
+            &RaidSscActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
 
         creators["leotheras the blind misdirect boss to demon form tank"] =
-            &RaidSSCActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
+            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
 
         creators["leotheras the blind manage dps wait timers"] =
-            &RaidSSCActionContext::leotheras_the_blind_manage_dps_wait_timers;
+            &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
 
         // Fathom-Lord Karathress
         creators["fathom-lord karathress main tank position boss"] =
-            &RaidSSCActionContext::fathom_lord_karathress_main_tank_position_boss;
+            &RaidSscActionContext::fathom_lord_karathress_main_tank_position_boss;
 
         creators["fathom-lord karathress first assist tank position caribdis"] =
-            &RaidSSCActionContext::fathom_lord_karathress_first_assist_tank_position_caribdis;
+            &RaidSscActionContext::fathom_lord_karathress_first_assist_tank_position_caribdis;
 
         creators["fathom-lord karathress second assist tank position sharkkis"] =
-            &RaidSSCActionContext::fathom_lord_karathress_second_assist_tank_position_sharkkis;
+            &RaidSscActionContext::fathom_lord_karathress_second_assist_tank_position_sharkkis;
 
         creators["fathom-lord karathress third assist tank position tidalvess"] =
-            &RaidSSCActionContext::fathom_lord_karathress_third_assist_tank_position_tidalvess;
+            &RaidSscActionContext::fathom_lord_karathress_third_assist_tank_position_tidalvess;
 
         creators["fathom-lord karathress position caribdis tank healer"] =
-            &RaidSSCActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
+            &RaidSscActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
 
         creators["fathom-lord karathress misdirect bosses to tanks"] =
-            &RaidSSCActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
+            &RaidSscActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
 
         creators["fathom-lord karathress assign dps priority"] =
-            &RaidSSCActionContext::fathom_lord_karathress_assign_dps_priority;
+            &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
 
         creators["fathom-lord karathress manage dps timer"] =
-            &RaidSSCActionContext::fathom_lord_karathress_manage_dps_timer;
+            &RaidSscActionContext::fathom_lord_karathress_manage_dps_timer;
 
         // Morogrim Tidewalker
         creators["morogrim tidewalker misdirect boss to main tank"] =
-            &RaidSSCActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
+            &RaidSscActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
 
         creators["morogrim tidewalker move boss to tank position"] =
-            &RaidSSCActionContext::morogrim_tidewalker_move_boss_to_tank_position;
+            &RaidSscActionContext::morogrim_tidewalker_move_boss_to_tank_position;
 
         creators["morogrim tidewalker phase 2 reposition ranged"] =
-            &RaidSSCActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
+            &RaidSscActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj main tank position boss"] =
-            &RaidSSCActionContext::lady_vashj_main_tank_position_boss;
+            &RaidSscActionContext::lady_vashj_main_tank_position_boss;
 
         creators["lady vashj phase 1 spread ranged in arc"] =
-            &RaidSSCActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
+            &RaidSscActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
 
         creators["lady vashj set grounding totem in main tank group"] =
-            &RaidSSCActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
+            &RaidSscActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
 
         creators["lady vashj static charge move away from group"] =
-            &RaidSSCActionContext::lady_vashj_static_charge_move_away_from_group;
+            &RaidSscActionContext::lady_vashj_static_charge_move_away_from_group;
 
         creators["lady vashj misdirect boss to main tank"] =
-            &RaidSSCActionContext::lady_vashj_misdirect_boss_to_main_tank;
+            &RaidSscActionContext::lady_vashj_misdirect_boss_to_main_tank;
 
         creators["lady vashj assign phase 2 and phase 3 dps priority"] =
-            &RaidSSCActionContext::lady_vashj_assign_phase_2_and_phase_3_dps_priority;
+            &RaidSscActionContext::lady_vashj_assign_phase_2_and_phase_3_dps_priority;
 
         creators["lady vashj misdirect strider to first assist tank"] =
-            &RaidSSCActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
+            &RaidSscActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
 
         creators["lady vashj tank attack and move away strider"] =
-            &RaidSSCActionContext::lady_vashj_tank_attack_and_move_away_strider;
+            &RaidSscActionContext::lady_vashj_tank_attack_and_move_away_strider;
 
         creators["lady vashj loot tainted core"] =
-            &RaidSSCActionContext::lady_vashj_loot_tainted_core;
+            &RaidSscActionContext::lady_vashj_loot_tainted_core;
 
         creators["lady vashj teleport to tainted elemental"] =
-            &RaidSSCActionContext::lady_vashj_teleport_to_tainted_elemental;
+            &RaidSscActionContext::lady_vashj_teleport_to_tainted_elemental;
 
         creators["lady vashj pass the tainted core"] =
-            &RaidSSCActionContext::lady_vashj_pass_the_tainted_core;
+            &RaidSscActionContext::lady_vashj_pass_the_tainted_core;
 
         creators["lady vashj avoid toxic spores"] =
-            &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
+            &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
 
         creators["lady vashj use free action abilities"] =
-            &RaidSSCActionContext::lady_vashj_use_free_action_abilities;
+            &RaidSscActionContext::lady_vashj_use_free_action_abilities;
     }
 
 private:

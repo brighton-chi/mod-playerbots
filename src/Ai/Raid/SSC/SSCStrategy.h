@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
-class RaidSSCStrategy : public Strategy
+class RaidSscStrategy : public Strategy
 {
 public:
-    RaidSSCStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+    RaidSscStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
     std::string const getName() override { return "ssc"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;

@@ -7,7 +7,7 @@
 #include "SSCStrategy.h"
 #include "SSCMultipliers.h"
 
-void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("serpent shrine cavern no encounter in progress", {
@@ -161,7 +161,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 7) }));
 }
 
-void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Trash Mobs
     multipliers.push_back(new UnderbogColossusEscapeToxicPoolMultiplier(botAI));

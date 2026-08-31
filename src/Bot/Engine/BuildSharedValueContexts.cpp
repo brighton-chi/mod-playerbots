@@ -18,8 +18,8 @@ void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<Unty
     valueContexts.Add(new ValueContext());
     valueContexts.Add(new TbcDungeonMechValueContext());
     valueContexts.Add(new TbcDungeonUnderbogValueContext());
-    valueContexts.Add(new RaidHyjalSummitValueContext());
+    valueContexts.Add(new RaidHyjalValueContext());
     valueContexts.Add(new RaidTempestKeepValueContext());
-    valueContexts.Add(new RaidSunwellValueContext());
+    valueContexts.Add(new RaidSwpValueContext());
     valueContexts.Add(new RaidZulAmanValueContext());
 }
