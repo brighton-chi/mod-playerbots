@@ -30,14 +30,15 @@
 namespace EncounterHelpers
 {
 
-// True when the bot is in `mapId` and that instance reports an encounter running. Cheap enough to
-// lead with: a map id compare, a pointer chase, and a scan of the instance's boss-state vector.
-//
-// Two caveats before gating anything on it. It is only as good as the encounter script: a boss
-// that overrides JustEngagedWith without chaining to _JustEngagedWith(), or a passive controller
-// that never engages, never reports IN_PROGRESS at all. And where a script sets the state on a
-// scripted milestone rather than on the pull, the window before that milestone reads as no
-// encounter.
+// Calling InstanceScript::IsEncounterInProgress is a very cheap check to use as an initial gate
+// for triggers and multipliers that should run only during a boss fight. This will not work for
+// every single encounter, as some bosses are not scripted to report IN_PROGRESS (but at least in
+// TBC raids, that is rare: only Terestian Illhoof and Illidari Council do not). It's also possible
+// for a boss script to set IN_PROGRESS upon an event other than the pull; that's at least the case
+// with Kil'jaeden, who is set to IN_PROGRESS only after 1 of the 3 Hands of the Deceiver is killed
+// in phase 1. To avoid spamming this check across each trigger and multiplier, you can create a
+// derived class of Trigger or Multiplier to call this helper and then derive your triggers and
+// multipliers from the intermediate class.
 bool IsEncounterInProgress(Player* bot, uint32 mapId)
 {
     if (bot->GetMapId() != mapId)
