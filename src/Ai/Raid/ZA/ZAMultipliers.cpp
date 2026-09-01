@@ -62,7 +62,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValue(Action* action)
     if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
 
-    // Further restrictions on Bloodlust for Zul'jin and Jan'alai below
+    // Further restrictions on Bloodlust for Zul'jin and Jan'alai
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
@@ -93,6 +93,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Malacrass siphoning a Warrior soul and Zul'jin have very similar Whirlwinds
 float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<ReachTargetAction*>(action) &&
@@ -125,7 +126,7 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (!boss->HasAura(whirlwind))
         return 1.0f;
 
-    return bot->GetExactDist2d(boss) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
+    return bot->GetExactDist2d(boss) <= ZA_WHIRLWIND_HOLD_DISTANCE ? 0.0f : 1.0f;
 }
 
 float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
@@ -136,8 +137,8 @@ float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    bool const isTankFace = dynamic_cast<TankFaceAction*>(action) != nullptr;
-    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) != nullptr;
+    bool const isTankFace = dynamic_cast<TankFaceAction*>(action);
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
     bool const isTaunt = !isTankFace && !isTankAssist && IsTauntAction(bot, action);
 
     if (!isTankFace && !isTankAssist && !isTaunt)
@@ -147,8 +148,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
-    // Nalorakk is the only one that taunts from a ZA action, so his is the only taunt suppressed -
-    // and only for whichever tank is meant to be holding him in the current form.
+    // Nalorakk: A tank swap is used by form so suppress taunts for the opposite-form tank.
     if (boss->GetEntry() == Id(ZaNpcs::NPC_NALORAKK))
     {
         if (!isTaunt)
@@ -162,30 +162,42 @@ float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
         return isInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
     }
 
+    // The assist tank picks up the Spirit of the Lynx so disable the main tank from taunting it
+    if (boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI))
+    {
+        if (!isTaunt)
+            return 0.0f;
+
+        if (!PlayerbotAI::IsMainTank(bot))
+            return 1.0f;
+
+        Unit* target = action->GetTarget();
+        return target && target->GetEntry() == Id(ZaNpcs::NPC_SPIRIT_OF_THE_LYNX) ? 0.0f : 1.0f;
+    }
+
     if (isTaunt)
         return 1.0f;
 
-    // Jan'alai: the offtank still needs its assist for the Hatchers, so only the main tank's is
-    // suppressed. Facing is driven by the ZA action either way.
+    // Jan'alai: Allow tank assist for the assist tank to pick up the Hatchlings. Tank face is
+    // already disabled as part of ZulAmanDisableCombatFormationMoveMultiplier so the addition here
+    // is just belt-and-suspenders for no cost.
     if (boss->GetEntry() == Id(ZaNpcs::NPC_JANALAI))
         return isTankFace || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 
-    if (boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI))
-        return 0.0f;
-
-    // Zul'jin is the one case that hands tanking back to the generic system: in dragonhawk form
-    // nothing positions him, so the tank is left to face him itself.
+    // Zul'jin: Allow tank face in Phase 5 for the tank to turn him away from the raid.
     if (boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN))
     {
         return isTankFace &&
             !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 0.0f : 1.0f;
     }
 
+    // Akil'zon disables only tank face action, and that is already handled by
+    // ZulAmanDisableCombatFormationMoveMultiplier.
     return 1.0f;
 }
 
-// Both fights pass the boss between tanks, so a misdirect aimed at the main tank would pull it
-// off whichever tank is supposed to have it.
+// Nalorakk: Don't Misdirect the boss in troll form to the Main Tank.
+// Halazzi: Don't Misdirect the Spirit of the Lynx to the Main Tank.
 float ZulAmanControlMisdirectionMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -205,6 +217,8 @@ float ZulAmanControlMisdirectionMultiplier::GetValue(Action* action)
     return entry == Id(ZaNpcs::NPC_NALORAKK) || entry == Id(ZaNpcs::NPC_HALAZZI) ? 0.0f : 1.0f;
 }
 
+// CombatFormationMoveAction is the action for the "disperse" command. It is also the parent class
+// for SetBehindTargetAction and TankFaceAction.
 float ZulAmanDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -247,6 +261,8 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 
 // Nalorakk <Bear Avatar>
 
+// N/A
+
 // Jan'alai <Dragonhawk Avatar>
 
 float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
@@ -272,9 +288,6 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValue(Action* action)
     if (!dynamic_cast<CastCrowdControlSpellAction*>(action))
         return 1.0f;
 
-    // The Hatchers never fight back - npc_janalai_hatcher overrides AttackStart to do nothing - so
-    // they only appear in a threat list once someone has already hit one, which is too late to be
-    // asking. Reading the cast's own target sidesteps that, and blocks only the casts that matter.
     Unit* target = action->GetTarget();
     return target && target->GetEntry() == Id(ZaNpcs::NPC_AMANISHI_HATCHER) ? 0.0f : 1.0f;
 }
@@ -299,10 +312,9 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValue(Action* action)
     return boss && boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI) ? 0.0f : 1.0f;
 }
 
-
 // Hex Lord Malacrass
 
-// Unstable Affliction is considered a magic effect, not a curse.
+// Weirdly, Unstable Affliction is considered a magic effect, not a curse.
 float HexLordMalacrassUnstableAfflictionMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

@@ -77,6 +77,7 @@ enum class ZaNpcs : uint32
 
     // Halazzi <Lynx Avatar>
     NPC_HALAZZI                     = 23577,
+    NPC_SPIRIT_OF_THE_LYNX          = 24143,
     NPC_CORRUPTED_LIGHTNING_TOTEM   = 24224,
 
     // Hex Lord Malacrass
@@ -101,8 +102,10 @@ enum class ZaObjects : uint32
 
 // General
 inline constexpr uint32 ZA_MAP_ID = 568;
-// For Hex Lord and Zul'jin. Radius is 8y with 2y of MoveAway padding.
-inline constexpr float ZA_WHIRLWIND_SAFE_DISTANCE = 10.0f;
+// For Hex Lord and Zul'jin. Whirlwind radius is 8y. Safe distance has 4y of MoveAway padding;
+// hold distance is for the don't run back in multiplier and adds another 3y of padding.
+inline constexpr float ZA_WHIRLWIND_SAFE_DISTANCE = 12.0f;
+inline constexpr float ZA_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 
 // A flat, convex quad given by its four corners in order (either winding). Contains() is a 2D
 // point-in-convex-polygon test, so rectangles that are not axis aligned work without extra math.
