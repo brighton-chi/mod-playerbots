@@ -6,6 +6,7 @@
 
 #include "GruulHelpers.h"
 #include "AiFactory.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <list>
@@ -31,11 +32,11 @@ bool IsBlindeyeTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
-Player* GetKroshMageTank(Player* bot)
+ObjectGuid FindKroshMageTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     // If an assistant Mage (player or bot) is found, return immediately.
     // Otherwise, return the bot Mage with the highest HP as fallback.
@@ -52,7 +53,7 @@ Player* GetKroshMageTank(Player* bot)
         }
 
         if (group->IsAssistant(member->GetGUID()))
-            return member;
+            return member->GetGUID();
 
         if (!GET_PLAYERBOT_AI(member))
             continue;
@@ -65,7 +66,22 @@ Player* GetKroshMageTank(Player* bot)
         }
     }
 
-    return highestHpBotMage;
+    return highestHpBotMage ? highestHpBotMage->GetGUID() : ObjectGuid::Empty;
+}
+
+Player* GetKroshMageTank(Player* bot)
+{
+    // Every bot in the raid walks to the same answer, and the value system caches per bot, so this
+    // does not collapse 24 walks into one - it collapses each bot's walk-per-tick into one per
+    // interval, which is where the cost was.
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    ObjectGuid const guid = botAI
+        ? botAI->GetAiObjectContext()->GetValue<ObjectGuid>("high king maulgar krosh mage tank")->Get()
+        : FindKroshMageTankGuid(bot);
+
+    // Resolved on every call rather than held as a pointer: the tank can log out or leave inside
+    // the interval, and a cached Player* would outlive them.
+    return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
 }
 
 bool IsKroshMageTank(Player* bot)
@@ -73,11 +89,11 @@ bool IsKroshMageTank(Player* bot)
     return bot->getClass() == CLASS_MAGE && GetKroshMageTank(bot) == bot;
 }
 
-Player* GetKigglerMoonkinTank(Player* bot)
+ObjectGuid FindKigglerMoonkinTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     // If an assistant Balance Druid (player or bot) is found, return immediately.
     // Otherwise, return the bot Balance Druid with the highest HP as fallback.
@@ -95,7 +111,7 @@ Player* GetKigglerMoonkinTank(Player* bot)
         }
 
         if (group->IsAssistant(member->GetGUID()))
-            return member;
+            return member->GetGUID();
 
         if (!GET_PLAYERBOT_AI(member))
             continue;
@@ -108,7 +124,17 @@ Player* GetKigglerMoonkinTank(Player* bot)
         }
     }
 
-    return highestHpBotMoonkin;
+    return highestHpBotMoonkin ? highestHpBotMoonkin->GetGUID() : ObjectGuid::Empty;
+}
+
+Player* GetKigglerMoonkinTank(Player* bot)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    ObjectGuid const guid = botAI
+        ? botAI->GetAiObjectContext()->GetValue<ObjectGuid>("high king maulgar kiggler moonkin tank")->Get()
+        : FindKigglerMoonkinTankGuid(bot);
+
+    return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
 }
 
 bool IsKigglerMoonkinTank(Player* bot)

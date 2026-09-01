@@ -88,6 +88,13 @@ inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
 // stalker is immaterial next to either.
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
 
+// Krosh's mage tank and Kiggler's moonkin tank are each picked by walking the whole raid, and the
+// moonkin walk runs AiFactory::GetPlayerSpecTab - a talent scan - on every druid it passes. Both
+// ran on every tick for every bot that could hold the role, and the moonkin check alone measured
+// 0.86% of all bot AI time. The answer only moves when someone dies, zones, or is promoted, so a
+// second of staleness costs at most a second before a fallback takes over from a dead tank.
+inline constexpr uint32 CASTER_TANK_CACHE_INTERVAL_MS = 1000;
+
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
 inline Position const OLM_TANK_POSITION      = { 101.050f, 219.359f,  -9.503f };
 inline Position const BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
@@ -97,8 +104,10 @@ inline Position const GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
 bool IsMaulgarTank(Player* bot);
 bool IsOlmTank(Player* bot);
 bool IsBlindeyeTank(Player* bot);
+ObjectGuid FindKroshMageTankGuid(Player* bot);
 Player* GetKroshMageTank(Player* bot);
 bool IsKroshMageTank(Player* bot);
+ObjectGuid FindKigglerMoonkinTankGuid(Player* bot);
 Player* GetKigglerMoonkinTank(Player* bot);
 bool IsKigglerMoonkinTank(Player* bot);
 bool HasGroundSlam(Player* bot);
