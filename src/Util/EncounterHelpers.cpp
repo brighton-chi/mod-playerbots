@@ -13,6 +13,7 @@
 #include "GenericSpellActions.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "InstanceScript.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
@@ -28,6 +29,23 @@
 
 namespace EncounterHelpers
 {
+
+// True when the bot is in `mapId` and that instance reports an encounter running. Cheap enough to
+// lead with: a map id compare, a pointer chase, and a scan of the instance's boss-state vector.
+//
+// Two caveats before gating anything on it. It is only as good as the encounter script: a boss
+// that overrides JustEngagedWith without chaining to _JustEngagedWith(), or a passive controller
+// that never engages, never reports IN_PROGRESS at all. And where a script sets the state on a
+// scripted milestone rather than on the pull, the window before that milestone reads as no
+// encounter.
+bool IsEncounterInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->IsEncounterInProgress();
+}
 
 // For validating ground and collision in connection with issuing incremental movement. The caller
 // gives a destination and how far to travel towards it per tick. The helper projects that step,
