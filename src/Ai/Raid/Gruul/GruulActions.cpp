@@ -12,7 +12,6 @@
 #include "RtiTargetValue.h"
 #include <algorithm>
 #include <iterator>
-#include <list>
 #include <vector>
 
 using namespace GruulHelpers;
@@ -239,27 +238,8 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    std::vector<Unit*> felStalkers;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(GruulNpcs::NPC_WILD_FEL_STALKER), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            felStalkers.push_back(creature);
-    }
-
-    // The grid search walks cells outward from the searcher's own cell (Cell::VisitObjects ->
-    // ComputeCellCoord on the caller's position), so two warlocks standing apart get the same
-    // stalkers back in a different order. The pairing below is by index, so without a shared
-    // ordering two warlocks would banish the same stalker and leave another loose. GUID counter
-    // gives every bot the same list.
-    std::sort(felStalkers.begin(), felStalkers.end(), [](Unit* lhs, Unit* rhs)
-    {
-        return lhs->GetGUID().GetCounter() < rhs->GetGUID().GetCounter();
-    });
+    // Cached, alive-filtered and ordered by GUID so that every warlock indexes the same list.
+    std::vector<Unit*> const felStalkers = GetNearbyWildFelStalkers(botAI);
 
     // Bot warlocks only. A human warlock picks their own target, and leaving them out of the
     // pairing keeps every stalker assigned to someone who will actually act on the assignment.

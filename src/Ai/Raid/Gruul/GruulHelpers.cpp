@@ -7,6 +7,8 @@
 #include "GruulHelpers.h"
 #include "AiFactory.h"
 #include "Playerbots.h"
+#include <algorithm>
+#include <list>
 
 namespace GruulHelpers
 {
@@ -118,6 +120,58 @@ bool HasGroundSlam(Player* bot)
 {
     return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
         bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
+}
+
+GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
+{
+    // A grid search is the most expensive check in the module, and the instance strategy can
+    // outlive leaving the instance (e.g. after a server reset), so gate it on the map rather than
+    // running it wherever the bot happens to be.
+    if (bot->GetMapId() != GRUUL_MAP_ID)
+        return {};
+
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, Id(GruulNpcs::NPC_WILD_FEL_STALKER), WILD_FEL_STALKER_SEARCH_RADIUS);
+
+    GuidVector guids;
+    guids.reserve(creatureList.size());
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    // The search walks cells outward from the searcher's own cell (Cell::VisitObjects ->
+    // ComputeCellCoord on the caller's position), so two bots standing apart get the same stalkers
+    // back in a different order. Sorting makes the list canonical, which is what lets the banish
+    // assignment pair warlock i with stalker i across the whole raid.
+    std::sort(guids.begin(), guids.end(), [](ObjectGuid const& lhs, ObjectGuid const& rhs)
+    {
+        return lhs.GetCounter() < rhs.GetCounter();
+    });
+
+    return guids;
+}
+
+std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>(
+            "high king maulgar wild fel stalkers")->RefGet();
+
+    // The list is up to WILD_FEL_STALKER_CACHE_INTERVAL_MS stale, so a stalker may have died since
+    // the scan. Dropping it here re-compacts the assignment rather than leaving a hole in it.
+    std::vector<Unit*> felStalkers;
+    felStalkers.reserve(guids.size());
+    for (ObjectGuid const& guid : guids)
+    {
+        Unit* felStalker = botAI->GetUnit(guid);
+        if (felStalker && felStalker->IsAlive())
+            felStalkers.push_back(felStalker);
+    }
+
+    return felStalkers;
 }
 
 }
