@@ -59,9 +59,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10) }));
 
     // Leotheras the Blind
-    triggers.push_back(new TriggerNode("leotheras the blind boss is inactive", {
-        NextAction("leotheras the blind target spellbinders", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form", {
         NextAction("leotheras the blind demon form tank attack boss", ACTION_RAID) }));
 

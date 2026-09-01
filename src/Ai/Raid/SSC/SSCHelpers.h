@@ -93,7 +93,6 @@ enum class SscNpcs : uint32
 
     // Leotheras the Blind
     NPC_LEOTHERAS_THE_BLIND      = 21215,
-    NPC_GREYHEART_SPELLBINDER    = 21806,
     NPC_INNER_DEMON              = 21857,
     NPC_SHADOW_OF_LEOTHERAS      = 21875,
 

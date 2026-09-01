@@ -700,9 +700,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
     {
         if (coreHandlers[i] && coreHandlers[i] == bot)
-        {
             isCoreHandler = true;
-        }
     }
     if (!isCoreHandler)
         return 1.0f;

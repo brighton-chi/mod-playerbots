@@ -65,9 +65,6 @@ public:
             &RaidSscTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
 
         // Leotheras the Blind
-        creators["leotheras the blind boss is inactive"] =
-            &RaidSscTriggerContext::leotheras_the_blind_boss_is_inactive;
-
         creators["leotheras the blind boss transformed into demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_boss_transformed_into_demon_form;
 
@@ -220,9 +217,6 @@ private:
     }
 
     // Leotheras the Blind
-    static Trigger* leotheras_the_blind_boss_is_inactive(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBossIsInactiveTrigger(botAI);
-    }
     static Trigger* leotheras_the_blind_boss_transformed_into_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindBossTransformedIntoDemonFormTrigger(botAI);
     }

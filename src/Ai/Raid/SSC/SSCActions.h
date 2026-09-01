@@ -145,14 +145,6 @@ public:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindTargetSpellbindersAction : public Action
-{
-public:
-    LeotherasTheBlindTargetSpellbindersAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind target spellbinders") {}
-    bool Execute(Event event) override;
-};
-
 class LeotherasTheBlindPositionRangedAction : public MovementAction
 {
 public:

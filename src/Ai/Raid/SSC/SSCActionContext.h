@@ -65,9 +65,6 @@ public:
             &RaidSscActionContext::the_lurker_below_manage_spout_timer;
 
         // Leotheras the Blind
-        creators["leotheras the blind target spellbinders"] =
-            &RaidSscActionContext::leotheras_the_blind_target_spellbinders;
-
         creators["leotheras the blind demon form tank attack boss"] =
             &RaidSscActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
 
@@ -226,9 +223,6 @@ private:
     }
 
     // Leotheras the Blind
-    static Action* leotheras_the_blind_target_spellbinders(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindTargetSpellbindersAction(botAI);
-    }
     static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI);
     }

@@ -139,14 +139,6 @@ public:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindBossIsInactiveTrigger : public Trigger
-{
-public:
-    LeotherasTheBlindBossIsInactiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind boss is inactive") {}
-    bool IsActive() override;
-};
-
 class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public Trigger
 {
 public:

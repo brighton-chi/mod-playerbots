@@ -38,8 +38,7 @@ bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) &&
-           AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -177,12 +176,6 @@ bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 }
 
 // Leotheras the Blind
-
-bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
-{
-    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
-           AI_VALUE2(Unit*, "find target", "greyheart spellbinder");
-}
 
 bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
 {

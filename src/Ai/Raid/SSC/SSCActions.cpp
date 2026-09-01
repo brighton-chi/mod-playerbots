@@ -117,9 +117,12 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
                   true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+// Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
-    Unit* totem = GetFirstAliveUnitByEntry(botAI, Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM));
+    constexpr float searchRadius = 20.0f;
+    Creature* totem =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM), searchRadius);
     return totem && MarkTargetWithSkull(bot, totem);
 }
 
@@ -295,8 +298,9 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
 
 bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
 {
-    if (Unit* waterElemental =
-            GetFirstAliveUnitByEntry(botAI, Id(SscNpcs::NPC_PURE_SPAWN_OF_HYDROSS)))
+    constexpr float searchRadius = 75.0f;
+    if (Creature* waterElemental =
+            bot->FindNearestCreature(Id(SscNpcs::NPC_PURE_SPAWN_OF_HYDROSS), searchRadius))
     {
         if (MarkTargetWithSkull(bot, waterElemental))
             return true;
@@ -306,8 +310,8 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
         if (AI_VALUE(Unit*, "current target") != waterElemental)
             return Attack(waterElemental);
     }
-    else if (Unit* natureElemental =
-            GetFirstAliveUnitByEntry(botAI, Id(SscNpcs::NPC_TAINTED_SPAWN_OF_HYDROSS)))
+    else if (Creature* natureElemental =
+            bot->FindNearestCreature(Id(SscNpcs::NPC_TAINTED_SPAWN_OF_HYDROSS), searchRadius))
     {
         if (MarkTargetWithSkull(bot, natureElemental))
             return true;
@@ -673,15 +677,6 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
 }
 
 // Leotheras the Blind
-
-bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
-{
-    Unit* spellbinder = GetFirstAliveUnitByEntry(botAI, Id(SscNpcs::NPC_GREYHEART_SPELLBINDER));
-    if (spellbinder && MarkTargetWithSkull(bot, spellbinder))
-        return true;
-
-    return false;
-}
 
 // Warlock tank action--see GetLeotherasDemonFormTank in RaidSSCHelpers.cpp
 // Use tank strategy for Demon Form and DPS strategy for Human Form
@@ -1325,7 +1320,8 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     // Target priority 1: Spitfire Totems for melee dps
-    Unit* totem = GetFirstAliveUnitByEntry(botAI, Id(SscNpcs::NPC_SPITFIRE_TOTEM));
+    constexpr float searchRadius = 75.0f;
+    Creature* totem = bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), searchRadius);
     if (totem && PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
     {
         if (MarkTargetWithSkull(bot, totem))
