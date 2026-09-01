@@ -116,13 +116,13 @@ bool HighKingMaulgarMageTankAttackKroshAction::AttackAndCast(Unit* krosh)
     return botAI->CanCastSpell("fire ward", bot) && botAI->CastSpell("fire ward", bot);
 }
 
-// The Mage tank moves to a designated position only if Krosh is 17-30y from the position in order
-// to tank Krosh without being in Blast Wave range.
+// The Mage tank moves to a designated position only if Krosh is far enough from that position to
+// be tanked from it without standing in Blast Wave, and close enough to still be tanked at all.
 bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh)
 {
     Position const& position = KROSH_TANK_POSITION;
     float const distanceKroshToPosition = krosh->GetExactDist2d(position);
-    constexpr float minDistance = 17.0f;
+    constexpr float minDistance = KROSH_BLAST_WAVE_SAFE_DISTANCE;
     constexpr float maxDistance = 30.0f;
 
     if (distanceKroshToPosition > minDistance && distanceKroshToPosition < maxDistance &&
@@ -133,14 +133,12 @@ bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    constexpr float safeDistance = 15.0f;
-    float const currentDistance = bot->GetDistance(krosh);
-
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(krosh);
+    if (currentDistance >= KROSH_BLAST_WAVE_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(krosh, safeDistance - currentDistance);
+    return MoveAway(krosh, KROSH_BLAST_WAVE_SAFE_DISTANCE - currentDistance);
 }
 
 // The moonkin tank has no tank position, but usually Kiggler remains close to where he starts.
@@ -156,13 +154,11 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
     if (kiggler->GetVictim() != bot)
         return false;
 
-    constexpr float safeDistance = 28.5f;
-    float const currentDistance = bot->GetDistance(kiggler);
-
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(kiggler);
+    if (currentDistance >= KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE)
         return false;
 
-    return MoveAway(kiggler, safeDistance - currentDistance);
+    return MoveAway(kiggler, KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE - currentDistance);
 }
 
 // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
@@ -210,12 +206,12 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     if (!maulgar)
         return false;
 
-    float const currentDistance = bot->GetDistance2d(maulgar);
-    if (currentDistance >= WHIRLWIND_SAFE_DISTANCE)
+    float const currentDistance = bot->GetExactDist2d(maulgar);
+    if (currentDistance >= MAULGAR_WHIRLWIND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(maulgar, WHIRLWIND_SAFE_DISTANCE - currentDistance);
+    return MoveAway(maulgar, MAULGAR_WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
 bool HighKingMaulgarFleeFromBlastWaveDangerAction::Execute(Event /*event*/)
@@ -224,14 +220,17 @@ bool HighKingMaulgarFleeFromBlastWaveDangerAction::Execute(Event /*event*/)
     if (!krosh)
         return false;
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance2d(krosh);
-
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(krosh);
+    if (currentDistance >= KROSH_BLAST_WAVE_SAFE_DISTANCE)
         return false;
 
+    // FleePosition rather than MoveAway: its strict candidates reject any spot that would leave the
+    // bot beyond spellDistance of its current target, so fleeing Krosh cannot strand a bot out of
+    // range of what it is killing and start a walk-back-into-the-blast loop. Note the second
+    // argument is a displacement cap, not a separation - it is clamped to AiPlayerbot.FleeDistance
+    // (5y), so reaching the safe distance takes several one-per-second hops.
     bot->CastStop();
-    return FleePosition(krosh->GetPosition(), safeDistance);
+    return FleePosition(krosh->GetPosition(), KROSH_BLAST_WAVE_SAFE_DISTANCE);
 }
 
 bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
@@ -252,6 +251,18 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
             felStalkers.push_back(creature);
     }
 
+    // The grid search walks cells outward from the searcher's own cell (Cell::VisitObjects ->
+    // ComputeCellCoord on the caller's position), so two warlocks standing apart get the same
+    // stalkers back in a different order. The pairing below is by index, so without a shared
+    // ordering two warlocks would banish the same stalker and leave another loose. GUID counter
+    // gives every bot the same list.
+    std::sort(felStalkers.begin(), felStalkers.end(), [](Unit* lhs, Unit* rhs)
+    {
+        return lhs->GetGUID().GetCounter() < rhs->GetGUID().GetCounter();
+    });
+
+    // Bot warlocks only. A human warlock picks their own target, and leaving them out of the
+    // pairing keeps every stalker assigned to someone who will actually act on the assignment.
     std::vector<Player*> warlocks;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -263,17 +274,12 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
         }
     }
 
-    int warlockIndex = -1;
-    for (size_t i = 0; i < warlocks.size(); ++i)
-    {
-        if (warlocks[i] == bot)
-        {
-            warlockIndex = static_cast<int>(i);
-            break;
-        }
-    }
+    auto const it = std::find(warlocks.begin(), warlocks.end(), bot);
+    if (it == warlocks.end())
+        return false;
 
-    if (warlockIndex < 0 || warlockIndex >= felStalkers.size())
+    size_t const warlockIndex = static_cast<size_t>(std::distance(warlocks.begin(), it));
+    if (warlockIndex >= felStalkers.size())
         return false;
 
     Unit* assignedFelStalker = felStalkers[warlockIndex];
@@ -446,6 +452,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
+    // Not GRUUL_SHATTER_SAFE_DISTANCE. Shatter's damage falls off linearly rather than cutting
+    // off, so this is a standing compromise rather than a hazard edge - 22y from every other raider
+    // is not reachable in a 25 man, and asking for it would make this action succeed on every tick
+    // and starve everything below it.
     constexpr float minSpreadDistance = 10.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, minSpreadDistance);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minSpreadDistance);
@@ -453,13 +463,12 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 20.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, GRUUL_SHATTER_SAFE_DISTANCE);
     if (!nearestPlayer)
         return false;
 
     float const distToNearest = bot->GetExactDist2d(nearestPlayer);
-    float const moveDist = std::min(3.5f, safeDistance - distToNearest);
+    float const moveDist = std::min(3.5f, GRUUL_SHATTER_SAFE_DISTANCE - distToNearest);
 
     return MoveAway(nearestPlayer, moveDist);
 }

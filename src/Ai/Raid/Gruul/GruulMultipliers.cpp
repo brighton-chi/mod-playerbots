@@ -120,7 +120,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    return bot->GetDistance2d(maulgar) < WHIRLWIND_SAFE_DISTANCE + 5.0f ? 0.0f : 1.0f;
+    return bot->GetExactDist2d(maulgar) < MAULGAR_WHIRLWIND_HOLD_DISTANCE ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)

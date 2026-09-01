@@ -49,9 +49,35 @@ enum class GruulNpcs : uint32
     NPC_WILD_FEL_STALKER = 18847,
 };
 
+// Ogre combat reaches:
+// (1) Maulgar = 3.5y, (2) Olm = 2.2y, (3) Blindeye = 3.525y, (4) Krosh = 2y, (5) Kiggler = 3.3y
+//
+// Safe distances below are exact 2D, center to center. Compare them with GetExactDist2d, never
+// GetDistance2d, which subtracts both combat reaches and so adds a silent, per-boss amount on top
+// of the 2y. The figure each one pads is the raw spell radius, because every hazard here reaches
+// players through the SRC branch of the membership check, where neither reach is added
+// (Spell.cpp:9162).
+
 inline constexpr uint32 GRUUL_MAP_ID = 565;
-inline constexpr float WHIRLWIND_SAFE_DISTANCE = 8.0f;
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
+// Radius is 15y with 2y of MoveAway padding.
+inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = 17.0f;
+// Radius is 8y, padded to 8 * sqrt(2) rather than the 2y used elsewhere. Maulgar is tanked against
+// a wall, so MoveAway's fan routinely falls through to its +/-90 degree candidates. An off-axis
+// landing sits at safeDistance * cos(delta/2) in the worst case, which puts +/-90 at safeDistance /
+// sqrt(2); only a request above 11.31y keeps all nine candidates clear of the radius. 2y of padding
+// would leave the two +/-90 candidates landing at 7.07y, inside the whirlwind.
+inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = 12.0f;
+// Held wider than the safe distance: the run-away action stops at the safe distance, and without a
+// wider hold band the multiplier would release at that same point and let another movement action
+// walk the bot straight back in.
+inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
+// Radius is 30y with 2y of MoveAway padding. Stays inside the stock "enemy out of spell" threshold
+// (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), so holding here
+// does not let reach spell drag the moonkin back into the blast.
+inline constexpr float KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE = 32.0f;
+// Radius is 20y with 2y of MoveAway padding.
+inline constexpr float GRUUL_SHATTER_SAFE_DISTANCE = 22.0f;
 
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
 inline Position const OLM_TANK_POSITION      = { 101.050f, 219.359f,  -9.503f };
