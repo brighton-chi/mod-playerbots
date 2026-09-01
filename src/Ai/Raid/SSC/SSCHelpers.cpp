@@ -5,14 +5,45 @@
  */
 
 #include "SSCHelpers.h"
-#include "AiFactory.h"
-#include "Creature.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "SSCValueContext.h"
 #include "Timer.h"
+#include <limits>
+#include <list>
 
 namespace SscHelpers
 {
+
+// Trash
+
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
+{
+    return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
+}
+
+bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)
+{
+    std::vector<Position> const& positions =
+        GetCachedHazardPositions(botAI, "ssc toxic pool");
+    if (positions.empty())
+        return false;
+
+    toxicPool = positions.front();
+    return true;
+}
+
+bool IsNearToxicPool(PlayerbotAI* botAI, float radius)
+{
+    Position toxicPool;
+    return GetToxicPoolPosition(botAI, toxicPool) &&
+        botAI->GetBot()->GetExactDist2d(toxicPool) < radius;
+}
+
+bool IsInToxicPool(PlayerbotAI* botAI)
+{
+    return IsNearToxicPool(botAI, TOXIC_POOL_RADIUS);
+}
 
 // Hydross the Unstable <Duke of Currents>
 
@@ -81,7 +112,7 @@ std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Unit* GetLeotherasHuman(Player* bot)
+Creature* GetLeotherasHuman(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
     Creature* leotheras =
@@ -94,7 +125,7 @@ Unit* GetLeotherasHuman(Player* bot)
     return nullptr;
 }
 
-Unit* GetPhase2LeotherasDemon(Player* bot)
+Creature* GetPhase2LeotherasDemon(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
     Creature* leotheras =
@@ -106,16 +137,16 @@ Unit* GetPhase2LeotherasDemon(Player* bot)
     return nullptr;
 }
 
-Unit* GetPhase3LeotherasDemon(Player* bot)
+Creature* GetPhase3LeotherasDemon(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
     return bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), searchRadius);
 }
 
-Unit* GetActiveLeotherasDemon(Player* bot)
+Creature* GetActiveLeotherasDemon(Player* bot)
 {
-    Unit* phase2 = GetPhase2LeotherasDemon(bot);
-    Unit* phase3 = GetPhase3LeotherasDemon(bot);
+    Creature* phase2 = GetPhase2LeotherasDemon(bot);
+    Creature* phase3 = GetPhase3LeotherasDemon(bot);
     return phase2 ? phase2 : phase3;
 }
 
@@ -491,17 +522,9 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
     return false;
 }
 
-const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS =
-{
-    47482, // NW
-    47483, // NE
-    47484, // SE
-    47485  // SW
-};
-
 // Get the positions of all active Shield Generators by their database GUIDs
 std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-    Map* map, const std::vector<uint32>& generatorDbGuids)
+    Map* map, std::vector<uint32> const& generatorDbGuids)
 {
     std::vector<GeneratorInfo> generators;
     if (!map)
@@ -560,13 +583,13 @@ Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     return nearest;
 }
 
-const GeneratorInfo* GetNearestGeneratorToBot(
-    Player* bot, const std::vector<GeneratorInfo>& generators)
+GeneratorInfo const* GetNearestGeneratorToBot(
+    Player* bot, std::vector<GeneratorInfo> const& generators)
 {
     if (generators.empty())
         return nullptr;
 
-    const GeneratorInfo* nearest = nullptr;
+    GeneratorInfo const* nearest = nullptr;
     float minDist = std::numeric_limits<float>::max();
 
     for (auto const& gen : generators)

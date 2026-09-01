@@ -335,8 +335,8 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     const uint32 now = getMSTime();
 
     constexpr uint32 dpsWaitMsPhase1 = 5 * IN_MILLISECONDS;
-    Unit* leotherasHuman = GetLeotherasHuman(bot);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
+    Creature* leotherasHuman = GetLeotherasHuman(bot);
+    Creature* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
     if (leotherasHuman && !leotherasHuman->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED)) &&
         !leotherasPhase3Demon)
     {
@@ -355,7 +355,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     }
 
     constexpr uint32 dpsWaitMsPhase2 = 12 * IN_MILLISECONDS;
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(bot);
+    Creature* leotherasPhase2Demon = GetPhase2LeotherasDemon(bot);
     Player* demonFormTank = GetLeotherasDemonFormTank(bot);
     if (leotherasPhase2Demon)
     {

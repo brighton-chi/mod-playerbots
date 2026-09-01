@@ -5,7 +5,6 @@
  */
 
 #include "SSCTriggers.h"
-#include "AiFactory.h"
 #include "Corpse.h"
 #include "EncounterHelpers.h"
 #include "InstanceScript.h"
@@ -33,7 +32,7 @@ bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
 
 bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
 {
-    return bot->HasAura(Id(SscSpells::SPELL_TOXIC_POOL));
+    return IsInToxicPool(botAI);
 }
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()

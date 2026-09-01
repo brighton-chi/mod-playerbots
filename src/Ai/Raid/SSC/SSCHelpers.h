@@ -7,20 +7,28 @@
 #ifndef PLAYERBOTS_SSCHELPERS_H
 #define PLAYERBOTS_SSCHELPERS_H
 
-#include "AiObject.h"
+#include "Common.h"
+#include "ObjectGuid.h"
 #include "Position.h"
-#include "Unit.h"
+#include <array>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
+
+class Creature;
+class Map;
+class Player;
+class PlayerbotAI;
+class Unit;
+namespace SscHelpers
+{
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 constexpr uint32 Id(T value)
 {
     return static_cast<uint32>(value);
 }
-
-namespace SscHelpers
-{
 
 enum class SscSpells : uint32
 {
@@ -117,10 +125,20 @@ enum class SscItems : uint32
 };
 
 inline constexpr uint32 SSC_MAP_ID = 548;
+inline constexpr uint32 HAZARD_CACHE_INTERVAL = 500;
+
+// Trash
+
+inline constexpr float TOXIC_POOL_RADIUS = 25.0f; // 25y is the actual hazard radius
+inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_RADIUS + 2.0f; // 2y margin for hazard search
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
+bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
+bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
+bool IsInToxicPool(PlayerbotAI* botAI);
 
 // Hydross the Unstable <Duke of Currents>
 
-inline Position const HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
+inline Position const HYDROSS_FROST_TANK_POSITION =  { -236.669f, -358.352f, -0.828f };
 inline Position const HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
 
 extern std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
@@ -151,10 +169,10 @@ extern std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Unit* GetLeotherasHuman(Player* bot);
-Unit* GetPhase2LeotherasDemon(Player* bot);
-Unit* GetPhase3LeotherasDemon(Player* bot);
-Unit* GetActiveLeotherasDemon(Player* bot);
+Creature* GetLeotherasHuman(Player* bot);
+Creature* GetPhase2LeotherasDemon(Player* bot);
+Creature* GetPhase3LeotherasDemon(Player* bot);
+Creature* GetActiveLeotherasDemon(Player* bot);
 Player* GetLeotherasDemonFormTank(Player* bot);
 
 // Fathom-Lord Karathress
@@ -211,12 +229,18 @@ Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot);
 bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot);
-extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
+std::vector<uint32> const SHIELD_GENERATOR_DB_GUIDS =
+{
+    47482, // NW
+    47483, // NE
+    47484, // SE
+    47485  // SW
+};
 std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-    Map* map, const std::vector<uint32>& generatorDbGuids);
+    Map* map, std::vector<uint32> const& generatorDbGuids);
 Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
-const GeneratorInfo* GetNearestGeneratorToBot(
-    Player* bot, const std::vector<GeneratorInfo>& generators);
+GeneratorInfo const* GetNearestGeneratorToBot(
+    Player* bot, std::vector<GeneratorInfo> const& generators);
 
 }
 

@@ -701,7 +701,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
     if (innerDemon)
         return false;
 
-    if (Unit* leotherasDemon = GetActiveLeotherasDemon(bot))
+    if (Creature* leotherasDemon = GetActiveLeotherasDemon(bot))
     {
         if (MarkTargetWithSquare(bot, leotherasDemon))
             return true;
@@ -729,7 +729,7 @@ bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event
 bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
-    Unit* leotherasHuman = GetLeotherasHuman(bot);
+    Creature* leotherasHuman = GetLeotherasHuman(bot);
     if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
         leotherasHuman->GetVictim() != bot)
     {
@@ -769,7 +769,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    if (Unit* leotherasHuman = GetLeotherasHuman(bot))
+    if (Creature* leotherasHuman = GetLeotherasHuman(bot))
     {
         float currentDistance = bot->GetExactDist2d(leotherasHuman);
         constexpr float safeDistance = 25.0f;
@@ -790,7 +790,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("cloak of shadows", bot))
         return botAI->CastSpell("cloak of shadows", bot);
 
-    Unit* leotheras = GetPhase2LeotherasDemon(bot);
+    Creature* leotheras = GetPhase2LeotherasDemon(bot);
     if (!leotheras)
         return false;
 
@@ -965,7 +965,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 // Everybody except the Warlock tank should focus on Leotheras in Phase 3
 bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* leotherasHuman = GetLeotherasHuman(bot);
+    Creature* leotherasHuman = GetLeotherasHuman(bot);
     if (!leotherasHuman)
         return false;
 
@@ -977,7 +977,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
     if (AI_VALUE(Unit*, "current target") != leotherasHuman)
         return Attack(leotherasHuman);
 
-    Unit* leotherasDemon = GetPhase3LeotherasDemon(bot);
+    Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -1006,7 +1006,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
 bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event /*event*/)
 {
-    Unit* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -1047,8 +1047,8 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
     }
 
     // Human Phase
-    Unit* leotherasHuman = GetLeotherasHuman(bot);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
+    Creature* leotherasHuman = GetLeotherasHuman(bot);
+    Creature* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
     if (leotherasHuman && !leotherasPhase3Demon &&
         (leotherasHumanFormDpsWaitTimer.try_emplace(instanceId, now).second ||
          leotherasDemonFormDpsWaitTimer.erase(instanceId) > 0))
@@ -2564,7 +2564,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(const uint32 i
 {
     auto const& generators =
         GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
-    const GeneratorInfo* nearestGen = GetNearestGeneratorToBot(bot, generators);
+    GeneratorInfo const* nearestGen = GetNearestGeneratorToBot(bot, generators);
     if (!nearestGen)
         return false;
 
