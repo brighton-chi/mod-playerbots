@@ -125,7 +125,7 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (!boss->HasAura(whirlwind))
         return 1.0f;
 
-    return bot->GetDistance2d(boss) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
+    return bot->GetExactDist2d(boss) <= ZA_WHIRLWIND_SAFE_DISTANCE ? 0.0f : 1.0f;
 }
 
 float ZulAmanDisableTankActionsMultiplier::GetValue(Action* action)
