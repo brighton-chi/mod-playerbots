@@ -16,7 +16,7 @@
 #include "SSCHelpers.h"
 #include "Timer.h"
 
-using namespace SerpentShrineCavernHelpers;
+using namespace SscHelpers;
 using namespace EncounterHelpers;
 
 // General
@@ -33,7 +33,7 @@ bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
 
 bool UnderbogColossusSpawnedToxicPoolAfterDeathTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_TOXIC_POOL);
+    return bot->HasAura(Id(SscSpells::SPELL_TOXIC_POOL));
 }
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
@@ -203,7 +203,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
@@ -220,16 +220,16 @@ bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
         return false;
 
-    return !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED) &&
-           !leotheras->HasAura(SPELL_WHIRLWIND) &&
-           !leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL);
+    return !leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED)) &&
+           !leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) &&
+           !leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL));
 }
 
 bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
@@ -241,11 +241,11 @@ bool LeotherasTheBlindBossChannelingWhirlwindTrigger::IsActive()
     if (!leotheras)
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
         return false;
 
-    return leotheras->HasAura(SPELL_WHIRLWIND) ||
-           leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL);
+    return leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) ||
+           leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL));
 }
 
 bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
@@ -256,10 +256,10 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
         return false;
 
-    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
+    Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
     if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
@@ -271,7 +271,7 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_INSIDIOUS_WHISPER) &&
+    return bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)) &&
            GetLeotherasDemonFormTank(bot) != bot;
 }
 
@@ -283,7 +283,7 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
         return false;
 
     if (bot->getClass() == CLASS_WARLOCK && GetLeotherasDemonFormTank(bot) == bot)
@@ -300,7 +300,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    return !bot->HasAura(SPELL_INSIDIOUS_WHISPER);
+    return !bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
 }
 
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
@@ -360,14 +360,17 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
 
     if (PlayerbotAI::IsDps(bot))
         return true;
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
         return !AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
         return !AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, true))
+
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, true))
         return !AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    else
-        return false;
+
+    return false;
 }
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
@@ -389,8 +392,7 @@ bool MorogrimTidewalkerPullingBossTrigger::IsActive()
 
 bool MorogrimTidewalkerBossEngagedByMainTankTrigger::IsActive()
 {
-    return PlayerbotAI::IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 }
 
 bool MorogrimTidewalkerWaterGlobulesAreIncomingTrigger::IsActive()
@@ -409,8 +411,10 @@ bool LadyVashjBossEngagedByMainTankTrigger::IsActive()
     if (!PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lady vashj") &&
-           !IsLadyVashjInPhase2(botAI);
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+        return false;
+
+    return !IsLadyVashjInPhase2(botAI);
 }
 
 bool LadyVashjBossEngagedByRangedInPhase1Trigger::IsActive()
@@ -442,7 +446,7 @@ bool LadyVashjBotHasStaticChargeTrigger::IsActive()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(SPELL_STATIC_CHARGE))
+        if (member && member->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE)))
             return true;
     }
 
@@ -501,7 +505,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
                 continue;
 
             if (Creature* creature = object->ToCreature();
-                creature->GetEntry() == NPC_TAINTED_ELEMENTAL && !creature->IsAlive())
+                creature->GetEntry() == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) && !creature->IsAlive())
             {
                 taintedPresent = true;
                 break;
@@ -513,7 +517,7 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActive()
         return false;
 
     return GetDesignatedCoreLooter(botAI, bot) == bot &&
-           !bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
+           !bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
@@ -558,7 +562,7 @@ bool LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger::IsActive()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->HasAura(SPELL_ENTANGLE))
+        if (!member || !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)))
             continue;
 
         if (PlayerbotAI::IsMelee(member))

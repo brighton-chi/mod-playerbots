@@ -11,13 +11,10 @@
 #include "Playerbots.h"
 #include "Timer.h"
 
-namespace SerpentShrineCavernHelpers
+namespace SscHelpers
 {
 
 // Hydross the Unstable <Duke of Currents>
-
-const Position HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
-const Position HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
 
 std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
@@ -26,41 +23,39 @@ std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
 bool HasMarkOfHydrossAt100Percent(Player* bot)
 {
-    return bot->HasAura(SPELL_MARK_OF_HYDROSS_100) ||
-            bot->HasAura(SPELL_MARK_OF_HYDROSS_250) ||
-            bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
+    return bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_100)) ||
+        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_250)) ||
+        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_500));
 }
 
 bool HasNoMarkOfHydross(Player* bot)
 {
-    return !bot->HasAura(SPELL_MARK_OF_HYDROSS_10) &&
-            !bot->HasAura(SPELL_MARK_OF_HYDROSS_25) &&
-            !bot->HasAura(SPELL_MARK_OF_HYDROSS_50) &&
-            !bot->HasAura(SPELL_MARK_OF_HYDROSS_100) &&
-            !bot->HasAura(SPELL_MARK_OF_HYDROSS_250) &&
-            !bot->HasAura(SPELL_MARK_OF_HYDROSS_500);
+    return !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_10)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_25)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_50)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_100)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_250)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_500));
 }
 
 bool HasMarkOfCorruptionAt100Percent(Player* bot)
 {
-    return bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) ||
-            bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) ||
-            bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
+    return bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_100)) ||
+        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_250)) ||
+        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_500));
 }
 
 bool HasNoMarkOfCorruption(Player* bot)
 {
-    return !bot->HasAura(SPELL_MARK_OF_CORRUPTION_10) &&
-            !bot->HasAura(SPELL_MARK_OF_CORRUPTION_25) &&
-            !bot->HasAura(SPELL_MARK_OF_CORRUPTION_50) &&
-            !bot->HasAura(SPELL_MARK_OF_CORRUPTION_100) &&
-            !bot->HasAura(SPELL_MARK_OF_CORRUPTION_250) &&
-            !bot->HasAura(SPELL_MARK_OF_CORRUPTION_500);
+    return !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_10)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_25)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_50)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_100)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_250)) &&
+        !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_500));
 }
 
 // The Lurker Below
-
-const Position LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
 std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
@@ -75,7 +70,7 @@ bool IsLurkerCastingSpout(Unit* lurker)
         return false;
 
     uint32 spellId = currentSpell->m_spellInfo->Id;
-    bool isSpout = spellId == SPELL_SPOUT_VISUAL;
+    bool isSpout = spellId == Id(SscSpells::SPELL_SPOUT_VISUAL);
 
     return isSpout;
 }
@@ -90,10 +85,10 @@ Unit* GetLeotherasHuman(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
     Creature* leotheras =
-        bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
 
     if (leotheras && leotheras->IsInCombat() &&
-        !leotheras->HasAura(SPELL_METAMORPHOSIS))
+        !leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
     return nullptr;
@@ -103,9 +98,9 @@ Unit* GetPhase2LeotherasDemon(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
     Creature* leotheras =
-        bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
 
-    if (leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS))
+    if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
     return nullptr;
@@ -114,7 +109,7 @@ Unit* GetPhase2LeotherasDemon(Player* bot)
 Unit* GetPhase3LeotherasDemon(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
-    return bot->FindNearestCreature(NPC_SHADOW_OF_LEOTHERAS, searchRadius, true);
+    return bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), searchRadius);
 }
 
 Unit* GetActiveLeotherasDemon(Player* bot)
@@ -152,28 +147,14 @@ Player* GetLeotherasDemonFormTank(Player* bot)
 
 // Fathom-Lord Karathress
 
-const Position KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
-const Position TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
-const Position SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
-const Position CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
-const Position CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
-const Position CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
-
 std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
-
-const Position TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
-const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
-const Position TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-const Position TIDEWALKER_PHASE_2_RANGED_POSITION = { 432.595f, -766.288f, -7.145f };
 
 std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
 std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
 // Lady Vashj <Coilfang Matron>
-
-const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
 std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
 std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
@@ -220,7 +201,8 @@ bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
     Unit* vashj =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
 
-    return vashj && vashj->GetHealthPct() <= 70.0f && vashj->HasAura(SPELL_MAGIC_BARRIER);
+    return vashj && vashj->GetHealthPct() <= 70.0f &&
+        vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
 }
 
 bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
@@ -228,9 +210,11 @@ bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
     Unit* vashj =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
 
-    return vashj && vashj->GetHealthPct() <= 70.0f && !vashj->HasAura(SPELL_MAGIC_BARRIER);
+    return vashj && vashj->GetHealthPct() <= 70.0f &&
+        !vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
 }
 
+// This can just be replaced by a target exclusion of Vashj for Phase 2 I think
 bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
 {
     if (!unit || !unit->IsAlive())
@@ -240,14 +224,19 @@ bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
 
     if (IsLadyVashjInPhase2(botAI))
     {
-        return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
-                entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER;
+        return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
+            entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
+            entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
+            entry == Id(SscNpcs::NPC_COILFANG_STRIDER);
     }
     else if (IsLadyVashjInPhase3(botAI))
     {
-        return entry == NPC_TAINTED_ELEMENTAL || entry == NPC_ENCHANTED_ELEMENTAL ||
-                entry == NPC_COILFANG_ELITE || entry == NPC_COILFANG_STRIDER ||
-                entry == NPC_TOXIC_SPOREBAT || entry == NPC_LADY_VASHJ;
+        return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
+            entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
+            entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
+            entry == Id(SscNpcs::NPC_COILFANG_STRIDER) ||
+            entry == Id(SscNpcs::NPC_TOXIC_SPOREBAT) ||
+            entry == Id(SscNpcs::NPC_LADY_VASHJ);
     }
 
     return false;
@@ -313,7 +302,7 @@ Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == designatedLooter)
+        if (!member || member == designatedLooter || !member->IsAlive())
             continue;
 
         if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
@@ -323,8 +312,10 @@ Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !PlayerbotAI::IsTank(member) && member != designatedLooter)
+        if (!member || member == designatedLooter || !member->IsAlive())
+            continue;
+
+        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
             return member;
     }
 
@@ -343,20 +334,26 @@ Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == designatedLooter ||
-            member == firstCorePasser || !GET_PLAYERBOT_AI(member))
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            !member->IsAlive())
+        {
             continue;
+        }
 
-        if (PlayerbotAI::IsAssistHealOfIndex(member, 1, true))
+        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
             return member;
     }
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
-            member != firstCorePasser)
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            !member->IsAlive())
+        {
+            continue;
+        }
+
+        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
             return member;
     }
 
@@ -376,20 +373,26 @@ Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == designatedLooter ||
-            member == firstCorePasser || member == secondCorePasser || !GET_PLAYERBOT_AI(member))
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            member == secondCorePasser || !member->IsAlive())
+        {
             continue;
+        }
 
-        if (PlayerbotAI::IsAssistHealOfIndex(member, 2, true))
+        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
             return member;
     }
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
-            member != firstCorePasser && member != secondCorePasser)
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            member == secondCorePasser || !member->IsAlive())
+        {
+            continue;
+        }
+
+        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
             return member;
     }
 
@@ -410,22 +413,26 @@ Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == designatedLooter ||
-            member == firstCorePasser || member == secondCorePasser ||
-            member == thirdCorePasser || !GET_PLAYERBOT_AI(member))
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            member == secondCorePasser || member == thirdCorePasser || !member->IsAlive())
+        {
             continue;
+        }
 
-        if (PlayerbotAI::IsAssistRangedDpsOfIndex(member, 0, true))
+        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
             return member;
     }
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            !PlayerbotAI::IsTank(member) && member != designatedLooter &&
-            member != firstCorePasser && member != secondCorePasser &&
-            member != thirdCorePasser)
+        if (!member || member == designatedLooter || member == firstCorePasser ||
+            member == secondCorePasser || member == thirdCorePasser || !member->IsAlive())
+        {
+            continue;
+        }
+
+        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
             return member;
     }
 
@@ -472,7 +479,7 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
         if (!handler)
             continue;
 
-        if (handler->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+        if (handler->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false))
             return true;
 
         auto it = lastCoreInInventoryTime.find(handler->GetGUID());
@@ -532,7 +539,7 @@ Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     std::list<Creature*> triggers;
     constexpr float searchRange = 150.0f;
     reference->GetCreatureListWithEntryInGrid(
-        triggers, NPC_WORLD_INVISIBLE_TRIGGER, searchRange);
+        triggers, Id(SscNpcs::NPC_WORLD_INVISIBLE_TRIGGER), searchRange);
 
     Creature* nearest = nullptr;
     float minDist = std::numeric_limits<float>::max();

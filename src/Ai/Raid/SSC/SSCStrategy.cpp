@@ -18,17 +18,17 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("greyheart tidecaller water elemental totem spawned", {
-        NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID + 1) }));
+        NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID) }));
 
     // Hydross the Unstable <Duke of Currents>
     triggers.push_back(new TriggerNode("hydross the unstable bot is frost tank", {
-        NextAction("hydross the unstable position frost tank", ACTION_RAID + 1) }));
+        NextAction("hydross the unstable position frost tank", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable bot is nature tank", {
-        NextAction("hydross the unstable position nature tank", ACTION_RAID + 1) }));
+        NextAction("hydross the unstable position nature tank", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable elementals spawned", {
-        NextAction("hydross the unstable prioritize elemental adds", ACTION_RAID + 1) }));
+        NextAction("hydross the unstable prioritize elemental adds", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable danger from water tombs", {
         NextAction("hydross the unstable frost phase spread out", ACTION_EMERGENCY + 1) }));
@@ -47,10 +47,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("the lurker below run around behind boss", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("the lurker below boss is active for main tank", {
-        NextAction("the lurker below position main tank", ACTION_RAID + 1) }));
+        NextAction("the lurker below position main tank", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("the lurker below boss casts geyser", {
-        NextAction("the lurker below spread ranged in arc", ACTION_RAID + 1) }));
+        NextAction("the lurker below spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("the lurker below boss is submerged", {
         NextAction("the lurker below tanks pick up adds", ACTION_EMERGENCY + 1) }));
@@ -60,16 +60,16 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Leotheras the Blind
     triggers.push_back(new TriggerNode("leotheras the blind boss is inactive", {
-        NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1) }));
+        NextAction("leotheras the blind target spellbinders", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form", {
-        NextAction("leotheras the blind demon form tank attack boss", ACTION_RAID + 1) }));
+        NextAction("leotheras the blind demon form tank attack boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
-        NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID + 1) }));
+        NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss engaged by ranged", {
-        NextAction("leotheras the blind position ranged", ACTION_RAID + 1) }));
+        NextAction("leotheras the blind position ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss channeling whirlwind", {
         NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1) }));
@@ -91,45 +91,45 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Fathom-Lord Karathress
     triggers.push_back(new TriggerNode("fathom-lord karathress boss engaged by main tank", {
-        NextAction("fathom-lord karathress main tank position boss", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress caribdis engaged by first assist tank", {
-        NextAction("fathom-lord karathress first assist tank position caribdis", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress first assist tank position caribdis", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress sharkkis engaged by second assist tank", {
-        NextAction("fathom-lord karathress second assist tank position sharkkis", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress second assist tank position sharkkis", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress tidalvess engaged by third assist tank", {
-        NextAction("fathom-lord karathress third assist tank position tidalvess", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress third assist tank position tidalvess", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress caribdis tank needs dedicated healer", {
-        NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress pulling bosses", {
-        NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 2) }));
+        NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress determining kill order", {
-        NextAction("fathom-lord karathress assign dps priority", ACTION_RAID + 1) }));
+        NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress tanks need to establish aggro", {
         NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode("morogrim tidewalker boss engaged by main tank", {
-        NextAction("morogrim tidewalker move boss to tank position", ACTION_RAID + 1) }));
+        NextAction("morogrim tidewalker move boss to tank position", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("morogrim tidewalker water globules are incoming", {
-        NextAction("morogrim tidewalker phase 2 reposition ranged", ACTION_RAID + 1) }));
+        NextAction("morogrim tidewalker phase 2 reposition ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss", {
-        NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID + 1) }));
+        NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID) }));
 
     // Lady Vashj <Coilfang Matron>
     triggers.push_back(new TriggerNode("lady vashj boss engaged by main tank", {
-        NextAction("lady vashj main tank position boss", ACTION_RAID + 1) }));
+        NextAction("lady vashj main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("lady vashj boss engaged by ranged in phase 1", {
-        NextAction("lady vashj phase 1 spread ranged in arc", ACTION_RAID + 1) }));
+        NextAction("lady vashj phase 1 spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("lady vashj casts shock blast on highest aggro", {
         NextAction("lady vashj set grounding totem in main tank group", ACTION_EMERGENCY + 1) }));
@@ -138,17 +138,17 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj static charge move away from group", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3", {
-        NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 2) }));
+        NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat", {
-        NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 10),
-        NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 10) }));
+        NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 12),
+        NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted", {
         NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3", {
-        NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1) }));
+        NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching", {
         NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2),
@@ -158,7 +158,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("lady vashj bot is entangled in toxic spores or static charge", {
-        NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 7) }));
+        NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 8) }));
 }
 
 void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

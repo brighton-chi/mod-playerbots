@@ -19,10 +19,10 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
-namespace SerpentShrineCavernHelpers
+namespace SscHelpers
 {
 
-enum SscSpells
+enum class SscSpells : uint32
 {
     // Trash Mobs
     SPELL_TOXIC_POOL             = 38718,
@@ -79,7 +79,7 @@ enum SscSpells
     SPELL_CURSE_OF_EXHAUSTION    = 18223,
 };
 
-enum SscNpcs
+enum class SscNpcs : uint32
 {
     // Trash Mobs
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
@@ -111,7 +111,7 @@ enum SscNpcs
     NPC_SPORE_DROP_TRIGGER       = 22207,
 };
 
-enum SscItems
+enum class SscItems : uint32
 {
     // Lady Vashj <Coilfang Matron>
     ITEM_TAINTED_CORE            = 31088,
@@ -120,29 +120,38 @@ enum SscItems
 inline constexpr uint32 SSC_MAP_ID = 548;
 
 // Hydross the Unstable <Duke of Currents>
-extern const Position HYDROSS_FROST_TANK_POSITION;
-extern const Position HYDROSS_NATURE_TANK_POSITION;
+
+inline Position const HYDROSS_FROST_TANK_POSITION = { -236.669f, -358.352f, -0.828f };
+inline Position const HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
+
 extern std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
+
 bool HasMarkOfHydrossAt100Percent(Player* bot);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* bot);
 bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
-extern const Position LURKER_MAIN_TANK_POSITION;
+
 // Stores the time the current Spout cast started; the entry is erased once it expires
 inline constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
+
+inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
+
 extern std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+
 bool IsLurkerCastingSpout(Unit* lurker);
 
 // Leotheras the Blind
+
 extern std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
+
 Unit* GetLeotherasHuman(Player* bot);
 Unit* GetPhase2LeotherasDemon(Player* bot);
 Unit* GetPhase3LeotherasDemon(Player* bot);
@@ -150,31 +159,47 @@ Unit* GetActiveLeotherasDemon(Player* bot);
 Player* GetLeotherasDemonFormTank(Player* bot);
 
 // Fathom-Lord Karathress
-extern const Position KARATHRESS_TANK_POSITION;
-extern const Position TIDALVESS_TANK_POSITION;
-extern const Position SHARKKIS_TANK_POSITION;
-extern const Position CARIBDIS_TANK_POSITION;
-extern const Position CARIBDIS_HEALER_POSITION;
-extern const Position CARIBDIS_RANGED_DPS_POSITION;
+
+inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
+inline Position const TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
+inline Position const SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
+inline Position const CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
+inline Position const CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
+inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
+
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
-extern const Position TIDEWALKER_PHASE_1_TANK_POSITION;
-extern const Position TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
-extern const Position TIDEWALKER_PHASE_2_TANK_POSITION;
-extern const Position TIDEWALKER_PHASE_2_RANGED_POSITION;
+
+inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
+inline Position const TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
+inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
+inline Position const TIDEWALKER_PHASE_2_RANGED_POSITION = { 432.595f, -766.288f, -7.145f };
+
 extern std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
 extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
 // Lady Vashj <Coilfang Matron>
-constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
-constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
-extern const Position VASHJ_PLATFORM_CENTER_POSITION;
+
+struct GeneratorInfo
+{
+    ObjectGuid guid;
+    float x;
+    float y;
+    float z;
+};
+
+inline constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
+inline constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
+
+inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
+
 extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
 extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedLineup;
 extern std::unordered_map<uint32, uint32> lastImbueAttempt;
 extern std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
+
 bool IsMainTankInSameSubgroup(Player* bot);
 bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
 bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
@@ -187,7 +212,6 @@ Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot);
 bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot);
-struct GeneratorInfo { ObjectGuid guid; float x, y, z; };
 extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
 std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
     Map* map, const std::vector<uint32>& generatorDbGuids);
