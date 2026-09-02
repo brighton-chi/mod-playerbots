@@ -1164,7 +1164,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
 
         felmystEncounterStates[bot->GetInstanceId()].encapsulateOccurredThisGroundPhase = true;
 
-        float distance = bot->GetDistance2d(member);
+        float distance = bot->GetExactDist(member);
         if (!closestTarget || distance < closestDistance)
         {
             closestTarget = member;
@@ -1197,7 +1197,7 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
         if (!member || !member->HasAura(Id(SwpSpells::SPELL_GAS_NOVA)))
             continue;
 
-        float distance = bot->GetDistance(member);
+        float distance = bot->GetExactDist(member);
         if (!closestTarget || distance < closestDistance)
         {
             closestTarget = member;
@@ -1232,7 +1232,7 @@ Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)
         if (PlayerbotAI::IsMelee(bot) && !felmyst->IsFlying() && !bot->IsWithinMeleeRange(member))
             continue;
 
-        if (PlayerbotAI::IsRanged(bot) && bot->GetDistance2d(member) > 30.0f)
+        if (PlayerbotAI::IsRanged(bot) && bot->GetDistance2d(member) > RANGED_ABILITY_REACH)
             continue;
 
         if (member->GetHealth() < lowestHp)
