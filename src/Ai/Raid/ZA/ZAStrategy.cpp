@@ -13,9 +13,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'aman no encounter in progress", {
         NextAction("zul'aman reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    // Every boss wants the same misdirect on the pull. Past the pull, the stock hunter
-    // "low tank threat" trigger covers it - including after a threat wipe, since it fires on
-    // tankThreat == 0.
+    // The same Misdirect upon pull action is used for all ZA bosses.
     triggers.push_back(new TriggerNode("zul'aman pulling boss", {
         NextAction("zul'aman misdirect boss to main tank", ACTION_RAID + 1) }));
 

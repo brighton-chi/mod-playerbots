@@ -12,16 +12,6 @@
 #include "ZAHelpers.h"
 #include <string>
 
-// Base for every multiplier that should only apply while a Zul'Aman encounter is running. Outside
-// one it returns 1.0f - stated once here rather than left as an implicit fall-through in twelve
-// bodies - which is the safe direction for a multiplier that exists to suppress.
-//
-// Most of these already lead with GetState() == BOT_STATE_NON_COMBAT, which costs about a
-// nanosecond and is already false outside combat. The gate's whole value is rejecting during
-// *trash* combat, where that check does not: in Gruul's Lair the equivalent set went from 14.5 to
-// 4.2 us/tick in the trash phases.
-//
-// GetValue() is final for the same reason IsActive() is on ZulAmanEncounterTrigger.
 class ZulAmanEncounterMultiplier : public Multiplier
 {
 public:
