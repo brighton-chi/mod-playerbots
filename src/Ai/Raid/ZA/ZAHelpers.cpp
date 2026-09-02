@@ -98,9 +98,12 @@ bool FindSafeStepInZone(Player* bot,
 bool IsPositionSafeFromHazards(
     float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
+    // Exact, to match the caller's danger test. GetDistance2d would subtract this hazard's combat
+    // reach here and both the hazard's and the bot's there, leaving the two thresholds a bot reach
+    // apart - see JANALAI_FIRE_BOMB_SAFE_DISTANCE.
     for (Unit* hazard : hazards)
     {
-        if (hazard->GetDistance2d(x, y) < hazardRadius)
+        if (hazard->GetExactDist2d(x, y) < hazardRadius)
             return false;
     }
 
@@ -201,6 +204,27 @@ bool IsNalorakkInBearForm(Unit* nalorakk)
 }
 
 // Jan'alai <Dragonhawk Avatar>
+
+ObjectGuid FindNearbyFreezingTrapGuid(Player* bot)
+{
+    // The instance strategy can outlive leaving the instance (e.g. after a server reset), so the
+    // grid search is gated on the map rather than run wherever the bot happens to be.
+    if (bot->GetMapId() != ZA_MAP_ID)
+        return ObjectGuid::Empty;
+
+    GameObject* trap = bot->FindNearestGameObject(
+        Id(ZaObjects::GO_FREEZING_TRAP), ZA_FREEZING_TRAP_SEARCH_RADIUS, true);
+
+    return trap ? trap->GetGUID() : ObjectGuid::Empty;
+}
+
+GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI)
+{
+    ObjectGuid const guid = botAI->GetAiObjectContext()
+        ->GetValue<ObjectGuid>("hex lord malacrass freezing trap")->Get();
+
+    return guid.IsEmpty() ? nullptr : botAI->GetGameObject(guid);
+}
 
 GuidVector FindNearbyFireBombGuids(Player* bot)
 {

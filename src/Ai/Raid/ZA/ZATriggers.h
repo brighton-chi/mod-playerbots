@@ -7,15 +7,38 @@
 #ifndef PLAYERBOTS_ZATRIGGERS_H
 #define PLAYERBOTS_ZATRIGGERS_H
 
+#include "EncounterHelpers.h"
 #include "Trigger.h"
+#include "ZAHelpers.h"
+#include <string>
+
+// General
+
+class ZulAmanEncounterTrigger : public Trigger
+{
+public:
+    ZulAmanEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
+
+    bool IsActive() final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, ZaHelpers::ZA_MAP_ID) &&
+            IsActiveInEncounter();
+    }
+
+protected:
+    virtual bool IsActiveInEncounter() = 0;
+};
 
 // General
 
 class ZulAmanNoEncounterInProgressTrigger : public Trigger
 {
 public:
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
     ZulAmanNoEncounterInProgressTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'aman no encounter in progress") {}
+        : Trigger(botAI, "zul'aman no encounter in progress", 1000) {}
     bool IsActive() override;
 };
 
@@ -39,174 +62,214 @@ public:
 
 // Akil'zon <Eagle Avatar>
 
-class AkilzonBossEngagedByTanksTrigger : public Trigger
+class AkilzonBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon boss engaged by tanks") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "akil'zon boss engaged by tanks") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AkilzonSpreadForStaticDisruptionTrigger : public Trigger
+class AkilzonSpreadForStaticDisruptionTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonSpreadForStaticDisruptionTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon spread for static disruption") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "akil'zon spread for static disruption") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AkilzonElectricalStormIncomingTrigger : public Trigger
+class AkilzonElectricalStormIncomingTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonElectricalStormIncomingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon electrical storm incoming") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "akil'zon electrical storm incoming") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AkilzonBotsNeedToPrepareForElectricalStormTrigger : public Trigger
+class AkilzonBotsNeedToPrepareForElectricalStormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonBotsNeedToPrepareForElectricalStormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "akil'zon bots need to prepare for electrical storm") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "akil'zon bots need to prepare for electrical storm") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Nalorakk <Bear Avatar>
 
-class NalorakkBossSwitchesFormsTrigger : public Trigger
+class NalorakkBossSwitchesFormsTrigger : public ZulAmanEncounterTrigger
 {
 public:
     NalorakkBossSwitchesFormsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nalorakk boss switches forms") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "nalorakk boss switches forms") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NalorakkSpreadForSurgeTrigger : public Trigger
+class NalorakkSpreadForSurgeTrigger : public ZulAmanEncounterTrigger
 {
 public:
     NalorakkSpreadForSurgeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nalorakk spread for surge") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "nalorakk spread for surge") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Jan'alai <Dragonhawk Avatar>
 
-class JanalaiBossEngagedByTanksTrigger : public Trigger
+class JanalaiBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai boss engaged by tanks") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "jan'alai boss engaged by tanks") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class JanalaiSpreadForFlameBreathTrigger : public Trigger
+class JanalaiSpreadForFlameBreathTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiSpreadForFlameBreathTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai spread for flame breath") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "jan'alai spread for flame breath") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class JanalaiBossSummoningFireBombsTrigger : public Trigger
+class JanalaiBossSummoningFireBombsTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiBossSummoningFireBombsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai boss summoning fire bombs") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "jan'alai boss summoning fire bombs") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class JanalaiAmanishiHatchersSpawnedTrigger : public Trigger
+class JanalaiAmanishiHatchersSpawnedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiAmanishiHatchersSpawnedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "jan'alai amani'shi hatchers spawned") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "jan'alai amani'shi hatchers spawned") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Halazzi <Lynx Avatar>
 
-class HalazziShouldBeTankedTrigger : public Trigger
+class HalazziShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi should be tanked") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "halazzi should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HalazziSpiritLynxHasAppearedTrigger : public Trigger
+class HalazziSpiritLynxHasAppearedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziSpiritLynxHasAppearedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi spirit lynx has appeared") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "halazzi spirit lynx has appeared") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HalazziShouldFocusDpsTrigger : public Trigger
+class HalazziShouldFocusDpsTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziShouldFocusDpsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "halazzi should focus dps") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "halazzi should focus dps") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Hex Lord Malacrass
 
-class HexLordMalacrassShouldPrioritizeAddsTrigger : public Trigger
+class HexLordMalacrassShouldPrioritizeAddsTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HexLordMalacrassShouldPrioritizeAddsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass should prioritize adds") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass should prioritize adds") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HexLordMalacrassBossIsChannelingWhirlwindTrigger : public Trigger
+class HexLordMalacrassBossIsChannelingWhirlwindTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HexLordMalacrassBossIsChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass boss is channeling whirlwind") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass boss is channeling whirlwind") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HexLordMalacrassBossPlacedFreezingTrapTrigger : public Trigger
+class HexLordMalacrassBossPlacedFreezingTrapTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HexLordMalacrassBossPlacedFreezingTrapTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hex lord malacrass boss placed freezing trap") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass boss placed freezing trap") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Zul'jin
 
-class ZuljinBossEngagedByTanksTrigger : public Trigger
+class ZuljinBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin boss engaged by tanks") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "zul'jin boss engaged by tanks") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ZuljinBossIsChannelingWhirlwindInTrollFormTrigger : public Trigger
+class ZuljinBossIsChannelingWhirlwindInTrollFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin boss is channeling whirlwind in troll form") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "zul'jin boss is channeling whirlwind in troll form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ZuljinBossIsSummoningCyclonesInEagleFormTrigger : public Trigger
+class ZuljinBossIsSummoningCyclonesInEagleFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinBossIsSummoningCyclonesInEagleFormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin boss is summoning cyclones in eagle form") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "zul'jin boss is summoning cyclones in eagle form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ZuljinSpreadForDragonhawkAoeTrigger : public Trigger
+class ZuljinSpreadForDragonhawkAoeTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinSpreadForDragonhawkAoeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'jin spread for dragonhawk aoe") {}
-    bool IsActive() override;
+        : ZulAmanEncounterTrigger(botAI, "zul'jin spread for dragonhawk aoe") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 #endif

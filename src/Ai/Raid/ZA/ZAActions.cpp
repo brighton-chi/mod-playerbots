@@ -226,11 +226,10 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     if (bombs.empty())
         return false;
 
-    constexpr float hazardRadius = 5.0f;
     bool inDanger = false;
     for (Unit* bomb : bombs)
     {
-        if (bot->GetDistance2d(bomb) < hazardRadius)
+        if (bot->GetExactDist2d(bomb) < JANALAI_FIRE_BOMB_SAFE_DISTANCE)
         {
             inDanger = true;
             break;
@@ -253,8 +252,8 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 
     float stepX, stepY, stepZ;
     if (!FindSafeStepInZone(
-            bot, bombs, JANALAI_SAFE_ZONE, maxSearchDistance, hazardRadius, moveDist,
-            stepX, stepY, stepZ))
+            bot, bombs, JANALAI_SAFE_ZONE, maxSearchDistance, JANALAI_FIRE_BOMB_SAFE_DISTANCE,
+            moveDist, stepX, stepY, stepZ))
     {
         return false;
     }
@@ -368,19 +367,16 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
 {
-    GameObject* trap = bot->FindNearestGameObject(
-        Id(ZaObjects::GO_FREEZING_TRAP), ZA_FREEZING_TRAP_SEARCH_RADIUS, true);
-
+    GameObject* trap = GetNearbyFreezingTrap(botAI);
     if (!trap)
         return false;
 
-    float currentDistance = bot->GetDistance2d(trap);
-    constexpr float safeDistance = 6.0f;
-    constexpr uint32 minInterval = 0;
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(trap);
+    if (currentDistance >= ZA_FREEZING_TRAP_SAFE_DISTANCE)
         return false;
 
-    return FleePosition(trap->GetPosition(), safeDistance, minInterval);
+    constexpr uint32 minInterval = 0;
+    return FleePosition(trap->GetPosition(), ZA_FREEZING_TRAP_SAFE_DISTANCE, minInterval);
 }
 
 // Zul'jin

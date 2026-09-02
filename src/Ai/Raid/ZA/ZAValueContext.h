@@ -26,17 +26,37 @@ protected:
     GuidVector Calculate() override { return ZaHelpers::FindNearbyFireBombGuids(bot); }
 };
 
+// Hex Lord's freezing trap is asked about twice a tick - once by the trigger to decide whether to
+// act, and again by the action to find the object to move away from. One grid search serves both.
+class HexLordMalacrassFreezingTrapValue : public ObjectGuidCalculatedValue
+{
+public:
+    HexLordMalacrassFreezingTrapValue(PlayerbotAI* botAI)
+        : ObjectGuidCalculatedValue(
+              botAI, "hex lord malacrass freezing trap",
+              ZaHelpers::FREEZING_TRAP_CACHE_INTERVAL_MS) {}
+
+protected:
+    ObjectGuid Calculate() override { return ZaHelpers::FindNearbyFreezingTrapGuid(bot); }
+};
+
 class RaidZulAmanValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
     RaidZulAmanValueContext()
     {
         creators["jan'alai fire bombs"] = &RaidZulAmanValueContext::janalai_fire_bombs;
+        creators["hex lord malacrass freezing trap"] =
+            &RaidZulAmanValueContext::hex_lord_malacrass_freezing_trap;
     }
 
 private:
     static UntypedValue* janalai_fire_bombs(PlayerbotAI* botAI) {
         return new JanalaiFireBombsValue(botAI);
+    }
+
+    static UntypedValue* hex_lord_malacrass_freezing_trap(PlayerbotAI* botAI) {
+        return new HexLordMalacrassFreezingTrapValue(botAI);
     }
 };
 
