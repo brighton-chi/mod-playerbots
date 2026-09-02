@@ -24,8 +24,12 @@ bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
     reset |= akilzonStormTimer.erase(bot->GetInstanceId()) > 0;
-    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-    reset |= ClearTargetIcon(bot, RtiTargetValue::moonIndex);
+
+    if (!AI_VALUE2(bool, "combat", "self target"))
+    {
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+        reset |= ClearTargetIcon(bot, RtiTargetValue::moonIndex);
+    }
 
     return reset;
 }
