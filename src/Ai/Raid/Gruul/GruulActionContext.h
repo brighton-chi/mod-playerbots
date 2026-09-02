@@ -19,7 +19,7 @@ public:
         creators["gruul's lair reset encounter states"] =
             &RaidGruulsLairActionContext::gruuls_lair_reset_encounter_states;
 
-        // High King Maulgar
+        // High King Maulgar <Lord of the Ogres>
         creators["high king maulgar melee tanks position bosses"] =
             &RaidGruulsLairActionContext::high_king_maulgar_melee_tanks_position_bosses;
 

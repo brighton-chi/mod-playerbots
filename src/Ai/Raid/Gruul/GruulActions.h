@@ -12,6 +12,8 @@
 #include "MovementActions.h"
 #include "Position.h"
 
+// General
+
 class GruulsLairResetEncounterStatesAction : public Action
 {
 public:
@@ -19,6 +21,8 @@ public:
         : Action(botAI, "gruul's lair reset encounter states") {}
     bool Execute(Event event) override;
 };
+
+// High King Maulgar <Lord of the Ogres>
 
 class HighKingMaulgarMeleeTanksPositionBossesAction : public AttackAction
 {
@@ -95,6 +99,8 @@ public:
         : Action(botAI, "high king maulgar cast fear ward on main tank") {}
     bool Execute(Event event) override;
 };
+
+// Gruul the Dragonkiller
 
 class GruulTheDragonkillerTanksPositionBossAction : public AttackAction
 {

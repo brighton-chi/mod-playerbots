@@ -12,6 +12,8 @@
 #include "Multiplier.h"
 #include <string>
 
+// General
+
 class GruulsLairEncounterMultiplier : public Multiplier
 {
 public:
@@ -37,6 +39,8 @@ public:
 protected:
     float GetValueInEncounter(Action* action) override;
 };
+
+// High King Maulgar <Lord of the Ogres>
 
 class HighKingMaulgarControlTankActionsMultiplier : public GruulsLairEncounterMultiplier
 {
@@ -97,6 +101,8 @@ public:
 protected:
     float GetValueInEncounter(Action* action) override;
 };
+
+// Gruul the Dragonkiller
 
 class GruulTheDragonkillerControlTankMovementMultiplier : public GruulsLairEncounterMultiplier
 {

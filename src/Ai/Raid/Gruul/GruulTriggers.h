@@ -12,10 +12,13 @@
 #include "Trigger.h"
 #include <string>
 
+// General
+
 class GruulsLairEncounterTrigger : public Trigger
 {
 public:
-    GruulsLairEncounterTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
+    GruulsLairEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
 
     bool IsActive() final
     {
@@ -30,12 +33,8 @@ protected:
 class GruulsLairNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    // Checked once a second rather than every tick. This trigger is true for the whole of trash and
-    // all downtime, and it is the only gate on an ACTION_EMERGENCY + 10 action, so at the default
-    // interval both it and the reset ran on every tick for every bot - together 0.43% of all bot AI
-    // during trash. needCheck() skips the check rather than caching a stale answer, so the reset can
-    // never fire during an encounter off an old reading, and landing within a second instead of
-    // ~200ms is invisible for clearing raid icons and a stored spread position between pulls.
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
     GruulsLairNoEncounterInProgressTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "gruul's lair no encounter in progress", 1000) {}
     bool IsActive() override;

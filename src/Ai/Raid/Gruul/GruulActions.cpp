@@ -39,7 +39,7 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// High King Maulgar
+// High King Maulgar <Lord of the Ogres>
 
 bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
 {
@@ -223,11 +223,6 @@ bool HighKingMaulgarBackAwayFromKroshAction::Execute(Event /*event*/)
     if (currentDistance >= KROSH_BLAST_WAVE_SAFE_DISTANCE)
         return false;
 
-    // FleePosition rather than MoveAway: its strict candidates reject any spot that would leave the
-    // bot beyond spellDistance of its current target, so fleeing Krosh cannot strand a bot out of
-    // range of what it is killing and start a walk-back-into-the-blast loop. Note the second
-    // argument is a displacement cap, not a separation - it is clamped to AiPlayerbot.FleeDistance
-    // (5y), so reaching the safe distance takes several one-per-second hops.
     bot->CastStop();
     return FleePosition(krosh->GetPosition(), KROSH_BLAST_WAVE_SAFE_DISTANCE);
 }
@@ -238,11 +233,8 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    // Cached, alive-filtered and ordered by GUID so that every warlock indexes the same list.
+    // Ordered by GUID so that every bot warlock indexes the same list.
     std::vector<Unit*> const felStalkers = GetNearbyWildFelStalkers(botAI);
-
-    // Bot warlocks only. A human warlock picks their own target, and leaving them out of the
-    // pairing keeps every stalker assigned to someone who will actually act on the assignment.
     std::vector<Player*> warlocks;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -432,10 +424,6 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    // Not GRUUL_SHATTER_SAFE_DISTANCE. Shatter's damage falls off linearly rather than cutting
-    // off, so this is a standing compromise rather than a hazard edge - 22y from every other raider
-    // is not reachable in a 25 man, and asking for it would make this action succeed on every tick
-    // and starve everything below it.
     constexpr float minSpreadDistance = 10.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, minSpreadDistance);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minSpreadDistance);

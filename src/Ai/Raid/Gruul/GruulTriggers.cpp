@@ -11,6 +11,8 @@
 
 using namespace GruulHelpers;
 
+// General
+
 bool GruulsLairNoEncounterInProgressTrigger::IsActive()
 {
     if (bot->GetMapId() != GRUUL_MAP_ID)

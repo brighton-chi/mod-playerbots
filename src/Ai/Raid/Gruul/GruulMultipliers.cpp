@@ -18,6 +18,8 @@
 using namespace GruulHelpers;
 using namespace EncounterHelpers;
 
+// General
+
 float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -33,6 +35,8 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
+
+// High King Maulgar <Lord of the Ogres>
 
 float HighKingMaulgarControlTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
@@ -169,6 +173,8 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValueInEncounter(Actio
 
     return GetKroshMageTank(bot) == bot ? 0.0f : 1.0f;
 }
+
+// Gruul the Dragonkiller
 
 float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Action* action)
 {

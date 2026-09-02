@@ -70,14 +70,14 @@ inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = 17.0f;
 inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = 12.0f;
 // Distance for the multiplier, which as usual, needs to be a little more than the escape distance.
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
-// Radius is 30y with 2y of MoveAway padding. Stays inside the stock "enemy out of spell" threshold
+// Radius is 30y with 2y of MoveAway padding. Stays inside the mod's "enemy out of spell" threshold
 // (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), allowing the
 // boomie to attack Kiggler, even without reach-increasing talents, without being in range of
 // Kiggler's Arcane Explosion.
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE = 32.0f;
-// Radius is 20y with 2y of MoveAway padding. Sort of. Exact calculation would leave an essay here.
+// Radius is 20y with 2y of MoveAway padding. Sort of. The details are not really important; I note
+// only that damage has a linear relationship with distance.
 inline constexpr float GRUUL_SHATTER_SAFE_DISTANCE = 22.0f;
-
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
 // Feeds the "high king maulgar wild fel stalkers" value
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
