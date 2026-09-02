@@ -11,6 +11,39 @@
 #include <cmath>
 #include <list>
 
+// Both are called only from FindSafeStepInZone, in this file. Internal linkage rather than a
+// ZaHelpers declaration: nothing outside ZA would include this header to reach them, so exporting
+// them bought nothing, and the definitions have to precede that first use anyway.
+namespace
+{
+
+// True when the ground under (x, y) is within floorTolerance of floorZ. GetMapHeight searches
+// downward from floorZ, so a spot over a hole reports the floor far below and a spot over nothing
+// at all reports INVALID_HEIGHT - both miss the tolerance by a wide margin.
+bool IsOnFlatFloor(Player* bot, float x, float y, float floorZ, float floorTolerance)
+{
+    float const groundZ = bot->GetMapHeight(x, y, floorZ);
+
+    return std::fabs(groundZ - floorZ) <= floorTolerance;
+}
+
+bool IsPositionSafeFromHazards(
+    float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
+{
+    // Exact, to match the caller's danger test. GetDistance2d would subtract this hazard's combat
+    // reach here and both the hazard's and the bot's there, leaving the two thresholds a bot reach
+    // apart - see JANALAI_FIRE_BOMB_SAFE_DISTANCE.
+    for (Unit* hazard : hazards)
+    {
+        if (hazard->GetExactDist2d(x, y) < hazardRadius)
+            return false;
+    }
+
+    return true;
+}
+
+}  // namespace
+
 namespace ZaHelpers
 {
 
@@ -39,15 +72,6 @@ bool SafeZoneQuad::Contains(float x, float y) const
     }
 
     return true;
-}
-
-bool IsOnFlatFloor(Player* bot, float x, float y, float floorZ, float floorTolerance)
-{
-    // Searches downward from floorZ, so a spot over a hole reports the floor far below and a spot
-    // over nothing at all reports INVALID_HEIGHT. Both miss the tolerance by a wide margin.
-    float const groundZ = bot->GetMapHeight(x, y, floorZ);
-
-    return std::fabs(groundZ - floorZ) <= floorTolerance;
 }
 
 bool FindSafeStepInZone(Player* bot,
@@ -93,21 +117,6 @@ bool FindSafeStepInZone(Player* bot,
     }
 
     return false;
-}
-
-bool IsPositionSafeFromHazards(
-    float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
-{
-    // Exact, to match the caller's danger test. GetDistance2d would subtract this hazard's combat
-    // reach here and both the hazard's and the bot's there, leaving the two thresholds a bot reach
-    // apart - see JANALAI_FIRE_BOMB_SAFE_DISTANCE.
-    for (Unit* hazard : hazards)
-    {
-        if (hazard->GetExactDist2d(x, y) < hazardRadius)
-            return false;
-    }
-
-    return true;
 }
 
 bool GetSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex)

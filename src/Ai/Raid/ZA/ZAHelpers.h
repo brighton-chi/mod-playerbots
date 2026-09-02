@@ -125,10 +125,6 @@ struct SafeZoneQuad
     bool Contains(float x, float y) const;
 };
 
-// True when the ground under (x, y) is within floorTolerance of floorZ. A spot off the platform
-// probes the floor far below (or nothing at all) and fails by a wide margin.
-bool IsOnFlatFloor(Player* bot, float x, float y, float floorZ, float floorTolerance);
-
 // Walks outward from the bot in 1 yd rings, bounded by a quad, and hands back one step of moveDist
 // toward the nearest spot that is clear of every hazard. The step is validated with
 // CanTakeStepTowards(), so a candidate whose step cannot actually be taken is skipped for the next
@@ -137,8 +133,6 @@ bool FindSafeStepInZone(
     Player* bot, std::vector<Unit*> const& hazards, SafeZoneQuad const& safeZone,
     float maxSearchDistance, float hazardRadius, float moveDist,
     float& stepX, float& stepY, float& stepZ);
-bool IsPositionSafeFromHazards(
-    float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
 // Counts living units of one entry in the group's attacker list. Reads "attackers", which the
 // engine already recomputes on a 1s cache, so this is cheap enough for a multiplier - unlike
 // "possible targets no los", which has no cache and re-runs a sight-range grid search per call.
