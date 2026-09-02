@@ -14,8 +14,10 @@
 class SerpentShrineCavernNoEncounterInProgressTrigger : public Trigger
 {
 public:
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
     SerpentShrineCavernNoEncounterInProgressTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "serpent shrine cavern no encounter in progress") {}
+        : Trigger(botAI, "serpent shrine cavern no encounter in progress", 1000) {}
     bool IsActive() override;
 };
 

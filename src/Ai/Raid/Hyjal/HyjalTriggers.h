@@ -15,8 +15,10 @@
 class HyjalSummitNoEncounterInProgress : public Trigger
 {
 public:
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
     HyjalSummitNoEncounterInProgress(PlayerbotAI* botAI)
-        : Trigger(botAI, "hyjal summit no encounter in progress") {}
+        : Trigger(botAI, "hyjal summit no encounter in progress", 1000) {}
     bool IsActive() override;
 };
 

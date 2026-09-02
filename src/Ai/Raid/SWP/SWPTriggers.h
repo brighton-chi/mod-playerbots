@@ -14,16 +14,20 @@
 class SunwellPlateauNoEncounterInProgressTrigger : public Trigger
 {
 public:
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
     SunwellPlateauNoEncounterInProgressTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau no encounter in progress") {}
+        : Trigger(botAI, "sunwell plateau no encounter in progress", 1000) {}
     bool IsActive() override;
 };
 
 class SunwellPlateauBotHasAuraToRemoveTrigger : public Trigger
 {
 public:
+    // Also throttled, though this can occur in combat (clear Ice Block and Divine Shield). A bit
+    // of a delay here feels more realistic anyway.
     SunwellPlateauBotHasAuraToRemoveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sunwell plateau bot has aura to remove") {}
+        : Trigger(botAI, "sunwell plateau bot has aura to remove", 1000) {}
     bool IsActive() override;
 };
 

@@ -10,6 +10,16 @@
 #include "PlayerbotAI.h"
 #include "Trigger.h"
 
+class MagtheridonNoEncounterInProgressTrigger : public Trigger
+{
+public:
+    // Throttled to once per second. This trigger is true for all trash and downtime and, being
+    // for between-encounter clean-up, has no real urgency to it.
+    MagtheridonNoEncounterInProgressTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "magtheridon no encounter in progress", 1000) {};
+    bool IsActive() override;
+};
+
 class MagtheridonFirstThreeChannelersEngagedByMainTankTrigger : public Trigger
 {
 public:
@@ -86,14 +96,6 @@ class MagtheridonNeedToManageTimersAndAssignmentsTrigger : public Trigger
 public:
     MagtheridonNeedToManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "magtheridon need to manage timers and assignments") {}
-    bool IsActive() override;
-};
-
-class MagtheridonNoEncounterInProgressTrigger : public Trigger
-{
-public:
-    MagtheridonNoEncounterInProgressTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "magtheridon no encounter in progress") {};
     bool IsActive() override;
 };
 
