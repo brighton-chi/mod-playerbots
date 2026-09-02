@@ -29,8 +29,8 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar boss channeling whirlwind", {
         NextAction("high king maulgar run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar krosh casts blast wave", {
-        NextAction("high king maulgar flee from blast wave danger", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("high king maulgar should stand back from krosh", {
+        NextAction("high king maulgar back away from krosh", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("high king maulgar wild fel stalker spawned", {
         NextAction("high king maulgar banish fel stalker", ACTION_RAID + 1) }));

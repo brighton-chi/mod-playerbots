@@ -213,7 +213,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     return MoveAway(maulgar, MAULGAR_WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
-bool HighKingMaulgarFleeFromBlastWaveDangerAction::Execute(Event /*event*/)
+bool HighKingMaulgarBackAwayFromKroshAction::Execute(Event /*event*/)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (!krosh)

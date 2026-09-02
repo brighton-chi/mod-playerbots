@@ -64,11 +64,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarFleeFromBlastWaveDangerAction : public MovementAction
+class HighKingMaulgarBackAwayFromKroshAction : public MovementAction
 {
 public:
-    HighKingMaulgarFleeFromBlastWaveDangerAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "high king maulgar flee from blast wave danger") {}
+    HighKingMaulgarBackAwayFromKroshAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high king maulgar back away from krosh") {}
     bool Execute(Event event) override;
 };
 

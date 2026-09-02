@@ -35,8 +35,8 @@ public:
         creators["high king maulgar run away from whirlwind"] =
             &RaidGruulsLairActionContext::high_king_maulgar_run_away_from_whirlwind;
 
-        creators["high king maulgar flee from blast wave danger"] =
-            &RaidGruulsLairActionContext::high_king_maulgar_flee_from_blast_wave_danger;
+        creators["high king maulgar back away from krosh"] =
+            &RaidGruulsLairActionContext::high_king_maulgar_back_away_from_krosh;
 
         creators["high king maulgar banish fel stalker"] =
             &RaidGruulsLairActionContext::high_king_maulgar_banish_fel_stalker;
@@ -80,8 +80,8 @@ private:
     static Action* high_king_maulgar_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new HighKingMaulgarRunAwayFromWhirlwindAction(botAI);
     }
-    static Action* high_king_maulgar_flee_from_blast_wave_danger(PlayerbotAI* botAI) {
-        return new HighKingMaulgarFleeFromBlastWaveDangerAction(botAI);
+    static Action* high_king_maulgar_back_away_from_krosh(PlayerbotAI* botAI) {
+        return new HighKingMaulgarBackAwayFromKroshAction(botAI);
     }
     static Action* high_king_maulgar_banish_fel_stalker(PlayerbotAI* botAI) {
         return new HighKingMaulgarBanishFelStalkerAction(botAI);

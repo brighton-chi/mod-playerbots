@@ -19,7 +19,7 @@ public:
         creators["gruul's lair no encounter in progress"] =
             &RaidGruulsLairTriggerContext::gruuls_lair_no_encounter_in_progress;
 
-        // High King Maulgar
+        // High King Maulgar <Lord of the Ogres>
         creators["high king maulgar three ogres need melee tanks"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_three_ogres_need_melee_tanks;
 
@@ -35,8 +35,8 @@ public:
         creators["high king maulgar boss channeling whirlwind"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_boss_channeling_whirlwind;
 
-        creators["high king maulgar krosh casts blast wave"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_casts_blast_wave;
+        creators["high king maulgar should stand back from krosh"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_should_stand_back_from_krosh;
 
         creators["high king maulgar wild fel stalker spawned"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_wild_fel_stalker_spawned;
@@ -61,10 +61,10 @@ public:
 private:
     // General
     static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI) {
-        return new GruulsLairNoEncounterInProgress(botAI);
+        return new GruulsLairNoEncounterInProgressTrigger(botAI);
     }
 
-    // High King Maulgar
+    // High King Maulgar <Lord of the Ogres>
     static Trigger* high_king_maulgar_three_ogres_need_melee_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(botAI);
     }
@@ -80,8 +80,8 @@ private:
     static Trigger* high_king_maulgar_boss_channeling_whirlwind(PlayerbotAI* botAI) {
         return new HighKingMaulgarBossChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_krosh_casts_blast_wave(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKroshCastsBlastWaveTrigger(botAI);
+    static Trigger* high_king_maulgar_should_stand_back_from_krosh(PlayerbotAI* botAI) {
+        return new HighKingMaulgarShouldStandBackFromKroshTrigger(botAI);
     }
     static Trigger* high_king_maulgar_wild_fel_stalker_spawned(PlayerbotAI* botAI) {
         return new HighKingMaulgarWildFelStalkerSpawnedTrigger(botAI);

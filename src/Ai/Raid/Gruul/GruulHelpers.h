@@ -28,7 +28,7 @@ constexpr uint32 Id(T value)
 
 enum class GruulSpells : uint32
 {
-    // High King Maulgar
+    // High King Maulgar <Lord of the Ogres>
     SPELL_WHIRLWIND     = 33238,
 
     // Krosh Firehand
@@ -56,43 +56,32 @@ enum class GruulNpcs : uint32
 // Ogre combat reaches:
 // (1) Maulgar = 3.5y, (2) Olm = 2.2y, (3) Blindeye = 3.525y, (4) Krosh = 2y, (5) Kiggler = 3.3y
 //
-// Safe distances below are exact 2D, center to center. Compare them with GetExactDist2d, never
-// GetDistance2d, which subtracts both combat reaches and so adds a silent, per-boss amount on top
-// of the 2y. The figure each one pads is the raw spell radius, because every hazard here reaches
-// players through the SRC branch of the membership check, where neither reach is added
-// (Spell.cpp:9162).
+// Safe distances below are exact 2D, calculated from the raw spell radius (technically exact 3D).
 
 inline constexpr uint32 GRUUL_MAP_ID = 565;
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
 // Radius is 15y with 2y of MoveAway padding.
 inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = 17.0f;
-// Radius is 8y, padded to 8 * sqrt(2) rather than the 2y used elsewhere. Maulgar is tanked against
-// a wall, so MoveAway's fan routinely falls through to its +/-90 degree candidates. An off-axis
-// landing sits at safeDistance * cos(delta/2) in the worst case, which puts +/-90 at safeDistance /
-// sqrt(2); only a request above 11.31y keeps all nine candidates clear of the radius. 2y of padding
-// would leave the two +/-90 candidates landing at 7.07y, inside the whirlwind.
+// Radius is 8y, padded to 8 * sqrt(2) rather than the 2y used elsewhere. The tl;dr is MoveAway()'s
+// fallback candidates (when running straight back is blocked) can end up moving the bot less than
+// the prescribed distance. Maulgar is tanked against a wall and fears and charges and can end up
+// turned away from the wall as a result, with melee dps between him and the wall and failing the
+// straight-away movement.
 inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = 12.0f;
-// Held wider than the safe distance: the run-away action stops at the safe distance, and without a
-// wider hold band the multiplier would release at that same point and let another movement action
-// walk the bot straight back in.
+// Distance for the multiplier, which as usual, needs to be a little more than the escape distance.
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 // Radius is 30y with 2y of MoveAway padding. Stays inside the stock "enemy out of spell" threshold
-// (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), so holding here
-// does not let reach spell drag the moonkin back into the blast.
+// (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), allowing the
+// boomie to attack Kiggler, even without reach-increasing talents, without being in range of
+// Kiggler's Arcane Explosion.
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE = 32.0f;
-// Radius is 20y with 2y of MoveAway padding.
+// Radius is 20y with 2y of MoveAway padding. Sort of. Exact calculation would leave an essay here.
 inline constexpr float GRUUL_SHATTER_SAFE_DISTANCE = 22.0f;
 
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
-// Olm summons one every 48.5s and Banish holds for 30s, so a second of staleness in noticing a new
-// stalker is immaterial next to either.
+// Feeds the "high king maulgar wild fel stalkers" value
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
-
-// Krosh's mage tank and Kiggler's moonkin tank are each picked by walking the whole raid, and the
-// moonkin walk runs AiFactory::GetPlayerSpecTab - a talent scan - on every druid it passes. Both
-// ran on every tick for every bot that could hold the role, and the moonkin check alone measured
-// 0.86% of all bot AI time. The answer only moves when someone dies, zones, or is promoted, so a
-// second of staleness costs at most a second before a fallback takes over from a dead tank.
+// Feeds the "high king maulgar krosh mage tank" and "high king maulgar kiggler moonkin tank" values
 inline constexpr uint32 CASTER_TANK_CACHE_INTERVAL_MS = 1000;
 
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };

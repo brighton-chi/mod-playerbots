@@ -18,7 +18,7 @@
 using namespace GruulHelpers;
 using namespace EncounterHelpers;
 
-float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
+float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -34,7 +34,7 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
+float HighKingMaulgarControlTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -51,7 +51,7 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarRestrictTauntingMultiplier::GetValue(Action* action)
+float HighKingMaulgarRestrictTauntingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -85,7 +85,7 @@ float HighKingMaulgarRestrictTauntingMultiplier::GetValue(Action* action)
     return AI_VALUE(Unit*, "current target") == kiggler ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarDisableDpsAssistMultiplier::GetValue(Action* action)
+float HighKingMaulgarDisableDpsAssistMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -99,7 +99,7 @@ float HighKingMaulgarDisableDpsAssistMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
+float HighKingMaulgarAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -123,7 +123,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     return bot->GetExactDist2d(maulgar) < MAULGAR_WHIRLWIND_HOLD_DISTANCE ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
+float HighKingMaulgarControlHunterActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -149,7 +149,7 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValue(Action* action)
     return krosh && action->GetTarget() == krosh ? 0.0f : 1.0f;
 }
 
-float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
+float HighKingMaulgarControlMageTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -170,7 +170,7 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValue(Action* action)
     return GetKroshMageTank(bot) == bot ? 0.0f : 1.0f;
 }
 
-float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -188,7 +188,7 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValue(Action* action
     return gruul && gruul->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
-float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Action* action)
 {
     if (!HasGroundSlam(bot))
         return 1.0f;
@@ -208,7 +208,7 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValue(Action* actio
 // needed to solve the issue for Gruul because the snare he applies (Gronn Lord's Grasp) persists
 // 300ms beyond the Shatter sequence, meaning that bots would otherwise be unable to move for 5s
 // after the Shatter sequence, even though no in-game factors would prevent their movement.
-float GruulTheDragonkillerHoldWhileSnaredMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerHoldWhileSnaredMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->GetSpeed(MOVE_RUN) > 0.0f)
         return 1.0f;

@@ -12,11 +12,8 @@
 #include "ObjectGuid.h"
 #include "Value.h"
 
-// Olm summons a Wild Fel Stalker every 48.5s, and both the spawn trigger and the banish action ask
-// about them every tick, per warlock. Each of those was its own grid search - the most expensive
-// check in the module - and the two did not even agree: the trigger asked "find target", which
-// only walks the asking bot's own threat list, so a stalker chasing anyone other than that warlock
-// was invisible to it and never got banished. One cached, canonically ordered list serves both.
+// Olm summons a Wild Fel Stalker every 48.5s (practically, that means you're not going to see more
+// than 1 or 2, but we cache the grid search anyway.
 class HighKingMaulgarWildFelStalkersValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -29,9 +26,7 @@ protected:
     GuidVector Calculate() override { return GruulHelpers::FindNearbyWildFelStalkerGuids(bot); }
 };
 
-// Both ogre caster tanks are chosen by walking the raid; the moonkin walk additionally runs a
-// talent scan per druid. Caching the answer as a guid rather than a pointer keeps a tank who logs
-// out or dies inside the interval from being handed back as a dangling Player*.
+// Both ogre caster tanks are chosen by iterating the raid.
 class HighKingMaulgarKroshMageTankValue : public ObjectGuidCalculatedValue
 {
 public:
