@@ -68,7 +68,7 @@ bool TempestKeepTankPositionAction::MoveToTankPosition(
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, position, tolerance, target, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, tolerance, target, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

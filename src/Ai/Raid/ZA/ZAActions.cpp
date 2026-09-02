@@ -65,7 +65,7 @@ bool ZulAmanTanksPositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -159,13 +159,13 @@ bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
             return false;
     }
 
-    // Both tanks walk to the position, so the backpedal is left to GetTankPositionStep(), which
-    // takes it only while the bot actually has Nalorakk on it.
+    // Both tanks walk to the position and back to it only when holding Nalorakk, so the
+    // determination for direct of movement is left to GetStepToPosition().
     constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, NALORAKK_TANK_POSITION, arrivalDist, nalorakk, moveX, moveY, backwards))
     {
         return false;
@@ -389,12 +389,11 @@ bool ZuljinSpreadRaidForCyclonesAction::Execute(Event /*event*/)
 
     Position const& position = ZULJIN_SPREAD_POSITIONS[slotIndex];
 
-    // No boss is passed, so this never backpedals - it is a walk to a standing spot, not tanking.
     constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

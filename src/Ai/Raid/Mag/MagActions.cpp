@@ -91,7 +91,7 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -259,7 +259,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(
+    if (!GetStepToPosition(
             bot, MAGTHERIDON_TANK_POSITION, arrivalDist, magtheridon, moveX, moveY, backwards))
     {
         return false;

@@ -74,7 +74,7 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, position, arrivalDist, target, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, arrivalDist, target, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -358,7 +358,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPositionStep(bot, GRUUL_TANK_POSITION, arrivalDist, gruul, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, GRUUL_TANK_POSITION, arrivalDist, gruul, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

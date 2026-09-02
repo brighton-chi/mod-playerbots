@@ -30,7 +30,7 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId);
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
-bool GetTankPositionStep(
+bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
