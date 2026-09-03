@@ -7,10 +7,28 @@
 #ifndef PLAYERBOTS_HYJALTRIGGERS_H
 #define PLAYERBOTS_HYJALTRIGGERS_H
 
+#include "EncounterHelpers.h"
+#include "HyjalHelpers.h"
 #include "Trigger.h"
 #include <string>
 
 // General
+
+class HyjalSummitEncounterTrigger : public Trigger
+{
+public:
+    HyjalSummitEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
+
+    bool IsActive() final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, HyjalHelpers::HYJAL_MAP_ID) &&
+            IsActiveInEncounter();
+    }
+
+protected:
+    virtual bool IsActiveInEncounter() = 0;
+};
 
 class HyjalSummitNoEncounterInProgress : public Trigger
 {
@@ -39,15 +57,17 @@ private:
 // This covers all five boss tanking actions, and activeAboveHealthPct is used for Archimonde
 // only. Anetheron, Kaz'rogal, and Azgalor need their offtanks free for the Infernals, the
 // Malevolent Cleave split, and the Doomguards, respectively, so those three are main tank only.
-class HyjalBossShouldBeTankedTrigger : public Trigger
+class HyjalBossShouldBeTankedTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     HyjalBossShouldBeTankedTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
         float activeAboveHealthPct = 0.0f, bool mainTankOnly = true)
-        : Trigger(botAI, name), _bossName(bossName), _activeAboveHealthPct(activeAboveHealthPct),
-          _mainTankOnly(mainTankOnly) {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, name), _bossName(bossName),
+          _activeAboveHealthPct(activeAboveHealthPct), _mainTankOnly(mainTankOnly) {}
+
+protected:
+    bool IsActiveInEncounter() override;
 
 private:
     std::string const _bossName;
@@ -57,28 +77,34 @@ private:
 
 // Rage Winterchill
 
-class RageWinterchillRangedShouldSpreadTrigger : public Trigger
+class RageWinterchillRangedShouldSpreadTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     RageWinterchillRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill ranged should spread") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "rage winterchill ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class RageWinterchillMeleeNearDeathAndDecayTrigger : public Trigger
+class RageWinterchillMeleeNearDeathAndDecayTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     RageWinterchillMeleeNearDeathAndDecayTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill melee near death and decay") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "rage winterchill melee near death and decay") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class RageWinterchillRangedInDeathAndDecayTrigger : public Trigger
+class RageWinterchillRangedInDeathAndDecayTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     RageWinterchillRangedInDeathAndDecayTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "rage winterchill ranged in death and decay") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "rage winterchill ranged in death and decay") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Anetheron
@@ -91,201 +117,250 @@ public:
     bool IsActive() override;
 };
 
-class AnetheronRangedShouldSpreadTrigger : public Trigger
+class AnetheronRangedShouldSpreadTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron ranged should spread") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AnetheronBotIsNearInfernoTargetTrigger : public Trigger
+class AnetheronBotIsNearInfernoTargetTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronBotIsNearInfernoTargetTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron bot is near inferno target") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron bot is near inferno target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AnetheronBotIsTargetedByInfernalTrigger : public Trigger
+class AnetheronBotIsTargetedByInfernalTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronBotIsTargetedByInfernalTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron bot is targeted by infernal") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron bot is targeted by infernal") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AnetheronInfernalsPulseImmolationTrigger : public Trigger
+class AnetheronInfernalsPulseImmolationTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronInfernalsPulseImmolationTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron infernals pulse immolation") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron infernals pulse immolation") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AnetheronInfernalsShouldBeTankedAwayTrigger : public Trigger
+class AnetheronInfernalsShouldBeTankedAwayTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronInfernalsShouldBeTankedAwayTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron infernals should be tanked away") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron infernals should be tanked away") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AnetheronShouldDivideDpsTrigger : public Trigger
+class AnetheronShouldDivideDpsTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronShouldDivideDpsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron should divide dps") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron should divide dps") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Kaz'rogal
 
-class KazrogalCanSplitMalevolentCleaveDamageTrigger : public Trigger
+class KazrogalCanSplitMalevolentCleaveDamageTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalCanSplitMalevolentCleaveDamageTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal can split malevolent cleave damage") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal can split malevolent cleave damage") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalRangedShouldAvoidWarStompTrigger : public Trigger
+class KazrogalRangedShouldAvoidWarStompTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalRangedShouldAvoidWarStompTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal ranged should avoid war stomp") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal ranged should avoid war stomp") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalBotIsLowOnManaTrigger : public Trigger
+class KazrogalBotIsLowOnManaTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalBotIsLowOnManaTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal bot is low on mana") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal bot is low on mana") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalHunterShouldPreserveManaTrigger : public Trigger
+class KazrogalHunterShouldPreserveManaTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalHunterShouldPreserveManaTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal hunter should preserve mana") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal hunter should preserve mana") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalMarkOnMageOrPaladinTrigger : public Trigger
+class KazrogalMarkOnMageOrPaladinTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalMarkOnMageOrPaladinTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal mark on mage or paladin") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal mark on mage or paladin") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalImmunityNoLongerNeededTrigger : public Trigger
+class KazrogalImmunityNoLongerNeededTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalImmunityNoLongerNeededTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal immunity no longer needed") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal immunity no longer needed") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KazrogalWarlockShouldManageManaTrigger : public Trigger
+class KazrogalWarlockShouldManageManaTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     KazrogalWarlockShouldManageManaTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kaz'rogal warlock should manage mana") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "kaz'rogal warlock should manage mana") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Azgalor
 
-class AzgalorRangedShouldSpreadTrigger : public Trigger
+class AzgalorRangedShouldSpreadTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AzgalorRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor ranged should spread") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "azgalor ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AzgalorMeleeNearRainOfFireTrigger : public Trigger
+class AzgalorMeleeNearRainOfFireTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AzgalorMeleeNearRainOfFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor melee near rain of fire") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "azgalor melee near rain of fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AzgalorRangedInRainOfFireTrigger : public Trigger
+class AzgalorRangedInRainOfFireTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AzgalorRangedInRainOfFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor ranged in rain of fire") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "azgalor ranged in rain of fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AzgalorBotIsDoomedTrigger : public Trigger
+class AzgalorBotIsDoomedTrigger : public HyjalSummitEncounterTrigger
 {
 public:
-    AzgalorBotIsDoomedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "azgalor bot is doomed") {}
-    bool IsActive() override;
+    AzgalorBotIsDoomedTrigger(PlayerbotAI* botAI)
+        : HyjalSummitEncounterTrigger(botAI, "azgalor bot is doomed") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AzgalorShouldControlDoomguardsTrigger : public Trigger
+class AzgalorShouldControlDoomguardsTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AzgalorShouldControlDoomguardsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor should control doomguards") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "azgalor should control doomguards") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AzgalorShouldDivideDpsTrigger : public Trigger
+class AzgalorShouldDivideDpsTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AzgalorShouldDivideDpsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "azgalor should divide dps") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "azgalor should divide dps") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Archimonde
 
-class ArchimondeBossCastsFearTrigger : public Trigger
+class ArchimondeBossCastsFearTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     ArchimondeBossCastsFearTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss casts fear") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "archimonde boss casts fear") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBossCastingAirBurstTrigger : public Trigger
+class ArchimondeBossCastingAirBurstTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     ArchimondeBossCastingAirBurstTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde boss casting air burst") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "archimonde boss casting air burst") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ArchimondeRangedShouldSpreadTrigger : public Trigger
+class ArchimondeRangedShouldSpreadTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     ArchimondeRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde ranged should spread") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "archimonde ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBotIsNearDoomfireTrigger : public Trigger
+class ArchimondeBotIsNearDoomfireTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     ArchimondeBotIsNearDoomfireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde bot is near doomfire") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "archimonde bot is near doomfire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBotStoodInDoomfireTrigger : public Trigger
+class ArchimondeBotStoodInDoomfireTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     ArchimondeBotStoodInDoomfireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "archimonde bot stood in doomfire") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "archimonde bot stood in doomfire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 #endif
