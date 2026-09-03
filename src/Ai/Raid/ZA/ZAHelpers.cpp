@@ -180,7 +180,7 @@ std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI)
 }
 
 // Shortest move to a spot that is safe from Fire Bombs, within the measured area
-bool FindSafeStepInZone(
+bool FindSafeStepInJanalaiZone(
     Player* bot, std::vector<Unit*> const& hazards, std::vector<Position> const& safeZone,
     float maxSearchDistance, float hazardRadius, float moveDist,
     float& stepX, float& stepY, float& stepZ)
@@ -219,8 +219,6 @@ bool FindSafeStepInZone(
 
 ObjectGuid FindNearbyFreezingTrapGuid(Player* bot)
 {
-    // The instance strategy can outlive leaving the instance (e.g. after a server reset), so the
-    // grid search is gated on the map rather than run wherever the bot happens to be.
     if (bot->GetMapId() != ZA_MAP_ID)
         return ObjectGuid::Empty;
 

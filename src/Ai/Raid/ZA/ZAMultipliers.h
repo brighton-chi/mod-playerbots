@@ -15,7 +15,8 @@
 class ZulAmanEncounterMultiplier : public Multiplier
 {
 public:
-    ZulAmanEncounterMultiplier(PlayerbotAI* botAI, std::string const name) : Multiplier(botAI, name) {}
+    ZulAmanEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
+        : Multiplier(botAI, name) {}
 
     float GetValue(Action* action) final
     {
