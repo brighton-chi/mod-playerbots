@@ -480,7 +480,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
     constexpr float searchRadius = 40.0f;
-    std::vector<Unit*> flamePatches = GetFlamePatches(searchRadius);
+    std::vector<Unit*> flamePatches = GetFlamePatches(bot, searchRadius);
 
     constexpr float hazardRadius = 8.0f;
 
@@ -498,22 +498,6 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
     }
 
     return false;
-}
-
-std::vector<Unit*> AlarAvoidFlamePatchesAndDiveBombsAction::GetFlamePatches(float searchRadius)
-{
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
-
-    std::vector<Unit*> flamePatches;
-    flamePatches.reserve(creatureList.size());
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            flamePatches.push_back(creature);
-    }
-
-    return flamePatches;
 }
 
 // Al'ar is the one fight in TK with multiple ground AoEs active at once, so where to run has to be
@@ -554,7 +538,7 @@ Position AlarAvoidFlamePatchesAndDiveBombsAction::FindSafestNearbyPosition(
             if (std::any_of(flamePatches.begin(), flamePatches.end(), inPatch))
                 continue;
 
-            if (IsPathSafe(testPos, flamePatches, hazardRadius))
+            if (IsPathSafe(botPos, testPos, flamePatches, hazardRadius))
                 return testPos;
 
             if (!haveFallback)
@@ -569,17 +553,18 @@ Position AlarAvoidFlamePatchesAndDiveBombsAction::FindSafestNearbyPosition(
 }
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::IsPathSafe(
-    Position const& end, std::vector<Unit*> const& flamePatches, float hazardRadius)
+    Position const& start, Position const& end, std::vector<Unit*> const& flamePatches,
+    float hazardRadius)
 {
     constexpr uint8 numChecks = 10;
-    float const dx = end.GetPositionX() - bot->GetPositionX();
-    float const dy = end.GetPositionY() - bot->GetPositionY();
+    float const dx = end.GetPositionX() - start.GetPositionX();
+    float const dy = end.GetPositionY() - start.GetPositionY();
 
     for (uint8 i = 1; i <= numChecks; ++i)
     {
         float const ratio = static_cast<float>(i) / numChecks;
-        float const checkX = bot->GetPositionX() + dx * ratio;
-        float const checkY = bot->GetPositionY() + dy * ratio;
+        float const checkX = start.GetPositionX() + dx * ratio;
+        float const checkY = start.GetPositionY() + dy * ratio;
 
         for (Unit* flamePatch : flamePatches)
         {

@@ -24,7 +24,7 @@ using namespace EncounterHelpers;
 
 // Al'ar <Phoenix God>
 
-float AlarSuppressGapClosersMultiplier::GetValue(Action* action)
+float AlarSuppressGapClosersMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -55,7 +55,7 @@ float AlarSuppressGapClosersMultiplier::GetValue(Action* action)
         currentLocationIndex > PLATFORM_3_IDX ? 0.0f : 1.0f;
 }
 
-float AlarControlMovementMultiplier::GetValue(Action* action)
+float AlarControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isDisperseOrFlee =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action);
@@ -80,7 +80,7 @@ float AlarControlMovementMultiplier::GetValue(Action* action)
     return botAI->GetState() == BOT_STATE_COMBAT ? 0.0f : 1.0f;
 }
 
-float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
+float AlarDisableAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -91,7 +91,7 @@ float AlarDisableAutomaticTargetingMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "al'ar") ? 0.0f : 1.0f;
 }
 
-float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
+float AlarStayAwayFromRebirthMultiplier::GetValueInEncounter(Action* action)
 {
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
         return 1.0f;
@@ -118,7 +118,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValue(Action* action)
     return alar->GetHealthPct() <= phase1AlmostEndedHpThreshold ? 0.0f : 1.0f;
 }
 
-float AlarControlTauntingMultiplier::GetValue(Action* action)
+float AlarControlTauntingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -158,7 +158,7 @@ float AlarControlTauntingMultiplier::GetValue(Action* action)
 
 // Void Reaver
 
-float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
+float VoidReaverMaintainPositionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -174,7 +174,7 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
 
 // High Astromancer Solarian
 
-float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
+float HighAstromancerSolarianWrathStayAwayMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -195,7 +195,7 @@ float HighAstromancerSolarianWrathStayAwayMultiplier::GetValue(Action* action)
     return HasWrathOfTheAstromancer(bot) ? 0.0f : 1.0f;
 }
 
-float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* action)
+float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -224,7 +224,7 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValue(Action* a
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
+float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
@@ -260,7 +260,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
+float KaelthasSunstriderKiteThaladredMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -286,7 +286,7 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValue(Action* action)
     return thaladred && thaladred->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
+float KaelthasSunstriderControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -308,7 +308,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValue(Action* action)
 // This multiplier is not needed right now because Soulshatter is cast only when there are
 // multiple enemies. That's probably not the right approach and should be fixed, so this
 // multiplier remains in place in anticipation of a future correction to Soulshatter usage.
-float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValue(Action* action)
+float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -334,7 +334,7 @@ float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValue(Action
     return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* action)
+float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -362,7 +362,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
     return IsAdvisorActive(capernian) ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
+float KaelthasSunstriderManageWeaponTankingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -381,7 +381,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
     return GetKaelthasPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
+float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<EquipUpgradeAction*>(action) &&
         !dynamic_cast<EquipUpgradesPacketAction*>(action))
@@ -392,7 +392,7 @@ float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* action)
+float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -420,7 +420,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValue(Action* act
     return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
+float KaelthasSunstriderDisableDisperseMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -434,7 +434,7 @@ float KaelthasSunstriderDisableDisperseMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "kael'thas sunstrider") ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
+float KaelthasSunstriderPrepareForPhase3Multiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
@@ -474,7 +474,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValue(Action* action)
 }
 
 // Bloodlust/Heroism and other major cooldowns should be saved until Phase 3.
-float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
+float KaelthasSunstriderDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -500,7 +500,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
     return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValue(Action* action)
+float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValueInEncounter(Action* action)
 {
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
         return 1.0f;

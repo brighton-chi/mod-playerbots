@@ -193,6 +193,7 @@ bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
 Player* GetSecondaryEmberTank(Player* bot);
+std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius);
 
 // Void Reaver
 // CombatReach is 15 yards

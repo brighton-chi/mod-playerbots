@@ -218,6 +218,22 @@ Player* GetSecondaryEmberTank(Player* bot)
     return assistTank;
 }
 
+std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius)
+{
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+
+    std::vector<Unit*> flamePatches;
+    flamePatches.reserve(creatureList.size());
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            flamePatches.push_back(creature);
+    }
+
+    return flamePatches;
+}
+
 // Void Reaver
 
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
