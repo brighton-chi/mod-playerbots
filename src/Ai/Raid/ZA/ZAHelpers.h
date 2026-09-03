@@ -111,22 +111,21 @@ inline constexpr float ZA_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 // A flat, convex quad given by its four corners in order (either winding). Contains() is a 2D
 // point-in-convex-polygon test, so rectangles that are not axis aligned work without extra math.
 //
-// Real platforms are rarely a clean rectangle: they jut out, and broken terrain can take a bite
-// out of a corner. Rather than shrinking the corners until they fit inside every irregularity and
-// giving up the floor that costs, the quad is only a cheap outer bound and floorZ is the precise
-// one. A candidate is kept only when the ground under it probes within floorTolerance of floorZ,
-// which rejects holes and overhangs wherever they happen to be.
+// Set it well inside the room, so that every point in it is walkable floor rather than a bound
+// that merely encloses one. Being convex, it then guarantees the line between any two of its
+// points is walkable as well, which is what lets the search validate only where a step is aimed.
+// Buying that with a smaller standing area is worth far more than the area is: the alternative is
+// probing ground per candidate, and a per-candidate ground test cannot be applied to a step
+// without also forbidding the bot from crossing anything to reach the far side.
 struct SafeZoneQuad
 {
     std::array<Position, 4> corners;
-    float floorZ;
-    float floorTolerance;
 
     bool Contains(float x, float y) const;
 };
 
 // Walks outward from the bot in 1 yd rings, bounded by a quad, and hands back one step of moveDist
-// toward the nearest spot that is clear of every hazard. The step is validated with
+// toward the nearest spot inside the quad that is clear of every hazard. The step is validated with
 // CanTakeStepTowards(), so a candidate whose step cannot actually be taken is skipped for the next
 // one out. Pass stepZ to MoveTo(), not the bot's Z - the helper has already snapped it to ground.
 bool FindSafeStepInZone(
@@ -167,20 +166,24 @@ bool IsNalorakkInBearForm(Unit* nalorakk);
 // Jan'alai <Dragonhawk Avatar>
 inline Position const JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
 inline constexpr float JANALAI_PLATFORM_Z = 19.146f;
-// The floor below the platform sits around z 6, so anything short of that drop is surface noise.
-inline constexpr float JANALAI_FLOOR_TOLERANCE = 2.0f;
-// The corners below trace Jan'alai's fire wall (x -54.80 / -10.13, y 1123.90 / 1175.68 in
-// fireWallCoords, boss_janalai.cpp), inset 1 yd. That line is the outer bound (in some parts, it
-// extends beyond what is reachable by players).
+// Inset 5 yd from Jan'alai's fire wall (x -54.80 / -10.13, y 1123.90 / 1175.68 in fireWallCoords,
+// boss_janalai.cpp). Two things have to be true of this quad and both are bought by the inset.
+//
+// It has to be clear of the wall, whose damage (43113 -> 43114, 3-4k a second) reaches 3 yd from
+// each of the ten bombs that carry it - so 5 leaves 2 yd of margin, and bots never have a reason
+// to go near it. And it has to be entirely walkable, which the wall line itself is not: in places
+// it runs past what players can reach. Inside this, the search needs no ground probe at all.
+//
+// The area given up is affordable. Bombs are scattered over the whole room, so thinning the
+// standing area does not thin the gaps in it - roughly an eighth of any part of the room is 6 yd
+// clear of all 40, which is ~180 square yards of valid ground inside these corners.
 inline SafeZoneQuad const JANALAI_SAFE_ZONE = {
     {{
-        Position(-53.80f, 1124.90f, JANALAI_PLATFORM_Z),
-        Position(-11.13f, 1124.90f, JANALAI_PLATFORM_Z),
-        Position(-11.13f, 1174.68f, JANALAI_PLATFORM_Z),
-        Position(-53.80f, 1174.68f, JANALAI_PLATFORM_Z)
-    }},
-    JANALAI_PLATFORM_Z,
-    JANALAI_FLOOR_TOLERANCE
+        Position(-49.80f, 1128.90f, JANALAI_PLATFORM_Z),
+        Position(-15.13f, 1128.90f, JANALAI_PLATFORM_Z),
+        Position(-15.13f, 1170.68f, JANALAI_PLATFORM_Z),
+        Position(-49.80f, 1170.68f, JANALAI_PLATFORM_Z)
+    }}
 };
 // Hatchers open eggs in a ramp - 1 on the first tick, then 2, then 3, every 5s - across 40 eggs,
 // 20 per side. Bloodlust waits for this many Hatchlings to be up.

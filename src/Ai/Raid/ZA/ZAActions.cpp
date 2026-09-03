@@ -105,12 +105,12 @@ bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
     constexpr float searchRadius = 40.0f;
 
     Creature* protectiveWard = bot->FindNearestCreature(
-        Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD), searchRadius, true);
+        Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD), searchRadius);
     if (protectiveWard)
         return MarkTargetWithSkull(bot, protectiveWard);
 
     Creature* healingWard = bot->FindNearestCreature(
-        Id(ZaNpcs::NPC_AMANI_HEALING_WARD), searchRadius, true);
+        Id(ZaNpcs::NPC_AMANI_HEALING_WARD), searchRadius);
     return healingWard && MarkTargetWithSkull(bot, healingWard);
 }
 

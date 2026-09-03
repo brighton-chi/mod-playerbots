@@ -11,21 +11,11 @@
 #include <cmath>
 #include <list>
 
-// Both are called only from FindSafeStepInZone, in this file. Internal linkage rather than a
-// ZaHelpers declaration: nothing outside ZA would include this header to reach them, so exporting
-// them bought nothing, and the definitions have to precede that first use anyway.
+// Called only from FindSafeStepInZone, in this file. Internal linkage rather than a ZaHelpers
+// declaration: nothing outside ZA would include this header to reach it, so exporting it bought
+// nothing, and the definition has to precede that first use anyway.
 namespace
 {
-
-// True when the ground under (x, y) is within floorTolerance of floorZ. GetMapHeight searches
-// downward from floorZ, so a spot over a hole reports the floor far below and a spot over nothing
-// at all reports INVALID_HEIGHT - both miss the tolerance by a wide margin.
-bool IsOnFlatFloor(Player* bot, float x, float y, float floorZ, float floorTolerance)
-{
-    float const groundZ = bot->GetMapHeight(x, y, floorZ);
-
-    return std::fabs(groundZ - floorZ) <= floorTolerance;
-}
 
 bool IsPositionSafeFromHazards(
     float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
@@ -82,15 +72,13 @@ bool FindSafeStepInZone(Player* bot,
     constexpr float searchStep = M_PI / 8.0f;
     constexpr float distanceStep = 1.0f;
 
-    // Cheapest first: the quad is arithmetic, the hazard sweep is a loop over every bomb, and the
-    // floor probe reads the map, so it only runs on what survives the other two.
-    auto const isAcceptable = [bot, &hazards, &safeZone, hazardRadius](float x, float y)
-    {
-        return safeZone.Contains(x, y) &&
-            IsPositionSafeFromHazards(x, y, hazards, hazardRadius) &&
-            IsOnFlatFloor(bot, x, y, safeZone.floorZ, safeZone.floorTolerance);
-    };
-
+    // Only where the step is aimed is checked, never where it lands. The quad is convex and every
+    // point in it is walkable, so the line between any two of its points is walkable too - and the
+    // hazards here are not worth testing on the way, only on arrival. Jan'alai's bombs do nothing
+    // until they all detonate at once, so crossing them is free, and testing the landing against
+    // them left bots standing where they were: the gaps are rarely within one step of a bot that
+    // needs one.
+    //
     // Rings are walked nearest first and every candidate within a ring is the same distance out,
     // so the first one that validates is the shortest move on offer.
     for (float distance = distanceStep;
@@ -101,15 +89,14 @@ bool FindSafeStepInZone(Player* bot,
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 
-            if (!isAcceptable(x, y))
+            // Quad first: it is arithmetic, where the hazard sweep loops over every bomb.
+            if (!safeZone.Contains(x, y))
+                continue;
+
+            if (!IsPositionSafeFromHazards(x, y, hazards, hazardRadius))
                 continue;
 
             if (!EncounterHelpers::CanTakeStepTowards(bot, x, y, moveDist, stepX, stepY, stepZ))
-                continue;
-
-            // The step stops short whenever the spot is further out than moveDist, and the line to
-            // it can cross ground the spot itself never touches, so where it lands is checked too.
-            if (!isAcceptable(stepX, stepY))
                 continue;
 
             return true;
