@@ -225,6 +225,9 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // General
     multipliers.push_back(new SunwellPlateauNoEncounterDrinkingMultiplier(botAI));
 
+    // Trash
+    multipliers.push_back(new VolatileFiendRestrictApproachMultiplier(botAI));
+
     // Kalecgos
     multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));

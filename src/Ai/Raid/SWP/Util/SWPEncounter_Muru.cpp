@@ -355,7 +355,7 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
         if (!unit)
             continue;
 
-        float const distance = bot->GetDistance2d(unit);
+        float const distance = bot->GetExactDist2d(unit);
         if (distance >= nearestDistance)
             continue;
 

@@ -699,8 +699,11 @@ bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
 
     bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
-    if (voidSpawn->GetDistance(target) > MURU_SHADOW_BOLT_VOLLEY_RADIUS)
+    if (voidSpawn->GetExactDist2d(target) >
+        MURU_SHADOW_BOLT_VOLLEY_RADIUS + target->GetCombatReach())
+    {
         return commandedAttack;
+    }
 
     constexpr uint32 volleySpellId = Id(SwpSpells::SPELL_SHADOW_BOLT_VOLLEY);
     if (voidSpawn->HasSpellCooldown(volleySpellId))
@@ -749,7 +752,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
 
     if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
     {
-        float const distFromVoidZone = bot->GetDistance2d(voidZone);
+        float const distFromVoidZone = bot->GetExactDist2d(voidZone);
         return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
@@ -758,7 +761,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
     if (!darkFiend)
         return false;
 
-    float const distFromFiend = bot->GetDistance2d(darkFiend);
+    float const distFromFiend = bot->GetExactDist2d(darkFiend);
     if (distFromFiend > DARK_FIEND_SAFE_DISTANCE)
         return false;
 

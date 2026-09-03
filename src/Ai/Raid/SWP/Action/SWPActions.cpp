@@ -126,7 +126,7 @@ namespace SwpHelpers
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
 {
     Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS, true);
+        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
 
     return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
 }
@@ -142,13 +142,12 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot))
         return AI_VALUE(Unit*, "current target") != volatileFiend && Attack(volatileFiend);
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance(volatileFiend);
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(volatileFiend);
+    if (currentDistance >= VOLATILE_FIEND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(volatileFiend, safeDistance - currentDistance);
+    return MoveAway(volatileFiend, VOLATILE_FIEND_SAFE_DISTANCE - currentDistance);
 }
 
 // At low health, Infernal Defense is cast, granting immunity to all damage but holy

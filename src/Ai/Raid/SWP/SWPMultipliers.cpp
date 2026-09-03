@@ -44,6 +44,27 @@ float SunwellPlateauNoEncounterDrinkingMultiplier::GetValue(Action* action)
     return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
 }
 
+// Trash
+
+float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (!volatileFiend || !volatileFiend->IsAlive())
+        return 1.0f;
+
+    return bot->GetExactDist2d(volatileFiend) < VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS ?
+        0.0f : 1.0f;
+}
+
 // Kalecgos
 
 float KalecgosControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
@@ -577,10 +598,12 @@ float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
 
 float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* action)
 {
-    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    if (!isReachTargetSpell && !dynamic_cast<MovementAction*>(action))
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<EredarTwinsConflagrationTargetMoveFromGroupAction*>(action) ||
         dynamic_cast<EredarTwinsMoveAwayFromSacrolashVictimAction*>(action))
@@ -600,20 +623,16 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
     if (conflagTarget == bot)
         return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
 
+    if (IsAlythessTank(bot)) // This bot needs to keep doing its job.
+        return 1.0f;
+
+    // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     if (!sacrolash)
         return 1.0f;
 
-    // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
     Unit* victim = sacrolash->GetVictim();
-    if (!victim || victim == bot || conflagTarget != victim)
-        return 1.0f;
-
-    if (isReachTargetSpell)
-        return 0.0f;
-
-    // Block movement actions generally when too close to the Conflagration target.
-    return bot->GetExactDist2d(victim) < CONFLAGRATION_SAFE_DISTANCE ? 0.0f : 1.0f;
+    return victim && victim != bot && conflagTarget == victim ? 0.0f : 1.0f;
 }
 
 float EredarTwinsDelayCooldownsMultiplier::GetValueInEncounter(Action* action)

@@ -350,7 +350,7 @@ bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
     if (!victim)
         return false;
 
-    if (bot->GetDistance2d(victim) >= CONFLAGRATION_SAFE_DISTANCE)
+    if (bot->GetExactDist2d(victim) >= CONFLAGRATION_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();

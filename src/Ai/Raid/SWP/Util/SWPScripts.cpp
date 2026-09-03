@@ -104,7 +104,7 @@ void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player*
             continue;
 
         Position ignored;
-        if (!TryGetFelmystFogSafeDestination(player, fogState.lane, ignored))
+        if (!TryGetFelmystFogCrossingDestination(player, fogState.lane, ignored))
             continue;
 
         botAI->RequestSpellInterrupt();

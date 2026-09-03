@@ -38,6 +38,16 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Trash
+
+class VolatileFiendRestrictApproachMultiplier : public Multiplier
+{
+public:
+    VolatileFiendRestrictApproachMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "volatile fiend restrict approach") {}
+    float GetValue(Action* action) override;
+};
+
 // Kalecgos
 
 class KalecgosControlMisdirectionMultiplier : public SunwellPlateauEncounterMultiplier
