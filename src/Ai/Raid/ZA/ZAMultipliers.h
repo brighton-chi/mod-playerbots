@@ -149,6 +149,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class HexLordMalacrassStayAwayFromFreezingTrapMultiplier : public ZulAmanEncounterMultiplier
+{
+public:
+    HexLordMalacrassStayAwayFromFreezingTrapMultiplier(PlayerbotAI* botAI)
+        : ZulAmanEncounterMultiplier(botAI, "hex lord malacrass stay away from freezing trap") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Zul'jin
 
 class ZuljinEagleDisableAvoidAoeMultiplier : public ZulAmanEncounterMultiplier

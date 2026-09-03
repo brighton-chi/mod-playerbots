@@ -69,7 +69,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass boss is channeling whirlwind", {
-        NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 6) }));
+        NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass boss placed freezing trap", {
         NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
@@ -79,7 +79,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("zul'jin tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is channeling whirlwind in troll form", {
-        NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 6) }));
+        NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is summoning cyclones in eagle form", {
         NextAction("zul'jin spread raid for cyclones", ACTION_RAID) }));
@@ -110,6 +110,7 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Hex Lord Malacrass
     multipliers.push_back(new HexLordMalacrassUnstableAfflictionMultiplier(botAI));
     multipliers.push_back(new HexLordMalacrassSpellReflectionMultiplier(botAI));
+    multipliers.push_back(new HexLordMalacrassStayAwayFromFreezingTrapMultiplier(botAI));
 
     // Zul'jin
     multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));

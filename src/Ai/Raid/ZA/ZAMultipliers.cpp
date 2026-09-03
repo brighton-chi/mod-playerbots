@@ -30,6 +30,17 @@ using namespace EncounterHelpers;
 namespace
 {
 
+// Actions that place the bot relative to its current target: closing to melee or spell range, the
+// gap-closers, and the formation moves that circle one. These are what fight a flee, so a hazard a
+// bot has been moved away from holds them until it is clear of it. Distinct from the below, which
+// is every movement at all - reach for that only where the bot should not move for any reason.
+bool IsApproachMovement(Action* action)
+{
+    return dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action);
+}
+
 bool IsHazardousMovement(Action* action)
 {
     return (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action)) ||
@@ -57,7 +68,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     // Every Zul'Aman boss, and nothing else in the instance, runs a BossAI.
     Unit* boss = AI_VALUE(Unit*, "boss target");
     if (!boss)
-        return 1.0f;
+        return 0.0f;
 
     if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
@@ -86,8 +97,8 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         if (boss->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
             return 1.0f;
 
-        return CountAttackersByEntry(botAI, Id(ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING)) >=
-            JANALAI_BLOODLUST_HATCHLING_COUNT ? 1.0f : 0.0f;
+        return CountJanalaiHatchlingsByEntry(botAI) >= JANALAI_BLOODLUST_HATCHLING_COUNT ?
+            1.0f : 0.0f;
     }
 
     return 1.0f;
@@ -96,12 +107,8 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 // Malacrass siphoning a Warrior soul and Zul'jin have very similar Whirlwinds
 float ZulAmanAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action))
-    {
+    if (!IsApproachMovement(action) && !dynamic_cast<CastKillingSpreeAction*>(action))
         return 1.0f;
-    }
 
     Unit* boss = AI_VALUE(Unit*, "boss target");
     if (!boss)
@@ -364,6 +371,14 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValueInEncounter(Action* act
     Unit* boss = AI_VALUE(Unit*, "boss target");
     return boss && boss->GetEntry() == Id(ZaNpcs::NPC_HEX_LORD_MALACRASS) &&
         boss->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
+}
+
+float HexLordMalacrassStayAwayFromFreezingTrapMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsApproachMovement(action))
+        return 1.0f;
+
+    return GetNearbyFreezingTrap(botAI) ? 0.0f : 1.0f;
 }
 
 // Zul'jin

@@ -149,7 +149,8 @@ bool JanalaiAmanishiHatchersSpawnedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRangedDps(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai || janalai->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
         return false;
 
     // Just need to find one Hatcher to fire the trigger

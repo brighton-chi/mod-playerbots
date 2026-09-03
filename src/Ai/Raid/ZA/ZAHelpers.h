@@ -108,45 +108,6 @@ inline constexpr uint32 ZA_MAP_ID = 568;
 inline constexpr float ZA_WHIRLWIND_SAFE_DISTANCE = 12.0f;
 inline constexpr float ZA_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 
-// A flat, convex quad given by its four corners in order (either winding). Contains() is a 2D
-// point-in-convex-polygon test, so rectangles that are not axis aligned work without extra math.
-//
-// Set it well inside the room, so that every point in it is walkable floor rather than a bound
-// that merely encloses one. Being convex, it then guarantees the line between any two of its
-// points is walkable as well, which is what lets the search validate only where a step is aimed.
-// Buying that with a smaller standing area is worth far more than the area is: the alternative is
-// probing ground per candidate, and a per-candidate ground test cannot be applied to a step
-// without also forbidding the bot from crossing anything to reach the far side.
-struct SafeZoneQuad
-{
-    std::array<Position, 4> corners;
-
-    bool Contains(float x, float y) const;
-};
-
-// Walks outward from the bot in 1 yd rings, bounded by a quad, and hands back one step of moveDist
-// toward the nearest spot inside the quad that is clear of every hazard. The step is validated with
-// CanTakeStepTowards(), so a candidate whose step cannot actually be taken is skipped for the next
-// one out. Pass stepZ to MoveTo(), not the bot's Z - the helper has already snapped it to ground.
-bool FindSafeStepInZone(
-    Player* bot, std::vector<Unit*> const& hazards, SafeZoneQuad const& safeZone,
-    float maxSearchDistance, float hazardRadius, float moveDist,
-    float& stepX, float& stepY, float& stepZ);
-// Counts living units of one entry in the group's attacker list. Reads "attackers", which the
-// engine already recomputes on a 1s cache, so this is cheap enough for a multiplier - unlike
-// "possible targets no los", which has no cache and re-runs a sight-range grid search per call.
-// The trade is that it only sees units actually threatening the raid, so it suits adds that fight
-// back and not passive ones like the Hatchers.
-uint32 CountAttackersByEntry(PlayerbotAI* botAI, uint32 entry);
-
-// Ranged raid members are ordered healers first, then ranged dps, each in group order, and member
-// i takes slot i. That fills the healer slots at the head of a spread list before anyone else, and
-// spills the remainder over in order: one healer leaves the second healer slot to a ranged dps, a
-// third healer takes the first dps slot. Wraps once there are more members than slots. Dead members
-// keep their slot so a death does not reshuffle the whole raid. Returns false for a bot that is not
-// ranged, or is not grouped or in the instance.
-bool GetSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex);
-
 // Akil'zon <Eagle Avatar>
 inline Position const AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 // Electrical Storm runs on a fixed 60s cycle once the encounter starts. Bots react from
@@ -166,63 +127,66 @@ bool IsNalorakkInBearForm(Unit* nalorakk);
 // Jan'alai <Dragonhawk Avatar>
 inline Position const JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
 inline constexpr float JANALAI_PLATFORM_Z = 19.146f;
-// Inset 5 yd from Jan'alai's fire wall (x -54.80 / -10.13, y 1123.90 / 1175.68 in fireWallCoords,
-// boss_janalai.cpp). Two things have to be true of this quad and both are bought by the inset.
+// Measured in the room. The fifth corner cuts off the northwest, where the platform is broken and
+// fenced off; the other four trace the floor's limits. Every point in it has to be walkable and it
+// has to stay convex - that is what lets FindSafeStepInZone() ignore where a step lands.
 //
-// It has to be clear of the wall, whose damage (43113 -> 43114, 3-4k a second) reaches 3 yd from
-// each of the ten bombs that carry it - so 5 leaves 2 yd of margin, and bots never have a reason
-// to go near it. And it has to be entirely walkable, which the wall line itself is not: in places
-// it runs past what players can reach. Inside this, the search needs no ground probe at all.
+// Not inset from the fire wall, and it does not need to be: those ten bombs are NPC_FIRE_BOMB like
+// the other forty, so the safe distance already keeps candidates off them, and only over the ~10 yd
+// of each edge they occupy rather than the whole edge. The east and west edges run alongside the
+// wall as a result; the north and south are well back, since there it crosses the bridge mouths.
 //
-// The area given up is affordable. Bombs are scattered over the whole room, so thinning the
-// standing area does not thin the gaps in it - roughly an eighth of any part of the room is 6 yd
-// clear of all 40, which is ~180 square yards of valid ground inside these corners.
-inline SafeZoneQuad const JANALAI_SAFE_ZONE = {
-    {{
-        Position(-49.80f, 1128.90f, JANALAI_PLATFORM_Z),
-        Position(-15.13f, 1128.90f, JANALAI_PLATFORM_Z),
-        Position(-15.13f, 1170.68f, JANALAI_PLATFORM_Z),
-        Position(-49.80f, 1170.68f, JANALAI_PLATFORM_Z)
-    }}
+// A vector where the other position tables are inline std::array: those are indexed where they sit,
+// this one is handed to FindSafeStepInZone().
+inline std::vector<Position> const JANALAI_SAFE_ZONE = {
+    Position(-12.576924f, 1131.9163f, JANALAI_PLATFORM_Z),
+    Position(-52.068108f, 1132.8198f, JANALAI_PLATFORM_Z),
+    Position(-51.508590f, 1158.4890f, JANALAI_PLATFORM_Z),
+    Position(-44.008713f, 1168.6125f, JANALAI_PLATFORM_Z),
+    Position(-12.115170f, 1167.6681f, JANALAI_PLATFORM_Z)
 };
 // Hatchers open eggs in a ramp - 1 on the first tick, then 2, then 3, every 5s - across 40 eggs,
 // 20 per side. Bloodlust waits for this many Hatchlings to be up.
 inline constexpr uint32 JANALAI_BLOODLUST_HATCHLING_COUNT = 6;
-// The bombs blanket the whole platform, so a search only has to reach as far as the avoidance can
-// move (20 yd) plus the blast radius (4, padded to 6). 30 covers that with room to spare.
-inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 30.0f;
-// Fire Bomb (42630) has a 4y radius, padded by 2 like every other hazard distance. Compare it with
-// GetExactDist2d, never GetDistance2d: the damage is a DEST area effect from an NPC caster, so
-// membership is exact centre to centre with no reach added on either side (Spell.cpp:9162).
+// Ranged spread evenly around this, centred on the tank position. It has to clear the melee and
+// stay inside JANALAI_SAFE_ZONE on every bearing, which on the west side is the tighter of the two.
+inline constexpr float JANALAI_RANGED_SPREAD_RADIUS = 15.0f;
+// How far the avoidance looks for somewhere to stand. The bombs blanket the room, so a failed
+// search never means there is no clear spot, only none nearby - reach is what fixes that, and it is
+// nearly free because the rings return on the first hit and only crowded cases pay for the rest.
+inline constexpr float JANALAI_FIRE_BOMB_MAX_SEARCH_DISTANCE = 30.0f;
+// Must cover the furthest candidate plus the safe distance, so every bomb bearing on that candidate
+// is in the list. Move one of the pair and move the other.
+inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 40.0f;
+// Fire Bomb (42630) has a 4y radius, padded by 1.5. Measure with GetExactDist2d, never
+// GetDistance2d: the damage is a DEST area effect from an NPC caster, so membership is exact centre
+// to centre with no reach on either side, and the danger test and the safe-spot test only agree in
+// exact terms.
 //
-// The two places this is used must also agree, and they only can in exact terms. The danger test is
-// object to object, so GetDistance2d there subtracts the bot's reach AND the bomb's; the safe-spot
-// test is object to a bare coordinate, where there is no second reach to subtract. Under
-// GetDistance2d the acceptance threshold therefore sat about a bot's combat reach tighter than the
-// danger threshold, and since FindSafeStepInZone returns the first acceptable candidate it landed
-// inside that band - so the bot arrived somewhere that still read as dangerous and fled again.
-inline constexpr float JANALAI_FIRE_BOMB_SAFE_DISTANCE = 6.0f;
-// Feeds the "jan'alai fire bombs" value. This figure is worst-case detection latency, not
-// staleness: if a wave lands a millisecond after the last check, nothing is seen for a full
-// interval plus a tick. The GUIDs the value holds have no bearing on that - they guard against a
-// bomb having gone, never against one having arrived.
-//
-// A second is right on both of the counts that matter. The deadline is generous: bombs spawn all at
-// once at their final positions, never move, and detonate on a fixed 11s timer (StartBombing() in
-// boss_janalai.cpp). And it is about what a player would take - the bombs blanket the platform, so
-// reacting means finding a gap to stand in, which is a decision rather than a reflex. The 200ms the
-// other raids use is reflex-grade and would make the bots read as inhumanly quick here.
+// The pad is deliberately tight. In a field this dense it is the most expensive number here - clear
+// ground goes as e^(-n*pi*r^2/A), so half a yard off it is worth more than ten yards of search
+// reach, in both bots left with nowhere to stand and bots disturbed at all. It can afford to be:
+// the bombs are static and the danger test uses this same constant, so a bot at rest is outside the
+// blast whatever the pad is.
+inline constexpr float JANALAI_FIRE_BOMB_SAFE_DISTANCE = 5.5f;
+// Feeds the "jan'alai fire bombs" value. Worst-case detection latency, not staleness. A second is
+// affordable - bombs spawn at their final positions and detonate on a fixed 11s timer - and it is
+// about what a player takes, since reacting here means picking a gap rather than stepping aside.
 inline constexpr uint32 FIRE_BOMB_CACHE_INTERVAL_MS = 1000;
 // Jan'alai hatches every remaining egg at once at 35% HP so that opens the door for Bloodlust in
 // any case. Using 33% to account for some delay for the event to actually complete.
 inline constexpr float JANALAI_HATCH_ALL_HEALTH_PCT = 33.0f;
-// The grid search, run once per cache interval behind the "jan'alai fire bombs" value.
-// Behind the "hex lord malacrass freezing trap" value.
-ObjectGuid FindNearbyFreezingTrapGuid(Player* bot);
-// Resolves that value back to the object. Held as a guid rather than a pointer because a trap that
-// fires and despawns inside the interval then comes back as nullptr instead of dangling.
-GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);
 
+std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
+// Walks outward from the bot in 1 yd rings, bounded by a convex polygon given as its corners in
+// order (either winding), and hands back one step of moveDist toward the nearest spot inside it
+// that is clear of every hazard. The step is validated with CanTakeStepTowards(), so a candidate
+// whose step cannot actually be taken is skipped for the next one out. Pass stepZ to MoveTo(), not
+// the bot's Z - the helper has already snapped it to ground.
+//
+// The polygon must be convex and wholly walkable; see JANALAI_SAFE_ZONE.
+uint32 CountJanalaiHatchlingsByEntry(PlayerbotAI* botAI);
+bool IsJanalaiBombing(Unit* janalai);
 GuidVector FindNearbyFireBombGuids(Player* bot);
 // GetNearbyFireBombs() resolves that value for the avoidance search, which is the only caller that
 // needs the bombs themselves. Everything else asks IsJanalaiBombing() instead.
@@ -231,39 +195,45 @@ std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI);
 // applies it alongside the spawn and the Boom() task removes it in the same moment it detonates
 // them. The bomb creatures themselves linger 4s past that on a 15s despawn, so counting them keeps
 // the raid frozen after the damage has already landed.
-bool IsJanalaiBombing(Unit* janalai);
-std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
+bool FindSafeStepInZone(
+    Player* bot, std::vector<Unit*> const& hazards, std::vector<Position> const& safeZone,
+    float maxSearchDistance, float hazardRadius, float moveDist,
+    float& stepX, float& stepY, float& stepZ);
+// Counts living units of one entry in the group's attacker list. Reads "attackers", which the
+// engine already recomputes on a 1s cache, so this is cheap enough for a multiplier - unlike
+// "possible targets no los", which has no cache and re-runs a sight-range grid search per call.
+// The trade is that it only sees units actually threatening the raid, so it suits adds that fight
+// back and not passive ones like the Hatchers.
+
 
 // Halazzi <Lynx Avatar>
 inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 
 // Hex Lord Malacrass
-// Freezing Trap (43448) stuns for 10s across a 10y radius from the trap, and it is the *effect*
-// radius that has to be cleared rather than the GameObject's activation radius: a trap tripped by
-// anyone at all catches everything within 10y, so staying outside the trigger circle is not enough.
-// Padded by 2 like every other hazard distance here. Compare with GetExactDist2d, never
-// GetDistance2d - the stun is a SRC area effect (targetA 22 / targetB 15), so membership is exact
-// centre to centre with no combat reach added on either side.
-inline constexpr float ZA_FREEZING_TRAP_SAFE_DISTANCE = 12.0f;
-// Only has to reach far enough to notice a trap before the bot is inside the safe distance, so it
-// is that distance plus a little lead - 4y is roughly two ticks of movement at bot run speed.
-// Reaching further does not make the bot safer: the trigger would fire for traps that the action
-// then declines to act on, and both of them pay their own FindNearestGameObject grid search for it.
+// Freezing Trap (43448) stuns for 10s across a 10y radius, and it is that radius to clear rather
+// than the object's 2.5y trigger circle: whoever springs it catches everyone within 10. Measure
+// with GetExactDist2d, never GetDistance2d - a SRC area effect, so exact centre to centre.
+//
+// Padded by 1 rather than the usual 2, because the tank flees with everyone else and Malacrass
+// follows it; every extra yard walks him closer to the door. The pad can be tight because the trap
+// is static and the trigger uses this same constant, so a bot at rest is outside the stun anyway.
+inline constexpr float ZA_FREEZING_TRAP_SAFE_DISTANCE = 11.0f;
+// Far enough to notice a trap before the bot is inside the safe distance. It doubles as how far
+// HexLordMalacrassStayAwayFromFreezingTrapMultiplier holds a bot off, and that gap is what stops a
+// bot from turning back the moment it clears the flee - so keep this the wider of the pair.
 inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
-// The trigger asks whether a trap is nearby and the action then asks again in order to move away
-// from it, so the same grid search ran twice in a tick for one answer.
-//
-// 200ms because this is reaction time rather than staleness. Reacting here is a reflex - one
-// object, and the answer is to move directly away from it - so it should run about as fast as a
-// player managing it on a good day, unlike the fire bombs where a gap has to be picked and a second
-// is plausible. It also matters that the trap arrives at its caster's feet
-// (SPELL_HU_FREEZING_TRAP, ABILITY_TARGET_SELF in boss_hexlord.cpp) rather than at a spot chosen in
-// advance, so it can appear at melee range with no warning at all.
-//
-// At the ~210ms bot tick this sits near the floor: the interval has usually expired by the next
-// tick anyway, so it adds no real latency and the saving is collapsing the duplicate within a
-// tick.
+// Feeds the "hex lord malacrass freezing trap" value, which the trigger and the action share rather
+// than each running the grid search. 200ms because reacting here is a reflex - one object, move
+// directly away - and because the trap arrives unannounced: 43447 places it by
+// TARGET_DEST_CASTER_RADIUS with a random bearing, so it lands 5y from the boss on any side,
+// inside the melee ring.
 inline constexpr uint32 FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
+
+// Behind the "hex lord malacrass freezing trap" value.
+ObjectGuid FindNearbyFreezingTrapGuid(Player* bot);
+// Resolves that value back to the object. Held as a guid rather than a pointer because a trap that
+// fires and despawns inside the interval then comes back as nullptr instead of dangling.
+GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);
 
 // Zul'jin
 inline Position const ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
@@ -271,7 +241,7 @@ inline Position const ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 // retarget whoever they reach, so there is nothing to dodge. The raid spreads instead, far enough
 // apart that a vortex passing through one member does not clip anyone else with its 4 yd aura.
 //
-// Order is what matters to GetSpreadSlotIndex() - the healer slots must come first. The four
+// Order is what matters to GetZuljinSpreadSlotIndex() - the healer slots must come first. The four
 // corner slots are pulled in along X until they sit exactly 39 yd from the farther healer, leaving
 // a yard of slack against a 40 yd heal. The closest pair of spots is still 15.3 yd apart, so a
 // vortex parked on one member never clips a second.
@@ -288,6 +258,14 @@ inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{
     Position(143.862f, 697.302f, ZULJIN_SPREAD_Z),
     Position(95.618f, 698.439f, ZULJIN_SPREAD_Z)
 }};
+
+// Ranged raid members are ordered healers first, then ranged dps, each in group order, and member
+// i takes slot i. That fills the healer slots at the head of a spread list before anyone else, and
+// spills the remainder over in order: one healer leaves the second healer slot to a ranged dps, a
+// third healer takes the first dps slot. Wraps once there are more members than slots. Dead members
+// keep their slot so a death does not reshuffle the whole raid. Returns false for a bot that is not
+// ranged, or is not grouped or in the instance.
+bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex);
 
 }
 
