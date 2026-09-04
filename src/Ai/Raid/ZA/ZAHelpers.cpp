@@ -185,14 +185,18 @@ bool FindSafeStepInJanalaiZone(
     float maxSearchDistance, float hazardRadius, float moveDist,
     float& stepX, float& stepY, float& stepZ)
 {
-    constexpr float searchStep = M_PI / 8.0f;
+    constexpr uint8 angleCount = 16;
+    constexpr float angleStep = 2.0f * M_PI / angleCount;
     constexpr float distanceStep = 1.0f;
 
-    for (float distance = distanceStep;
-            distance <= maxSearchDistance; distance += distanceStep)
+    uint32 const ringCount = static_cast<uint32>(maxSearchDistance / distanceStep);
+
+    for (uint32 ring = 1; ring <= ringCount; ++ring)
     {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
+        float const distance = ring * distanceStep;
+        for (uint8 i = 0; i < angleCount; ++i)
         {
+            float const angle = i * angleStep;
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 
@@ -272,7 +276,6 @@ bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex)
     if (dpsIt == rangedDps.end())
         return false;
 
-    // Healers occupy the head of the list, so the dps ordinal picks up where they left off.
     size_t const ordinal =
         healers.size() + static_cast<size_t>(std::distance(rangedDps.begin(), dpsIt));
     slotIndex = ordinal % slotCount;
