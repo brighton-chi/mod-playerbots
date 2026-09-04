@@ -122,16 +122,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighKingMaulgarBossCastsIntimidatingRoarTrigger : public GruulsLairEncounterTrigger
-{
-public:
-    HighKingMaulgarBossCastsIntimidatingRoarTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar boss casts intimidating roar") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 // Gruul the Dragonkiller
 
 class GruulTheDragonkillerShouldBeTankedTrigger : public GruulsLairEncounterTrigger

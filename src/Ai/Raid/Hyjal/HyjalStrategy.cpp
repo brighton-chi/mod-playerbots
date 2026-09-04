@@ -116,7 +116,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde move boss to initial position", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
-        NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
+        NextAction("archimonde set tremor totem", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
         NextAction("archimonde keep air burst away from tank", ACTION_EMERGENCY + 8) }));

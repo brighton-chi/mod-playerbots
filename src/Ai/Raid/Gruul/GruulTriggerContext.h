@@ -44,9 +44,6 @@ public:
         creators["high king maulgar pulling ogre council"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_pulling_ogre_council;
 
-        creators["high king maulgar boss casts intimidating roar"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_boss_casts_intimidating_roar;
-
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller should be tanked"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_should_be_tanked;
@@ -88,9 +85,6 @@ private:
     }
     static Trigger* high_king_maulgar_pulling_ogre_council(PlayerbotAI* botAI) {
         return new HighKingMaulgarPullingOgreCouncilTrigger(botAI);
-    }
-    static Trigger* high_king_maulgar_boss_casts_intimidating_roar(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBossCastsIntimidatingRoarTrigger(botAI);
     }
 
     // Gruul the Dragonkiller

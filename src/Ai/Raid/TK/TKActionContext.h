@@ -22,9 +22,6 @@ public:
         creators["tempest keep clear stale falling flag"] =
             &RaidTempestKeepActionContext::tempest_keep_clear_stale_falling_flag;
 
-        creators["tempest keep cast fear ward on main tank"] =
-            &RaidTempestKeepActionContext::tempest_keep_cast_fear_ward_on_main_tank;
-
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -149,9 +146,6 @@ private:
     }
     static Action* tempest_keep_clear_stale_falling_flag(PlayerbotAI* botAI) {
         return new TempestKeepClearStaleFallingFlagAction(botAI);
-    }
-    static Action* tempest_keep_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
-        return new TempestKeepCastFearWardOnMainTankAction(botAI);
     }
 
     // Trash

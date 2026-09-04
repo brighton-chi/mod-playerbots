@@ -92,14 +92,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarCastFearWardOnMainTankAction : public Action
-{
-public:
-    HighKingMaulgarCastFearWardOnMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "high king maulgar cast fear ward on main tank") {}
-    bool Execute(Event event) override;
-};
-
 // Gruul the Dragonkiller
 
 class GruulTheDragonkillerTanksPositionBossAction : public AttackAction

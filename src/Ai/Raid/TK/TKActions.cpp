@@ -76,16 +76,6 @@ bool TempestKeepTankPositionAction::MoveToTankPosition(
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool TempestKeepCastFearWardOnMainTankAction::Execute(Event /*event*/)
-{
-    constexpr uint32 fearWard = Id(TkSpells::SPELL_FEAR_WARD);
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank || mainTank->HasAura(fearWard))
-        return false;
-
-    return botAI->CanCastSpell(fearWard, mainTank) && botAI->CastSpell(fearWard, mainTank);
-}
-
 // Trash
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)

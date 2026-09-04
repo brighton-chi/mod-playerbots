@@ -61,9 +61,6 @@ enum class TkSpells : uint32
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
-
-    // Priest
-    SPELL_FEAR_WARD                 = 6346,
 };
 
 enum class TkNpcs : uint32

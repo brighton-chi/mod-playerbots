@@ -49,14 +49,6 @@ protected:
         Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
 };
 
-class TempestKeepCastFearWardOnMainTankAction : public Action
-{
-public:
-    TempestKeepCastFearWardOnMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "tempest keep cast fear ward on main tank") {}
-    bool Execute(Event event) override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action

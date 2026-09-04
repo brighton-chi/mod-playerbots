@@ -119,8 +119,8 @@ public:
         creators["archimonde move boss to initial position"] =
             &RaidHyjalActionContext::archimonde_move_boss_to_initial_position;
 
-        creators["archimonde cast fear immunity spell"] =
-            &RaidHyjalActionContext::archimonde_cast_fear_immunity_spell;
+        creators["archimonde set tremor totem"] =
+            &RaidHyjalActionContext::archimonde_set_tremor_totem;
 
         creators["archimonde keep air burst away from tank"] =
             &RaidHyjalActionContext::archimonde_keep_air_burst_away_from_tank;
@@ -260,8 +260,8 @@ private:
             botAI, "archimonde move boss to initial position", "archimonde",
             HyjalHelpers::ARCHIMONDE_INITIAL_POSITION, 60.0f);
     }
-    static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
-        return new ArchimondeCastFearImmunitySpellAction(botAI);
+    static Action* archimonde_set_tremor_totem(PlayerbotAI* botAI) {
+        return new ArchimondeSetTremorTotemAction(botAI);
     }
     static Action* archimonde_keep_air_burst_away_from_tank(PlayerbotAI* botAI) {
         return new ArchimondeKeepAirBurstAwayFromTankAction(botAI);

@@ -213,16 +213,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighAstromancerSolarianBossCastsPsychicScreamTrigger : public TempestKeepEncounterTrigger
-{
-public:
-    HighAstromancerSolarianBossCastsPsychicScreamTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "high astromancer boss casts psychic scream") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public TempestKeepEncounterTrigger
@@ -251,16 +241,6 @@ public:
     KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
             botAI, "kael'thas sunstrider sanguinar or telonicus should be tanked") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class KaelthasSunstriderSanguinarCastsBellowingRoarTrigger : public TempestKeepEncounterTrigger
-{
-public:
-    KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider sanguinar casts bellowing roar") {}
 
 protected:
     bool IsActiveInEncounter() override;

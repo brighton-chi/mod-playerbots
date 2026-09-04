@@ -44,9 +44,6 @@ public:
         creators["high king maulgar misdirect ogres to tanks"] =
             &RaidGruulsLairActionContext::high_king_maulgar_misdirect_ogres_to_tanks;
 
-        creators["high king maulgar cast fear ward on main tank"] =
-            &RaidGruulsLairActionContext::high_king_maulgar_cast_fear_ward_on_main_tank;
-
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller tanks position boss"] =
             &RaidGruulsLairActionContext::gruul_the_dragonkiller_tanks_position_boss;
@@ -88,9 +85,6 @@ private:
     }
     static Action* high_king_maulgar_misdirect_ogres_to_tanks(PlayerbotAI* botAI) {
         return new HighKingMaulgarMisdirectOgresToTanksAction(botAI);
-    }
-    static Action* high_king_maulgar_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarCastFearWardOnMainTankAction(botAI);
     }
 
     // Gruul the Dragonkiller

@@ -729,25 +729,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 
 // Archimonde
 
-bool ArchimondeCastFearImmunitySpellAction::Execute(Event /*event*/)
-{
-    if (bot->getClass() == CLASS_PRIEST)
-        return CastFearWardOnMainTank();
-
-    return SetTremorTotem();
-}
-
-bool ArchimondeCastFearImmunitySpellAction::CastFearWardOnMainTank()
-{
-    constexpr uint32 fearWard = Id(HyjalSpells::SPELL_FEAR_WARD);
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank || mainTank->HasAura(fearWard))
-        return false;
-
-    return botAI->CanCastSpell(fearWard, mainTank) && botAI->CastSpell(fearWard, mainTank);
-}
-
-bool ArchimondeCastFearImmunitySpellAction::SetTremorTotem()
+bool ArchimondeSetTremorTotemAction::Execute(Event /*event*/)
 {
     if (AI_VALUE2(bool, "has totem", "tremor totem"))
         return false;

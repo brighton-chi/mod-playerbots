@@ -40,9 +40,6 @@ enum class GruulSpells : uint32
     // Mage
     SPELL_SPELLSTEAL    = 30449,
 
-    // Priest
-    SPELL_FEAR_WARD     = 6346,
-
     // Gruul the Dragonkiller
     SPELL_GROUND_SLAM_1 = 33525,
     SPELL_GROUND_SLAM_2 = 39187,

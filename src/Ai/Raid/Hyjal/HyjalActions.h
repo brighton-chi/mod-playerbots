@@ -263,16 +263,12 @@ public:
 
 // Archimonde
 
-class ArchimondeCastFearImmunitySpellAction : public Action
+class ArchimondeSetTremorTotemAction : public Action
 {
 public:
-    ArchimondeCastFearImmunitySpellAction(PlayerbotAI* botAI)
-        : Action(botAI, "archimonde cast fear immunity spell") {}
+    ArchimondeSetTremorTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "archimonde set tremor totem") {}
     bool Execute(Event event) override;
-
-private:
-    bool CastFearWardOnMainTank();
-    bool SetTremorTotem();
 };
 
 class ArchimondeKeepAirBurstAwayFromTankAction : public MovementAction

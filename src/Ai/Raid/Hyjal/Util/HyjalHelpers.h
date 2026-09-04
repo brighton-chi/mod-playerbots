@@ -62,9 +62,6 @@ enum class HyjalSpells : uint32
     // Paladin
     SPELL_DIVINE_SHIELD       = 642,
 
-    // Priest
-    SPELL_FEAR_WARD           = 6346,
-
     // Rogue
     SPELL_CLOAK_OF_SHADOWS    = 31224,
 

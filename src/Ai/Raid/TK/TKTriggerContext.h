@@ -74,9 +74,6 @@ public:
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
 
-        creators["high astromancer solarian boss casts psychic scream"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
-
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider thaladred is fixated on bot"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
@@ -87,9 +84,6 @@ public:
         creators["kael'thas sunstrider sanguinar or telonicus should be tanked"] =
             &RaidTempestKeepTriggerContext::
                 kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked;
-
-        creators["kael'thas sunstrider sanguinar casts bellowing roar"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_sanguinar_casts_bellowing_roar;
 
         creators["kael'thas sunstrider capernian should be tanked by warlock"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_should_be_tanked_by_warlock;
@@ -198,9 +192,6 @@ private:
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI);
     }
-    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI);
-    }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) {
@@ -212,9 +203,6 @@ private:
     static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked(
         PlayerbotAI* botAI) {
         return new KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(botAI);
-    }
-    static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_capernian_should_be_tanked_by_warlock(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger(botAI);

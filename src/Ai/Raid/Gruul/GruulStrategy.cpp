@@ -38,9 +38,6 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar pulling ogre council", {
         NextAction("high king maulgar misdirect ogres to tanks", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar boss casts intimidating roar", {
-        NextAction("high king maulgar cast fear ward on main tank", ACTION_RAID + 2) }));
-
     // Gruul the Dragonkiller
     triggers.push_back(new TriggerNode("gruul the dragonkiller should be tanked", {
         NextAction("gruul the dragonkiller tanks position boss", ACTION_RAID) }));
