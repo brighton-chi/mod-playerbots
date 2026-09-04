@@ -2255,13 +2255,14 @@ AiPlayerbot.RandomClassSpecIndex.3.5 = 5
 #
 
 # as pve
-AiPlayerbot.RandomClassSpecProb.4.0 = 45
+AiPlayerbot.RandomClassSpecProb.4.0 = 40
 AiPlayerbot.RandomClassSpecIndex.4.0 = 0
 # combat pve
-AiPlayerbot.RandomClassSpecProb.4.1 = 45
+AiPlayerbot.RandomClassSpecProb.4.1 = 60
 AiPlayerbot.RandomClassSpecIndex.4.1 = 1
 # subtlety pve
-AiPlayerbot.RandomClassSpecProb.4.2 = 10
+# Note: Subtlety is NOT IMPLEMENTED. Subtlety bots will use Assassination strategies (poorly).
+AiPlayerbot.RandomClassSpecProb.4.2 = 0
 AiPlayerbot.RandomClassSpecIndex.4.2 = 2
 # as pvp
 AiPlayerbot.RandomClassSpecProb.4.3 = 0
