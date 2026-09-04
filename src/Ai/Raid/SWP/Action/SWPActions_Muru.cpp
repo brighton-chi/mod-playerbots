@@ -5,8 +5,6 @@
  */
 
 #include "SWPActions.h"
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Muru.h"
@@ -468,27 +466,6 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
-    Unit* voidSentinel)
-{
-    ObjectGuid const sentinelGuid = voidSentinel->GetGUID();
-    Position const& northPosition = MURU_VOID_SENTINEL_N_TANK_POSITION;
-    Position const& eastPosition = MURU_VOID_SENTINEL_E_TANK_POSITION;
-
-    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
-    auto assignmentItr = assignments.find(sentinelGuid);
-    if (assignmentItr == assignments.end())
-    {
-        float const northDistance = voidSentinel->GetExactDist2d(northPosition);
-        float const eastDistance = voidSentinel->GetExactDist2d(eastPosition);
-
-        uint8 const assignedIndex = northDistance <= eastDistance ? 0 : 1;
-        assignmentItr = assignments.emplace(sentinelGuid, assignedIndex).first;
-    }
-
-    return assignmentItr->second == 0 ? northPosition : eastPosition;
-}
-
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
     Position const& position = MURU_ENTRANCE_POSITION;
@@ -653,38 +630,6 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetControlledVoidSpawn() const
     }
 
     return voidSpawn;
-}
-
-bool MuruEnslavedVoidSpawnAttackAction::CommandControlledCreatureToAttack(
-    Unit* controlled, Unit* target) const
-{
-    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
-        return false;
-
-    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
-    controlled->AttackStop();
-    controlled->SetTarget(target->GetGUID());
-
-    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    if (!controlled->IsPlayer() && controlled->IsCreature() &&
-        controlled->ToCreature()->IsAIEnabled)
-    {
-        controlled->ToCreature()->AI()->AttackStart(target);
-    }
-    else
-    {
-        controlled->Attack(target, true);
-    }
-
-    return true;
 }
 
 bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)

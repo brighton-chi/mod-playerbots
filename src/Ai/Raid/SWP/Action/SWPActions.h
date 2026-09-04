@@ -461,9 +461,6 @@ public:
     MuruTanksMoveSentinelToSafePositionAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "m'uru tanks move sentinel to safe position") {}
     bool Execute(Event event) override;
-
-private:
-    Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 };
 
 class MuruSecondAssistTankGuardRangedAction : public MovementAction
@@ -522,7 +519,6 @@ public:
 
 protected:
     Unit* GetControlledVoidSpawn() const;
-    bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
     Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
@@ -609,8 +605,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryGetPosition(Position& position) const;
-    bool TryAdjustForArmageddon(Position& position);
+    bool TryGetMeleePosition(Position& position) const;
+    bool TryAdjustMeleeForArmageddon(Position& position);
 };
 
 class KiljaedenPositionRangedAndAvoidArmageddonsAction : public MovementAction
@@ -621,8 +617,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryGetPosition(Position& position) const;
-    bool TryAdjustForArmageddon(Position& position);
+    bool TryGetRangedPosition(Position& position) const;
+    bool TryAdjustRangedForArmageddon(Position& position);
 };
 
 class KiljaedenRemoveFireBloomAction : public Action

@@ -112,11 +112,13 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
+Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
 GuidVector FindMuruVoidZoneGuids(Player* bot);
 ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
+bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
 }
 

@@ -6,6 +6,8 @@
 
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
+#include "CharmInfo.h"
+#include "CreatureAI.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <limits>
@@ -302,6 +304,26 @@ Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI)
         &IsSpellFuryBuffedFuryMage);
 }
 
+Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel)
+{
+    ObjectGuid const sentinelGuid = voidSentinel->GetGUID();
+    Position const& northPosition = MURU_VOID_SENTINEL_N_TANK_POSITION;
+    Position const& eastPosition = MURU_VOID_SENTINEL_E_TANK_POSITION;
+
+    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
+    auto assignmentItr = assignments.find(sentinelGuid);
+    if (assignmentItr == assignments.end())
+    {
+        float const northDistance = voidSentinel->GetExactDist2d(northPosition);
+        float const eastDistance = voidSentinel->GetExactDist2d(eastPosition);
+
+        uint8 const assignedIndex = northDistance <= eastDistance ? 0 : 1;
+        assignmentItr = assignments.emplace(sentinelGuid, assignedIndex).first;
+    }
+
+    return assignmentItr->second == 0 ? northPosition : eastPosition;
+}
+
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -396,6 +418,37 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     }
 
     return bestSpawn;
+}
+
+bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
+{
+    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
+        return false;
+
+    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
+    controlled->AttackStop();
+    controlled->SetTarget(target->GetGUID());
+
+    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    if (!controlled->IsPlayer() && controlled->IsCreature() &&
+        controlled->ToCreature()->IsAIEnabled)
+    {
+        controlled->ToCreature()->AI()->AttackStart(target);
+    }
+    else
+    {
+        controlled->Attack(target, true);
+    }
+
+    return true;
 }
 
 }

@@ -260,10 +260,10 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
 bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
 {
     Position position;
-    if (!TryGetPosition(position))
+    if (!TryGetMeleePosition(position))
         return false;
 
-    if (!TryAdjustForArmageddon(position))
+    if (!TryAdjustMeleeForArmageddon(position))
         return false;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -274,7 +274,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -308,7 +308,7 @@ bool KiljaedenPositionMeleeAction::TryGetPosition(Position& position) const
     return true;
 }
 
-bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionMeleeAction::TryAdjustMeleeForArmageddon(Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
@@ -366,10 +366,10 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
-    if (!TryGetPosition(position))
+    if (!TryGetRangedPosition(position))
         return false;
 
-    if (!TryAdjustForArmageddon(position))
+    if (!TryAdjustRangedForArmageddon(position))
         return false;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -380,7 +380,7 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& position) const
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Position& position) const
 {
     EnsureKiljaedenRangedAssignments(bot);
 
@@ -395,7 +395,7 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetPosition(Position& 
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
 }
 
-bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustForArmageddon(Position& position)
+bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
     auto const armageddonAssignmentItr =
