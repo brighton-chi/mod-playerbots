@@ -163,7 +163,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 // Priority: (1) Blindeye, (2) Olm, (3) Krosh (ranged only), (4) Kiggler, and (5) Maulgar
 bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* target = nullptr;
     Unit* krosh = nullptr;
     if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
     {
@@ -173,14 +173,18 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         target = olm;
     }
-    else if ((krosh = AI_VALUE2(Unit*, "find target", "krosh firehand")) &&
-        PlayerbotAI::IsRanged(bot))
+    else if (PlayerbotAI::IsRanged(bot) &&
+        (krosh = AI_VALUE2(Unit*, "find target", "krosh firehand")))
     {
         target = krosh;
     }
     else if (Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed"))
     {
         target = kiggler;
+    }
+    else if (Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar"))
+    {
+        target = maulgar;
     }
 
     if (!target)
