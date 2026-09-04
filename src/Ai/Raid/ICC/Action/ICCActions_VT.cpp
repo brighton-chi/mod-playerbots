@@ -1088,7 +1088,7 @@ bool IccValithriaZombieKiteAction::Execute(Event /*event*/)
     if (!bot->HasAura(SPELL_NITRO_BOOSTS))
         bot->AddAura(SPELL_NITRO_BOOSTS, bot);
 
-    // Stop channeled spellcasting that would root the bot.
+    // Stop active channeling that would root the bot
     bot->CastStop();
 
     constexpr float ANCHOR_RADIUS_LIMIT = 25.0f;  // kite stays within this radius of heal anchor

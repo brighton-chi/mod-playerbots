@@ -232,9 +232,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
             Player* victimOwner = victim ? victim->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
             if (!victim || !victimOwner || victimOwner == bot || victimOwner == botAI->GetMaster() ||
                 (bot->GetGroup() && bot->GetGroup() == victimOwner->GetGroup()))
-            {
                 return true;
-            }
         }
 
         // (3) Last because it is applied automatically only in battlegrounds and arenas: the

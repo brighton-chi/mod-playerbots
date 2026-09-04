@@ -210,7 +210,7 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
 }
 
 // For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
-// behind an out of combat check (such as with IsInCombatValue).
+// behind an out-of-combat check (such as with IsInCombatValue).
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -324,8 +324,7 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     return nullptr;
 }
 
-// Return the first matching alive unit from PossibleTargetsValue within .sightDistance from config
-// Note that PossibleTargetsValue picks up only hostile units
+// DO NOT USE. TO BE REMOVED HERE ONCE ALL CALL SITES ARE MODIFIED.
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& units =

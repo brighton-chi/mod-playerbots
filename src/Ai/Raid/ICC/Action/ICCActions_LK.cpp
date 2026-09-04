@@ -2452,7 +2452,7 @@ bool IccLichKingAddsAction::HandleQuakeMechanics(Unit* boss)
     if (dist >= QUAKE_MIN && dist <= QUAKE_MAX)
         return false;
 
-    // Interrupt channeling spellcast before repositioning
+    // Interrupt active channel before repositioning
     bot->CastStop();
 
     float const dx = bot->GetPositionX() - boss->GetPositionX();
@@ -3661,8 +3661,8 @@ bool IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
 
     float destZ = bot->GetPositionZ();
     bot->UpdateAllowedPositionZ(destX, destY, destZ);
-    bot->CastStop();
 
+    bot->CastStop();
     MoveTo(bot->GetMapId(), destX, destY, destZ,
            false, false, false, true, MovementPriority::MOVEMENT_FORCED);
     return true;
