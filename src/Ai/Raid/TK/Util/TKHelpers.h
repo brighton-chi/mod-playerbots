@@ -234,6 +234,7 @@ enum KTPhases
 
 // About the exact distance from Kael to the entrances to his room
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
+inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 
 // To the left of the advisors' starting position (when facing them), up against the wall
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
@@ -250,7 +251,8 @@ inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
-uint32 GetKaelthasPhase(Unit* kaelthas);
+Unit* GetKaelthasTk(PlayerbotAI* botAI);
+uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);

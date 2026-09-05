@@ -236,7 +236,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (!kaelthas)
         return 1.0f;
 
-    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
     constexpr uint32 dpsWaitMs = 10 * IN_MILLISECONDS;
@@ -275,7 +275,7 @@ float KaelthasSunstriderKiteThaladredMultiplier::GetValueInEncounter(Action* act
     if (!kaelthas)
         return 1.0f;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase == PHASE_NONE)
         return 1.0f;
 
@@ -301,7 +301,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValueInEncounter(Actio
     if (!kaelthas)
         return 1.0f;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     return phase != PHASE_NONE && phase != PHASE_FINAL ? 0.0f : 1.0f;
 }
 
@@ -323,7 +323,7 @@ float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncou
     if (!kaelthas)
         return 1.0f;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
         return 1.0f;
 
@@ -352,7 +352,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValueInEncounter
     if (!kaelthas)
         return 1.0f;
 
-    if (GetKaelthasPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
         return 1.0f;
 
     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
@@ -378,7 +378,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValueInEncounter(Actio
     if (!kaelthas)
         return 1.0f;
 
-    return GetKaelthasPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
+    return GetKaelthasTkPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValueInEncounter(Action* action)
@@ -406,7 +406,7 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(
     if (!kaelthas)
         return 1.0f;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase == PHASE_NONE)
         return 1.0f;
 
@@ -446,7 +446,7 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValueInEncounter(Action* 
     if (!kaelthas)
         return 1.0f;
 
-    if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return 1.0f;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
@@ -486,7 +486,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValueInEncounter(Action* ac
     if (!kaelthas)
         return 1.0f;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase == PHASE_NONE)
         return 1.0f;
 

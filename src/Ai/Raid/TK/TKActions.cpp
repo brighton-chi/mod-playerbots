@@ -683,8 +683,8 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     constexpr float searchStep = M_PI / 12.0f;
     constexpr float minSearchDist = 1.0f;
     constexpr float searchDistStep = 1.0f;
-    constexpr float minDistFromBoss = 20.5f;
-    constexpr float maxDistFromBoss = 28.5f;
+    constexpr float minDistFromBoss = 35.5f;
+    constexpr float maxDistFromBoss = 43.5f;
     constexpr uint8 numAngles = 24;
     constexpr uint8 numDistSteps = 39;
     constexpr float safeDistanceSq = ARCANE_ORB_SAFE_DISTANCE * ARCANE_ORB_SAFE_DISTANCE;
@@ -707,7 +707,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
             float const x = botX + dist * std::cos(angle);
             float const y = botY + dist * std::sin(angle);
 
-            float const distFromBoss = voidReaver->GetDistance2d(x, y);
+            float const distFromBoss = voidReaver->GetExactDist2d(x, y);
             if (distFromBoss < minDistFromBoss || distFromBoss > maxDistFromBoss)
                 continue;
 
@@ -847,8 +847,9 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     if (!thaladred)
         return false;
 
-    constexpr float safeDistance = 15.0f;
-    float const currentDistance = bot->GetDistance2d(thaladred);
+    // Thaladred's CombatReach is 4.5y
+    constexpr float safeDistance = 20.0f;
+    float const currentDistance = bot->GetExactDist2d(thaladred);
     if (currentDistance >= safeDistance)
         return false;
 
@@ -975,7 +976,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::Execute(Event /*eve
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase == PHASE_NONE)
         return false;
 
@@ -1107,7 +1108,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase == PHASE_NONE)
         return false;
 
@@ -1259,13 +1260,12 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (isTank)
         return didAvoidDevastation;
 
-    constexpr float safeDistance = 12.0f;
-
     // Melee dps obviously has to stand near a weapon to hit it, so any weapon too close to the axe
     // is skipped temporarily.
+    constexpr float safeDistance = 12.0f;
     auto const isTooCloseToAxe = [&](Unit* candidate)
     {
-        return isMeleeDps && axe && candidate->GetDistance2d(axe) <= safeDistance;
+        return isMeleeDps && axe && candidate->GetExactDist2d(axe) <= safeDistance;
     };
 
     struct WeaponPriority
@@ -1349,8 +1349,8 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
     if (!isTank || hasAggroFromWeapon)
     {
-        float const safeDistance = isTank ? 15.0f : 10.0f;
-        float const currentDistance = bot->GetDistance2d(axe);
+        float const safeDistance = isTank ? 17.0f : 12.0f;
+        float const currentDistance = bot->GetExactDist2d(axe);
         if (currentDistance < safeDistance)
             result = MoveAway(axe, safeDistance - currentDistance);
     }
@@ -1383,7 +1383,8 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
-    constexpr float safeDistance = 13.0f;
+    // Devastation's CombatReach is 0y (so it defaults to DEFAULT_WORLD_OBJECT_SIZE, or 0.389y)
+    constexpr float safeDistance = 15.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
 
@@ -1837,18 +1838,19 @@ bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
     return FleePosition(flameStrike->GetPosition(), hazardRadius, minInterval);
 }
 
-bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
+bool KaelthasSunstriderAssignFinalPhaseTargetAction::Execute(Event /*event*/)
 {
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
-        return AssistTanksPickUpPhoenixes();
+        if (AssistTanksPickUpPhoenixes())
+            return true;
     }
 
-    return NonTanksDestroyEggsAndAvoidPhoenixes();
+    return NonTanksAssignTargetAndAvoidPhoenixes();
 }
 
-bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes()
+bool KaelthasSunstriderAssignFinalPhaseTargetAction::AssistTanksPickUpPhoenixes()
 {
     std::vector<Unit*> phoenixes;
     for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
@@ -1884,9 +1886,13 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes(
     return MoveFromGroup(safeDistance);
 }
 
-bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoidPhoenixes()
+// Priority: (1) Kael with Shock Barrier (to interrupt Pyroblast), (2) Eggs, (3) Kael without Shock
+// Barrier, and (4) Phoenixes but only for ranged during Kael's RP power-up scene. Phoenixes kill
+// themselves so having them included is only because bots have nothing else to do during the scene.
+bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoidPhoenixes()
 {
-    if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
+    Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
+    if (phoenix)
     {
         constexpr float safeDistance = 15.0f;
         float const currentDistance = bot->GetExactDist2d(phoenix);
@@ -1901,19 +1907,21 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
         }
     }
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return false;
+    Unit* kaelthas = GetKaelthasTk(botAI);
+    bool const isKaelthasAttackable =
+        kaelthas && !kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 
-    Unit* target = kaelthas;
+    Unit* target = nullptr;
+    if (isKaelthasAttackable && kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
+        target = kaelthas;
+    else if (Creature* egg = GetPhoenixEgg(bot))
+        target = egg;
+    else if (isKaelthasAttackable)
+        target = kaelthas;
+    else if (PlayerbotAI::IsRanged(bot))
+        target = phoenix;
 
-    if (!kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
-    {
-        if (Creature* egg = GetPhoenixEgg(bot))
-            target = egg;
-    }
-
-    return AI_VALUE(Unit*, "current target") != target && Attack(target);
+    return target && AI_VALUE(Unit*, "current target") != target && Attack(target);
 }
 
 bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)

@@ -117,8 +117,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider main tank position boss", ACTION_RAID),
         NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider phoenixes and eggs are spawning", {
-        NextAction("kael'thas sunstrider handle phoenixes and eggs", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should assign final phase target", {
+        NextAction("kael'thas sunstrider assign final phase target", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider raid member is mind controlled", {
         NextAction("kael'thas sunstrider break mind control", ACTION_EMERGENCY + 1) }));

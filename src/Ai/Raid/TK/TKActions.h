@@ -377,16 +377,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderHandlePhoenixesAndEggsAction : public AttackAction
+class KaelthasSunstriderAssignFinalPhaseTargetAction : public AttackAction
 {
 public:
-    KaelthasSunstriderHandlePhoenixesAndEggsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider handle phoenixes and eggs") {}
+    KaelthasSunstriderAssignFinalPhaseTargetAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kael'thas sunstrider assign final phase target") {}
     bool Execute(Event event) override;
 
 private:
     bool AssistTanksPickUpPhoenixes();
-    bool NonTanksDestroyEggsAndAvoidPhoenixes();
+    bool NonTanksAssignTargetAndAvoidPhoenixes();
 };
 
 class KaelthasSunstriderBreakMindControlAction : public AttackAction

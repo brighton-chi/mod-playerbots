@@ -207,7 +207,8 @@ class HighAstromancerSolarianSolariumPriestsSpawnedTrigger : public TempestKeepE
 {
 public:
     HighAstromancerSolarianSolariumPriestsSpawnedTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "high astromancer solarian solarium priests spawned") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "high astromancer solarian solarium priests spawned") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -235,7 +236,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger
+    : public TempestKeepEncounterTrigger
 {
 public:
     KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(PlayerbotAI* botAI)
@@ -261,7 +263,8 @@ class KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger : public TempestKeepEn
 {
 public:
     KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider capernian blows up near and far") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider capernian blows up near and far") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -282,7 +285,8 @@ class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public TempestKeepE
 {
 public:
     KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider determining advisor kill order") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider determining advisor kill order") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -292,7 +296,8 @@ class KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger : public TempestKeepE
 {
 public:
     KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider should manage advisor dps timer") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider should manage advisor dps timer") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -312,7 +317,8 @@ class KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger : public TempestKeepEn
 {
 public:
     KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider legendary axe casts whirlwind") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider legendary axe casts whirlwind") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -332,7 +338,8 @@ class KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger : public TempestKeepE
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider legendary weapons are equipped") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider legendary weapons are equipped") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -356,11 +363,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider phoenixes and eggs are spawning") {}
+    KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(
+              botAI, "kael'thas sunstrider should assign final phase target") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -370,7 +378,8 @@ class KaelthasSunstriderRaidMemberIsMindControlledTrigger : public TempestKeepEn
 {
 public:
     KaelthasSunstriderRaidMemberIsMindControlledTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider raid member is mind controlled") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider raid member is mind controlled") {}
 
 protected:
     bool IsActiveInEncounter() override;

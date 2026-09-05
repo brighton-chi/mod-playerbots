@@ -18,10 +18,10 @@ using namespace EncounterHelpers;
 
 bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
+    if (IsEncounterInProgress(bot, TK_MAP_ID))
         return false;
 
-    return !IsEncounterInProgress(bot, TK_MAP_ID);
+    return IsMechanicTrackerBot(bot, TK_MAP_ID);
 }
 
 bool TempestKeepBotIsStuckFallingTrigger::IsActive()
@@ -197,7 +197,7 @@ bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (PlayerbotAI::IsTank(bot) && phase == PHASE_ALL_ADVISORS)
         return false;
 
@@ -213,7 +213,7 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS;
 }
 
@@ -256,7 +256,7 @@ bool KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger::IsActiveInEncounter
     if (!kaelthas)
         return false;
 
-    if (GetKaelthasPhase(kaelthas) != PHASE_ALL_ADVISORS)
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_ALL_ADVISORS)
         return false;
 
     Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
@@ -284,7 +284,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS;
 }
 
@@ -297,7 +297,7 @@ bool KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    return GetKaelthasPhase(kaelthas) == PHASE_SINGLE_ADVISOR;
+    return GetKaelthasTkPhase(kaelthas) == PHASE_SINGLE_ADVISOR;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActiveInEncounter()
@@ -306,7 +306,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    if (GetKaelthasPhase(kaelthas) != PHASE_WEAPONS)
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_WEAPONS)
         return false;
 
     return !PlayerbotAI::IsMainTank(bot);
@@ -324,7 +324,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasPhase(kaelthas);
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
         return false;
 
@@ -362,9 +362,8 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (AI_VALUE2(bool, "combat", "self target"))
         return false;
 
-    constexpr uint32 kaelthasDbGuid = 158218;
     auto const& creatureStore = bot->GetMap()->GetCreatureBySpawnIdStore();
-    auto it = creatureStore.find(kaelthasDbGuid);
+    auto it = creatureStore.find(KAELTHAS_DB_GUID);
     if (it == creatureStore.end())
         return false;
 
@@ -390,25 +389,19 @@ bool KaelthasSunstriderBossHasEnteredTheFightTrigger::IsActiveInEncounter()
     if (!kaelthas)
         return false;
 
-    return GetKaelthasPhase(kaelthas) == PHASE_FINAL;
+    return GetKaelthasTkPhase(kaelthas) == PHASE_FINAL;
 }
 
-bool KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger::IsActiveInEncounter()
+bool KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger::IsActiveInEncounter()
 {
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas || kaelthas->GetVictim() == bot)
-        return false;
-
-    if (GetKaelthasPhase(kaelthas) != PHASE_FINAL)
-        return false;
-
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    if (AI_VALUE2(Unit*, "find target", "phoenix"))
-        return true;
+    Unit* kaelthas = GetKaelthasTk(botAI);
+    if (!kaelthas || kaelthas->GetVictim() == bot)
+        return false;
 
-    return GetPhoenixEgg(bot);
+    return GetKaelthasTkPhase(kaelthas) == PHASE_FINAL;
 }
 
 bool KaelthasSunstriderRaidMemberIsMindControlledTrigger::IsActiveInEncounter()

@@ -121,8 +121,8 @@ public:
         creators["kael'thas sunstrider raid member is mind controlled"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_raid_member_is_mind_controlled;
 
-        creators["kael'thas sunstrider phoenixes and eggs are spawning"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_phoenixes_and_eggs_are_spawning;
+        creators["kael'thas sunstrider should assign final phase target"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_assign_final_phase_target;
 
         creators["kael'thas sunstrider boss is manipulating gravity"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_manipulating_gravity;
@@ -240,8 +240,8 @@ private:
     static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(PlayerbotAI* botAI) {
         return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_phoenixes_and_eggs_are_spawning(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_should_assign_final_phase_target(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI);
