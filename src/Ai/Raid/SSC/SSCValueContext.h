@@ -14,9 +14,6 @@
 #include <string>
 #include <vector>
 
-using SscHelpers::SscSpells;
-using namespace EncounterHelpers;
-
 class SscHazardPositionsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -29,7 +26,7 @@ public:
 protected:
     std::vector<Position> Calculate() override
     {
-        return GetDynamicObjectPositions(bot, _searchRadius, _spellId);
+        return EncounterHelpers::GetDynamicObjectPositions(bot, _searchRadius, _spellId);
     }
 
 private:
@@ -48,7 +45,7 @@ public:
 private:
     static UntypedValue* ssc_toxic_pool(PlayerbotAI* botAI) {
         return new SscHazardPositionsValue(
-            botAI, "ssc toxic pool", SscHelpers::Id(SscSpells::SPELL_TOXIC_POOL),
+            botAI, "ssc toxic pool", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_POOL),
             SscHelpers::TOXIC_POOL_SEARCH_RADIUS);
     }
 };

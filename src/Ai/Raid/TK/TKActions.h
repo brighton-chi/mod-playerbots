@@ -15,8 +15,6 @@
 #include <utility>
 #include <vector>
 
-using namespace TkHelpers;
-
 // General
 
 class TempestKeepResetEncounterStatesAction : public Action
@@ -331,10 +329,10 @@ public:
 private:
     struct WeaponInfo
     {
-        TkNpcs npcEntry;
-        TkItems itemId;
+        TkHelpers::TkNpcs npcEntry;
+        TkHelpers::TkItems itemId;
     };
-    bool ShouldBotLootWeapon(TkNpcs weaponEntry);
+    bool ShouldBotLootWeapon(TkHelpers::TkNpcs weaponEntry);
     bool LootWeapon(uint32 weaponEntry, uint32 itemId);
     bool EquipLegendaryWeapon(uint32 itemId);
 };
