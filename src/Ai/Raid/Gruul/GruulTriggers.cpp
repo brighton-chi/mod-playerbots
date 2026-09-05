@@ -37,12 +37,12 @@ bool HighKingMaulgarThreeOgresNeedMeleeTanksTrigger::IsActiveInEncounter()
 
 bool HighKingMaulgarKroshNeedsMageTankTrigger::IsActiveInEncounter()
 {
-    return IsKroshMageTank(bot) && AI_VALUE2(Unit*, "find target", "krosh firehand");
+    return IsKroshMageTank(botAI) && AI_VALUE2(Unit*, "find target", "krosh firehand");
 }
 
 bool HighKingMaulgarKigglerNeedsMoonkinTankTrigger::IsActiveInEncounter()
 {
-    return IsKigglerMoonkinTank(bot) && AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    return IsKigglerMoonkinTank(botAI) && AI_VALUE2(Unit*, "find target", "kiggler the crazed");
 }
 
 bool HighKingMaulgarDeterminingKillOrderTrigger::IsActiveInEncounter()
@@ -59,10 +59,10 @@ bool HighKingMaulgarDeterminingKillOrderTrigger::IsActiveInEncounter()
     if (IsBlindeyeTank(bot))
         return !AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    if (IsKroshMageTank(bot))
+    if (IsKroshMageTank(botAI))
         return !AI_VALUE2(Unit*, "find target", "krosh firehand");
 
-    if (IsKigglerMoonkinTank(bot))
+    if (IsKigglerMoonkinTank(botAI))
         return !AI_VALUE2(Unit*, "find target", "kiggler the crazed");
 
     return true;
@@ -79,7 +79,7 @@ bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActiveInEncounter()
 
 bool HighKingMaulgarShouldStandBackFromKroshTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot) || IsKroshMageTank(bot))
+    if (PlayerbotAI::IsTank(bot) || IsKroshMageTank(botAI))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "krosh firehand");

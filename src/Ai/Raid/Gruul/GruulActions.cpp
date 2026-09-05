@@ -5,12 +5,12 @@
  */
 
 #include "GruulActions.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "GruulHelpers.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <vector>
 
@@ -278,7 +278,7 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            GET_PLAYERBOT_AI(member))
+            member->GetMapId() == GRUUL_MAP_ID && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -314,12 +314,12 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     else if (hunterIndex == 2)
     {
         ogre = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-        tank = GetKigglerMoonkinTank(bot);
+        tank = GetKigglerMoonkinTank(botAI);
     }
     else if (hunterIndex == 3)
     {
         ogre = AI_VALUE2(Unit*, "find target", "krosh firehand");
-        tank = GetKroshMageTank(bot);
+        tank = GetKroshMageTank(botAI);
     }
 
     if (!ogre || !tank || !tank->IsAlive())
@@ -374,23 +374,27 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
+            if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
+                !PlayerbotAI::IsRanged(member))
+            {
                 continue;
+            }
 
             members.push_back(member);
         }
 
+        if (members.empty())
+            return false;
+
         auto it = std::find(members.begin(), members.end(), bot);
-        uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
-        uint8 count = members.size();
+        size_t const botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
 
         constexpr float minRadius = 25.0f;
         constexpr float maxRadius = 40.0f;
-        float angle = 2 * M_PI * botIndex / count;
-        float radius = minRadius + static_cast<float>(rand()) /
-            static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
-        float targetX = position.GetPositionX() + radius * cos(angle);
-        float targetY = position.GetPositionY() + radius * sin(angle);
+        float const angle = 2.0f * M_PI * botIndex / members.size();
+        float const radius = frand(minRadius, maxRadius);
+        float const targetX = position.GetPositionX() + radius * std::cos(angle);
+        float const targetY = position.GetPositionY() + radius * std::sin(angle);
 
         _initialPosition = Position(targetX, targetY, position.GetPositionZ());
         _hasInitialPosition = true;

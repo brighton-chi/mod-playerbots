@@ -65,7 +65,7 @@ inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = 17.0f;
 // turned away from the wall as a result, with melee dps between him and the wall and failing the
 // straight-away movement.
 inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = 12.0f;
-// Distance for the multiplier, which as usual, needs to be a little more than the escape distance.
+// Distance for the multiplier, which as usual, is a little more than the escape distance.
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 // Radius is 30y with 2y of MoveAway padding. Stays inside the mod's "enemy out of spell" threshold
 // (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), allowing the
@@ -76,9 +76,9 @@ inline constexpr float KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE = 32.0f;
 // only that damage has a linear relationship with distance.
 inline constexpr float GRUUL_SHATTER_SAFE_DISTANCE = 22.0f;
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
-// Feeds the "high king maulgar wild fel stalkers" value
+// For the "high king maulgar wild fel stalkers" value.
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
-// Feeds the "high king maulgar krosh mage tank" and "high king maulgar kiggler moonkin tank" values
+// For the "high king maulgar krosh mage tank" and "high king maulgar kiggler moonkin tank" values.
 inline constexpr uint32 CASTER_TANK_CACHE_INTERVAL_MS = 1000;
 
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
@@ -91,11 +91,11 @@ bool IsMaulgarTank(Player* bot);
 bool IsOlmTank(Player* bot);
 bool IsBlindeyeTank(Player* bot);
 ObjectGuid FindKroshMageTankGuid(Player* bot);
-Player* GetKroshMageTank(Player* bot);
-bool IsKroshMageTank(Player* bot);
+Player* GetKroshMageTank(PlayerbotAI* botAI);
+bool IsKroshMageTank(PlayerbotAI* botAI);
 ObjectGuid FindKigglerMoonkinTankGuid(Player* bot);
-Player* GetKigglerMoonkinTank(Player* bot);
-bool IsKigglerMoonkinTank(Player* bot);
+Player* GetKigglerMoonkinTank(PlayerbotAI* botAI);
+bool IsKigglerMoonkinTank(PlayerbotAI* botAI);
 bool HasGroundSlam(Player* bot);
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot);
 std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI);

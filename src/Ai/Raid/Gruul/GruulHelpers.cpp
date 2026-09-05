@@ -24,6 +24,8 @@ bool IsMaulgarTank(Player* bot)
 
 bool IsOlmTank(Player* bot)
 {
+    // Although passing true for indexLivingOnly means a death will swap the Blindeye tank to Olm,
+    // this is intended since Blindeye dies first and Olm is more important to control anyway.
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
@@ -69,24 +71,18 @@ ObjectGuid FindKroshMageTankGuid(Player* bot)
     return highestHpBotMage ? highestHpBotMage->GetGUID() : ObjectGuid::Empty;
 }
 
-Player* GetKroshMageTank(Player* bot)
+Player* GetKroshMageTank(PlayerbotAI* botAI)
 {
-    // Every bot in the raid walks to the same answer, and the value system caches per bot, so this
-    // does not collapse 24 walks into one - it collapses each bot's walk-per-tick into one per
-    // interval, which is where the cost was.
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    ObjectGuid const guid = botAI
-        ? botAI->GetAiObjectContext()->GetValue<ObjectGuid>("high king maulgar krosh mage tank")->Get()
-        : FindKroshMageTankGuid(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    ObjectGuid const guid = AI_VALUE(ObjectGuid, "high king maulgar krosh mage tank");
 
-    // Resolved on every call rather than held as a pointer: the tank can log out or leave inside
-    // the interval, and a cached Player* would outlive them.
     return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
 }
 
-bool IsKroshMageTank(Player* bot)
+bool IsKroshMageTank(PlayerbotAI* botAI)
 {
-    return bot->getClass() == CLASS_MAGE && GetKroshMageTank(bot) == bot;
+    Player* bot = botAI->GetBot();
+    return bot->getClass() == CLASS_MAGE && GetKroshMageTank(botAI) == bot;
 }
 
 ObjectGuid FindKigglerMoonkinTankGuid(Player* bot)
@@ -127,19 +123,18 @@ ObjectGuid FindKigglerMoonkinTankGuid(Player* bot)
     return highestHpBotMoonkin ? highestHpBotMoonkin->GetGUID() : ObjectGuid::Empty;
 }
 
-Player* GetKigglerMoonkinTank(Player* bot)
+Player* GetKigglerMoonkinTank(PlayerbotAI* botAI)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    ObjectGuid const guid = botAI
-        ? botAI->GetAiObjectContext()->GetValue<ObjectGuid>("high king maulgar kiggler moonkin tank")->Get()
-        : FindKigglerMoonkinTankGuid(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    ObjectGuid const guid = AI_VALUE(ObjectGuid, "high king maulgar kiggler moonkin tank");
 
     return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
 }
 
-bool IsKigglerMoonkinTank(Player* bot)
+bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
 {
-    return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(bot) == bot;
+    Player* bot = botAI->GetBot();
+    return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(botAI) == bot;
 }
 
 bool HasGroundSlam(Player* bot)
@@ -150,9 +145,6 @@ bool HasGroundSlam(Player* bot)
 
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
 {
-    // A grid search is the most expensive check in the module, and the instance strategy can
-    // outlive leaving the instance (e.g. after a server reset), so gate it on the map rather than
-    // running it wherever the bot happens to be.
     if (bot->GetMapId() != GRUUL_MAP_ID)
         return {};
 
@@ -168,10 +160,6 @@ GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
             guids.push_back(creature->GetGUID());
     }
 
-    // The search walks cells outward from the searcher's own cell (Cell::VisitObjects ->
-    // ComputeCellCoord on the caller's position), so two bots standing apart get the same stalkers
-    // back in a different order. Sorting makes the list canonical, which is what lets the banish
-    // assignment pair warlock i with stalker i across the whole raid.
     std::sort(guids.begin(), guids.end(), [](ObjectGuid const& lhs, ObjectGuid const& rhs)
     {
         return lhs.GetCounter() < rhs.GetCounter();
@@ -182,12 +170,9 @@ GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
 
 std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>(
-            "high king maulgar wild fel stalkers")->RefGet();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& guids = AI_VALUE_REF(GuidVector, "high king maulgar wild fel stalkers");
 
-    // The list is up to WILD_FEL_STALKER_CACHE_INTERVAL_MS stale, so a stalker may have died since
-    // the scan. Dropping it here re-compacts the assignment rather than leaving a hole in it.
     std::vector<Unit*> felStalkers;
     felStalkers.reserve(guids.size());
     for (ObjectGuid const& guid : guids)

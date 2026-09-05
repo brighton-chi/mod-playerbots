@@ -13,7 +13,6 @@
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
-#include "ShamanActions.h"
 
 using namespace GruulHelpers;
 using namespace EncounterHelpers;
@@ -83,7 +82,7 @@ float HighKingMaulgarRestrictTauntingMultiplier::GetValueInEncounter(Action* act
     if (!kiggler)
         return 1.0f;
 
-    if (!GetKigglerMoonkinTank(bot))
+    if (!GetKigglerMoonkinTank(botAI))
         return 1.0f;
 
     return AI_VALUE(Unit*, "current target") == kiggler ? 0.0f : 1.0f;
@@ -139,17 +138,16 @@ float HighKingMaulgarControlHunterActionsMultiplier::GetValueInEncounter(Action*
     if (!isMainTankMisdirect && !dynamic_cast<CastArcaneShotAction*>(action))
         return 1.0f;
 
-    // Krosh/Kiggler will be the last to die before Maulgar
-    // When only Maulgar is left, the standard Misdirection strategy is fine
+    // Krosh/Kiggler will be the last to die before Maulgar.
+    // When only Maulgar is left, the standard Misdirection strategy is fine.
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (isMainTankMisdirect &&
-        ((AI_VALUE2(Unit*, "find target", "krosh firehand")) ||
-         (AI_VALUE2(Unit*, "find target", "kiggler the crazed"))))
+        (krosh || AI_VALUE2(Unit*, "find target", "kiggler the crazed")))
     {
         return 0.0f;
     }
 
-    // Arcane Shot removes Spell Shield, which the mage tank needs to survive
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    // Arcane Shot removes Spell Shield, which the mage tank needs to survive.
     return krosh && action->GetTarget() == krosh ? 0.0f : 1.0f;
 }
 
@@ -171,7 +169,7 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (!AI_VALUE2(Unit*, "find target", "krosh firehand"))
         return 1.0f;
 
-    return GetKroshMageTank(bot) == bot ? 0.0f : 1.0f;
+    return GetKroshMageTank(botAI) == bot ? 0.0f : 1.0f;
 }
 
 // Gruul the Dragonkiller

@@ -13,7 +13,7 @@
 #include "Value.h"
 
 // Olm summons a Wild Fel Stalker every 48.5s (practically, that means you're not going to see more
-// than 1 or 2, but we cache the grid search anyway.
+// than 1 or 2, but we cache the grid search anyway).
 class HighKingMaulgarWildFelStalkersValue : public CalculatedValue<GuidVector>
 {
 public:
