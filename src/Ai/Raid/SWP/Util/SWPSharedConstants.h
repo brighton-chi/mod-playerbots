@@ -170,7 +170,7 @@ inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
 // Challenging Shout and Challenging Roar.
 inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
-// Feeds the "swp volatile fiend" value.
+// For the "swp volatile fiend" value.
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 // Shared by the trigger and the action so the two cannot drift apart.
 inline constexpr float VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;

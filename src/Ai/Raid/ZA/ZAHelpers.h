@@ -183,7 +183,7 @@ inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 inline constexpr float ZA_FREEZING_TRAP_SAFE_DISTANCE = 11.0f;
 // Also used for HexLordMalacrassStayAwayFromFreezingTrapMultiplier.
 inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
-// Feeds the "hex lord malacrass freezing trap" value.
+// For the "hex lord malacrass freezing trap" value.
 inline constexpr uint32 FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
 ObjectGuid FindNearbyFreezingTrapGuid(Player* bot);
 GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);

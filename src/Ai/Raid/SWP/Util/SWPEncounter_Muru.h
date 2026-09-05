@@ -55,9 +55,9 @@ inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 // For the "muru encounter targets" value. Only list membership is cached, not states read (like
 // auras, casting, health).
 inline constexpr uint32 MURU_ENCOUNTER_TARGETS_CACHE_INTERVAL_MS = 200;
-// Feeds the "muru void zones" value.
+// For the "muru void zones" value.
 inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
-// Feeds the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
+// For the "muru singularity" value. Only one exists at a time: Entropius casts Black Hole every
 // 29s, and Singularities despawn after 18s.
 inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
 

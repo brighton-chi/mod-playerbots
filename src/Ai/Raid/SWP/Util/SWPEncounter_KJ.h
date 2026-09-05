@@ -64,7 +64,7 @@ inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
 inline constexpr float KILJAEDEN_PHASE4_HP_THRESHOLD = 55.0f;
 inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
-// Feeds the "kiljaeden hands" value.
+// For the "kiljaeden hands" value.
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 // The presence of Dragon Orbs is cached, but GO_FLAG_IN_USE and GO_FLAG_NOT_SELECTABLE are not.
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;

@@ -37,7 +37,7 @@ struct EredarTwinsBlazeTargetState
 // Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z.
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
 
-// Feeds the "eredar twins blaze" value.
+// For the "eredar twins blaze" value.
 inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
 // The Blaze trap GO casts 45246, dealing damage in a 3y radius; extra 1.5y is avoidance buffer.
 inline constexpr float BLAZE_DANGER_RADIUS = 4.5f;
