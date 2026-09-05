@@ -32,6 +32,9 @@ bool IsApproachMovement(Action* action)
     return dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action);
+        // CombatFormationMoveAction is the parent of SetBehindTargetAction, which does "approach"
+        // targets by circling around them when they are near, even if the bot is otherwise held
+        // in position.
 }
 
 bool IsHazardousMovement(Action* action)

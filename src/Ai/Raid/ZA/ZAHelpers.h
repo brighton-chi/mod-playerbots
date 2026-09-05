@@ -51,11 +51,12 @@ enum class ZaSpells : uint32
     SPELL_SHAPE_OF_THE_EAGLE        = 42606,
     SPELL_SHAPE_OF_THE_LYNX         = 42607,
     SPELL_SHAPE_OF_THE_DRAGONHAWK   = 42608,
+    // SPELL_CLAW_RAGE              = 43149,
+
     // 43149 is a 6s aura Zul'jin self-casts during Lynx phase that ticks twice a second, each tick
     // casting 43150 on a random target. It's probably his most dangerous ability, but I'm not sure
     // how to get the target without a spell hook or redeclaration of his bossai, neither of which
     // seem worth it for this. Adding this comment in case somebody wants to implement a method.
-    // SPELL_CLAW_RAGE              = 43149,
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
@@ -120,7 +121,7 @@ inline constexpr uint32 AKILZON_STORM_PERIOD_MS = 60000;
 inline constexpr uint32 AKILZON_STORM_LEAD_MS = 5000;
 inline constexpr uint32 AKILZON_STORM_DURATION_MS = 10000;
 
-// ~Center of the platform
+// Centerish of the platform
 inline Position const AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 
 extern std::unordered_map<uint32, uint32> akilzonStormTimer;
@@ -158,7 +159,7 @@ inline constexpr uint32 FIRE_BOMB_CACHE_INTERVAL_MS = 1000;
 // at this point. Using 33% accounts for some delay for the hatching event to occur.
 inline constexpr float JANALAI_HATCH_ALL_HEALTH_PCT = 33.0f;
 
-// ~Center of the platform
+// Centerish of the platform
 inline Position const JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
 // The safe zone is about the entire reachable platform, minus the destroyed, fenced-off corner and
 // the parts that jut out on each side and connect to the bridges to the eggs. The measured area
@@ -206,12 +207,12 @@ GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);
 
 // Zul'jin
 
-// 4 Cyclones (Feather Vortex NPCs) chase random raid members at 7y/s (player run speed) and have
+// 4 Cyclones (NPC_FEATHER_VORTEX) chase random raid members at 7y/s (player run speed) and have
 // a 4y radius. They're not really dodgeable as a result, so the approach is just to spread ranged
 // out for the Cyclones to have to travel farther and not be able to hit as many targets at once.
 inline constexpr float ZULJIN_SPREAD_Z = 45.111f;
 
-// ~Center of the platform
+// Centerish of the platform
 inline Position const ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{
     // Healer slots.
