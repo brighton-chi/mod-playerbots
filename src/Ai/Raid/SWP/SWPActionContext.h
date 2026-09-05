@@ -263,7 +263,8 @@ private:
         return new KalecgosDisperseRangedAction(botAI);
     }
     static Action* kalecgos_remove_arcane_buffet(PlayerbotAI* botAI) {
-        return new KalecgosRemoveArcaneBuffetAction(botAI);
+        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+            botAI, "kalecgos remove arcane buffet");
     }
     static Action* kalecgos_sathrovarr_tank_stand_with_kalec(PlayerbotAI* botAI) {
         return new KalecgosSathrovarrTankStandWithKalecAction(botAI);
@@ -355,7 +356,8 @@ private:
         return new EredarTwinsStackInRoomCenterAction(botAI);
     }
     static Action* eredar_twins_remove_flame_sear(PlayerbotAI* botAI) {
-        return new EredarTwinsRemoveFlameSearAction(botAI);
+        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+            botAI, "eredar twins remove flame sear");
     }
     static Action* eredar_twins_dps_prioritize_sacrolash(PlayerbotAI* botAI) {
         return new EredarTwinsDpsPrioritizeSacrolashAction(botAI);
@@ -437,7 +439,8 @@ private:
         return new KiljaedenPositionRangedAndAvoidArmageddonsAction(botAI);
     }
     static Action* kiljaeden_remove_fire_bloom(PlayerbotAI* botAI) {
-        return new KiljaedenRemoveFireBloomAction(botAI);
+        return new SunwellPlateauRemoveDebuffWithImmunityAction(
+            botAI, "kil'jaeden remove fire bloom");
     }
     static Action* kiljaeden_stack_for_shield_of_the_blue(PlayerbotAI* botAI) {
         return new KiljaedenStackForShieldOfTheBlueAction(botAI);

@@ -9,7 +9,7 @@
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 
@@ -88,14 +88,8 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_MAGE)
-    {
-        return botAI->CanCastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot) &&
-            botAI->CastSpell(Id(SwpSpells::SPELL_ICE_BLOCK), bot);
-    }
-
-    return botAI->CanCastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot) &&
-        botAI->CastSpell(Id(SwpSpells::SPELL_DIVINE_SHIELD), bot);
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
 bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)

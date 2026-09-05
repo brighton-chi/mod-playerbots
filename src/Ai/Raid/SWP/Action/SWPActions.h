@@ -28,6 +28,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class SunwellPlateauRemoveDebuffWithImmunityAction : public Action
+{
+public:
+    SunwellPlateauRemoveDebuffWithImmunityAction(PlayerbotAI* botAI, std::string const name)
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class SunwellPlateauRemoveAuraAction : public Action
 {
 public:
@@ -111,14 +119,6 @@ public:
 
 private:
     bool _initialRangedPositionReached = false;
-};
-
-class KalecgosRemoveArcaneBuffetAction : public Action
-{
-public:
-    KalecgosRemoveArcaneBuffetAction(PlayerbotAI* botAI)
-        : Action(botAI, "kalecgos remove arcane buffet") {}
-    bool Execute(Event event) override;
 };
 
 class KalecgosSathrovarrTankStandWithKalecAction : public MovementAction
@@ -368,14 +368,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsRemoveFlameSearAction : public Action
-{
-public:
-    EredarTwinsRemoveFlameSearAction(PlayerbotAI* botAI)
-        : Action(botAI, "eredar twins remove flame sear") {}
-    bool Execute(Event event) override;
-};
-
 class EredarTwinsDpsPrioritizeSacrolashAction : public AttackAction
 {
 public:
@@ -620,14 +612,6 @@ public:
 private:
     bool TryGetRangedPosition(Position& position) const;
     bool TryAdjustRangedForArmageddon(Position& position);
-};
-
-class KiljaedenRemoveFireBloomAction : public Action
-{
-public:
-    KiljaedenRemoveFireBloomAction(PlayerbotAI* botAI)
-        : Action(botAI, "kil'jaeden remove fire bloom") {}
-    bool Execute(Event event) override;
 };
 
 class KiljaedenStackForShieldOfTheBlueAction : public MovementAction
