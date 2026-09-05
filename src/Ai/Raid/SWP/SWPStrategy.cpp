@@ -113,6 +113,9 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
         NextAction("eredar twins melee jump from balcony", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("eredar twins should announce alythess tank", {
+        NextAction("eredar twins announce alythess tank", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("eredar twins pulling bosses", {
         NextAction("eredar twins misdirect bosses to tanks", ACTION_RAID + 2) }));
 

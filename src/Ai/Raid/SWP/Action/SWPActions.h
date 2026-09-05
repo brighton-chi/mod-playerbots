@@ -310,6 +310,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class EredarTwinsAnnounceAlythessTankAction : public Action
+{
+public:
+    EredarTwinsAnnounceAlythessTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "eredar twins announce alythess tank") {}
+    bool Execute(Event event) override;
+};
+
 class EredarTwinsMisdirectBossesToTanksAction : public Action
 {
 public:

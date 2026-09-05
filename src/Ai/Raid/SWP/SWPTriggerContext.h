@@ -114,6 +114,9 @@ public:
         creators["eredar twins melee is at balcony"] =
             &RaidSwpTriggerContext::eredar_twins_melee_is_at_balcony;
 
+        creators["eredar twins should announce alythess tank"] =
+            &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
+
         creators["eredar twins pulling bosses"] =
             &RaidSwpTriggerContext::eredar_twins_pulling_bosses;
 
@@ -323,6 +326,9 @@ private:
     // Eredar Twins
     static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI) {
         return new EredarTwinsMeleeIsAtBalconyTrigger(botAI);
+    }
+    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI) {
+        return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
     }
     static Trigger* eredar_twins_pulling_bosses(PlayerbotAI* botAI) {
         return new EredarTwinsPullingBossesTrigger(botAI);

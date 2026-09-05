@@ -534,7 +534,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsHeal(bot)) // early return; already excluded from ShouldHoldTwinThreat()
+    if (PlayerbotAI::IsHeal(bot)) // early return; the threat hold already excludes healers
         return 1.0f;
 
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -546,10 +546,9 @@ float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
 
-    bool const shouldHoldSacrolashThreat = sacrolash && !PlayerbotAI::IsTank(bot) &&
-        ShouldHoldTwinThreat(bot, sacrolash, SACROLASH_THREAT_HOLD_RATIO, IsAnySacrolashTank);
-    bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldTwinThreat(bot, alythess, ALYTHESS_THREAT_HOLD_RATIO, IsAlythessTank);
+    bool const shouldHoldSacrolashThreat =
+        sacrolash && !PlayerbotAI::IsTank(bot) && ShouldHoldSacrolashThreat(bot, sacrolash);
+    bool const shouldHoldAlythessThreat = alythess && ShouldHoldAlythessThreat(bot, alythess);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;

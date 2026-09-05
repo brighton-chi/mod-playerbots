@@ -473,6 +473,19 @@ bool EredarTwinsMeleeIsAtBalconyTrigger::IsActiveInEncounter()
     return bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z;
 }
 
+bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
+{
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
+        return false;
+
+    auto const itr = eredarTwinsTankAssignments.find(bot->GetInstanceId());
+    if (itr != eredarTwinsTankAssignments.end() && itr->second.announcementMs)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
+        AI_VALUE2(Unit*, "find target", "lady sacrolash");
+}
+
 bool EredarTwinsPullingBossesTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)

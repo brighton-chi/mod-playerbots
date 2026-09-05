@@ -337,6 +337,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class EredarTwinsShouldAnnounceAlythessTankTrigger : public SunwellPlateauEncounterTrigger
+{
+public:
+    EredarTwinsShouldAnnounceAlythessTankTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "eredar twins should announce alythess tank") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class EredarTwinsPullingBossesTrigger : public Trigger
 {
 public:

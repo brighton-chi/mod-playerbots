@@ -82,6 +82,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
     reset |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
     reset |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
+    reset |= eredarTwinsTankAssignments.erase(instanceId) > 0;
     reset |= muruDarknessStates.erase(instanceId) > 0;
     reset |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
     reset |= kiljaedenEncounterStates.erase(instanceId) > 0;

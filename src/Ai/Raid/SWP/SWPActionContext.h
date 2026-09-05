@@ -114,6 +114,9 @@ public:
         creators["eredar twins melee jump from balcony"] =
             &RaidSwpActionContext::eredar_twins_melee_jump_from_balcony;
 
+        creators["eredar twins announce alythess tank"] =
+            &RaidSwpActionContext::eredar_twins_announce_alythess_tank;
+
         creators["eredar twins misdirect bosses to tanks"] =
             &RaidSwpActionContext::eredar_twins_misdirect_bosses_to_tanks;
 
@@ -332,6 +335,9 @@ private:
     // Eredar Twins
     static Action* eredar_twins_melee_jump_from_balcony(PlayerbotAI* botAI) {
         return new EredarTwinsMeleeJumpFromBalconyAction(botAI);
+    }
+    static Action* eredar_twins_announce_alythess_tank(PlayerbotAI* botAI) {
+        return new EredarTwinsAnnounceAlythessTankAction(botAI);
     }
     static Action* eredar_twins_misdirect_bosses_to_tanks(PlayerbotAI* botAI) {
         return new EredarTwinsMisdirectBossesToTanksAction(botAI);
