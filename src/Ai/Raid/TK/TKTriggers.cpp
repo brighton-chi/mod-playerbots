@@ -77,9 +77,9 @@ bool AlarEmbersExplodeUponDeathTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "ember of al'ar");
 }
 
-bool AlarKillingEmbersDamagesBossTrigger::IsActiveInEncounter()
+bool AlarShouldAssignNonTankTargetTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRangedDps(bot) && AI_VALUE2(Unit*, "find target", "ember of al'ar");
+    return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
 bool AlarIncomingFlameQuillsTrigger::IsActiveInEncounter()

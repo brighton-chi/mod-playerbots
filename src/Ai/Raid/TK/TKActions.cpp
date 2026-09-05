@@ -184,9 +184,6 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
     if (!alar || alar->GetHealthPct() <= 5.0f)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != alar)
-        return Attack(alar);
-
     int8 platformIndex = GetAlarPlatformIndex(alar);
     if (platformIndex == LOCATION_NONE)
         return false;
@@ -322,33 +319,35 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     return MoveFromGroup(safeDistance);
 }
 
-bool AlarRangedDpsPrioritizeEmbersAction::Execute(Event /*event*/)
+bool AlarAssignNonTankTargetAction::Execute(Event /*event*/)
 {
-    auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
-    Unit* ember = firstEmber;
-    if (!ember && secondEmber)
-        ember = secondEmber;
-
     Unit* target = nullptr;
-    if (ember)
+    if (PlayerbotAI::IsRanged(bot))
     {
-        target = ember;
-        constexpr float safeDistance = 20.0f;
-        float const currentDistance = bot->GetExactDist2d(ember);
-        if (currentDistance < safeDistance)
+        auto const& [firstEmber, secondEmber] =
+            GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
+
+        Unit* ember = firstEmber;
+        if (!ember && secondEmber)
+            ember = secondEmber;
+
+        if (ember)
         {
-            bot->CastStop();
-            return MoveAway(ember, safeDistance - currentDistance);
+            target = ember;
+            constexpr float safeDistance = 20.0f;
+            float const currentDistance = bot->GetExactDist2d(ember);
+            if (currentDistance < safeDistance)
+            {
+                bot->CastStop();
+                return MoveAway(ember, safeDistance - currentDistance);
+            }
         }
     }
 
     if (!target)
-    {
-        if (Unit* alar = AI_VALUE2(Unit*, "find target", "al'ar"))
-            target = alar;
-    }
+        target = AI_VALUE2(Unit*, "find target", "al'ar");
 
-    if (AI_VALUE(Unit*, "current target") == target)
+    if (!target || AI_VALUE(Unit*, "current target") == target)
         return false;
 
     return Attack(target);
@@ -803,8 +802,11 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+        if (!member || !member->IsAlive() || member->GetMapId() != TK_MAP_ID ||
+            !GET_PLAYERBOT_AI(member))
+        {
             continue;
+        }
 
         if (PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsMainTank(member))
             meleeMembers.push_back(member);
@@ -866,7 +868,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            GET_PLAYERBOT_AI(member))
+            member->GetMapId() == TK_MAP_ID && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -1011,8 +1013,11 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != TK_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
             continue;
+        }
 
         if (PlayerbotAI::IsHeal(member))
             healers.push_back(member);

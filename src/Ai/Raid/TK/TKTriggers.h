@@ -88,11 +88,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class AlarKillingEmbersDamagesBossTrigger : public TempestKeepEncounterTrigger
+class AlarShouldAssignNonTankTargetTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    AlarKillingEmbersDamagesBossTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar killing embers damages boss") {}
+    AlarShouldAssignNonTankTargetTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "al'ar should assign non-tank target") {}
 
 protected:
     bool IsActiveInEncounter() override;

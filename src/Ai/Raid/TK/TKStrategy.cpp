@@ -33,8 +33,8 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("al'ar embers explode upon death", {
         NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("al'ar killing embers damages boss", {
-        NextAction("al'ar ranged dps prioritize embers", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("al'ar should assign non-tank target", {
+        NextAction("al'ar assign non-tank target", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("al'ar incoming flame quills", {
         NextAction("al'ar jump from platform", ACTION_EMERGENCY + 7) }));

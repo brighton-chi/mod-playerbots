@@ -42,8 +42,8 @@ public:
         creators["al'ar assist tanks pick up embers"] =
             &RaidTempestKeepActionContext::alar_assist_tanks_pick_up_embers;
 
-        creators["al'ar ranged dps prioritize embers"] =
-            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers;
+        creators["al'ar assign non-tank target"] =
+            &RaidTempestKeepActionContext::alar_assign_non_tank_target;
 
         creators["al'ar jump from platform"] =
             &RaidTempestKeepActionContext::alar_jump_from_platform;
@@ -169,8 +169,8 @@ private:
     static Action* alar_assist_tanks_pick_up_embers(PlayerbotAI* botAI) {
         return new AlarAssistTanksPickUpEmbersAction(botAI);
     }
-    static Action* alar_ranged_dps_prioritize_embers(PlayerbotAI* botAI) {
-        return new AlarRangedDpsPrioritizeEmbersAction(botAI);
+    static Action* alar_assign_non_tank_target(PlayerbotAI* botAI) {
+        return new AlarAssignNonTankTargetAction(botAI);
     }
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) {
         return new AlarJumpFromPlatformAction(botAI);

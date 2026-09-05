@@ -6,7 +6,6 @@
 
 #include "TKHelpers.h"
 #include "EncounterHelpers.h"
-#include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "TKKaelthasBossAI.h"
 #include <limits>
