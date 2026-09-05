@@ -8,7 +8,6 @@
 #include "EncounterHelpers.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
-#include "InstanceScript.h"
 #include "Playerbots.h"
 
 using namespace HyjalHelpers;
@@ -18,11 +17,7 @@ using namespace EncounterHelpers;
 
 bool HyjalSummitNoEncounterInProgress::IsActive()
 {
-    if (bot->GetMapId() != HYJAL_MAP_ID)
-        return false;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return !IsEncounterInProgress(bot, HYJAL_MAP_ID);
 }
 
 bool HyjalPullingBossTrigger::IsActive()

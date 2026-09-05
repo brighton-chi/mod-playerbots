@@ -17,11 +17,7 @@ using namespace EncounterHelpers;
 
 bool ZulAmanNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != ZA_MAP_ID)
-        return false;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, ZA_MAP_ID))
         return false;
 
     return IsMechanicTrackerBot(bot, ZA_MAP_ID);

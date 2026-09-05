@@ -6,7 +6,6 @@
 
 #include "SWPTriggers.h"
 #include "EncounterHelpers.h"
-#include "InstanceScript.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -29,10 +28,10 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
 
     // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
     // except for Kil'jaeden, which does not commence until the first Hand dies.
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return false;
 
+    // Use a distance gate to avoid searching for Hands through the entire instance.
     if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
         return true;
 
@@ -50,8 +49,7 @@ bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()
         return true;
     }
 
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return false;
 
     return HasBrutallusBurn(bot);

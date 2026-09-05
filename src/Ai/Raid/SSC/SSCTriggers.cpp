@@ -7,7 +7,6 @@
 #include "SSCTriggers.h"
 #include "Corpse.h"
 #include "EncounterHelpers.h"
-#include "InstanceScript.h"
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -21,11 +20,7 @@ using namespace EncounterHelpers;
 // General
 bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != SSC_MAP_ID)
-        return false;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return !IsEncounterInProgress(bot, SSC_MAP_ID);
 }
 
 // Trash Mobs

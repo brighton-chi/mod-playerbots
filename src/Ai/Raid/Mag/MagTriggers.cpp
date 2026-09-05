@@ -6,7 +6,6 @@
 
 #include "MagTriggers.h"
 #include "EncounterHelpers.h"
-#include "InstanceScript.h"
 #include "MagHelpers.h"
 #include "Playerbots.h"
 
@@ -15,11 +14,7 @@ using namespace EncounterHelpers;
 
 bool MagtheridonNoEncounterInProgressTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(bot, MAG_MAP_ID))
-        return false;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return !IsEncounterInProgress(bot, MAG_MAP_ID);
 }
 
 bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
