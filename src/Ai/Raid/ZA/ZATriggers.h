@@ -55,8 +55,7 @@ public:
 class ZulAmanPullingBossTrigger : public Trigger
 {
 public:
-    ZulAmanPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "zul'aman pulling boss") {}
+    ZulAmanPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "zul'aman pulling boss") {}
     bool IsActive() override;
 };
 

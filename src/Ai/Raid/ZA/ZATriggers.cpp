@@ -23,14 +23,13 @@ bool ZulAmanNoEncounterInProgressTrigger::IsActive()
     return IsMechanicTrackerBot(bot, ZA_MAP_ID);
 }
 
-// The misdirect on the pull is the same job on every boss, and every Zul'Aman boss - and nothing
-// else in the instance - runs a BossAI, so "boss target" resolves whichever one the raid is on.
+// Same Misdirect on pull for all bosses
 bool ZulAmanPullingBossTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    if (bot->GetMapId() != ZA_MAP_ID) // In case strategy persists outside (e.g., server reset)
+    if (bot->GetMapId() != ZA_MAP_ID)
         return false;
 
     Unit* boss = AI_VALUE(Unit*, "boss target");
@@ -116,7 +115,6 @@ bool JanalaiBossEngagedByTanksTrigger::IsActiveInEncounter()
         return false;
 
     Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
-
     return janalai && !IsJanalaiBombing(janalai);
 }
 
@@ -149,7 +147,6 @@ bool JanalaiAmanishiHatchersSpawnedTrigger::IsActiveInEncounter()
     if (!janalai || janalai->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
         return false;
 
-    // Just need to find one Hatcher to fire the trigger
     constexpr float searchRadius = 40.0f;
     return bot->FindNearestCreature(Id(ZaNpcs::NPC_AMANISHI_HATCHER), searchRadius);
 }
@@ -204,9 +201,11 @@ bool ZuljinBossEngagedByTanksTrigger::IsActiveInEncounter()
         return false;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin &&
-           !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
-           !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
+    if (!zuljin)
+        return false;
+
+    return !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
+        !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
 
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
@@ -215,7 +214,7 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
     if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
         return false;
 
-    return !(PlayerbotAI::IsTank(bot) && zuljin->GetVictim() == bot);
+    return !PlayerbotAI::IsTank(bot) || zuljin->GetVictim() != bot;
 }
 
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActiveInEncounter()

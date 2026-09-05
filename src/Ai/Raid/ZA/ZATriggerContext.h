@@ -19,8 +19,7 @@ public:
         creators["zul'aman no encounter in progress"] =
             &RaidZulAmanTriggerContext::zulaman_no_encounter_in_progress;
 
-        creators["zul'aman pulling boss"] =
-            &RaidZulAmanTriggerContext::zulaman_pulling_boss;
+        creators["zul'aman pulling boss"] = &RaidZulAmanTriggerContext::zulaman_pulling_boss;
 
         // Trash
         creators["amani'shi medicine man summoned ward"] =
@@ -60,14 +59,12 @@ public:
             &RaidZulAmanTriggerContext::janalai_amanishi_hatchers_spawned;
 
         // Halazzi <Lynx Avatar>
-        creators["halazzi should be tanked"] =
-            &RaidZulAmanTriggerContext::halazzi_should_be_tanked;
+        creators["halazzi should be tanked"] = &RaidZulAmanTriggerContext::halazzi_should_be_tanked;
 
         creators["halazzi spirit lynx has appeared"] =
             &RaidZulAmanTriggerContext::halazzi_spirit_lynx_has_appeared;
 
-        creators["halazzi should focus dps"] =
-            &RaidZulAmanTriggerContext::halazzi_should_focus_dps;
+        creators["halazzi should focus dps"] = &RaidZulAmanTriggerContext::halazzi_should_focus_dps;
 
         // Hex Lord Malacrass
 

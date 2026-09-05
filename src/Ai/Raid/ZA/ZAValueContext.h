@@ -12,9 +12,6 @@
 #include "Value.h"
 #include "ZAHelpers.h"
 
-// Jan'alai drops 40 bombs across the platform at once, and four separate places ask about them
-// every tick - three triggers plus the movement multiplier, which runs per candidate action. Each
-// of those was its own grid search; caching turns them into one.
 class JanalaiFireBombsValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -26,8 +23,6 @@ protected:
     GuidVector Calculate() override { return ZaHelpers::FindNearbyFireBombGuids(bot); }
 };
 
-// Hex Lord's freezing trap is asked about twice a tick - once by the trigger to decide whether to
-// act, and again by the action to find the object to move away from. One grid search serves both.
 class HexLordMalacrassFreezingTrapValue : public ObjectGuidCalculatedValue
 {
 public:

@@ -31,8 +31,7 @@ public:
         creators["akil'zon tanks position boss"] =
             &RaidZulAmanActionContext::akilzon_tanks_position_boss;
 
-        creators["akil'zon spread ranged"] =
-            &RaidZulAmanActionContext::akilzon_spread_ranged;
+        creators["akil'zon spread ranged"] = &RaidZulAmanActionContext::akilzon_spread_ranged;
 
         creators["akil'zon move to eye of the storm"] =
             &RaidZulAmanActionContext::akilzon_move_to_eye_of_the_storm;
@@ -44,8 +43,7 @@ public:
         creators["nalorakk tanks position boss"] =
             &RaidZulAmanActionContext::nalorakk_tanks_position_boss;
 
-        creators["nalorakk spread ranged"] =
-            &RaidZulAmanActionContext::nalorakk_spread_ranged;
+        creators["nalorakk spread ranged"] = &RaidZulAmanActionContext::nalorakk_spread_ranged;
 
         // Jan'alai <Dragonhawk Avatar>
         creators["jan'alai tanks position boss"] =
@@ -54,8 +52,7 @@ public:
         creators["jan'alai spread ranged in circle"] =
             &RaidZulAmanActionContext::janalai_spread_ranged_in_circle;
 
-        creators["jan'alai avoid fire bombs"] =
-            &RaidZulAmanActionContext::janalai_avoid_fire_bombs;
+        creators["jan'alai avoid fire bombs"] = &RaidZulAmanActionContext::janalai_avoid_fire_bombs;
 
         creators["jan'alai mark amani'shi hatchers"] =
             &RaidZulAmanActionContext::janalai_mark_amanishi_hatchers;
@@ -90,8 +87,7 @@ public:
         creators["zul'jin spread raid for cyclones"] =
             &RaidZulAmanActionContext::zuljin_spread_raid_for_cyclones;
 
-        creators["zul'jin spread ranged"] =
-            &RaidZulAmanActionContext::zuljin_spread_ranged;
+        creators["zul'jin spread ranged"] = &RaidZulAmanActionContext::zuljin_spread_ranged;
     }
 
 private:
