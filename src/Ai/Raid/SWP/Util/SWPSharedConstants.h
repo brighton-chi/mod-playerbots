@@ -8,7 +8,10 @@
 #define PLAYERBOTS_SWPSHAREDCONSTANTS_H
 
 #include "Common.h"
+#include "ObjectGuid.h"
 #include <type_traits>
+
+class Player;
 
 namespace SwpHelpers
 {
@@ -180,6 +183,7 @@ inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = 15.0f;
 // Don't try to reach targets if within this distance of a fiend. Works fine in practice since the
 // gauntlet is always going forwards so nobody needs to go the other way to reach a target.
 inline constexpr float VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS = 25.0f;
+ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
 
 }
 

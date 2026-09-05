@@ -38,13 +38,6 @@ public:
 
 // Trash
 
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
-
-}
-
 class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction
 {
 public:

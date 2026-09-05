@@ -34,11 +34,7 @@ using namespace EncounterHelpers;
 
 float SunwellPlateauNoEncounterDrinkingMultiplier::GetValue(Action* action)
 {
-    if (bot->GetMapId() != SWP_MAP_ID)
-        return 1.0f;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || !instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return 1.0f;
 
     return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
@@ -835,7 +831,7 @@ float KiljaedenSingleTargetHandsMultiplier::GetValue(Action* action)
     }
 
     if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > SUNWELL_CENTER_RADIUS)
-        return 1.0;
+        return 1.0f;
 
     return AI_VALUE(GuidVector, "kiljaeden hands").empty() ? 1.0f : 0.0f;
 }

@@ -8,13 +8,14 @@
 #define PLAYERBOTS_SWPVALUECONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "SWPActions.h"
+#include "ObjectGuid.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "Value.h"
+#include "SWPSharedConstants.h"
 #include "Position.h"
+#include "Value.h"
 #include <vector>
 
 class EredarTwinsBlazePositionsValue : public CalculatedValue<std::vector<Position>>

@@ -106,8 +106,7 @@ bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
         return true;
     }
 
-    InstanceScript* instance = bot->GetInstanceScript();
-    if (!instance || instance->IsEncounterInProgress())
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
         return false;
 
     // It is Blizzlike for Burn to persist after the kill, but bots will murder the raid without
@@ -170,6 +169,9 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
         if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
             target = apocalypseGuard;
     }
+
+    if (!target)
+        return false;
 
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
         bot->RemoveAura(Id(SwpSpells::SPELL_SHADOWFORM));
