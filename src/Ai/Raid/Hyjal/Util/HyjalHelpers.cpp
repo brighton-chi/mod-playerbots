@@ -283,13 +283,12 @@ GuidVector const& GetInfernalGuids(PlayerbotAI* botAI)
     return botAI->GetAiObjectContext()->GetValue<GuidVector>("hyjal infernals")->RefGet();
 }
 
-Unit* GetLooseInfernal(Player* bot)
+Unit* GetLooseInfernal(PlayerbotAI* botAI)
 {
-    Player* infernalTank = GetInfernalTank(bot);
+    Player* infernalTank = GetInfernalTank(botAI->GetBot());
     if (!infernalTank)
         return nullptr;
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
@@ -300,9 +299,9 @@ Unit* GetLooseInfernal(Player* bot)
     return nullptr;
 }
 
-Unit* GetNearestInfernal(Player* bot)
+Unit* GetNearestInfernal(PlayerbotAI* botAI)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    Player* bot = botAI->GetBot();
     Unit* nearest = nullptr;
     float nearestDistance = 0.0f;
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
@@ -341,9 +340,9 @@ Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
     return infernal;
 }
 
-Unit* GetInfernalTargetingBot(Player* bot)
+Unit* GetInfernalTargetingBot(PlayerbotAI* botAI)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    Player* bot = botAI->GetBot();
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
@@ -361,18 +360,7 @@ bool IsInfernalTank(Player* bot)
 
 Player* GetInfernalTank(Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && IsInfernalTank(member))
-            return member;
-    }
-
-    return nullptr;
+    return GetGroupAssistTank(bot, 0);
 }
 
 Position const& GetInfernalTankPosition(Player* bot)
@@ -402,10 +390,9 @@ float GetKazrogalRangedArcSpan(float radius)
     return 2.0f * std::asin(ratio < 1.0f ? ratio : 1.0f);
 }
 
-bool IsKazrogalManaUser(Player* bot)
+bool IsKazrogalManaUser(PlayerbotAI* botAI)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    switch (bot->getClass())
+    switch (botAI->GetBot()->getClass())
     {
         case CLASS_WARRIOR:
         case CLASS_ROGUE:
@@ -495,16 +482,18 @@ bool IsDoomguardTank(Player* bot)
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        return true;
-
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    // GetGroupAssistTank() skips dead tanks so the second assist tank naturally becomes the first
+    // if the first dies.
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    if (!firstAssistTank)
         return false;
 
-    // The second assist tank takes over if the first assist tank is Doomed. GetGroupAssistTank()
-    // requires a live tank, so if the first dies, the second becomes the Doomguard tank.
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    return !firstAssistTank || IsDoomed(firstAssistTank);
+    if (firstAssistTank == bot)
+        return true;
+
+    // The second assist tank also takes over while the first is Doomed and so about to die and
+    // spawn a Doomguard of its own.
+    return IsDoomed(firstAssistTank) && GetGroupAssistTank(bot, 1) == bot;
 }
 
 bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)

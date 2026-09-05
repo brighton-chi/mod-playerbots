@@ -223,7 +223,7 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         tank = GetGroupMainTank(bot);
         enemy = anetheron;
     }
-    else if (Unit* infernal = GetLooseInfernal(bot))
+    else if (Unit* infernal = GetLooseInfernal(botAI))
     {
         tank = GetInfernalTank(bot);
         enemy = infernal;
@@ -335,7 +335,7 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetInfernalTankPosition(bot), arrivalDist, GetInfernalTargetingBot(bot), moveX,
+            bot, GetInfernalTankPosition(bot), arrivalDist, GetInfernalTargetingBot(botAI), moveX,
             moveY, backwards))
     {
         return false;
@@ -349,7 +349,7 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
 // A live Infernal burns everything within 10y of itself, so anybody who is not holding it leaves.
 bool AnetheronGetOutOfImmolationAction::Execute(Event /*event*/)
 {
-    Unit* infernal = GetNearestInfernal(bot);
+    Unit* infernal = GetNearestInfernal(botAI);
     if (!infernal || infernal->GetVictim() == bot)
         return false;
 

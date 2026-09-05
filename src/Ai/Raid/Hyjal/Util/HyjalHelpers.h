@@ -163,14 +163,15 @@ Player* GetInfernoTarget(Unit* anetheron);
 GuidVector FindInfernalGuids(Player* bot);
 GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
 // The first Infernal that the Infernal tank does not have aggro on.
-Unit* GetLooseInfernal(Player* bot);
-Unit* GetNearestInfernal(Player* bot);
+Unit* GetLooseInfernal(PlayerbotAI* botAI);
+Unit* GetNearestInfernal(PlayerbotAI* botAI);
 // The Infernal a ranged bot should attack instead of the boss, if any. It is the oldest Infernal
 // alive, but in practice, a raid should have only one up at a time.
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron);
-Unit* GetInfernalTargetingBot(Player* bot);
+Unit* GetInfernalTargetingBot(PlayerbotAI* botAI);
+// Both resolve the first assist tank among the living, so keep them in step.
 bool IsInfernalTank(Player* bot);
-Player* GetInfernalTank(Player* bot); // First Assist Tank
+Player* GetInfernalTank(Player* bot);
 // Whichever of the two spots the Infernal tank stands nearer.
 Position const& GetInfernalTankPosition(Player* bot);
 
@@ -201,7 +202,7 @@ inline constexpr float MARK_ESCAPE_DISTANCE = 16.0f;
 extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 float GetKazrogalRangedArcRadius(Unit* kazrogal);
 float GetKazrogalRangedArcSpan(float radius);
-bool IsKazrogalManaUser(Player* bot);
+bool IsKazrogalManaUser(PlayerbotAI* botAI);
 bool HasMarkOfKazrogal(Player* bot);
 uint32 GetKazrogalImmunitySpell(Player* bot);
 

@@ -6,7 +6,6 @@
 
 #include "HyjalTriggers.h"
 #include "EncounterHelpers.h"
-#include "HyjalActions.h"
 #include "HyjalHelpers.h"
 #include "Playerbots.h"
 
@@ -123,7 +122,7 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActiveInEncounter()
     if (IsInfernalTank(bot))
         return false;
 
-    return GetInfernalTargetingBot(bot);
+    return GetInfernalTargetingBot(botAI);
 }
 
 bool AnetheronInfernalsPulseImmolationTrigger::IsActiveInEncounter()
@@ -134,7 +133,7 @@ bool AnetheronInfernalsPulseImmolationTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
         return false;
 
-    Unit* infernal = GetNearestInfernal(bot);
+    Unit* infernal = GetNearestInfernal(botAI);
     return infernal && infernal->GetVictim() != bot &&
         bot->GetExactDist2d(infernal) < INFERNAL_DANGER_RADIUS;
 }
@@ -147,7 +146,7 @@ bool AnetheronInfernalsShouldBeTankedAwayTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "anetheron"))
         return false;
 
-    Unit* infernal = GetInfernalTargetingBot(bot);
+    Unit* infernal = GetInfernalTargetingBot(botAI);
     return infernal && bot->IsWithinMeleeRange(infernal);
 }
 
@@ -185,7 +184,7 @@ bool KazrogalRangedShouldAvoidWarStompTrigger::IsActiveInEncounter()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActiveInEncounter()
 {
-    if (!IsKazrogalManaUser(bot))
+    if (!IsKazrogalManaUser(botAI))
         return false;
 
     // Hunters never run away. They rely only on Aspect of the Viper.

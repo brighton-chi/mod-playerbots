@@ -140,7 +140,7 @@ float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValueInEncounter(Actio
         return 1.0f;
 
     constexpr float holdTankAoeRadius = 20.0f; // arbitrary, but > AoE threat ability radii
-    Unit* infernal = GetNearestInfernal(bot);
+    Unit* infernal = GetNearestInfernal(botAI);
     if (!infernal || infernal->GetExactDist2d(bot) > holdTankAoeRadius)
         return 1.0f;
 
@@ -165,7 +165,7 @@ float AnetheronInfernalTargetRunToPositionMultiplier::GetValueInEncounter(Action
     if (IsInfernalTank(bot))
         return 1.0f;
 
-    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(bot) ? 0.0f : 1.0f;
+    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI) ? 0.0f : 1.0f;
 }
 
 float AnetheronControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -217,7 +217,7 @@ float KazrogalDisableDisperseAndTankFaceMultiplier::GetValueInEncounter(Action* 
 
 float KazrogalControlLowManaMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsKazrogalManaUser(bot) || bot->getClass() == CLASS_HUNTER)
+    if (!IsKazrogalManaUser(botAI) || bot->getClass() == CLASS_HUNTER)
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&

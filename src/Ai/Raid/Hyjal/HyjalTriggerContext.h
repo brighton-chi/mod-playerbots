@@ -8,7 +8,6 @@
 #define PLAYERBOTS_HYJALTRIGGERCONTEXT_H
 
 #include "EncounterHelpers.h"
-#include "HyjalHelpers.h"
 #include "HyjalTriggers.h"
 #include "NamedObjectContext.h"
 
