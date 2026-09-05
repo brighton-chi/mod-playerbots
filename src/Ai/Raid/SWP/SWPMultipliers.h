@@ -9,7 +9,7 @@
 
 #include "EncounterHelpers.h"
 #include "Multiplier.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <string>
 
 // General

@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef PLAYERBOTS_SWPSHAREDCONSTANTS_H
-#define PLAYERBOTS_SWPSHAREDCONSTANTS_H
+#ifndef PLAYERBOTS_SWPSHARED_H
+#define PLAYERBOTS_SWPSHARED_H
 
 #include "Common.h"
 #include "ObjectGuid.h"
@@ -80,18 +80,12 @@ enum class SwpSpells : uint32
 
     // Mage
     SPELL_SPELLSTEAL                   = 30449,
-    SPELL_ICE_BLOCK                    = 45438,
-
-    // Paladin
-    SPELL_DIVINE_SHIELD                = 642,
 
     // Priest
     SPELL_DISPEL_MAGIC_RANK_1          = 527,
     SPELL_SHADOWFORM                   = 15473,
     SPELL_MASS_DISPEL                  = 32375,
 
-    // Rogue
-    SPELL_CLOAK_OF_SHADOWS             = 31224,
 
     // Shaman
     SPELL_PURGE_RANK_1                 = 370,
@@ -154,10 +148,9 @@ enum class SwpObjects : uint32
 
 inline constexpr uint32 SWP_MAP_ID = 580;
 
-// Ability reaches from SpellRange.dbc (MaxRangeHostile). Grouped by spell, not shared value.
-// _REACH is the distance from the caster to a target; _RADIUS is the area around the caster. Both
-// are the raw dbc figures. A single-target cast counts both combat reaches, so using unmodified
-// _REACH is conservative.
+// Ability reaches from SpellRange.dbc (MaxRangeHostile). _REACH is the distance from the caster to
+// a target; _RADIUS is the area around the caster. Both are the raw dbc figures. A single-target
+// cast counts both combat reaches, so using unmodified _REACH is conservative.
 inline constexpr float MELEE_ABILITY_REACH = 5.0f;
 inline constexpr float RANGED_ABILITY_REACH = 30.0f;
 inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
@@ -168,14 +161,13 @@ inline constexpr float SILENCING_SHOT_REACH = 35.0f;
 inline constexpr float CONSECRATION_RADIUS = 8.0f;
 inline constexpr float SHOCKWAVE_RADIUS = 10.0f;
 
-// War Stomp (20549) and all 3 Arcane Torrent variants.
+// Radius for War Stomp (20549) and all 3 Arcane Torrent variants.
 inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
-// Challenging Shout and Challenging Roar.
+// Radius for Challenging Shout and Challenging Roar.
 inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
 // For the "swp volatile fiend" value.
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
-// Shared by the trigger and the action so the two cannot drift apart.
 inline constexpr float VOLATILE_FIEND_SEARCH_RADIUS = 25.0f;
 // Felfire Fission (45779), the fiend's death explosion, hits within 10y and just murders melee
 // bots (and me). This distance is a little farther since the fiends are running toward the raid.
@@ -184,6 +176,41 @@ inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = 15.0f;
 // gauntlet is always going forwards so nobody needs to go the other way to reach a target.
 inline constexpr float VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS = 25.0f;
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+// The minimum interval between spells cast by a charmed creature. This is in effect a manually
+// enforced cooldown because the path being used for the spellcast skips cooldowns.
+uint32 GetManualCastCooldown(uint32 spellId);
+// Same as above, except for enforcing a GCD for abilities with no cooldowns.
+uint32 GetManualCastGlobalCooldown(uint32 spellId);
+
+// Offset from the center of an arc for assigning positioning slots, filling outward and
+// alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
+inline float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
+{
+    if (slotCount <= 1)
+        return 0.0f;
+
+    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
+    if (slotCount % 2 == 1)
+    {
+        if (slotIndex == 0)
+            return 0.0f;
+
+        uint8 const stepIndex = (slotIndex + 1) / 2;
+        float angleOffset = angleStep * stepIndex;
+        if (slotIndex % 2 == 0)
+            angleOffset = -angleOffset;
+
+        return angleOffset;
+    }
+
+    float const halfStep = angleStep / 2.0f;
+    uint8 const pairIndex = slotIndex / 2;
+    float angleOffset = halfStep + angleStep * pairIndex;
+    if (slotIndex % 2 == 1)
+        angleOffset = -angleOffset;
+
+    return angleOffset;
+}
 
 }
 

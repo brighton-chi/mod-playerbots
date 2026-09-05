@@ -8,7 +8,7 @@
 #define PLAYERBOTS_SWPTRIGGERS_H
 
 #include "EncounterHelpers.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include "Trigger.h"
 #include <string>
 

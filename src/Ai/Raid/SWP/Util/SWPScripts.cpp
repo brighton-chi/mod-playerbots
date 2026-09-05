@@ -13,7 +13,7 @@
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Twins.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <list>
 #include <vector>
 

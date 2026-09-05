@@ -7,7 +7,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
