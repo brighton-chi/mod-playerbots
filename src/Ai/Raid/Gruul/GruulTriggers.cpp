@@ -5,6 +5,7 @@
  */
 
 #include "GruulTriggers.h"
+#include "EncounterHelpers.h"
 #include "GruulHelpers.h"
 #include "InstanceScript.h"
 #include "Playerbots.h"
@@ -15,11 +16,7 @@ using namespace GruulHelpers;
 
 bool GruulsLairNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != GRUUL_MAP_ID)
-        return false;
-
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return EncounterHelpers::IsEncounterInProgress(bot, GRUUL_MAP_ID);
 }
 
 // High King Maulgar <Lord of the Ogres>
