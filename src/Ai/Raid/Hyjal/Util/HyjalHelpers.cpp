@@ -24,7 +24,6 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::s
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
-
 }
 
 // General
@@ -179,8 +178,11 @@ std::vector<Player*> GetRangedMembers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == HYJAL_MAP_ID && PlayerbotAI::IsRanged(member))
+        if (member && member->GetMapId() == HYJAL_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            PlayerbotAI::IsRanged(member))
+        {
             members.push_back(member);
+        }
     }
 
     return members;

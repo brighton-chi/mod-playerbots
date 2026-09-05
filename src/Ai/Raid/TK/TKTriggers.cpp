@@ -6,7 +6,6 @@
 
 #include "TKTriggers.h"
 #include "EncounterHelpers.h"
-#include "InstanceScript.h"
 #include "MoveSpline.h"
 #include "Playerbots.h"
 #include "TKHelpers.h"
@@ -17,15 +16,12 @@ using namespace EncounterHelpers;
 
 // General
 
-// Read the instance's own encounter state rather than the bot's combat state to determine when
-// it is safe to erase encounter maps.
 bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 {
     if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
         return false;
 
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return !IsEncounterInProgress(bot, TK_MAP_ID);
 }
 
 bool TempestKeepBotIsStuckFallingTrigger::IsActive()
@@ -36,8 +32,7 @@ bool TempestKeepBotIsStuckFallingTrigger::IsActive()
     if (bot->GetMapId() != TK_MAP_ID)
         return false;
 
-    InstanceScript* instance = bot->GetInstanceScript();
-    return instance && !instance->IsEncounterInProgress();
+    return !IsEncounterInProgress(bot, TK_MAP_ID);
 }
 
 // Trash

@@ -805,8 +805,11 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
             continue;
+        }
 
         if (PlayerbotAI::IsHeal(member) == botIsHealer && member->GetGUID() < botGuid)
             ++stackIndex;

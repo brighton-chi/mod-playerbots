@@ -192,7 +192,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != ZA_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
