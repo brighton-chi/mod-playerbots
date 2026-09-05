@@ -120,7 +120,8 @@ bool FindStepToCircle(
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
-// Every ranged raid member on the map, in group order.
+// Every ranged raid member on the map, in group order. The dead are kept in the list so that a
+// death does not shift every survivor's ring index.
 std::vector<Player*> GetRangedMembers(Player* bot);
 RangedGroups GetRangedGroups(Player* bot);
 std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
@@ -154,7 +155,8 @@ inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
 inline constexpr float INFERNAL_ESCAPE_DISTANCE = INFERNAL_DANGER_RADIUS + 2.0f;
 // Past this, ranged stay on the boss rather than switching to the Infernal. Arbitrary, but near
-// enough that ranged do not bunch up and risk too many getting hit by a Carrion Swarm.
+// enough that ranged do not bunch up and risk too many getting hit by a Carrion Swarm. Measured
+// center to center; a Towering Infernal's CombatReach is 4y.
 inline constexpr float INFERNAL_RANGED_ENGAGE_DISTANCE = 50.0f;
 Player* GetInfernoTarget(Unit* anetheron);
 // Every living Towering Infernal, oldest first, read through the "hyjal infernals" value

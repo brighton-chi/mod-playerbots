@@ -85,7 +85,7 @@ bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 
 bool AnetheronRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsMelee(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");

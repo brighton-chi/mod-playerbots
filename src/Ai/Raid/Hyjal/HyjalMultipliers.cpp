@@ -130,7 +130,7 @@ float AnetheronDisableAssistTargetingMultiplier::GetValueInEncounter(Action* act
     return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
-// Keep non-Infernal tanks from inadvertesntly grabbing aggro with Consecration, Thunder Clap, etc.
+// Keep non-Infernal tanks from inadvertently grabbing aggro with Consecration, Thunder Clap, etc.
 float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

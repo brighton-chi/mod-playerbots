@@ -106,8 +106,8 @@ public:
         creators["azgalor move to doomguard tank"] =
             &RaidHyjalActionContext::azgalor_move_to_doomguard_tank;
 
-        creators["azgalor first assist tank position doomguard"] =
-            &RaidHyjalActionContext::azgalor_first_assist_tank_position_doomguard;
+        creators["azgalor tank position doomguard"] =
+            &RaidHyjalActionContext::azgalor_tank_position_doomguard;
 
         creators["azgalor determine dps priority"] =
             &RaidHyjalActionContext::azgalor_determine_dps_priority;
@@ -243,8 +243,8 @@ private:
     static Action* azgalor_move_to_doomguard_tank(PlayerbotAI* botAI) {
         return new AzgalorMoveToDoomguardTankAction(botAI);
     }
-    static Action* azgalor_first_assist_tank_position_doomguard(PlayerbotAI* botAI) {
-        return new AzgalorFirstAssistTankPositionDoomguardAction(botAI);
+    static Action* azgalor_tank_position_doomguard(PlayerbotAI* botAI) {
+        return new AzgalorTankPositionDoomguardAction(botAI);
     }
     static Action* azgalor_determine_dps_priority(PlayerbotAI* botAI) {
         return new AzgalorDetermineDpsPriorityAction(botAI);

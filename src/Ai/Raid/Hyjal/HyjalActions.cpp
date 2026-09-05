@@ -512,7 +512,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    float const safeDistFromBoss = 30.0f; // arbitrary, but ~20 yards + both CombatReaches
+    constexpr float safeDistFromBoss = 30.0f; // arbitrary, but ~20 yards + both CombatReaches
     constexpr uint32 minInterval = 0;
 
     if (bot->GetExactDist2d(azgalor) < safeDistFromBoss &&
@@ -538,7 +538,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 }
 
 // Similar to D&D avoidance, but there are two notable differences to account for: two RoFs can be
-// active at a time, and escape cannot take the bot iinto Azgalor's frontal arc due to the Cleave.
+// active at a time, and escape cannot take the bot into Azgalor's frontal arc due to the Cleave.
 bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 {
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
@@ -662,7 +662,7 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
+bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
 {
     Position const& position = AZGALOR_DOOMGUARD_POSITION;
     constexpr float arrivalDist = 3.0f;
@@ -704,7 +704,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     if (PlayerbotAI::IsMelee(bot))
-        return AI_VALUE(Unit*, "current target") != azgalor && Attack (azgalor);
+        return AI_VALUE(Unit*, "current target") != azgalor && Attack(azgalor);
 
     Unit* target = nullptr;
     if (azgalor->GetHealthPct() < BOSS_BURN_HEALTH_PCT)
@@ -720,9 +720,6 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
         else
             target = azgalor;
     }
-
-    if (!target)
-        return false;
 
     return AI_VALUE(Unit*, "current target") != target && Attack(target);
 }

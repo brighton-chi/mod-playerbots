@@ -335,7 +335,7 @@ Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
             break;
     }
 
-    if (!infernal || botAI->GetBot()->GetDistance2d(infernal) >= INFERNAL_RANGED_ENGAGE_DISTANCE)
+    if (!infernal || botAI->GetBot()->GetExactDist2d(infernal) >= INFERNAL_RANGED_ENGAGE_DISTANCE)
         return nullptr;
 
     return infernal;
@@ -448,7 +448,6 @@ std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI)
 {
     return GetCachedHazardPositions(botAI, "hyjal rain of fire");
 }
-
 
 bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool)
 {

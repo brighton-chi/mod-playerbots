@@ -35,6 +35,8 @@ private:
     std::string const _bossName;
 };
 
+// For all five bosses. _bailBelowHealthPct is the tank's own health, below which it stops walking
+// the boss.
 class HyjalSummitMainTankPositionBossAction : public AttackAction
 {
 public:
@@ -47,7 +49,7 @@ public:
 
 private:
     std::string const _bossName;
-    Position const& _position;
+    Position const _position;
     float const _bailBelowHealthPct;
 };
 
@@ -245,11 +247,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorFirstAssistTankPositionDoomguardAction : public AttackAction
+// The Doomguard tank is the first assist tank, or the second when the first is Doomed.
+class AzgalorTankPositionDoomguardAction : public AttackAction
 {
 public:
-    AzgalorFirstAssistTankPositionDoomguardAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor first assist tank position doomguard") {}
+    AzgalorTankPositionDoomguardAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "azgalor tank position doomguard") {}
     bool Execute(Event event) override;
 };
 
