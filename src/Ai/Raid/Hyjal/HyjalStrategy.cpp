@@ -75,7 +75,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal activate aspect of the viper", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal mark on mage or paladin", {
-        NextAction("kaz'rogal cancel mark", ACTION_EMERGENCY + 6) }));
+        NextAction("hyjal summit remove dangerous dot", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal immunity no longer needed", {
         NextAction("kaz'rogal cancel immunity", ACTION_RAID + 1) }));
@@ -128,7 +128,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {
-        NextAction("archimonde remove doomfire dot", ACTION_EMERGENCY + 7) }));
+        NextAction("hyjal summit remove dangerous dot", ACTION_EMERGENCY + 7) }));
 }
 
 void RaidHyjalStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

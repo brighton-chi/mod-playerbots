@@ -53,6 +53,15 @@ private:
     float const _bailBelowHealthPct;
 };
 
+// Remove Mark of Kaz'rogal and Doomfire in certain cases
+class HyjalSummitRemoveDangerousDotAction : public Action
+{
+public:
+    HyjalSummitRemoveDangerousDotAction(PlayerbotAI* botAI)
+        : Action(botAI, "hyjal summit remove dangerous dot") {}
+    bool Execute(Event event) override;
+};
+
 // Rage Winterchill
 
 class RageWinterchillRangedGetOutOfDeathAndDecayAction : public MovementAction
@@ -191,13 +200,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalCancelMarkAction : public Action
-{
-public:
-    KazrogalCancelMarkAction(PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cancel mark") {}
-    bool Execute(Event event) override;
-};
-
 class KazrogalCancelImmunityAction : public Action
 {
 public:
@@ -295,14 +297,6 @@ class ArchimondeAvoidDoomfireAction : public MovementAction
 public:
     ArchimondeAvoidDoomfireAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "archimonde avoid doomfire") {}
-    bool Execute(Event event) override;
-};
-
-class ArchimondeRemoveDoomfireDotAction : public Action
-{
-public:
-    ArchimondeRemoveDoomfireDotAction(PlayerbotAI* botAI)
-        : Action(botAI, "archimonde remove doomfire dot") {}
     bool Execute(Event event) override;
 };
 

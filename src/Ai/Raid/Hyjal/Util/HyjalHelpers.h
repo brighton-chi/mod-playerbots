@@ -56,15 +56,6 @@ enum class HyjalSpells : uint32
     SPELL_ASPECT_OF_THE_VIPER = 34074,
     SPELL_MISDIRECTION        = 35079,
 
-    // Mage
-    SPELL_ICE_BLOCK           = 45438,
-
-    // Paladin
-    SPELL_DIVINE_SHIELD       = 642,
-
-    // Rogue
-    SPELL_CLOAK_OF_SHADOWS    = 31224,
-
     // Shaman
     SPELL_TREMOR_TOTEM        = 8143,
 };
@@ -204,7 +195,6 @@ float GetKazrogalRangedArcRadius(Unit* kazrogal);
 float GetKazrogalRangedArcSpan(float radius);
 bool IsKazrogalManaUser(PlayerbotAI* botAI);
 bool HasMarkOfKazrogal(Player* bot);
-uint32 GetKazrogalImmunitySpell(Player* bot);
 
 // Azgalor
 

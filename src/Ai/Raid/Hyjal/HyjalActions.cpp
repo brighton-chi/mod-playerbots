@@ -88,6 +88,12 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+bool HyjalSummitRemoveDangerousDotAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
 // Rage Winterchill
 
 // This is essentially a forced "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in the
@@ -471,18 +477,9 @@ bool KazrogalActivateAspectOfTheViperAction::Execute(Event /*event*/)
         botAI->CastSpell(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER), bot);
 }
 
-bool KazrogalCancelMarkAction::Execute(Event /*event*/)
-{
-    uint32 const spellId = GetKazrogalImmunitySpell(bot);
-    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
-}
-
 bool KazrogalCancelImmunityAction::Execute(Event /*event*/)
 {
-    uint32 const spellId = GetKazrogalImmunitySpell(bot);
-    if (!spellId || !bot->HasAura(spellId))
-        return false;
-
+    uint32 const spellId = GetSelfImmunitySpell(bot);
     bot->RemoveAura(spellId);
     return true;
 }
@@ -894,25 +891,4 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
-}
-
-bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            return botAI->CanCastSpell(Id(HyjalSpells::SPELL_ICE_BLOCK), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_ICE_BLOCK), bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell(Id(HyjalSpells::SPELL_DIVINE_SHIELD), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_DIVINE_SHIELD), bot);
-
-        case CLASS_ROGUE:
-            return botAI->CanCastSpell(Id(HyjalSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
-                botAI->CastSpell(Id(HyjalSpells::SPELL_CLOAK_OF_SHADOWS), bot);
-
-        default:
-            return false;
-    }
 }

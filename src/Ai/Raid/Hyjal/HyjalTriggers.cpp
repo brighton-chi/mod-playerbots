@@ -274,7 +274,7 @@ bool KazrogalImmunityNoLongerNeededTrigger::IsActiveInEncounter()
         return false;
     }
 
-    uint32 const spellId = GetKazrogalImmunitySpell(bot);
+    uint32 const spellId = GetSelfImmunitySpell(bot);
     if (!spellId || !bot->HasAura(spellId))
         return false;
 

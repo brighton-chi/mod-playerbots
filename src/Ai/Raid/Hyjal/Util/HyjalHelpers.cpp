@@ -413,21 +413,6 @@ bool HasMarkOfKazrogal(Player* bot)
     return bot->HasAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
-uint32 GetKazrogalImmunitySpell(Player* bot)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            return Id(HyjalSpells::SPELL_ICE_BLOCK);
-
-        case CLASS_PALADIN:
-            return Id(HyjalSpells::SPELL_DIVINE_SHIELD);
-
-        default:
-            return 0;
-    }
-}
-
 // Azgalor
 
 // Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time.
