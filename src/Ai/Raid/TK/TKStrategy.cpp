@@ -5,7 +5,6 @@
  */
 
 #include "TKStrategy.h"
-#include "Playerbots.h"
 #include "TKMultipliers.h"
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -66,8 +65,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian should be tanked", {
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
-        NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(
+        new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
+            NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
@@ -83,8 +83,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "kael'thas sunstrider sanguinar or telonicus should be tanked", {
         NextAction("kael'thas sunstrider melee tanks position advisors", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by warlock", {
-        NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode("kael'thas sunstrider capernian should be tanked by warlock", {
+            NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
@@ -156,17 +157,4 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
-}
-
-// Used only to exclude melee dps from Kael'thas Phoenixes
-void RaidTempestKeepStrategy::AppendTargetExclusions(
-    GuidSet& exclusions, TargetValueExclusionType /*type*/)
-{
-    Player* bot = botAI->GetBot();
-    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
-        return;
-
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    if (Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix"))
-        exclusions.insert(phoenix->GetGUID());
 }
