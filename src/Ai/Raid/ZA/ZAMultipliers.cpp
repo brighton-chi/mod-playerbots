@@ -6,8 +6,6 @@
 
 #include "ZAMultipliers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidBearActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
@@ -19,7 +17,6 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "ZAActions.h"
 #include "ZAHelpers.h"
@@ -30,10 +27,6 @@ using namespace EncounterHelpers;
 namespace
 {
 
-// Actions that place the bot relative to its current target: closing to melee or spell range, the
-// gap-closers, and the formation moves that circle one. These are what fight a flee, so a hazard a
-// bot has been moved away from holds them until it is clear of it. Distinct from the below, which
-// is every movement at all - reach for that only where the bot should not move for any reason.
 bool IsApproachMovement(Action* action)
 {
     return dynamic_cast<ReachTargetAction*>(action) ||
@@ -120,9 +113,11 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
         case Id(ZaNpcs::NPC_ZULJIN):
             whirlwind = Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND);
             break;
+
         case Id(ZaNpcs::NPC_HEX_LORD_MALACRASS):
             whirlwind = Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND);
             break;
+
         default:
             return 1.0f;
     }
@@ -369,8 +364,10 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
 
     Unit* boss = AI_VALUE(Unit*, "boss target");
-    return boss && boss->GetEntry() == Id(ZaNpcs::NPC_HEX_LORD_MALACRASS) &&
-        boss->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
+    if (!boss || boss->GetEntry() != Id(ZaNpcs::NPC_HEX_LORD_MALACRASS))
+        return 1.0f;
+
+    return boss->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
 }
 
 float HexLordMalacrassStayAwayFromFreezingTrapMultiplier::GetValueInEncounter(Action* action)
@@ -383,9 +380,6 @@ float HexLordMalacrassStayAwayFromFreezingTrapMultiplier::GetValueInEncounter(Ac
 
 // Zul'jin
 
-// AvoidAoeAction is otherwise triggered by the Feather Vortices, and it is useless as they chase
-// players at player run speed (the bot runs away when it gets hit, and the vortex just chases the
-// bot at the same speed).
 float ZuljinEagleDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -395,6 +389,8 @@ float ZuljinEagleDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* boss = AI_VALUE(Unit*, "boss target");
-    return boss && boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN) &&
-        boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
+    if (!boss || boss->GetEntry() != Id(ZaNpcs::NPC_ZULJIN))
+        return 1.0f;
+
+    return boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 }

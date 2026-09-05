@@ -264,7 +264,6 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 {
     auto [hatcherLow, hatcherHigh] = GetAmanishiHatcherPair(botAI);
-
     if (!hatcherLow || !hatcherHigh || hatcherHigh == hatcherLow)
         return false;
 
