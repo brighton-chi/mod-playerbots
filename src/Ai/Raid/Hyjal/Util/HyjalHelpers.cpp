@@ -311,7 +311,7 @@ Unit* GetNearestInfernal(Player* bot)
         if (!infernal)
             continue;
 
-        float const distance = bot->GetDistance2d(infernal);
+        float const distance = bot->GetExactDist2d(infernal);
         if (!nearest || distance < nearestDistance)
         {
             nearest = infernal;
