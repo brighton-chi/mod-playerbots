@@ -16,16 +16,17 @@
 #include "ZAValueContext.h"
 #include "ValueContext.h"
 
-void AiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
+void AiObjectContext::BuildSharedValueContexts(
+    SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {
     valueContexts.Add(new ValueContext());
-    valueContexts.Add(new TbcDungeonMechValueContext());
-    valueContexts.Add(new TbcDungeonMgTValueContext());
-    valueContexts.Add(new TbcDungeonUnderbogValueContext());
     valueContexts.Add(new RaidHyjalValueContext());
     valueContexts.Add(new RaidSscValueContext());
     valueContexts.Add(new RaidTempestKeepValueContext());
     valueContexts.Add(new RaidSwpValueContext());
     valueContexts.Add(new RaidZulAmanValueContext());
     valueContexts.Add(new RaidGruulsLairValueContext());
+    valueContexts.Add(new TbcDungeonMechValueContext());
+    valueContexts.Add(new TbcDungeonMgTValueContext());
+    valueContexts.Add(new TbcDungeonUnderbogValueContext());
 }
