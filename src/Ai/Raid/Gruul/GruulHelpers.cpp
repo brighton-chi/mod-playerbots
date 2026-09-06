@@ -14,6 +14,8 @@
 namespace GruulHelpers
 {
 
+// High King Maulgar
+
 bool IsMaulgarTank(Player* bot)
 {
     // Note: IsMainTank() is not necessarily a tank (by either strategy or spec). It can be anybody
@@ -137,12 +139,6 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
     return bot->getClass() == CLASS_DRUID && GetKigglerMoonkinTank(botAI) == bot;
 }
 
-bool HasGroundSlam(Player* bot)
-{
-    return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
-        bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
-}
-
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
 {
     if (bot->GetMapId() != GRUUL_MAP_ID)
@@ -183,6 +179,59 @@ std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI)
     }
 
     return felStalkers;
+}
+
+// Gruul the Dragonkiller
+
+namespace
+{
+std::vector<Position> const& GetCaveInPositions(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("gruul the dragonkiller cave in")->RefGet();
+}
+}
+
+bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool)
+{
+    Player* bot = botAI->GetBot();
+    bool found = false;
+    float nearestDistance = 0.0f;
+    for (Position const& position : GetCaveInPositions(botAI))
+    {
+        float const distance = bot->GetExactDist2d(position);
+        if (!found || distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            pool = position;
+            found = true;
+        }
+    }
+
+    return found;
+}
+
+bool IsNearCaveIn(PlayerbotAI* botAI, float radius)
+{
+    Player* bot = botAI->GetBot();
+    for (Position const& position : GetCaveInPositions(botAI))
+    {
+        if (bot->GetExactDist2d(position) < radius)
+            return true;
+    }
+
+    return false;
+}
+
+bool IsInCaveIn(PlayerbotAI* botAI)
+{
+    return IsNearCaveIn(botAI, CAVE_IN_RADIUS);
+}
+
+bool HasGroundSlam(Player* bot)
+{
+    return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
+        bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
 }
 
 }

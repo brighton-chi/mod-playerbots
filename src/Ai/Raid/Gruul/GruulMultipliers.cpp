@@ -179,8 +179,8 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Act
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsTank(bot))
-        return 1.0f;
+    // if (!PlayerbotAI::IsTank(bot))
+    //     return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<AvoidAoeAction*>(action))
@@ -189,7 +189,7 @@ float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Act
     }
 
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    return gruul && gruul->GetVictim() == bot ? 0.0f : 1.0f;
+    return gruul /*&& gruul->GetVictim() == bot*/ ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Action* action)
@@ -204,6 +204,32 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Ac
     }
 
     return dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action) ? 1.0f : 0.0f;
+}
+
+// When near a cave in, ignore the general methods for moving to the tank position and ranged
+// spreading, as well as standard movement actions like reaching the target.
+float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
+{
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<GruulTheDragonkillerGetOutOfCaveInAction*>(action))
+        return 1.0f;
+
+    // Shatter outranks Cave In, and the snare that follows it stops the bot moving regardless.
+    if (HasGroundSlam(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+        return 1.0f;
+
+    return IsNearCaveIn(botAI, CAVE_IN_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // MoveTo does not check speed, and thus even with a snare of -100% or more, it starts a spline

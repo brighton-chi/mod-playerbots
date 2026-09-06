@@ -108,6 +108,17 @@ bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 }
 
+bool GruulTheDragonkillerInCaveInTrigger::IsActiveInEncounter()
+{
+    if (HasGroundSlam(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+        return false;
+
+    return IsInCaveIn(botAI);
+}
+
 bool GruulTheDragonkillerIncomingShatterTrigger::IsActiveInEncounter()
 {
     return HasGroundSlam(bot);
