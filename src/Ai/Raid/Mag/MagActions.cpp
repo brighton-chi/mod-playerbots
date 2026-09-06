@@ -480,7 +480,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 
             float const moveDistance = bot->GetExactDist2d(x, y);
 
-            if (!foundSafe || moveDistance < minMoveDistance)
+            if (moveDistance < minMoveDistance)
             {
                 outPos = Position(x, y, bot->GetPositionZ());
                 minMoveDistance = moveDistance;

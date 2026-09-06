@@ -12,6 +12,9 @@
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
+#include <string>
+#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -259,7 +262,7 @@ bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
                 bot, botX, botY, botZ, candidateX, candidateY, candidateZ, false);
 
             float const moveDistance = bot->GetExactDist2d(candidateX, candidateY);
-            if (!foundSafe || moveDistance < minMoveDistance)
+            if (moveDistance < minMoveDistance)
             {
                 bestPos = Position(candidateX, candidateY, candidateZ);
                 minMoveDistance = moveDistance;

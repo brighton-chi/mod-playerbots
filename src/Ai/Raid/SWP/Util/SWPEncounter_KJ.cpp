@@ -183,7 +183,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
         return false;
 
     bool foundArmageddon = false;
-    float bestDistance = 0.0f;
+    float bestDistance = std::numeric_limits<float>::max();
 
     for (KiljaedenArmageddon const& candidate : stateItr->second.armageddons)
     {
@@ -191,7 +191,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
         if (distance >= candidate.safeDistance)
             continue;
 
-        if (!foundArmageddon || distance < bestDistance)
+        if (distance < bestDistance)
         {
             armageddon = candidate;
             bestDistance = distance;
@@ -698,7 +698,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
         return nullptr;
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -707,7 +707,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
             continue;
 
         float const distance = dragon->GetExactDist2d(member);
-        if (!closestTarget || distance < closestDistance)
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;

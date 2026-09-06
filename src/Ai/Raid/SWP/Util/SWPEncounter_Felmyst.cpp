@@ -1221,7 +1221,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     }
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1232,7 +1232,7 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
         felmystEncounterStates[bot->GetInstanceId()].encapsulateOccurredThisGroundPhase = true;
 
         float distance = bot->GetExactDist(member);
-        if (!closestTarget || distance < closestDistance)
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;
@@ -1256,7 +1256,7 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
         return nullptr;
 
     Player* closestTarget = nullptr;
-    float closestDistance = 0.0f;
+    float closestDistance = std::numeric_limits<float>::max();
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1265,7 +1265,7 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
             continue;
 
         float distance = bot->GetExactDist(member);
-        if (!closestTarget || distance < closestDistance)
+        if (distance < closestDistance)
         {
             closestTarget = member;
             closestDistance = distance;

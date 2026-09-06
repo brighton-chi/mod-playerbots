@@ -12,6 +12,7 @@
 #include "SWPShared.h"
 #include <cmath>
 #include <map>
+#include <string>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

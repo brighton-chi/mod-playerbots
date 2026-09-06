@@ -122,7 +122,7 @@ Unit* SelectNearestQualifying(
     Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
 
     Unit* best = nullptr;
-    float bestDistance = 0.0f;
+    float bestDistance = std::numeric_limits<float>::max();
 
     for (ObjectGuid const& guid : candidates)
     {
@@ -137,7 +137,7 @@ Unit* SelectNearestQualifying(
         if (candidate == currentTarget)
             return candidate;
 
-        if (!best || distance < bestDistance)
+        if (distance < bestDistance)
         {
             best = candidate;
             bestDistance = distance;

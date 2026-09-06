@@ -318,7 +318,7 @@ bool FindBeamPosition(
             continue;
 
         float distToIdeal = fabs(dist - idealDistance);
-        if (!found || distToIdeal < bestDist)
+        if (distToIdeal < bestDist)
         {
             bestDist = distToIdeal;
             outPos = Position(candidateX, candidateY, candidateZ);

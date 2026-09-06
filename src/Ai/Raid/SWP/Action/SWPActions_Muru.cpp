@@ -15,6 +15,7 @@
 #include <iterator>
 #include <list>
 #include <utility>
+#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

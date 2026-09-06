@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <list>
 #include <string>
 
@@ -87,7 +88,7 @@ bool FindNearestUnblockedAngle(
 
     constexpr float edgeNudge = 0.01f;
     bool found = false;
-    float bestOffset = 0.0f;
+    float bestOffset = std::numeric_limits<float>::max();
 
     for (BlockedArc const& arc : blocked)
     {
@@ -98,7 +99,7 @@ bool FindNearestUnblockedAngle(
                 continue;
 
             float const offset = offsetFrom(edge, preferred);
-            if (!found || std::fabs(offset) < std::fabs(bestOffset))
+            if (std::fabs(offset) < std::fabs(bestOffset))
             {
                 bestOffset = offset;
                 unblocked = edge;
@@ -303,7 +304,7 @@ Unit* GetNearestInfernal(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     Unit* nearest = nullptr;
-    float nearestDistance = 0.0f;
+    float nearestDistance = std::numeric_limits<float>::max();
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
@@ -311,7 +312,7 @@ Unit* GetNearestInfernal(PlayerbotAI* botAI)
             continue;
 
         float const distance = bot->GetExactDist2d(infernal);
-        if (!nearest || distance < nearestDistance)
+        if (distance < nearestDistance)
         {
             nearest = infernal;
             nearestDistance = distance;
@@ -425,11 +426,11 @@ bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool)
 {
     Player* bot = botAI->GetBot();
     bool found = false;
-    float nearestDistance = 0.0f;
+    float nearestDistance = std::numeric_limits<float>::max();
     for (Position const& position : GetCachedHazardPositions(botAI, "hyjal rain of fire"))
     {
         float const distance = bot->GetExactDist2d(position);
-        if (!found || distance < nearestDistance)
+        if (distance < nearestDistance)
         {
             nearestDistance = distance;
             pool = position;

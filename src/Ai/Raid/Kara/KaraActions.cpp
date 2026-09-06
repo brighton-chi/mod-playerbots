@@ -831,7 +831,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
             float dy = candidateY - botY;
             float moveDistSq = dx*dx + dy*dy;
 
-            if (!found || moveDistSq < bestDistSq)
+            if (moveDistSq < bestDistSq)
             {
                 bestCandidate = Position(candidateX, candidateY, bot->GetPositionZ());
                 bestDistSq = moveDistSq;
