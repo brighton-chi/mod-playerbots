@@ -394,15 +394,12 @@ float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValueInEncounter(Acti
 
 float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
 
     if (!isDpsAssist && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");;
     if (!kaelthas)
         return 1.0f;
 
@@ -410,14 +407,23 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(
     if (phase == PHASE_NONE)
         return 1.0f;
 
+    // Kael drops every attacker when he becomes unattackable for his RP scene.
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT &&
+        !(phase == PHASE_FINAL && kaelthas->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE)))
+    {
+        return 1.0f;
+    }
+
     if (isDpsAssist)
         return 0.0f;
 
     // TankAssistAction
-    if (PlayerbotAI::IsMainTank(bot))
+    // All tanks are blocked during advisor and final phases.
+    if (phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS || phase == PHASE_FINAL)
         return 0.0f;
 
-    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_ALL_ADVISORS ? 0.0f : 1.0f;
+    // Only main tank is blocked during weapons/transition phases.
+    return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValueInEncounter(Action* action)

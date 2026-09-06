@@ -251,7 +251,6 @@ inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
-Unit* GetKaelthasTk(PlayerbotAI* botAI);
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);

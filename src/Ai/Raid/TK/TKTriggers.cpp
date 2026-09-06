@@ -359,6 +359,9 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TK_MAP_ID)
         return false;
 
+    if (IsEncounterInProgress(bot, TK_MAP_ID))
+        return false;
+
     if (AI_VALUE2(bool, "combat", "self target"))
         return false;
 
@@ -397,7 +400,7 @@ bool KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger::IsActiveInEncounter(
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* kaelthas = GetKaelthasTk(botAI);
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas || kaelthas->GetVictim() == bot)
         return false;
 

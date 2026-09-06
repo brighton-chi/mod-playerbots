@@ -359,11 +359,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionBossAction : public TempestKeepTankPositionAction
+class KaelthasSunstriderTanksPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
-    KaelthasSunstriderMainTankPositionBossAction(PlayerbotAI* botAI)
-        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider main tank position boss") {}
+    KaelthasSunstriderTanksPositionBossAction(PlayerbotAI* botAI)
+        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -383,7 +383,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool AssistTanksPickUpPhoenixes();
+    Unit* GetAssignedPhoenix();
+    bool AssistTankPicksUpPhoenix(Unit* phoenix);
     bool NonTanksAssignTargetAndAvoidPhoenixes();
 };
 
