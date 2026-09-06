@@ -25,8 +25,6 @@ namespace SwpHelpers
 namespace
 {
 
-std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
-
 std::vector<Position> const& GetCachedBlazePositions(PlayerbotAI* botAI)
 {
     return botAI->GetAiObjectContext()
@@ -113,6 +111,8 @@ std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetSt
 std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 
 std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
+
+std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {

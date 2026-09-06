@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <unordered_map>
 #include <vector>
@@ -105,6 +105,8 @@ extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
 extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
 extern std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
 extern std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
+// For the Alythess tank: the last Blaze it moved away from, so one Blaze moves it only one step.
+extern std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleePosition(Unit* alythess);
