@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <unordered_map>
 #include <vector>
 
@@ -92,6 +92,10 @@ inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
 // wide as touching a single Dark Fiend is almost a guaranteed wipe.
 inline constexpr float DARK_FIEND_SAFE_DISTANCE = 12.0f;
 inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
+// Distance kept from a Singularity. The active tank's distance is greater in order to leave space
+// for melee on Entropius.
+inline constexpr float SINGULARITY_SAFE_DISTANCE = 15.0f;
+inline constexpr float SINGULARITY_TANK_SAFE_DISTANCE = 20.0f;
 
 inline Position const MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
 inline Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
@@ -107,6 +111,9 @@ bool IsMuruPhaseActive(Unit* muru);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(
     Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
+bool PeekMuruDarknessActiveState(Player* bot);
+bool PeekMuruDarknessEarlyState(
+    Player* bot, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);

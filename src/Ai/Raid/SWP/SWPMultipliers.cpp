@@ -23,7 +23,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include "Timer.h"
 #include "WipeAction.h"
 
@@ -730,7 +730,7 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    if (!TryGetMuruDarknessActiveState(bot, muru))
+    if (!PeekMuruDarknessActiveState(bot))
         return 1.0f;
 
     auto const isReachTargetSafeFromDarkness = [&](Action* action) -> bool
@@ -751,7 +751,7 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (isReachTargetSafeFromDarkness(action))
         return 1.0f;
 
-    return PlayerbotAI::IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru) ? 1.0f : 0.0f;
+    return PlayerbotAI::IsTank(bot) && !PeekMuruDarknessEarlyState(bot) ? 1.0f : 0.0f;
 }
 
 float MuruDelayCooldownsMultiplier::GetValueInEncounter(Action* action)

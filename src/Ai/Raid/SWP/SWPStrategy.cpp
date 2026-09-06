@@ -10,7 +10,7 @@
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPMultipliers.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 
 void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -320,7 +320,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
     if (!IsMuruPhaseActive(muru))
         return;
 
-    bool const darknessActive = TryGetMuruDarknessActiveState(bot, muru);
+    bool const darknessActive = PeekMuruDarknessActiveState(bot);
     // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels
     bool const distanceUnrestricted = darknessActive &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
