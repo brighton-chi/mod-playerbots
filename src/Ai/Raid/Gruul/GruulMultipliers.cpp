@@ -203,7 +203,8 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Ac
         return 1.0f;
     }
 
-    return dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action) ? 1.0f : 0.0f;
+    return dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action) ||
+        dynamic_cast<GruulTheDragonkillerGetOutOfCaveInAction*>(action) ? 1.0f : 0.0f;
 }
 
 // When near a cave in, ignore the ranged spread, as well as standard movement actions like reaching
@@ -227,7 +228,7 @@ float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action
     if (dynamic_cast<GruulTheDragonkillerGetOutOfCaveInAction*>(action))
         return 1.0f;
 
-    // Shatter outranks Cave In, and the snare that follows it stops the bot moving regardless.
+    // The shatter spread multiplier takes over during Ground Slam (and allows the Cave In escape).
     if (HasGroundSlam(bot))
         return 1.0f;
 

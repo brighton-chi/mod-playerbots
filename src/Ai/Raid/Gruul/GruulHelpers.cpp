@@ -9,6 +9,7 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include <algorithm>
+#include <limits>
 #include <list>
 
 namespace GruulHelpers
@@ -196,11 +197,11 @@ bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool)
 {
     Player* bot = botAI->GetBot();
     bool found = false;
-    float nearestDistance = 0.0f;
+    float nearestDistance = std::numeric_limits<float>::max();
     for (Position const& position : GetCaveInPositions(botAI))
     {
         float const distance = bot->GetExactDist2d(position);
-        if (!found || distance < nearestDistance)
+        if (distance < nearestDistance)
         {
             nearestDistance = distance;
             pool = position;

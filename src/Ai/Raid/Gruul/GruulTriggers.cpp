@@ -110,10 +110,13 @@ bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 bool GruulTheDragonkillerInCaveInTrigger::IsActiveInEncounter()
 {
-    if (HasGroundSlam(bot))
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!gruul)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+    // The tank holding Gruul eats it. Moving him messes up the spread and puts other bots in
+    // danger.
+    if (gruul->GetVictim() == bot)
         return false;
 
     return IsInCaveIn(botAI);

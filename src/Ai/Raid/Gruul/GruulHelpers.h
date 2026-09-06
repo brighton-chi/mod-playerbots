@@ -105,12 +105,10 @@ std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI);
 // For the "gruul the dragonkiller cave in" value.
 inline constexpr uint32 CAVE_IN_CACHE_INTERVAL_MS = 100;
 // Radius is 8y, plus the 1.5y CombatReach the membership check adds for the player, rounded up.
-// The pool lasts 15s and is cast as often as every 3.5s, so five can be on the ground at once.
+// The pool lasts 15s and is cast as often as every 3.5s, so 5 can be on the ground at once.
 inline constexpr float CAVE_IN_RADIUS = 10.0f;
-// Distance for the multiplier. FleePosition() can leave the bot up to AiPlayerbot.FleeDistance
-// (5 by default) past the edge; the rest keeps the tank and ranged positioning from walking it
-// straight back in.
-inline constexpr float CAVE_IN_CONTROL_RADIUS = CAVE_IN_RADIUS + 7.0f;
+// Distance for the multiplier. As usual, wider than the avoidance to prevent running back in.
+inline constexpr float CAVE_IN_CONTROL_RADIUS = CAVE_IN_RADIUS + 5.0f;
 inline constexpr float CAVE_IN_SEARCH_RADIUS = CAVE_IN_CONTROL_RADIUS + 2.0f;
 // Radius is 20y with 2y of MoveAway padding. Sort of. The details are not really important; I note
 // only that damage has a linear relationship with distance.
