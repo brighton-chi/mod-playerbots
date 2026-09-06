@@ -86,7 +86,6 @@ enum class SwpSpells : uint32
     SPELL_SHADOWFORM                   = 15473,
     SPELL_MASS_DISPEL                  = 32375,
 
-
     // Shaman
     SPELL_PURGE_RANK_1                 = 370,
 
@@ -176,41 +175,14 @@ inline constexpr float VOLATILE_FIEND_SAFE_DISTANCE = 15.0f;
 // gauntlet is always going forwards so nobody needs to go the other way to reach a target.
 inline constexpr float VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS = 25.0f;
 ObjectGuid FindSwpVolatileFiendGuid(Player* bot);
+// Offset from the center of an arc for assigning positioning slots, filling outward and
+// alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
+float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
 // The minimum interval between spells cast by a charmed creature. This is in effect a manually
 // enforced cooldown because the path being used for the spellcast skips cooldowns.
 uint32 GetManualCastCooldown(uint32 spellId);
 // Same as above, except for enforcing a GCD for abilities with no cooldowns.
 uint32 GetManualCastGlobalCooldown(uint32 spellId);
-
-// Offset from the center of an arc for assigning positioning slots, filling outward and
-// alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
-inline float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
-{
-    if (slotCount <= 1)
-        return 0.0f;
-
-    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
-    if (slotCount % 2 == 1)
-    {
-        if (slotIndex == 0)
-            return 0.0f;
-
-        uint8 const stepIndex = (slotIndex + 1) / 2;
-        float angleOffset = angleStep * stepIndex;
-        if (slotIndex % 2 == 0)
-            angleOffset = -angleOffset;
-
-        return angleOffset;
-    }
-
-    float const halfStep = angleStep / 2.0f;
-    uint8 const pairIndex = slotIndex / 2;
-    float angleOffset = halfStep + angleStep * pairIndex;
-    if (slotIndex % 2 == 1)
-        angleOffset = -angleOffset;
-
-    return angleOffset;
-}
 
 }
 

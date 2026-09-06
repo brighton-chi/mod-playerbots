@@ -39,7 +39,7 @@ bool EredarTwinsMeleeJumpFromBalconyAction::Execute(Event /*event*/)
 }
 
 // Alythess really needs a Paladin tank so has a custom tank-selection method. To try to limit
-// confusion, announcements are made about which tank should be holding Alythess and why.
+// confusion, announcements are made about which tank is assigned to Alythess and why.
 bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
 {
     ResolveEredarTwinsTankAssignment(bot);

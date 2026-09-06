@@ -6,6 +6,7 @@
 
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <vector>

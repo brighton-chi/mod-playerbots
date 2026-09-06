@@ -7,6 +7,7 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>

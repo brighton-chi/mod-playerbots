@@ -125,51 +125,6 @@ bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
     return true;
 }
 
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
-{
-    Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
-
-    return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
-}
-
-uint32 GetManualCastCooldown(uint32 spellId)
-{
-    constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return minGlobalCooldown;
-
-    uint32 cooldownMs = spellInfo->GetRecoveryTime();
-    if (spellInfo->CategoryRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->CategoryRecoveryTime;
-    if (spellInfo->StartRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->StartRecoveryTime;
-
-    return cooldownMs ? cooldownMs : minGlobalCooldown;
-}
-
-uint32 GetManualCastGlobalCooldown(uint32 spellId)
-{
-    constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return minGlobalCooldown;
-
-    if (spellInfo->StartRecoveryTime)
-        return spellInfo->StartRecoveryTime;
-
-    // A charmed caster still gets MIN_GCD for a cooldownless spell.
-    return spellInfo->RecoveryTime || spellInfo->CategoryRecoveryTime ? 0 : minGlobalCooldown;
-}
-
-}
-
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
     Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
