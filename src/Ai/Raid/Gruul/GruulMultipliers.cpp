@@ -206,18 +206,23 @@ float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Ac
     return dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action) ? 1.0f : 0.0f;
 }
 
-// When near a cave in, ignore the general methods for moving to the tank position and ranged
-// spreading, as well as standard movement actions like reaching the target.
+// When near a cave in, ignore the ranged spread, as well as standard movement actions like reaching
+// the target, with some exceptions for tanks (and full exception for the active tank on Gruul).
 float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
+
+    if (PlayerbotAI::IsTank(bot) &&
+        (isReachTargetSpell || dynamic_cast<ReachTargetAction*>(action)))
     {
         return 1.0f;
     }
+
+    if (!isReachTargetSpell && !dynamic_cast<MovementAction*>(action))
+        return 1.0f;
 
     if (dynamic_cast<GruulTheDragonkillerGetOutOfCaveInAction*>(action))
         return 1.0f;
@@ -226,7 +231,11 @@ float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action
     if (HasGroundSlam(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    if (!gruul)
+        return 1.0f;
+
+    if (gruul->GetVictim() == bot)
         return 1.0f;
 
     return IsNearCaveIn(botAI, CAVE_IN_CONTROL_RADIUS) ? 0.0f : 1.0f;
@@ -243,8 +252,8 @@ float GruulTheDragonkillerHoldWhileSnaredMultiplier::GetValueInEncounter(Action*
     if (bot->GetSpeed(MOVE_RUN) > 0.0f)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "gruul the dragonkiller"))
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    return dynamic_cast<MovementAction*>(action) ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "gruul the dragonkiller") ? 0.0f : 1.0f;
 }
