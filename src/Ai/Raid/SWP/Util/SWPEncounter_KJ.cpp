@@ -20,50 +20,6 @@ namespace SwpHelpers
 namespace
 {
 
-float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
-{
-    if (slotCount <= 1)
-        return 0.0f;
-
-    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
-    if (slotCount % 2 == 1)
-    {
-        if (slotIndex == 0)
-            return 0.0f;
-
-        uint8 const stepIndex = (slotIndex + 1) / 2;
-        float angleOffset = angleStep * stepIndex;
-        if (slotIndex % 2 == 0)
-            angleOffset = -angleOffset;
-
-        return angleOffset;
-    }
-
-    float const halfStep = angleStep / 2.0f;
-    uint8 const pairIndex = slotIndex / 2;
-    float angleOffset = halfStep + angleStep * pairIndex;
-    if (slotIndex % 2 == 1)
-        angleOffset = -angleOffset;
-
-    return angleOffset;
-}
-
-uint32 GetDragonManualCooldown(uint32 spellId)
-{
-    constexpr uint32 globalCooldown = 1000;
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
-        return globalCooldown;
-
-    uint32 cooldownMs = spellInfo->GetRecoveryTime();
-    if (spellInfo->CategoryRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->CategoryRecoveryTime;
-    if (spellInfo->StartRecoveryTime > cooldownMs)
-        cooldownMs = spellInfo->StartRecoveryTime;
-
-    return cooldownMs ? cooldownMs : globalCooldown;
-}
-
 bool IsDragonGroupTarget(Player* bot, Player* member)
 {
     return member && member != bot && member->IsAlive() &&
@@ -648,7 +604,19 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
         return false;
 
     dragon->CastSpell(dragon, spellId, true);
-    dragon->AddSpellCooldown(spellId, 0, GetDragonManualCooldown(spellId));
+    dragon->AddSpellCooldown(spellId, 0, GetManualCastCooldown(spellId));
+
+    // The engine records no global cooldown for a triggered cast, so hold the dragon's other
+    // abilities here. Without it, Haste and Revitalize go out on consecutive ticks.
+    if (uint32 const globalCooldownMs = GetManualCastGlobalCooldown(spellId))
+    {
+        for (uint32 otherSpellId : KILJAEDEN_DRAGON_SPELLS)
+        {
+            if (otherSpellId != spellId && !dragon->HasSpellCooldown(otherSpellId))
+                dragon->AddSpellCooldown(otherSpellId, 0, globalCooldownMs);
+        }
+    }
+
     return true;
 }
 

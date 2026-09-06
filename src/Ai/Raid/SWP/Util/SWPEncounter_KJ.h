@@ -9,7 +9,7 @@
 
 #include "ObjectGuid.h"
 #include "Position.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
@@ -58,6 +58,12 @@ inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
     Id(SwpObjects::GO_DRAGON_ORB_2),
     Id(SwpObjects::GO_DRAGON_ORB_3),
     Id(SwpObjects::GO_DRAGON_ORB_4),
+};
+
+inline std::array const KILJAEDEN_DRAGON_SPELLS = {
+    Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE),
+    Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE),
+    Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE),
 };
 
 inline constexpr float KILJAEDEN_PHASE3_HP_THRESHOLD = 85.0f;
