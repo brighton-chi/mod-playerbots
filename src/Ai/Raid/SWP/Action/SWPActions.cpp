@@ -15,7 +15,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "SWPSharedConstants.h"
+#include "SWPShared.h"
 #include <list>
 
 using namespace SwpHelpers;
@@ -51,6 +51,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Eredar Twins
+    reset |= alythessTankLastBlazeGuid.erase(guid) > 0;
+
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
     if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(
             twinsAction)->ResetAlythessTankStep())
@@ -92,18 +94,22 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
+bool SunwellPlateauRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
 bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_MAGE && bot->HasAura(Id(SwpSpells::SPELL_ICE_BLOCK)))
+    // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
+    // Shadows and HPal bubbles are excluded.
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
+        bot->HasAura(spellId))
     {
-        bot->RemoveAura(Id(SwpSpells::SPELL_ICE_BLOCK));
-        return true;
-    }
-
-    if (bot->getClass() == CLASS_PALADIN && !PlayerbotAI::IsHeal(bot) &&
-        bot->HasAura(Id(SwpSpells::SPELL_DIVINE_SHIELD)))
-    {
-        bot->RemoveAura(Id(SwpSpells::SPELL_DIVINE_SHIELD));
+        bot->RemoveAura(spellId);
         return true;
     }
 
@@ -111,8 +117,7 @@ bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
         return false;
 
     // It is Blizzlike for Burn to persist after the kill, but bots will murder the raid without
-    // a dedicated non-combat strategy for it. It's no fun to do that and wait around for expiry
-    // so I'm just wiping the aura after the encounter.
+    // a dedicated non-combat strategy for it. That's a waste of time, so just wipe the aura.
     if (!HasBrutallusBurn(bot))
         return false;
 
@@ -129,6 +134,38 @@ ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
         Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
 
     return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
+}
+
+uint32 GetManualCastCooldown(uint32 spellId)
+{
+    constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return minGlobalCooldown;
+
+    uint32 cooldownMs = spellInfo->GetRecoveryTime();
+    if (spellInfo->CategoryRecoveryTime > cooldownMs)
+        cooldownMs = spellInfo->CategoryRecoveryTime;
+    if (spellInfo->StartRecoveryTime > cooldownMs)
+        cooldownMs = spellInfo->StartRecoveryTime;
+
+    return cooldownMs ? cooldownMs : minGlobalCooldown;
+}
+
+uint32 GetManualCastGlobalCooldown(uint32 spellId)
+{
+    constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return minGlobalCooldown;
+
+    if (spellInfo->StartRecoveryTime)
+        return spellInfo->StartRecoveryTime;
+
+    // A charmed caster still gets MIN_GCD for a cooldownless spell.
+    return spellInfo->RecoveryTime || spellInfo->CategoryRecoveryTime ? 0 : minGlobalCooldown;
 }
 
 }
