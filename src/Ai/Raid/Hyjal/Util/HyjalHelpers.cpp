@@ -12,6 +12,7 @@
 #include <limits>
 #include <list>
 #include <string>
+#include <utility>
 
 using namespace EncounterHelpers;
 
@@ -20,14 +21,13 @@ namespace HyjalHelpers
 
 namespace
 {
+
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
-}
 
-// General
-
+// The span of a ring that a circular ground hazard covers.
 bool GetHazardBlockedArc(
     Position const& ringCenter, float ringRadius, Position const& hazard,
     float hazardRadius, BlockedArc& arc)
@@ -56,6 +56,7 @@ bool GetHazardBlockedArc(
     return true;
 }
 
+// The angle nearest to the preferred one that clears every blocked arc.
 bool FindNearestUnblockedAngle(
     std::vector<BlockedArc> const& blocked, float preferred, float& unblocked)
 {
@@ -110,6 +111,7 @@ bool FindNearestUnblockedAngle(
     return found;
 }
 
+// A step towards a point on a circle, at the angle nearest to preferred that the bot can reach.
 bool FindStepToCircle(
     Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
     float& stepX, float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable,
@@ -152,6 +154,7 @@ bool FindStepToCircle(
     return false;
 }
 
+// The same search, except aimed straight out of a hazard.
 bool GetHazardEscapeStep(
     Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
     float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable)
@@ -165,28 +168,15 @@ bool GetHazardEscapeStep(
         escapeAngle = bot->GetOrientation();
 
     return FindStepToCircle(
-        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ, isAcceptable);
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ,
+        isAcceptable, nullptr, nullptr);
 }
 
-std::vector<Player*> GetRangedMembers(Player* bot)
+struct RangedGroups
 {
-    std::vector<Player*> members;
-    Group* group = bot->GetGroup();
-    if (!group)
-        return members;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->GetMapId() == HYJAL_MAP_ID && GET_PLAYERBOT_AI(member) &&
-            PlayerbotAI::IsRanged(member))
-        {
-            members.push_back(member);
-        }
-    }
-
-    return members;
-}
+    std::vector<Player*> healers;
+    std::vector<Player*> rangedDps;
+};
 
 RangedGroups GetRangedGroups(Player* bot)
 {
@@ -209,6 +199,128 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups co
     size_t index = (it != vec.end()) ? std::distance(vec.begin(), it) : 0;
 
     return {index, vec.size()};
+}
+
+} // end anonymous namespace
+
+// General
+
+bool GetMeleeHazardManeuverStep(
+    Player* bot, Unit* boss, std::vector<Position> const& hazards, float hazardRadius,
+    std::vector<BlockedArc> const& extraBlocked, float& stepX, float& stepY, float& stepZ,
+    std::function<bool(float, float)> const& isAcceptable)
+{
+    constexpr float moveDist = 10.0f;
+    float const meleeRadius = bot->GetMeleeRange(boss) - MELEE_RANGE_INSET;
+
+    std::vector<BlockedArc> blocked;
+    blocked.reserve(hazards.size() + extraBlocked.size());
+    for (Position const& hazard : hazards)
+    {
+        BlockedArc hazardArc;
+        if (GetHazardBlockedArc(boss->GetPosition(), meleeRadius, hazard, hazardRadius, hazardArc))
+            blocked.push_back(hazardArc);
+    }
+
+    blocked.insert(blocked.end(), extraBlocked.begin(), extraBlocked.end());
+
+    float const bossX = boss->GetPositionX();
+    float const bossY = boss->GetPositionY();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+
+    float standAngle;
+    if (FindNearestUnblockedAngle(blocked, std::atan2(botY - bossY, botX - bossX), standAngle))
+    {
+        float const targetX = bossX + std::cos(standAngle) * meleeRadius;
+        float const targetY = bossY + std::sin(standAngle) * meleeRadius;
+        float const distToTarget = bot->GetExactDist2d(targetX, targetY);
+
+        constexpr float minStepDistance = 0.5f;
+        if (distToTarget < minStepDistance)
+            return false;
+
+        float const stepDist = std::min(moveDist, distToTarget);
+        stepX = botX + ((targetX - botX) / distToTarget) * stepDist;
+        stepY = botY + ((targetY - botY) / distToTarget) * stepDist;
+        stepZ = bot->GetPositionZ();
+        return true;
+    }
+
+    Position const* nearest = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (Position const& hazard : hazards)
+    {
+        float const distance = bot->GetExactDist2d(hazard);
+        if (distance < nearestDistance)
+        {
+            nearest = &hazard;
+            nearestDistance = distance;
+        }
+    }
+
+    if (!nearest || nearestDistance >= hazardRadius)
+        return false;
+
+    constexpr float escapeMargin = 2.0f;
+    return GetHazardEscapeStep(
+        bot, *nearest, hazardRadius + escapeMargin, moveDist, stepX, stepY, stepZ, isAcceptable);
+}
+
+std::vector<Player*> GetRangedMembers(Player* bot)
+{
+    std::vector<Player*> members;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return members;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->GetMapId() == HYJAL_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            PlayerbotAI::IsRanged(member))
+        {
+            members.push_back(member);
+        }
+    }
+
+    return members;
+}
+
+bool GetRangedRingStep(
+    Player* bot, Position const& center, float healerRadius, float dpsRadius, float& stepX,
+    float& stepY, float& stepZ, bool& reached)
+{
+    RangedGroups const groups = GetRangedGroups(bot);
+    auto const [botIndex, count] = GetBotCircleIndexAndCount(bot, groups);
+    if (count == 0)
+        return false;
+
+    constexpr float arcSpan = 2.0f * static_cast<float>(M_PI);
+    constexpr float arcCenter = 0.0f;
+    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
+    float const angle = (count == 1) ? arcCenter :
+        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
+
+    float const radius = PlayerbotAI::IsHeal(bot) ? healerRadius : dpsRadius;
+    constexpr float moveDist = 3.5f;
+    float chosenX;
+    float chosenY;
+    if (!FindStepToCircle(
+            bot, center, radius, angle, moveDist, stepX, stepY, stepZ, {}, &chosenX, &chosenY))
+    {
+        reached = true;
+        return false;
+    }
+
+    constexpr float arrivalDist = 2.0f;
+    if (bot->GetExactDist2d(chosenX, chosenY) <= arrivalDist)
+    {
+        reached = true;
+        return false;
+    }
+
+    return true;
 }
 
 // Rage Winterchill
