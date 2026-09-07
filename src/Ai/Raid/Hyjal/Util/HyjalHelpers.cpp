@@ -292,7 +292,7 @@ Unit* GetLooseInfernal(PlayerbotAI* botAI)
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
-        if (infernal && infernal->GetVictim() != infernalTank)
+        if (infernal && infernal->IsAlive() && infernal->GetVictim() != infernalTank)
             return infernal;
     }
 
@@ -307,7 +307,7 @@ Unit* GetNearestInfernal(PlayerbotAI* botAI)
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
-        if (!infernal)
+        if (!infernal || !infernal->IsAlive())
             continue;
 
         float const distance = bot->GetExactDist2d(infernal);
@@ -326,18 +326,17 @@ Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
     if (!anetheron || anetheron->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
         return nullptr;
 
-    Unit* infernal = nullptr;
+    Player* bot = botAI->GetBot();
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
-        infernal = botAI->GetUnit(guid);
-        if (infernal)
-            break;
+        Unit* infernal = botAI->GetUnit(guid);
+        if (!infernal || !infernal->IsAlive())
+            continue;
+
+        return bot->GetExactDist2d(infernal) < INFERNAL_RANGED_ENGAGE_DISTANCE ? infernal : nullptr;
     }
 
-    if (!infernal || botAI->GetBot()->GetExactDist2d(infernal) >= INFERNAL_RANGED_ENGAGE_DISTANCE)
-        return nullptr;
-
-    return infernal;
+    return nullptr;
 }
 
 Unit* GetInfernalTargetingBot(PlayerbotAI* botAI)

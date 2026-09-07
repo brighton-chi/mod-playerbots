@@ -166,8 +166,6 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    // Same call the client makes for a right-clicked buff, since dropping Shadowform to cast a
-    // Holy spell is exactly what a Shadow Priest does by hand.
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
     {
         bot->RemoveOwnedAura(

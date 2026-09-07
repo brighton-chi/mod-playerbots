@@ -140,6 +140,8 @@ bool IsInDeathAndDecay(PlayerbotAI* botAI);
 // Towering Infernal's CombatReach is 4y
 
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
+// Longer than the hazard interval because this is a creature grid search.
+inline constexpr uint32 INFERNAL_CACHE_INTERVAL = 200;
 // A landing Infernal stuns everybody within 10y for 2s (31302) and then burns everything within
 // 10y of itself for as long as it lives with Immolation (31304 triggering 31303).
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;

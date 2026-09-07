@@ -18,7 +18,8 @@ class HyjalInfernalsValue : public CalculatedValue<GuidVector>
 {
 public:
     HyjalInfernalsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(botAI, "hyjal infernals", 200) {}
+        : CalculatedValue<GuidVector>(
+              botAI, "hyjal infernals", HyjalHelpers::INFERNAL_CACHE_INTERVAL) {}
 
 protected:
     GuidVector Calculate() override { return HyjalHelpers::FindInfernalGuids(bot); }
