@@ -404,10 +404,8 @@ Unit* GetLooseInfernal(PlayerbotAI* botAI)
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
-        if (!infernal || !infernal->IsAlive())
-            continue;
-
-        return infernal->GetVictim() != infernalTank ? infernal : nullptr;
+        if (infernal && infernal->IsAlive() && infernal->GetVictim() != infernalTank)
+            return infernal;
     }
 
     return nullptr;
