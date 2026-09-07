@@ -168,7 +168,8 @@ bool GetHazardEscapeStep(
         escapeAngle = bot->GetOrientation();
 
     return FindStepToCircle(
-        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ, isAcceptable);
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ,
+        isAcceptable, nullptr, nullptr);
 }
 
 struct RangedGroups
