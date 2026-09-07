@@ -52,11 +52,14 @@ public:
     bool IsActive() override;
 };
 
-class ZulAmanPullingBossTrigger : public Trigger
+class ZulAmanPullingBossTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    ZulAmanPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "zul'aman pulling boss") {}
-    bool IsActive() override;
+    ZulAmanPullingBossTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "zul'aman pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Akil'zon <Eagle Avatar>

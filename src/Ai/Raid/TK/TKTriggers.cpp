@@ -45,7 +45,7 @@ bool CrimsonHandCenturionCastsArcaneFlurryTrigger::IsActive()
 
 // Al'ar <Phoenix God>
 
-bool AlarPullingBossTrigger::IsActive()
+bool AlarPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;

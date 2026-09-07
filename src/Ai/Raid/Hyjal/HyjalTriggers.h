@@ -42,13 +42,15 @@ public:
 
 // For Misdirection to the boss. Anetheron is not included because Misdirection is used there for
 // picking up Infernals as well.
-class HyjalPullingBossTrigger : public Trigger
+class HyjalPullingBossTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     HyjalPullingBossTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Trigger(botAI, name), _bossName(bossName) {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
 
 private:
     std::string const _bossName;
@@ -109,12 +111,14 @@ protected:
 
 // Anetheron
 
-class AnetheronPullingBossOrInfernalTrigger : public Trigger
+class AnetheronPullingBossOrInfernalTrigger : public HyjalSummitEncounterTrigger
 {
 public:
     AnetheronPullingBossOrInfernalTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "anetheron pulling boss or infernal") {}
-    bool IsActive() override;
+        : HyjalSummitEncounterTrigger(botAI, "anetheron pulling boss or infernal") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class AnetheronRangedShouldSpreadTrigger : public HyjalSummitEncounterTrigger

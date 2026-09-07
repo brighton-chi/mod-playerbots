@@ -24,12 +24,9 @@ bool ZulAmanNoEncounterInProgressTrigger::IsActive()
 }
 
 // Same Misdirect on pull for all bosses
-bool ZulAmanPullingBossTrigger::IsActive()
+bool ZulAmanPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    if (bot->GetMapId() != ZA_MAP_ID)
         return false;
 
     Unit* boss = AI_VALUE(Unit*, "boss target");

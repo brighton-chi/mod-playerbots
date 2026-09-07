@@ -80,11 +80,14 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KalecgosPullingBossTrigger : public Trigger
+class KalecgosPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    KalecgosPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "kalecgos pulling boss") {}
-    bool IsActive() override;
+    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "kalecgos pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class KalecgosRequiresTankRotationTrigger : public SunwellPlateauEncounterTrigger
@@ -149,11 +152,14 @@ protected:
 
 // Brutallus
 
-class BrutallusPullingBossTrigger : public Trigger
+class BrutallusPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "brutallus pulling boss") {}
-    bool IsActive() override;
+    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "brutallus pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class BrutallusRequiresTwoTanksTrigger : public SunwellPlateauEncounterTrigger
@@ -198,11 +204,14 @@ protected:
 
 // Felmyst
 
-class FelmystPullingBossTrigger : public Trigger
+class FelmystPullingBossTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "felmyst pulling boss") {}
-    bool IsActive() override;
+    FelmystPullingBossTrigger(PlayerbotAI* botAI)
+        : SunwellPlateauEncounterTrigger(botAI, "felmyst pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class FelmystGroundPhaseShouldBeTankedTrigger : public SunwellPlateauEncounterTrigger
@@ -347,12 +356,14 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsPullingBossesTrigger : public Trigger
+class EredarTwinsPullingBossesTrigger : public SunwellPlateauEncounterTrigger
 {
 public:
     EredarTwinsPullingBossesTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "eredar twins pulling bosses") {}
-    bool IsActive() override;
+        : SunwellPlateauEncounterTrigger(botAI, "eredar twins pulling bosses") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class EredarTwinsSacrolashRequiresTwoTanksTrigger : public SunwellPlateauEncounterTrigger

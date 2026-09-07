@@ -22,7 +22,7 @@ bool HyjalSummitNoEncounterInProgress::IsActive()
     return !IsEncounterInProgress(bot, HYJAL_MAP_ID);
 }
 
-bool HyjalPullingBossTrigger::IsActive()
+bool HyjalPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -80,7 +80,7 @@ bool RageWinterchillRangedInDeathAndDecayTrigger::IsActiveInEncounter()
 
 // Anetheron
 
-bool AnetheronPullingBossOrInfernalTrigger::IsActive()
+bool AnetheronPullingBossOrInfernalTrigger::IsActiveInEncounter()
 {
     return bot->getClass() == CLASS_HUNTER && AI_VALUE2(Unit*, "find target", "anetheron");
 }
