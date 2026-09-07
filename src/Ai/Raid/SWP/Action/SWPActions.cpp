@@ -30,8 +30,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 
     // Kalecgos
     Action* kalecAction = context->GetAction("kalecgos disperse ranged");
-    if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
-            kalecAction)->ResetInitialRangedPositionReached())
+    if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(kalecAction)
+            ->ResetInitialRangedPositionReached())
     {
         reset = true;
     }
@@ -44,8 +44,8 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= ReleaseBrutallusBurnPad(bot);
 
     Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
-    if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
-            brutallusAction)->ResetInitialPositionReached())
+    if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(brutallusAction)
+            ->ResetInitialPositionReached())
     {
         reset = true;
     }
@@ -54,16 +54,16 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= alythessTankLastBlazeGuid.erase(guid) > 0;
 
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
-    if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(
-            twinsAction)->ResetAlythessTankStep())
+    if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(twinsAction)
+            ->ResetAlythessTankStep())
     {
         reset = true;
     }
 
     // M'uru
     Action* muruAction = context->GetAction("m'uru position ranged by phase");
-    if (muruAction && static_cast<MuruPositionRangedByPhaseAction*>(
-            muruAction)->ResetEntropiusRangedPositionReached())
+    if (muruAction && static_cast<MuruPositionRangedByPhaseAction*>(muruAction)
+            ->ResetEntropiusRangedPositionReached())
     {
         reset = true;
     }
@@ -166,8 +166,13 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
+    // Same call the client makes for a right-clicked buff, since dropping Shadowform to cast a
+    // Holy spell is exactly what a Shadow Priest does by hand.
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
-        bot->RemoveAura(Id(SwpSpells::SPELL_SHADOWFORM));
+    {
+        bot->RemoveOwnedAura(
+            Id(SwpSpells::SPELL_SHADOWFORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
 
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }
