@@ -9,6 +9,8 @@
 
 #include "Multiplier.h"
 
+// General
+
 class KarazhanSetTremorTotemMultiplier : public Multiplier
 {
 public:
@@ -16,6 +18,8 @@ public:
         : Multiplier(botAI, "karazhan set tremor totem") {}
     float GetValue(Action* action) override;
 };
+
+// Attumen the Huntsman
 
 class AttumenTheHuntsmanDisableAutomaticTargetingMultiplier : public Multiplier
 {
@@ -41,6 +45,8 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Maiden of Virtue
+
 class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
@@ -56,6 +62,8 @@ public:
         : Multiplier(botAI, "maiden of virtue set grounding totem") {}
     float GetValue(Action* action) override;
 };
+
+// The Curator
 
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
@@ -81,6 +89,8 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Terestian Illhoof
+
 class TerestianIllhoofDontDotFiendishImpsMultiplier : public Multiplier
 {
 public:
@@ -88,6 +98,8 @@ public:
         : Multiplier(botAI, "terestian illhoof don't dot fiendish imps") {}
     float GetValue(Action* action) override;
 };
+
+// Shade of Aran
 
 class ShadeOfAranArcaneExplosionRunAwayMultiplier : public Multiplier
 {
@@ -105,6 +117,8 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Netherspite
+
 class NetherspiteKeepBlockingBeamMultiplier : public Multiplier
 {
 public:
@@ -121,6 +135,8 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Prince Malchezaar
+
 class PrinceMalchezaarEnfeebleMultiplier : public Multiplier
 {
 public:
@@ -136,6 +152,8 @@ public:
         : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism") {}
     float GetValue(Action* action) override;
 };
+
+// Nightbane
 
 class NightbaneDisablePetsMultiplier : public Multiplier
 {

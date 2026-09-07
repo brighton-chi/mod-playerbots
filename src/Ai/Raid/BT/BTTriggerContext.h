@@ -16,8 +16,8 @@ public:
     RaidBlackTempleTriggerContext()
     {
         // General
-        creators["black temple bot is not in combat"] =
-            &RaidBlackTempleTriggerContext::black_temple_bot_is_not_in_combat;
+        creators["black temple no encounter in progress"] =
+            &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus pulling boss"] =
@@ -211,8 +211,8 @@ public:
 
 private:
     // General
-    static Trigger* black_temple_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new BlackTempleBotIsNotInCombatTrigger(botAI);
+    static Trigger* black_temple_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new BlackTempleNoEncounterInProgressTrigger(botAI);
     }
 
     // High Warlord Naj'entus

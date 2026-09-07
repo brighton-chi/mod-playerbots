@@ -16,18 +16,18 @@ public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
         // General
-        creators["gruul's lair bot is not in combat"] =
-            &RaidGruulsLairTriggerContext::gruuls_lair_bot_is_not_in_combat;
+        creators["gruul's lair no encounter in progress"] =
+            &RaidGruulsLairTriggerContext::gruuls_lair_no_encounter_in_progress;
 
-        // High King Maulgar
-        creators["high king maulgar bosses engaged by melee tanks"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_bosses_engaged_by_melee_tanks;
+        // High King Maulgar <Lord of the Ogres>
+        creators["high king maulgar three ogres need melee tanks"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_three_ogres_need_melee_tanks;
 
-        creators["high king maulgar krosh engaged by mage tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_engaged_by_mage_tank;
+        creators["high king maulgar krosh needs mage tank"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_needs_mage_tank;
 
-        creators["high king maulgar kiggler engaged by moonkin tank"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_kiggler_engaged_by_moonkin_tank;
+        creators["high king maulgar kiggler needs moonkin tank"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_kiggler_needs_moonkin_tank;
 
         creators["high king maulgar determining kill order"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_determining_kill_order;
@@ -35,8 +35,8 @@ public:
         creators["high king maulgar boss channeling whirlwind"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_boss_channeling_whirlwind;
 
-        creators["high king maulgar krosh casts blast wave"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_krosh_casts_blast_wave;
+        creators["high king maulgar should stand back from krosh"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_should_stand_back_from_krosh;
 
         creators["high king maulgar wild fel stalker spawned"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_wild_fel_stalker_spawned;
@@ -45,11 +45,14 @@ public:
             &RaidGruulsLairTriggerContext::high_king_maulgar_pulling_ogre_council;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller boss engaged by tanks"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_tanks;
+        creators["gruul the dragonkiller should be tanked"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_should_be_tanked;
 
         creators["gruul the dragonkiller ranged should spread"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
+
+        creators["gruul the dragonkiller in cave in"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_in_cave_in;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
@@ -57,19 +60,19 @@ public:
 
 private:
     // General
-    static Trigger* gruuls_lair_bot_is_not_in_combat(PlayerbotAI* botAI) {
-        return new GruulsLairBotIsNotInCombatTrigger(botAI);
+    static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new GruulsLairNoEncounterInProgressTrigger(botAI);
     }
 
-    // High King Maulgar
-    static Trigger* high_king_maulgar_bosses_engaged_by_melee_tanks(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBossesEngagedByMeleeTanksTrigger(botAI);
+    // High King Maulgar <Lord of the Ogres>
+    static Trigger* high_king_maulgar_three_ogres_need_melee_tanks(PlayerbotAI* botAI) {
+        return new HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_krosh_engaged_by_mage_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKroshEngagedByMageTankTrigger(botAI);
+    static Trigger* high_king_maulgar_krosh_needs_mage_tank(PlayerbotAI* botAI) {
+        return new HighKingMaulgarKroshNeedsMageTankTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_kiggler_engaged_by_moonkin_tank(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKigglerEngagedByMoonkinTankTrigger(botAI);
+    static Trigger* high_king_maulgar_kiggler_needs_moonkin_tank(PlayerbotAI* botAI) {
+        return new HighKingMaulgarKigglerNeedsMoonkinTankTrigger(botAI);
     }
     static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI) {
         return new HighKingMaulgarDeterminingKillOrderTrigger(botAI);
@@ -77,8 +80,8 @@ private:
     static Trigger* high_king_maulgar_boss_channeling_whirlwind(PlayerbotAI* botAI) {
         return new HighKingMaulgarBossChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_krosh_casts_blast_wave(PlayerbotAI* botAI) {
-        return new HighKingMaulgarKroshCastsBlastWaveTrigger(botAI);
+    static Trigger* high_king_maulgar_should_stand_back_from_krosh(PlayerbotAI* botAI) {
+        return new HighKingMaulgarShouldStandBackFromKroshTrigger(botAI);
     }
     static Trigger* high_king_maulgar_wild_fel_stalker_spawned(PlayerbotAI* botAI) {
         return new HighKingMaulgarWildFelStalkerSpawnedTrigger(botAI);
@@ -88,11 +91,14 @@ private:
     }
 
     // Gruul the Dragonkiller
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new GruulTheDragonkillerBossEngagedByTanksTrigger(botAI);
+    static Trigger* gruul_the_dragonkiller_should_be_tanked(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerShouldBeTankedTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* gruul_the_dragonkiller_in_cave_in(PlayerbotAI* botAI) {
+        return new GruulTheDragonkillerInCaveInTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);

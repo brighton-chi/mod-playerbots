@@ -8,11 +8,13 @@
 #define PLAYERBOTS_SWPSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
-class RaidSunwellStrategy : public Strategy
+class RaidSwpStrategy : public Strategy
 {
 public:
-    RaidSunwellStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+    RaidSwpStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
     std::string const getName() override { return "sunwell"; }
 
     bool HasTargetExclusions() const override { return true; }

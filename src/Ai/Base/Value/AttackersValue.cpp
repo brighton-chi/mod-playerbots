@@ -217,25 +217,22 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         //
         // (1) Whatever the claim, the bot may attack if it (a) is in a raid/group and has a master
         //     holding nonzero threat on the creature, (b) has, or has a raid/group member that has,
-        //     already tapped it, (c) is already in combat with the creature, or (d) has the "attack
-        //     tagged" strategy, which is automatically applied in battlegrounds and arenas.
+        //     already tapped it, or (c) is already in combat with the creature.
         if (leaderHasThreat || c->isTappedBy(bot) || c->IsInCombatWith(bot))
             return true;
 
         // (2) Nobody has claimed the creature, so ask who it is attacking. If it is not attacking
         //     anything, or if it is attacking (a) something with no player behind it (e.g., a
         //     critter), (b) the bot, (c) the bot's master, or (d) a member of the bot's raid/group,
-        //     then the victim is considered to belong to the bot and may be attacked. A charm is
-        //     treated the same as whoever owns it, so (b) through (d) cover pets and totems too.
+        //     then the victim is considered to belong to the bot and may be attacked. Clauses (b)
+        //     through (d) also include a player's pets, guardians, totems, and charms.
         if (!c->hasLootRecipient())
         {
             Unit* victim = c->GetVictim();
             Player* victimOwner = victim ? victim->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
             if (!victim || !victimOwner || victimOwner == bot || victimOwner == botAI->GetMaster() ||
                 (bot->GetGroup() && bot->GetGroup() == victimOwner->GetGroup()))
-            {
                 return true;
-            }
         }
 
         // (3) Last because it is applied automatically only in battlegrounds and arenas: the

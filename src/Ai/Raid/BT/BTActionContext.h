@@ -16,8 +16,8 @@ public:
     RaidBlackTempleActionContext()
     {
         // General
-        creators["black temple erase timers and trackers"] =
-            &RaidBlackTempleActionContext::black_temple_erase_timers_and_trackers;
+        creators["black temple reset encounter states"] =
+            &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect boss to main tank"] =
@@ -211,8 +211,8 @@ public:
 
 private:
     // General
-    static Action* black_temple_erase_timers_and_trackers(PlayerbotAI* botAI) {
-        return new BlackTempleEraseTimersAndTrackersAction(botAI);
+    static Action* black_temple_reset_encounter_states(PlayerbotAI* botAI) {
+        return new BlackTempleResetEncounterStatesAction(botAI);
     }
 
     // High Warlord Naj'entus

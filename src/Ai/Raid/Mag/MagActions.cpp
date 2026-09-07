@@ -11,13 +11,31 @@
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
-#include <algorithm>
+#include "RtiTargetValue.h"
+#include <cmath>
 #include <limits>
 #include <list>
 #include <vector>
 
 using namespace MagHelpers;
 using namespace EncounterHelpers;
+
+bool MagtheridonResetEncounterStatesAction::Execute(Event /*event*/)
+{
+    uint32 const instanceId = bot->GetInstanceId();
+
+    bool reset = false;
+    reset |= blastNovaTimer.erase(instanceId) > 0;
+    reset |= dpsWaitTimer.erase(instanceId) > 0;
+    reset |= ceilingCollapseApplied.erase(instanceId) > 0;
+    reset |= lastBlastNovaState.erase(instanceId) > 0;
+    reset |= botToCubeAssignments.erase(instanceId) > 0;
+
+    if (!AI_VALUE2(bool, "combat", "self target"))
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+
+    return reset;
+}
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
@@ -68,19 +86,17 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
     if (channeler->GetVictim() != bot)
         return false;
 
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 3.0f)
+    // Movement is intentionally forwards only, so no facing is passed.
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
-
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
-    float const moveDist = std::min(distToPosition, 3.5f);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
     return MoveTo(
         MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Misdirect West & East Channelers to Main Tank
@@ -239,25 +255,15 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
-    Position const& position = MAGTHERIDON_TANK_POSITION;
-
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 3.0f)
+    constexpr float arrivalDist = 3.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, MAGTHERIDON_TANK_POSITION, arrivalDist, magtheridon, moveX, moveY, backwards))
+    {
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    float const toBossX = magtheridon->GetPositionX() - botX;
-    float const toBossY = magtheridon->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-    float const maxMoveDist = backwards ? 2.25f : 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + (toPosX / distToPosition) * moveDist;
-    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
@@ -474,7 +480,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 
             float const moveDistance = bot->GetExactDist2d(x, y);
 
-            if (!foundSafe || moveDistance < minMoveDistance)
+            if (moveDistance < minMoveDistance)
             {
                 outPos = Position(x, y, bot->GetPositionZ());
                 minMoveDistance = moveDistance;
@@ -628,18 +634,4 @@ bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
     }
 
     return false;
-}
-
-bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
-{
-    uint32 const instanceId = bot->GetInstanceId();
-
-    bool erased = false;
-    erased |= blastNovaTimer.erase(instanceId) > 0;
-    erased |= dpsWaitTimer.erase(instanceId) > 0;
-    erased |= ceilingCollapseApplied.erase(instanceId) > 0;
-    erased |= lastBlastNovaState.erase(instanceId) > 0;
-    erased |= botToCubeAssignments.erase(instanceId) > 0;
-
-    return erased;
 }

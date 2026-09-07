@@ -10,6 +10,7 @@
 #include "ACTriggerContext.h"
 #include "HFRTriggerContext.h"
 #include "MechTriggerContext.h"
+#include "MgTTriggerContext.h"
 #include "SethTriggerContext.h"
 #include "UBTriggerContext.h"
 

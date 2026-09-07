@@ -8,6 +8,8 @@
 #define PLAYERBOTS_GRUULSTRATEGY_H
 
 #include "Strategy.h"
+#include <string>
+#include <vector>
 
 class RaidGruulsLairStrategy : public Strategy
 {

@@ -5,16 +5,17 @@
  */
 
 #include "SWPActions.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
+#include "InstanceScript.h"
 #include "Playerbots.h"
-#include "SWPSharedConstants.h"
+#include "RtiTargetValue.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include "SWPShared.h"
 #include <list>
 
 using namespace SwpHelpers;
@@ -24,94 +25,104 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
-    bool const isMechanicTracker = IsMechanicTrackerBot(bot, SWP_MAP_ID);
 
-    bool didSomething = false;
-
-    // The trigger gates this on InstanceScript reporting no encounter in progress, so nothing here
-    // needs a per-boss check of its own - no SWP boss is engaged while this runs.
+    bool reset = false;
 
     // Kalecgos
     Action* kalecAction = context->GetAction("kalecgos disperse ranged");
-    if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(
-            kalecAction)->ResetInitialRangedPositionReached())
+    if (kalecAction && static_cast<KalecgosDisperseRangedAction*>(kalecAction)
+            ->ResetInitialRangedPositionReached())
     {
-        didSomething = true;
+        reset = true;
     }
 
     // Brutallus
-    if (bot->HasAura(Id(SwpSpells::SPELL_BURN)))
-    {
-        bot->RemoveAura(Id(SwpSpells::SPELL_BURN));
-        didSomething = true;
-    }
-
     auto const brutallusItr = brutallusEncounterStates.find(instanceId);
     if (brutallusItr != brutallusEncounterStates.end())
-        didSomething |= brutallusItr->second.rangedBurnStates.erase(guid) > 0;
+        reset |= brutallusItr->second.rangedBurnStates.erase(guid) > 0;
 
-    didSomething |= ReleaseBrutallusBurnPad(bot);
+    reset |= ReleaseBrutallusBurnPad(bot);
 
     Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
-    if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(
-            brutallusAction)->ResetInitialPositionReached())
+    if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(brutallusAction)
+            ->ResetInitialPositionReached())
     {
-        didSomething = true;
+        reset = true;
     }
 
     // Eredar Twins
-    Action* twinsAction = context->GetAction("eredar twins first assist tank move out of blaze");
-    if (twinsAction && static_cast<EredarTwinsFirstAssistTankMoveOutOfBlazeAction*>(
-            twinsAction)->ResetAlythessTankStep())
+    reset |= alythessTankLastBlazeGuid.erase(guid) > 0;
+
+    Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
+    if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(twinsAction)
+            ->ResetAlythessTankStep())
     {
-        didSomething = true;
+        reset = true;
+    }
+
+    // M'uru
+    Action* muruAction = context->GetAction("m'uru position ranged by phase");
+    if (muruAction && static_cast<MuruPositionRangedByPhaseAction*>(muruAction)
+            ->ResetEntropiusRangedPositionReached())
+    {
+        reset = true;
     }
 
     // Kil'jaeden
-    didSomething |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
+    reset |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
 
-    if (!isMechanicTracker)
-        return didSomething;
+    // Records shared across the raid, so one bot clears them all
+    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
+        return reset;
 
-    // Records shared across the raid, so one bot clears them rather than all twenty-five
-    didSomething |= kalecgosEncounterStates.erase(instanceId) > 0;
-    didSomething |= brutallusEncounterStates.erase(instanceId) > 0;
-    didSomething |= felmystEncounterStates.erase(instanceId) > 0;
-    didSomething |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
-    didSomething |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
-    didSomething |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
-    didSomething |= muruDarknessStates.erase(instanceId) > 0;
-    didSomething |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
-    didSomething |= kiljaedenEncounterStates.erase(instanceId) > 0;
-    didSomething |= ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
-    didSomething |= kiljaedenHandTankAssignments.erase(instanceId) > 0;
+    if (!AI_VALUE2(bool, "combat", "self target"))
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
-    return didSomething;
+    reset |= kalecgosEncounterStates.erase(instanceId) > 0;
+    reset |= brutallusEncounterStates.erase(instanceId) > 0;
+    reset |= felmystEncounterStates.erase(instanceId) > 0;
+    reset |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
+    reset |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
+    reset |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
+    reset |= eredarTwinsTankAssignments.erase(instanceId) > 0;
+    reset |= muruDarknessStates.erase(instanceId) > 0;
+    reset |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
+    reset |= kiljaedenEncounterStates.erase(instanceId) > 0;
+    reset |= ResetKiljaedenDragonOrbUserAnnouncement(instanceId);
+    reset |= kiljaedenHandControlClaims.erase(instanceId) > 0;
+
+    return reset;
 }
 
-bool SunwellPlateauRemoveProtectiveAuraAction::Execute(Event /*event*/)
+// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
+bool SunwellPlateauRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
 {
-    if (bot->getClass() == CLASS_MAGE)
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
+bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
+{
+    // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
+    // Shadows and HPal bubbles are excluded.
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
+        bot->HasAura(spellId))
     {
-        bot->RemoveAura(Id(SwpSpells::SPELL_ICE_BLOCK));
+        bot->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
         return true;
     }
 
-    bot->RemoveAura(Id(SwpSpells::SPELL_DIVINE_SHIELD));
+    if (IsEncounterInProgress(bot, SWP_MAP_ID))
+        return false;
+
+    // It is Blizzlike for Burn to persist after the kill, but bots will murder the raid without
+    // a dedicated non-combat strategy for it. That's a waste of time, so just wipe the aura.
+    if (!HasBrutallusBurn(bot))
+        return false;
+
+    bot->RemoveAura(Id(SwpSpells::SPELL_BURN));
     return true;
-}
-
-namespace SwpHelpers
-{
-
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
-{
-    Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), SWP_VOLATILE_FIEND_SEARCH_RADIUS, true);
-
-    return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
-}
-
 }
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
@@ -123,15 +134,15 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot))
         return AI_VALUE(Unit*, "current target") != volatileFiend && Attack(volatileFiend);
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance(volatileFiend);
-    if (currentDistance >= safeDistance)
+    float const currentDistance = bot->GetExactDist2d(volatileFiend);
+    if (currentDistance >= VOLATILE_FIEND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(volatileFiend, safeDistance - currentDistance);
+    return MoveAway(volatileFiend, VOLATILE_FIEND_SAFE_DISTANCE - currentDistance);
 }
 
+// At low health, Infernal Defense is cast, granting immunity to all damage but holy
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
@@ -152,8 +163,14 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
             target = apocalypseGuard;
     }
 
+    if (!target)
+        return false;
+
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
-        bot->RemoveAura(Id(SwpSpells::SPELL_SHADOWFORM));
+    {
+        bot->RemoveOwnedAura(
+            Id(SwpSpells::SPELL_SHADOWFORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
 
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }

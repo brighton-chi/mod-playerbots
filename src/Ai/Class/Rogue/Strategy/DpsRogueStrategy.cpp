@@ -61,7 +61,7 @@ private:
     }
 };
 
-DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : MeleeCombatStrategy(botAI)
+DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : GenericRogueStrategy(botAI)
 {
     actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
 }
@@ -76,7 +76,7 @@ std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
 
 void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    MeleeCombatStrategy::InitTriggers(triggers);
+    GenericRogueStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode(
@@ -102,6 +102,15 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "slice and dice",
             {
                 NextAction("slice and dice", ACTION_HIGH + 5)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "riposte",
+            {
+                NextAction("riposte", ACTION_HIGH + 4)
             }
         )
     );

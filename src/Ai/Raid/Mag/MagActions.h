@@ -12,6 +12,14 @@
 #include "MagHelpers.h"
 #include "MovementActions.h"
 
+class MagtheridonResetEncounterStatesAction : public Action
+{
+public:
+    MagtheridonResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon reset encounter states") {}
+    bool Execute(Event event) override;
+};
+
 class MagtheridonMainTankAttackFirstThreeChannelersAction : public AttackAction
 {
 public:
@@ -105,14 +113,6 @@ public:
 private:
     bool AssignCubeClickers();
     bool NeedsCubeReassignment(uint32 instanceId);
-};
-
-class MagtheridonEraseTimersAndTrackersAction : public Action
-{
-public:
-    MagtheridonEraseTimersAndTrackersAction(PlayerbotAI* botAI)
-        : Action(botAI, "magtheridon erase timers and trackers") {}
-    bool Execute(Event event) override;
 };
 
 #endif

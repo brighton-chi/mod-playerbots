@@ -12,6 +12,8 @@
 #include "MovementActions.h"
 #include "Position.h"
 
+// General
+
 class GruulsLairResetEncounterStatesAction : public Action
 {
 public:
@@ -19,6 +21,8 @@ public:
         : Action(botAI, "gruul's lair reset encounter states") {}
     bool Execute(Event event) override;
 };
+
+// High King Maulgar <Lord of the Ogres>
 
 class HighKingMaulgarMeleeTanksPositionBossesAction : public AttackAction
 {
@@ -64,11 +68,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarFleeFromBlastNovaDangerAction : public MovementAction
+class HighKingMaulgarBackAwayFromKroshAction : public MovementAction
 {
 public:
-    HighKingMaulgarFleeFromBlastNovaDangerAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "high king maulgar flee from blast nova danger") {}
+    HighKingMaulgarBackAwayFromKroshAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high king maulgar back away from krosh") {}
     bool Execute(Event event) override;
 };
 
@@ -80,13 +84,15 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarMisdirectOgresToTanksAction : public AttackAction
+class HighKingMaulgarMisdirectOgresToTanksAction : public Action
 {
 public:
     HighKingMaulgarMisdirectOgresToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "high king maulgar misdirect ogres to tanks") {}
+        : Action(botAI, "high king maulgar misdirect ogres to tanks") {}
     bool Execute(Event event) override;
 };
+
+// Gruul the Dragonkiller
 
 class GruulTheDragonkillerTanksPositionBossAction : public AttackAction
 {
@@ -104,20 +110,26 @@ public:
     bool Execute(Event event) override;
     bool ResetInitialPosition()
     {
-        if (!_hasReachedInitialPosition && _initialPosition.GetPositionX() == 0.0f &&
-            _initialPosition.GetPositionY() == 0.0f)
-        {
+        if (!_hasReachedInitialPosition && !_hasInitialPosition)
             return false;
-        }
 
         _hasReachedInitialPosition = false;
-        _initialPosition = Position();
+        _hasInitialPosition = false;
         return true;
     }
 
 private:
     Position _initialPosition;
+    bool _hasInitialPosition = false;
     bool _hasReachedInitialPosition = false;
+};
+
+class GruulTheDragonkillerGetOutOfCaveInAction : public MovementAction
+{
+public:
+    GruulTheDragonkillerGetOutOfCaveInAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gruul the dragonkiller get out of cave in") {}
+    bool Execute(Event event) override;
 };
 
 class GruulTheDragonkillerShatterSpreadAction : public MovementAction

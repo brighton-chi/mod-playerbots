@@ -20,12 +20,19 @@ class Unit;
 namespace EncounterHelpers
 {
 
-// Answers whether the bot can take one short step towards a destination, and where that step
-// lands. It says nothing about the destination itself--only about the next hop. stepX/Y/Z are
-// written on success and left untouched on failure
+// Cheap, rough proxies for how far along an encounter is. 95% HP means the boss and raid are
+// positioned, the tank has threat, and the fight proper has started, so it's time to use cooldowns.
+// 10% means the boss is almost dead, so ignore adds and finish off the boss.
+inline constexpr float BOSS_ENGAGED_HEALTH_PCT = 95.0f;
+inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
+
+bool IsEncounterInProgress(Player* bot, uint32 mapId);
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
+bool GetStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards);
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
 bool MarkTargetWithSkull(Player* bot, Unit* target);
 bool MarkTargetWithSquare(Player* bot, Unit* target);
@@ -40,9 +47,10 @@ void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(Player* bot);
 Player* GetGroupAssistTank(Player* bot, uint8 index);
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry); // DO NOT USE, WILL BE REMOVED
 Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
+uint32 GetSelfImmunitySpell(Player* bot);
 bool IsDpsCooldownAction(Player* bot, Action* action);
 bool IsTauntAction(Player* bot, Action* action);
 bool IsAoeThreatAction(Player* bot, Action* action);

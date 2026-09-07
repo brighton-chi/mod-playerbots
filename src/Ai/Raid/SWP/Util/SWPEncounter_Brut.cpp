@@ -6,7 +6,9 @@
 
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
+#include "SWPShared.h"
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 namespace SwpHelpers
@@ -170,7 +172,6 @@ void EnsureRangedAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // Double up if every slot is taken (unlikely even though TBC hates melee, as there are 20)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_RANGED_POSITIONS);
     };
@@ -231,7 +232,6 @@ void EnsureMeleeAssignments(Group* group, BrutallusEncounterState& state)
             return;
         }
 
-        // Double up if every slot is taken (unlikely since there are 14 and TBC hates melee)
         assignments[member->GetGUID()] =
             static_cast<uint8>(assignments.size() % BRUTALLUS_TOTAL_MELEE_POSITIONS);
     };
@@ -280,34 +280,6 @@ Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, 
     return { x, y, bot->GetPositionZ() };
 }
 
-float GetBrutallusCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
-{
-    if (slotCount <= 1)
-        return 0.0f;
-
-    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
-    if (slotCount % 2 == 1)
-    {
-        if (slotIndex == 0)
-            return 0.0f;
-
-        uint8 const stepIndex = (slotIndex + 1) / 2;
-        float angleOffset = angleStep * stepIndex;
-        if (slotIndex % 2 == 0)
-            angleOffset = -angleOffset;
-
-        return angleOffset;
-    }
-
-    float const halfStep = angleStep / 2.0f;
-    uint8 const pairIndex = slotIndex / 2;
-    float angleOffset = halfStep + angleStep * pairIndex;
-    if (slotIndex % 2 == 1)
-        angleOffset = -angleOffset;
-
-    return angleOffset;
-}
-
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
 {
     Group* group = bot->GetGroup();
@@ -347,7 +319,7 @@ bool TryGetBrutallusRangedPosition(
         GetBrutallusAssistTankAngle(brutallus, assistTank, mainTankAngle);
 
     float const tankAngle = isMainTankGroup ? mainTankAngle : assistTankAngle;
-    float const angleOffset = GetBrutallusCenteredArcSlotAngleOffset(
+    float const angleOffset = GetCenteredArcSlotAngleOffset(
         arcPositionIndex, BRUTALLUS_RANGED_POSITIONS_PER_GROUP,
         BRUTALLUS_RANGED_GROUP_ARC_WIDTH);
 
@@ -431,6 +403,11 @@ bool ReleaseBrutallusBurnPad(Player* bot)
         return false;
 
     return instanceItr->second.rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
+}
+
+bool HasBrutallusBurn(Player* bot)
+{
+    return bot->HasAura(Id(SwpSpells::SPELL_BURN));
 }
 
 }

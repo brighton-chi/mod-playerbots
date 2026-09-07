@@ -5,47 +5,34 @@
  */
 
 #include "HyjalMultipliers.h"
-#include "AiFactory.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidBearActions.h"
 #include "EncounterHelpers.h"
 #include "HunterActions.h"
 #include "HyjalActions.h"
 #include "HyjalHelpers.h"
-#include "PaladinActions.h"
 #include "ReachTargetActions.h"
 #include "ShamanActions.h"
-#include "WarriorActions.h"
 
 using namespace HyjalHelpers;
 using namespace EncounterHelpers;
 
 // Note: BOT_STATE_NON_COMBAT checks cannot be used by any multiplier that could result in a bot
 // having no valid targets as it will then swap to the non-combat engine, even during a boss fight.
-// This implicates much any avoidance action that could hold the bot out of attack range.
+// This concern implicates any avoidance action that could hold the bot out of attack range.
 
 float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (bot->GetMapId() != HYJAL_MAP_ID) // Needed in case strategy isn't cleared outside
+    if (bot->GetMapId() != HYJAL_MAP_ID) // In case strategy persists outside (e.g., server reset)
         return 1.0f;
 
-    if (!IsDpsCooldownAction(bot, action)) // This includes Bloodlust & Heroism
+    if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
-
-    Unit* boss = nullptr;
-    for (char const* name : // In reverse instance order
-         { "archimonde", "azgalor", "kaz'rogal", "anetheron", "rage winterchill" })
-    {
-        boss = AI_VALUE2(Unit*, "find target", name);
-        if (boss)
-            break;
-    }
 
     // Suppress Bloodlust/Heroism during all trash waves. It's blown on CD otherwise.
+    Unit* boss = AI_VALUE(Unit*, "boss target");
     if (!boss)
     {
         return bot->getClass() == CLASS_SHAMAN &&
@@ -53,13 +40,12 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
              dynamic_cast<CastHeroismAction*>(action)) ? 0.0f : 1.0f;
     }
 
-    // Suppress all dps cooldowns when boss is above 90% health
-    return boss->GetHealthPct() > 90.0f ? 0.0f : 1.0f;
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Rage Winterchill
 
-float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+float RageWinterchillDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -73,9 +59,9 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
     return AI_VALUE2(Unit*, "find target", "rage winterchill") ? 0.0f : 1.0f;
 }
 
-float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
+float RageWinterchillMeleeControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsRanged(bot))
+    if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
     bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
@@ -92,7 +78,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     if (!winterchill)
         return 1.0f;
 
-    if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS))
+    if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS))
         return 1.0f;
 
     if (isAvoidAoe)
@@ -104,7 +90,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
     return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 }
 
-float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
+float RageWinterchillRangedControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
@@ -124,17 +110,18 @@ float RageWinterchillRangedControlAvoidanceMultiplier::GetValue(Action* action)
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_RANGED_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Anetheron
 
-float AnetheronDisableAssistTargetingMultiplier::GetValue(Action* action)
+float AnetheronDisableAssistTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) != nullptr;
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
+
     if (!isTankAssist && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
@@ -144,8 +131,8 @@ float AnetheronDisableAssistTargetingMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
-// Keep non-Infernal tanks from inadvertesntly grabbing aggro with Consecration, Thunder Clap, etc.
-float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
+// Keep non-Infernal tanks from inadvertently grabbing aggro with Consecration, Thunder Clap, etc.
+float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -154,14 +141,14 @@ float AnetheronAvoidAccidentalInfernalAggroMultiplier::GetValue(Action* action)
         return 1.0f;
 
     constexpr float holdTankAoeRadius = 20.0f; // arbitrary, but > AoE threat ability radii
-    Unit* infernal = GetNearestInfernal(bot);
+    Unit* infernal = GetNearestInfernal(botAI);
     if (!infernal || infernal->GetExactDist2d(bot) > holdTankAoeRadius)
         return 1.0f;
 
     return IsInfernalTank(bot) ? 1.0f : 0.0f;
 }
 
-float AnetheronInfernalTargetRunToPositionMultiplier::GetValue(Action* action)
+float AnetheronInfernalTargetRunToPositionMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -179,10 +166,10 @@ float AnetheronInfernalTargetRunToPositionMultiplier::GetValue(Action* action)
     if (IsInfernalTank(bot))
         return 1.0f;
 
-    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(bot) ? 0.0f : 1.0f;
+    return GetInfernoTarget(anetheron) == bot || GetInfernalTargetingBot(botAI) ? 0.0f : 1.0f;
 }
 
-float AnetheronControlMovementMultiplier::GetValue(Action* action)
+float AnetheronControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -199,7 +186,7 @@ float AnetheronControlMovementMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "anetheron") ? 0.0f : 1.0f;
 }
 
-float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
+float AnetheronControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -215,7 +202,7 @@ float AnetheronControlMisdirectionMultiplier::GetValue(Action* action)
 
 // Kaz'rogal
 
-float KazrogalDisableDisperseAndTankFaceMultiplier::GetValue(Action* action)
+float KazrogalDisableDisperseAndTankFaceMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -229,9 +216,9 @@ float KazrogalDisableDisperseAndTankFaceMultiplier::GetValue(Action* action)
     return AI_VALUE2(Unit*, "find target", "kaz'rogal") ? 0.0f : 1.0f;
 }
 
-float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
+float KazrogalControlLowManaMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsKazrogalManaUser(bot) || bot->getClass() == CLASS_HUNTER)
+    if (!IsKazrogalManaUser(botAI) || bot->getClass() == CLASS_HUNTER)
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&
@@ -253,7 +240,7 @@ float KazrogalControlLowManaMovementMultiplier::GetValue(Action* action)
     return botsBelowManaThreshold.contains(bot->GetGUID()) ? 0.0f : 1.0f;
 }
 
-float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
+float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -274,12 +261,12 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA ? 0.0f : 1.0f;
+    return bot->GetPower(POWER_MANA) <= MARK_REJOIN_MANA ? 0.0f : 1.0f;
 }
 
 // Azgalor
 
-float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* action)
+float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -292,14 +279,14 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValue(Action* acti
         return 1.0f;
     }
 
-    // Disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
+    // Set Behind Target is still disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "azgalor") ? 0.0f : 1.0f;
 }
 
-float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
+float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDoomed(bot))
         return 1.0f;
@@ -313,7 +300,7 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 1.0f : 0.0f;
 }
 
-float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
+float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return 1.0f;
@@ -336,10 +323,10 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
+float AzgalorRangedControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
@@ -359,12 +346,12 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_RANGED_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Archimonde
 
-float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+float ArchimondeDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -381,7 +368,7 @@ float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
     return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;
 }
 
-float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
+float ArchimondeControlDoomfireAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -390,7 +377,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
     }
 
     if (dynamic_cast<ArchimondeAvoidDoomfireAction*>(action) ||
-        dynamic_cast<ArchimondeSpreadToAvoidAirBurstAction*>(action))
+        dynamic_cast<ArchimondeKeepAirBurstAwayFromTankAction*>(action))
     {
         return 1.0f;
     }
@@ -407,7 +394,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValue(Action* action)
     return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
+float ArchimondeSetTremorTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -424,7 +411,7 @@ float ArchimondeSetTremorTotemMultiplier::GetValue(Action* action)
     }
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde || archimonde->GetHealthPct() > 90.0f)
+    if (!archimonde || archimonde->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 1.0f;
 
     return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;

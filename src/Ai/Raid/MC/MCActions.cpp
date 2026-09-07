@@ -8,7 +8,6 @@
 #include "MCHelpers.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-
 #include <algorithm>
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
@@ -146,7 +145,7 @@ bool McGolemaggMarkBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance,
+bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, Position const& tankPosition, float maxDistance,
                                               float stepDistance)
 {
     if (bot->GetVictim() != target)

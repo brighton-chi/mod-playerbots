@@ -22,9 +22,6 @@ public:
         creators["tempest keep clear stale falling flag"] =
             &RaidTempestKeepActionContext::tempest_keep_clear_stale_falling_flag;
 
-        creators["tempest keep cast fear ward on main tank"] =
-            &RaidTempestKeepActionContext::tempest_keep_cast_fear_ward_on_main_tank;
-
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -45,8 +42,8 @@ public:
         creators["al'ar assist tanks pick up embers"] =
             &RaidTempestKeepActionContext::alar_assist_tanks_pick_up_embers;
 
-        creators["al'ar ranged dps prioritize embers"] =
-            &RaidTempestKeepActionContext::alar_ranged_dps_prioritize_embers;
+        creators["al'ar assign non-tank target"] =
+            &RaidTempestKeepActionContext::alar_assign_non_tank_target;
 
         creators["al'ar jump from platform"] =
             &RaidTempestKeepActionContext::alar_jump_from_platform;
@@ -126,14 +123,14 @@ public:
         creators["kael'thas sunstrider reequip gear"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
 
-        creators["kael'thas sunstrider main tank position boss"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_position_boss;
+        creators["kael'thas sunstrider tanks position boss"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_tanks_position_boss;
 
         creators["kael'thas sunstrider avoid flame strike"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_avoid_flame_strike;
 
-        creators["kael'thas sunstrider handle phoenixes and eggs"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_handle_phoenixes_and_eggs;
+        creators["kael'thas sunstrider assign final phase target"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_final_phase_target;
 
         creators["kael'thas sunstrider break mind control"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_break_mind_control;
@@ -149,9 +146,6 @@ private:
     }
     static Action* tempest_keep_clear_stale_falling_flag(PlayerbotAI* botAI) {
         return new TempestKeepClearStaleFallingFlagAction(botAI);
-    }
-    static Action* tempest_keep_cast_fear_ward_on_main_tank(PlayerbotAI* botAI) {
-        return new TempestKeepCastFearWardOnMainTankAction(botAI);
     }
 
     // Trash
@@ -175,8 +169,8 @@ private:
     static Action* alar_assist_tanks_pick_up_embers(PlayerbotAI* botAI) {
         return new AlarAssistTanksPickUpEmbersAction(botAI);
     }
-    static Action* alar_ranged_dps_prioritize_embers(PlayerbotAI* botAI) {
-        return new AlarRangedDpsPrioritizeEmbersAction(botAI);
+    static Action* alar_assign_non_tank_target(PlayerbotAI* botAI) {
+        return new AlarAssignNonTankTargetAction(botAI);
     }
     static Action* alar_jump_from_platform(PlayerbotAI* botAI) {
         return new AlarJumpFromPlatformAction(botAI);
@@ -259,14 +253,14 @@ private:
     static Action* kaelthas_sunstrider_reequip_gear(PlayerbotAI* botAI) {
         return new KaelthasSunstriderReequipGearAction(botAI);
     }
-    static Action* kaelthas_sunstrider_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderMainTankPositionBossAction(botAI);
+    static Action* kaelthas_sunstrider_tanks_position_boss(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderTanksPositionBossAction(botAI);
     }
     static Action* kaelthas_sunstrider_avoid_flame_strike(PlayerbotAI* botAI) {
         return new KaelthasSunstriderAvoidFlameStrikeAction(botAI);
     }
-    static Action* kaelthas_sunstrider_handle_phoenixes_and_eggs(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderHandlePhoenixesAndEggsAction(botAI);
+    static Action* kaelthas_sunstrider_assign_final_phase_target(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderAssignFinalPhaseTargetAction(botAI);
     }
     static Action* kaelthas_sunstrider_break_mind_control(PlayerbotAI* botAI) {
         return new KaelthasSunstriderBreakMindControlAction(botAI);
