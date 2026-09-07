@@ -5,8 +5,8 @@
  */
 
 #include "HyjalActions.h"
-#include "HyjalHelpers.h"
 #include "EncounterHelpers.h"
+#include "HyjalHelpers.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <cmath>
@@ -485,7 +485,10 @@ bool KazrogalActivateAspectOfTheViperAction::Execute(Event /*event*/)
 bool KazrogalCancelImmunityAction::Execute(Event /*event*/)
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
-    bot->RemoveAura(spellId);
+    if (!spellId || !bot->HasAura(spellId))
+        return false;
+
+    bot->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     return true;
 }
 
@@ -525,7 +528,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     constexpr float safeDistFromDoomguard = 10.0f; // War Stomp is 10 yards center-to-center
 
     if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
-        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
+        return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard, minInterval);
 
     if (doomguard && AI_VALUE(Unit*, "current target") == doomguard)
         return false;
