@@ -2088,11 +2088,11 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return (hash >> 8) / static_cast<float>(1 << 24);
     };
 
-    Aura* aura = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
-    if (!aura)
+    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    if (lapse)
         return false;
 
-    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(aura->GetApplyTime());
+    uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
 
     // Target height is between 10 and 35 yards
     constexpr float minHoverHeight = 10.0f;
@@ -2107,7 +2107,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     int32 const reactionDelayMs = minReactionMs + static_cast<int32>(roll(seed, reactionSalt) *
         (maxReactionMs - minReactionMs));
 
-    if (aura->GetMaxDuration() - aura->GetDuration() < reactionDelayMs)
+    if (lapse->GetMaxDuration() - lapse->GetDuration() < reactionDelayMs)
         return false;
 
     Group* group = bot->GetGroup();
