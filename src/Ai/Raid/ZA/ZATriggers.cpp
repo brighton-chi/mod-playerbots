@@ -23,13 +23,12 @@ bool ZulAmanNoEncounterInProgressTrigger::IsActive()
     return IsMechanicTrackerBot(bot, ZA_MAP_ID);
 }
 
-// Same Misdirect on pull for all bosses
 bool ZulAmanPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* boss = AI_VALUE(Unit*, "boss target");
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
@@ -43,7 +42,7 @@ bool AmanishiMedicineManSummonedWardTrigger::IsActive()
 
 // Akil'zon <Eagle Avatar>
 
-bool AkilzonBossEngagedByTanksTrigger::IsActiveInEncounter()
+bool AkilzonShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -106,7 +105,7 @@ bool NalorakkSpreadForSurgeTrigger::IsActiveInEncounter()
 
 // Jan'alai <Dragonhawk Avatar>
 
-bool JanalaiBossEngagedByTanksTrigger::IsActiveInEncounter()
+bool JanalaiShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -192,7 +191,7 @@ bool HexLordMalacrassBossPlacedFreezingTrapTrigger::IsActiveInEncounter()
 
 // Zul'jin
 
-bool ZuljinBossEngagedByTanksTrigger::IsActiveInEncounter()
+bool ZuljinShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;

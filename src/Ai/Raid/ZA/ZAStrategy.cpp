@@ -13,15 +13,15 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'aman no encounter in progress", {
         NextAction("zul'aman reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("zul'aman pulling boss", {
-        NextAction("zul'aman misdirect boss to main tank", ACTION_RAID + 1) }));
-
     // Trash
     triggers.push_back(new TriggerNode("amani'shi medicine man summoned ward", {
         NextAction("amani'shi medicine man mark ward", ACTION_RAID) }));
 
     // Akil'zon <Eagle Avatar>
-    triggers.push_back(new TriggerNode("akil'zon boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("akil'zon pulling boss", {
+        NextAction("akil'zon misdirect boss to main tank", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("akil'zon should be tanked", {
         NextAction("akil'zon tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("akil'zon spread for static disruption", {
@@ -34,6 +34,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("akil'zon manage electrical storm timer", ACTION_EMERGENCY + 10) }));
 
     // Nalorakk <Bear Avatar>
+    triggers.push_back(new TriggerNode("nalorakk pulling boss", {
+        NextAction("nalorakk misdirect boss to main tank", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("nalorakk boss switches forms", {
         NextAction("nalorakk tanks position boss", ACTION_EMERGENCY + 1) }));
 
@@ -41,7 +44,10 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("nalorakk spread ranged", ACTION_RAID) }));
 
     // Jan'alai <Dragonhawk Avatar>
-    triggers.push_back(new TriggerNode("jan'alai boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("jan'alai pulling boss", {
+        NextAction("jan'alai misdirect boss to main tank", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("jan'alai should be tanked", {
         NextAction("jan'alai tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("jan'alai spread for flame breath", {
@@ -54,6 +60,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("jan'alai mark amani'shi hatchers", ACTION_RAID + 1) }));
 
     // Halazzi <Lynx Avatar>
+    triggers.push_back(new TriggerNode("halazzi pulling boss", {
+        NextAction("halazzi misdirect boss to main tank", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("halazzi should be tanked", {
         NextAction("halazzi main tank position boss", ACTION_RAID) }));
 
@@ -64,6 +73,9 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("halazzi dps attack totem and boss", ACTION_RAID) }));
 
     // Hex Lord Malacrass
+    triggers.push_back(new TriggerNode("hex lord malacrass pulling boss", {
+        NextAction("hex lord malacrass misdirect boss to main tank", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("hex lord malacrass should prioritize adds", {
         NextAction("hex lord malacrass assign dps priority", ACTION_RAID) }));
 
@@ -74,7 +86,10 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
 
     // Zul'jin
-    triggers.push_back(new TriggerNode("zul'jin boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("zul'jin pulling boss", {
+        NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("zul'jin should be tanked", {
         NextAction("zul'jin tanks position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("zul'jin boss is channeling whirlwind in troll form", {
