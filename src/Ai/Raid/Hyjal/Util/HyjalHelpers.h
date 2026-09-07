@@ -14,7 +14,6 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 class Player;
@@ -69,12 +68,6 @@ enum class HyjalNpcs : uint32
     NPC_DOOMFIRE          = 18095,
 };
 
-struct RangedGroups
-{
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDps;
-};
-
 // A span of headings around a ring that is unavailable.
 struct BlockedArc
 {
@@ -97,26 +90,14 @@ inline constexpr float HAZARD_SEARCH_MARGIN = 2.0f;
 // bot just out of reach.
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
 
-// The span of a ring that a circular ground hazard covers.
-bool GetHazardBlockedArc(
-    Position const& ringCenter, float ringRadius, Position const& hazard,
-    float hazardRadius, BlockedArc& arc);
-// The angle nearest to the preferred one that clears every blocked arc.
-bool FindNearestUnblockedAngle(
-    std::vector<BlockedArc> const& blocked, float preferred, float& unblocked);
-// A step towards a point on a circle, at the angle nearest to preferred that the bot can reach.
-bool FindStepToCircle(
-    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
-    float& stepX, float& stepY, float& stepZ,
-    std::function<bool(float, float)> const& isAcceptable = {},
-    float* chosenX = nullptr, float* chosenY = nullptr);
-// The same search, except aimed straight out of a hazard.
-bool GetHazardEscapeStep(
-    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
-    float& stepY, float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
+bool GetMeleeHazardManeuverStep(
+    Player* bot, Unit* boss, std::vector<Position> const& hazards, float hazardRadius,
+    std::vector<BlockedArc> const& extraBlocked, float& stepX, float& stepY, float& stepZ,
+    std::function<bool(float, float)> const& isAcceptable = {});
 std::vector<Player*> GetRangedMembers(Player* bot);
-RangedGroups GetRangedGroups(Player* bot);
-std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups const& groups);
+bool GetRangedRingStep(
+    Player* bot, Position const& center, float healerRadius, float dpsRadius, float& stepX,
+    float& stepY, float& stepZ, bool& reached);
 
 // Rage Winterchill
 

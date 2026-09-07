@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_HYJALVALUECONTEXT_H
 #define PLAYERBOTS_HYJALVALUECONTEXT_H
 
-#include "HyjalHelpers.h"
 #include "EncounterHelpers.h"
+#include "HyjalHelpers.h"
 #include "NamedObjectContext.h"
 #include "Value.h"
 #include <string>

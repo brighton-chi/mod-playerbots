@@ -115,37 +115,15 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     if (_winterchillPositionReached)
         return false;
 
-    RangedGroups groups = GetRangedGroups(bot);
-    auto [botIndex, count] = GetBotCircleIndexAndCount(bot, groups);
-    if (count == 0)
-        return false;
-
-    float const radius = PlayerbotAI::IsHeal(bot) ? 25.0f : 35.0f;
-    constexpr float arcSpan = 2.0f * M_PI;
-    constexpr float arcCenter = 0.0f;
-    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-    float const angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
-
-    Position const& position = WINTERCHILL_TANK_POSITION;
-    constexpr float moveDist = 3.5f;
+    constexpr float healerRadius = 25.0f;
+    constexpr float dpsRadius = 35.0f;
     float moveX;
     float moveY;
     float moveZ;
-    float chosenX;
-    float chosenY;
-
-    if (!FindStepToCircle(
-            bot, position, radius, angle, moveDist, moveX, moveY, moveZ, {}, &chosenX, &chosenY))
+    if (!GetRangedRingStep(
+            bot, WINTERCHILL_TANK_POSITION, healerRadius, dpsRadius, moveX, moveY, moveZ,
+            _winterchillPositionReached))
     {
-        _winterchillPositionReached = true;
-        return false;
-    }
-
-    if (bot->GetExactDist2d(chosenX, chosenY) <= 2.0f)
-    {
-        _winterchillPositionReached = true;
         return false;
     }
 
@@ -167,50 +145,11 @@ bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*eve
     if (!GetDeathAndDecayPosition(botAI, pool))
         return false;
 
-    constexpr float moveDist = 10.0f;
-    float moveX, moveY, moveZ;
-
-    float const meleeRadius = bot->GetMeleeRange(winterchill) - MELEE_RANGE_INSET;
-
-    std::vector<BlockedArc> blocked;
-    BlockedArc poolArc;
-    if (GetHazardBlockedArc(
-            winterchill->GetPosition(), meleeRadius, pool, DEATH_AND_DECAY_RADIUS, poolArc))
-    {
-        blocked.push_back(poolArc);
-    }
-
-    float const bossX = winterchill->GetPositionX();
-    float const bossY = winterchill->GetPositionY();
-    float const botHeading = std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
-
-    float standAngle;
-    if (FindNearestUnblockedAngle(blocked, botHeading, standAngle))
-    {
-        float const targetX = bossX + std::cos(standAngle) * meleeRadius;
-        float const targetY = bossY + std::sin(standAngle) * meleeRadius;
-        float const distToTarget = bot->GetExactDist2d(targetX, targetY);
-
-        constexpr float minStepDistance = 0.5f;
-        if (distToTarget < minStepDistance)
-            return false;
-
-        float const stepDist = std::min(moveDist, distToTarget);
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-
-        return MoveTo(
-            HYJAL_MAP_ID, botX + ((targetX - botX) / distToTarget) * stepDist,
-            botY + ((targetY - botY) / distToTarget) * stepDist, bot->GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    if (!IsInDeathAndDecay(botAI))
-        return false;
-
-    constexpr float escapeMargin = 2.0f;
-    if (!GetHazardEscapeStep(
-            bot, pool, DEATH_AND_DECAY_RADIUS + escapeMargin, moveDist, moveX, moveY, moveZ))
+    float moveX;
+    float moveY;
+    float moveZ;
+    if (!GetMeleeHazardManeuverStep(
+            bot, winterchill, { pool }, DEATH_AND_DECAY_RADIUS, {}, moveX, moveY, moveZ))
     {
         return false;
     }
@@ -267,33 +206,15 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
         return false;
     }
 
-    RangedGroups groups = GetRangedGroups(bot);
-    auto [botIndex, count] = GetBotCircleIndexAndCount(bot, groups);
-    if (count == 0)
-        return false;
-
-    float const radius = PlayerbotAI::IsHeal(bot) ? 27.0f : 34.0f;
-    constexpr float arcSpan = M_PI * 2.0f;
-    constexpr float arcCenter = 0.0f;
-    constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-    float const angle = (count == 1) ? arcCenter :
-        (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count));
-
-    Position const& position = ANETHERON_TANK_POSITION;
-
-    constexpr float moveDist = 3.5f;
-    float moveX, moveY, moveZ, chosenX, chosenY;
-    if (!FindStepToCircle(
-            bot, position, radius, angle, moveDist, moveX, moveY, moveZ, {}, &chosenX, &chosenY))
+    constexpr float healerRadius = 27.0f;
+    constexpr float dpsRadius = 34.0f;
+    float moveX;
+    float moveY;
+    float moveZ;
+    if (!GetRangedRingStep(
+            bot, ANETHERON_TANK_POSITION, healerRadius, dpsRadius, moveX, moveY, moveZ,
+            _anetheronPositionReached))
     {
-        _anetheronPositionReached = true;
-        return false;
-    }
-
-    if (bot->GetExactDist2d(chosenX, chosenY) <= 2.0f)
-    {
-        _anetheronPositionReached = true;
         return false;
     }
 
@@ -552,77 +473,19 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     if (pools.empty())
         return false;
 
-    constexpr float moveDist = 10.0f;
-    float moveX;
-    float moveY;
-    float moveZ;
-    float const meleeRadius = bot->GetMeleeRange(azgalor) - MELEE_RANGE_INSET;
+    std::vector<BlockedArc> const cleaveArc = {
+        { azgalor->GetOrientation(), CLEAVE_DANGER_ARC / 2.0f } };
 
-    std::vector<BlockedArc> blocked;
-    blocked.reserve(pools.size() + 1);
-
-    for (Position const& pool : pools)
-    {
-        BlockedArc poolArc;
-        if (GetHazardBlockedArc(
-                azgalor->GetPosition(), meleeRadius, pool, RAIN_OF_FIRE_RADIUS, poolArc))
-        {
-            blocked.push_back(poolArc);
-        }
-    }
-
-    blocked.push_back({ azgalor->GetOrientation(), CLEAVE_DANGER_ARC / 2.0f });
-
-    float const bossX = azgalor->GetPositionX();
-    float const bossY = azgalor->GetPositionY();
-    float const botHeading =
-        std::atan2(bot->GetPositionY() - bossY, bot->GetPositionX() - bossX);
-
-    float standAngle;
-    if (FindNearestUnblockedAngle(blocked, botHeading, standAngle))
-    {
-        float const targetX = bossX + std::cos(standAngle) * meleeRadius;
-        float const targetY = bossY + std::sin(standAngle) * meleeRadius;
-        float const distToTarget = bot->GetExactDist2d(targetX, targetY);
-
-        constexpr float minStepDistance = 0.5f;
-        if (distToTarget < minStepDistance)
-            return false;
-
-        float const stepDist = std::min(moveDist, distToTarget);
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-
-        return MoveTo(
-            HYJAL_MAP_ID, botX + ((targetX - botX) / distToTarget) * stepDist,
-            botY + ((targetY - botY) / distToTarget) * stepDist, bot->GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
-
-    if (!IsInRainOfFire(botAI))
-        return false;
-
-    Position const* nearest = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-    for (Position const& pool : pools)
-    {
-        float const distance = bot->GetExactDist2d(pool);
-        if (distance < nearestDistance)
-        {
-            nearest = &pool;
-            nearestDistance = distance;
-        }
-    }
-
-    constexpr float escapeMargin = 2.0f;
     auto cleaveSafe = [azgalor](float x, float y)
     {
         return IsSafeFromAzgalorCleave(azgalor, x, y);
     };
 
-    if (!GetHazardEscapeStep(
-            bot, *nearest, RAIN_OF_FIRE_RADIUS + escapeMargin, moveDist,
-            moveX, moveY, moveZ, cleaveSafe))
+    float moveX;
+    float moveY;
+    float moveZ;
+    if (!GetMeleeHazardManeuverStep(
+            bot, azgalor, pools, RAIN_OF_FIRE_RADIUS, cleaveArc, moveX, moveY, moveZ, cleaveSafe))
     {
         return false;
     }
