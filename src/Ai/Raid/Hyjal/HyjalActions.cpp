@@ -97,8 +97,8 @@ bool HyjalSummitRemoveDangerousDotAction::Execute(Event /*event*/)
 
 // Rage Winterchill
 
-// This is essentially a forced "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in the
-// config being 15 yards; avoid aoe works fine without this strategy if it is set to 20+ yards.
+// This is essentially a modified "avoid aoe" due to the default AiPlayerbot.MaxAoeAvoidRadius in
+// the config being 15y (>25y would be needed for avoid aoe to work for D&D).
 bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -130,9 +130,14 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 
     Position const& position = WINTERCHILL_TANK_POSITION;
     constexpr float moveDist = 3.5f;
-    float moveX, moveY, moveZ, chosenX, chosenY;
-    if (!FindStepToCircle(bot, position, radius, angle, moveDist, moveX, moveY, moveZ, {},
-                          &chosenX, &chosenY))
+    float moveX;
+    float moveY;
+    float moveZ;
+    float chosenX;
+    float chosenY;
+
+    if (!FindStepToCircle(
+            bot, position, radius, angle, moveDist, moveX, moveY, moveZ, {}, &chosenX, &chosenY))
     {
         _winterchillPositionReached = true;
         return false;
@@ -353,11 +358,11 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// A live Infernal burns everything within 10y of itself, so anybody who is not holding it leaves.
+// An Infernal burns everything within 10y of itself, so anybody who is not tanking it leaves.
 bool AnetheronGetOutOfImmolationAction::Execute(Event /*event*/)
 {
     Unit* infernal = GetNearestInfernal(botAI);
-    if (!infernal || infernal->GetVictim() == bot)
+    if (!infernal)
         return false;
 
     constexpr uint32 minInterval = 0;
@@ -386,7 +391,6 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 }
 
 // Kaz'rogal
-// CombatReach is 7.875 yards
 
 bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
 {
@@ -427,7 +431,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     float const arcSpan = GetKazrogalRangedArcSpan(arcRadius);
     float const arcStart = KAZROGAL_RANGED_ARC_CENTER - arcSpan / 2.0f;
 
-    float angle = (count == 1) ? KAZROGAL_RANGED_ARC_CENTER :
+    float const angle = (count == 1) ? KAZROGAL_RANGED_ARC_CENTER :
         (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
     float const targetX = kazrogal->GetPositionX() + arcRadius * std::cos(angle);
@@ -489,9 +493,9 @@ bool KazrogalCancelImmunityAction::Execute(Event /*event*/)
 bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 {
     if (bot->GetPower(POWER_MANA) <= MARK_LIFE_TAP_MANA &&
-        bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth)
+        botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot))
     {
-        return botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot);
+        return true;
     }
 
     if (!HasMarkOfKazrogal(bot))
@@ -501,8 +505,6 @@ bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 }
 
 // Azgalor
-// CombatReach is 8.8 yards
-// Doomguard CombatReach is 3.75 yards
 
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
@@ -627,7 +629,8 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Like with Winterchill, this is pretty close to a hardcoded AvoidAoeAction.
+// Like with Winterchill, this is essentially a forced "avoid aoe" due to the default config being
+// insufficient (in this case, >20y would be needed for safety).
 bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -638,13 +641,10 @@ bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
     return FleePosition(pool, RAIN_OF_FIRE_RADIUS, minInterval);
 }
 
-// The spot is about right on top of Thrall's starting position, in order to get Thrall to aggro
-// as soon as he is hit.
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
     Position const& position = AZGALOR_DOOMGUARD_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
-
     if (distToPosition <= 5.0f)
         return false;
 
@@ -705,7 +705,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
         return AI_VALUE(Unit*, "current target") != azgalor && Attack(azgalor);
 
     Unit* target = nullptr;
-    if (azgalor->GetHealthPct() < BOSS_BURN_HEALTH_PCT)
+    if (azgalor->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
     {
         target = azgalor;
     }

@@ -61,7 +61,7 @@ bool RageWinterchillMeleeNearDeathAndDecayTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS);
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS);
 }
 
 bool RageWinterchillRangedInDeathAndDecayTrigger::IsActiveInEncounter()
@@ -134,8 +134,10 @@ bool AnetheronInfernalsPulseImmolationTrigger::IsActiveInEncounter()
         return false;
 
     Unit* infernal = GetNearestInfernal(botAI);
-    return infernal && infernal->GetVictim() != bot &&
-        bot->GetExactDist2d(infernal) < INFERNAL_DANGER_RADIUS;
+    if (!infernal || infernal->GetVictim() == bot)
+        return false;
+
+    return bot->GetExactDist2d(infernal) < INFERNAL_DANGER_RADIUS;
 }
 
 bool AnetheronInfernalsShouldBeTankedAwayTrigger::IsActiveInEncounter()
@@ -187,8 +189,9 @@ bool KazrogalBotIsLowOnManaTrigger::IsActiveInEncounter()
     if (!IsKazrogalManaUser(botAI))
         return false;
 
-    // Hunters never run away. They rely only on Aspect of the Viper.
-    if (bot->getClass() == CLASS_HUNTER)
+    // Hunters and Warlocks never run away. They rely only on Aspect of the Viper and Life Tap/
+    // Shadow Ward, respectively.
+    if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_WARLOCK)
         return false;
 
     Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
@@ -215,7 +218,7 @@ bool KazrogalHunterShouldPreserveManaTrigger::IsActiveInEncounter()
     if (bot->HasAura(Id(HyjalSpells::SPELL_ASPECT_OF_THE_VIPER)))
         return false;
 
-    // Activate at 3200 mana; switch back based on normal Hunter aspect strategies.
+    // Eligible to switch back at MARK_REJOIN_MANA, per the multiplier.
     return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA;
 }
 
@@ -228,22 +231,19 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActiveInEncounter()
     if (!kazrogal || kazrogal->GetVictim() == bot)
         return false;
 
-    Aura* aura = bot->GetAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
-    if (!aura)
+    Aura* mark = bot->GetAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+    if (!mark)
         return false;
 
     uint32 const mana = bot->GetPower(POWER_MANA);
-    constexpr float markFullyDrainedMana = 3000.0f;
-    if (mana >= markFullyDrainedMana)
+    if (mana >= MARK_FULL_DRAIN)
         return false;
 
     // Blowing Ice Block/Divine Shield is worth it only where the Mark outlasts mana.
     //   2400-2999  needs 5s left      1200-1799  needs 3s left      0-599  needs 1s left
     //   1800-2399  needs 4s left       600-1199  needs 2s left
-    uint32 const tickDrain = static_cast<uint32>(MARK_TICK_DRAIN);
-    int32 const requiredMs = static_cast<int32>(mana / tickDrain + 1) * IN_MILLISECONDS;
-
-    return aura->GetDuration() >= requiredMs;
+    int32 const requiredMs = static_cast<int32>((mana / MARK_TICK_DRAIN + 1) * IN_MILLISECONDS);
+    return mark->GetDuration() >= requiredMs;
 }
 
 bool KazrogalWarlockShouldManageManaTrigger::IsActiveInEncounter()
@@ -254,11 +254,8 @@ bool KazrogalWarlockShouldManageManaTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    if (bot->GetPower(POWER_MANA) <= MARK_LIFE_TAP_MANA &&
-        bot->GetHealthPct() > sPlayerbotAIConfig.lowHealth)
-    {
+    if (bot->GetPower(POWER_MANA) <= MARK_LIFE_TAP_MANA)
         return true;
-    }
 
     if (!HasMarkOfKazrogal(bot) || botAI->HasAura("shadow ward", bot))
         return false;
@@ -304,7 +301,7 @@ bool AzgalorRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (IsDoomed(bot))
         return false;
 
-    return !IsNearRainOfFire(botAI, RAIN_OF_FIRE_RANGED_CONTROL_RADIUS);
+    return !IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS);
 }
 
 bool AzgalorMeleeNearRainOfFireTrigger::IsActiveInEncounter()
@@ -325,7 +322,7 @@ bool AzgalorMeleeNearRainOfFireTrigger::IsActiveInEncounter()
     if (IsDoomguardTank(bot))
         return false;
 
-    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS);
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS);
 }
 
 bool AzgalorRangedInRainOfFireTrigger::IsActiveInEncounter()
@@ -355,7 +352,10 @@ bool AzgalorShouldControlDoomguardsTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lesser doomguard") || AnyGroupMemberHasDoom(bot);
+    if (AI_VALUE2(Unit*, "find target", "lesser doomguard"))
+        return true;
+
+    return AnyGroupMemberHasDoom(bot);
 }
 
 bool AzgalorShouldDivideDpsTrigger::IsActiveInEncounter()

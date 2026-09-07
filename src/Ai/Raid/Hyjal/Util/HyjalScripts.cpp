@@ -13,8 +13,6 @@
 
 using namespace HyjalHelpers;
 
-// Both spell listeners are driven by DoCastRandomTarget, which always has an explicit unit target.
-
 namespace
 {
 
@@ -45,39 +43,29 @@ bool ShouldInterruptForArchimondeAirBurst(Player* bot, Unit* caster, Player* tar
     return distanceToActiveTank < AIR_BURST_SAFE_DISTANCE;
 }
 
-}
+} // end anonymous namespace
 
-// Doomfire's mechanic is pretty interesting. A Doomfire Spirit trigger NPC teleports up to 8y
-// every 1.6s, and the Doomfire trigger NPC follows it after each teleport and drops the hazards.
-// The hook reads the Doomfire NPC since it accompanies the visual fire trail. Real players cannot
-// see the spirit so keying off of that would be a cheat.
-class ArchimondeDoomfireTrailCreatureScript : public AllCreatureScript
+// Inferno summons a Towering Infernal at its target's then-current position after a 3.5s cast.
+class AnetheronInfernoSpellListenerScript : public AllSpellScript
 {
 public:
-    ArchimondeDoomfireTrailCreatureScript()
-        : AllCreatureScript("ArchimondeDoomfireTrailCreatureScript") {}
+    AnetheronInfernoSpellListenerScript() :
+        AllSpellScript("AnetheronInfernoSpellListenerScript") {}
 
-    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    void OnSpellPrepare(Spell* spell, Unit* /*caster*/, SpellInfo const* spellInfo) override
     {
-        if (creature->GetEntry() != Id(HyjalNpcs::NPC_DOOMFIRE))
+        if (spellInfo->Id != Id(HyjalSpells::SPELL_INFERNO))
             return;
 
-        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (!player || !player->IsAlive())
-                continue;
+        Player* target = GetTargetedPlayer(spell);
+        if (!target)
+            return;
 
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
-                creature->GetExactDist2d(player) > DOOMFIRE_DANGER_RADIUS)
-            {
-                continue;
-            }
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+        if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT))
+            return;
 
-            botAI->RequestSpellInterrupt();
-        }
+        botAI->RequestSpellInterrupt();
     }
 };
 
@@ -119,33 +107,43 @@ public:
     }
 };
 
-// Inferno summons a Towering Infernal at its target's then-current position after a 3.5s cast.
-class AnetheronInfernoSpellListenerScript : public AllSpellScript
+// Doomfire's mechanic is pretty interesting. A Doomfire Spirit trigger NPC teleports up to 8y
+// every 1.6s, and a Doomfire trigger NPC follows it after each teleport and drops the hazards.
+// This hook reads the Doomfire NPC since it accompanies the visual fire trail. Real players cannot
+// see the spirit so keying off of that would be a cheat.
+class ArchimondeDoomfireTrailCreatureScript : public AllCreatureScript
 {
 public:
-    AnetheronInfernoSpellListenerScript() :
-        AllSpellScript("AnetheronInfernoSpellListenerScript") {}
+    ArchimondeDoomfireTrailCreatureScript()
+        : AllCreatureScript("ArchimondeDoomfireTrailCreatureScript") {}
 
-    void OnSpellPrepare(Spell* spell, Unit* /*caster*/, SpellInfo const* spellInfo) override
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (spellInfo->Id != Id(HyjalSpells::SPELL_INFERNO))
+        if (creature->GetEntry() != Id(HyjalNpcs::NPC_DOOMFIRE))
             return;
 
-        Player* target = GetTargetedPlayer(spell);
-        if (!target)
-            return;
+        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive())
+                continue;
 
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-        if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT))
-            return;
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
+                creature->GetExactDist2d(player) > DOOMFIRE_DANGER_RADIUS)
+            {
+                continue;
+            }
 
-        botAI->RequestSpellInterrupt();
+            botAI->RequestSpellInterrupt();
+        }
     }
 };
 
 void AddSC_HyjalSummitBotScripts()
 {
-    new ArchimondeDoomfireTrailCreatureScript();
-    new ArchimondeAirBurstSpellListenerScript();
     new AnetheronInfernoSpellListenerScript();
+    new ArchimondeAirBurstSpellListenerScript();
+    new ArchimondeDoomfireTrailCreatureScript();
 }
