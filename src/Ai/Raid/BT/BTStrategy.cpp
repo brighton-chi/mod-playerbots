@@ -10,8 +10,8 @@
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("black temple bot is not in combat", {
-        NextAction("black temple erase timers and trackers", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("black temple no encounter in progress", {
+        NextAction("black temple reset encounter states", ACTION_EMERGENCY + 11) }));
 
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {

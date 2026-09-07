@@ -61,9 +61,6 @@ enum class TkSpells : uint32
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
-
-    // Priest
-    SPELL_FEAR_WARD                 = 6346,
 };
 
 enum class TkNpcs : uint32
@@ -113,13 +110,6 @@ inline constexpr uint32 TK_MAP_ID = 550;
 
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
-std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
-Position FindSafestNearbyPosition(
-    Player* bot, std::vector<Unit*> const& hazards,
-    float hazardRadius, Position const* center = nullptr);
-bool IsPathSafeFromHazards(
-    Position const start, Position const end, std::vector<Unit*> const& hazards,
-    float hazardRadius);
 
 // Al'ar <Phoenix God>
 // CombatReach is 15 yards
@@ -194,12 +184,12 @@ bool IsAlarInPhase2(uint32 instanceId);
 int8 GetAlarDestinationLocationIndex(Unit* alar);
 int8 GetAlarCurrentLocationIndex(Unit* alar);
 int8 GetAlarPlatformIndex(Unit* alar);
-// The spot on the floor under the nearest landing platform, for jumping down off the balcony
 Position const& GetClosestGroundPosition(Position const& botPos);
 bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
 Player* GetSecondaryEmberTank(Player* bot);
+std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius);
 
 // Void Reaver
 // CombatReach is 15 yards
@@ -211,9 +201,11 @@ struct ArcaneOrbData
 };
 
 inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
+// Actual hazard range is 20 yards; the rest is buffer for escape & multiplier.
 inline constexpr float ARCANE_ORB_SAFE_DISTANCE = 22.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = 30.0f;
 
+// Center of the room
 inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
 
 extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
@@ -242,28 +234,35 @@ enum KTPhases
 
 // About the exact distance from Kael to the entrances to his room
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
+inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 
+// To the left of the advisors' starting position (when facing them), up against the wall
 inline Position const SANGUINAR_TANK_POSITION    = { 775.478f,  39.888f, 46.780f };
 inline Position const SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
+// Next to Sanguinar
 inline Position const TELONICUS_TANK_POSITION    = { 773.717f,  44.091f, 46.780f };
 inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
 inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
+// A bit aways from the Sanguinar and Telonicus tanking positions
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
+// Towards the front-center of the platform to ensure an open area for Gravity Lapse
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 extern std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
-uint32 GetKaelthasPhase(Unit* kaelthas);
+uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
 Player* GetCapernianTank(Player* bot);
 bool IsSanguinarDebuffHunter(Player* bot);
+Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry);
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot);
 GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 bool IsLegendaryWeaponItem(uint32 itemId);
 bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
+Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius);
 Creature* GetPhoenixEgg(Player* bot);
 
 }

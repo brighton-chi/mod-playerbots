@@ -6,9 +6,7 @@
 
 #include "TKHelpers.h"
 #include "EncounterHelpers.h"
-#include "LootObjectStack.h"
 #include "Playerbots.h"
-#include "TKActions.h"
 #include "TKKaelthasBossAI.h"
 #include <limits>
 #include <list>
@@ -66,110 +64,6 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     }
 
     return nearestPlayer;
-}
-
-std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius)
-{
-    std::vector<Unit*> hazardTriggers;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, npcEntry, searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            hazardTriggers.push_back(creature);
-    }
-
-    return hazardTriggers;
-}
-
-Position FindSafestNearbyPosition(
-    Player* bot, std::vector<Unit*> const& hazards, float hazardRadius, Position const* center)
-{
-    constexpr float searchStep = M_PI / 12.0f;
-    constexpr float minDistance = 2.0f;
-    constexpr float distanceStep = 1.0f;
-    constexpr uint8 numAngles = 24;
-    constexpr uint8 numDistSteps = 28;
-
-    Position const searchCenter = center ? *center : bot->GetPosition();
-    Position bestPos = bot->GetPosition();
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    for (uint8 i = 0; i <= numDistSteps; ++i)
-    {
-        float const distance = minDistance + i * distanceStep;
-        for (uint8 j = 0; j < numAngles; ++j)
-        {
-            float const angle = j * searchStep;
-            float const x = searchCenter.GetPositionX() + distance * std::cos(angle);
-            float const y = searchCenter.GetPositionY() + distance * std::sin(angle);
-
-            bool isSafe = true;
-            for (Unit* hazard : hazards)
-            {
-                if (hazard->GetExactDist2d(x, y) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            Position testPos(x, y, bot->GetPositionZ());
-
-            bool pathSafe = IsPathSafeFromHazards(
-                bot->GetPosition(), testPos, hazards, hazardRadius);
-            if (pathSafe || !foundSafe)
-            {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    return bestPos;
-}
-
-bool IsPathSafeFromHazards(
-    Position const start, Position const end, std::vector<Unit*> const& hazards, float hazardRadius)
-{
-    constexpr uint8 numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* hazard : hazards)
-        {
-            float distToHazard = hazard->GetExactDist2d(checkX, checkY);
-            if (distToHazard < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
 }
 
 // Al'ar <Phoenix God>
@@ -323,6 +217,22 @@ Player* GetSecondaryEmberTank(Player* bot)
     return assistTank;
 }
 
+std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius)
+{
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+
+    std::vector<Unit*> flamePatches;
+    flamePatches.reserve(creatureList.size());
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            flamePatches.push_back(creature);
+    }
+
+    return flamePatches;
+}
+
 // Void Reaver
 
 std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
@@ -372,13 +282,13 @@ bool HasWrathOfTheAstromancer(Player* bot)
 
 std::unordered_map<uint32, uint32> advisorDpsWaitTimer;
 
-uint32 GetKaelthasPhase(Unit* kaelthas)
+uint32 GetKaelthasTkPhase(Unit* kaelthas)
 {
     if (!kaelthas)
         return PHASE_NONE;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI ? kaelAI->GetPhase() : PHASE_NONE;
+    return kaelAI ? kaelAI->GetPhase() : Id(PHASE_NONE);
 }
 
 // The non-attackable unit flag covers the period in phase 1 before the advisor activates.
@@ -453,6 +363,23 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return fallbackHunter == bot;
 }
 
+// Threat-scoped lookups such as "find target" cannot be used for the weapons. A bot that was dead
+// when they called SetInCombatWithZone, or that died and was resurrected afterwards, holds no
+// threat entry on them and never regains one, so it sees a different set of weapons from everyone
+// else, which leaves the raid disagreeing on the kill order and dragging the icon between two
+// weapons
+Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry)
+{
+    std::list<Creature*> weapons;
+    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntry, KAELTHAS_ROOM_SEARCH_DISTANCE);
+
+    for (Creature* weapon : weapons)
+        if (weapon && weapon->IsAlive())
+            return weapon;
+
+    return nullptr;
+}
+
 GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
@@ -523,8 +450,8 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
         uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
         uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
-        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END
-            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+        uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? uint8(INVENTORY_SLOT_ITEM_END)
+            : (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : uint8(0));
 
         for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
         {
@@ -547,10 +474,15 @@ Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId)
     return item && item->GetEntry() == itemId ? item : nullptr;
 }
 
+Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius)
+{
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER), radius);
+}
+
 Creature* GetPhoenixEgg(Player* bot)
 {
     constexpr float searchRadius = 75.0f;
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius, true);
+    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius);
 }
 
 }

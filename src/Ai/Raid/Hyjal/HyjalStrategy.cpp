@@ -7,33 +7,34 @@
 #include "HyjalStrategy.h"
 #include "HyjalMultipliers.h"
 
-void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("hyjal summit bot is not in combat", {
+    triggers.push_back(new TriggerNode("hyjal summit no encounter in progress", {
         NextAction("hyjal summit reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Rage Winterchill
     triggers.push_back(new TriggerNode("rage winterchill pulling boss", {
         NextAction("rage winterchill misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("rage winterchill boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("rage winterchill should be tanked", {
         NextAction("rage winterchill main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill ranged should spread", {
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("rage winterchill melee near death and decay", {
-        NextAction("rage winterchill melee maneuver through death and decay", ACTION_EMERGENCY + 1) }));
+        NextAction(
+            "rage winterchill melee maneuver through death and decay", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("rage winterchill ranged is standing in death and decay", {
+    triggers.push_back(new TriggerNode("rage winterchill ranged in death and decay", {
         NextAction("rage winterchill ranged get out of death and decay", ACTION_EMERGENCY + 1) }));
 
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss or infernal", {
         NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("anetheron boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("anetheron should be tanked", {
         NextAction("anetheron main tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("anetheron ranged should spread", {
@@ -45,23 +46,26 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron bot is near inferno target", {
         NextAction("anetheron move away from inferno target", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("anetheron infernals should be kept away", {
+    triggers.push_back(new TriggerNode("anetheron infernals pulse immolation", {
+        NextAction("anetheron get out of immolation", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("anetheron infernals should be tanked away", {
         NextAction("anetheron infernal tank take position", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("anetheron should determine dps priority", {
+    triggers.push_back(new TriggerNode("anetheron should divide dps", {
         NextAction("anetheron assign dps priority", ACTION_RAID) }));
 
     // Kaz'rogal
     triggers.push_back(new TriggerNode("kaz'rogal pulling boss", {
         NextAction("kaz'rogal misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("kaz'rogal should be tanked", {
         NextAction("kaz'rogal main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal malevolent cleave splits damage", {
-        NextAction("kaz'rogal assist tanks move in front of boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kaz'rogal can split malevolent cleave damage", {
+        NextAction("kaz'rogal assist tanks move in front", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal low mana bots need escape path", {
+    triggers.push_back(new TriggerNode("kaz'rogal ranged should avoid war stomp", {
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
@@ -71,7 +75,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal activate aspect of the viper", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal mark on mage or paladin", {
-        NextAction("kaz'rogal cancel mark", ACTION_EMERGENCY + 6) }));
+        NextAction("hyjal summit remove dangerous dot", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("kaz'rogal immunity no longer needed", {
+        NextAction("kaz'rogal cancel immunity", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal warlock should manage mana", {
         NextAction("kaz'rogal warlock manage mana", ACTION_EMERGENCY + 6) }));
@@ -80,23 +87,23 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor pulling boss", {
         NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("azgalor boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("azgalor should be tanked", {
         NextAction("azgalor main tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("azgalor boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("azgalor ranged should spread", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor melee near rain of fire", {
         NextAction("azgalor melee maneuver through fire", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor ranged is standing in rain of fire", {
+    triggers.push_back(new TriggerNode("azgalor ranged in rain of fire", {
         NextAction("azgalor ranged get out of rain of fire", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
-        NextAction("azgalor first assist tank position doomguard", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("azgalor should control doomguards", {
+        NextAction("azgalor tank position doomguard", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("azgalor should divide dps", {
         NextAction("azgalor determine dps priority", ACTION_RAID) }));
@@ -105,14 +112,14 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
         NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("archimonde should be tanked", {
         NextAction("archimonde move boss to initial position", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
-        NextAction("archimonde cast fear immunity spell", ACTION_RAID + 1) }));
+        NextAction("archimonde set tremor totem", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
-        NextAction("archimonde spread to avoid air burst", ACTION_EMERGENCY + 8) }));
+        NextAction("archimonde keep air burst away from tank", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));
@@ -121,10 +128,10 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {
-        NextAction("archimonde remove doomfire dot", ACTION_EMERGENCY + 7) }));
+        NextAction("hyjal summit remove dangerous dot", ACTION_EMERGENCY + 7) }));
 }
 
-void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void RaidHyjalStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
     multipliers.push_back(new HyjalSummitDelayDpsCooldownsMultiplier(botAI));

@@ -15,17 +15,26 @@ using namespace EncounterHelpers;
 
 // General
 
-bool KarazhanBotIsNotInCombatTrigger::IsActive()
+// This will return true during Terestian Illhoof. It's not a problem as there is nothing to be
+// cleared that relates to him, but it is something to keep in mind going forward.
+bool KarazhanNoEncounterInProgressTrigger::IsActive()
 {
-    return bot->GetMapId() == KARA_MAP_ID && !AI_VALUE2(bool, "combat", "self target");
+    if (bot->GetMapId() != KARA_MAP_ID)
+        return false;
+
+    return !IsEncounterInProgress(bot, KARA_MAP_ID);
 }
 
 bool KarazhanEnemiesCastFearTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_SHAMAN && bot->getClass() != CLASS_PRIEST)
+    if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "nightbane") ||
+    if (AI_VALUE2(bool, "has totem", "tremor totem"))
+        return false;
+
+    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    return (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z) ||
         AI_VALUE2(Unit*, "find target", "spectral charger") ||
         AI_VALUE2(Unit*, "find target", "the big bad wolf");
 }
@@ -133,7 +142,7 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    for (const char* name : OZ_TARGETS)
+    for (char const* name : OZ_TARGETS)
     {
         if (AI_VALUE2(Unit*, "find target", name))
             return true;
@@ -333,14 +342,13 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
-    uint32 const instanceId = nightbane->GetInstanceId();
-    time_t const now = std::time(nullptr);
-    constexpr uint8 flightPhaseDurationSeconds = 35;
+    constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    if (nightbaneFlightPhaseStartTimer.find(instanceId) == nightbaneFlightPhaseStartTimer.end())
+    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetInstanceId());
+    if (it == nightbaneFlightPhaseStartTimer.end())
         return false;
 
-    return now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds;
+    return getMSTimeDiff(it->second, getMSTime()) < flightPhaseDurationMs;
 }
 
 bool NightbaneBotWentOutOfBoundsTrigger::IsActive()

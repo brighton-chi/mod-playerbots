@@ -11,10 +11,9 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "TKHelpers.h"
+#include <string>
 #include <utility>
 #include <vector>
-
-using namespace TkHelpers;
 
 // General
 
@@ -48,14 +47,6 @@ protected:
         Unit* target, Position const& position, float tolerance, bool shouldAttack = true);
 };
 
-class TempestKeepCastFearWardOnMainTankAction : public Action
-{
-public:
-    TempestKeepCastFearWardOnMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "tempest keep cast fear ward on main tank") {}
-    bool Execute(Event event) override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action
@@ -84,11 +75,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AlarMeleeDpsMoveBetweenPlatformsAction : public AttackAction
+class AlarMeleeDpsMoveBetweenPlatformsAction : public MovementAction
 {
 public:
     AlarMeleeDpsMoveBetweenPlatformsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "al'ar melee dps move between platforms") {}
+        : MovementAction(botAI, "al'ar melee dps move between platforms") {}
     bool Execute(Event event) override;
 };
 
@@ -112,11 +103,11 @@ private:
     bool HandlePhase2Embers(Event const& event);
 };
 
-class AlarRangedDpsPrioritizeEmbersAction : public AttackAction
+class AlarAssignNonTankTargetAction : public AttackAction
 {
 public:
-    AlarRangedDpsPrioritizeEmbersAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "al'ar ranged dps prioritize embers") {}
+    AlarAssignNonTankTargetAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "al'ar assign non-tank target") {}
     bool Execute(Event event) override;
 };
 
@@ -154,6 +145,11 @@ public:
 private:
     bool AvoidFlamePatch();
     bool HandleDiveBomb(Unit* alar);
+    Position FindSafestNearbyPosition(
+        std::vector<Unit*> const& flamePatches, float hazardRadius);
+    bool IsPathSafe(
+        Position const& start, Position const& end, std::vector<Unit*> const& flamePatches,
+        float hazardRadius);
 };
 
 class AlarManagePhaseTrackerAction : public Action
@@ -333,10 +329,10 @@ public:
 private:
     struct WeaponInfo
     {
-        TkNpcs npcEntry;
-        TkItems itemId;
+        TkHelpers::TkNpcs npcEntry;
+        TkHelpers::TkItems itemId;
     };
-    bool ShouldBotLootWeapon(TkNpcs weaponEntry);
+    bool ShouldBotLootWeapon(TkHelpers::TkNpcs weaponEntry);
     bool LootWeapon(uint32 weaponEntry, uint32 itemId);
     bool EquipLegendaryWeapon(uint32 itemId);
 };
@@ -363,11 +359,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankPositionBossAction : public TempestKeepTankPositionAction
+class KaelthasSunstriderTanksPositionBossAction : public TempestKeepTankPositionAction
 {
 public:
-    KaelthasSunstriderMainTankPositionBossAction(PlayerbotAI* botAI)
-        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider main tank position boss") {}
+    KaelthasSunstriderTanksPositionBossAction(PlayerbotAI* botAI)
+        : TempestKeepTankPositionAction(botAI, "kael'thas sunstrider tanks position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -379,16 +375,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderHandlePhoenixesAndEggsAction : public AttackAction
+class KaelthasSunstriderAssignFinalPhaseTargetAction : public AttackAction
 {
 public:
-    KaelthasSunstriderHandlePhoenixesAndEggsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider handle phoenixes and eggs") {}
+    KaelthasSunstriderAssignFinalPhaseTargetAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kael'thas sunstrider assign final phase target") {}
     bool Execute(Event event) override;
 
 private:
-    bool AssistTanksPickUpPhoenixes();
-    bool NonTanksDestroyEggsAndAvoidPhoenixes();
+    Unit* GetAssignedPhoenix();
+    bool AssistTankPicksUpPhoenix(Unit* phoenix);
+    bool NonTanksAssignTargetAndAvoidPhoenixes();
 };
 
 class KaelthasSunstriderBreakMindControlAction : public AttackAction

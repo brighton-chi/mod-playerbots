@@ -8,19 +8,16 @@
 #define PLAYERBOTS_SWPVALUECONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "SWPActions.h"
+#include "ObjectGuid.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "Value.h"
+#include "SWPShared.h"
 #include "Position.h"
+#include "Value.h"
 #include <vector>
 
-// Cache positions, never object pointers. CalculatedValue holds whatever Calculate() returned until
-// the interval lapses, and only UnitCalculatedValue::Get() carries an IsInWorld guard - RefGet and
-// every non-Unit specialisation have none, so a stored Creature*/GameObject* would be a dangling
-// dereference waiting on a despawn.
 class EredarTwinsBlazePositionsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -35,8 +32,6 @@ protected:
     }
 };
 
-// Collapses the four per-tick sweeps of "possible targets no los" this encounter used to run into
-// one per interval. Guids only - see MuruEncounterGuids for why the resolved pointers stay local.
 class MuruEncounterTargetsValue : public CalculatedValue<SwpHelpers::MuruEncounterGuids>
 {
 public:
@@ -52,30 +47,23 @@ protected:
     }
 };
 
-// The pools are static and permanent, so this is a straight cost saving: the trigger and the action
-// both ask every tick for the whole Entropius phase, and the room keeps accumulating them.
 class MuruVoidZonesValue : public CalculatedValue<GuidVector>
 {
 public:
     MuruVoidZonesValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "muru void zones", SwpHelpers::MURU_VOID_ZONE_CACHE_INTERVAL_MS) {}
+              botAI, "muru void zones", SwpHelpers::VOID_ZONE_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return SwpHelpers::FindMuruVoidZoneGuids(bot); }
 };
 
-// The four values below all replace a grid search that a trigger ran and then the action it gates
-// ran again with the same entry and the same radius. Guids only, so a despawn inside the window
-// resolves to null at the call site rather than dangling. FindNearestCreature filters the dead by
-// default, which caching a guid would otherwise discard, so the creature values are re-tested with
-// IsAlive() where they are resolved.
 class SwpVolatileFiendValue : public CalculatedValue<ObjectGuid>
 {
 public:
     SwpVolatileFiendValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "swp volatile fiend", SwpHelpers::SWP_VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
+              botAI, "swp volatile fiend", SwpHelpers::VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(bot); }
@@ -86,8 +74,7 @@ class KalecgosSpectralRiftValue : public CalculatedValue<ObjectGuid>
 public:
     KalecgosSpectralRiftValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "kalecgos spectral rift",
-              SwpHelpers::KALECGOS_SPECTRAL_RIFT_CACHE_INTERVAL_MS) {}
+              botAI, "kalecgos spectral rift", SwpHelpers::SPECTRAL_RIFT_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindKalecgosSpectralRiftGuid(bot); }
@@ -98,7 +85,7 @@ class MuruSingularityValue : public CalculatedValue<ObjectGuid>
 public:
     MuruSingularityValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "muru singularity", SwpHelpers::MURU_SINGULARITY_CACHE_INTERVAL_MS) {}
+              botAI, "muru singularity", SwpHelpers::SINGULARITY_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SwpHelpers::FindMuruSingularityGuid(bot); }
@@ -109,25 +96,36 @@ class KiljaedenDragonOrbsValue : public CalculatedValue<GuidVector>
 public:
     KiljaedenDragonOrbsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "kiljaeden dragon orbs",
-              SwpHelpers::KILJAEDEN_DRAGON_ORB_CACHE_INTERVAL_MS) {}
+              botAI, "kiljaeden dragon orbs", SwpHelpers::DRAGON_ORB_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return SwpHelpers::FindKiljaedenDragonOrbGuids(bot); }
 };
 
-class RaidSunwellValueContext : public NamedObjectContext<UntypedValue>
+class KiljaedenHandsValue : public CalculatedValue<GuidVector>
 {
 public:
-    RaidSunwellValueContext()
+    KiljaedenHandsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "kiljaeden hands", SwpHelpers::HAND_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SwpHelpers::FindKiljaedenHandGuids(bot); }
+};
+
+class RaidSwpValueContext : public NamedObjectContext<UntypedValue>
+{
+public:
+    RaidSwpValueContext()
     {
-        creators["eredar twins blaze"] = &RaidSunwellValueContext::eredar_twins_blaze;
-        creators["muru encounter targets"] = &RaidSunwellValueContext::muru_encounter_targets;
-        creators["muru void zones"] = &RaidSunwellValueContext::muru_void_zones;
-        creators["swp volatile fiend"] = &RaidSunwellValueContext::swp_volatile_fiend;
-        creators["kalecgos spectral rift"] = &RaidSunwellValueContext::kalecgos_spectral_rift;
-        creators["muru singularity"] = &RaidSunwellValueContext::muru_singularity;
-        creators["kiljaeden dragon orbs"] = &RaidSunwellValueContext::kiljaeden_dragon_orbs;
+        creators["eredar twins blaze"] = &RaidSwpValueContext::eredar_twins_blaze;
+        creators["muru encounter targets"] = &RaidSwpValueContext::muru_encounter_targets;
+        creators["muru void zones"] = &RaidSwpValueContext::muru_void_zones;
+        creators["swp volatile fiend"] = &RaidSwpValueContext::swp_volatile_fiend;
+        creators["kalecgos spectral rift"] = &RaidSwpValueContext::kalecgos_spectral_rift;
+        creators["muru singularity"] = &RaidSwpValueContext::muru_singularity;
+        creators["kiljaeden dragon orbs"] = &RaidSwpValueContext::kiljaeden_dragon_orbs;
+        creators["kiljaeden hands"] = &RaidSwpValueContext::kiljaeden_hands;
     }
 
 private:
@@ -151,6 +149,9 @@ private:
     }
     static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbsValue(botAI);
+    }
+    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
+        return new KiljaedenHandsValue(botAI);
     }
 };
 

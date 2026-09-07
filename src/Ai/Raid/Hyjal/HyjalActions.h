@@ -35,21 +35,31 @@ private:
     std::string const _bossName;
 };
 
+// For all five bosses. _bailBelowHealthPct is the tank's own health, below which it stops walking
+// the boss.
 class HyjalSummitMainTankPositionBossAction : public AttackAction
 {
 public:
     HyjalSummitMainTankPositionBossAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
-        Position const& position, float arrivalDistance, float bailBelowHealthPct = 0.0f)
+        Position const& position, float bailBelowHealthPct = 0.0f)
         : AttackAction(botAI, name), _bossName(bossName), _position(position),
-          _arrivalDistance(arrivalDistance), _bailBelowHealthPct(bailBelowHealthPct) {}
+          _bailBelowHealthPct(bailBelowHealthPct) {}
     bool Execute(Event event) override;
 
 private:
     std::string const _bossName;
-    Position const& _position;
-    float const _arrivalDistance;
+    Position const _position;
     float const _bailBelowHealthPct;
+};
+
+// Remove Mark of Kaz'rogal and Doomfire in certain cases
+class HyjalSummitRemoveDangerousDotAction : public Action
+{
+public:
+    HyjalSummitRemoveDangerousDotAction(PlayerbotAI* botAI)
+        : Action(botAI, "hyjal summit remove dangerous dot") {}
+    bool Execute(Event event) override;
 };
 
 // Rage Winterchill
@@ -140,6 +150,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AnetheronGetOutOfImmolationAction : public MovementAction
+{
+public:
+    AnetheronGetOutOfImmolationAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "anetheron get out of immolation") {}
+    bool Execute(Event event) override;
+};
+
 class AnetheronAssignDpsPriorityAction : public AttackAction
 {
 public:
@@ -150,11 +168,11 @@ public:
 
 // Kaz'rogal
 
-class KazrogalAssistTanksMoveInFrontOfBossAction : public AttackAction
+class KazrogalAssistTanksMoveInFrontAction : public AttackAction
 {
 public:
-    KazrogalAssistTanksMoveInFrontOfBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kaz'rogal assist tanks move in front of boss") {}
+    KazrogalAssistTanksMoveInFrontAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kaz'rogal assist tanks move in front") {}
     bool Execute(Event event) override;
 };
 
@@ -182,11 +200,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalCancelMarkAction : public Action
+class KazrogalCancelImmunityAction : public Action
 {
 public:
-    KazrogalCancelMarkAction(PlayerbotAI* botAI)
-        : Action(botAI, "kaz'rogal cancel mark") {}
+    KazrogalCancelImmunityAction(PlayerbotAI* botAI) : Action(botAI, "kaz'rogal cancel immunity") {}
     bool Execute(Event event) override;
 };
 
@@ -232,11 +249,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorFirstAssistTankPositionDoomguardAction : public AttackAction
+// The Doomguard tank is the first assist tank, or the second when the first is Doomed.
+class AzgalorTankPositionDoomguardAction : public AttackAction
 {
 public:
-    AzgalorFirstAssistTankPositionDoomguardAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "azgalor first assist tank position doomguard") {}
+    AzgalorTankPositionDoomguardAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "azgalor tank position doomguard") {}
     bool Execute(Event event) override;
 };
 
@@ -250,23 +268,19 @@ public:
 
 // Archimonde
 
-class ArchimondeCastFearImmunitySpellAction : public Action
+class ArchimondeSetTremorTotemAction : public Action
 {
 public:
-    ArchimondeCastFearImmunitySpellAction(PlayerbotAI* botAI)
-        : Action(botAI, "archimonde cast fear immunity spell") {}
+    ArchimondeSetTremorTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "archimonde set tremor totem") {}
     bool Execute(Event event) override;
-
-private:
-    bool CastFearWardOnMainTank();
-    bool SetTremorTotem();
 };
 
-class ArchimondeSpreadToAvoidAirBurstAction : public MovementAction
+class ArchimondeKeepAirBurstAwayFromTankAction : public MovementAction
 {
 public:
-    ArchimondeSpreadToAvoidAirBurstAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "archimonde spread to avoid air burst") {}
+    ArchimondeKeepAirBurstAwayFromTankAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "archimonde keep air burst away from tank") {}
     bool Execute(Event event) override;
 };
 
@@ -283,14 +297,6 @@ class ArchimondeAvoidDoomfireAction : public MovementAction
 public:
     ArchimondeAvoidDoomfireAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "archimonde avoid doomfire") {}
-    bool Execute(Event event) override;
-};
-
-class ArchimondeRemoveDoomfireDotAction : public Action
-{
-public:
-    ArchimondeRemoveDoomfireDotAction(PlayerbotAI* botAI)
-        : Action(botAI, "archimonde remove doomfire dot") {}
     bool Execute(Event event) override;
 };
 
