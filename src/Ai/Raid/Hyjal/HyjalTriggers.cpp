@@ -16,6 +16,9 @@ using namespace EncounterHelpers;
 
 bool HyjalSummitNoEncounterInProgress::IsActive()
 {
+    if (bot->GetMapId() != HYJAL_MAP_ID)
+        return false;
+
     return !IsEncounterInProgress(bot, HYJAL_MAP_ID);
 }
 
@@ -423,7 +426,12 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActiveInEncounter()
     if (HasProtectionOfElune(bot))
         return false;
 
-    return bot->GetHealthPct() < 40.0f && // Arbitrary high risk-of-death threshold
-        (bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE)) ||
-         bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE_DOT)));
+    if (!bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE)) &&
+        !bot->HasAura(Id(HyjalSpells::SPELL_DOOMFIRE_DOT)))
+    {
+        return false;
+    }
+
+    constexpr float dangerHealthPct = 40.0f;
+    return bot->GetHealthPct() < dangerHealthPct;
 }

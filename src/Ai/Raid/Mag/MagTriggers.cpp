@@ -12,8 +12,12 @@
 using namespace MagHelpers;
 using namespace EncounterHelpers;
 
+// Presupposes the encounter will be fixed in AC
 bool MagtheridonNoEncounterInProgressTrigger::IsActive()
 {
+    if (bot->GetMapId() != MAG_MAP_ID)
+        return false;
+
     return !IsEncounterInProgress(bot, MAG_MAP_ID);
 }
 
