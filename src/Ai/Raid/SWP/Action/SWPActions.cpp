@@ -109,7 +109,7 @@ bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
     if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&
         bot->HasAura(spellId))
     {
-        bot->RemoveAura(spellId);
+        bot->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
         return true;
     }
 
