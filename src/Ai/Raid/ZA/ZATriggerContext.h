@@ -19,15 +19,15 @@ public:
         creators["zul'aman no encounter in progress"] =
             &RaidZulAmanTriggerContext::zulaman_no_encounter_in_progress;
 
-        creators["zul'aman pulling boss"] = &RaidZulAmanTriggerContext::zulaman_pulling_boss;
-
         // Trash
         creators["amani'shi medicine man summoned ward"] =
             &RaidZulAmanTriggerContext::amanishi_medicine_man_summoned_ward;
 
         // Akil'zon <Eagle Avatar>
-        creators["akil'zon boss engaged by tanks"] =
-            &RaidZulAmanTriggerContext::akilzon_boss_engaged_by_tanks;
+        creators["akil'zon pulling boss"] = &RaidZulAmanTriggerContext::akilzon_pulling_boss;
+
+        creators["akil'zon should be tanked"] =
+            &RaidZulAmanTriggerContext::akilzon_should_be_tanked;
 
         creators["akil'zon spread for static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_spread_for_static_disruption;
@@ -39,6 +39,8 @@ public:
             &RaidZulAmanTriggerContext::akilzon_bots_need_to_prepare_for_electrical_storm;
 
         // Nalorakk <Bear Avatar>
+        creators["nalorakk pulling boss"] = &RaidZulAmanTriggerContext::nalorakk_pulling_boss;
+
         creators["nalorakk spread for surge"] =
             &RaidZulAmanTriggerContext::nalorakk_spread_for_surge;
 
@@ -46,8 +48,10 @@ public:
             &RaidZulAmanTriggerContext::nalorakk_boss_switches_forms;
 
         // Jan'alai <Dragonhawk Avatar>
-        creators["jan'alai boss engaged by tanks"] =
-            &RaidZulAmanTriggerContext::janalai_boss_engaged_by_tanks;
+        creators["jan'alai pulling boss"] = &RaidZulAmanTriggerContext::janalai_pulling_boss;
+
+        creators["jan'alai should be tanked"] =
+            &RaidZulAmanTriggerContext::janalai_should_be_tanked;
 
         creators["jan'alai spread for flame breath"] =
             &RaidZulAmanTriggerContext::janalai_spread_for_flame_breath;
@@ -59,6 +63,8 @@ public:
             &RaidZulAmanTriggerContext::janalai_amanishi_hatchers_spawned;
 
         // Halazzi <Lynx Avatar>
+        creators["halazzi pulling boss"] = &RaidZulAmanTriggerContext::halazzi_pulling_boss;
+
         creators["halazzi should be tanked"] = &RaidZulAmanTriggerContext::halazzi_should_be_tanked;
 
         creators["halazzi spirit lynx has appeared"] =
@@ -67,6 +73,8 @@ public:
         creators["halazzi should focus dps"] = &RaidZulAmanTriggerContext::halazzi_should_focus_dps;
 
         // Hex Lord Malacrass
+        creators["hex lord malacrass pulling boss"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_pulling_boss;
 
         creators["hex lord malacrass should prioritize adds"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_should_prioritize_adds;
@@ -78,9 +86,9 @@ public:
             &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_placed_freezing_trap;
 
         // Zul'jin
+        creators["zul'jin pulling boss"] = &RaidZulAmanTriggerContext::zuljin_pulling_boss;
 
-        creators["zul'jin boss engaged by tanks"] =
-            &RaidZulAmanTriggerContext::zuljin_boss_engaged_by_tanks;
+        creators["zul'jin should be tanked"] = &RaidZulAmanTriggerContext::zuljin_should_be_tanked;
 
         creators["zul'jin boss is channeling whirlwind in troll form"] =
             &RaidZulAmanTriggerContext::zuljin_boss_is_channeling_whirlwind_in_troll_form;
@@ -97,9 +105,6 @@ private:
     static Trigger* zulaman_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new ZulAmanNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* zulaman_pulling_boss(PlayerbotAI* botAI) {
-        return new ZulAmanPullingBossTrigger(botAI);
-    }
 
     // Trash
     static Trigger* amanishi_medicine_man_summoned_ward(PlayerbotAI* botAI) {
@@ -107,8 +112,11 @@ private:
     }
 
     // Akil'zon <Eagle Avatar>
-    static Trigger* akilzon_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new AkilzonBossEngagedByTanksTrigger(botAI);
+    static Trigger* akilzon_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI, "akil'zon pulling boss", "akil'zon");
+    }
+    static Trigger* akilzon_should_be_tanked(PlayerbotAI* botAI) {
+        return new AkilzonShouldBeTankedTrigger(botAI);
     }
     static Trigger* akilzon_spread_for_static_disruption(PlayerbotAI* botAI) {
         return new AkilzonSpreadForStaticDisruptionTrigger(botAI);
@@ -121,6 +129,9 @@ private:
     }
 
     // Nalorakk <Bear Avatar>
+    static Trigger* nalorakk_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI, "nalorakk pulling boss", "nalorakk");
+    }
     static Trigger* nalorakk_spread_for_surge(PlayerbotAI* botAI) {
         return new NalorakkSpreadForSurgeTrigger(botAI);
     }
@@ -129,8 +140,11 @@ private:
     }
 
     // Jan'alai <Dragonhawk Avatar>
-    static Trigger* janalai_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new JanalaiBossEngagedByTanksTrigger(botAI);
+    static Trigger* janalai_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI, "jan'alai pulling boss", "jan'alai");
+    }
+    static Trigger* janalai_should_be_tanked(PlayerbotAI* botAI) {
+        return new JanalaiShouldBeTankedTrigger(botAI);
     }
     static Trigger* janalai_spread_for_flame_breath(PlayerbotAI* botAI) {
         return new JanalaiSpreadForFlameBreathTrigger(botAI);
@@ -143,6 +157,9 @@ private:
     }
 
     // Halazzi <Lynx Avatar>
+    static Trigger* halazzi_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI, "halazzi pulling boss", "halazzi");
+    }
     static Trigger* halazzi_should_be_tanked(PlayerbotAI* botAI) {
         return new HalazziShouldBeTankedTrigger(botAI);
     }
@@ -154,6 +171,10 @@ private:
     }
 
     // Hex Lord Malacrass
+    static Trigger* hex_lord_malacrass_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(
+            botAI, "hex lord malacrass pulling boss", "hex lord malacrass");
+    }
     static Trigger* hex_lord_malacrass_should_prioritize_adds(PlayerbotAI* botAI) {
         return new HexLordMalacrassShouldPrioritizeAddsTrigger(botAI);
     }
@@ -165,8 +186,11 @@ private:
     }
 
     // Zul'jin
-    static Trigger* zuljin_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new ZuljinBossEngagedByTanksTrigger(botAI);
+    static Trigger* zuljin_pulling_boss(PlayerbotAI* botAI) {
+        return new ZulAmanPullingBossTrigger(botAI, "zul'jin pulling boss", "zul'jin");
+    }
+    static Trigger* zuljin_should_be_tanked(PlayerbotAI* botAI) {
+        return new ZuljinShouldBeTankedTrigger(botAI);
     }
     static Trigger* zuljin_boss_is_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI) {
         return new ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(botAI);

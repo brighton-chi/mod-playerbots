@@ -144,7 +144,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 
     bool const isTankFace = dynamic_cast<TankFaceAction*>(action);
     bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
-    bool const isTaunt = !isTankFace && !isTankAssist && IsTauntAction(bot, action);
+    bool const isTaunt = IsTauntAction(bot, action);
 
     if (!isTankFace && !isTankAssist && !isTaunt)
         return 1.0f;
@@ -153,21 +153,20 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     if (!boss)
         return 1.0f;
 
-    // Nalorakk: A tank swap is used by form so suppress taunts for the opposite-form tank.
+    // Nalorakk: A tank swap is used by form, so only the tank assigned to the current form may
+    // taunt. Same as NalorakkTanksPositionBossAction: main tank gets bear, assist tank gets troll.
     if (boss->GetEntry() == Id(ZaNpcs::NPC_NALORAKK))
     {
         if (!isTaunt)
             return 0.0f;
 
-        bool const isInBearForm = IsNalorakkInBearForm(boss);
+        bool const isFormTank = IsNalorakkInBearForm(boss)
+            ? PlayerbotAI::IsMainTank(bot) : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 
-        if (!isInBearForm && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-            return 0.0f;
-
-        return isInBearForm && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+        return isFormTank ? 1.0f : 0.0f;
     }
 
-    // The assist tank picks up the Spirit of the Lynx so disable the main tank from taunting it
+    // Halazzi: The assist tank picks up the lynx so disable the main tank from taunting it.
     if (boss->GetEntry() == Id(ZaNpcs::NPC_HALAZZI))
     {
         if (!isTaunt)
@@ -201,8 +200,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     return 1.0f;
 }
 
-// Nalorakk: Don't Misdirect the boss in troll form to the Main Tank.
-// Halazzi: Don't Misdirect the Spirit of the Lynx to the Main Tank.
+// Nalorakk's troll form and Halazzi's lynx add need to be handled by the assist tank.
 float ZulAmanControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -240,6 +238,9 @@ float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* a
         return 1.0f;
 
     uint32 const entry = boss->GetEntry();
+    if (entry == Id(ZaNpcs::NPC_ZULJIN) && boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
+        return 0.0f;
+
     return entry == Id(ZaNpcs::NPC_JANALAI) || entry == Id(ZaNpcs::NPC_AKILZON) ? 0.0f : 1.0f;
 }
 

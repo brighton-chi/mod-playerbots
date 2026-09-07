@@ -25,9 +25,13 @@ public:
 class ZulAmanMisdirectBossToMainTankAction : public Action
 {
 public:
-    ZulAmanMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "zul'aman misdirect boss to main tank") {}
+    ZulAmanMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
 };
 
 class ZulAmanTanksPositionBossAction : public AttackAction
@@ -41,7 +45,7 @@ public:
 
 private:
     std::string const _bossName;
-    Position const& _position;
+    Position const _position;
 };
 
 class ZulAmanSpreadRangedAction : public MovementAction

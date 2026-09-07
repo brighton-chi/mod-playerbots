@@ -52,23 +52,28 @@ public:
     bool IsActive() override;
 };
 
+// For Misdirection to the boss on the pull. Used by every boss.
 class ZulAmanPullingBossTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    ZulAmanPullingBossTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'aman pulling boss") {}
+    ZulAmanPullingBossTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : ZulAmanEncounterTrigger(botAI, name), _bossName(bossName) {}
 
 protected:
     bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
 };
 
 // Akil'zon <Eagle Avatar>
 
-class AkilzonBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
+class AkilzonShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    AkilzonBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon boss engaged by tanks") {}
+    AkilzonShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "akil'zon should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -128,11 +133,11 @@ protected:
 
 // Jan'alai <Dragonhawk Avatar>
 
-class JanalaiBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
+class JanalaiShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    JanalaiBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai boss engaged by tanks") {}
+    JanalaiShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "jan'alai should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -234,11 +239,11 @@ protected:
 
 // Zul'jin
 
-class ZuljinBossEngagedByTanksTrigger : public ZulAmanEncounterTrigger
+class ZuljinShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    ZuljinBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin boss engaged by tanks") {}
+    ZuljinShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "zul'jin should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;

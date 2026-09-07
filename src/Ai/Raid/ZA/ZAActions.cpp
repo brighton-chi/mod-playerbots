@@ -36,12 +36,12 @@ bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool ZulAmanMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE(Unit*, "boss target");
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)
         return false;
 
     Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
+    if (!mainTank || !mainTank->IsAlive())
         return false;
 
     if (botAI->CanCastSpell("misdirection", mainTank))
@@ -138,11 +138,14 @@ bool AkilzonManageElectricalStormTimerAction::Execute(Event /*event*/)
 
 // Nalorakk <Bear Avatar>
 
-bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
+bool NalorakkTanksPositionBossAction::Execute(Event event)
 {
     Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
     if (!nalorakk)
         return false;
+
+    if (AI_VALUE(Unit*, "current target") != nalorakk)
+        return Attack(nalorakk);
 
     // Main tank takes bear, assist tank takes troll
     Player* nalorakkTank = nullptr;
@@ -153,11 +156,8 @@ bool NalorakkTanksPositionBossAction::Execute(Event /*event*/)
 
     if (nalorakkTank && nalorakkTank == bot)
     {
-        if (AI_VALUE(Unit*, "current target") != nalorakk)
-            return Attack(nalorakk);
-
         if (nalorakk->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), true);
+            return botAI->DoSpecificAction("taunt spell", event, true);
 
         if (!bot->IsWithinMeleeRange(nalorakk))
             return false;
@@ -272,7 +272,7 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
 // Halazzi <Lynx Avatar>
 
-bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
+bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 {
     Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
     if (lynx)
@@ -280,7 +280,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
         if (AI_VALUE(Unit*, "current target") != lynx)
             return Attack(lynx);
 
-        if (lynx->GetVictim() != bot && botAI->DoSpecificAction("taunt spell", Event(), true))
+        if (lynx->GetVictim() != bot && botAI->DoSpecificAction("taunt spell", event, true))
             return true;
     }
 
