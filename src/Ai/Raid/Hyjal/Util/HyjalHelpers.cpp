@@ -22,7 +22,7 @@ namespace HyjalHelpers
 namespace
 {
 
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char const* value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
