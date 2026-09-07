@@ -22,7 +22,7 @@ namespace HyjalHelpers
 namespace
 {
 
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char const* value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
@@ -404,8 +404,10 @@ Unit* GetLooseInfernal(PlayerbotAI* botAI)
     for (ObjectGuid const guid : GetInfernalGuids(botAI))
     {
         Unit* infernal = botAI->GetUnit(guid);
-        if (infernal && infernal->IsAlive() && infernal->GetVictim() != infernalTank)
-            return infernal;
+        if (!infernal || !infernal->IsAlive())
+            continue;
+
+        return infernal->GetVictim() != infernalTank ? infernal : nullptr;
     }
 
     return nullptr;
