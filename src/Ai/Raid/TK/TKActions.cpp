@@ -2089,7 +2089,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     };
 
     Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
-    if (lapse)
+    if (!lapse)
         return false;
 
     uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
