@@ -20,7 +20,6 @@ namespace HyjalHelpers
 
 namespace
 {
-// Every ground hazard is read through a cached value rather than searched for directly.
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
@@ -244,11 +243,11 @@ Player* GetInfernoTarget(Unit* anetheron)
     if (!anetheron)
         return nullptr;
 
-    Spell* spell = anetheron->FindCurrentSpellBySpellId(Id(HyjalSpells::SPELL_INFERNO));
-    if (!spell)
+    Spell* inferno = anetheron->FindCurrentSpellBySpellId(Id(HyjalSpells::SPELL_INFERNO));
+    if (!inferno)
         return nullptr;
 
-    Unit* target = spell->m_targets.GetUnitTarget();
+    Unit* target = inferno->m_targets.GetUnitTarget();
     return target ? target->ToPlayer() : nullptr;
 }
 
@@ -324,7 +323,7 @@ Unit* GetNearestInfernal(PlayerbotAI* botAI)
 
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
 {
-    if (!anetheron || anetheron->GetHealthPct() < BOSS_BURN_HEALTH_PCT)
+    if (!anetheron || anetheron->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
         return nullptr;
 
     Unit* infernal = nullptr;
@@ -416,7 +415,19 @@ bool HasMarkOfKazrogal(Player* bot)
 
 // Azgalor
 
-// Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time.
+bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)
+{
+    Unit* victim = azgalor->GetVictim();
+    if (!victim)
+        return true;
+
+    if (victim->GetExactDist2d(x, y) > CLEAVE_CHAIN_RADIUS)
+        return true;
+
+    Position const candidate(x, y, azgalor->GetPositionZ());
+    return !azgalor->HasInArc(CLEAVE_DANGER_ARC, &candidate);
+}
+
 std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI)
 {
     return GetCachedHazardPositions(botAI, "hyjal rain of fire");
@@ -468,8 +479,6 @@ bool IsDoomguardTank(Player* bot)
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    // GetGroupAssistTank() skips dead tanks so the second assist tank naturally becomes the first
-    // if the first dies.
     Player* firstAssistTank = GetGroupAssistTank(bot, 0);
     if (!firstAssistTank)
         return false;
@@ -477,22 +486,7 @@ bool IsDoomguardTank(Player* bot)
     if (firstAssistTank == bot)
         return true;
 
-    // The second assist tank also takes over while the first is Doomed and so about to die and
-    // spawn a Doomguard of its own.
     return IsDoomed(firstAssistTank) && GetGroupAssistTank(bot, 1) == bot;
-}
-
-bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y)
-{
-    Unit* victim = azgalor->GetVictim();
-    if (!victim)
-        return true;
-
-    if (victim->GetExactDist2d(x, y) > CLEAVE_CHAIN_RADIUS)
-        return true;
-
-    Position const candidate(x, y, azgalor->GetPositionZ());
-    return !azgalor->HasInArc(CLEAVE_DANGER_ARC, &candidate);
 }
 
 bool AnyGroupMemberHasDoom(Player* bot)

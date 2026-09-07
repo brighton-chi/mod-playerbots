@@ -18,7 +18,7 @@ using namespace EncounterHelpers;
 
 // Note: BOT_STATE_NON_COMBAT checks cannot be used by any multiplier that could result in a bot
 // having no valid targets as it will then swap to the non-combat engine, even during a boss fight.
-// This implicates any avoidance action that could hold the bot out of attack range.
+// This concern implicates any avoidance action that could hold the bot out of attack range.
 
 float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
@@ -61,7 +61,7 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValueInEncounter(A
 
 float RageWinterchillMeleeControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsRanged(bot))
+    if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
     bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
@@ -78,7 +78,7 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValueInEncounter(Action
     if (!winterchill)
         return 1.0f;
 
-    if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_MELEE_CONTROL_RADIUS))
+    if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS))
         return 1.0f;
 
     if (isAvoidAoe)
@@ -110,7 +110,7 @@ float RageWinterchillRangedControlAvoidanceMultiplier::GetValueInEncounter(Actio
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_RANGED_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Anetheron
@@ -120,7 +120,8 @@ float AnetheronDisableAssistTargetingMultiplier::GetValueInEncounter(Action* act
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) != nullptr;
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
+
     if (!isTankAssist && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
@@ -260,7 +261,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValueInEncounter(Action* 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
-    return bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA ? 0.0f : 1.0f;
+    return bot->GetPower(POWER_MANA) <= MARK_REJOIN_MANA ? 0.0f : 1.0f;
 }
 
 // Azgalor
@@ -278,7 +279,7 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValueInEncounter(A
         return 1.0f;
     }
 
-    // SBTA is still disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
+    // Set Behind Target is still disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
@@ -322,7 +323,7 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValueInEncounter(Action* act
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 float AzgalorRangedControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
@@ -345,7 +346,7 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValueInEncounter(Action* actio
     if (!AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_RANGED_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearRainOfFire(botAI, RAIN_OF_FIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Archimonde
