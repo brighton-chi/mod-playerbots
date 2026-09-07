@@ -228,7 +228,8 @@ class FelmystRangedShouldPositionToDispelAndFleeTrigger : public SunwellPlateauE
 {
 public:
     FelmystRangedShouldPositionToDispelAndFleeTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "felmyst ranged should position to dispel and flee") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "felmyst ranged should position to dispel and flee") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -440,7 +441,8 @@ class EredarTwinsSacrolashVictimHasConflagrationTrigger : public SunwellPlateauE
 {
 public:
     EredarTwinsSacrolashVictimHasConflagrationTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "eredar twins sacrolash victim has conflagration") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "eredar twins sacrolash victim has conflagration") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -582,7 +584,8 @@ class MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger : public SunwellPlateauEn
 {
 public:
     MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "m'uru entropius darkness pools spawn dark fiends") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "m'uru entropius darkness pools spawn dark fiends") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -603,8 +606,8 @@ protected:
 // Kil'jaeden is the one Sunwell encounter that does not report IN_PROGRESS on engage:
 // boss_kiljaeden does not chain BossAI::JustEngagedWith, and the controller sets the state only
 // once the first Hand of the Deceiver dies. The two triggers below are the ones that run before
-// that, so they cannot take SunwellPlateauEncounterTrigger. Every trigger after them needs
-// Kil'jaeden himself, who does not emerge until all three Hands are dead.
+// that, so they cannot inherit from SunwellPlateauEncounterTrigger. Every trigger after them needs
+// Kil'jaeden himself so they can be subclassed.
 
 class KiljaedenShouldCoordinateOrbUseTrigger : public Trigger
 {
@@ -626,7 +629,8 @@ class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellPlateauE
 {
 public:
     KiljaedenTanksShouldHoldBossAndReflectionsTrigger(PlayerbotAI* botAI)
-        : SunwellPlateauEncounterTrigger(botAI, "kil'jaeden tanks should hold boss and reflections") {}
+        : SunwellPlateauEncounterTrigger(
+            botAI, "kil'jaeden tanks should hold boss and reflections") {}
 
 protected:
     bool IsActiveInEncounter() override;
