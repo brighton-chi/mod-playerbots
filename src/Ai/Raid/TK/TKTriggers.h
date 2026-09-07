@@ -61,11 +61,14 @@ public:
 
 // Al'ar <Phoenix God>
 
-class AlarPullingBossTrigger : public Trigger
+class AlarPullingBossTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    AlarPullingBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "al'ar pulling boss") {}
-    bool IsActive() override;
+    AlarPullingBossTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "al'ar pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class AlarBossIsFlyingBetweenPlatformsTrigger : public TempestKeepEncounterTrigger
