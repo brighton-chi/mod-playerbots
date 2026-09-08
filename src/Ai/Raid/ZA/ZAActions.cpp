@@ -79,9 +79,8 @@ bool ZulAmanTanksPositionBossAction::Execute(Event /*event*/)
 
 bool ZulAmanSpreadRangedAction::Execute(Event /*event*/)
 {
-    float minDistance = _minDistance;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, _minDistance);
+    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _minDistance);
 }
 
 bool ZulAmanRunAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -102,15 +101,13 @@ bool ZulAmanRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 
 bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 40.0f;
-
     Creature* protectiveWard = bot->FindNearestCreature(
-        Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD), searchRadius);
+        Id(ZaNpcs::NPC_AMANI_PROTECTIVE_WARD), ZA_CREATURE_SEARCH_RADIUS);
     if (protectiveWard)
         return MarkTargetWithSkull(bot, protectiveWard);
 
     Creature* healingWard = bot->FindNearestCreature(
-        Id(ZaNpcs::NPC_AMANI_HEALING_WARD), searchRadius);
+        Id(ZaNpcs::NPC_AMANI_HEALING_WARD), ZA_CREATURE_SEARCH_RADIUS);
     return healingWard && MarkTargetWithSkull(bot, healingWard);
 }
 
@@ -122,7 +119,8 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
     if (!target && !PlayerbotAI::IsMainTank(bot))
         target = GetGroupMainTank(bot);
 
-    if (!target || bot->GetExactDist2d(target) <= 3.0f)
+    constexpr float arrivalDist = 3.0f;
+    if (!target || bot->GetExactDist2d(target) <= arrivalDist)
         return false;
 
     bot->CastStop();
@@ -213,7 +211,8 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
     float targetY =
         JANALAI_TANK_POSITION.GetPositionY() + JANALAI_RANGED_SPREAD_RADIUS * std::sin(angle);
 
-    if (bot->GetExactDist2d(targetX, targetY) <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    if (bot->GetExactDist2d(targetX, targetY) <= arrivalDist)
         return false;
 
     return MoveTo(
@@ -223,7 +222,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 {
-    auto const& bombs = GetNearbyFireBombs(botAI);
+    std::vector<Unit*> const bombs = GetNearbyFireBombs(botAI);
 
     if (bombs.empty())
         return false;
@@ -247,7 +246,9 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 
     constexpr float moveDist = 3.5f;
 
-    float stepX, stepY, stepZ;
+    float stepX;
+    float stepY;
+    float stepZ;
     if (!FindSafeStepInJanalaiZone(
             bot, bombs, JANALAI_SAFE_ZONE, JANALAI_FIRE_BOMB_MAX_SEARCH_DISTANCE,
             JANALAI_FIRE_BOMB_SAFE_DISTANCE, moveDist, stepX, stepY, stepZ))
@@ -274,22 +275,20 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
 bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 {
-    Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx");
-    if (lynx)
+    if (Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
     {
         if (AI_VALUE(Unit*, "current target") != lynx)
             return Attack(lynx);
 
-        if (lynx->GetVictim() != bot && botAI->DoSpecificAction("taunt spell", event, true))
-            return true;
+        if (lynx->GetVictim() != bot)
+            return botAI->DoSpecificAction("taunt spell", event, true);
     }
-
-    if (lynx && lynx->GetVictim() != bot)
-        return false;
 
     Position const& position = HALAZZI_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+
+    if (distToPosition <= arrivalDist)
         return false;
 
     return MoveTo(
@@ -300,9 +299,8 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 bool HalazziDpsAttackTotemAndBossAction::Execute(Event /*event*/)
 {
     // Target priority 1: Corrupted Lightning Totems
-    constexpr float searchRadius = 40.0f;
-    if (Creature* totem =
-            bot->FindNearestCreature(Id(ZaNpcs::NPC_CORRUPTED_LIGHTNING_TOTEM), searchRadius))
+    if (Creature* totem = bot->FindNearestCreature(
+            Id(ZaNpcs::NPC_CORRUPTED_LIGHTNING_TOTEM), ZA_CREATURE_SEARCH_RADIUS))
     {
         if (MarkTargetWithSkull(bot, totem))
             return true;

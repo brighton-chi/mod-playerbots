@@ -144,8 +144,7 @@ bool JanalaiAmanishiHatchersSpawnedTrigger::IsActiveInEncounter()
     if (!janalai || janalai->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
         return false;
 
-    constexpr float searchRadius = 40.0f;
-    return bot->FindNearestCreature(Id(ZaNpcs::NPC_AMANISHI_HATCHER), searchRadius);
+    return bot->FindNearestCreature(Id(ZaNpcs::NPC_AMANISHI_HATCHER), ZA_CREATURE_SEARCH_RADIUS);
 }
 
 // Halazzi <Lynx Avatar>
@@ -242,7 +241,8 @@ bool ZuljinSummoningCyclonesInEagleFormTrigger::IsActiveInEncounter()
 
     // The aura check is cleaner, but the health check here allows ranged to head to their
     // positions during the phase transition sequence.
-    return zuljin->GetHealthPct() <= 60.0f && zuljin->GetHealthPct() > 40.0f;
+    float const healthPct = zuljin->GetHealthPct();
+    return healthPct <= 60.0f && healthPct > 40.0f;
 }
 
 bool ZuljinSpreadForDragonhawkAoeTrigger::IsActiveInEncounter()
