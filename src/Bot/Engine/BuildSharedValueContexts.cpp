@@ -18,7 +18,7 @@ void AiObjectContext::BuildSharedValueContexts(
     valueContexts.Add(new ValueContext());
     valueContexts.Add(new RaidTempestKeepValueContext());
     valueContexts.Add(new TbcDungeonMechValueContext());
+    valueContexts.Add(new TbcDungeonMgTValueContext());
     valueContexts.Add(new TbcDungeonUnderbogValueContext());
     valueContexts.Add(new WotlkDungeonGDValueContext());
-    valueContexts.Add(new TbcDungeonMgTValueContext());
 }
