@@ -19,7 +19,8 @@ namespace
 
 bool IsInsideSafeZone(std::vector<Position> const& corners, float x, float y)
 {
-    // The point is inside a convex polygon when it falls on the same side of every edge.
+    // The safe zone's shape is pentagonal, sort of like a rectangle with one of the corners cut
+    // out (to exclude a fenced-off broken corner of the stage).
     size_t const count = corners.size();
     int8 insideSign = 0;
     for (size_t i = 0; i < count; ++i)
@@ -32,7 +33,7 @@ bool IsInsideSafeZone(std::vector<Position> const& corners, float x, float y)
             (edgeEnd.GetPositionY() - edgeStart.GetPositionY()) * (x - edgeStart.GetPositionX());
 
         if (cross == 0.0f)
-            continue;  // Exactly on this edge, so it rules nothing out.
+            continue;
 
         int8 const sign = cross > 0.0f ? 1 : -1;
         if (insideSign == 0)
@@ -47,7 +48,6 @@ bool IsInsideSafeZone(std::vector<Position> const& corners, float x, float y)
 bool IsPositionSafeFromHazards(
     float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
-    // Exact, to match the caller's danger test - see JANALAI_FIRE_BOMB_SAFE_DISTANCE.
     for (Unit* hazard : hazards)
     {
         if (hazard->GetExactDist2d(x, y) < hazardRadius)
