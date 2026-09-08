@@ -54,9 +54,6 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (bot->GetMapId() != ZA_MAP_ID) // In case strategy persists outside (e.g., server reset)
-        return 1.0f;
-
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -377,6 +374,32 @@ float HexLordMalacrassStayAwayFromFreezingTrapMultiplier::GetValueInEncounter(Ac
 }
 
 // Zul'jin
+
+float ZuljinStopAttackingDuringPhaseChangeMultiplier::GetValueInEncounter(Action* action)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
+    // Above 80% is Phase 1.
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || zuljin->GetHealthPct() > 80.0f)
+        return 1.0f;
+
+    // After 80%, Zul'jin drops into troll form only during transformation sequences.
+    bool const isZuljinTransformed =
+        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_BEAR)) ||
+        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ||
+        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_LYNX)) ||
+        zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
+
+    return isZuljinTransformed ? 1.0f : 0.0f;
+}
 
 float ZuljinEagleDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
 {
