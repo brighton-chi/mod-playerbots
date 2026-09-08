@@ -18,7 +18,7 @@ using namespace SscHelpers;
 using namespace EncounterHelpers;
 
 // General
-bool SerpentShrineCavernNoEncounterInProgressTrigger::IsActive()
+bool SscNoEncounterInProgressTrigger::IsActive()
 {
     if (bot->GetMapId() != SSC_MAP_ID)
         return false;

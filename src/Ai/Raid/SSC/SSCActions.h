@@ -13,11 +13,11 @@
 
 // General
 
-class SerpentShrineCavernResetEncounterStatesAction : public Action
+class SscResetEncounterStatesAction : public Action
 {
 public:
-    SerpentShrineCavernResetEncounterStatesAction(PlayerbotAI* botAI)
-        : Action(botAI, "serpent shrine cavern reset encounter states") {}
+    SscResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "ssc reset encounter states") {}
     bool Execute(Event event) override;
 };
 

@@ -16,8 +16,8 @@ public:
     RaidSscTriggerContext()
     {
         // General
-        creators["serpent shrine cavern no encounter in progress"] =
-            &RaidSscTriggerContext::serpent_shrine_cavern_no_encounter_in_progress;
+        creators["ssc no encounter in progress"] =
+            &RaidSscTriggerContext::ssc_no_encounter_in_progress;
 
         // Trash
         creators["underbog colossus spawned toxic pool after death"] =
@@ -164,8 +164,8 @@ public:
 
 private:
     // General
-    static Trigger* serpent_shrine_cavern_no_encounter_in_progress(PlayerbotAI* botAI) {
-        return new SerpentShrineCavernNoEncounterInProgressTrigger(botAI);
+    static Trigger* ssc_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new SscNoEncounterInProgressTrigger(botAI);
     }
 
     // Trash

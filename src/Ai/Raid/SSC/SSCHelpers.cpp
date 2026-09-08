@@ -42,7 +42,7 @@ bool IsNearToxicPool(PlayerbotAI* botAI, float radius)
 
 bool IsInToxicPool(PlayerbotAI* botAI)
 {
-    return IsNearToxicPool(botAI, TOXIC_POOL_RADIUS);
+    return IsNearToxicPool(botAI, TOXIC_POOL_HAZARD_RADIUS);
 }
 
 // Hydross the Unstable <Duke of Currents>

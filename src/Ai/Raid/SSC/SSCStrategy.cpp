@@ -10,8 +10,8 @@
 void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("serpent shrine cavern no encounter in progress", {
-        NextAction("serpent shrine cavern reset encounter states", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("ssc no encounter in progress", {
+        NextAction("ssc reset encounter states", ACTION_EMERGENCY + 11) }));
 
     // Trash Mobs
     triggers.push_back(new TriggerNode("underbog colossus spawned toxic pool after death", {
@@ -186,7 +186,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMultiplier(botAI));
 
     // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));

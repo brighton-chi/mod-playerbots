@@ -34,7 +34,7 @@ using namespace SscHelpers;
 
 float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(Id(SscSpells::SPELL_TOXIC_POOL)))
+    if (bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action))
@@ -43,12 +43,15 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    return dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action) ? 1.0f : 0.0f;
+    if (dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+        return 1.0f;
+
+    return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Hydross the Unstable <Duke of Currents>
 
-float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
+float HydrossTheUnstableDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsMainTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return 1.0f;
@@ -505,7 +508,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue(Action* action)
+float FathomLordKarathressCaribdisTankHealerMultiplier::GetValue(Action* action)
 {
     if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return 1.0f;

@@ -129,8 +129,10 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL = 500;
 
 // Trash
 
-inline constexpr float TOXIC_POOL_RADIUS = 25.0f; // 25y is the actual hazard radius
-inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_RADIUS + 2.0f; // 2y margin for hazard search
+inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 25.0f; // Actual hazard radius
+inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f; // For multiplier
+inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
+
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);

@@ -21,7 +21,7 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SerpentShrineCavernResetEncounterStatesAction::Execute(Event /*event*/)
+bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
     ObjectGuid const guid = bot->GetGUID();
@@ -55,66 +55,12 @@ bool SerpentShrineCavernResetEncounterStatesAction::Execute(Event /*event*/)
 // Move out of toxic pool left behind by some colossi upon death
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
-    Aura* aura = bot->GetAura(Id(SscSpells::SPELL_TOXIC_POOL));
-    if (!aura)
+    Position pool;
+    if (!GetToxicPoolPosition(botAI, pool))
         return false;
 
-    DynamicObject* dynObj = aura->GetDynobjOwner();
-    if (!dynObj)
-        return false;
-
-    float radius = dynObj->GetRadius();
-    const SpellInfo* sInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
-    if (radius <= 0.0f && sInfo)
-    {
-        for (int e = 0; e < MAX_SPELL_EFFECTS; ++e)
-        {
-            auto const& eff = sInfo->Effects[e];
-            if (eff.Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                (eff.Effect == SPELL_EFFECT_APPLY_AURA &&
-                 eff.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE))
-            {
-                radius = eff.CalcRadius();
-                break;
-            }
-        }
-    }
-
-    if (radius <= 0.0f)
-        return false;
-
-    constexpr float bufferDist = 3.0f;
-    constexpr float centerThreshold = 1.0f;
-
-    float dx = bot->GetPositionX() - dynObj->GetPositionX();
-    float dy = bot->GetPositionY() - dynObj->GetPositionY();
-
-    float distToObj = bot->GetExactDist2d(dynObj->GetPositionX(), dynObj->GetPositionY());
-    const float insideThresh = radius + centerThreshold;
-
-    if (distToObj > insideThresh)
-        return false;
-
-    float safeDist = radius + bufferDist;
-    float moveX;
-    float moveY;
-
-    if (distToObj == 0.0f)
-    {
-        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
-        moveX = dynObj->GetPositionX() + std::cos(angle) * safeDist;
-        moveY = dynObj->GetPositionY() + std::sin(angle) * safeDist;
-    }
-    else
-    {
-        float invDist = 1.0f / distToObj;
-        moveX = dynObj->GetPositionX() + (dx * invDist) * safeDist;
-        moveY = dynObj->GetPositionY() + (dy * invDist) * safeDist;
-    }
-
-    bot->CastStop();
-    return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false,
-                  true, MovementPriority::MOVEMENT_FORCED, true, false);
+    constexpr uint32 minInterval = 0;
+    return FleePosition(pool, TOXIC_POOL_HAZARD_RADIUS, minInterval);
 }
 
 // Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?

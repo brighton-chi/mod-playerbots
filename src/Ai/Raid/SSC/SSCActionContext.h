@@ -16,8 +16,8 @@ public:
     RaidSscActionContext()
     {
         // General
-        creators["serpent shrine cavern reset encounter states"] =
-            &RaidSscActionContext::serpent_shrine_cavern_reset_encounter_states;
+        creators["ssc reset encounter states"] =
+            &RaidSscActionContext::ssc_reset_encounter_states;
 
         // Trash
         creators["underbog colossus escape toxic pool"] =
@@ -170,8 +170,8 @@ public:
 
 private:
     // General
-    static Action* serpent_shrine_cavern_reset_encounter_states(PlayerbotAI* botAI) {
-        return new SerpentShrineCavernResetEncounterStatesAction(botAI);
+    static Action* ssc_reset_encounter_states(PlayerbotAI* botAI) {
+        return new SscResetEncounterStatesAction(botAI);
     }
 
     // Trash
