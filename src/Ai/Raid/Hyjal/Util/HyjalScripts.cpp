@@ -141,7 +141,7 @@ public:
     }
 };
 
-void AddSC_HyjalSummitBotScripts()
+void AddSC_HyjalBotScripts()
 {
     new AnetheronInfernoSpellListenerScript();
     new ArchimondeAirBurstSpellListenerScript();
