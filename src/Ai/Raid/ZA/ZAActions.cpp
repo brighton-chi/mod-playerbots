@@ -131,7 +131,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AkilzonManageElectricalStormTimerAction::Execute(Event /*event*/)
+bool AkilzonStartElectricalStormTimerAction::Execute(Event /*event*/)
 {
     return akilzonStormTimer.try_emplace(bot->GetInstanceId(), getMSTime()).second;
 }
@@ -370,7 +370,15 @@ bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
 
 // Zul'jin
 
-bool ZuljinSpreadRaidForCyclonesAction::Execute(Event /*event*/)
+bool ZuljinMassDispelCreepingParalysisAction::Execute(Event /*event*/)
+{
+    Player* paralysisTarget = GetZuljinCreepingParalysisDispelTarget(bot);
+    return paralysisTarget &&
+        botAI->CanCastSpell(Id(ZaSpells::SPELL_MASS_DISPEL), paralysisTarget) &&
+        botAI->CastSpell(Id(ZaSpells::SPELL_MASS_DISPEL), paralysisTarget);
+}
+
+bool ZuljinPositionRangedForCyclonesAction::Execute(Event /*event*/)
 {
     size_t slotIndex;
     if (!GetZuljinSpreadSlotIndex(bot, ZULJIN_SPREAD_POSITIONS.size(), slotIndex))

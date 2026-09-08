@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <list>
 
 using namespace EncounterHelpers;
@@ -280,6 +281,32 @@ bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex)
         healers.size() + static_cast<size_t>(std::distance(rangedDps.begin(), dpsIt));
     slotIndex = ordinal % slotCount;
     return true;
+}
+
+Player* GetZuljinCreepingParalysisDispelTarget(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* closestTarget = nullptr;
+    float closestDistance = std::numeric_limits<float>::max();
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->HasAura(Id(ZaSpells::SPELL_CREEPING_PARALYSIS)))
+            continue;
+
+        float distance = bot->GetExactDist(member);
+        if (distance < closestDistance)
+        {
+            closestTarget = member;
+            closestDistance = distance;
+        }
+    }
+
+    return closestTarget;
 }
 
 }

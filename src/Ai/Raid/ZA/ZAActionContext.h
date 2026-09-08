@@ -36,8 +36,8 @@ public:
         creators["akil'zon move to eye of the storm"] =
             &RaidZulAmanActionContext::akilzon_move_to_eye_of_the_storm;
 
-        creators["akil'zon manage electrical storm timer"] =
-            &RaidZulAmanActionContext::akilzon_manage_electrical_storm_timer;
+        creators["akil'zon start electrical storm timer"] =
+            &RaidZulAmanActionContext::akilzon_start_electrical_storm_timer;
 
         // Nalorakk <Bear Avatar>
         creators["nalorakk misdirect boss to main tank"] =
@@ -99,8 +99,11 @@ public:
         creators["zul'jin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
 
-        creators["zul'jin spread raid for cyclones"] =
-            &RaidZulAmanActionContext::zuljin_spread_raid_for_cyclones;
+        creators["zul'jin mass dispel creeping paralysis"] =
+            &RaidZulAmanActionContext::zuljin_mass_dispel_creeping_paralysis;
+
+        creators["zul'jin position ranged for cyclones"] =
+            &RaidZulAmanActionContext::zuljin_position_ranged_for_cyclones;
 
         creators["zul'jin spread ranged"] = &RaidZulAmanActionContext::zuljin_spread_ranged;
     }
@@ -131,8 +134,8 @@ private:
     static Action* akilzon_move_to_eye_of_the_storm(PlayerbotAI* botAI) {
         return new AkilzonMoveToEyeOfTheStormAction(botAI);
     }
-    static Action* akilzon_manage_electrical_storm_timer(PlayerbotAI* botAI) {
-        return new AkilzonManageElectricalStormTimerAction(botAI);
+    static Action* akilzon_start_electrical_storm_timer(PlayerbotAI* botAI) {
+        return new AkilzonStartElectricalStormTimerAction(botAI);
     }
 
     // Nalorakk <Bear Avatar>
@@ -215,8 +218,11 @@ private:
         return new ZulAmanRunAwayFromWhirlwindAction(
             botAI, "zul'jin run away from whirlwind", "zul'jin");
     }
-    static Action* zuljin_spread_raid_for_cyclones(PlayerbotAI* botAI) {
-        return new ZuljinSpreadRaidForCyclonesAction(botAI);
+    static Action* zuljin_mass_dispel_creeping_paralysis(PlayerbotAI* botAI) {
+        return new ZuljinMassDispelCreepingParalysisAction(botAI);
+    }
+    static Action* zuljin_position_ranged_for_cyclones(PlayerbotAI* botAI) {
+        return new ZuljinPositionRangedForCyclonesAction(botAI);
     }
 };
 

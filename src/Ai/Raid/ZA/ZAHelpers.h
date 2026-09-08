@@ -48,9 +48,11 @@ enum class ZaSpells : uint32
 
     // Zul'jin
     SPELL_ZULJIN_WHIRLWIND          = 17207,
+    SPELL_SHAPE_OF_THE_BEAR         = 42594,
     SPELL_SHAPE_OF_THE_EAGLE        = 42606,
     SPELL_SHAPE_OF_THE_LYNX         = 42607,
     SPELL_SHAPE_OF_THE_DRAGONHAWK   = 42608,
+    SPELL_CREEPING_PARALYSIS        = 43095,
     // SPELL_CLAW_RAGE              = 43149,
 
     // 43149 is a 6s aura Zul'jin self-casts during Lynx phase that ticks twice a second, each tick
@@ -60,6 +62,9 @@ enum class ZaSpells : uint32
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
+
+    // Priest
+    SPELL_MASS_DISPEL               = 32375,
 };
 
 enum class ZaNpcs : uint32
@@ -226,6 +231,8 @@ inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{
 // Presumably, players will bring 2 healers, and the intent is to allow each healer to reach every
 // other bot's position (accordingly, no two spots are more than 39y apart).
 bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex);
+// Find the closest target with Creeping Paralysis to cast Mass Dispel on.
+Player* GetZuljinCreepingParalysisDispelTarget(Player* bot);
 
 }
 
