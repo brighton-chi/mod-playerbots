@@ -14,7 +14,7 @@ using namespace EncounterHelpers;
 
 // General
 
-bool HyjalSummitNoEncounterInProgress::IsActive()
+bool HyjalNoEncounterInProgressTrigger::IsActive()
 {
     if (bot->GetMapId() != HYJAL_MAP_ID)
         return false;

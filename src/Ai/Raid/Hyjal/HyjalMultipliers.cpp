@@ -20,7 +20,7 @@ using namespace EncounterHelpers;
 // having no valid targets as it will then swap to the non-combat engine, even during a boss fight.
 // This concern implicates any avoidance action that could hold the bot out of attack range.
 
-float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
+float HyjalDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -43,9 +43,7 @@ float HyjalSummitDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
-// Rage Winterchill
-
-float RageWinterchillDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
+float HyjalDisableDisperseAndTankFaceMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -56,8 +54,15 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValueInEncounter(A
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "rage winterchill") ? 0.0f : 1.0f;
+    if (HasProtectionOfElune(bot))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "archimonde") ||
+        AI_VALUE2(Unit*, "find target", "kaz'rogal") ||
+        AI_VALUE2(Unit*, "find target", "rage winterchill") ? 0.0f : 1.0f;
 }
+
+// Rage Winterchill
 
 float RageWinterchillMeleeControlAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
@@ -202,20 +207,6 @@ float AnetheronControlMisdirectionMultiplier::GetValueInEncounter(Action* action
 
 // Kaz'rogal
 
-float KazrogalDisableDisperseAndTankFaceMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "kaz'rogal") ? 0.0f : 1.0f;
-}
-
 float KazrogalControlLowManaMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsKazrogalManaUser(botAI) || bot->getClass() == CLASS_HUNTER)
@@ -350,23 +341,6 @@ float AzgalorRangedControlAvoidanceMultiplier::GetValueInEncounter(Action* actio
 }
 
 // Archimonde
-
-float ArchimondeDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
-        return 1.0f;
-
-    return !HasProtectionOfElune(bot) ? 0.0f : 1.0f;
-}
 
 float ArchimondeControlDoomfireAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {

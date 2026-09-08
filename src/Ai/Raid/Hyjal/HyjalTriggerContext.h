@@ -17,8 +17,8 @@ public:
     RaidHyjalTriggerContext()
     {
         // General
-        creators["hyjal summit no encounter in progress"] =
-            &RaidHyjalTriggerContext::hyjal_summit_no_encounter_in_progress;
+        creators["hyjal no encounter in progress"] =
+            &RaidHyjalTriggerContext::hyjal_no_encounter_in_progress;
 
         // Rage Winterchill
         creators["rage winterchill pulling boss"] =
@@ -62,8 +62,7 @@ public:
             &RaidHyjalTriggerContext::anetheron_should_divide_dps;
 
         // Kaz'rogal
-        creators["kaz'rogal pulling boss"] =
-            &RaidHyjalTriggerContext::kazrogal_pulling_boss;
+        creators["kaz'rogal pulling boss"] = &RaidHyjalTriggerContext::kazrogal_pulling_boss;
 
         creators["kaz'rogal should be tanked"] =
             &RaidHyjalTriggerContext::kazrogal_should_be_tanked;
@@ -90,11 +89,9 @@ public:
             &RaidHyjalTriggerContext::kazrogal_warlock_should_manage_mana;
 
         // Azgalor
-        creators["azgalor pulling boss"] =
-            &RaidHyjalTriggerContext::azgalor_pulling_boss;
+        creators["azgalor pulling boss"] = &RaidHyjalTriggerContext::azgalor_pulling_boss;
 
-        creators["azgalor should be tanked"] =
-            &RaidHyjalTriggerContext::azgalor_should_be_tanked;
+        creators["azgalor should be tanked"] = &RaidHyjalTriggerContext::azgalor_should_be_tanked;
 
         creators["azgalor ranged should spread"] =
             &RaidHyjalTriggerContext::azgalor_ranged_should_spread;
@@ -105,18 +102,15 @@ public:
         creators["azgalor ranged in rain of fire"] =
             &RaidHyjalTriggerContext::azgalor_ranged_in_rain_of_fire;
 
-        creators["azgalor bot is doomed"] =
-            &RaidHyjalTriggerContext::azgalor_bot_is_doomed;
+        creators["azgalor bot is doomed"] = &RaidHyjalTriggerContext::azgalor_bot_is_doomed;
 
         creators["azgalor should control doomguards"] =
             &RaidHyjalTriggerContext::azgalor_should_control_doomguards;
 
-        creators["azgalor should divide dps"] =
-            &RaidHyjalTriggerContext::azgalor_should_divide_dps;
+        creators["azgalor should divide dps"] = &RaidHyjalTriggerContext::azgalor_should_divide_dps;
 
         // Archimonde
-        creators["archimonde pulling boss"] =
-            &RaidHyjalTriggerContext::archimonde_pulling_boss;
+        creators["archimonde pulling boss"] = &RaidHyjalTriggerContext::archimonde_pulling_boss;
 
         creators["archimonde should be tanked"] =
             &RaidHyjalTriggerContext::archimonde_boss_engaged_by_main_tank;
@@ -139,8 +133,8 @@ public:
 
 private:
     // General
-    static Trigger* hyjal_summit_no_encounter_in_progress(PlayerbotAI* botAI) {
-        return new HyjalSummitNoEncounterInProgress(botAI);
+    static Trigger* hyjal_no_encounter_in_progress(PlayerbotAI* botAI) {
+        return new HyjalNoEncounterInProgressTrigger(botAI);
     }
 
     // Rage Winterchill

@@ -15,18 +15,18 @@
 
 // General
 
-class HyjalSummitResetEncounterStatesAction : public Action
+class HyjalResetEncounterStatesAction : public Action
 {
 public:
-    HyjalSummitResetEncounterStatesAction(PlayerbotAI* botAI)
-        : Action(botAI, "hyjal summit reset encounter states") {}
+    HyjalResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "hyjal reset encounter states") {}
     bool Execute(Event event) override;
 };
 
-class HyjalSummitMisdirectBossToMainTankAction : public Action
+class HyjalMisdirectBossToMainTankAction : public Action
 {
 public:
-    HyjalSummitMisdirectBossToMainTankAction(
+    HyjalMisdirectBossToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
@@ -37,10 +37,10 @@ private:
 
 // For all five bosses. _bailBelowHealthPct is the tank's own health, below which it stops walking
 // the boss.
-class HyjalSummitMainTankPositionBossAction : public AttackAction
+class HyjalMainTankPositionBossAction : public AttackAction
 {
 public:
-    HyjalSummitMainTankPositionBossAction(
+    HyjalMainTankPositionBossAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
         Position const& position, float bailBelowHealthPct = 0.0f)
         : AttackAction(botAI, name), _bossName(bossName), _position(position),
@@ -54,11 +54,11 @@ private:
 };
 
 // Remove Mark of Kaz'rogal and Doomfire in certain cases
-class HyjalSummitRemoveDangerousDotAction : public Action
+class HyjalRemoveDangerousDotAction : public Action
 {
 public:
-    HyjalSummitRemoveDangerousDotAction(PlayerbotAI* botAI)
-        : Action(botAI, "hyjal summit remove dangerous dot") {}
+    HyjalRemoveDangerousDotAction(PlayerbotAI* botAI)
+        : Action(botAI, "hyjal remove dangerous dot") {}
     bool Execute(Event event) override;
 };
 
