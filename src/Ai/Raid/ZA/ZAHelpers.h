@@ -111,6 +111,8 @@ inline constexpr uint32 ZA_MAP_ID = 568;
 // hold distance is for the don't run back in multiplier and adds another 3y of padding.
 inline constexpr float ZA_WHIRLWIND_SAFE_DISTANCE = 12.0f;
 inline constexpr float ZA_WHIRLWIND_HOLD_DISTANCE = 15.0f;
+// For Medicine Man totems, Halazzi totem, and Jan'alai Hatchers
+inline constexpr float ZA_CREATURE_SEARCH_RADIUS = 40.0f;
 
 // Akil'zon <Eagle Avatar>
 
