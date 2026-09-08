@@ -19,7 +19,7 @@ using namespace EncounterHelpers;
 
 // General
 
-bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
+bool HyjalResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
@@ -43,7 +43,7 @@ bool HyjalSummitResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-bool HyjalSummitMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool HyjalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)
@@ -62,7 +62,7 @@ bool HyjalSummitMisdirectBossToMainTankAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
 }
 
-bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
+bool HyjalMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)
@@ -89,7 +89,7 @@ bool HyjalSummitMainTankPositionBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool HyjalSummitRemoveDangerousDotAction::Execute(Event /*event*/)
+bool HyjalRemoveDangerousDotAction::Execute(Event /*event*/)
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
