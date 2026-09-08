@@ -68,12 +68,6 @@ enum class ZaNpcs : uint32
     NPC_AMANI_HEALING_WARD          = 23757,
     NPC_AMANI_PROTECTIVE_WARD       = 23822,
 
-    // Akil'zon <Eagle Avatar>
-    NPC_AKILZON                     = 23574,
-
-    // Nalorakk <Bear Avatar>
-    NPC_NALORAKK                    = 23576,
-
     // Jan'alai <Dragonhawk Avatar>
     NPC_JANALAI                     = 23578,
     NPC_AMANI_DRAGONHAWK_HATCHLING  = 23598,
