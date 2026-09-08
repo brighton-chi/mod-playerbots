@@ -130,5 +130,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HexLordMalacrassStayAwayFromFreezingTrapMultiplier(botAI));
 
     // Zul'jin
+    multipliers.push_back(new ZuljinStopAttackingDuringPhaseChangeMultiplier(botAI));
     multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));
 }

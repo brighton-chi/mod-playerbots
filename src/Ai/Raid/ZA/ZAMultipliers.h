@@ -162,6 +162,16 @@ protected:
 
 // Zul'jin
 
+class ZuljinStopAttackingDuringPhaseChangeMultiplier : public ZulAmanEncounterMultiplier
+{
+public:
+    ZuljinStopAttackingDuringPhaseChangeMultiplier(PlayerbotAI* botAI)
+        : ZulAmanEncounterMultiplier(botAI, "zul'jin stop attaking during phase change") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class ZuljinEagleDisableAvoidAoeMultiplier : public ZulAmanEncounterMultiplier
 {
 public:
