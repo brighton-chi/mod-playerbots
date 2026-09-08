@@ -82,10 +82,7 @@ bool AkilzonElectricalStormIncomingTrigger::IsActiveInEncounter()
 
 bool AkilzonShouldTrackElectricalStormTrigger::IsActiveInEncounter()
 {
-    if (!IsMechanicTrackerBot(bot, ZA_MAP_ID))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "akil'zon");
+    return IsMechanicTrackerBot(bot, ZA_MAP_ID) && AI_VALUE2(Unit*, "find target", "akil'zon");
 }
 
 // Nalorakk <Bear Avatar>
@@ -131,7 +128,11 @@ bool JanalaiSpreadForFlameBreathTrigger::IsActiveInEncounter()
 
 bool JanalaiIsFireBombingTrigger::IsActiveInEncounter()
 {
-    return IsJanalaiBombing(AI_VALUE2(Unit*, "find target", "jan'alai"));
+    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    if (!janalai)
+        return false;
+
+    return IsJanalaiBombing(janalai);
 }
 
 bool JanalaiAmanishiHatchersSpawnedTrigger::IsActiveInEncounter()
@@ -186,7 +187,7 @@ bool HexLordMalacrassFreezingTrapPlacedTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
         return false;
 
-    return GetNearbyFreezingTrap(botAI) != nullptr;
+    return GetNearbyFreezingTrap(botAI);
 }
 
 // Zul'jin
@@ -200,6 +201,8 @@ bool ZuljinShouldBeTankedTrigger::IsActiveInEncounter()
     if (!zuljin)
         return false;
 
+    // Eagle can't be tanked, and flexibility for the tank to turn Zul'jin during Dragonhawk
+    // is preferable.
     return !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
         !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
@@ -227,8 +230,19 @@ bool ZuljinCreepingParalysisInBearFormTrigger::IsActiveInEncounter()
 
 bool ZuljinSummoningCyclonesInEagleFormTrigger::IsActiveInEncounter()
 {
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE));
+    if (!zuljin)
+        return false;
+
+    if (zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)))
+        return true;
+
+    // The aura check is cleaner, but the health check here allows ranged to head to their
+    // positions during the phase transition sequence.
+    return zuljin->GetHealthPct() <= 60.0f && zuljin->GetHealthPct() > 40.0f;
 }
 
 bool ZuljinSpreadForDragonhawkAoeTrigger::IsActiveInEncounter()
