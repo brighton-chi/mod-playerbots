@@ -92,11 +92,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AkilzonManageElectricalStormTimerAction : public Action
+class AkilzonStartElectricalStormTimerAction : public Action
 {
 public:
-    AkilzonManageElectricalStormTimerAction(PlayerbotAI* botAI)
-        : Action(botAI, "akil'zon manage electrical storm timer") {}
+    AkilzonStartElectricalStormTimerAction(PlayerbotAI* botAI)
+        : Action(botAI, "akil'zon start electrical storm timer") {}
     bool Execute(Event event) override;
 };
 
@@ -174,11 +174,19 @@ public:
 
 // Zul'jin
 
-class ZuljinSpreadRaidForCyclonesAction : public MovementAction
+class ZuljinMassDispelCreepingParalysisAction : public Action
 {
 public:
-    ZuljinSpreadRaidForCyclonesAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "zul'jin spread raid for cyclones") {}
+    ZuljinMassDispelCreepingParalysisAction(PlayerbotAI* botAI)
+        : Action(botAI, "zul'jin mass dispel creeping paralysis") {}
+    bool Execute(Event event) override;
+};
+
+class ZuljinPositionRangedForCyclonesAction : public MovementAction
+{
+public:
+    ZuljinPositionRangedForCyclonesAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "zul'jin position ranged for cyclones") {}
     bool Execute(Event event) override;
 };
 

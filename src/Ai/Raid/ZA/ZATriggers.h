@@ -99,11 +99,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class AkilzonBotsNeedToPrepareForElectricalStormTrigger : public ZulAmanEncounterTrigger
+class AkilzonShouldTrackElectricalStormTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    AkilzonBotsNeedToPrepareForElectricalStormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon bots need to prepare for electrical storm") {}
+    AkilzonShouldTrackElectricalStormTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "akil'zon should track electrical storm") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -111,11 +111,11 @@ protected:
 
 // Nalorakk <Bear Avatar>
 
-class NalorakkBossSwitchesFormsTrigger : public ZulAmanEncounterTrigger
+class NalorakkBothFormsShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    NalorakkBossSwitchesFormsTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "nalorakk boss switches forms") {}
+    NalorakkBothFormsShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "nalorakk both forms should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -153,11 +153,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class JanalaiBossSummoningFireBombsTrigger : public ZulAmanEncounterTrigger
+class JanalaiIsFireBombingTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    JanalaiBossSummoningFireBombsTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai boss summoning fire bombs") {}
+    JanalaiIsFireBombingTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "jan'alai is fire bombing") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -217,21 +217,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HexLordMalacrassBossIsChannelingWhirlwindTrigger : public ZulAmanEncounterTrigger
+class HexLordMalacrassChannelingWhirlwindTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    HexLordMalacrassBossIsChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass boss is channeling whirlwind") {}
+    HexLordMalacrassChannelingWhirlwindTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass channeling whirlwind") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class HexLordMalacrassBossPlacedFreezingTrapTrigger : public ZulAmanEncounterTrigger
+class HexLordMalacrassFreezingTrapPlacedTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    HexLordMalacrassBossPlacedFreezingTrapTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass boss placed freezing trap") {}
+    HexLordMalacrassFreezingTrapPlacedTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass freezing trap placed") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -249,21 +249,31 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class ZuljinBossIsChannelingWhirlwindInTrollFormTrigger : public ZulAmanEncounterTrigger
+class ZuljinChannelingWhirlwindInTrollFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin boss is channeling whirlwind in troll form") {}
+    ZuljinChannelingWhirlwindInTrollFormTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "zul'jin channeling whirlwind in troll form") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class ZuljinBossIsSummoningCyclonesInEagleFormTrigger : public ZulAmanEncounterTrigger
+class ZuljinCreepingParalysisInBearFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    ZuljinBossIsSummoningCyclonesInEagleFormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin boss is summoning cyclones in eagle form") {}
+    ZuljinCreepingParalysisInBearFormTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "zul'jin creeping paralysis in bear form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class ZuljinSummoningCyclonesInEagleFormTrigger : public ZulAmanEncounterTrigger
+{
+public:
+    ZuljinSummoningCyclonesInEagleFormTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(botAI, "zul'jin summoning cyclones in eagle form") {}
 
 protected:
     bool IsActiveInEncounter() override;

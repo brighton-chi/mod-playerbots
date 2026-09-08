@@ -35,8 +35,8 @@ public:
         creators["akil'zon electrical storm incoming"] =
             &RaidZulAmanTriggerContext::akilzon_electrical_storm_incoming;
 
-        creators["akil'zon bots need to prepare for electrical storm"] =
-            &RaidZulAmanTriggerContext::akilzon_bots_need_to_prepare_for_electrical_storm;
+        creators["akil'zon should track electrical storm"] =
+            &RaidZulAmanTriggerContext::akilzon_should_track_electrical_storm;
 
         // Nalorakk <Bear Avatar>
         creators["nalorakk pulling boss"] = &RaidZulAmanTriggerContext::nalorakk_pulling_boss;
@@ -44,8 +44,8 @@ public:
         creators["nalorakk spread for surge"] =
             &RaidZulAmanTriggerContext::nalorakk_spread_for_surge;
 
-        creators["nalorakk boss switches forms"] =
-            &RaidZulAmanTriggerContext::nalorakk_boss_switches_forms;
+        creators["nalorakk both forms should be tanked"] =
+            &RaidZulAmanTriggerContext::nalorakk_both_forms_should_be_tanked;
 
         // Jan'alai <Dragonhawk Avatar>
         creators["jan'alai pulling boss"] = &RaidZulAmanTriggerContext::janalai_pulling_boss;
@@ -56,8 +56,7 @@ public:
         creators["jan'alai spread for flame breath"] =
             &RaidZulAmanTriggerContext::janalai_spread_for_flame_breath;
 
-        creators["jan'alai boss summoning fire bombs"] =
-            &RaidZulAmanTriggerContext::janalai_boss_summoning_fire_bombs;
+        creators["jan'alai is fire bombing"] = &RaidZulAmanTriggerContext::janalai_is_fire_bombing;
 
         creators["jan'alai amani'shi hatchers spawned"] =
             &RaidZulAmanTriggerContext::janalai_amanishi_hatchers_spawned;
@@ -79,22 +78,25 @@ public:
         creators["hex lord malacrass should prioritize adds"] =
             &RaidZulAmanTriggerContext::hex_lord_malacrass_should_prioritize_adds;
 
-        creators["hex lord malacrass boss is channeling whirlwind"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_is_channeling_whirlwind;
+        creators["hex lord malacrass channeling whirlwind"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_channeling_whirlwind;
 
-        creators["hex lord malacrass boss placed freezing trap"] =
-            &RaidZulAmanTriggerContext::hex_lord_malacrass_boss_placed_freezing_trap;
+        creators["hex lord malacrass freezing trap placed"] =
+            &RaidZulAmanTriggerContext::hex_lord_malacrass_freezing_trap_placed;
 
         // Zul'jin
         creators["zul'jin pulling boss"] = &RaidZulAmanTriggerContext::zuljin_pulling_boss;
 
         creators["zul'jin should be tanked"] = &RaidZulAmanTriggerContext::zuljin_should_be_tanked;
 
-        creators["zul'jin boss is channeling whirlwind in troll form"] =
-            &RaidZulAmanTriggerContext::zuljin_boss_is_channeling_whirlwind_in_troll_form;
+        creators["zul'jin channeling whirlwind in troll form"] =
+            &RaidZulAmanTriggerContext::zuljin_channeling_whirlwind_in_troll_form;
 
-        creators["zul'jin boss is summoning cyclones in eagle form"] =
-            &RaidZulAmanTriggerContext::zuljin_boss_is_summoning_cyclones_in_eagle_form;
+        creators["zul'jin creeping paralysis in bear form"] =
+            &RaidZulAmanTriggerContext::zuljin_creeping_paralysis_in_bear_form;
+
+        creators["zul'jin summoning cyclones in eagle form"] =
+            &RaidZulAmanTriggerContext::zuljin_summoning_cyclones_in_eagle_form;
 
         creators["zul'jin spread for dragonhawk aoe"] =
             &RaidZulAmanTriggerContext::zuljin_spread_for_dragonhawk_aoe;
@@ -124,8 +126,8 @@ private:
     static Trigger* akilzon_electrical_storm_incoming(PlayerbotAI* botAI) {
         return new AkilzonElectricalStormIncomingTrigger(botAI);
     }
-    static Trigger* akilzon_bots_need_to_prepare_for_electrical_storm(PlayerbotAI* botAI) {
-        return new AkilzonBotsNeedToPrepareForElectricalStormTrigger(botAI);
+    static Trigger* akilzon_should_track_electrical_storm(PlayerbotAI* botAI) {
+        return new AkilzonShouldTrackElectricalStormTrigger(botAI);
     }
 
     // Nalorakk <Bear Avatar>
@@ -135,8 +137,8 @@ private:
     static Trigger* nalorakk_spread_for_surge(PlayerbotAI* botAI) {
         return new NalorakkSpreadForSurgeTrigger(botAI);
     }
-    static Trigger* nalorakk_boss_switches_forms(PlayerbotAI* botAI) {
-        return new NalorakkBossSwitchesFormsTrigger(botAI);
+    static Trigger* nalorakk_both_forms_should_be_tanked(PlayerbotAI* botAI) {
+        return new NalorakkBothFormsShouldBeTankedTrigger(botAI);
     }
 
     // Jan'alai <Dragonhawk Avatar>
@@ -149,8 +151,8 @@ private:
     static Trigger* janalai_spread_for_flame_breath(PlayerbotAI* botAI) {
         return new JanalaiSpreadForFlameBreathTrigger(botAI);
     }
-    static Trigger* janalai_boss_summoning_fire_bombs(PlayerbotAI* botAI) {
-        return new JanalaiBossSummoningFireBombsTrigger(botAI);
+    static Trigger* janalai_is_fire_bombing(PlayerbotAI* botAI) {
+        return new JanalaiIsFireBombingTrigger(botAI);
     }
     static Trigger* janalai_amanishi_hatchers_spawned(PlayerbotAI* botAI) {
         return new JanalaiAmanishiHatchersSpawnedTrigger(botAI);
@@ -178,11 +180,11 @@ private:
     static Trigger* hex_lord_malacrass_should_prioritize_adds(PlayerbotAI* botAI) {
         return new HexLordMalacrassShouldPrioritizeAddsTrigger(botAI);
     }
-    static Trigger* hex_lord_malacrass_boss_is_channeling_whirlwind(PlayerbotAI* botAI) {
-        return new HexLordMalacrassBossIsChannelingWhirlwindTrigger(botAI);
+    static Trigger* hex_lord_malacrass_channeling_whirlwind(PlayerbotAI* botAI) {
+        return new HexLordMalacrassChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* hex_lord_malacrass_boss_placed_freezing_trap(PlayerbotAI* botAI) {
-        return new HexLordMalacrassBossPlacedFreezingTrapTrigger(botAI);
+    static Trigger* hex_lord_malacrass_freezing_trap_placed(PlayerbotAI* botAI) {
+        return new HexLordMalacrassFreezingTrapPlacedTrigger(botAI);
     }
 
     // Zul'jin
@@ -192,11 +194,14 @@ private:
     static Trigger* zuljin_should_be_tanked(PlayerbotAI* botAI) {
         return new ZuljinShouldBeTankedTrigger(botAI);
     }
-    static Trigger* zuljin_boss_is_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI) {
-        return new ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(botAI);
+    static Trigger* zuljin_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI) {
+        return new ZuljinChannelingWhirlwindInTrollFormTrigger(botAI);
     }
-    static Trigger* zuljin_boss_is_summoning_cyclones_in_eagle_form(PlayerbotAI* botAI) {
-        return new ZuljinBossIsSummoningCyclonesInEagleFormTrigger(botAI);
+    static Trigger* zuljin_creeping_paralysis_in_bear_form(PlayerbotAI* botAI) {
+        return new ZuljinCreepingParalysisInBearFormTrigger(botAI);
+    }
+    static Trigger* zuljin_summoning_cyclones_in_eagle_form(PlayerbotAI* botAI) {
+        return new ZuljinSummoningCyclonesInEagleFormTrigger(botAI);
     }
     static Trigger* zuljin_spread_for_dragonhawk_aoe(PlayerbotAI* botAI) {
         return new ZuljinSpreadForDragonhawkAoeTrigger(botAI);

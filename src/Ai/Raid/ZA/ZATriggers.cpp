@@ -80,7 +80,7 @@ bool AkilzonElectricalStormIncomingTrigger::IsActiveInEncounter()
     return IsInStormWindow(it->second);
 }
 
-bool AkilzonBotsNeedToPrepareForElectricalStormTrigger::IsActiveInEncounter()
+bool AkilzonShouldTrackElectricalStormTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, ZA_MAP_ID))
         return false;
@@ -90,7 +90,7 @@ bool AkilzonBotsNeedToPrepareForElectricalStormTrigger::IsActiveInEncounter()
 
 // Nalorakk <Bear Avatar>
 
-bool NalorakkBossSwitchesFormsTrigger::IsActiveInEncounter()
+bool NalorakkBothFormsShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "nalorakk"))
         return false;
@@ -129,7 +129,7 @@ bool JanalaiSpreadForFlameBreathTrigger::IsActiveInEncounter()
     return !IsJanalaiBombing(janalai);
 }
 
-bool JanalaiBossSummoningFireBombsTrigger::IsActiveInEncounter()
+bool JanalaiIsFireBombingTrigger::IsActiveInEncounter()
 {
     return IsJanalaiBombing(AI_VALUE2(Unit*, "find target", "jan'alai"));
 }
@@ -172,7 +172,7 @@ bool HexLordMalacrassShouldPrioritizeAddsTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hex lord malacrass");
 }
 
-bool HexLordMalacrassBossIsChannelingWhirlwindTrigger::IsActiveInEncounter()
+bool HexLordMalacrassChannelingWhirlwindTrigger::IsActiveInEncounter()
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
     if (!malacrass || malacrass->GetVictim() == bot)
@@ -181,7 +181,7 @@ bool HexLordMalacrassBossIsChannelingWhirlwindTrigger::IsActiveInEncounter()
     return malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND));
 }
 
-bool HexLordMalacrassBossPlacedFreezingTrapTrigger::IsActiveInEncounter()
+bool HexLordMalacrassFreezingTrapPlacedTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
         return false;
@@ -204,7 +204,7 @@ bool ZuljinShouldBeTankedTrigger::IsActiveInEncounter()
         !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
 
-bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
+bool ZuljinChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND)))
@@ -213,7 +213,19 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
     return !PlayerbotAI::IsTank(bot) || zuljin->GetVictim() != bot;
 }
 
-bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActiveInEncounter()
+bool ZuljinCreepingParalysisInBearFormTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    if (!zuljin || !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_BEAR)))
+        return false;
+
+    return GetZuljinCreepingParalysisDispelTarget(bot);
+}
+
+bool ZuljinSummoningCyclonesInEagleFormTrigger::IsActiveInEncounter()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
     return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE));
