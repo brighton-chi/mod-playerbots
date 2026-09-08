@@ -163,8 +163,8 @@ bool NalorakkTanksPositionBossAction::Execute(Event event)
             return false;
     }
 
-    // Both always move to the position but should back to it only when holding Nalorakk, so the
-    // determination for direction of movement is left to GetStepToPosition().
+    // Both always move to the position but should back to it only when holding Nalorakk, so
+    // whether movement is forwards or backwards is determined by GetStepToPosition().
     constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
