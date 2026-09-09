@@ -19,9 +19,6 @@ using namespace EncounterHelpers;
 // cleared that relates to him, but it is something to keep in mind going forward.
 bool KarazhanNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != KARA_MAP_ID)
-        return false;
-
     return !IsEncounterInProgress(bot, KARA_MAP_ID);
 }
 

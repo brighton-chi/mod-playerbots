@@ -20,9 +20,6 @@ using namespace EncounterHelpers;
 // NEED TO ADJUST FOR ILLIDARI COUNCIL
 bool BlackTempleNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != BLACK_TEMPLE_MAP_ID)
-        return false;
-
     return !IsEncounterInProgress(bot, BLACK_TEMPLE_MAP_ID);
 }
 
