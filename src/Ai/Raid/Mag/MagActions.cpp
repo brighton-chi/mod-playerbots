@@ -348,6 +348,32 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     return true;
 }
 
+bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
+    CubeInfo const& cubeInfo, GameObject* cube)
+{
+    constexpr float interactDistance = 1.0f;
+    float const cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
+
+    if (cubeDist < interactDistance + 1.0f)
+    {
+        uint32 const minDelayMs = 200;
+        uint32 const maxDelayMs = 1500;
+        uint32 delay = urand(minDelayMs, maxDelayMs);
+        botAI->AddTimedEvent(
+            [this, cube]
+            {
+                bot->StopMoving();
+                cube->Use(bot);
+            },
+            delay);
+        botAI->SetNextCheckDelay(delay + 50);
+        return true;
+    }
+
+    bot->CastStop();
+    return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
+}
+
 bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeInfo)
 {
     auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
@@ -405,32 +431,6 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
     }
 
     return foundSafe;
-}
-
-bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
-    CubeInfo const& cubeInfo, GameObject* cube)
-{
-    constexpr float interactDistance = 1.0f;
-    float const cubeDist = bot->GetDistance2d(cubeInfo.x, cubeInfo.y);
-
-    if (cubeDist < interactDistance + 1.0f)
-    {
-        uint32 const minDelayMs = 200;
-        uint32 const maxDelayMs = 1500;
-        uint32 delay = urand(minDelayMs, maxDelayMs);
-        botAI->AddTimedEvent(
-            [this, cube]
-            {
-                bot->StopMoving();
-                cube->Use(bot);
-            },
-            delay);
-        botAI->SetNextCheckDelay(delay + 50);
-        return true;
-    }
-
-    bot->CastStop();
-    return MoveTo(cube, interactDistance, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
@@ -515,18 +515,17 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
         updated = true;
     }
 
-    updated |= NeedsCubeReassignment(instanceId) && AssignCubeClickers();
+    updated |= NeedsCubeReassignment(instanceId) && AssignCubeClickers(instanceId);
 
     return updated;
 }
 
-bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
+bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers(uint32 instanceId)
 {
-    uint32 const instanceId = bot->GetInstanceId();
     std::vector<CubeInfo> cubes = GetAllCubeInfosByDbGuids(bot->GetMap(), MANTICRON_CUBE_DB_GUIDS);
-
     auto& assignment = botToCubeAssignments[instanceId];
     Group* group = bot->GetGroup();
+
     if (!group || cubes.empty())
     {
         assignment.clear();
@@ -561,8 +560,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
         Player* candidate = nullptr;
 
         // Pass 1: ranged DPS bots, excluding warlocks
-        for (GroupReference* ref = group->GetFirstMember();
-             ref && !candidate; ref = ref->next())
+        for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
         {
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member->getClass() == CLASS_WARLOCK ||

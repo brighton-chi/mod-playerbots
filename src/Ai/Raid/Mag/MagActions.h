@@ -97,8 +97,8 @@ public:
 private:
     MagHelpers::CubeInfo const* GetAssignedCube();
     bool HandleCubeRelease(Unit* magtheridon);
-    bool HandleWaitingPhase(MagHelpers::CubeInfo const& cubeInfo);
     bool HandleCubeInteraction(MagHelpers::CubeInfo const& cubeInfo, GameObject* cube);
+    bool HandleWaitingPhase(MagHelpers::CubeInfo const& cubeInfo);
     bool FindSafePositionNearCube(
         MagHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
 };
@@ -111,7 +111,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool AssignCubeClickers();
+    bool AssignCubeClickers(uint32 instanceId);
     bool NeedsCubeReassignment(uint32 instanceId);
 };
 
