@@ -49,7 +49,7 @@ enum class MagNpcs : uint32
     NPC_BURNING_ABYSSAL = 17454,
 };
 
-enum class MagObjs : uint32
+enum class MagObjects : uint32
 {
     GO_BLAZE            = 181832,
 };
@@ -60,6 +60,7 @@ struct CubeInfo
     float x, y, z;
 };
 
+// Magtheridon's CombatReach is 12 yards
 inline constexpr uint32 MAG_MAP_ID                   = 544;
 inline constexpr uint32 SOUTH_CHANNELER_DB_GUID      = 90978;
 inline constexpr uint32 WEST_CHANNELER_DB_GUID       = 90979;

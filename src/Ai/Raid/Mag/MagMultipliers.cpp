@@ -6,34 +6,30 @@
 
 #include "MagMultipliers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
-#include "DruidBearActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
-#include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MagActions.h"
 #include "MagHelpers.h"
 #include "MageActions.h"
 #include "MovementActions.h"
-#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
-#include "WarriorActions.h"
 #include "WipeAction.h"
 
 using namespace MagHelpers;
 using namespace EncounterHelpers;
 
-// When a cube clicker is in the handling phase (waiting near cube or moving
-// to use), suppress movement actions that would pull them away from the cube
-float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
+// When a cube clicker is in the handling phase (waiting near cube or moving to use), suppress
+// movement actions that would pull them away from the cube.
+float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<FollowAction*>(action) &&
-        !dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action))
     {
         return 1.0;
@@ -52,8 +48,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     return getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS ? 0.0f : 1.0f;
 }
 
-// Wait for 6 seconds after Magtheridon becomes attackable before engaging
-float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
+// Wait for 6 seconds after Magtheridon becomes attackable before engaging.
+float MagtheridonWaitToAttackMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<CastSpellAction*>(action))
@@ -79,7 +75,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     return getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs ? 0.0f : 1.0f;
 }
 
-float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
+float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -105,16 +101,15 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (isAvoidAoe && magtheridon->GetVictim() != bot)
         return 1.0f;
 
-    if (isReachTargetSpell && !PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
+    // Block the main tank from charging the assist tanks' Channelers when moving to the waiting
+    // position.
+    if (isReachTargetSpell && PlayerbotAI::IsMainTank(bot))
+        return IsMagtheridonActive(magtheridon) ? 1.0f : 0.0f;
 
-    if (GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID))
-        return 0.0f;
-
-    return GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID) ? 0.0f : 1.0f;
+    return 0.0f;
 }
 
-float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
+float MagtheridonDebrisDangerMultiplier::GetValueInEncounter(Action* action)
 {
     if (dynamic_cast<WipeAction*>(action) ||
         dynamic_cast<MagtheridonMoveOutOfDebrisAction*>(action))

@@ -7,38 +7,65 @@
 #ifndef PLAYERBOTS_MAGMULTIPLIERS_H
 #define PLAYERBOTS_MAGMULTIPLIERS_H
 
+#include "EncounterHelpers.h"
+#include "MagHelpers.h"
 #include "Multiplier.h"
+#include <string>
 
-class MagtheridonUseManticronCubeMultiplier : public Multiplier
+class MagtheridonEncounterMultiplier : public Multiplier
+{
+public:
+    MagtheridonEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
+        : Multiplier(botAI, name) {}
+
+    float GetValue(Action* action) final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, MagHelpers::MAG_MAP_ID)
+            ? GetValueInEncounter(action) : 1.0f;
+    }
+
+protected:
+    virtual float GetValueInEncounter(Action* action) = 0;
+};
+
+class MagtheridonUseManticronCubeMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
     MagtheridonUseManticronCubeMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "magtheridon use manticron cube multiplier") {}
-    float GetValue(Action* action) override;
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon use manticron cube multiplier") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class MagtheridonWaitToAttackMultiplier : public Multiplier
+class MagtheridonWaitToAttackMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
     MagtheridonWaitToAttackMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "magtheridon wait to attack multiplier") {}
-    float GetValue(Action* action) override;
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon wait to attack multiplier") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class MagtheridonControlTankActionsMultiplier : public Multiplier
+class MagtheridonControlTankActionsMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
     MagtheridonControlTankActionsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "magtheridon control tank actions multiplier") {}
-    float GetValue(Action* action) override;
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon control tank actions multiplier") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class MagtheridonDebrisDangerMultiplier : public Multiplier
+class MagtheridonDebrisDangerMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
     MagtheridonDebrisDangerMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "magtheridon debris danger multiplier") {}
-    float GetValue(Action* action) override;
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon debris danger multiplier") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 #endif

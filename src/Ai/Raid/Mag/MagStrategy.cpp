@@ -12,10 +12,10 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon no encounter in progress", {
         NextAction("magtheridon reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("magtheridon first three channelers engaged by main tank", {
+    triggers.push_back(new TriggerNode("magtheridon main tank should tank channelers", {
         NextAction("magtheridon main tank attack first three channelers", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("magtheridon last two channelers engaged by assist tanks", {
+    triggers.push_back(new TriggerNode("magtheridon assist tanks should tank channelers", {
         NextAction("magtheridon assist tanks attack last two channelers", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers", {
@@ -27,10 +27,10 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon burning abyssal spawned", {
         NextAction("magtheridon warlock cc burning abyssal", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("magtheridon boss engaged by main tank", {
+    triggers.push_back(new TriggerNode("magtheridon should be tanked", {
         NextAction("magtheridon main tank position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("magtheridon boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("magtheridon should spread ranged", {
         NextAction("magtheridon spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon standing in debris", {

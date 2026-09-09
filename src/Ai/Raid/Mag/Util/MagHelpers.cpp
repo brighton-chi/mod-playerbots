@@ -114,7 +114,7 @@ std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI)
     for (auto const& goGuid : gameObjects)
     {
         GameObject* go = botAI->GetGameObject(goGuid);
-        if (!go || !go->isSpawned() || go->GetEntry() != Id(MagObjs::GO_BLAZE))
+        if (!go || !go->isSpawned() || go->GetEntry() != Id(MagObjects::GO_BLAZE))
             continue;
 
         blazes.push_back(go);
