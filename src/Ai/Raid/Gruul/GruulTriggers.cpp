@@ -16,9 +16,6 @@ using namespace EncounterHelpers;
 
 bool GruulsLairNoEncounterInProgressTrigger::IsActive()
 {
-    if (bot->GetMapId() != GRUUL_MAP_ID)
-        return false;
-
     return !IsEncounterInProgress(bot, GRUUL_MAP_ID);
 }
 
