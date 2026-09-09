@@ -14,6 +14,7 @@ constexpr uint32 SPELL_RETALIATION = 20230;
 constexpr uint32 SPELL_DIVINE_SHIELD = 642;
 constexpr uint32 SPELL_ICE_BLOCK = 45438;
 constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
+constexpr uint32 SPELL_VIGILANCE = 50720;
 constexpr uint32 SPELL_SHATTERING_THROW = 64382;
 }
 
@@ -75,89 +76,34 @@ Unit* CastVigilanceAction::GetTarget()
 {
     Group* group = bot->GetGroup();
     if (!group)
-    {
         return nullptr;
-    }
 
-    Player* currentVigilanceTarget = nullptr;
-    Player* mainTank = nullptr;
-    Player* assistTank1 = nullptr;
-    Player* assistTank2 = nullptr;
     Player* highestGearScorePlayer = nullptr;
     uint32 highestGearScore = 0;
 
-    // Iterate once through the group to gather all necessary information
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        // Check if member has Vigilance applied by the bot
-        if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
-        {
-            currentVigilanceTarget = member;
-        }
+        // Exit if any member has Vigilance, but...
+        if (member->HasAura(SPELL_VIGILANCE, bot->GetGUID()))
+            return nullptr;
 
-        // Identify Main Tank
-        if (!mainTank && botAI->IsMainTank(member))
+        // A valid Vigilance target for the action must be a dps.
+        if (PlayerbotAI::IsDps(member))
         {
-            mainTank = member;
-        }
-
-        // Identify Assist Tanks
-        if (assistTank1 == nullptr && botAI->IsAssistTankOfIndex(member, 0))
-        {
-            assistTank1 = member;
-        }
-        else if (assistTank2 == nullptr && botAI->IsAssistTankOfIndex(member, 1))
-        {
-            assistTank2 = member;
-        }
-
-        // Determine Highest Gear Score
-        uint32 gearScore = botAI->GetEquipGearScore(member/*, false, false*/);
-        if (gearScore > highestGearScore)
-        {
-            highestGearScore = gearScore;
-            highestGearScorePlayer = member;
+            uint32 gearScore = botAI->GetEquipGearScore(member);
+            if (gearScore > highestGearScore)
+            {
+                highestGearScore = gearScore;
+                highestGearScorePlayer = member;
+            }
         }
     }
 
-    // Determine the highest-priority target
-    Player* highestPriorityTarget = mainTank ? mainTank :
-                                      (assistTank1 ? assistTank1 :
-                                      (assistTank2 ? assistTank2 : highestGearScorePlayer));
-
-    // If no valid target, return nullptr
-    if (!highestPriorityTarget)
-    {
-        return nullptr;
-    }
-
-    // If the current target is already the highest-priority target, do nothing
-    if (currentVigilanceTarget == highestPriorityTarget)
-    {
-        return nullptr;
-    }
-
-    // Assign the new target
-    Unit* targetUnit = highestPriorityTarget->ToUnit();
-    if (targetUnit)
-    {
-        return targetUnit;
-    }
-
-    return nullptr;
-}
-
-bool CastVigilanceAction::Execute(Event /*event*/)
-{
-    Unit* target = GetTarget();
-    if (!target || target == bot)
-        return false;
-
-    return botAI->CastSpell("vigilance", target);
+    return highestGearScorePlayer;
 }
 
 bool CastRetaliationAction::isUseful()

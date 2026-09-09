@@ -3427,7 +3427,6 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     if (itemTarget == nullptr)
     {
         itemTarget = aiObjectContext->GetValue<Item*>("item for spell", spellid)->Get();
-        ;
     }
     spell->m_targets.SetItemTarget(itemTarget);
     SpellCastResult result = spell->CheckCast(true);
