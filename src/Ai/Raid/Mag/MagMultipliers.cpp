@@ -46,8 +46,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         return 1.0f;
 
     auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
-    if (timerIt != blastNovaTimer.end())
-        return 0.0f;
+    if (timerIt == blastNovaTimer.end())
+        return 1.0f;
 
     return getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS ? 0.0f : 1.0f;
 }

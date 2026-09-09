@@ -344,7 +344,9 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
         return false;
     }
 
-    uint32 delay = urand(200, 3000);
+    uint32 const minDelayMs = 200;
+    uint32 const maxDelayMs = 2000;
+    uint32 delay = urand(minDelayMs, maxDelayMs);
     botAI->AddTimedEvent(
         [this]
         {
@@ -422,7 +424,9 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(
 
     if (cubeDist < interactDistance + 1.0f)
     {
-        uint32 delay = urand(200, 1500);
+        uint32 const minDelayMs = 200;
+        uint32 const maxDelayMs = 1500;
+        uint32 delay = urand(minDelayMs, maxDelayMs);
         botAI->AddTimedEvent(
             [this, cube]
             {
@@ -495,43 +499,32 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 
     uint32 const instanceId = magtheridon->GetInstanceId();
     uint32 const now = getMSTime();
 
     bool const isCasting = IsBlastNovaCasting(magtheridon);
-    if (isCasting && !lastBlastNovaState[instanceId])
+    bool& lastState = lastBlastNovaState.try_emplace(instanceId, false).first->second;
+    if (isCasting && !lastState)
         blastNovaTimer[instanceId] = now;
 
-    lastBlastNovaState[instanceId] = isCasting;
+    lastState = isCasting;
 
     bool updated = false;
+    updated |= blastNovaTimer.try_emplace(instanceId, now).second;
+    updated |= dpsWaitTimer.try_emplace(instanceId, now).second;
 
-    if (IsMagtheridonActive(magtheridon))
+    // Ceiling collapse at 30% HP delays scheduled abilities such as Blast Nova by 18s
+    if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied.contains(instanceId))
     {
-        updated |= blastNovaTimer.try_emplace(instanceId, now).second;
-        updated |= dpsWaitTimer.try_emplace(instanceId, now).second;
-
-        // Ceiling collapse at 30% HP delays scheduled abilities such as Blast Nova by 18s
-        if (magtheridon->GetHealthPct() < 30.0f && !ceilingCollapseApplied.contains(instanceId))
-        {
-            blastNovaTimer[instanceId] += 18 * IN_MILLISECONDS;
-            ceilingCollapseApplied.insert(instanceId);
-            updated = true;
-        }
-
-        updated |= NeedsCubeReassignment(instanceId) && AssignCubeClickers();
+        blastNovaTimer[instanceId] += 18 * IN_MILLISECONDS;
+        ceilingCollapseApplied.insert(instanceId);
+        updated = true;
     }
-    else
-    {
-        updated |= blastNovaTimer.erase(instanceId) > 0;
-        updated |= dpsWaitTimer.erase(instanceId) > 0;
-        updated |= botToCubeAssignments.erase(instanceId) > 0;
-        updated |= ceilingCollapseApplied.erase(instanceId) > 0;
-        updated |= lastBlastNovaState.erase(instanceId) > 0;
-    }
+
+    updated |= NeedsCubeReassignment(instanceId) && AssignCubeClickers();
 
     return updated;
 }
@@ -549,7 +542,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
         return true;
     }
 
-    // Prune dead or absent players from the existing assignment
+    // Prune dead or absent players from the existing assignment.
     for (auto it = assignment.begin(); it != assignment.end(); )
     {
         Player* player = ObjectAccessor::FindPlayer(it->first);
@@ -559,7 +552,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
             ++it;
     }
 
-    // Fill unassigned cubes
+    // Fill unassigned cubes.
     for (CubeInfo const& cube : cubes)
     {
         bool alreadyAssigned = false;
@@ -576,13 +569,13 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
 
         Player* candidate = nullptr;
 
-        // Pass 1: ranged DPS excluding warlocks
+        // Pass 1: ranged DPS bots, excluding warlocks
         for (GroupReference* ref = group->GetFirstMember();
              ref && !candidate; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !PlayerbotAI::IsRangedDps(member) ||
-                !GET_PLAYERBOT_AI(member) || member->getClass() == CLASS_WARLOCK)
+            if (!member || !member->IsAlive() || member->getClass() == CLASS_WARLOCK ||
+                !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRangedDps(member))
             {
                 continue;
             }
@@ -600,8 +593,8 @@ bool MagtheridonManageTimersAndAssignmentsAction::AssignCubeClickers()
                  ref && !candidate; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || PlayerbotAI::IsTank(member) ||
-                    !GET_PLAYERBOT_AI(member))
+                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                    PlayerbotAI::IsTank(member))
                 {
                     continue;
                 }
