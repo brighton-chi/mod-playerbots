@@ -10,37 +10,37 @@
 void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("magtheridon no encounter in progress", {
-        NextAction("magtheridon reset encounter states", ACTION_EMERGENCY + 12) }));
+        NextAction("magtheridon reset encounter states", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("magtheridon first three channelers engaged by main tank", {
-        NextAction("magtheridon main tank attack first three channelers", ACTION_RAID + 1) }));
+        NextAction("magtheridon main tank attack first three channelers", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("magtheridon nw channeler engaged by first assist tank", {
-        NextAction("magtheridon assist tanks attack last two channelers", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("magtheridon last two channelers engaged by assist tanks", {
+        NextAction("magtheridon assist tanks attack last two channelers", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers", {
-        NextAction("magtheridon misdirect hellfire channelers to main tank", ACTION_RAID + 2) }));
+        NextAction("magtheridon misdirect hellfire channelers to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon determining kill order", {
-        NextAction("magtheridon assign dps priority", ACTION_RAID + 1) }));
+        NextAction("magtheridon assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("magtheridon burning abyssal spawned", {
-        NextAction("magtheridon warlock cc burning abyssal", ACTION_RAID + 3) }));
+        NextAction("magtheridon warlock cc burning abyssal", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("magtheridon boss engaged by main tank", {
-        NextAction("magtheridon main tank position boss", ACTION_RAID + 2) }));
+        NextAction("magtheridon main tank position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon boss engaged by ranged", {
-        NextAction("magtheridon spread ranged", ACTION_RAID + 2) }));
+        NextAction("magtheridon spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon standing in debris", {
-        NextAction("magtheridon move out of debris", ACTION_EMERGENCY + 10) }));
+        NextAction("magtheridon move out of debris", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("magtheridon incoming blast nova", {
-        NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 9) }));
+        NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("magtheridon need to manage timers and assignments", {
-        NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("magtheridon should manage timers and assignments", {
+        NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

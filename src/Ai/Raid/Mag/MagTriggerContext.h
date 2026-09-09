@@ -25,7 +25,7 @@ public:
             &RaidMagtheridonTriggerContext::magtheridon_last_two_channelers_engaged_by_assist_tanks;
 
         creators["magtheridon pulling west and east channelers"] =
-            &RaidMagtheridonTriggerContext::magtheridon_pull_west_and_east_channelers;
+            &RaidMagtheridonTriggerContext::magtheridon_pull_west_and_EAST_CHANNELER_DB_GUIDs;
 
         creators["magtheridon determining kill order"] =
             &RaidMagtheridonTriggerContext::magtheridon_determining_kill_order;
@@ -45,8 +45,8 @@ public:
         creators["magtheridon incoming blast nova"] =
             &RaidMagtheridonTriggerContext::magtheridon_incoming_blast_nova;
 
-        creators["magtheridon need to manage timers and assignments"] =
-            &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
+        creators["magtheridon should manage timers and assignments"] =
+            &RaidMagtheridonTriggerContext::magtheridon_should_manage_timers_and_assignments;
     }
 
 private:
@@ -59,7 +59,7 @@ private:
     static Trigger* magtheridon_last_two_channelers_engaged_by_assist_tanks(PlayerbotAI* botAI) {
         return new MagtheridonLastTwoChannelersEngagedByAssistTanksTrigger(botAI);
     }
-    static Trigger* magtheridon_pull_west_and_east_channelers(PlayerbotAI* botAI) {
+    static Trigger* magtheridon_pull_west_and_EAST_CHANNELER_DB_GUIDs(PlayerbotAI* botAI) {
         return new MagtheridonPullingWestAndEastChannelersTrigger(botAI);
     }
     static Trigger* magtheridon_determining_kill_order(PlayerbotAI* botAI) {
@@ -80,8 +80,8 @@ private:
     static Trigger* magtheridon_incoming_blast_nova(PlayerbotAI* botAI) {
         return new MagtheridonIncomingBlastNovaTrigger(botAI);
     }
-    static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {
-        return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI);
+    static Trigger* magtheridon_should_manage_timers_and_assignments(PlayerbotAI* botAI) {
+        return new MagtheridonShouldManageTimersAndAssignmentsTrigger(botAI);
     }
 };
 

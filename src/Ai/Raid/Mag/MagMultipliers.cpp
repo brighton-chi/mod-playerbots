@@ -108,10 +108,10 @@ float MagtheridonControlTankActionsMultiplier::GetValue(Action* action)
     if (isReachTargetSpell && !PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    if (GetChanneler(bot, NORTHWEST_CHANNELER))
+    if (GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID))
         return 0.0f;
 
-    return GetChanneler(bot, NORTHEAST_CHANNELER) ? 0.0f : 1.0f;
+    return GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID) ? 0.0f : 1.0f;
 }
 
 float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)

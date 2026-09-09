@@ -35,13 +35,13 @@ bool MagtheridonLastTwoChannelersEngagedByAssistTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    if (GetChanneler(bot, NORTHWEST_CHANNELER) &&
+    if (GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID) &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
         return true;
     }
 
-    return GetChanneler(bot, NORTHEAST_CHANNELER) &&
+    return GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID) &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
@@ -53,7 +53,7 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return GetChanneler(bot, WEST_CHANNELER) || GetChanneler(bot, EAST_CHANNELER);
+    return GetChanneler(bot, WEST_CHANNELER_DB_GUID) || GetChanneler(bot, EAST_CHANNELER_DB_GUID);
 }
 
 bool MagtheridonDeterminingKillOrderTrigger::IsActive()
@@ -61,13 +61,13 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    if (!GetChanneler(bot, NORTHWEST_CHANNELER) &&
+    if (!GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID) &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
         return true;
     }
 
-    if (!GetChanneler(bot, NORTHEAST_CHANNELER) &&
+    if (!GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID) &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
         return true;
@@ -126,7 +126,7 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
     return magtheridon && IsMagtheridonActive(magtheridon) && IsCubeClicker(bot);
 }
 
-bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
+bool MagtheridonShouldManageTimersAndAssignmentsTrigger::IsActive()
 {
     return IsMechanicTrackerBot(bot, MAG_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "magtheridon");
