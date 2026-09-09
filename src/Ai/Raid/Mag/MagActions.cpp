@@ -386,7 +386,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(CubeInfo const& cubeI
 
     constexpr float safeWaitDistance = 10.0f;
     if (fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f)
-        return true;
+        return false;
 
     Position safePos;
     if (!FindSafePositionNearCube(cubeInfo, safeWaitDistance, safePos))
