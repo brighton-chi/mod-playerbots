@@ -60,13 +60,13 @@ struct CubeInfo
     float x, y, z;
 };
 
-inline constexpr uint32 MAG_MAP_ID                = 544;
-inline constexpr uint32 SOUTH_CHANNELER           = 90978;
-inline constexpr uint32 WEST_CHANNELER            = 90979;
-inline constexpr uint32 NORTHWEST_CHANNELER       = 90980;
-inline constexpr uint32 EAST_CHANNELER            = 90982;
-inline constexpr uint32 NORTHEAST_CHANNELER       = 90981;
-inline constexpr uint8 BLAST_NOVA_INTERIM_SECONDS = 45;
+inline constexpr uint32 MAG_MAP_ID                   = 544;
+inline constexpr uint32 SOUTH_CHANNELER_DB_GUID      = 90978;
+inline constexpr uint32 WEST_CHANNELER_DB_GUID       = 90979;
+inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID  = 90980;
+inline constexpr uint32 EAST_CHANNELER_DB_GUID       = 90982;
+inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
+inline constexpr uint8 BLAST_NOVA_INTERIM_SECONDS    = 45;
 inline constexpr uint32 BLAST_NOVA_INTERIM_MS = BLAST_NOVA_INTERIM_SECONDS * IN_MILLISECONDS;
 
 inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -0.304f, 0.657f };

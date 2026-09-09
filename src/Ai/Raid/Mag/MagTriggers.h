@@ -91,11 +91,11 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonNeedToManageTimersAndAssignmentsTrigger : public Trigger
+class MagtheridonShouldManageTimersAndAssignmentsTrigger : public Trigger
 {
 public:
-    MagtheridonNeedToManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "magtheridon need to manage timers and assignments") {}
+    MagtheridonShouldManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "magtheridon should manage timers and assignments") {}
     bool IsActive() override;
 };
 

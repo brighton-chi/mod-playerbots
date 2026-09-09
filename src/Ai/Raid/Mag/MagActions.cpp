@@ -39,11 +39,11 @@ bool MagtheridonResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
-    Creature* channeler = GetChanneler(bot, SOUTH_CHANNELER);
+    Creature* channeler = GetChanneler(bot, SOUTH_CHANNELER_DB_GUID);
     if (!channeler)
-        channeler = GetChanneler(bot, WEST_CHANNELER);
+        channeler = GetChanneler(bot, WEST_CHANNELER_DB_GUID);
     if (!channeler)
-        channeler = GetChanneler(bot, EAST_CHANNELER);
+        channeler = GetChanneler(bot, EAST_CHANNELER_DB_GUID);
 
     if (channeler)
         return AI_VALUE(Unit*, "current target") != channeler && Attack(channeler);
@@ -68,12 +68,12 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
     Position position;
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
-        channeler = GetChanneler(bot, NORTHWEST_CHANNELER);
+        channeler = GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID);
         position = NW_CHANNELER_TANK_POSITION;
     }
     else // PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
-        channeler = GetChanneler(bot, NORTHEAST_CHANNELER);
+        channeler = GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID);
         position = NE_CHANNELER_TANK_POSITION;
     }
 
@@ -133,9 +133,9 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
 
     Creature* channeler = nullptr;
     if (hunterIndex == 0)
-        channeler = GetChanneler(bot, WEST_CHANNELER);
+        channeler = GetChanneler(bot, WEST_CHANNELER_DB_GUID);
     else if (hunterIndex == 1)
-        channeler = GetChanneler(bot, EAST_CHANNELER);
+        channeler = GetChanneler(bot, EAST_CHANNELER_DB_GUID);
 
     if (!channeler)
         return false;
@@ -153,15 +153,15 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
 bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Creature* channeler = nullptr;
-    if (Creature* channelerS = GetChanneler(bot, SOUTH_CHANNELER))
+    if (Creature* channelerS = GetChanneler(bot, SOUTH_CHANNELER_DB_GUID))
         channeler = channelerS;
-    else if (Creature* channelerW = GetChanneler(bot, WEST_CHANNELER))
+    else if (Creature* channelerW = GetChanneler(bot, WEST_CHANNELER_DB_GUID))
         channeler = channelerW;
-    else if (Creature* channelerE = GetChanneler(bot, EAST_CHANNELER))
+    else if (Creature* channelerE = GetChanneler(bot, EAST_CHANNELER_DB_GUID))
         channeler = channelerE;
-    else if (Creature* channelerNw = GetChanneler(bot, NORTHWEST_CHANNELER))
+    else if (Creature* channelerNw = GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID))
         channeler = channelerNw;
-    else if (Creature* channelerNe = GetChanneler(bot, NORTHEAST_CHANNELER))
+    else if (Creature* channelerNe = GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID))
         channeler = channelerNe;
 
     if (!channeler)
