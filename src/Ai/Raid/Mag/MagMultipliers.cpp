@@ -24,8 +24,11 @@ using namespace EncounterHelpers;
 // movement actions that would pull them away from the cube.
 float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+    {
         return 1.0f;
+    }
 
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&
@@ -35,7 +38,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
         return 1.0;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
     if (!IsCubeClicker(bot))
@@ -111,21 +115,24 @@ float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* actio
 
 float MagtheridonDebrisDangerMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<WipeAction*>(action) ||
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<MagtheridonUseManticronCubeAction*>(action) ||
         dynamic_cast<MagtheridonMoveOutOfDebrisAction*>(action))
     {
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
     constexpr float debrisSuppressionZone = 15.0f;
-    if (IsPositionInActiveDebris(
-            bot, bot->GetPositionX(), bot->GetPositionY(), debrisSuppressionZone))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return IsPositionInActiveDebris(
+        bot, bot->GetPositionX(), bot->GetPositionY(), debrisSuppressionZone) ? 0.0f : 1.0f;
 }
