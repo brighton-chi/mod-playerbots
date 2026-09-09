@@ -5,7 +5,6 @@
  */
 
 #include "MagActions.h"
-#include "Creature.h"
 #include "EncounterHelpers.h"
 #include "MagHelpers.h"
 #include "ObjectAccessor.h"
@@ -57,9 +56,8 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
     }
 
     return MoveTo(
-        MAG_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED);
+        MAG_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED);
 }
 
 bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*/)
@@ -249,8 +247,9 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != magtheridon)
         return Attack(magtheridon);
 
+    constexpr float waitForHealHealthPct = 50.0f;
     if (magtheridon->GetVictim() != bot || !bot->IsWithinMeleeRange(magtheridon) ||
-        bot->GetHealthPct() < 50.0f)
+        bot->GetHealthPct() < waitForHealHealthPct)
     {
         return false;
     }
@@ -271,27 +270,19 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 }
 
 // Ranged stay away from Magtheridon and other players
-// Magtheridon's CombatReach is 12 yards and BoundingRadius is 4 yards
 bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
         return false;
 
-    if (IsCubeClicker(bot))
+    constexpr float safeDistFromBoss = 20.0f;
+    constexpr uint32 minInterval = 0;
+    if (bot->GetExactDist(magtheridon) < safeDistFromBoss &&
+        FleePosition(magtheridon->GetPosition(), safeDistFromBoss, minInterval))
     {
-        auto timerIt = blastNovaTimer.find(magtheridon->GetInstanceId());
-        if (timerIt != blastNovaTimer.end() &&
-            getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS)
-        {
-            return false;
-        }
+        return true;
     }
-
-    constexpr float safeDistFromBoss = 10.0f;
-    float const currentDistance = bot->GetDistance2d(magtheridon);
-    if (currentDistance < safeDistFromBoss)
-        return MoveAway(magtheridon, safeDistFromBoss - currentDistance);
 
     constexpr float safeDistFromPlayer = 6.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
