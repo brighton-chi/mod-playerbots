@@ -57,22 +57,7 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActiveInEncounter()
 
 bool MagtheridonDeterminingKillOrderTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
-        return false;
-
-    if (!GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID) &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-    {
-        return true;
-    }
-
-    if (!GetChanneler(bot, NORTHEAST_CHANNELER_DB_GUID) &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
-    {
-        return true;
-    }
-
-    return !PlayerbotAI::IsMainTank(bot);
+    return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActiveInEncounter()
