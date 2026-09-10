@@ -166,6 +166,9 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
+    if (bot->getClass() == CLASS_PALADIN)
+        return botAI->CanCastSpell("exorcism", target) && botAI->CastSpell("exorcism", target);
+
     if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
     {
         bot->RemoveOwnedAura(

@@ -69,7 +69,10 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_PRIEST && AI_VALUE2(Unit*, "find target", "apocalypse guard");
+    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "apocalypse guard");
 }
 
 // Kalecgos
