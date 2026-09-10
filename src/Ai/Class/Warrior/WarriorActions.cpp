@@ -72,13 +72,13 @@ bool CastSunderArmorAction::isUseful()
     return !aura || aura->GetStackAmount() < 5 || aura->GetDuration() <= 6000;
 }
 
-Unit* CastVigilanceOnPartyAction::GetTarget()
+Unit* CastVigilanceAction::GetTarget()
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    Player* highestGearScorePlayer = nullptr;
+    Player* vigilanceTarget = nullptr;
     uint32 highestGearScore = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -87,23 +87,30 @@ Unit* CastVigilanceOnPartyAction::GetTarget()
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        // Exit if any member has Vigilance, but...
+        // Same as trigger: early return if the bot's own Vigilance is already applied to a member.
         if (member->HasAura(SPELL_VIGILANCE, bot->GetGUID()))
             return nullptr;
 
-        // A valid Vigilance target for the action must be a dps.
-        if (PlayerbotAI::IsDps(member))
+        // A valid target must not have Vigilance from any source, not just the bot...
+        if (member->HasAura(SPELL_VIGILANCE))
+            continue;
+
+        // And it must be in range and be a dps.
+        if (member->GetMapId() != bot->GetMapId() || !PlayerbotAI::IsDps(member) ||
+            bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
         {
-            uint32 gearScore = botAI->GetEquipGearScore(member);
-            if (gearScore > highestGearScore)
-            {
-                highestGearScore = gearScore;
-                highestGearScorePlayer = member;
-            }
+            continue;
+        }
+
+        uint32 gearScore = botAI->GetEquipGearScore(member);
+        if (gearScore > highestGearScore)
+        {
+            highestGearScore = gearScore;
+            vigilanceTarget = member;
         }
     }
 
-    return highestGearScorePlayer;
+    return vigilanceTarget;
 }
 
 bool CastRetaliationAction::isUseful()
