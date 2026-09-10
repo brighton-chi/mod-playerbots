@@ -231,8 +231,10 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Trash
     multipliers.push_back(new VolatileFiendRestrictApproachMultiplier(botAI));
 
+    // Shared Boss
+    multipliers.push_back(new SunwellControlMisdirectionMultiplier(botAI));
+
     // Kalecgos
-    multipliers.push_back(new KalecgosControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KalecgosWaitToDecurseMultiplier(botAI));
     multipliers.push_back(new KalecgosControlMovementMultiplier(botAI));
     multipliers.push_back(new KalecgosRestrictTauntMultiplier(botAI));
@@ -241,7 +243,6 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosDelayCooldownsForSathrovarrMultiplier(botAI));
 
     // Brutallus
-    multipliers.push_back(new BrutallusControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
     multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
     multipliers.push_back(new BrutallusRestrictTauntMultiplier(botAI));
@@ -259,7 +260,6 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Eredar Twins
     multipliers.push_back(new EredarTwinsDisableAutomaticTargetingMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
@@ -269,7 +269,6 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
-    multipliers.push_back(new MuruControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>

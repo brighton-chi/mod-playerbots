@@ -50,17 +50,19 @@ public:
     float GetValue(Action* action) override;
 };
 
-// Kalecgos
+// Shared Boss
 
-class KalecgosControlMisdirectionMultiplier : public SunwellEncounterMultiplier
+class SunwellControlMisdirectionMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    KalecgosControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "kalecgos control misdirection") {}
+    SunwellControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "sunwell control misdirection") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
+
+// Kalecgos
 
 class KalecgosWaitToDecurseMultiplier : public SunwellEncounterMultiplier
 {
@@ -123,16 +125,6 @@ protected:
 };
 
 // Brutallus
-
-class BrutallusControlMisdirectionMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    BrutallusControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "brutallus control misdirection") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
 
 class BrutallusControlMovementMultiplier : public SunwellEncounterMultiplier
 {
@@ -268,16 +260,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class EredarTwinsControlMisdirectionMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    EredarTwinsControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "eredar twins misdirect bosses to tanks") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class EredarTwinsHoldDpsAtStartMultiplier : public SunwellEncounterMultiplier
 {
 public:
@@ -335,16 +317,6 @@ class MuruDisableDefaultTargetingMultiplier : public SunwellEncounterMultiplier
 public:
     MuruDisableDefaultTargetingMultiplier(PlayerbotAI* botAI)
         : SunwellEncounterMultiplier(botAI, "m'uru disable default targeting") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class MuruControlMisdirectionMultiplier : public SunwellEncounterMultiplier
-{
-public:
-    MuruControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "m'uru control misdirection") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
