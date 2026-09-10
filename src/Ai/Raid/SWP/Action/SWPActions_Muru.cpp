@@ -20,39 +20,6 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-namespace
-{
-
-Unit* SelectNearestByEntry(
-    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates, Position const& origin)
-{
-    Unit* selected = nullptr;
-    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
-        selected = currentTarget;
-
-    for (Unit* candidate : candidates)
-    {
-        if (!candidate || selected == candidate)
-            continue;
-
-        if (!selected)
-        {
-            selected = candidate;
-            continue;
-        }
-
-        if (candidate->GetExactDist2d(origin) + MURU_TARGET_SWITCH_MARGIN <
-            selected->GetExactDist2d(origin))
-        {
-            selected = candidate;
-        }
-    }
-
-    return selected;
-}
-
-} // end anonymous namespace
-
 bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
 {
     Unit* enemy = nullptr;
@@ -235,13 +202,13 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
     bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Position const& origin = MURU_STACK_POSITION;
-    Unit* voidSentinel = SelectNearestByEntry(
+    Unit* voidSentinel = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels, origin);
-    Unit* voidSpawn = SelectNearestByEntry(
+    Unit* voidSpawn = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_VOID_SPAWN), targets.voidSpawns, origin);
-    Unit* furyMage = SelectNearestByEntry(
+    Unit* furyMage = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
-    Unit* berserker = SelectNearestByEntry(
+    Unit* berserker = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
 
     Player* voidSentinelVictim = nullptr;
@@ -668,11 +635,11 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget(Unit* 
     Position const& origin = voidSpawn->GetPosition();
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
 
-    Unit* furyMage = SelectNearestByEntry(
+    Unit* furyMage = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
-    Unit* berserker = SelectNearestByEntry(
+    Unit* berserker = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
-    Unit* voidSentinel = SelectNearestByEntry(
+    Unit* voidSentinel = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels, origin);
 
     Unit* validMuru = targets.muru;

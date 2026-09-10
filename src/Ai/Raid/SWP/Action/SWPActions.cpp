@@ -21,7 +21,7 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
+bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
@@ -95,13 +95,13 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
 }
 
 // Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
-bool SunwellPlateauRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
+bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
-bool SunwellPlateauRemoveAuraAction::Execute(Event /*event*/)
+bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 {
     // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
     // Shadows and HPal bubbles are excluded.
@@ -175,7 +175,7 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
 }
 
-bool SunwellPlateauMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)

@@ -21,7 +21,7 @@ using namespace EncounterHelpers;
 
 // General
 
-bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
+bool SunwellNoEncounterInProgressTrigger::IsActive()
 {
     // InstanceScript reports IN_PROGRESS for every SWP boss from JustEngagedWith until kill/evade,
     // except for Kil'jaeden, which does not commence until the first Hand dies.
@@ -38,7 +38,7 @@ bool SunwellPlateauNoEncounterInProgressTrigger::IsActive()
     return AI_VALUE(GuidVector, "kiljaeden hands").empty();
 }
 
-bool SunwellPlateauBotHasAuraToRemoveTrigger::IsActive()
+bool SunwellBotHasAuraToRemoveTrigger::IsActive()
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
     if (spellId && bot->getClass() != CLASS_ROGUE && !PlayerbotAI::IsHeal(bot) &&

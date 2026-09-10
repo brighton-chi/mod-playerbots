@@ -116,6 +116,9 @@ bool PeekMuruDarknessEarlyState(
     Player* bot, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
+Unit* SelectNearestMuruTargetByEntry(
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates,
+    Position const& origin);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);

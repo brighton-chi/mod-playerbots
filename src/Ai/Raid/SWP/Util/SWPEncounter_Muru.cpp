@@ -288,6 +288,34 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     ResolveLivingUnits(botAI, guids.berserkers, targets.berserkers);
 }
 
+Unit* SelectNearestMuruTargetByEntry(
+    Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates, Position const& origin)
+{
+    Unit* selected = nullptr;
+    if (currentTarget && currentTarget->IsAlive() && currentTarget->GetEntry() == entry)
+        selected = currentTarget;
+
+    for (Unit* candidate : candidates)
+    {
+        if (!candidate || selected == candidate)
+            continue;
+
+        if (!selected)
+        {
+            selected = candidate;
+            continue;
+        }
+
+        if (candidate->GetExactDist2d(origin) + MURU_TARGET_SWITCH_MARGIN <
+            selected->GetExactDist2d(origin))
+        {
+            selected = candidate;
+        }
+    }
+
+    return selected;
+}
+
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI)
 {
     float const reach = GetBerserkerStunReach(botAI->GetBot());
