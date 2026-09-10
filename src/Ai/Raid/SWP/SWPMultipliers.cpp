@@ -620,7 +620,7 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
     if (conflagTarget == bot)
         return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
 
-    if (IsAlythessTank(bot)) // This bot needs to keep doing its job.
+    if (IsAlythessTank(bot))
         return 1.0f;
 
     // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
