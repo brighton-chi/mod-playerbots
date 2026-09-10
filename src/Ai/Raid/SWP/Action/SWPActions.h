@@ -28,14 +28,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class SunwellRemoveDebuffWithImmunityAction : public Action
-{
-public:
-    SunwellRemoveDebuffWithImmunityAction(PlayerbotAI* botAI, std::string const name)
-        : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class SunwellRemoveAuraAction : public Action
 {
 public:
@@ -59,6 +51,16 @@ class ApocalypseGuardAttackWithHolyMagicAction : public Action
 public:
     ApocalypseGuardAttackWithHolyMagicAction(PlayerbotAI* botAI)
         : Action(botAI, "apocalypse guard attack with holy magic") {}
+    bool Execute(Event event) override;
+};
+
+// Shared Bosses
+
+class SunwellRemoveDebuffWithImmunityAction : public Action
+{
+public:
+    SunwellRemoveDebuffWithImmunityAction(PlayerbotAI* botAI, std::string const name)
+        : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

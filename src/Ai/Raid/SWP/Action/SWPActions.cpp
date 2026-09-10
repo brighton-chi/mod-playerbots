@@ -21,6 +21,8 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
+// General
+
 bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
 {
     ObjectGuid const guid = bot->GetGUID();
@@ -94,13 +96,6 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
-bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
-{
-    uint32 const spellId = GetSelfImmunitySpell(bot);
-    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
-}
-
 bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 {
     // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of
@@ -124,6 +119,8 @@ bool SunwellRemoveAuraAction::Execute(Event /*event*/)
     bot->RemoveAura(Id(SwpSpells::SPELL_BURN));
     return true;
 }
+
+// Trash
 
 bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
 {
@@ -176,6 +173,15 @@ bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
     }
 
     return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
+}
+
+// Shared Bosses
+
+// Clear Kalecgos's Arcane Buffet, the Eredar Twins' Flame Sear, and Kil'jaeden's Fire Bloom.
+bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
 bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
