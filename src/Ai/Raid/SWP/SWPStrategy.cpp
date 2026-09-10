@@ -15,11 +15,11 @@
 void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
-    triggers.push_back(new TriggerNode("sunwell plateau no encounter in progress", {
-        NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("sunwell no encounter in progress", {
+        NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("sunwell plateau bot has aura to remove", {
-        NextAction("sunwell plateau remove aura", ACTION_EMERGENCY) }));
+    triggers.push_back(new TriggerNode("sunwell bot has aura to remove", {
+        NextAction("sunwell remove aura", ACTION_EMERGENCY) }));
 
     // Trash
     triggers.push_back(new TriggerNode("volatile fiend self destructs when near", {
@@ -226,7 +226,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new SunwellPlateauNoEncounterDrinkingMultiplier(botAI));
+    multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new VolatileFiendRestrictApproachMultiplier(botAI));

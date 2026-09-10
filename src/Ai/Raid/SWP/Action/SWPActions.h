@@ -20,27 +20,27 @@ class Creature;
 
 // General
 
-class SunwellPlateauResetEncounterStatesAction : public Action
+class SunwellResetEncounterStatesAction : public Action
 {
 public:
-    SunwellPlateauResetEncounterStatesAction(PlayerbotAI* botAI)
-        : Action(botAI, "sunwell plateau reset encounter states") {}
+    SunwellResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "sunwell reset encounter states") {}
     bool Execute(Event event) override;
 };
 
-class SunwellPlateauRemoveDebuffWithImmunityAction : public Action
+class SunwellRemoveDebuffWithImmunityAction : public Action
 {
 public:
-    SunwellPlateauRemoveDebuffWithImmunityAction(PlayerbotAI* botAI, std::string const name)
+    SunwellRemoveDebuffWithImmunityAction(PlayerbotAI* botAI, std::string const name)
         : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
-class SunwellPlateauRemoveAuraAction : public Action
+class SunwellRemoveAuraAction : public Action
 {
 public:
-    SunwellPlateauRemoveAuraAction(PlayerbotAI* botAI)
-        : Action(botAI, "sunwell plateau remove aura") {}
+    SunwellRemoveAuraAction(PlayerbotAI* botAI)
+        : Action(botAI, "sunwell remove aura") {}
     bool Execute(Event event) override;
 };
 
@@ -62,10 +62,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class SunwellPlateauMisdirectBossToMainTankAction : public Action
+class SunwellMisdirectBossToMainTankAction : public Action
 {
 public:
-    SunwellPlateauMisdirectBossToMainTankAction(
+    SunwellMisdirectBossToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
