@@ -39,7 +39,7 @@ bool VigilanceTrigger::IsActive()
             continue;
 
         // The action casts Vigilance on dps, but the trigger fails if any party member has
-        // Vigilance (so the player can have a bot cast Vigilance on any group member).
+        // Vigilance from the bot (so the player can have a bot cast Vigilance on any group member).
         if (member->HasAura(SPELL_VIGILANCE, bot->GetGUID()))
             return false;
     }

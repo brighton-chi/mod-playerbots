@@ -74,7 +74,7 @@ public:
 class VigilanceTrigger : public Trigger
 {
 public:
-    VigilanceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "vigilance") {}
+    VigilanceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "vigilance", 5 * IN_MILLISECONDS) {}
 
     bool IsActive() override;
 };
