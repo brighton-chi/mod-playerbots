@@ -316,6 +316,30 @@ Unit* SelectNearestMuruTargetByEntry(
     return selected;
 }
 
+bool IsMuruAddInVoidSentinelPulse(Unit* add, std::vector<Unit*> const& voidSentinels)
+{
+    if (!add)
+        return false;
+
+    if (add->GetEntry() != Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE) &&
+        add->GetEntry() != Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER) &&
+        add->GetEntry() != Id(SwpNpcs::NPC_VOID_SPAWN))
+    {
+        return false;
+    }
+
+    for (Unit* voidSentinel : voidSentinels)
+    {
+        if (voidSentinel &&
+            add->GetExactDist2d(voidSentinel) < MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI)
 {
     float const reach = GetBerserkerStunReach(botAI->GetBot());

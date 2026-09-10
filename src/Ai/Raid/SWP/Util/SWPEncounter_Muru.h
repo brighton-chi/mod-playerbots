@@ -79,6 +79,9 @@ inline constexpr float MURU_HOLDING_POSITION_RADIUS = 25.0f;
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 // Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
+// Shadow Pulse (46087) is a 10y AoE centered on the Void Sentinel, pulsed every 3s by 46086. Melee
+// end up ~4y from their target, and there's also some variability from the tanking moving adds.
+inline constexpr float MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL = 15.0f;
 
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, and spawn Dark Fiends.
 // The wide safe distance is in anticipation of the Dark Fiend spawn. Search is measured by
@@ -119,6 +122,7 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 Unit* SelectNearestMuruTargetByEntry(
     Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates,
     Position const& origin);
+bool IsMuruAddInVoidSentinelPulse(Unit* add, std::vector<Unit*> const& voidSentinels);
 Unit* FindMuruBerserkerToStun(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);

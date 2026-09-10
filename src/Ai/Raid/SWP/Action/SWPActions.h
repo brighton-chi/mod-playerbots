@@ -437,7 +437,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(Unit* currentTarget);
+    Unit* ResolveMuruDpsTarget(Unit* currentTarget, bool& shouldDropTarget);
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action

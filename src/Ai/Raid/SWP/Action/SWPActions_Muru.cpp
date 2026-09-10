@@ -150,9 +150,20 @@ bool MuruPositionRangedByPhaseAction::TryGetEntropiusInitialRangedPosition(
 bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    Unit* target = ResolveMuruDpsTarget(currentTarget);
+    bool shouldDropTarget = false;
+    Unit* target = ResolveMuruDpsTarget(currentTarget, shouldDropTarget);
     if (!target)
-        return false;
+    {
+        if (!shouldDropTarget || !currentTarget)
+            return false;
+
+        bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        bot->CastStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+        return true;
+    }
 
     if (target->GetEntry() == Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER))
     {
@@ -169,16 +180,10 @@ bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    bool needsAttack = false;
-    if (PlayerbotAI::IsMelee(bot))
-        needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
-    else
-        needsAttack = currentTarget != target;
-
-    return needsAttack && Attack(target);
+    return currentTarget != target && Attack(target);
 }
 
-Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
+Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget, bool& shouldDropTarget)
 {
     bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
@@ -198,15 +203,33 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
     bool const isMuruPhase = IsMuruPhaseActive(muru);
     bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
+    bool const isMelee = PlayerbotAI::IsMelee(bot);
+    Unit* addStickyTarget = currentTarget;
+    if (isMelee && !targets.voidSentinels.empty())
+    {
+        auto const isUnsafe = [&targets](Unit* add)
+        { return IsMuruAddInVoidSentinelPulse(add, targets.voidSentinels); };
+
+        targets.furyMages.erase(
+            std::remove_if(targets.furyMages.begin(), targets.furyMages.end(), isUnsafe),
+            targets.furyMages.end());
+        targets.berserkers.erase(
+            std::remove_if(targets.berserkers.begin(), targets.berserkers.end(), isUnsafe),
+            targets.berserkers.end());
+
+        if (isUnsafe(addStickyTarget))
+            addStickyTarget = nullptr;
+    }
+
     Position const& origin = MURU_STACK_POSITION;
     Unit* voidSentinel = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_VOID_SENTINEL), targets.voidSentinels, origin);
     Unit* voidSpawn = SelectNearestMuruTargetByEntry(
         currentTarget, Id(SwpNpcs::NPC_VOID_SPAWN), targets.voidSpawns, origin);
     Unit* furyMage = SelectNearestMuruTargetByEntry(
-        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
+        addStickyTarget, Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE), targets.furyMages, origin);
     Unit* berserker = SelectNearestMuruTargetByEntry(
-        currentTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
+        addStickyTarget, Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER), targets.berserkers, origin);
 
     Player* voidSentinelVictim = nullptr;
     if (voidSentinel)
@@ -217,7 +240,7 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
 
     // Void Sentinel: Attack only if a tank has aggro or if it is below 10% health.
     bool const isVoidSentinelAllowed =
-        (voidSentinel->GetHealthPct() < 10.0f ||
+        (voidSentinel && voidSentinel->GetHealthPct() < 10.0f ||
          (voidSentinelVictim && PlayerbotAI::IsTank(voidSentinelVictim)));
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
@@ -242,12 +265,15 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
                     return !isMuruPhase && isVoidSentinelAllowed;
                 if (isOtherRanged)
                     return isVoidSentinelAllowed;
+                return false;
 
             case Id(SwpNpcs::NPC_VOID_SPAWN):
                 return isOtherRanged;
 
             case Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
             case Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
+                if (isMelee && IsMuruAddInVoidSentinelPulse(unit, targets.voidSentinels))
+                    return false;
                 if (isShadowPriest)
                     return !isMuruPhase;
                 if (isOtherRanged)
@@ -330,7 +356,12 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
     }
 
     if (!target)
-        target = AI_VALUE(Unit*, "dps target");
+    {
+        if (isMelee)
+            shouldDropTarget = true;
+        else
+            target = AI_VALUE(Unit*, "dps target");
+    }
 
     return target;
 }
