@@ -42,6 +42,9 @@ float SunwellNoEncounterDrinkingMultiplier::GetValueInEncounter(Action* action)
 
 float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
 {
+    if (IsEncounterInProgress(bot, SwpHelpers::SWP_MAP_ID))
+        return 1.0f;
+
     if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
         !dynamic_cast<ReachTargetAction*>(action))
     {
