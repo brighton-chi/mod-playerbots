@@ -72,7 +72,7 @@ bool CastSunderArmorAction::isUseful()
     return !aura || aura->GetStackAmount() < 5 || aura->GetDuration() <= 6000;
 }
 
-Unit* CastVigilanceAction::GetTarget()
+Unit* CastVigilanceOnPartyAction::GetTarget()
 {
     Group* group = bot->GetGroup();
     if (!group)

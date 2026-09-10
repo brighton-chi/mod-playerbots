@@ -127,7 +127,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "vigilance",
             {
-                NextAction("vigilance", ACTION_HIGH + 7)
+                NextAction("vigilance on party", ACTION_HIGH + 7)
             }
         )
     );
