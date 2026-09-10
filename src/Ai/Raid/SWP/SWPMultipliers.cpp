@@ -34,7 +34,7 @@ using namespace EncounterHelpers;
 
 float SunwellPlateauNoEncounterDrinkingMultiplier::GetValue(Action* action)
 {
-    if (IsEncounterInProgress(bot, SWP_MAP_ID))
+    if (!IsEncounterInProgress(bot, SWP_MAP_ID))
         return 1.0f;
 
     return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
