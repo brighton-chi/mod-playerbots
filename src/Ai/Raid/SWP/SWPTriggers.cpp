@@ -61,8 +61,8 @@ bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
     if (!fiend || !fiend->IsAlive())
         return false;
 
-    // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck
-    // due to proximity to the volatile fiends below, in case the player decides to skip them.
+    // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck due to
+    // proximity to the volatile fiends below (in case the player decides to skip them).
     constexpr float verticalOffset = 10.0f;
     return std::abs(bot->GetPositionZ() - fiend->GetPositionZ()) < verticalOffset;
 }

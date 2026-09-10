@@ -285,6 +285,18 @@ namespace
 
 using namespace SwpHelpers;
 
+void AppendVolatileFiendMeleeDpsExclusions(
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
+        return;
+
+    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (volatileFiend && volatileFiend->IsAlive())
+        exclusions.insert(volatileFiend->GetGUID());
+}
+
 void AppendFelmystVaporPhaseMeleeExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
@@ -370,6 +382,7 @@ void RaidSwpStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
+    AppendVolatileFiendMeleeDpsExclusions(botAI, context, exclusions);
     AppendFelmystVaporPhaseMeleeExclusions(botAI, context, exclusions);
     AppendMuruTankExclusions(botAI, context, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
