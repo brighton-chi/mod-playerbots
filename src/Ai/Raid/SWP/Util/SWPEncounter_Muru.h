@@ -71,10 +71,10 @@ inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20000;
 inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10000;
 // Darkness damages within 15 yards of M'uru; the rest is avoidance padding.
 inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
-// Tanks drag nothing further than this from the ranged stack.
-inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 25.0f;
+// Tanks won't try to pick up anything farther than this distance from the ranged stack.
+inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 30.0f;
 // The maximum distance from the melee dps holding spot that they wander to attack during Darkness.
-inline constexpr float MURU_HOLDING_POSITION_RADIUS = 20.0f;
+inline constexpr float MURU_HOLDING_POSITION_RADIUS = 25.0f;
 // Targeting is based on the nearest mob; this buffer is to keep targets sticky.
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
 // Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
