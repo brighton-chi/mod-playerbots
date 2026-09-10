@@ -510,7 +510,8 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    // No AttackAction block. Commencing auto-attack gets bots positioned, but don't use abilities.
+    // No AttackAction block. Commencing auto-attack activates combat engines and gets bots
+    // positioned, but don't use abilities.
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
@@ -535,7 +536,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsHeal(bot)) // early return; the threat hold already excludes healers
+    if (PlayerbotAI::IsHeal(bot))
         return 1.0f;
 
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))

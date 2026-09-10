@@ -573,6 +573,7 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return false;
 
+    // Healers are included to flip to their combat engines since dps assist is disabled.
     if (PlayerbotAI::IsDps(bot) || PlayerbotAI::IsHeal(bot))
         return true;
 
