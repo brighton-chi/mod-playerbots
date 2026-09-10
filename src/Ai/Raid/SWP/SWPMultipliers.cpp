@@ -35,7 +35,7 @@ using namespace EncounterHelpers;
 // Without this, bots are able to drink after Kil'jaeden's Hands go down.
 float SunwellNoEncounterDrinkingMultiplier::GetValueInEncounter(Action* action)
 {
-    return dynamic_cast<DrinkAction*>(action) ? 0.0f : 1.0f;
+    return dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Trash
