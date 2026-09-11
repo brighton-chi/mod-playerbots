@@ -13,7 +13,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("tempest keep no encounter in progress", {
         NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("tempest keep bot is stuck falling", {
+    triggers.push_back(new TriggerNode("tempest keep stuck falling", {
         NextAction("tempest keep clear stale falling flag", ACTION_EMERGENCY + 10) }));
 
     // Trash
@@ -24,7 +24,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("al'ar pulling boss", {
         NextAction("al'ar misdirect boss to main tank", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("al'ar boss is flying between platforms", {
+    triggers.push_back(new TriggerNode("al'ar flies between platforms", {
         NextAction("al'ar boss tanks move between platforms", ACTION_RAID),
         NextAction("al'ar melee dps move between platforms", ACTION_RAID),
         NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 3) }));
@@ -41,7 +41,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("al'ar rising from the ashes", {
         NextAction("al'ar move away from rebirth", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("al'ar is in phase 2", {
+    triggers.push_back(new TriggerNode("al'ar in phase 2", {
         NextAction("al'ar swap tanks on boss", ACTION_EMERGENCY + 2),
         NextAction("al'ar avoid flame patches and dive bombs", ACTION_EMERGENCY + 1) }));
 
@@ -66,14 +66,14 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("high astromancer solarian main tank pick up boss", ACTION_RAID) }));
 
     triggers.push_back(
-        new TriggerNode("high astromancer solarian bot has wrath of the astromancer", {
+        new TriggerNode("high astromancer solarian wrath of the astromancer", {
             NextAction("high astromancer solarian move away from group", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned", {
         NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
-    triggers.push_back(new TriggerNode("kael'thas sunstrider thaladred is fixated on bot", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider chased by thaladred", {
         NextAction("kael'thas sunstrider kite thaladred", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors", {
@@ -87,10 +87,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("kael'thas sunstrider capernian should be tanked by warlock", {
             NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider capernian blows up near and far", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should stand back from capernian", {
         NextAction("kael'thas sunstrider spread and move away from capernian", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider bots should hold phase 3 positions", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should hold phase 3 positions", {
         NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order", {
@@ -114,7 +114,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons were lost", {
         NextAction("kael'thas sunstrider reequip gear", ACTION_EMERGENCY + 11) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider boss has entered the fight", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider has entered the fight", {
         NextAction("kael'thas sunstrider tanks position boss", ACTION_RAID),
         NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8) }));
 
@@ -124,7 +124,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider raid member is mind controlled", {
         NextAction("kael'thas sunstrider break mind control", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider boss is manipulating gravity", {
+    triggers.push_back(new TriggerNode("kael'thas sunstrider in gravity lapse phase", {
         NextAction("kael'thas sunstrider spread out in midair", ACTION_RAID + 1) }));
 }
 
