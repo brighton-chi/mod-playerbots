@@ -80,16 +80,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableElementalsSpawnedTrigger : public SscEncounterTrigger
-{
-public:
-    HydrossTheUnstableElementalsSpawnedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable elementals spawned") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class HydrossTheUnstableRangedShouldSpreadTrigger : public SscEncounterTrigger
 {
 public:

@@ -57,14 +57,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstablePrioritizeElementalAddsAction : public AttackAction
-{
-public:
-    HydrossTheUnstablePrioritizeElementalAddsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "hydross the unstable prioritize elemental adds") {}
-    bool Execute(Event event) override;
-};
-
 class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
 {
 public:
@@ -79,10 +71,6 @@ public:
     HydrossTheUnstableMisdirectBossToTankAction(PlayerbotAI* botAI)
         : Action(botAI, "hydross the unstable misdirect boss to tank") {}
     bool Execute(Event event) override;
-
-private:
-    bool TryMisdirectToFrostTank(Unit* hydross);
-    bool TryMisdirectToNatureTank(Unit* hydross);
 };
 
 class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action

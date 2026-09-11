@@ -33,9 +33,6 @@ public:
         creators["hydross the unstable position nature tank"] =
             &RaidSscActionContext::hydross_the_unstable_position_nature_tank;
 
-        creators["hydross the unstable prioritize elemental adds"] =
-            &RaidSscActionContext::hydross_the_unstable_prioritize_elemental_adds;
-
         creators["hydross the unstable frost phase spread out"] =
             &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_out;
 
@@ -188,9 +185,6 @@ private:
     }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstablePositionNatureTankAction(botAI);
-    }
-    static Action* hydross_the_unstable_prioritize_elemental_adds(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePrioritizeElementalAddsAction(botAI);
     }
     static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) {
         return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI);

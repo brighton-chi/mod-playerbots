@@ -108,28 +108,38 @@ bool IsLurkerCastingSpout(Unit* lurker)
 
 // Leotheras the Blind
 
-std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
-std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Creature* GetLeotherasHuman(Player* bot)
+bool IsSpellbinderPhase(Creature* leotheras)
 {
-    constexpr float searchRadius = 100.0f;
-    Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
+    return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
+}
 
-    if (leotheras && leotheras->IsInCombat() &&
-        !leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
+Creature* GetActiveLeotherasHumanoid(Player* bot)
+{
+    Creature* leotheras =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
+
+    if (!leotheras || IsSpellbinderPhase(leotheras))
+        return nullptr;
+
+    if (!leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
     return nullptr;
 }
 
+bool IsLeotherasHumanoidPhase(Player* bot)
+{
+    return GetActiveLeotherasHumanoid(bot) && !GetPhase3LeotherasDemon(bot);
+}
+
 Creature* GetPhase2LeotherasDemon(Player* bot)
 {
-    constexpr float searchRadius = 100.0f;
     Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
 
     if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
@@ -137,18 +147,31 @@ Creature* GetPhase2LeotherasDemon(Player* bot)
     return nullptr;
 }
 
+bool IsLeotherasDemonPhase(Player* bot)
+{
+    return GetPhase2LeotherasDemon(bot);
+}
+
 Creature* GetPhase3LeotherasDemon(Player* bot)
 {
-    constexpr float searchRadius = 100.0f;
-    return bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), searchRadius);
+    return bot->FindNearestCreature(
+        Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), LEOTHERAS_SEARCH_DISTANCE);
+}
+
+bool IsLeotherasFinalPhase(Player* bot)
+{
+    return GetPhase3LeotherasDemon(bot);
 }
 
 Creature* GetActiveLeotherasDemon(Player* bot)
 {
-    if (Creature* phase2 = GetPhase2LeotherasDemon(bot))
-        return phase2;
+    if (Creature* phase2Demon = GetPhase2LeotherasDemon(bot))
+        return phase2Demon;
 
-    return GetPhase3LeotherasDemon(bot);
+    if (Creature* phase3Demon = GetPhase3LeotherasDemon(bot))
+        return phase3Demon;
+
+    return nullptr;
 }
 
 // (1) First priority is an assistant Warlock (real player or bot)
@@ -232,10 +255,10 @@ std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 // Lady Vashj <Coilfang Matron>
 
 std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-std::unordered_map<ObjectGuid, Position> intendedLineup;
-std::unordered_map<uint32, uint32> lastImbueAttempt;
-std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
+std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
+std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
+std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
+std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot)
 {
@@ -559,8 +582,8 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
         if (handler->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false))
             return true;
 
-        auto it = lastCoreInInventoryTime.find(handler->GetGUID());
-        if (it != lastCoreInInventoryTime.end() &&
+        auto it = lastVashjCoreInInventoryTime.find(handler->GetGUID());
+        if (it != lastVashjCoreInInventoryTime.end() &&
             getMSTimeDiff(it->second, now) <= lookbackMs)
             return true;
     }

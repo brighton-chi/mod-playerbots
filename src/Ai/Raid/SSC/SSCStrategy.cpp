@@ -168,7 +168,8 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
 
     // Hydross the Unstable <Duke of Currents>
-    multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableDisableTankReachMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableDisableAutoTargetAndMoveMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
 
     // The Lurker Below

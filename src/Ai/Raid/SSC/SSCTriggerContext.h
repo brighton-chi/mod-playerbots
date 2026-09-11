@@ -33,9 +33,6 @@ public:
         creators["hydross the unstable should be tanked by nature tank"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_be_tanked_by_nature_tank;
 
-        creators["hydross the unstable elementals spawned"] =
-            &RaidSscTriggerContext::hydross_the_unstable_elementals_spawned;
-
         creators["hydross the unstable ranged should spread"] =
             &RaidSscTriggerContext::hydross_the_unstable_ranged_should_spread;
 
@@ -181,9 +178,6 @@ private:
     }
     static Trigger* hydross_the_unstable_should_be_tanked_by_nature_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstableShouldBeTankedByNatureTankTrigger(botAI);
-    }
-    static Trigger* hydross_the_unstable_elementals_spawned(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableElementalsSpawnedTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_ranged_should_spread(PlayerbotAI* botAI) {
         return new HydrossTheUnstableRangedShouldSpreadTrigger(botAI);

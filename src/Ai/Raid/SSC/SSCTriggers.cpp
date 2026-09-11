@@ -52,22 +52,6 @@ bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
            AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
-bool HydrossTheUnstableElementalsSpawnedTrigger::IsActiveInEncounter()
-{
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross || hydross->GetHealthPct() < 10.0f)
-        return false;
-
-    if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "pure spawn of hydross") ||
-           AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
-}
-
 bool HydrossTheUnstableRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsRanged(bot) &&
@@ -210,15 +194,14 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras || IsSpellbinderPhase(leotheras))
+        return false;
+
     if (HasInnerDemon(bot))
         return false;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-        return false;
-
-    return !leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED)) &&
-           !IsLeotherasChannelingWhirlwind(leotheras);
+    return !IsLeotherasChannelingWhirlwind(leotheras);
 }
 
 bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()

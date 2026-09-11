@@ -169,13 +169,19 @@ bool IsLurkerCastingSpout(Unit* lurker);
 
 // Leotheras the Blind
 
-extern std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
+
+extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Creature* GetLeotherasHuman(Player* bot);
+bool IsSpellbinderPhase(Creature* leotheras);
+Creature* GetActiveLeotherasHumanoid(Player* bot);
+bool IsLeotherasHumanoidPhase(Player* bot);
 Creature* GetPhase2LeotherasDemon(Player* bot);
+bool IsLeotherasDemonPhase(Player* bot);
 Creature* GetPhase3LeotherasDemon(Player* bot);
+bool IsLeotherasFinalPhase(Player* bot);
 Creature* GetActiveLeotherasDemon(Player* bot);
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
@@ -220,10 +226,10 @@ inline constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
 extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-extern std::unordered_map<ObjectGuid, Position> intendedLineup;
-extern std::unordered_map<uint32, uint32> lastImbueAttempt;
-extern std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
+extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
+extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
+extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
+extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot);
 int8 GetLadyVashjPhase(Unit* vashj);
