@@ -255,11 +255,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindDemonFormTankNeedsAggroTrigger : public SscEncounterTrigger
+class LeotherasTheBlindWarlockTankNeedsAggroTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindDemonFormTankNeedsAggroTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind demon form tank needs aggro") {}
+    LeotherasTheBlindWarlockTankNeedsAggroTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind warlock tank needs aggro") {}
 
 protected:
     bool IsActiveInEncounter() override;

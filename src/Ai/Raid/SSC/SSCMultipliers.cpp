@@ -185,29 +185,32 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
 
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !IsRepositionAction(bot, action) &&
+        (bot->getClass() != CLASS_ROGUE || !dynamic_cast<CastKillingSpreeAction*>(action)))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return 1.0f;
 
-    const uint32 now = getMSTime();
-
     auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
-    if (it != lurkerSpoutTimer.end() &&
-        getMSTimeDiff(it->second, now) < LURKER_SPOUT_DURATION_MS)
-    {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action) ||
-            isRepositionAction)
-            return 0.0f;
+    if (it == lurkerSpoutTimer.end())
+        return 1.0f;
 
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
-            return 0.0f;
-    }
-
-    return 1.0f;
+    return getMSTimeDiff(it->second, getMSTime()) < LURKER_SPOUT_DURATION_MS ? 0.0f : 1.0f;
 }
 
 float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* action)
@@ -215,15 +218,14 @@ float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* 
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) &&
+        !IsRepositionAction(bot, action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
 
 // Disable tank assist during Submerge only if there are 3 or more tanks in the raid
@@ -270,28 +272,28 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* act
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (HasInnerDemon(bot))
         return 1.0f;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras || (!leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) &&
-        !leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL))))
-        return 1.0f;
-
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
-
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return leotheras && IsLeotherasChannelingWhirlwind(leotheras) ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsTank(bot) || bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (!PlayerbotAI::IsTank(bot) || HasInnerDemon(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
@@ -308,20 +310,25 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
 
 float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (!HasInnerDemon(bot))
         return 1.0f;
 
-    return dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<DpsAssistAction*>(action) ||
-        dynamic_cast<CastHealingSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<PartyMemberActionNameSupport*>(action) ||
-        dynamic_cast<CastBearFormAction*>(action) ||
-        dynamic_cast<CastDireBearFormAction*>(action) ||
-        dynamic_cast<CastTreeFormAction*>(action) ? 0.0f : 1.0f;
+    if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    if (bot->getClass() == CLASS_DRUID &&
+        (dynamic_cast<CastDireBearFormAction*>(action) ||
+         dynamic_cast<CastBearFormAction*>(action) ||
+         dynamic_cast<CastTreeFormAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    Creature* innerDemon = GetPersonalInnerDemon(botAI);
+    if (!innerDemon)
+        return 1.0f;
+
+    return action->GetTarget() == innerDemon ? 1.0f : 0.0f; // NEED TO CONFIRM IF THIS WORKS INSTEAD OF SUPPRESSING TYPES OF SPELLS
 }
 
 float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
@@ -352,10 +359,10 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!leotheras)
         return 1.0f;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return 1.0f;
 
-    if (dynamic_cast<LeotherasTheBlindMisdirectBossToDemonFormTankAction*>(action))
+    if (dynamic_cast<LeotherasTheBlindMisdirectBossToWarlockTankAction*>(action))
         return 1.0f;
 
     const uint32 instanceId = leotheras->GetInstanceId();
@@ -383,13 +390,13 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 
     constexpr uint32 dpsWaitMsPhase2 = 12 * IN_MILLISECONDS;
     Creature* leotherasPhase2Demon = GetPhase2LeotherasDemon(bot);
-    Player* demonFormTank = GetLeotherasDemonFormTank(bot);
+    Player* warlockTank = GetLeotherasWarlockTank(bot);
     if (leotherasPhase2Demon)
     {
-        if (demonFormTank && demonFormTank == bot)
+        if (warlockTank && warlockTank == bot)
             return 1.0f;
 
-        if (!demonFormTank && PlayerbotAI::IsTank(bot))
+        if (!warlockTank && PlayerbotAI::IsTank(bot))
             return 1.0f;
 
         auto it = leotherasDemonFormDpsWaitTimer.find(instanceId);
@@ -406,7 +413,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     constexpr uint32 dpsWaitMsPhase3 = 8 * IN_MILLISECONDS;
     if (leotherasPhase3Demon)
     {
-        if ((demonFormTank && demonFormTank == bot) || PlayerbotAI::IsTank(bot))
+        if ((warlockTank && warlockTank == bot) || PlayerbotAI::IsTank(bot))
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(instanceId);

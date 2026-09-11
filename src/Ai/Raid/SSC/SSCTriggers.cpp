@@ -182,7 +182,7 @@ bool LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger::IsActiveInEncount
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (GetLeotherasDemonFormTank(bot) != bot)
+    if (GetLeotherasWarlockTank(bot) != bot)
         return false;
 
     return GetActiveLeotherasDemon(bot);
@@ -193,13 +193,13 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (!GetLeotherasDemonFormTank(bot))
+    if (!GetLeotherasWarlockTank(bot))
         return false;
 
     return GetPhase2LeotherasDemon(bot);
@@ -210,7 +210,7 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return false;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -218,8 +218,7 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     return !leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED)) &&
-           !leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) &&
-           !leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL));
+           !IsLeotherasChannelingWhirlwind(leotheras);
 }
 
 bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
@@ -231,11 +230,10 @@ bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
     if (!leotheras)
         return false;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return false;
 
-    return leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) ||
-           leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL));
+    return IsLeotherasChannelingWhirlwind(leotheras);
 }
 
 bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
@@ -246,14 +244,14 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return false;
 
     Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
     if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
-    if (!GetLeotherasDemonFormTank(bot) && PlayerbotAI::IsMainTank(bot))
+    if (!GetLeotherasWarlockTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
     return GetPhase2LeotherasDemon(bot);
@@ -261,8 +259,8 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)) &&
-           GetLeotherasDemonFormTank(bot) != bot;
+    return HasInnerDemon(bot) &&
+           GetLeotherasWarlockTank(bot) != bot;
 }
 
 bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
@@ -273,16 +271,16 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER)))
+    if (HasInnerDemon(bot))
         return false;
 
-    if (bot->getClass() == CLASS_WARLOCK && GetLeotherasDemonFormTank(bot) == bot)
+    if (bot->getClass() == CLASS_WARLOCK && GetLeotherasWarlockTank(bot) == bot)
         return false;
 
     return GetPhase3LeotherasDemon(bot);
 }
 
-bool LeotherasTheBlindDemonFormTankNeedsAggroTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindWarlockTankNeedsAggroTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -290,7 +288,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggroTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    return !bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
+    return !HasInnerDemon(bot);
 }
 
 bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()

@@ -177,7 +177,11 @@ Creature* GetLeotherasHuman(Player* bot);
 Creature* GetPhase2LeotherasDemon(Player* bot);
 Creature* GetPhase3LeotherasDemon(Player* bot);
 Creature* GetActiveLeotherasDemon(Player* bot);
-Player* GetLeotherasDemonFormTank(Player* bot);
+Player* GetLeotherasWarlockTank(Player* bot);
+bool IsLeotherasWarlockTank(Player* bot);
+bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
+bool HasInnerDemon(Player* bot);
+Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 
 // Fathom-Lord Karathress
 

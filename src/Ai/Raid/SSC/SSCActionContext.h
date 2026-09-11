@@ -65,8 +65,8 @@ public:
             &RaidSscActionContext::the_lurker_below_manage_spout_timer;
 
         // Leotheras the Blind
-        creators["leotheras the blind demon form tank attack boss"] =
-            &RaidSscActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
+        creators["leotheras the blind warlock tank attack boss"] =
+            &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
 
         creators["leotheras the blind melee tanks don't attack demon form"] =
             &RaidSscActionContext::leotheras_the_blind_melee_tanks_dont_attack_demon_form;
@@ -86,8 +86,8 @@ public:
         creators["leotheras the blind final phase assign dps priority"] =
             &RaidSscActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
 
-        creators["leotheras the blind misdirect boss to demon form tank"] =
-            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
+        creators["leotheras the blind misdirect boss to warlock tank"] =
+            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_warlock_tank;
 
         creators["leotheras the blind manage dps wait timers"] =
             &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
@@ -223,8 +223,8 @@ private:
     }
 
     // Leotheras the Blind
-    static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI);
+    static Action* leotheras_the_blind_warlock_tank_attack_boss(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindWarlockTankAttackBossAction(botAI);
     }
     static Action* leotheras_the_blind_melee_tanks_dont_attack_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindMeleeTanksDontAttackDemonFormAction(botAI);
@@ -241,8 +241,8 @@ private:
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI);
+    static Action* leotheras_the_blind_misdirect_boss_to_warlock_tank(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMisdirectBossToWarlockTankAction(botAI);
     }
     static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI);

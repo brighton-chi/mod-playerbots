@@ -103,17 +103,7 @@ std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 
 bool IsLurkerCastingSpout(Unit* lurker)
 {
-    if (!lurker || !lurker->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    Spell* currentSpell = lurker->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell)
-        return false;
-
-    uint32 spellId = currentSpell->m_spellInfo->Id;
-    bool isSpout = spellId == Id(SscSpells::SPELL_SPOUT_VISUAL);
-
-    return isSpout;
+    return lurker && lurker->FindCurrentSpellBySpellId(Id(SscSpells::SPELL_SPOUT_VISUAL));
 }
 
 // Leotheras the Blind
@@ -155,26 +145,29 @@ Creature* GetPhase3LeotherasDemon(Player* bot)
 
 Creature* GetActiveLeotherasDemon(Player* bot)
 {
-    Creature* phase2 = GetPhase2LeotherasDemon(bot);
-    Creature* phase3 = GetPhase3LeotherasDemon(bot);
-    return phase2 ? phase2 : phase3;
+    if (Creature* phase2 = GetPhase2LeotherasDemon(bot))
+        return phase2;
+
+    return GetPhase3LeotherasDemon(bot);
 }
 
 // (1) First priority is an assistant Warlock (real player or bot)
 // (2) If no assistant Warlock, then look for any Warlock bot
-Player* GetLeotherasDemonFormTank(Player* bot)
+Player* GetLeotherasWarlockTank(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
     Player* fallbackWarlock = nullptr;
-
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK ||
+            member->GetMapId() != SSC_MAP_ID)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member;
@@ -184,6 +177,47 @@ Player* GetLeotherasDemonFormTank(Player* bot)
     }
 
     return fallbackWarlock;
+}
+
+bool IsLeotherasWarlockTank(Player* bot)
+{
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    return GetLeotherasWarlockTank(bot) == bot;
+}
+
+bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
+{
+    return leotheras &&
+        (leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) ||
+         leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL)));
+}
+
+bool HasInnerDemon(Player* bot)
+{
+    return bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
+}
+
+Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
+{
+    ObjectGuid const botGuid = botAI->GetBot()->GetGuid();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& innerDemons = AI_VALUE(GuidVector, "possible targets no los");
+
+    Creature* innerDemon = nullptr;
+    for (auto creatureGuid : innerDemons)
+    {
+        Creature* creature = botAI->GetCreature(creatureGuid);
+        if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
+            creature->GetSummonerGUID() == botGuid)
+        {
+            innerDemon = creature;
+            break;
+        }
+    }
+
+    return innerDemon;
 }
 
 // Fathom-Lord Karathress

@@ -624,27 +624,11 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
 
 // Leotheras the Blind
 
-// Warlock tank action--see GetLeotherasDemonFormTank in RaidSSCHelpers.cpp
+// Warlock tank action--see GetLeotherasWarlockTank in RaidSSCHelpers.cpp
 // Use tank strategy for Demon Form and DPS strategy for Human Form
-bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
+bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-
-    Unit* innerDemon = nullptr;
-    for (auto guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
-            creature->GetSummonerGUID() == bot->GetGUID())
-        {
-            innerDemon = creature;
-            break;
-        }
-    }
-
-    if (innerDemon)
+    if (GetPersonalInnerDemon(botAI))
         return false;
 
     if (Creature* leotherasDemon = GetActiveLeotherasDemon(bot))
@@ -679,54 +663,51 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
     if (leotherasHuman && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
         leotherasHuman->GetVictim() != bot)
     {
-        constexpr uint32 minInterval = 500;
-        return FleePosition(leotherasHuman->GetPosition(), safeDistFromBoss, minInterval);
+        if (FleePosition(leotherasHuman->GetPosition(), safeDistFromBoss))
+            return true;
     }
 
     if (!GetActiveLeotherasDemon(bot))
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member == bot || !member->IsAlive())
-                continue;
+    constexpr float searchRadius = 10.0f;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, searchRadius);
+    if (!nearestPlayer)
+        return false;
 
-            constexpr uint32 minInterval = 0;
-            if (GetLeotherasDemonFormTank(bot) == member)
-            {
-                constexpr float safeDistFromMember = 10.0f;
-                if (bot->GetExactDist2d(member) < safeDistFromMember)
-                    return FleePosition(member->GetPosition(), safeDistFromMember, minInterval);
-            }
-            else
-            {
-                constexpr float safeDistFromMember = 6.0f;
-                if (bot->GetExactDist2d(member) < safeDistFromMember)
-                    return FleePosition(member->GetPosition(), safeDistFromMember, minInterval);
-            }
-        }
+    Player* warlockTank = GetLeotherasWarlockTank(bot);
+    float safeDistance = std::numeric_limits<float>::max();
+    uint32 minInterval = std::numeric_limits<uint32>::max();
+    if (warlockTank != bot && warlockTank == nearestPlayer)
+    {
+        safeDistance = 10.0f;
+        minInterval = 0;
+    }
+    else
+    {
+        safeDistance = 5.0f;
+        minInterval = 1000;
     }
 
-    return false;
+    if (bot->GetExactDist2d(nearestPlayer) >= safeDistance)
+        return false;
+
+    return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 }
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    if (Creature* leotherasHuman = GetLeotherasHuman(bot))
-    {
-        float currentDistance = bot->GetExactDist2d(leotherasHuman);
-        constexpr float safeDistance = 25.0f;
-        if (currentDistance < safeDistance)
-        {
-            bot->CastStop();
-            return MoveAway(leotherasHuman, safeDistance - currentDistance);
-        }
-    }
+    Creature* leotherasHuman = GetLeotherasHuman(bot);
+    if (!leotherasHuman)
+        return false;
 
-    return false;
+    float const currentDistance = bot->GetExactDist2d(leotherasHuman);
+    constexpr float safeDistance = 25.0f;
+    if (currentDistance >= safeDistance)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(leotherasHuman, safeDistance - currentDistance);
 }
 
 // This method is likely unnecessary unless the player does not use a Warlock tank
@@ -755,37 +736,17 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 // Hardcoded actions for healers and bear tanks to kill Inner Demons
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    Creature* innerDemon = GetPersonalInnerDemon(botAI);
+    if (!innerDemon)
+        return false;
 
-    Unit* innerDemon = nullptr;
-    for (auto guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        Creature* creature = unit ? unit->ToCreature() : nullptr;
-        if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
-            creature->GetSummonerGUID() == bot->GetGUID())
-        {
-            innerDemon = creature;
-            break;
-        }
-    }
+    if (bot->getClass() == CLASS_DRUID && PlayerbotAI::IsTank(bot))
+        return HandleFeralTankStrategy(innerDemon);
 
-    if (innerDemon)
-    {
-        if (bot->getClass() == CLASS_DRUID && PlayerbotAI::IsTank(bot))
-            return HandleFeralTankStrategy(innerDemon);
+    if (PlayerbotAI::IsHeal(bot))
+        return HandleHealerStrategy(innerDemon);
 
-        if (PlayerbotAI::IsHeal(bot))
-            return HandleHealerStrategy(innerDemon);
-
-        // Roles without a strategy need to affirmatively attack their Inner Demons
-        // Because DPS assist is disabled via multipliers
-        if (AI_VALUE(Unit*, "current target") != innerDemon)
-            return Attack(innerDemon);
-    }
-
-    return false;
+    return AI_VALUE(Unit*, "current target") != innerDemon && Attack(innerDemon);
 }
 
 // At 50% nerfed damage, bears have trouble killing their Inner Demons without a specific strategy
@@ -794,25 +755,28 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
     if (bot->HasAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM)))
-        bot->RemoveAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM));
+    {
+        bot->RemoveOwnedAura(
+            Id(SscSpells::SPELL_DIRE_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
 
     if (bot->HasAura(Id(SscSpells::SPELL_BEAR_FORM)))
-        bot->RemoveAura(Id(SscSpells::SPELL_BEAR_FORM));
+    {
+        bot->RemoveOwnedAura(
+            Id(SscSpells::SPELL_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
 
     bool casted = false;
 
     if (!bot->HasAura(Id(SscSpells::SPELL_CAT_FORM)) &&
-        botAI->CanCastSpell("cat form", bot) &&
-        botAI->CastSpell("cat form", bot))
+        botAI->CanCastSpell("cat form", bot) && botAI->CastSpell("cat form", bot))
         casted = true;
 
-    if (botAI->CanCastSpell("berserk", bot) &&
-        botAI->CastSpell("berserk", bot))
+    if (botAI->CanCastSpell("berserk", bot) && botAI->CastSpell("berserk", bot))
         casted = true;
 
     if (bot->GetPower(POWER_ENERGY) < 30 &&
-        botAI->CanCastSpell("tiger's fury", bot) &&
-        botAI->CastSpell("tiger's fury", bot))
+        botAI->CanCastSpell("tiger's fury", bot) && botAI->CastSpell("tiger's fury", bot))
         casted = true;
 
     if (bot->GetComboPoints() >= 4 &&
@@ -821,8 +785,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         casted = true;
 
     if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 25.0f &&
-        botAI->CanCastSpell("rake", innerDemon) &&
-        botAI->CastSpell("rake", innerDemon))
+        botAI->CanCastSpell("rake", innerDemon) && botAI->CastSpell("rake", innerDemon))
         casted = true;
 
     if (botAI->CanCastSpell("mangle (cat)", innerDemon) &&
@@ -837,7 +800,10 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
     if (bot->getClass() == CLASS_DRUID)
     {
         if (bot->HasAura(Id(SscSpells::SPELL_TREE_OF_LIFE)))
-            bot->RemoveAura(Id(SscSpells::SPELL_TREE_OF_LIFE));
+        {
+            bot->RemoveOwnedAura(
+                Id(SscSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+        }
 
         bool casted = false;
 
@@ -950,13 +916,13 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
 }
 
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
-bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event /*event*/)
+bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
-    Player* targetTank = GetLeotherasDemonFormTank(bot);
+    Player* targetTank = GetLeotherasWarlockTank(bot);
     if (!targetTank)
         targetTank = GetGroupMainTank(bot);
 

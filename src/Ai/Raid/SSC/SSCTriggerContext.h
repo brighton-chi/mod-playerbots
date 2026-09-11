@@ -86,8 +86,8 @@ public:
         creators["leotheras the blind in final phase"] =
             &RaidSscTriggerContext::leotheras_the_blind_in_final_phase;
 
-        creators["leotheras the blind demon form tank needs aggro"] =
-            &RaidSscTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
+        creators["leotheras the blind warlock tank needs aggro"] =
+            &RaidSscTriggerContext::leotheras_the_blind_warlock_tank_needs_aggro;
 
         creators["leotheras the blind should manage dps wait timers"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
@@ -237,8 +237,8 @@ private:
     static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI) {
         return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_demon_form_tank_needs_aggro(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindDemonFormTankNeedsAggroTrigger(botAI);
+    static Trigger* leotheras_the_blind_warlock_tank_needs_aggro(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindWarlockTankNeedsAggroTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);

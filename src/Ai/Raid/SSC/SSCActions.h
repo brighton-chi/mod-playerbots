@@ -153,11 +153,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindDemonFormTankAttackBossAction : public AttackAction
+class LeotherasTheBlindWarlockTankAttackBossAction : public AttackAction
 {
 public:
-    LeotherasTheBlindDemonFormTankAttackBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind demon form tank attack boss") {}
+    LeotherasTheBlindWarlockTankAttackBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "leotheras the blind warlock tank attack boss") {}
     bool Execute(Event event) override;
 };
 
@@ -205,11 +205,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMisdirectBossToDemonFormTankAction : public Action
+class LeotherasTheBlindMisdirectBossToWarlockTankAction : public Action
 {
 public:
-    LeotherasTheBlindMisdirectBossToDemonFormTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind misdirect boss to demon form tank") {}
+    LeotherasTheBlindMisdirectBossToWarlockTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind misdirect boss to warlock tank") {}
     bool Execute(Event event) override;
 };
 

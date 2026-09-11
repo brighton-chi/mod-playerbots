@@ -11,11 +11,11 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("ssc no encounter in progress", {
-        NextAction("ssc reset encounter states", ACTION_EMERGENCY + 11) }));
+        NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Trash Mobs
     triggers.push_back(new TriggerNode("underbog colossus in toxic pool", {
-        NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 10) }));
+        NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("greyheart tidecaller water elemental totem spawned", {
         NextAction("greyheart tidecaller mark water elemental totem", ACTION_RAID) }));
@@ -61,7 +61,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(
         "leotheras the blind demon form should be tanked by warlock", {
-        NextAction("leotheras the blind demon form tank attack boss", ACTION_RAID) }));
+        NextAction("leotheras the blind warlock tank attack boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
         NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID) }));
@@ -81,8 +81,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind in final phase", {
         NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind demon form tank needs aggro", {
-        NextAction("leotheras the blind misdirect boss to demon form tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("leotheras the blind warlock tank needs aggro", {
+        NextAction("leotheras the blind misdirect boss to warlock tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers", {
         NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
