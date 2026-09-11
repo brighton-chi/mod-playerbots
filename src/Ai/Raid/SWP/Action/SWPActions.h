@@ -592,11 +592,11 @@ private:
     bool PickUpSinisterReflections(Creature* reflection);
 };
 
-class KiljaedenPositionMeleeAction : public MovementAction
+class KiljaedenPositionMeleeAndAvoidArmageddonsAction : public MovementAction
 {
 public:
-    KiljaedenPositionMeleeAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "kil'jaeden position melee") {}
+    KiljaedenPositionMeleeAndAvoidArmageddonsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "kil'jaeden position melee and avoid armageddons") {}
     bool Execute(Event event) override;
 
 private:
