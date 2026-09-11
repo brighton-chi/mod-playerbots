@@ -46,11 +46,11 @@ public:
         creators["anetheron ranged should spread"] =
             &RaidHyjalTriggerContext::anetheron_ranged_should_spread;
 
-        creators["anetheron bot is near inferno target"] =
-            &RaidHyjalTriggerContext::anetheron_bot_is_near_inferno_target;
+        creators["anetheron near inferno target"] =
+            &RaidHyjalTriggerContext::anetheron_near_inferno_target;
 
-        creators["anetheron bot is targeted by infernal"] =
-            &RaidHyjalTriggerContext::anetheron_bot_is_targeted_by_infernal;
+        creators["anetheron targeted by infernal"] =
+            &RaidHyjalTriggerContext::anetheron_targeted_by_infernal;
 
         creators["anetheron infernals pulse immolation"] =
             &RaidHyjalTriggerContext::anetheron_infernals_pulse_immolation;
@@ -73,8 +73,8 @@ public:
         creators["kaz'rogal ranged should avoid war stomp"] =
             &RaidHyjalTriggerContext::kazrogal_ranged_should_avoid_war_stomp;
 
-        creators["kaz'rogal bot is low on mana"] =
-            &RaidHyjalTriggerContext::kazrogal_bot_is_low_on_mana;
+        creators["kaz'rogal low on mana"] =
+            &RaidHyjalTriggerContext::kazrogal_low_on_mana;
 
         creators["kaz'rogal hunter should preserve mana"] =
             &RaidHyjalTriggerContext::kazrogal_hunter_should_preserve_mana;
@@ -113,22 +113,22 @@ public:
         creators["archimonde pulling boss"] = &RaidHyjalTriggerContext::archimonde_pulling_boss;
 
         creators["archimonde should be tanked"] =
-            &RaidHyjalTriggerContext::archimonde_boss_engaged_by_main_tank;
+            &RaidHyjalTriggerContext::archimonde_should_be_tanked;
 
-        creators["archimonde boss casts fear"] =
-            &RaidHyjalTriggerContext::archimonde_boss_casts_fear;
+        creators["archimonde shaman should protect against fear"] =
+            &RaidHyjalTriggerContext::archimonde_shaman_should_protect_against_fear;
 
-        creators["archimonde boss casting air burst"] =
-            &RaidHyjalTriggerContext::archimonde_boss_casting_air_burst;
+        creators["archimonde casting air burst"] =
+            &RaidHyjalTriggerContext::archimonde_casting_air_burst;
 
         creators["archimonde ranged should spread"] =
             &RaidHyjalTriggerContext::archimonde_ranged_should_spread;
 
-        creators["archimonde bot is near doomfire"] =
-            &RaidHyjalTriggerContext::archimonde_bot_is_near_doomfire;
+        creators["archimonde near doomfire"] =
+            &RaidHyjalTriggerContext::archimonde_near_doomfire;
 
-        creators["archimonde bot stood in doomfire"] =
-            &RaidHyjalTriggerContext::archimonde_bot_stood_in_doomfire;
+        creators["archimonde stood in doomfire"] =
+            &RaidHyjalTriggerContext::archimonde_stood_in_doomfire;
     }
 
 private:
@@ -167,11 +167,11 @@ private:
     static Trigger* anetheron_ranged_should_spread(PlayerbotAI* botAI) {
         return new AnetheronRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* anetheron_bot_is_near_inferno_target(PlayerbotAI* botAI) {
-        return new AnetheronBotIsNearInfernoTargetTrigger(botAI);
+    static Trigger* anetheron_near_inferno_target(PlayerbotAI* botAI) {
+        return new AnetheronNearInfernoTargetTrigger(botAI);
     }
-    static Trigger* anetheron_bot_is_targeted_by_infernal(PlayerbotAI* botAI) {
-        return new AnetheronBotIsTargetedByInfernalTrigger(botAI);
+    static Trigger* anetheron_targeted_by_infernal(PlayerbotAI* botAI) {
+        return new AnetheronTargetedByInfernalTrigger(botAI);
     }
     static Trigger* anetheron_infernals_pulse_immolation(PlayerbotAI* botAI) {
         return new AnetheronInfernalsPulseImmolationTrigger(botAI);
@@ -197,8 +197,8 @@ private:
     static Trigger* kazrogal_ranged_should_avoid_war_stomp(PlayerbotAI* botAI) {
         return new KazrogalRangedShouldAvoidWarStompTrigger(botAI);
     }
-    static Trigger* kazrogal_bot_is_low_on_mana(PlayerbotAI* botAI) {
-        return new KazrogalBotIsLowOnManaTrigger(botAI);
+    static Trigger* kazrogal_low_on_mana(PlayerbotAI* botAI) {
+        return new KazrogalLowOnManaTrigger(botAI);
     }
     static Trigger* kazrogal_hunter_should_preserve_mana(PlayerbotAI* botAI) {
         return new KazrogalHunterShouldPreserveManaTrigger(botAI);
@@ -244,25 +244,25 @@ private:
     static Trigger* archimonde_pulling_boss(PlayerbotAI* botAI) {
         return new HyjalPullingBossTrigger(botAI, "archimonde pulling boss", "archimonde");
     }
-    static Trigger* archimonde_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
+    static Trigger* archimonde_should_be_tanked(PlayerbotAI* botAI) {
         return new HyjalBossShouldBeTankedTrigger(
             botAI, "archimonde should be tanked", "archimonde",
             EncounterHelpers::BOSS_ENGAGED_HEALTH_PCT, false);
     }
-    static Trigger* archimonde_boss_casts_fear(PlayerbotAI* botAI) {
-        return new ArchimondeBossCastsFearTrigger(botAI);
+    static Trigger* archimonde_shaman_should_protect_against_fear(PlayerbotAI* botAI) {
+        return new ArchimondeShamanShouldProtectAgainstFearTrigger(botAI);
     }
-    static Trigger* archimonde_boss_casting_air_burst(PlayerbotAI* botAI) {
-        return new ArchimondeBossCastingAirBurstTrigger(botAI);
+    static Trigger* archimonde_casting_air_burst(PlayerbotAI* botAI) {
+        return new ArchimondeCastingAirBurstTrigger(botAI);
     }
     static Trigger* archimonde_ranged_should_spread(PlayerbotAI* botAI) {
         return new ArchimondeRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* archimonde_bot_is_near_doomfire(PlayerbotAI* botAI) {
-        return new ArchimondeBotIsNearDoomfireTrigger(botAI);
+    static Trigger* archimonde_near_doomfire(PlayerbotAI* botAI) {
+        return new ArchimondeNearDoomfireTrigger(botAI);
     }
-    static Trigger* archimonde_bot_stood_in_doomfire(PlayerbotAI* botAI) {
-        return new ArchimondeBotStoodInDoomfireTrigger(botAI);
+    static Trigger* archimonde_stood_in_doomfire(PlayerbotAI* botAI) {
+        return new ArchimondeStoodInDoomfireTrigger(botAI);
     }
 };
 
