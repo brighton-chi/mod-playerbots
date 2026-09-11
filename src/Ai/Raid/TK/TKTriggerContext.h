@@ -19,19 +19,18 @@ public:
         creators["tempest keep no encounter in progress"] =
             &RaidTempestKeepTriggerContext::tempest_keep_no_encounter_in_progress;
 
-        creators["tempest keep bot is stuck falling"] =
-            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_stuck_falling;
+        creators["tempest keep stuck falling"] =
+            &RaidTempestKeepTriggerContext::tempest_keep_stuck_falling;
 
         // Trash
         creators["crimson hand centurion casts arcane flurry"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_flurry;
 
         // Al'ar <Phoenix God>
-        creators["al'ar pulling boss"] =
-            &RaidTempestKeepTriggerContext::alar_pulling_boss;
+        creators["al'ar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
 
-        creators["al'ar boss is flying between platforms"] =
-            &RaidTempestKeepTriggerContext::alar_boss_is_flying_between_platforms;
+        creators["al'ar flies between platforms"] =
+            &RaidTempestKeepTriggerContext::alar_flies_between_platforms;
 
         creators["al'ar embers explode upon death"] =
             &RaidTempestKeepTriggerContext::alar_embers_explode_upon_death;
@@ -45,8 +44,7 @@ public:
         creators["al'ar rising from the ashes"] =
             &RaidTempestKeepTriggerContext::alar_rising_from_the_ashes;
 
-        creators["al'ar is in phase 2"] =
-            &RaidTempestKeepTriggerContext::alar_is_in_phase_2;
+        creators["al'ar in phase 2"] = &RaidTempestKeepTriggerContext::alar_in_phase_2;
 
         creators["al'ar should manage phase tracker"] =
             &RaidTempestKeepTriggerContext::alar_should_manage_phase_tracker;
@@ -68,15 +66,15 @@ public:
         creators["high astromancer solarian should be tanked"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_should_be_tanked;
 
-        creators["high astromancer solarian bot has wrath of the astromancer"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_bot_has_wrath_of_the_astromancer;
+        creators["high astromancer solarian wrath of the astromancer"] =
+            &RaidTempestKeepTriggerContext::high_astromancer_solarian_wrath_of_the_astromancer;
 
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
 
         // Kael'thas Sunstrider <Lord of the Blood Elves>
-        creators["kael'thas sunstrider thaladred is fixated on bot"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_thaladred_is_fixated_on_bot;
+        creators["kael'thas sunstrider chased by thaladred"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_chased_by_thaladred;
 
         creators["kael'thas sunstrider pulling tankable advisors"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
@@ -86,13 +84,14 @@ public:
                 kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked;
 
         creators["kael'thas sunstrider capernian should be tanked by warlock"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_should_be_tanked_by_warlock;
+            &RaidTempestKeepTriggerContext::
+                kaelthas_sunstrider_capernian_should_be_tanked_by_warlock;
 
-        creators["kael'thas sunstrider capernian blows up near and far"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_capernian_blows_up_near_and_far;
+        creators["kael'thas sunstrider should stand back from capernian"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_stand_back_from_capernian;
 
-        creators["kael'thas sunstrider bots should hold phase 3 positions"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_bots_should_hold_phase_3_positions;
+        creators["kael'thas sunstrider should hold phase 3 positions"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_hold_phase_3_positions;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
@@ -115,8 +114,8 @@ public:
         creators["kael'thas sunstrider legendary weapons were lost"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_legendary_weapons_were_lost;
 
-        creators["kael'thas sunstrider boss has entered the fight"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_has_entered_the_fight;
+        creators["kael'thas sunstrider has entered the fight"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_has_entered_the_fight;
 
         creators["kael'thas sunstrider raid member is mind controlled"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_raid_member_is_mind_controlled;
@@ -124,8 +123,8 @@ public:
         creators["kael'thas sunstrider should assign final phase target"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_assign_final_phase_target;
 
-        creators["kael'thas sunstrider boss is manipulating gravity"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_boss_is_manipulating_gravity;
+        creators["kael'thas sunstrider in gravity lapse phase"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_in_gravity_lapse_phase;
     }
 
 private:
@@ -133,8 +132,8 @@ private:
     static Trigger* tempest_keep_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new TempestKeepNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* tempest_keep_bot_is_stuck_falling(PlayerbotAI* botAI) {
-        return new TempestKeepBotIsStuckFallingTrigger(botAI);
+    static Trigger* tempest_keep_stuck_falling(PlayerbotAI* botAI) {
+        return new TempestKeepStuckFallingTrigger(botAI);
     }
 
     // Trash
@@ -146,8 +145,8 @@ private:
     static Trigger* alar_pulling_boss(PlayerbotAI* botAI) {
         return new AlarPullingBossTrigger(botAI);
     }
-    static Trigger* alar_boss_is_flying_between_platforms(PlayerbotAI* botAI) {
-        return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI);
+    static Trigger* alar_flies_between_platforms(PlayerbotAI* botAI) {
+        return new AlarFliesBetweenPlatformsTrigger(botAI);
     }
     static Trigger* alar_embers_explode_upon_death(PlayerbotAI* botAI) {
         return new AlarEmbersExplodeUponDeathTrigger(botAI);
@@ -161,8 +160,8 @@ private:
     static Trigger* alar_rising_from_the_ashes(PlayerbotAI* botAI) {
         return new AlarRisingFromTheAshesTrigger(botAI);
     }
-    static Trigger* alar_is_in_phase_2(PlayerbotAI* botAI) {
-        return new AlarIsInPhase2Trigger(botAI);
+    static Trigger* alar_in_phase_2(PlayerbotAI* botAI) {
+        return new AlarInPhase2Trigger(botAI);
     }
     static Trigger* alar_should_manage_phase_tracker(PlayerbotAI* botAI) {
         return new AlarShouldManagePhaseTrackerTrigger(botAI);
@@ -186,16 +185,16 @@ private:
     static Trigger* high_astromancer_solarian_should_be_tanked(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianShouldBeTankedTrigger(botAI);
     }
-    static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
-        return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);
+    static Trigger* high_astromancer_solarian_wrath_of_the_astromancer(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianWrathOfTheAstromancerTrigger(botAI);
     }
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) {
         return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI);
     }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
-    static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_chased_by_thaladred(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderChasedByThaladredTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) {
         return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI);
@@ -207,11 +206,11 @@ private:
     static Trigger* kaelthas_sunstrider_capernian_should_be_tanked_by_warlock(PlayerbotAI* botAI) {
         return new KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_capernian_blows_up_near_and_far(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_should_stand_back_from_capernian(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderShouldStandBackFromCapernianTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_bots_should_hold_phase_3_positions(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_should_hold_phase_3_positions(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderShouldHoldPhase3PositionsTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) {
         return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI);
@@ -234,8 +233,8 @@ private:
     static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(PlayerbotAI* botAI) {
         return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_boss_has_entered_the_fight(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBossHasEnteredTheFightTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_has_entered_the_fight(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderHasEnteredTheFightTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(PlayerbotAI* botAI) {
         return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI);
@@ -243,8 +242,8 @@ private:
     static Trigger* kaelthas_sunstrider_should_assign_final_phase_target(PlayerbotAI* botAI) {
         return new KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(PlayerbotAI* botAI) {
-        return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI);
+    static Trigger* kaelthas_sunstrider_in_gravity_lapse_phase(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderInGravityLapsePhaseTrigger(botAI);
     }
 };
 

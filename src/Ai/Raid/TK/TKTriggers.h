@@ -40,12 +40,12 @@ public:
     bool IsActive() override;
 };
 
-class TempestKeepBotIsStuckFallingTrigger : public Trigger
+class TempestKeepStuckFallingTrigger : public Trigger
 {
 public:
     // Same idea as above; this is to address a fringe wipe scenario during Kael'thas.
-    TempestKeepBotIsStuckFallingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "tempest keep bot is stuck falling", 1000) {}
+    TempestKeepStuckFallingTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "tempest keep stuck falling", 1000) {}
     bool IsActive() override;
 };
 
@@ -71,11 +71,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class AlarBossIsFlyingBetweenPlatformsTrigger : public TempestKeepEncounterTrigger
+class AlarFliesBetweenPlatformsTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    AlarBossIsFlyingBetweenPlatformsTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar boss is flying between platforms") {}
+    AlarFliesBetweenPlatformsTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "al'ar flies between platforms") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -121,11 +121,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class AlarIsInPhase2Trigger : public TempestKeepEncounterTrigger
+class AlarInPhase2Trigger : public TempestKeepEncounterTrigger
 {
 public:
-    AlarIsInPhase2Trigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar is in phase 2") {}
+    AlarInPhase2Trigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "al'ar in phase 2") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -195,12 +195,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger : public TempestKeepEncounterTrigger
+class HighAstromancerSolarianWrathOfTheAstromancerTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(PlayerbotAI* botAI)
+    HighAstromancerSolarianWrathOfTheAstromancerTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "high astromancer solarian bot has wrath of the astromancer") {}
+            botAI, "high astromancer solarian wrath of the astromancer") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -219,11 +219,11 @@ protected:
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-class KaelthasSunstriderThaladredIsFixatedOnBotTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderChasedByThaladredTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderThaladredIsFixatedOnBotTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider thaladred is fixated on bot") {}
+    KaelthasSunstriderChasedByThaladredTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider chased by thaladred") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -262,23 +262,23 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderShouldStandBackFromCapernianTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderCapernianBlowsUpNearAndFarTrigger(PlayerbotAI* botAI)
+    KaelthasSunstriderShouldStandBackFromCapernianTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider capernian blows up near and far") {}
+            botAI, "kael'thas sunstrider should stand back from capernian") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderShouldHoldPhase3PositionsTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderBotsShouldHoldPhase3PositionsTrigger(PlayerbotAI* botAI)
+    KaelthasSunstriderShouldHoldPhase3PositionsTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider bots should hold phase 3 positions") {}
+            botAI, "kael'thas sunstrider should hold phase 3 positions") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -356,11 +356,11 @@ public:
     bool IsActive() override;
 };
 
-class KaelthasSunstriderBossHasEnteredTheFightTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderHasEnteredTheFightTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderBossHasEnteredTheFightTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider boss has entered the fight") {}
+    KaelthasSunstriderHasEnteredTheFightTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider has entered the fight") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -388,11 +388,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderBossIsManipulatingGravityTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderInGravityLapsePhaseTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderBossIsManipulatingGravityTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider boss is manipulating gravity") {}
+    KaelthasSunstriderInGravityLapsePhaseTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider in gravity lapse phase") {}
 
 protected:
     bool IsActiveInEncounter() override;
