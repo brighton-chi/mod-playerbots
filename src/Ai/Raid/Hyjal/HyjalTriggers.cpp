@@ -97,7 +97,7 @@ bool AnetheronRangedShouldSpreadTrigger::IsActiveInEncounter()
     return !GetInfernalToAttack(botAI, anetheron);
 }
 
-bool AnetheronBotIsNearInfernoTargetTrigger::IsActiveInEncounter()
+bool AnetheronNearInfernoTargetTrigger::IsActiveInEncounter()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron || anetheron->GetVictim() == bot)
@@ -110,7 +110,7 @@ bool AnetheronBotIsNearInfernoTargetTrigger::IsActiveInEncounter()
     return bot->GetExactDist2d(infernoTarget) < INFERNAL_ESCAPE_DISTANCE;
 }
 
-bool AnetheronBotIsTargetedByInfernalTrigger::IsActiveInEncounter()
+bool AnetheronTargetedByInfernalTrigger::IsActiveInEncounter()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
     if (!anetheron || anetheron->GetVictim() == bot)
@@ -184,7 +184,7 @@ bool KazrogalRangedShouldAvoidWarStompTrigger::IsActiveInEncounter()
     return !botsBelowManaThreshold.contains(bot->GetGUID());
 }
 
-bool KazrogalBotIsLowOnManaTrigger::IsActiveInEncounter()
+bool KazrogalLowOnManaTrigger::IsActiveInEncounter()
 {
     if (!IsKazrogalManaUser(botAI))
         return false;
@@ -365,7 +365,7 @@ bool AzgalorShouldDivideDpsTrigger::IsActiveInEncounter()
 
 // Archimonde
 
-bool ArchimondeBossCastsFearTrigger::IsActiveInEncounter()
+bool ArchimondeShamanShouldProtectAgainstFearTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
@@ -377,7 +377,7 @@ bool ArchimondeBossCastsFearTrigger::IsActiveInEncounter()
     return !HasProtectionOfElune(bot);
 }
 
-bool ArchimondeBossCastingAirBurstTrigger::IsActiveInEncounter()
+bool ArchimondeCastingAirBurstTrigger::IsActiveInEncounter()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde || archimonde->GetVictim() == bot)
@@ -401,7 +401,7 @@ bool ArchimondeRangedShouldSpreadTrigger::IsActiveInEncounter()
     return !HasProtectionOfElune(bot);
 }
 
-bool ArchimondeBotIsNearDoomfireTrigger::IsActiveInEncounter()
+bool ArchimondeNearDoomfireTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "archimonde"))
         return false;
@@ -412,7 +412,7 @@ bool ArchimondeBotIsNearDoomfireTrigger::IsActiveInEncounter()
     return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS);
 }
 
-bool ArchimondeBotStoodInDoomfireTrigger::IsActiveInEncounter()
+bool ArchimondeStoodInDoomfireTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_ROGUE &&
         bot->getClass() != CLASS_PALADIN)
