@@ -73,8 +73,7 @@ public:
         creators["kaz'rogal ranged should avoid war stomp"] =
             &RaidHyjalTriggerContext::kazrogal_ranged_should_avoid_war_stomp;
 
-        creators["kaz'rogal low on mana"] =
-            &RaidHyjalTriggerContext::kazrogal_low_on_mana;
+        creators["kaz'rogal low on mana"] = &RaidHyjalTriggerContext::kazrogal_low_on_mana;
 
         creators["kaz'rogal hunter should preserve mana"] =
             &RaidHyjalTriggerContext::kazrogal_hunter_should_preserve_mana;
@@ -124,8 +123,7 @@ public:
         creators["archimonde ranged should spread"] =
             &RaidHyjalTriggerContext::archimonde_ranged_should_spread;
 
-        creators["archimonde near doomfire"] =
-            &RaidHyjalTriggerContext::archimonde_near_doomfire;
+        creators["archimonde near doomfire"] = &RaidHyjalTriggerContext::archimonde_near_doomfire;
 
         creators["archimonde stood in doomfire"] =
             &RaidHyjalTriggerContext::archimonde_stood_in_doomfire;
