@@ -82,11 +82,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighKingMaulgarBossChannelingWhirlwindTrigger : public GruulsLairEncounterTrigger
+class HighKingMaulgarChannelingWhirlwindTrigger : public GruulsLairEncounterTrigger
 {
 public:
-    HighKingMaulgarBossChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar boss channeling whirlwind") {}
+    HighKingMaulgarChannelingWhirlwindTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "high king maulgar channeling whirlwind") {}
 
 protected:
     bool IsActiveInEncounter() override;

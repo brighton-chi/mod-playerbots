@@ -65,7 +65,7 @@ bool HighKingMaulgarDeterminingKillOrderTrigger::IsActiveInEncounter()
     return true;
 }
 
-bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActiveInEncounter()
+bool HighKingMaulgarChannelingWhirlwindTrigger::IsActiveInEncounter()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (!maulgar || !maulgar->HasAura(Id(GruulSpells::SPELL_WHIRLWIND)))

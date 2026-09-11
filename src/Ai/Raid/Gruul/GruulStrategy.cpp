@@ -26,7 +26,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar determining kill order", {
         NextAction("high king maulgar assign dps priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar boss channeling whirlwind", {
+    triggers.push_back(new TriggerNode("high king maulgar channeling whirlwind", {
         NextAction("high king maulgar run away from whirlwind", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("high king maulgar should stand back from krosh", {
