@@ -40,10 +40,10 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("anetheron ranged should spread", {
         NextAction("anetheron spread ranged in circle", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal", {
+    triggers.push_back(new TriggerNode("anetheron targeted by infernal", {
         NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("anetheron bot is near inferno target", {
+    triggers.push_back(new TriggerNode("anetheron near inferno target", {
         NextAction("anetheron move away from inferno target", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("anetheron infernals pulse immolation", {
@@ -68,7 +68,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kaz'rogal ranged should avoid war stomp", {
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
+    triggers.push_back(new TriggerNode("kaz'rogal low on mana", {
         NextAction("kaz'rogal move away from group", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal hunter should preserve mana", {
@@ -115,19 +115,19 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde should be tanked", {
         NextAction("archimonde move boss to initial position", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss casts fear", {
+    triggers.push_back(new TriggerNode("archimonde shaman should protect against fear", {
         NextAction("archimonde set tremor totem", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("archimonde boss casting air burst", {
+    triggers.push_back(new TriggerNode("archimonde casting air burst", {
         NextAction("archimonde keep air burst away from tank", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("archimonde ranged should spread", {
         NextAction("archimonde spread ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("archimonde bot is near doomfire", {
+    triggers.push_back(new TriggerNode("archimonde near doomfire", {
         NextAction("archimonde avoid doomfire", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("archimonde bot stood in doomfire", {
+    triggers.push_back(new TriggerNode("archimonde stood in doomfire", {
         NextAction("hyjal remove dangerous dot", ACTION_EMERGENCY + 7) }));
 }
 

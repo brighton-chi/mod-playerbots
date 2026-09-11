@@ -131,21 +131,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class AnetheronBotIsNearInfernoTargetTrigger : public HyjalEncounterTrigger
+class AnetheronNearInfernoTargetTrigger : public HyjalEncounterTrigger
 {
 public:
-    AnetheronBotIsNearInfernoTargetTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "anetheron bot is near inferno target") {}
+    AnetheronNearInfernoTargetTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "anetheron near inferno target") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class AnetheronBotIsTargetedByInfernalTrigger : public HyjalEncounterTrigger
+class AnetheronTargetedByInfernalTrigger : public HyjalEncounterTrigger
 {
 public:
-    AnetheronBotIsTargetedByInfernalTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "anetheron bot is targeted by infernal") {}
+    AnetheronTargetedByInfernalTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "anetheron targeted by infernal") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -203,11 +203,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KazrogalBotIsLowOnManaTrigger : public HyjalEncounterTrigger
+class KazrogalLowOnManaTrigger : public HyjalEncounterTrigger
 {
 public:
-    KazrogalBotIsLowOnManaTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "kaz'rogal bot is low on mana") {}
+    KazrogalLowOnManaTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "kaz'rogal low on mana") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -317,21 +317,21 @@ protected:
 
 // Archimonde
 
-class ArchimondeBossCastsFearTrigger : public HyjalEncounterTrigger
+class ArchimondeShamanShouldProtectAgainstFearTrigger : public HyjalEncounterTrigger
 {
 public:
-    ArchimondeBossCastsFearTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "archimonde boss casts fear") {}
+    ArchimondeShamanShouldProtectAgainstFearTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "archimonde shaman should protect against fear") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBossCastingAirBurstTrigger : public HyjalEncounterTrigger
+class ArchimondeCastingAirBurstTrigger : public HyjalEncounterTrigger
 {
 public:
-    ArchimondeBossCastingAirBurstTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "archimonde boss casting air burst") {}
+    ArchimondeCastingAirBurstTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "archimonde casting air burst") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -347,21 +347,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBotIsNearDoomfireTrigger : public HyjalEncounterTrigger
+class ArchimondeNearDoomfireTrigger : public HyjalEncounterTrigger
 {
 public:
-    ArchimondeBotIsNearDoomfireTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "archimonde bot is near doomfire") {}
+    ArchimondeNearDoomfireTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "archimonde near doomfire") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class ArchimondeBotStoodInDoomfireTrigger : public HyjalEncounterTrigger
+class ArchimondeStoodInDoomfireTrigger : public HyjalEncounterTrigger
 {
 public:
-    ArchimondeBotStoodInDoomfireTrigger(PlayerbotAI* botAI)
-        : HyjalEncounterTrigger(botAI, "archimonde bot stood in doomfire") {}
+    ArchimondeStoodInDoomfireTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(botAI, "archimonde stood in doomfire") {}
 
 protected:
     bool IsActiveInEncounter() override;
