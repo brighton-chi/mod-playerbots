@@ -90,17 +90,8 @@ public:
             &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
 
         // Fathom-Lord Karathress
-        creators["fathom-lord karathress should be tanked"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_should_be_tanked;
-
-        creators["fathom-lord karathress caribdis should be tanked"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_should_be_tanked;
-
-        creators["fathom-lord karathress sharkkis should be tanked"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_sharkkis_should_be_tanked;
-
-        creators["fathom-lord karathress tidalvess should be tanked"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_tidalvess_should_be_tanked;
+        creators["fathom-lord karathress targets should be tanked"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_targets_should_be_tanked;
 
         creators["fathom-lord karathress should heal caribdis tank"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_heal_caribdis_tank;
@@ -239,17 +230,8 @@ private:
     }
 
     // Fathom-Lord Karathress
-    static Trigger* fathom_lord_karathress_should_be_tanked(PlayerbotAI* botAI) {
-        return new FathomLordKarathressShouldBeTankedTrigger(botAI);
-    }
-    static Trigger* fathom_lord_karathress_caribdis_should_be_tanked(PlayerbotAI* botAI) {
-        return new FathomLordKarathressCaribdisShouldBeTankedTrigger(botAI);
-    }
-    static Trigger* fathom_lord_karathress_sharkkis_should_be_tanked(PlayerbotAI* botAI) {
-        return new FathomLordKarathressSharkkisShouldBeTankedTrigger(botAI);
-    }
-    static Trigger* fathom_lord_karathress_tidalvess_should_be_tanked(PlayerbotAI* botAI) {
-        return new FathomLordKarathressTidalvessShouldBeTankedTrigger(botAI);
+    static Trigger* fathom_lord_karathress_targets_should_be_tanked(PlayerbotAI* botAI) {
+        return new FathomLordKarathressTargetsShouldBeTankedTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_heal_caribdis_tank(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldHealCaribdisTankTrigger(botAI);

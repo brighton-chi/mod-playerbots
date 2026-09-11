@@ -267,41 +267,11 @@ protected:
 
 // Fathom-Lord Karathress
 
-class FathomLordKarathressShouldBeTankedTrigger : public SscEncounterTrigger
+class FathomLordKarathressTargetsShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress should be tanked") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class FathomLordKarathressCaribdisShouldBeTankedTrigger : public SscEncounterTrigger
-{
-public:
-    FathomLordKarathressCaribdisShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress caribdis should be tanked") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class FathomLordKarathressSharkkisShouldBeTankedTrigger : public SscEncounterTrigger
-{
-public:
-    FathomLordKarathressSharkkisShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress sharkkis should be tanked") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class FathomLordKarathressTidalvessShouldBeTankedTrigger : public SscEncounterTrigger
-{
-public:
-    FathomLordKarathressTidalvessShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress tidalvess should be tanked") {}
+    FathomLordKarathressTargetsShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress targets should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;

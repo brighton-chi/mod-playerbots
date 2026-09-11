@@ -41,7 +41,7 @@ bool IsRepositionAction(Player* bot, Action* action)
         (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
 }
 
-bool isBloodlustAction(Player* bot, Action* action)
+bool IsBloodlustAction(Player* bot, Action* action)
 {
     return bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
@@ -441,23 +441,25 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    bool const isTankMovementAction =
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<AvoidAoeAction*>(action);
-
-    if (!isTankMovementAction && !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<AvoidAoeAction*>(action) &&
+        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
+    {
         return 1.0f;
+    }
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
-        return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
+}
 
-    if (isTankMovementAction)
-        return 0.0f;
-
+float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
+{
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    return dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
 float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* action)
@@ -465,14 +467,11 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    if (!castSpellAction || castSpellAction->getThreatType() != Action::ActionThreatType::Aoe)
         return 1.0f;
 
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
 float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
@@ -480,42 +479,33 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
         return 1.0f;
 
-    if (dynamic_cast<FathomLordKarathressMisdirectBossesToTanksAction*>(action))
-        return 1.0f;
-
-    const uint32 now = getMSTime();
-    constexpr uint32 dpsWaitMs = 12 * IN_MILLISECONDS;
-
     auto it = karathressDpsWaitTimer.find(karathress->GetInstanceId());
-    if (it == karathressDpsWaitTimer.end() ||
-        getMSTimeDiff(it->second, now) < dpsWaitMs)
-    {
-        if (dynamic_cast<AttackAction*>(action) ||
-            (dynamic_cast<CastSpellAction*>(action) &&
-             !dynamic_cast<CastHealingSpellAction*>(action)))
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float FathomLordKarathressCaribdisTankHealerMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
-        return 1.0f;
-
-    if (dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action))
+    if (it == karathressDpsWaitTimer.end())
         return 0.0f;
 
-    return 1.0f;
+    constexpr uint32 dpsWaitMs = 12 * IN_MILLISECONDS;
+    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+}
+
+float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
 // Morogrim Tidewalker
@@ -523,20 +513,16 @@ float FathomLordKarathressCaribdisTankHealerMultiplier::GetValueInEncounter(Acti
 // Use Bloodlust/Heroism after the first Murloc spawn
 float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->getClass() != CLASS_SHAMAN)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!IsBloodlustAction(bot, action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "tidewalker lurker"))
-        return 1.0f;
-
-    if (dynamic_cast<CastHeroismAction*>(action) ||
-        dynamic_cast<CastBloodlustAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "tidewalker lurker") ? 1.0f : 0.0f;
 }
 
 float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
@@ -731,7 +717,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
 
 // All of phases 2 and 3 require a custom movement and targeting system
 // So the standard target selection system must be disabled
-float LadyVashjDisableAutomaticTargetingAndMovementMultiplier::GetValueInEncounter(Action *action)
+float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *action)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)

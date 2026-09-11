@@ -27,17 +27,14 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hydross the unstable should be tanked by nature tank", {
         NextAction("hydross the unstable position nature tank", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("hydross the unstable elementals spawned", {
-        NextAction("hydross the unstable prioritize elemental adds", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("hydross the unstable ranged should spread", {
-        NextAction("hydross the unstable frost phase spread out", ACTION_EMERGENCY + 1) }));
+        NextAction("hydross the unstable frost phase spread out", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable tank needs aggro upon phase change", {
-        NextAction("hydross the unstable misdirect boss to tank", ACTION_EMERGENCY + 6) }));
+        NextAction("hydross the unstable misdirect boss to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change", {
-        NextAction("hydross the unstable stop dps upon phase change", ACTION_EMERGENCY + 9) }));
+        NextAction("hydross the unstable stop dps upon phase change", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers", {
         NextAction("hydross the unstable manage timers", ACTION_EMERGENCY + 10) }));
@@ -88,17 +85,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
 
     // Fathom-Lord Karathress
-    triggers.push_back(new TriggerNode("fathom-lord karathress should be tanked", {
-        NextAction("fathom-lord karathress main tank position boss", ACTION_RAID) }));
-
-    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis should be tanked", {
-        NextAction("fathom-lord karathress first assist tank position caribdis", ACTION_RAID) }));
-
-    triggers.push_back(new TriggerNode("fathom-lord karathress sharkkis should be tanked", {
-        NextAction("fathom-lord karathress second assist tank position sharkkis", ACTION_RAID) }));
-
-    triggers.push_back(new TriggerNode("fathom-lord karathress tidalvess should be tanked", {
-        NextAction("fathom-lord karathress third assist tank position tidalvess", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("fathom-lord karathress targets should be tanked", {
+        NextAction("fathom-lord karathress tanks position targets", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should heal caribdis tank", {
         NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID) }));
@@ -187,9 +175,10 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressDisableAutoTargetMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
 
     // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
@@ -203,6 +192,6 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementMultiplier(botAI));
+    multipliers.push_back(new LadyVashjDisableAutoTargetAndMoveMultiplier(botAI));
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
 }

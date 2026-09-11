@@ -189,6 +189,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class FathomLordKarathressDisableAutoTargetMultiplier : public SscEncounterMultiplier
+{
+public:
+    FathomLordKarathressDisableAutoTargetMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress disable auto target") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class FathomLordKarathressDisableAoeMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -209,11 +219,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FathomLordKarathressCaribdisTankHealerMultiplier : public SscEncounterMultiplier
+class FathomLordKarathressMaintainPositionMultiplier : public SscEncounterMultiplier
 {
 public:
-    FathomLordKarathressCaribdisTankHealerMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "fathom-lord karathress caribdis tank healer") {}
+    FathomLordKarathressMaintainPositionMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress maintain position") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -313,11 +323,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjDisableAutomaticTargetingAndMovementMultiplier : public SscEncounterMultiplier
+class LadyVashjDisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjDisableAutomaticTargetingAndMovementMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj disable automatic targeting and movement") {}
+    LadyVashjDisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj disable auto target and move") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

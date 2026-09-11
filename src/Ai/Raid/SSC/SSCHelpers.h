@@ -21,6 +21,7 @@ class Map;
 class Player;
 class PlayerbotAI;
 class Unit;
+
 namespace SscHelpers
 {
 
@@ -79,6 +80,9 @@ enum class SscSpells : uint32
 
     // Mage
     SPELL_SLOW                   = 31589,
+
+    // Rogue
+    SPELL_CLOAK_OF_SHADOWS       = 31224,
 
     // Shaman
     SPELL_GROUNDING_TOTEM_EFFECT =  8178,
@@ -162,10 +166,8 @@ inline constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
 
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
-extern std::unordered_map<uint32, uint32> lurkerSpoutTimer;
+extern std::unordered_map<uint32, uint32> lurkerSpoutTimer; // Is there a  visual I can rely on? So I don't need a timer?
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
-
-bool IsLurkerCastingSpout(Unit* lurker);
 
 // Leotheras the Blind
 
@@ -201,6 +203,8 @@ inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
+
+inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };

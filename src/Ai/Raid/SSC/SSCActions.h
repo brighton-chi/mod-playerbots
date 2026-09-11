@@ -211,35 +211,11 @@ public:
 
 // Fathom-Lord Karathress
 
-class FathomLordKarathressMainTankPositionBossAction : public AttackAction
+class FathomLordKarathressTanksPositionTargetsAction : public AttackAction
 {
 public:
-    FathomLordKarathressMainTankPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "fathom-lord karathress main tank position boss") {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressFirstAssistTankPositionCaribdisAction : public AttackAction
-{
-public:
-    FathomLordKarathressFirstAssistTankPositionCaribdisAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "fathom-lord karathress first assist tank position caribdis") {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressSecondAssistTankPositionSharkkisAction : public AttackAction
-{
-public:
-    FathomLordKarathressSecondAssistTankPositionSharkkisAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "fathom-lord karathress second assist tank position sharkkis") {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressThirdAssistTankPositionTidalvessAction : public AttackAction
-{
-public:
-    FathomLordKarathressThirdAssistTankPositionTidalvessAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "fathom-lord karathress third assist tank position tidalvess") {}
+    FathomLordKarathressTanksPositionTargetsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "fathom-lord karathress tanks position targets") {}
     bool Execute(Event event) override;
 };
 

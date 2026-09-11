@@ -90,17 +90,8 @@ public:
             &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
 
         // Fathom-Lord Karathress
-        creators["fathom-lord karathress main tank position boss"] =
-            &RaidSscActionContext::fathom_lord_karathress_main_tank_position_boss;
-
-        creators["fathom-lord karathress first assist tank position caribdis"] =
-            &RaidSscActionContext::fathom_lord_karathress_first_assist_tank_position_caribdis;
-
-        creators["fathom-lord karathress second assist tank position sharkkis"] =
-            &RaidSscActionContext::fathom_lord_karathress_second_assist_tank_position_sharkkis;
-
-        creators["fathom-lord karathress third assist tank position tidalvess"] =
-            &RaidSscActionContext::fathom_lord_karathress_third_assist_tank_position_tidalvess;
+        creators["fathom-lord karathress tanks position targets"] =
+            &RaidSscActionContext::fathom_lord_karathress_tanks_position_targets;
 
         creators["fathom-lord karathress position caribdis tank healer"] =
             &RaidSscActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
@@ -246,17 +237,8 @@ private:
     }
 
     // Fathom-Lord Karathress
-    static Action* fathom_lord_karathress_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new FathomLordKarathressMainTankPositionBossAction(botAI);
-    }
-    static Action* fathom_lord_karathress_first_assist_tank_position_caribdis(PlayerbotAI* botAI) {
-        return new FathomLordKarathressFirstAssistTankPositionCaribdisAction(botAI);
-    }
-    static Action* fathom_lord_karathress_second_assist_tank_position_sharkkis(PlayerbotAI* botAI) {
-        return new FathomLordKarathressSecondAssistTankPositionSharkkisAction(botAI);
-    }
-    static Action* fathom_lord_karathress_third_assist_tank_position_tidalvess(PlayerbotAI* botAI) {
-        return new FathomLordKarathressThirdAssistTankPositionTidalvessAction(botAI);
+    static Action* fathom_lord_karathress_tanks_position_targets(PlayerbotAI* botAI) {
+        return new FathomLordKarathressTanksPositionTargetsAction(botAI);
     }
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) {
         return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI);

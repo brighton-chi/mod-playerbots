@@ -8,7 +8,6 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
-#include "Timer.h"
 #include <limits>
 #include <list>
 
@@ -100,11 +99,6 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
-
-bool IsLurkerCastingSpout(Unit* lurker)
-{
-    return lurker && lurker->FindCurrentSpellBySpellId(Id(SscSpells::SPELL_SPOUT_VISUAL));
-}
 
 // Leotheras the Blind
 
