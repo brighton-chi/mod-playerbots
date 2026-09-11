@@ -260,7 +260,7 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
     }
 }
 
-bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
     Position position;
     if (!TryGetMeleePosition(position))
@@ -277,7 +277,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Position& position) const
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -311,7 +311,8 @@ bool KiljaedenPositionMeleeAction::TryGetMeleePosition(Position& position) const
     return true;
 }
 
-bool KiljaedenPositionMeleeAction::TryAdjustMeleeForArmageddon(Position& position)
+bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddon(
+    Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());

@@ -206,8 +206,8 @@ public:
         creators["kil'jaeden position and move tanks"] =
             &RaidSwpActionContext::kiljaeden_position_and_move_tanks;
 
-        creators["kil'jaeden position melee"] =
-            &RaidSwpActionContext::kiljaeden_position_melee;
+        creators["kil'jaeden position melee and avoid armageddons"] =
+            &RaidSwpActionContext::kiljaeden_position_melee_and_avoid_armageddons;
 
         creators["kil'jaeden position ranged and avoid armageddons"] =
             &RaidSwpActionContext::kiljaeden_position_ranged_and_avoid_armageddons;
@@ -432,8 +432,8 @@ private:
     static Action* kiljaeden_position_and_move_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionAndMoveTanksAction(botAI);
     }
-    static Action* kiljaeden_position_melee(PlayerbotAI* botAI) {
-        return new KiljaedenPositionMeleeAction(botAI);
+    static Action* kiljaeden_position_melee_and_avoid_armageddons(PlayerbotAI* botAI) {
+        return new KiljaedenPositionMeleeAndAvoidArmageddonsAction(botAI);
     }
     static Action* kiljaeden_position_ranged_and_avoid_armageddons(PlayerbotAI* botAI) {
         return new KiljaedenPositionRangedAndAvoidArmageddonsAction(botAI);

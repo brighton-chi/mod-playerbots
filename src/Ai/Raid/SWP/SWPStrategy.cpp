@@ -201,10 +201,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden tanks should hold boss and reflections", {
         NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by melee", {
-        NextAction("kil'jaeden position melee", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("kil'jaeden melee should split into two groups", {
+        NextAction("kil'jaeden position melee and avoid armageddons", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden boss engaged by ranged", {
+    triggers.push_back(new TriggerNode("kil'jaeden ranged should spread in two arcs", {
         NextAction("kil'jaeden position ranged and avoid armageddons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden bot has fire bloom", {

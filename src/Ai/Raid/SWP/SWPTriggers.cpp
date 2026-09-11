@@ -817,7 +817,7 @@ bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenBossEngagedByMeleeTrigger::IsActiveInEncounter()
+bool KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return false;
@@ -832,7 +832,7 @@ bool KiljaedenBossEngagedByMeleeTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenBossEngagedByRangedTrigger::IsActiveInEncounter()
+bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
