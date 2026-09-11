@@ -14,7 +14,6 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
-#include "Timer.h"
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -585,21 +584,12 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
 // Use tank strategy for Demon Form and DPS strategy for Human Form
 bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
-    if (GetPersonalInnerDemon(botAI))
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    if (!leotherasDemon)
         return false;
 
-    if (Creature* leotherasDemon = GetActiveLeotherasDemon(bot))
-    {
-        if (MarkTargetWithSquare(bot, leotherasDemon))
-            return true;
-
-        SetRtiTarget(botAI, "square");
-
-        if (botAI->CanCastSpell("searing pain", leotherasDemon))
-            return botAI->CastSpell("searing pain", leotherasDemon);
-    }
-
-    return false;
+    return botAI->CanCastSpell("searing pain", leotherasDemon) &&
+        botAI->CastSpell("searing pain", leotherasDemon);
 }
 
 // Stop melee tanks from attacking upon transformation so they don't take aggro
@@ -684,19 +674,19 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
     }
 
     Creature* leotheras = GetPhase2LeotherasDemon(bot);
-    if (!leotheras)
+    if (!leotherasDemon)
         return false;
 
-    Unit* demonVictim = leotheras->GetVictim();
-    if (!demonVictim)
+    Unit* demonVictim = leotherasDemon->GetVictim();
+    if (!demonVictim || demonVictim == bot)
         return false;
 
     float currentDistance = bot->GetExactDist2d(demonVictim);
     constexpr float safeDistance = 10.0f;
-    if (currentDistance < safeDistance && demonVictim != bot)
-        return MoveAway(demonVictim, safeDistance - currentDistance);
+    if (currentDistance >= safeDistance)
+        return false;
 
-    return false;
+    return MoveAway(demonVictim, safeDistance - currentDistance);
 }
 
 // Hardcoded actions for healers and bear tanks to kill Inner Demons
@@ -732,33 +722,30 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
             Id(SscSpells::SPELL_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
-    bool casted = false;
-
     if (!bot->HasAura(Id(SscSpells::SPELL_CAT_FORM)) &&
-        botAI->CanCastSpell("cat form", bot) && botAI->CastSpell("cat form", bot))
-        casted = true;
+        botAI->CanCastSpell(Id(SscSpells::SPELL_CAT_FORM), bot) &&
+        botAI->CastSpell(Id(SscSpells::SPELL_CAT_FORM), bot))
+        return true;
 
-    if (botAI->CanCastSpell("berserk", bot) && botAI->CastSpell("berserk", bot))
-        casted = true;
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_DRUID_BERSERK), bot) &&
+        botAI->CastSpell(Id(SscSpells::SPELL_DRUID_BERSERK), bot))
+        return true;
 
     if (bot->GetPower(POWER_ENERGY) < 30 &&
         botAI->CanCastSpell("tiger's fury", bot) && botAI->CastSpell("tiger's fury", bot))
-        casted = true;
+        return true;
 
     if (bot->GetComboPoints() >= 4 &&
         botAI->CanCastSpell("ferocious bite", innerDemon) &&
         botAI->CastSpell("ferocious bite", innerDemon))
-        casted = true;
+        return true;
 
     if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 25.0f &&
         botAI->CanCastSpell("rake", innerDemon) && botAI->CastSpell("rake", innerDemon))
-        casted = true;
+        return true;
 
-    if (botAI->CanCastSpell("mangle (cat)", innerDemon) &&
-        botAI->CastSpell("mangle (cat)", innerDemon))
-        casted = true;
-
-    return casted;
+    return botAI->CanCastSpell("mangle (cat)", innerDemon) &&
+        botAI->CastSpell("mangle (cat)", innerDemon);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)
@@ -771,70 +758,54 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
                 Id(SscSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
         }
 
-        bool casted = false;
-
         if (botAI->CanCastSpell("barkskin", bot) &&
             botAI->CastSpell("barkskin", bot))
-            casted = true;
+            return true;
 
-        if (botAI->CanCastSpell("wrath", innerDemon) &&
-            botAI->CastSpell("wrath", innerDemon))
-            casted = true;
-
-        return casted;
+        return botAI->CanCastSpell("wrath", innerDemon) && botAI->CastSpell("wrath", innerDemon);
     }
-    else if (bot->getClass() == CLASS_PALADIN)
-    {
-        bool casted = false;
 
-        if (botAI->CanCastSpell("avenging wrath", bot) &&
-            botAI->CastSpell("avenging wrath", bot))
-            casted = true;
+    if (bot->getClass() == CLASS_PALADIN)
+    {
+        if (botAI->CanCastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot) &&
+            botAI->CastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot))
+            return true;
 
         if (botAI->CanCastSpell("consecration", bot) &&
             botAI->CastSpell("consecration", bot))
-            casted = true;
+            return true;
 
         if (botAI->CanCastSpell("exorcism", innerDemon) &&
             botAI->CastSpell("exorcism", innerDemon))
-            casted = true;
+            return true;
 
         if (botAI->CanCastSpell("hammer of wrath", innerDemon) &&
             botAI->CastSpell("hammer of wrath", innerDemon))
-            casted = true;
+            return true;
 
         if (botAI->CanCastSpell("holy shock", innerDemon) &&
             botAI->CastSpell("holy shock", innerDemon))
-            casted = true;
+            return true;
 
-        if (botAI->CanCastSpell("judgement of light", innerDemon) &&
-            botAI->CastSpell("judgement of light", innerDemon))
-            casted = true;
-
-        return casted;
+        return botAI->CanCastSpell("judgement of light", innerDemon) &&
+            botAI->CastSpell("judgement of light", innerDemon);
     }
-    else if (bot->getClass() == CLASS_PRIEST)
-    {
-        if (botAI->CanCastSpell("smite", innerDemon))
-            return botAI->CastSpell("smite", innerDemon);
-    }
-    else if (bot->getClass() == CLASS_SHAMAN)
-    {
-        bool casted = false;
 
+    if (bot->getClass() == CLASS_PRIEST)
+        return botAI->CanCastSpell("smite", innerDemon) && botAI->CastSpell("smite", innerDemon);
+
+    if (bot->getClass() == CLASS_SHAMAN)
+    {
         if (botAI->CanCastSpell("earth shock", innerDemon) &&
             botAI->CastSpell("earth shock", innerDemon))
-            casted = true;
+            return true;
 
         if (botAI->CanCastSpell("chain lightning", innerDemon) &&
             botAI->CastSpell("chain lightning", innerDemon))
-            casted = true;
+            return true;
 
-        if (botAI->CanCastSpell("lightning bolt", innerDemon) &&
-            botAI->CastSpell("lightning bolt", innerDemon))
-            casted = true;
-
-        return casted;
+        return botAI->CanCastSpell("lightning bolt", innerDemon) &&
+            botAI->CastSpell("lightning bolt", innerDemon);
     }
 
     return false;
@@ -847,38 +818,32 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
     if (!leotherasHumanoid)
         return false;
 
-    if (MarkTargetWithStar(bot, leotherasHumanoid))
-        return true;
-
-    SetRtiTarget(botAI, "star");
-
     if (AI_VALUE(Unit*, "current target") != leotherasHumanoid)
         return Attack(leotherasHumanoid);
-
-    Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
-    if (!leotherasDemon)
-        return false;
 
     if (leotherasHumanoid->GetVictim() != bot)
         return false;
 
-    Unit* demonTarget = leotherasDemon->GetVictim();
-    if (!demonTarget)
+    return MoveLeotherasFromWarlockTank(leotherasHumanoid);
+}
+
+bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarlockTank(
+    Creature* leotherasHumanoid)
+{
+    Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
+    if (!leotherasDemon)
         return false;
 
-    constexpr float safeDistanceFromDemon = 20.0f;
-    if (leotherasHumanoid->GetExactDist2d(demonTarget) < safeDistanceFromDemon)
-    {
-        float angle = atan2(bot->GetPositionY() - demonTarget->GetPositionY(),
-                            bot->GetPositionX() - demonTarget->GetPositionX());
-        float targetX = bot->GetPositionX() + safeDistanceFromDemon * std::cos(angle);
-        float targetY = bot->GetPositionY() + safeDistanceFromDemon * std::sin(angle);
+    Unit* demonVictim = leotherasDemon->GetVictim();
+    if (!demonVictim || demonVictim == bot)
+        return false;
 
-        return MoveTo(SSC_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    float const currentDistance = bot->GetExactDist2d(demonVictim);
+    constexpr float safeDistance = 20.0f;
+    if (currentDistance >= safeDistance)
+        return false;
 
-    return false;
+    return MoveAway(demonVictim, safeDistance - safeDistance, true);
 }
 
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
@@ -1179,25 +1144,6 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 
 // Morogrim Tidewalker
 
-bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)) && botAI->CanCastSpell("steady shot", tidewalker))
-        return botAI->CastSpell("steady shot", tidewalker);
-
-    return false;
-}
-
 // Separate tanking positions are used for phase 1 and phase 2 to address the
 // Water Globule mechanic in phase 2
 bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
@@ -1387,10 +1333,12 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
         {
             if (Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental"))
             {
-                float currentDistance = bot->GetExactDist2d(enchanted);
+                float const currentDistance = bot->GetExactDist2d(enchanted);
                 constexpr float safeDistance = 10.0f;
-                if (currentDistance < safeDistance)
-                    return MoveAway(enchanted, safeDistance - currentDistance);
+                if (currentDistance >= safeDistance)
+                    return false;
+
+                return MoveAway(enchanted, safeDistance - currentDistance);
             }
         }
     }
@@ -1471,25 +1419,6 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
            botAI->CastSpell("grounding totem", bot);
 }
 
-bool LadyVashjMisdirectBossToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)) && botAI->CanCastSpell("steady shot", vashj))
-        return botAI->CastSpell("steady shot", vashj);
-
-    return false;
-}
-
 bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -1500,10 +1429,12 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && bot != mainTank && mainTank->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE)))
     {
-        float currentDistance = bot->GetExactDist2d(mainTank);
+        float const currentDistance = bot->GetExactDist2d(mainTank);
         constexpr float safeDistance = 11.0f;
-        if (currentDistance < safeDistance)
-            return MoveAway(mainTank, safeDistance - currentDistance);
+        if (currentDistance >= safeDistance)
+            return false;
+
+        return MoveAway(mainTank, safeDistance - currentDistance);
     }
 
     // If any other bot has Static Charge, it should move away from other group members
@@ -1744,10 +1675,10 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
 
         float currentDistance = bot->GetExactDist2d(vashj);
         constexpr float safeDistance = 28.0f;
-        if (strider->GetVictim() == bot && currentDistance < safeDistance)
-            return MoveAway(vashj, safeDistance - currentDistance);
+        if (strider->GetVictim() != bot || currentDistance >= safeDistance)
+            return false;
 
-        return false;
+        return MoveAway(vashj, safeDistance - currentDistance, true);
     }
 
     // Don't move away if raid cheats are enabled, or in any case if the bot is a tank
@@ -1787,29 +1718,24 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (!tainted)
         return false;
 
-    if (bot->GetExactDist2d(tainted) > 10.0f)
+    bool const isWithinMeleeRange = bot->IsWithinMeleeRange(tainted);
+
+    if (!isWithinTaintedMeleeRange)
     {
         bot->CastStop();
-        bot->NearTeleportTo(tainted->GetPositionX(), tainted->GetPositionY(),
-                            tainted->GetPositionZ(), tainted->GetOrientation());
+        bot->NearTeleportTo(
+            tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ(),
+            tainted->GetOrientation());
     }
 
     if (AI_VALUE(Unit*, "current target") != tainted)
-    {
-        if (MarkTargetWithStar(bot, tainted))
-            return true;
-
-        SetRtiTarget(botAI, "star");
         return Attack(tainted);
-    }
 
-    if (bot->GetExactDist2d(tainted) < 5.0f)
-    {
-        bot->SetFullHealth();
-        bot->RemoveAura(Id(SscSpells::SPELL_POISON_BOLT));
-    }
+    if (!isWithinTaintedMeleeRange)
+        return false;
 
-    return false;
+    bot->SetFullHealth();
+    bot->RemoveAura(Id(SscSpells::SPELL_POISON_BOLT));
 }
 
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)

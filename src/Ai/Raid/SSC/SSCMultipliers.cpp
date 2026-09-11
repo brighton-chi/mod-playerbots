@@ -339,9 +339,9 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     return action->GetTarget() == innerDemon ? 1.0f : 0.0f; // NEED TO CONFIRM IF THIS WORKS INSTEAD OF SUPPRESSING TYPES OF SPELLS
 }
 
-float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
+float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
+    if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
     if (!dynamic_cast<AttackAction*>(action) &&
@@ -353,8 +353,11 @@ float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValueInEncounter(Ac
         return 1.0f;
     }
 
-    Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
-    return chaosBlast && chaosBlast->GetStackAmount() >= 5 ? 0.0f : 1.0f;
+    if (!HasTooManyChaosBlastStacks(bot))
+        return 1.0f;
+
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    return leotherasDemon && leotherasDemon->GetVictim() != bot ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)

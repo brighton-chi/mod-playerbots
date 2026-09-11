@@ -74,12 +74,16 @@ enum class SscSpells : uint32
     SPELL_BEAR_FORM              =  5487,
     SPELL_DIRE_BEAR_FORM         =  9634,
     SPELL_TREE_OF_LIFE           = 33891,
+    SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
     SPELL_MISDIRECTION           = 35079,
 
     // Mage
     SPELL_SLOW                   = 31589,
+
+    // Paladin
+    SPELL_AVENGING_WRATH         = 31884,
 
     // Rogue
     SPELL_CLOAK_OF_SHADOWS       = 31224,
@@ -188,6 +192,7 @@ Creature* GetActiveLeotherasDemon(Player* bot);
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
+bool HasTooManyChaosBlastStacks(Player* bot);
 bool HasInnerDemon(Player* bot);
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 

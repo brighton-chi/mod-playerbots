@@ -153,7 +153,10 @@ bool LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger::IsActiveInEncount
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (GetLeotherasWarlockTank(bot) != bot)
+    if (!IsLeotherasWarlockTank(bot))
+        return false;
+
+    if (HasInnerDemon(bot))
         return false;
 
     return GetActiveLeotherasDemon(bot);
@@ -164,12 +167,13 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
+    if (HasInnerDemon(bot))
+        return false;
+
+    // If there is no Warlock tank, then traditional tanks will have to do it.
     if (!GetLeotherasWarlockTank(bot))
         return false;
 
@@ -217,25 +221,16 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (HasInnerDemon(bot))
         return false;
 
-    Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
-    if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
+    if (!HasTooManyChaosBlastStacks(bot))
         return false;
 
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
-    if (!leotherasDemon || leotherasDemon->GetVictim() == bot)
-        return false;
-
-    // Main tank needs to stay in if there is no Warlock tank
-    if (PlayerbotAI::IsMainTank(bot))
-        return GetLeotherasWarlockTank(bot);
-
-    return true;
+    return leotherasDemon && leotherasDemon->GetVictim() != bot;
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActiveInEncounter()
 {
-    // Warlock tank handles as part of its own action
-    return HasInnerDemon(bot) && !IsLeotherasWarlockTank(bot);
+    return HasInnerDemon(bot);
 }
 
 bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()

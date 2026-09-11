@@ -168,7 +168,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Leotheras the Blind
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));

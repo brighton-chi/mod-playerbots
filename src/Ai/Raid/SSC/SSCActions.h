@@ -39,6 +39,21 @@ public:
     bool Execute(Event event) override;
 };
 
+// Shared Bosses
+
+// Morogrim Tidewalker and Lady Vashj
+class SscMisdirectBossToMainTankAction : public Action
+{
+public:
+    SscMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
+    bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
+};
+
 // Hydross the Unstable <Duke of Currents>
 
 class HydrossTheUnstablePositionFrostTankAction : public AttackAction
@@ -191,6 +206,9 @@ public:
     LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "leotheras the blind final phase assign dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveLeotherasFromWarlockTank(Creature* leotherasHumanoid);
 };
 
 class LeotherasTheBlindMisdirectBossToWarlockTankAction : public Action
@@ -253,14 +271,6 @@ public:
 
 // Morogrim Tidewalker
 
-class MorogrimTidewalkerMisdirectBossToMainTankAction : public Action
-{
-public:
-    MorogrimTidewalkerMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "morogrim tidewalker misdirect boss to main tank") {}
-    bool Execute(Event event) override;
-};
-
 class MorogrimTidewalkerMoveBossToTankPositionAction : public AttackAction
 {
 public:
@@ -312,14 +322,6 @@ class LadyVashjStaticChargeMoveAwayFromGroupAction : public MovementAction
 public:
     LadyVashjStaticChargeMoveAwayFromGroupAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj static charge move away from group") {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjMisdirectBossToMainTankAction : public Action
-{
-public:
-    LadyVashjMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 

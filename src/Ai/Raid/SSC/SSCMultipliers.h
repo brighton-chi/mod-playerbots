@@ -137,11 +137,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public SscEncounterMultiplier
+class LeotherasTheBlindMeleeAvoidChaosBlastMultiplier : public SscEncounterMultiplier
 {
 public:
-    LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "leotheras the blind melee dps avoid chaos blast") {}
+    LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "leotheras the blind melee avoid chaos blast") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

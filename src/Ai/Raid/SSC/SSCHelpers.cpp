@@ -211,6 +211,12 @@ bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
          leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL)));
 }
 
+bool HasTooManyChaosBlastStacks(Player* bot)
+{
+    Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
+    return chaosBlast && chaosBlast->GetStackAmount() >= 5;
+}
+
 bool HasInnerDemon(Player* bot)
 {
     return bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
