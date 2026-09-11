@@ -686,21 +686,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenBotHasStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
-{
-public:
-    KiljaedenBotHasStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has stale root after dragon") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class KiljaedenBotControlsDragonTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenBotControlsDragonTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "kil'jaeden bot controls dragon") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KiljaedenBotHasStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenBotHasStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "kil'jaeden bot has stale root after dragon") {}
 
 protected:
     bool IsActiveInEncounter() override;

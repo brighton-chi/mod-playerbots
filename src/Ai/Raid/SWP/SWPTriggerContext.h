@@ -215,11 +215,11 @@ public:
         creators["kil'jaeden dragon orb is active"] =
             &RaidSwpTriggerContext::kiljaeden_dragon_orb_is_active;
 
-        creators["kil'jaeden bot has stale root after dragon"] =
-            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
-
         creators["kil'jaeden bot controls dragon"] =
             &RaidSwpTriggerContext::kiljaeden_bot_controls_dragon;
+
+        creators["kil'jaeden bot has stale root after dragon"] =
+            &RaidSwpTriggerContext::kiljaeden_bot_has_stale_root_after_dragon;
     }
 
 private:
@@ -430,11 +430,11 @@ private:
     static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI) {
         return new KiljaedenDragonOrbIsActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_bot_has_stale_root_after_dragon(PlayerbotAI* botAI) {
-        return new KiljaedenBotHasStaleRootAfterDragonTrigger(botAI);
-    }
     static Trigger* kiljaeden_bot_controls_dragon(PlayerbotAI* botAI) {
         return new KiljaedenBotControlsDragonTrigger(botAI);
+    }
+    static Trigger* kiljaeden_bot_has_stale_root_after_dragon(PlayerbotAI* botAI) {
+        return new KiljaedenBotHasStaleRootAfterDragonTrigger(botAI);
     }
 };
 
