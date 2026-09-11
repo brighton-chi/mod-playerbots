@@ -259,7 +259,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins
-    multipliers.push_back(new EredarTwinsDisableAutomaticTargetingMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
