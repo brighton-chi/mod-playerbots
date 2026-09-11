@@ -20,24 +20,24 @@ public:
             &RaidSscTriggerContext::ssc_no_encounter_in_progress;
 
         // Trash
-        creators["underbog colossus spawned toxic pool after death"] =
-            &RaidSscTriggerContext::underbog_colossus_spawned_toxic_pool_after_death;
+        creators["underbog colossus in toxic pool"] =
+            &RaidSscTriggerContext::underbog_colossus_in_toxic_pool;
 
         creators["greyheart tidecaller water elemental totem spawned"] =
             &RaidSscTriggerContext::greyheart_tidecaller_water_elemental_totem_spawned;
 
         // Hydross the Unstable <Duke of Currents>
-        creators["hydross the unstable bot is frost tank"] =
-            &RaidSscTriggerContext::hydross_the_unstable_bot_is_frost_tank;
+        creators["hydross the unstable should be tanked by frost tank"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_be_tanked_by_frost_tank;
 
-        creators["hydross the unstable bot is nature tank"] =
-            &RaidSscTriggerContext::hydross_the_unstable_bot_is_nature_tank;
+        creators["hydross the unstable should be tanked by nature tank"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_be_tanked_by_nature_tank;
 
         creators["hydross the unstable elementals spawned"] =
             &RaidSscTriggerContext::hydross_the_unstable_elementals_spawned;
 
-        creators["hydross the unstable danger from water tombs"] =
-            &RaidSscTriggerContext::hydross_the_unstable_danger_from_water_tombs;
+        creators["hydross the unstable ranged should spread"] =
+            &RaidSscTriggerContext::hydross_the_unstable_ranged_should_spread;
 
         creators["hydross the unstable tank needs aggro upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
@@ -45,65 +45,65 @@ public:
         creators["hydross the unstable aggro resets upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
 
-        creators["hydross the unstable need to manage timers"] =
-            &RaidSscTriggerContext::hydross_the_unstable_need_to_manage_timers;
+        creators["hydross the unstable should manage phase timers"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
 
         // The Lurker Below
         creators["the lurker below spout is active"] =
             &RaidSscTriggerContext::the_lurker_below_spout_is_active;
 
-        creators["the lurker below boss is active for main tank"] =
-            &RaidSscTriggerContext::the_lurker_below_boss_is_active_for_main_tank;
+        creators["the lurker below should be tanked"] =
+            &RaidSscTriggerContext::the_lurker_below_should_be_tanked;
 
-        creators["the lurker below boss casts geyser"] =
-            &RaidSscTriggerContext::the_lurker_below_boss_casts_geyser;
+        creators["the lurker below ranged should spread"] =
+            &RaidSscTriggerContext::the_lurker_below_ranged_should_spread;
 
-        creators["the lurker below boss is submerged"] =
-            &RaidSscTriggerContext::the_lurker_below_boss_is_submerged;
+        creators["the lurker below is submerged"] =
+            &RaidSscTriggerContext::the_lurker_below_is_submerged;
 
-        creators["the lurker below need to prepare timer for spout"] =
-            &RaidSscTriggerContext::the_lurker_below_need_to_prepare_timer_for_spout;
+        creators["the lurker below should manage spout timer"] =
+            &RaidSscTriggerContext::the_lurker_below_should_manage_spout_timer;
 
         // Leotheras the Blind
-        creators["leotheras the blind boss transformed into demon form"] =
-            &RaidSscTriggerContext::leotheras_the_blind_boss_transformed_into_demon_form;
+        creators["leotheras the blind demon form should be tanked by warlock"] =
+            &RaidSscTriggerContext::leotheras_the_blind_demon_form_should_be_tanked_by_warlock;
 
         creators["leotheras the blind only warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
 
-        creators["leotheras the blind boss engaged by ranged"] =
-            &RaidSscTriggerContext::leotheras_the_blind_boss_engaged_by_ranged;
+        creators["leotheras the blind ranged should spread"] =
+            &RaidSscTriggerContext::leotheras_the_blind_ranged_should_spread;
 
-        creators["leotheras the blind boss channeling whirlwind"] =
-            &RaidSscTriggerContext::leotheras_the_blind_boss_channeling_whirlwind;
+        creators["leotheras the blind channeling whirlwind"] =
+            &RaidSscTriggerContext::leotheras_the_blind_channeling_whirlwind;
 
-        creators["leotheras the blind bot has too many chaos blast stacks"] =
-            &RaidSscTriggerContext::leotheras_the_blind_bot_has_too_many_chaos_blast_stacks;
+        creators["leotheras the blind too many chaos blast stacks"] =
+            &RaidSscTriggerContext::leotheras_the_blind_too_many_chaos_blast_stacks;
 
         creators["leotheras the blind inner demon has awakened"] =
             &RaidSscTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
 
-        creators["leotheras the blind entered final phase"] =
-            &RaidSscTriggerContext::leotheras_the_blind_entered_final_phase;
+        creators["leotheras the blind in final phase"] =
+            &RaidSscTriggerContext::leotheras_the_blind_in_final_phase;
 
         creators["leotheras the blind demon form tank needs aggro"] =
             &RaidSscTriggerContext::leotheras_the_blind_demon_form_tank_needs_aggro;
 
-        creators["leotheras the blind boss wipes aggro upon phase change"] =
-            &RaidSscTriggerContext::leotheras_the_blind_boss_wipes_aggro_upon_phase_change;
+        creators["leotheras the blind should manage dps wait timers"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
 
         // Fathom-Lord Karathress
-        creators["fathom-lord karathress boss engaged by main tank"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_boss_engaged_by_main_tank;
+        creators["fathom-lord karathress should be tanked"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_be_tanked;
 
-        creators["fathom-lord karathress caribdis engaged by first assist tank"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_engaged_by_first_assist_tank;
+        creators["fathom-lord karathress caribdis should be tanked"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_should_be_tanked;
 
-        creators["fathom-lord karathress sharkkis engaged by second assist tank"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_sharkkis_engaged_by_second_assist_tank;
+        creators["fathom-lord karathress sharkkis should be tanked"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_sharkkis_should_be_tanked;
 
-        creators["fathom-lord karathress tidalvess engaged by third assist tank"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_tidalvess_engaged_by_third_assist_tank;
+        creators["fathom-lord karathress tidalvess should be tanked"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_tidalvess_should_be_tanked;
 
         creators["fathom-lord karathress caribdis tank needs dedicated healer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_caribdis_tank_needs_dedicated_healer;
@@ -114,31 +114,31 @@ public:
         creators["fathom-lord karathress determining kill order"] =
             &RaidSscTriggerContext::fathom_lord_karathress_determining_kill_order;
 
-        creators["fathom-lord karathress tanks need to establish aggro"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_tanks_need_to_establish_aggro;
+        creators["fathom-lord karathress should manage dps timer"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
 
         // Morogrim Tidewalker
-        creators["morogrim tidewalker boss engaged by main tank"] =
-            &RaidSscTriggerContext::morogrim_tidewalker_boss_engaged_by_main_tank;
+        creators["morogrim tidewalker should be tanked"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_should_be_tanked;
 
         creators["morogrim tidewalker pulling boss"] =
             &RaidSscTriggerContext::morogrim_tidewalker_pulling_boss;
 
-        creators["morogrim tidewalker water globules are incoming"] =
-            &RaidSscTriggerContext::morogrim_tidewalker_water_globules_are_incoming;
+        creators["morogrim tidewalker in phase 2"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_in_phase_2;
 
         // Lady Vashj <Coilfang Matron>
-        creators["lady vashj boss engaged by main tank"] =
-            &RaidSscTriggerContext::lady_vashj_boss_engaged_by_main_tank;
+        creators["lady vashj should be tanked"] =
+            &RaidSscTriggerContext::lady_vashj_should_be_tanked;
 
-        creators["lady vashj boss engaged by ranged in phase 1"] =
-            &RaidSscTriggerContext::lady_vashj_boss_engaged_by_ranged_in_phase_1;
+        creators["lady vashj ranged should spread in phase 1"] =
+            &RaidSscTriggerContext::lady_vashj_ranged_should_spread_in_phase_1;
 
-        creators["lady vashj casts shock blast on highest aggro"] =
-            &RaidSscTriggerContext::lady_vashj_casts_shock_blast_on_highest_aggro;
+        creators["lady vashj shaman should ground shock blast"] =
+            &RaidSscTriggerContext::lady_vashj_shaman_should_ground_shock_blast;
 
-        creators["lady vashj bot has static charge"] =
-            &RaidSscTriggerContext::lady_vashj_bot_has_static_charge;
+        creators["lady vashj static charge on group member"] =
+            &RaidSscTriggerContext::lady_vashj_static_charge_on_group_member;
 
         creators["lady vashj pulling boss in phase 1 and phase 3"] =
             &RaidSscTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
@@ -155,11 +155,11 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
-        creators["lady vashj toxic sporebats are spewing poison clouds"] =
-            &RaidSscTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
+        creators["lady vashj in phase 3"] =
+            &RaidSscTriggerContext::lady_vashj_in_phase_3;
 
-        creators["lady vashj bot is entangled in toxic spores or static charge"] =
-            &RaidSscTriggerContext::lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge;
+        creators["lady vashj entangle on melee"] =
+            &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
     }
 
 private:
@@ -169,25 +169,25 @@ private:
     }
 
     // Trash
-    static Trigger* underbog_colossus_spawned_toxic_pool_after_death(PlayerbotAI* botAI) {
-        return new UnderbogColossusSpawnedToxicPoolAfterDeathTrigger(botAI);
+    static Trigger* underbog_colossus_in_toxic_pool(PlayerbotAI* botAI) {
+        return new UnderbogColossusInToxicPoolTrigger(botAI);
     }
     static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI) {
         return new GreyheartTidecallerWaterElementalTotemSpawnedTrigger(botAI);
     }
 
     // Hydross the Unstable <Duke of Currents>
-    static Trigger* hydross_the_unstable_bot_is_frost_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableBotIsFrostTankTrigger(botAI);
+    static Trigger* hydross_the_unstable_should_be_tanked_by_frost_tank(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableShouldBeTankedByFrostTankTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_bot_is_nature_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableBotIsNatureTankTrigger(botAI);
+    static Trigger* hydross_the_unstable_should_be_tanked_by_nature_tank(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableShouldBeTankedByNatureTankTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_elementals_spawned(PlayerbotAI* botAI) {
         return new HydrossTheUnstableElementalsSpawnedTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_danger_from_water_tombs(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableDangerFromWaterTombsTrigger(botAI);
+    static Trigger* hydross_the_unstable_ranged_should_spread(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_tank_needs_aggro_upon_phase_change(PlayerbotAI* botAI) {
         return new HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(botAI);
@@ -195,68 +195,68 @@ private:
     static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI) {
         return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_need_to_manage_timers(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableNeedToManageTimersTrigger(botAI);
+    static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
     }
 
     // The Lurker Below
     static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) {
         return new TheLurkerBelowSpoutIsActiveTrigger(botAI);
     }
-    static Trigger* the_lurker_below_boss_is_active_for_main_tank(PlayerbotAI* botAI) {
-        return new TheLurkerBelowBossIsActiveForMainTankTrigger(botAI);
+    static Trigger* the_lurker_below_should_be_tanked(PlayerbotAI* botAI) {
+        return new TheLurkerBelowShouldBeTankedTrigger(botAI);
     }
-    static Trigger* the_lurker_below_boss_casts_geyser(PlayerbotAI* botAI) {
-        return new TheLurkerBelowBossCastsGeyserTrigger(botAI);
+    static Trigger* the_lurker_below_ranged_should_spread(PlayerbotAI* botAI) {
+        return new TheLurkerBelowRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* the_lurker_below_boss_is_submerged(PlayerbotAI* botAI) {
-        return new TheLurkerBelowBossIsSubmergedTrigger(botAI);
+    static Trigger* the_lurker_below_is_submerged(PlayerbotAI* botAI) {
+        return new TheLurkerBelowIsSubmergedTrigger(botAI);
     }
-    static Trigger* the_lurker_below_need_to_prepare_timer_for_spout(PlayerbotAI* botAI) {
-        return new TheLurkerBelowNeedToPrepareTimerForSpoutTrigger(botAI);
+    static Trigger* the_lurker_below_should_manage_spout_timer(PlayerbotAI* botAI) {
+        return new TheLurkerBelowShouldManageSpoutTimerTrigger(botAI);
     }
 
     // Leotheras the Blind
-    static Trigger* leotheras_the_blind_boss_transformed_into_demon_form(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBossTransformedIntoDemonFormTrigger(botAI);
+    static Trigger* leotheras_the_blind_demon_form_should_be_tanked_by_warlock(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_only_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBossEngagedByRangedTrigger(botAI);
+    static Trigger* leotheras_the_blind_ranged_should_spread(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_boss_channeling_whirlwind(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBossChannelingWhirlwindTrigger(botAI);
+    static Trigger* leotheras_the_blind_channeling_whirlwind(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_bot_has_too_many_chaos_blast_stacks(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger(botAI);
+    static Trigger* leotheras_the_blind_too_many_chaos_blast_stacks(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindTooManyChaosBlastStacksTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_inner_demon_has_awakened(PlayerbotAI* botAI) {
         return new LeotherasTheBlindInnerDemonHasAwakenedTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_entered_final_phase(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindEnteredFinalPhaseTrigger(botAI);
+    static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_demon_form_tank_needs_aggro(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDemonFormTankNeedsAggro(botAI);
     }
-    static Trigger* leotheras_the_blind_boss_wipes_aggro_upon_phase_change(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger(botAI);
+    static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);
     }
 
     // Fathom-Lord Karathress
-    static Trigger* fathom_lord_karathress_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new FathomLordKarathressBossEngagedByMainTankTrigger(botAI);
+    static Trigger* fathom_lord_karathress_should_be_tanked(PlayerbotAI* botAI) {
+        return new FathomLordKarathressShouldBeTankedTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_caribdis_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
-        return new FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger(botAI);
+    static Trigger* fathom_lord_karathress_caribdis_should_be_tanked(PlayerbotAI* botAI) {
+        return new FathomLordKarathressCaribdisShouldBeTankedTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_sharkkis_engaged_by_second_assist_tank(PlayerbotAI* botAI) {
-        return new FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger(botAI);
+    static Trigger* fathom_lord_karathress_sharkkis_should_be_tanked(PlayerbotAI* botAI) {
+        return new FathomLordKarathressSharkkisShouldBeTankedTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_tidalvess_engaged_by_third_assist_tank(PlayerbotAI* botAI) {
-        return new FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger(botAI);
+    static Trigger* fathom_lord_karathress_tidalvess_should_be_tanked(PlayerbotAI* botAI) {
+        return new FathomLordKarathressTidalvessShouldBeTankedTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_caribdis_tank_needs_dedicated_healer(PlayerbotAI* botAI) {
         return new FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(botAI);
@@ -267,33 +267,33 @@ private:
     static Trigger* fathom_lord_karathress_determining_kill_order(PlayerbotAI* botAI) {
         return new FathomLordKarathressDeterminingKillOrderTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_tanks_need_to_establish_aggro(PlayerbotAI* botAI) {
-        return new FathomLordKarathressTanksNeedToEstablishAggroTrigger(botAI);
+    static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI) {
+        return new FathomLordKarathressShouldManageDpsTimerTrigger(botAI);
     }
 
     // Morogrim Tidewalker
-    static Trigger* morogrim_tidewalker_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerBossEngagedByMainTankTrigger(botAI);
+    static Trigger* morogrim_tidewalker_should_be_tanked(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerShouldBeTankedTrigger(botAI);
     }
     static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerPullingBossTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_water_globules_are_incoming(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(botAI);
+    static Trigger* morogrim_tidewalker_in_phase_2(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerInPhase2Trigger(botAI);
     }
 
     // Lady Vashj <Coilfang Matron>
-    static Trigger* lady_vashj_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
-        return new LadyVashjBossEngagedByMainTankTrigger(botAI);
+    static Trigger* lady_vashj_should_be_tanked(PlayerbotAI* botAI) {
+        return new LadyVashjShouldBeTankedTrigger(botAI);
     }
-    static Trigger* lady_vashj_boss_engaged_by_ranged_in_phase_1(PlayerbotAI* botAI) {
-        return new LadyVashjBossEngagedByRangedInPhase1Trigger(botAI);
+    static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI) {
+        return new LadyVashjRangedShouldSpreadInPhase1Trigger(botAI);
     }
-    static Trigger* lady_vashj_casts_shock_blast_on_highest_aggro(PlayerbotAI* botAI) {
-        return new LadyVashjCastsShockBlastOnHighestAggroTrigger(botAI);
+    static Trigger* lady_vashj_shaman_should_ground_shock_blast(PlayerbotAI* botAI) {
+        return new LadyVashjShamanShouldGroundShockBlastTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_has_static_charge(PlayerbotAI* botAI) {
-        return new LadyVashjBotHasStaticChargeTrigger(botAI);
+    static Trigger* lady_vashj_static_charge_on_group_member(PlayerbotAI* botAI) {
+        return new LadyVashjStaticChargeOnGroupMemberTrigger(botAI);
     }
     static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI);
@@ -310,11 +310,11 @@ private:
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
     }
-    static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(PlayerbotAI* botAI) {
-        return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI);
+    static Trigger* lady_vashj_in_phase_3(PlayerbotAI* botAI) {
+        return new LadyVashjInPhase3Trigger(botAI);
     }
-    static Trigger* lady_vashj_bot_is_entangled_in_toxic_spores_or_static_charge(PlayerbotAI* botAI) {
-        return new LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(botAI);
+    static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
+        return new LadyVashjEntangleOnMeleeTrigger(botAI);
     }
 };
 

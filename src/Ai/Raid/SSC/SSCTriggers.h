@@ -23,11 +23,11 @@ public:
 
 // Trash
 
-class UnderbogColossusSpawnedToxicPoolAfterDeathTrigger : public Trigger
+class UnderbogColossusInToxicPoolTrigger : public Trigger
 {
 public:
-    UnderbogColossusSpawnedToxicPoolAfterDeathTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "underbog colossus spawned toxic pool after death") {}
+    UnderbogColossusInToxicPoolTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "underbog colossus in toxic pool") {}
     bool IsActive() override;
 };
 
@@ -41,19 +41,19 @@ public:
 
 // Hydross the Unstable <Duke of Currents>
 
-class HydrossTheUnstableBotIsFrostTankTrigger : public Trigger
+class HydrossTheUnstableShouldBeTankedByFrostTankTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableBotIsFrostTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable bot is frost tank") {}
+    HydrossTheUnstableShouldBeTankedByFrostTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "hydross the unstable should be tanked by frost tank") {}
     bool IsActive() override;
 };
 
-class HydrossTheUnstableBotIsNatureTankTrigger : public Trigger
+class HydrossTheUnstableShouldBeTankedByNatureTankTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableBotIsNatureTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable bot is nature tank") {}
+    HydrossTheUnstableShouldBeTankedByNatureTankTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "hydross the unstable should be tanked by nature tank") {}
     bool IsActive() override;
 };
 
@@ -65,11 +65,11 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableDangerFromWaterTombsTrigger : public Trigger
+class HydrossTheUnstableRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableDangerFromWaterTombsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable danger from water tombs") {}
+    HydrossTheUnstableRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "hydross the unstable ranged should spread") {}
     bool IsActive() override;
 };
 
@@ -89,11 +89,11 @@ public:
     bool IsActive() override;
 };
 
-class HydrossTheUnstableNeedToManageTimersTrigger : public Trigger
+class HydrossTheUnstableShouldManagePhaseTimersTrigger : public Trigger
 {
 public:
-    HydrossTheUnstableNeedToManageTimersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable need to manage timers") {}
+    HydrossTheUnstableShouldManagePhaseTimersTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "hydross the unstable should manage phase timers") {}
     bool IsActive() override;
 };
 
@@ -107,35 +107,35 @@ public:
     bool IsActive() override;
 };
 
-class TheLurkerBelowBossIsActiveForMainTankTrigger : public Trigger
+class TheLurkerBelowShouldBeTankedTrigger : public Trigger
 {
 public:
-    TheLurkerBelowBossIsActiveForMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below boss is active for main tank") {}
+    TheLurkerBelowShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "the lurker below should be tanked") {}
     bool IsActive() override;
 };
 
-class TheLurkerBelowBossCastsGeyserTrigger : public Trigger
+class TheLurkerBelowRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    TheLurkerBelowBossCastsGeyserTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below boss casts geyser") {}
+    TheLurkerBelowRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "the lurker below ranged should spread") {}
     bool IsActive() override;
 };
 
-class TheLurkerBelowBossIsSubmergedTrigger : public Trigger
+class TheLurkerBelowIsSubmergedTrigger : public Trigger
 {
 public:
-    TheLurkerBelowBossIsSubmergedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below boss is submerged") {}
+    TheLurkerBelowIsSubmergedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "the lurker below is submerged") {}
     bool IsActive() override;
 };
 
-class TheLurkerBelowNeedToPrepareTimerForSpoutTrigger : public Trigger
+class TheLurkerBelowShouldManageSpoutTimerTrigger : public Trigger
 {
 public:
-    TheLurkerBelowNeedToPrepareTimerForSpoutTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below need to prepare timer for spout") {}
+    TheLurkerBelowShouldManageSpoutTimerTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "the lurker below should manage spout timer") {}
     bool IsActive() override;
 };
 
@@ -149,35 +149,35 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindBossTransformedIntoDemonFormTrigger : public Trigger
+class LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindBossTransformedIntoDemonFormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind boss transformed into demon form") {}
+    LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind demon form should be tanked by warlock") {}
     bool IsActive() override;
 };
 
-class LeotherasTheBlindBossEngagedByRangedTrigger : public Trigger
+class LeotherasTheBlindRangedShouldSpreadTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind boss engaged by ranged") {}
+    LeotherasTheBlindRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind ranged should spread") {}
     bool IsActive() override;
 };
 
-class LeotherasTheBlindBossChannelingWhirlwindTrigger : public Trigger
+class LeotherasTheBlindChannelingWhirlwindTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindBossChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind boss channeling whirlwind") {}
+    LeotherasTheBlindChannelingWhirlwindTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind channeling whirlwind") {}
     bool IsActive() override;
 };
 
-class LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger : public Trigger
+class LeotherasTheBlindTooManyChaosBlastStacksTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind bot has too many chaos blast stacks") {}
+    LeotherasTheBlindTooManyChaosBlastStacksTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind too many chaos blast stacks") {}
     bool IsActive() override;
 };
 
@@ -189,11 +189,11 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindEnteredFinalPhaseTrigger : public Trigger
+class LeotherasTheBlindInFinalPhaseTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindEnteredFinalPhaseTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind entered final phase") {}
+    LeotherasTheBlindInFinalPhaseTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind in final phase") {}
     bool IsActive() override;
 };
 
@@ -205,45 +205,45 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger : public Trigger
+class LeotherasTheBlindShouldManageDpsWaitTimersTrigger : public Trigger
 {
 public:
-    LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind boss wipes aggro upon phase change") {}
+    LeotherasTheBlindShouldManageDpsWaitTimersTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "leotheras the blind should manage dps wait timers") {}
     bool IsActive() override;
 };
 
 // Fathom-Lord Karathress
 
-class FathomLordKarathressBossEngagedByMainTankTrigger : public Trigger
+class FathomLordKarathressShouldBeTankedTrigger : public Trigger
 {
 public:
-    FathomLordKarathressBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress boss engaged by main tank") {}
+    FathomLordKarathressShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "fathom-lord karathress should be tanked") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger : public Trigger
+class FathomLordKarathressCaribdisShouldBeTankedTrigger : public Trigger
 {
 public:
-    FathomLordKarathressCaribdisEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress caribdis engaged by first assist tank") {}
+    FathomLordKarathressCaribdisShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "fathom-lord karathress caribdis should be tanked") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger : public Trigger
+class FathomLordKarathressSharkkisShouldBeTankedTrigger : public Trigger
 {
 public:
-    FathomLordKarathressSharkkisEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress sharkkis engaged by second assist tank") {}
+    FathomLordKarathressSharkkisShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "fathom-lord karathress sharkkis should be tanked") {}
     bool IsActive() override;
 };
 
-class FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger : public Trigger
+class FathomLordKarathressTidalvessShouldBeTankedTrigger : public Trigger
 {
 public:
-    FathomLordKarathressTidalvessEngagedByThirdAssistTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress tidalvess engaged by third assist tank") {}
+    FathomLordKarathressTidalvessShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "fathom-lord karathress tidalvess should be tanked") {}
     bool IsActive() override;
 };
 
@@ -271,11 +271,11 @@ public:
     bool IsActive() override;
 };
 
-class FathomLordKarathressTanksNeedToEstablishAggroTrigger : public Trigger
+class FathomLordKarathressShouldManageDpsTimerTrigger : public Trigger
 {
 public:
-    FathomLordKarathressTanksNeedToEstablishAggroTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress tanks need to establish aggro") {}
+    FathomLordKarathressShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "fathom-lord karathress should manage dps timer") {}
     bool IsActive() override;
 };
 
@@ -289,53 +289,53 @@ public:
     bool IsActive() override;
 };
 
-class MorogrimTidewalkerBossEngagedByMainTankTrigger : public Trigger
+class MorogrimTidewalkerShouldBeTankedTrigger : public Trigger
 {
 public:
-    MorogrimTidewalkerBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "morogrim tidewalker boss engaged by main tank") {}
+    MorogrimTidewalkerShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "morogrim tidewalker should be tanked") {}
     bool IsActive() override;
 };
 
-class MorogrimTidewalkerWaterGlobulesAreIncomingTrigger : public Trigger
+class MorogrimTidewalkerInPhase2Trigger : public Trigger
 {
 public:
-    MorogrimTidewalkerWaterGlobulesAreIncomingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "morogrim tidewalker water globules are incoming") {}
+    MorogrimTidewalkerInPhase2Trigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "morogrim tidewalker in phase 2") {}
     bool IsActive() override;
 };
 
 // Lady Vashj <Coilfang Matron>
 
-class LadyVashjBossEngagedByMainTankTrigger : public Trigger
+class LadyVashjShouldBeTankedTrigger : public Trigger
 {
 public:
-    LadyVashjBossEngagedByMainTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj boss engaged by main tank") {}
+    LadyVashjShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj should be tanked") {}
     bool IsActive() override;
 };
 
-class LadyVashjBossEngagedByRangedInPhase1Trigger : public Trigger
+class LadyVashjRangedShouldSpreadInPhase1Trigger : public Trigger
 {
 public:
-    LadyVashjBossEngagedByRangedInPhase1Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj boss engaged by ranged in phase 1") {}
+    LadyVashjRangedShouldSpreadInPhase1Trigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj ranged should spread in phase 1") {}
     bool IsActive() override;
 };
 
-class LadyVashjCastsShockBlastOnHighestAggroTrigger : public Trigger
+class LadyVashjShamanShouldGroundShockBlastTrigger : public Trigger
 {
 public:
-    LadyVashjCastsShockBlastOnHighestAggroTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj casts shock blast on highest aggro") {}
+    LadyVashjShamanShouldGroundShockBlastTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj shaman should ground shock blast") {}
     bool IsActive() override;
 };
 
-class LadyVashjBotHasStaticChargeTrigger : public Trigger
+class LadyVashjStaticChargeOnGroupMemberTrigger : public Trigger
 {
 public:
-    LadyVashjBotHasStaticChargeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj bot has static charge") {}
+    LadyVashjStaticChargeOnGroupMemberTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj static charge on group member") {}
     bool IsActive() override;
 };
 
@@ -379,19 +379,19 @@ public:
     bool IsActive() override;
 };
 
-class LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger : public Trigger
+class LadyVashjInPhase3Trigger : public Trigger
 {
 public:
-    LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj toxic sporebats are spewing poison clouds") {}
+    LadyVashjInPhase3Trigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj in phase 3") {}
     bool IsActive() override;
 };
 
-class LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger : public Trigger
+class LadyVashjEntangleOnMeleeTrigger : public Trigger
 {
 public:
-    LadyVashjBotIsEntangledInToxicSporesOrStaticChargeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj bot is entangled in toxic spores or static charge") {}
+    LadyVashjEntangleOnMeleeTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "lady vashj entangle on melee") {}
     bool IsActive() override;
 };
 
