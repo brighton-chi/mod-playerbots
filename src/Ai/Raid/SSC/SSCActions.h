@@ -41,7 +41,7 @@ public:
 
 // Shared Bosses
 
-// Morogrim Tidewalker and Lady Vashj
+// Morogrim Tidewalker and Lady Vashj (main tank action only)
 class SscMisdirectBossToMainTankAction : public Action
 {
 public:

@@ -272,13 +272,13 @@ bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()
 bool FathomLordKarathressTargetsShouldBeTankedTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+        AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 
 bool FathomLordKarathressShouldHealCaribdisTankTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
-           AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+        AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 }
 
 bool FathomLordKarathressPullingBossesTrigger::IsActiveInEncounter()
