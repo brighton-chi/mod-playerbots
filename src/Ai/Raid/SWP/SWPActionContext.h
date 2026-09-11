@@ -221,11 +221,11 @@ public:
         creators["kil'jaeden use dragon orb"] =
             &RaidSwpActionContext::kiljaeden_use_dragon_orb;
 
-        creators["kil'jaeden release stale root"] =
-            &RaidSwpActionContext::kiljaeden_release_stale_root;
-
         creators["kil'jaeden dragon buff and protect raid"] =
             &RaidSwpActionContext::kiljaeden_dragon_buff_and_protect_raid;
+
+        creators["kil'jaeden release stale root"] =
+            &RaidSwpActionContext::kiljaeden_release_stale_root;
     }
 
 private:
@@ -448,11 +448,11 @@ private:
     static Action* kiljaeden_use_dragon_orb(PlayerbotAI* botAI) {
         return new KiljaedenUseDragonOrbAction(botAI);
     }
-    static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI) {
-        return new KiljaedenReleaseStaleRootAction(botAI);
-    }
     static Action* kiljaeden_dragon_buff_and_protect_raid(PlayerbotAI* botAI) {
         return new KiljaedenDragonBuffAndProtectRaidAction(botAI);
+    }
+    static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI) {
+        return new KiljaedenReleaseStaleRootAction(botAI);
     }
 };
 
