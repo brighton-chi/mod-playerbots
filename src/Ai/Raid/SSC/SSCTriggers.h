@@ -7,9 +7,28 @@
 #ifndef PLAYERBOTS_SSCTRIGGERS_H
 #define PLAYERBOTS_SSCTRIGGERS_H
 
+#include "EncounterHelpers.h"
+#include "SSCHelpers.h"
 #include "Trigger.h"
+#include <string>
 
 // General
+
+class SscEncounterTrigger : public Trigger
+{
+public:
+    SscEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
+
+    bool IsActive() final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, SscHelpers::SSC_MAP_ID) &&
+            IsActiveInEncounter();
+    }
+
+protected:
+    virtual bool IsActiveInEncounter() = 0;
+};
 
 class SscNoEncounterInProgressTrigger : public Trigger
 {
@@ -41,358 +60,446 @@ public:
 
 // Hydross the Unstable <Duke of Currents>
 
-class HydrossTheUnstableShouldBeTankedByFrostTankTrigger : public Trigger
+class HydrossTheUnstableShouldBeTankedByFrostTankTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableShouldBeTankedByFrostTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable should be tanked by frost tank") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable should be tanked by frost tank") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableShouldBeTankedByNatureTankTrigger : public Trigger
+class HydrossTheUnstableShouldBeTankedByNatureTankTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableShouldBeTankedByNatureTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable should be tanked by nature tank") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable should be tanked by nature tank") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableElementalsSpawnedTrigger : public Trigger
+class HydrossTheUnstableElementalsSpawnedTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableElementalsSpawnedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable elementals spawned") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable elementals spawned") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableRangedShouldSpreadTrigger : public Trigger
+class HydrossTheUnstableRangedShouldSpreadTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable ranged should spread") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger : public Trigger
+class HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable tank needs aggro upon phase change") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable tank needs aggro upon phase change") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableAggroResetsUponPhaseChangeTrigger : public Trigger
+class HydrossTheUnstableAggroResetsUponPhaseChangeTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable aggro resets upon phase change") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable aggro resets upon phase change") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableShouldManagePhaseTimersTrigger : public Trigger
+class HydrossTheUnstableShouldManagePhaseTimersTrigger : public SscEncounterTrigger
 {
 public:
     HydrossTheUnstableShouldManagePhaseTimersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "hydross the unstable should manage phase timers") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "hydross the unstable should manage phase timers") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // The Lurker Below
 
-class TheLurkerBelowSpoutIsActiveTrigger : public Trigger
+class TheLurkerBelowSpoutIsActiveTrigger : public SscEncounterTrigger
 {
 public:
     TheLurkerBelowSpoutIsActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below spout is active") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "the lurker below spout is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowShouldBeTankedTrigger : public Trigger
+class TheLurkerBelowShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     TheLurkerBelowShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "the lurker below should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowRangedShouldSpreadTrigger : public Trigger
+class TheLurkerBelowRangedShouldSpreadTrigger : public SscEncounterTrigger
 {
 public:
     TheLurkerBelowRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below ranged should spread") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "the lurker below ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowIsSubmergedTrigger : public Trigger
+class TheLurkerBelowIsSubmergedTrigger : public SscEncounterTrigger
 {
 public:
     TheLurkerBelowIsSubmergedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below is submerged") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "the lurker below is submerged") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowShouldManageSpoutTimerTrigger : public Trigger
+class TheLurkerBelowShouldManageSpoutTimerTrigger : public SscEncounterTrigger
 {
 public:
     TheLurkerBelowShouldManageSpoutTimerTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the lurker below should manage spout timer") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "the lurker below should manage spout timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Leotheras the Blind
 
-class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public Trigger
+class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind only warlock should tank demon form") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind only warlock should tank demon form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger : public Trigger
+class LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind demon form should be tanked by warlock") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(
+            botAI, "leotheras the blind demon form should be tanked by warlock") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindRangedShouldSpreadTrigger : public Trigger
+class LeotherasTheBlindRangedShouldSpreadTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind ranged should spread") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindChannelingWhirlwindTrigger : public Trigger
+class LeotherasTheBlindChannelingWhirlwindTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind channeling whirlwind") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind channeling whirlwind") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindTooManyChaosBlastStacksTrigger : public Trigger
+class LeotherasTheBlindTooManyChaosBlastStacksTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindTooManyChaosBlastStacksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind too many chaos blast stacks") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind too many chaos blast stacks") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindInnerDemonHasAwakenedTrigger : public Trigger
+class LeotherasTheBlindInnerDemonHasAwakenedTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindInnerDemonHasAwakenedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind inner demon has awakened") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind inner demon has awakened") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindInFinalPhaseTrigger : public Trigger
+class LeotherasTheBlindInFinalPhaseTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindInFinalPhaseTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind in final phase") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind in final phase") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindDemonFormTankNeedsAggro : public Trigger
+class LeotherasTheBlindDemonFormTankNeedsAggroTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindDemonFormTankNeedsAggro(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind demon form tank needs aggro") {}
-    bool IsActive() override;
+    LeotherasTheBlindDemonFormTankNeedsAggroTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind demon form tank needs aggro") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindShouldManageDpsWaitTimersTrigger : public Trigger
+class LeotherasTheBlindShouldManageDpsWaitTimersTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindShouldManageDpsWaitTimersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "leotheras the blind should manage dps wait timers") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "leotheras the blind should manage dps wait timers") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Fathom-Lord Karathress
 
-class FathomLordKarathressShouldBeTankedTrigger : public Trigger
+class FathomLordKarathressShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressCaribdisShouldBeTankedTrigger : public Trigger
+class FathomLordKarathressCaribdisShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressCaribdisShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress caribdis should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress caribdis should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressSharkkisShouldBeTankedTrigger : public Trigger
+class FathomLordKarathressSharkkisShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressSharkkisShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress sharkkis should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress sharkkis should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressTidalvessShouldBeTankedTrigger : public Trigger
+class FathomLordKarathressTidalvessShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressTidalvessShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress tidalvess should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress tidalvess should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public Trigger
+class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(
+            botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressPullingBossesTrigger : public Trigger
+class FathomLordKarathressPullingBossesTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressPullingBossesTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress pulling bosses") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress pulling bosses") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressDeterminingKillOrderTrigger : public Trigger
+class FathomLordKarathressDeterminingKillOrderTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress determining kill order") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress determining kill order") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressShouldManageDpsTimerTrigger : public Trigger
+class FathomLordKarathressShouldManageDpsTimerTrigger : public SscEncounterTrigger
 {
 public:
     FathomLordKarathressShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "fathom-lord karathress should manage dps timer") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "fathom-lord karathress should manage dps timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Morogrim Tidewalker
 
-class MorogrimTidewalkerPullingBossTrigger : public Trigger
+class MorogrimTidewalkerPullingBossTrigger : public SscEncounterTrigger
 {
 public:
     MorogrimTidewalkerPullingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "morogrim tidewalker pulling boss") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "morogrim tidewalker pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MorogrimTidewalkerShouldBeTankedTrigger : public Trigger
+class MorogrimTidewalkerShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     MorogrimTidewalkerShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "morogrim tidewalker should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "morogrim tidewalker should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MorogrimTidewalkerInPhase2Trigger : public Trigger
+class MorogrimTidewalkerInPhase2Trigger : public SscEncounterTrigger
 {
 public:
     MorogrimTidewalkerInPhase2Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "morogrim tidewalker in phase 2") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "morogrim tidewalker in phase 2") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Lady Vashj <Coilfang Matron>
 
-class LadyVashjShouldBeTankedTrigger : public Trigger
+class LadyVashjShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj should be tanked") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjRangedShouldSpreadInPhase1Trigger : public Trigger
+class LadyVashjRangedShouldSpreadInPhase1Trigger : public SscEncounterTrigger
 {
 public:
     LadyVashjRangedShouldSpreadInPhase1Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj ranged should spread in phase 1") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj ranged should spread in phase 1") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjShamanShouldGroundShockBlastTrigger : public Trigger
+class LadyVashjShamanShouldGroundShockBlastTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjShamanShouldGroundShockBlastTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj shaman should ground shock blast") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj shaman should ground shock blast") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjStaticChargeOnGroupMemberTrigger : public Trigger
+class LadyVashjStaticChargeOnGroupMemberTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjStaticChargeOnGroupMemberTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj static charge on group member") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj static charge on group member") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjPullingBossInPhase1AndPhase3Trigger : public Trigger
+class LadyVashjPullingBossInPhase1AndPhase3Trigger : public SscEncounterTrigger
 {
 public:
     LadyVashjPullingBossInPhase1AndPhase3Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj pulling boss in phase 1 and phase 3") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj pulling boss in phase 1 and phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjAddsSpawnInPhase2AndPhase3Trigger : public Trigger
+class LadyVashjAddsSpawnInPhase2AndPhase3Trigger : public SscEncounterTrigger
 {
 public:
     LadyVashjAddsSpawnInPhase2AndPhase3Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj adds spawn in phase 2 and phase 3") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj adds spawn in phase 2 and phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjCoilfangStriderIsApproachingTrigger : public Trigger
+class LadyVashjCoilfangStriderIsApproachingTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjCoilfangStriderIsApproachingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj coilfang strider is approaching") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj coilfang strider is approaching") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjTaintedElementalCheatTrigger : public Trigger
+class LadyVashjTaintedElementalCheatTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjTaintedElementalCheatTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj tainted elemental cheat") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj tainted elemental cheat") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjTaintedCoreWasLootedTrigger : public Trigger
+class LadyVashjTaintedCoreWasLootedTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjTaintedCoreWasLootedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj tainted core was looted") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj tainted core was looted") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjInPhase3Trigger : public Trigger
+class LadyVashjInPhase3Trigger : public SscEncounterTrigger
 {
 public:
     LadyVashjInPhase3Trigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj in phase 3") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj in phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class LadyVashjEntangleOnMeleeTrigger : public Trigger
+class LadyVashjEntangleOnMeleeTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjEntangleOnMeleeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "lady vashj entangle on melee") {}
-    bool IsActive() override;
+        : SscEncounterTrigger(botAI, "lady vashj entangle on melee") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 #endif

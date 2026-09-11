@@ -239,7 +239,7 @@ private:
         return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_demon_form_tank_needs_aggro(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindDemonFormTankNeedsAggro(botAI);
+        return new LeotherasTheBlindDemonFormTankNeedsAggroTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);
