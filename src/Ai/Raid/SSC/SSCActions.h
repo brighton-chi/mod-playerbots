@@ -41,17 +41,22 @@ public:
 
 // Shared Bosses
 
-// Morogrim Tidewalker and Lady Vashj (main tank action only)
-class SscMisdirectBossToMainTankAction : public Action
+// Misdirect a named target onto the main tank, or onto the assist tank at assistTankIndex when
+// one is given. Used for Morogrim Tidewalker, Lady Vashj and her Coilfang Striders.
+class SscMisdirectTargetToTankAction : public Action
 {
 public:
-    SscMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+    static constexpr int8 MAIN_TANK = -1;
+
+    SscMisdirectTargetToTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& targetName,
+        int8 assistTankIndex = MAIN_TANK)
+        : Action(botAI, name), _targetName(targetName), _assistTankIndex(assistTankIndex) {}
     bool Execute(Event event) override;
 
-private:
-    std::string const _bossName;
+protected:
+    std::string const _targetName;
+    int8 const _assistTankIndex;
 };
 
 // Hydross the Unstable <Duke of Currents>
@@ -330,14 +335,6 @@ class LadyVashjAssignPhase2AndPhase3DpsPriorityAction : public AttackAction
 public:
     LadyVashjAssignPhase2AndPhase3DpsPriorityAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "lady vashj assign phase 2 and phase 3 dps priority") {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjMisdirectStriderToFirstAssistTankAction : public Action
-{
-public:
-    LadyVashjMisdirectStriderToFirstAssistTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj misdirect strider to first assist tank") {}
     bool Execute(Event event) override;
 };
 

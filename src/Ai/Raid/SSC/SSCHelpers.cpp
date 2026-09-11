@@ -5,20 +5,74 @@
  */
 
 #include "SSCHelpers.h"
+#include "EncounterHelpers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
+#include <cmath>
 #include <limits>
 #include <list>
 
+using namespace EncounterHelpers;
+
 namespace SscHelpers
 {
+
+namespace
+{
+
+// A step towards a point on a circle, at the angle nearest to preferred that the bot can reach.
+bool FindStepToCircle(
+    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
+    float& stepX, float& stepY, float& stepZ)
+{
+    float const centerX = center.GetPositionX();
+    float const centerY = center.GetPositionY();
+
+    constexpr uint8 fanSteps = 8;
+    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
+
+    for (uint8 step = 0; step <= fanSteps; ++step)
+    {
+        float const delta = fanStep * step;
+        uint8 const candidates = (step == 0) ? 1 : 2;
+        for (uint8 i = 0; i < candidates; ++i)
+        {
+            float const angle = preferredAngle + (i == 0 ? delta : -delta);
+            float const targetX = centerX + std::cos(angle) * radius;
+            float const targetY = centerY + std::sin(angle) * radius;
+
+            if (CanTakeStepTowards(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+} // end anonymous namespace
 
 // Trash
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
+}
+
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ)
+{
+    float const centerX = hazard.GetPositionX();
+    float const centerY = hazard.GetPositionY();
+    float escapeAngle =
+        std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+    if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
+        escapeAngle = bot->GetOrientation();
+
+    return FindStepToCircle(
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ);
 }
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)

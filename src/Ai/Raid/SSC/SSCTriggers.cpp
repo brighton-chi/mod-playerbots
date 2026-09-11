@@ -435,6 +435,21 @@ bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActiveInEncounter()
     return AI_VALUE2(Unit*, "find target", "coilfang strider");
 }
 
+// Striders are not tankable without a cheat to block Fear so there is no point in misdirecting
+// if raid cheats are not enabled. Unlike a boss pull, a strider already on its tank needs nothing.
+bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER || !botAI->HasCheat(BotCheatMask::raid))
+        return false;
+
+    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
+    if (!strider)
+        return false;
+
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    return firstAssistTank && strider->GetVictim() != firstAssistTank;
+}
+
 bool LadyVashjTaintedElementalCheatTrigger::IsActiveInEncounter()
 {
     if (!botAI->HasCheat(BotCheatMask::raid))

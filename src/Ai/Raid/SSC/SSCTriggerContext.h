@@ -137,6 +137,9 @@ public:
         creators["lady vashj coilfang strider is approaching"] =
             &RaidSscTriggerContext::lady_vashj_coilfang_strider_is_approaching;
 
+        creators["lady vashj hunter should misdirect strider"] =
+            &RaidSscTriggerContext::lady_vashj_hunter_should_misdirect_strider;
+
         creators["lady vashj tainted elemental cheat"] =
             &RaidSscTriggerContext::lady_vashj_tainted_elemental_cheat;
 
@@ -278,6 +281,9 @@ private:
     }
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) {
         return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI);
+    }
+    static Trigger* lady_vashj_hunter_should_misdirect_strider(PlayerbotAI* botAI) {
+        return new LadyVashjHunterShouldMisdirectStriderTrigger(botAI);
     }
     static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) {
         return new LadyVashjTaintedElementalCheatTrigger(botAI);

@@ -133,15 +133,21 @@ enum class SscItems : uint32
 };
 
 inline constexpr uint32 SSC_MAP_ID = 548;
-inline constexpr uint32 HAZARD_CACHE_INTERVAL = 500;
+inline constexpr uint32 HAZARD_CACHE_INTERVAL = 200;
 
 // Trash
 
-inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 25.0f; // Actual hazard radius
+// 25y radius + ~2y player CombatReach; see the Hyjal D&D note on persistent ground AoE range in AC.
+inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
 inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f; // For multiplier
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
+// A step straight out of a circular hazard, fanning around the escape heading on collision. Copied
+// from HyjalHelpers pending promotion to EncounterHelpers.
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);

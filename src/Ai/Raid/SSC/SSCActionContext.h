@@ -255,7 +255,7 @@ private:
 
     // Morogrim Tidewalker
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectBossToMainTankAction(
+        return new SscMisdirectTargetToTankAction(
             botAI, "morogrim tidewalker misdirect boss to main tank", "morogrim tidewalker");
     }
     static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) {
@@ -279,14 +279,15 @@ private:
         return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI);
     }
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectBossToMainTankAction(
+        return new SscMisdirectTargetToTankAction(
             botAI, "lady vashj misdirect boss to main tank", "lady vashj");
     }
     static Action* lady_vashj_assign_phase_2_and_phase_3_dps_priority(PlayerbotAI* botAI) {
         return new LadyVashjAssignPhase2AndPhase3DpsPriorityAction(botAI);
     }
     static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) {
-        return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI);
+        return new SscMisdirectTargetToTankAction(
+            botAI, "lady vashj misdirect strider to first assist tank", "coilfang strider", 0);
     }
     static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) {
         return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI);

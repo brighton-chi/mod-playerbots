@@ -54,15 +54,31 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
 // Trash Mobs
 
-// Move out of toxic pool left behind by some colossi upon death
+// Move straight out of the toxic pool left behind by some colossi upon death. The pool is centred
+// on the corpse, and while that corpse exists it is still the bot's "current target", which
+// FleePosition would steer around rather than away from. Nothing else needs to redirect the bot
+// mid-escape (the multiplier suppresses all other movement inside the holding radius), so the
+// step can be large.
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
     Position pool;
     if (!GetToxicPoolPosition(botAI, pool))
         return false;
 
-    constexpr uint32 minInterval = 0;
-    return FleePosition(pool, TOXIC_POOL_HAZARD_RADIUS, minInterval);
+    constexpr float moveDist = 10.0f;
+    constexpr float escapeMargin = 2.0f;
+    float stepX;
+    float stepY;
+    float stepZ;
+    if (!GetHazardEscapeStep(
+            bot, pool, TOXIC_POOL_HAZARD_RADIUS + escapeMargin, moveDist, stepX, stepY, stepZ))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/) // Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?
@@ -75,23 +91,24 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/) 
 
 // Shared Bosses
 
-bool SscMisdirectBossToMainTankAction::Execute(Event /*event*/) // I CAN PROBABLY WORK THE STRIDER MISDIRECT INTO THIS TOO
+bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
-    if (!boss)
+    Unit* target = AI_VALUE2(Unit*, "find target", _targetName);
+    if (!target)
         return false;
 
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank || !mainTank->IsAlive())
+    Player* tank = _assistTankIndex == MAIN_TANK ?
+        GetGroupMainTank(bot) : GetGroupAssistTank(bot, _assistTankIndex);
+    if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
 
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;
 
-    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -1663,33 +1680,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);
-}
-
-bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event /*event*/)
-{
-    // Striders are not tankable without a cheat to block Fear so there is
-    // no point in misdirecting if raid cheats are not enabled
-    if (!botAI->HasCheat(BotCheatMask::raid))
-        return false;
-
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    if (!strider)
-        return false;
-
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    if (!firstAssistTank || strider->GetVictim() == firstAssistTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", firstAssistTank))
-        return botAI->CastSpell("misdirection", firstAssistTank);
-
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", strider) && botAI->CastSpell("steady shot", strider);
 }
 
 bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
