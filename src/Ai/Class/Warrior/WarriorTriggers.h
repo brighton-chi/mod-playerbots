@@ -71,10 +71,10 @@ public:
     RendDebuffTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "rend", 1, true) {}
 };
 
-class VigilanceTrigger : public Trigger
+class VigilanceTrigger : public BuffTrigger
 {
 public:
-    VigilanceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "vigilance", 5 * IN_MILLISECONDS) {}
+    VigilanceTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "vigilance", 5 * IN_MILLISECONDS) {}
 
     bool IsActive() override;
 };
