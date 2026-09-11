@@ -107,7 +107,7 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 
     const uint32 now = getMSTime();
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
+    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
     return it != lurkerSpoutTimer.end() &&
            getMSTimeDiff(it->second, now) < LURKER_SPOUT_DURATION_MS;
 }
@@ -123,7 +123,7 @@ bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter()
 
     const uint32 now = getMSTime();
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
+    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() ||
             getMSTimeDiff(it->second, now) >= LURKER_SPOUT_DURATION_MS);
@@ -140,7 +140,7 @@ bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
 
     const uint32 now = getMSTime();
 
-    auto it = lurkerSpoutTimer.find(lurker->GetMap()->GetInstanceId());
+    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
     return lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
            (it == lurkerSpoutTimer.end() ||
             getMSTimeDiff(it->second, now) >= LURKER_SPOUT_DURATION_MS);
@@ -325,7 +325,7 @@ bool FathomLordKarathressTidalvessShouldBeTankedTrigger::IsActiveInEncounter()
            AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
 }
 
-bool FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger::IsActiveInEncounter()
+bool FathomLordKarathressShouldHealCaribdisTankTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
            AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
@@ -401,15 +401,21 @@ bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMainTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
         return false;
 
-    return !IsLadyVashjInPhase2(botAI);
+    int8 phase = GetLadyVashjPhase(vashj);
+    return phase == 1 || phase == 3;
 }
 
 bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && IsLadyVashjInPhase1(botAI);
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 1;
 }
 
 bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
@@ -417,8 +423,12 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
-        IsLadyVashjInPhase2(botAI))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    int8 phase = GetLadyVashjPhase(vashj);
+    if (phase != 1 && phase != 3)
         return false;
 
     return IsMainTankInSameSubgroup(bot);
@@ -462,8 +472,12 @@ bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
     if (PlayerbotAI::IsHeal(bot))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "lady vashj") &&
-           !IsLadyVashjInPhase1(botAI);
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    if (!vashj)
+        return false;
+
+    int8 phase = GetLadyVashjPhase(vashj);
+    return phase == 2 || phase == 3;
 }
 
 bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActiveInEncounter()
@@ -512,7 +526,8 @@ bool LadyVashjTaintedElementalCheatTrigger::IsActiveInEncounter()
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") || !IsLadyVashjInPhase2(botAI))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
 
     auto coreHandlers = GetCoreHandlers(botAI, bot);
@@ -537,12 +552,14 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
 
 bool LadyVashjInPhase3Trigger::IsActiveInEncounter()
 {
-    return IsLadyVashjInPhase3(botAI);
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    return vashj && GetLadyVashjPhase(vashj) == 3;
 }
 
-bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
+bool LadyVashjEntangleOnMeleeInPhase3Trigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
     Group* group = bot->GetGroup();

@@ -38,15 +38,26 @@ public:
     float GetValue(Action* action) override;
 };
 
+// Shared Bosses
+
+// For Lady Vashj, Fathom-Lord Karathress, and Hydross
+class SscControlMisdirectionMultiplier : public SscEncounterMultiplier
+{
+public:
+    SscControlMisdirectionMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "ssc control misdirection") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Hydross the Unstable <Duke of Currents>
 
-class HydrossTheUnstableDisableTankActionsMultiplier
-    : public SscEncounterMultiplier
+class HydrossTheUnstableDisableTankActionsMultiplier : public SscEncounterMultiplier
 {
 public:
     HydrossTheUnstableDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(
-            botAI, "hydross the unstable disable tank actions") {}
+        : SscEncounterMultiplier(botAI, "hydross the unstable disable tank actions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -62,15 +73,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class HydrossTheUnstableControlMisdirectionMultiplier : public SscEncounterMultiplier
-{
-public:
-    HydrossTheUnstableControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(
-            botAI, "hydross the unstable control misdirection") {}
-    float GetValue(Action* action) override;
-};
-
 // The Lurker Below
 
 class TheLurkerBelowStayAwayFromSpoutMultiplier : public SscEncounterMultiplier
@@ -78,16 +80,19 @@ class TheLurkerBelowStayAwayFromSpoutMultiplier : public SscEncounterMultiplier
 public:
     TheLurkerBelowStayAwayFromSpoutMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "the lurker below stay away from spout") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class TheLurkerBelowMaintainRangedSpreadMultiplier : public SscEncounterMultiplier
 {
 public:
     TheLurkerBelowMaintainRangedSpreadMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(
-            botAI, "the lurker below maintain ranged spread") {}
-    float GetValue(Action* action) override;
+        : SscEncounterMultiplier(botAI, "the lurker below maintain ranged spread") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class TheLurkerBelowDisableTankAssistMultiplier : public SscEncounterMultiplier
@@ -95,7 +100,9 @@ class TheLurkerBelowDisableTankAssistMultiplier : public SscEncounterMultiplier
 public:
     TheLurkerBelowDisableTankAssistMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "the lurker below disable tank assist") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Leotheras the Blind
@@ -105,7 +112,9 @@ class LeotherasTheBlindAvoidWhirlwindMultiplier : public SscEncounterMultiplier
 public:
     LeotherasTheBlindAvoidWhirlwindMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind avoid whirlwind") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LeotherasTheBlindDisableTankActionsMultiplier : public SscEncounterMultiplier
@@ -113,7 +122,9 @@ class LeotherasTheBlindDisableTankActionsMultiplier : public SscEncounterMultipl
 public:
     LeotherasTheBlindDisableTankActionsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind disable tank actions") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public SscEncounterMultiplier
@@ -121,7 +132,9 @@ class LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier : public SscEncounterMu
 public:
     LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind melee dps avoid chaos blast") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LeotherasTheBlindFocusOnInnerDemonMultiplier : public SscEncounterMultiplier
@@ -129,7 +142,9 @@ class LeotherasTheBlindFocusOnInnerDemonMultiplier : public SscEncounterMultipli
 public:
     LeotherasTheBlindFocusOnInnerDemonMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind focus on inner demon") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LeotherasTheBlindWaitForDpsMultiplier : public SscEncounterMultiplier
@@ -137,7 +152,9 @@ class LeotherasTheBlindWaitForDpsMultiplier : public SscEncounterMultiplier
 public:
     LeotherasTheBlindWaitForDpsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind wait for dps") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public SscEncounterMultiplier
@@ -145,7 +162,9 @@ class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public SscEncounterM
 public:
     LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "leotheras the blind delay bloodlust and heroism") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Fathom-Lord Karathress
@@ -155,7 +174,9 @@ class FathomLordKarathressDisableTankActionsMultiplier : public SscEncounterMult
 public:
     FathomLordKarathressDisableTankActionsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "fathom-lord karathress disable tank actions") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class FathomLordKarathressDisableAoeMultiplier : public SscEncounterMultiplier
@@ -163,15 +184,9 @@ class FathomLordKarathressDisableAoeMultiplier : public SscEncounterMultiplier
 public:
     FathomLordKarathressDisableAoeMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "fathom-lord karathress disable aoe") {}
-    float GetValue(Action* action) override;
-};
 
-class FathomLordKarathressControlMisdirectionMultiplier : public SscEncounterMultiplier
-{
-public:
-    FathomLordKarathressControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "fathom-lord karathress control misdirection") {}
-    float GetValue(Action* action) override;
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class FathomLordKarathressWaitForDpsMultiplier : public SscEncounterMultiplier
@@ -179,7 +194,9 @@ class FathomLordKarathressWaitForDpsMultiplier : public SscEncounterMultiplier
 public:
     FathomLordKarathressWaitForDpsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "fathom-lord karathress wait for dps") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class FathomLordKarathressCaribdisTankHealerMultiplier : public SscEncounterMultiplier
@@ -187,7 +204,9 @@ class FathomLordKarathressCaribdisTankHealerMultiplier : public SscEncounterMult
 public:
     FathomLordKarathressCaribdisTankHealerMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "fathom-lord karathress caribdis tank healer") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Morogrim Tidewalker
@@ -197,7 +216,9 @@ class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public SscEncounter
 public:
     MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "morogrim tidewalker delay bloodlust and heroism") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class MorogrimTidewalkerDisableTankActionsMultiplier : public SscEncounterMultiplier
@@ -205,7 +226,9 @@ class MorogrimTidewalkerDisableTankActionsMultiplier : public SscEncounterMultip
 public:
     MorogrimTidewalkerDisableTankActionsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "morogrim tidewalker disable tank actions") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class MorogrimTidewalkerMaintainPhase2StackingMultiplier : public SscEncounterMultiplier
@@ -213,7 +236,9 @@ class MorogrimTidewalkerMaintainPhase2StackingMultiplier : public SscEncounterMu
 public:
     MorogrimTidewalkerMaintainPhase2StackingMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "morogrim tidewalker maintain phase2 stacking") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Lady Vashj <Coilfang Matron>
@@ -223,15 +248,19 @@ class LadyVashjDelayCooldownsMultiplier : public SscEncounterMultiplier
 public:
     LadyVashjDelayCooldownsMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj delay cooldowns") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier : public SscEncounterMultiplier
+class LadyVashjSetGroundingTotemMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj main tank group shaman use grounding totem") {}
-    float GetValue(Action* action) override;
+    LadyVashjSetGroundingTotemMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj set grounding totem") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LadyVashjMaintainPhase1RangedSpreadMultiplier : public SscEncounterMultiplier
@@ -239,7 +268,9 @@ class LadyVashjMaintainPhase1RangedSpreadMultiplier : public SscEncounterMultipl
 public:
     LadyVashjMaintainPhase1RangedSpreadMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj maintain phase1 ranged spread") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LadyVashjStaticChargeStayAwayFromGroupMultiplier : public SscEncounterMultiplier
@@ -247,7 +278,9 @@ class LadyVashjStaticChargeStayAwayFromGroupMultiplier : public SscEncounterMult
 public:
     LadyVashjStaticChargeStayAwayFromGroupMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj static charge stay away from group") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LadyVashjDoNotLootTheTaintedCoreMultiplier : public SscEncounterMultiplier
@@ -255,7 +288,9 @@ class LadyVashjDoNotLootTheTaintedCoreMultiplier : public SscEncounterMultiplier
 public:
     LadyVashjDoNotLootTheTaintedCoreMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj do not loot the tainted core") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class LadyVashjCorePassersPrioritizePositioningMultiplier : public SscEncounterMultiplier
@@ -263,15 +298,29 @@ class LadyVashjCorePassersPrioritizePositioningMultiplier : public SscEncounterM
 public:
     LadyVashjCorePassersPrioritizePositioningMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj core passers prioritize positioning") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjDisableAutomaticTargetingAndMovementModifier : public SscEncounterMultiplier
+class LadyVashjDisableAutomaticTargetingAndMovementMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjDisableAutomaticTargetingAndMovementModifier(PlayerbotAI* botAI)
+    LadyVashjDisableAutomaticTargetingAndMovementMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "lady vashj disable automatic targeting and movement") {}
-    float GetValue(Action* action) override;
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class LadyVashjSaveHandOfFreedomMultiplier : public SscEncounterMultiplier
+{
+public:
+    LadyVashjSaveHandOfFreedomMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj save hand of freedom") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 #endif

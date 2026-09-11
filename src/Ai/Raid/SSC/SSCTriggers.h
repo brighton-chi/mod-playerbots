@@ -317,12 +317,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger : public SscEncounterTrigger
+class FathomLordKarathressShouldHealCaribdisTankTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI)
+    FathomLordKarathressShouldHealCaribdisTankTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(
-            botAI, "fathom-lord karathress caribdis tank needs dedicated healer") {}
+            botAI, "fathom-lord karathress should heal caribdis tank") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -105,8 +105,8 @@ public:
         creators["fathom-lord karathress tidalvess should be tanked"] =
             &RaidSscTriggerContext::fathom_lord_karathress_tidalvess_should_be_tanked;
 
-        creators["fathom-lord karathress caribdis tank needs dedicated healer"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_caribdis_tank_needs_dedicated_healer;
+        creators["fathom-lord karathress should heal caribdis tank"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_heal_caribdis_tank;
 
         creators["fathom-lord karathress pulling bosses"] =
             &RaidSscTriggerContext::fathom_lord_karathress_pulling_bosses;
@@ -155,8 +155,7 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
-        creators["lady vashj in phase 3"] =
-            &RaidSscTriggerContext::lady_vashj_in_phase_3;
+        creators["lady vashj in phase 3"] = &RaidSscTriggerContext::lady_vashj_in_phase_3;
 
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
@@ -258,8 +257,8 @@ private:
     static Trigger* fathom_lord_karathress_tidalvess_should_be_tanked(PlayerbotAI* botAI) {
         return new FathomLordKarathressTidalvessShouldBeTankedTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_caribdis_tank_needs_dedicated_healer(PlayerbotAI* botAI) {
-        return new FathomLordKarathressCaribdisTankNeedsDedicatedHealerTrigger(botAI);
+    static Trigger* fathom_lord_karathress_should_heal_caribdis_tank(PlayerbotAI* botAI) {
+        return new FathomLordKarathressShouldHealCaribdisTankTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_pulling_bosses(PlayerbotAI* botAI) {
         return new FathomLordKarathressPullingBossesTrigger(botAI);

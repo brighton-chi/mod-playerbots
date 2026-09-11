@@ -48,7 +48,7 @@ enum class SscSpells : uint32
     SPELL_MARK_OF_CORRUPTION_100 = 38222,
     SPELL_MARK_OF_CORRUPTION_250 = 38230,
     SPELL_MARK_OF_CORRUPTION_500 = 40583,
-    SPELL_CORRUPTION             = 37961,
+    SPELL_HYDROSS_CORRUPTION     = 37961,
 
     // The Lurker Below
     SPELL_SPOUT_VISUAL = 37431,
@@ -148,6 +148,8 @@ extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+bool IsHydrossInFrostPhase(Unit* hydross);
+bool IsHydrossInNaturePhase(Unit* hydross);
 bool HasMarkOfHydrossAt100Percent(Player* bot);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* bot);
@@ -220,10 +222,8 @@ extern std::unordered_map<uint32, uint32> lastImbueAttempt;
 extern std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot);
-bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
-bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
-bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
+int8 GetLadyVashjPhase(Unit* vashj);
+bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI, Unit* vashj);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);

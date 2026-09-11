@@ -205,11 +205,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMisdirectBossToDemonFormTankAction : public AttackAction
+class LeotherasTheBlindMisdirectBossToDemonFormTankAction : public Action
 {
 public:
     LeotherasTheBlindMisdirectBossToDemonFormTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind misdirect boss to demon form tank") {}
+        : Action(botAI, "leotheras the blind misdirect boss to demon form tank") {}
     bool Execute(Event event) override;
 };
 
@@ -263,11 +263,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressMisdirectBossesToTanksAction : public AttackAction
+class FathomLordKarathressMisdirectBossesToTanksAction : public Action
 {
 public:
     FathomLordKarathressMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "fathom-lord karathress misdirect bosses to tanks") {}
+        : Action(botAI, "fathom-lord karathress misdirect bosses to tanks") {}
     bool Execute(Event event) override;
 };
 
@@ -289,11 +289,11 @@ public:
 
 // Morogrim Tidewalker
 
-class MorogrimTidewalkerMisdirectBossToMainTankAction : public AttackAction
+class MorogrimTidewalkerMisdirectBossToMainTankAction : public Action
 {
 public:
     MorogrimTidewalkerMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "morogrim tidewalker misdirect boss to main tank") {}
+        : Action(botAI, "morogrim tidewalker misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -351,11 +351,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjMisdirectBossToMainTankAction : public AttackAction
+class LadyVashjMisdirectBossToMainTankAction : public Action
 {
 public:
     LadyVashjMisdirectBossToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "lady vashj misdirect boss to main tank") {}
+        : Action(botAI, "lady vashj misdirect boss to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -367,11 +367,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjMisdirectStriderToFirstAssistTankAction : public AttackAction
+class LadyVashjMisdirectStriderToFirstAssistTankAction : public Action
 {
 public:
     LadyVashjMisdirectStriderToFirstAssistTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "lady vashj misdirect strider to first assist tank") {}
+        : Action(botAI, "lady vashj misdirect strider to first assist tank") {}
     bool Execute(Event event) override;
 };
 

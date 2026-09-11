@@ -100,7 +100,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress tidalvess should be tanked", {
         NextAction("fathom-lord karathress third assist tank position tidalvess", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress caribdis tank needs dedicated healer", {
+    triggers.push_back(new TriggerNode("fathom-lord karathress should heal caribdis tank", {
         NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress pulling bosses", {
@@ -164,10 +164,12 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Trash Mobs
     multipliers.push_back(new UnderbogColossusEscapeToxicPoolMultiplier(botAI));
 
+    // Shared Bosses
+    multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
+
     // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new HydrossTheUnstableControlMisdirectionMultiplier(botAI));
 
     // The Lurker Below
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
@@ -185,7 +187,6 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressCaribdisTankHealerMultiplier(botAI));
 
@@ -196,10 +197,11 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Lady Vashj <Coilfang Matron>
     multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
-    multipliers.push_back(new LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(botAI));
+    multipliers.push_back(new LadyVashjSetGroundingTotemMultiplier(botAI));
     multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementModifier(botAI));
+    multipliers.push_back(new LadyVashjDisableAutomaticTargetingAndMovementMultiplier(botAI));
+    multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
 }

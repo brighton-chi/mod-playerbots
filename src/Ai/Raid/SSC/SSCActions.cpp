@@ -83,7 +83,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    if (!hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) && !HasMarkOfHydrossAt100Percent(bot))
+    if (IsHydrossInFrostPhase(hydross) && !HasMarkOfHydrossAt100Percent(bot))
     {
         if (MarkTargetWithSquare(bot, hydross))
             return true;
@@ -113,12 +113,12 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
         }
     }
 
-    if (!hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) && HasMarkOfHydrossAt100Percent(bot) &&
+    if (IsHydrossInFrostPhase(hydross) && HasMarkOfHydrossAt100Percent(bot) &&
         hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
     {
         constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
         const uint32 now = getMSTime();
-        auto it = hydrossChangeToNaturePhaseTimer.find(hydross->GetMap()->GetInstanceId());
+        auto it = hydrossChangeToNaturePhaseTimer.find(hydross->GetInstanceId());
 
         if (it != hydrossChangeToNaturePhaseTimer.end() &&
             getMSTimeDiff(it->second, now) >= phaseChangeDelayMs)
@@ -147,7 +147,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
     }
 
     const Position& position = HYDROSS_FROST_TANK_POSITION;
-    if (hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) &&
+    if (IsHydrossInNaturePhase(hydross) &&
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -167,7 +167,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    if (hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) && !HasMarkOfCorruptionAt100Percent(bot))
+    if (IsHydrossInNaturePhase(hydross) && !HasMarkOfCorruptionAt100Percent(bot))
     {
         if (MarkTargetWithTriangle(bot, hydross))
             return true;
@@ -197,12 +197,12 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
         }
     }
 
-    if (hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) && HasMarkOfCorruptionAt100Percent(bot) &&
+    if (IsHydrossInNaturePhase(hydross) && HasMarkOfCorruptionAt100Percent(bot) &&
         hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
     {
         constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
         const uint32 now = getMSTime();
-        auto it = hydrossChangeToFrostPhaseTimer.find(hydross->GetMap()->GetInstanceId());
+        auto it = hydrossChangeToFrostPhaseTimer.find(hydross->GetInstanceId());
 
         if (it != hydrossChangeToFrostPhaseTimer.end() &&
             getMSTimeDiff(it->second, now) >= phaseChangeDelayMs)
@@ -231,7 +231,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
     }
 
     const Position& position = HYDROSS_NATURE_TANK_POSITION;
-    if (!hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)) &&
+    if (IsHydrossInFrostPhase(hydross) &&
         bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -301,7 +301,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
     if (!frostTank)
         return false;
 
-    if (HasNoMarkOfHydross(bot) && !hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)))
+    if (HasNoMarkOfHydross(bot) && IsHydrossInFrostPhase(hydross))
     {
         if (botAI->CanCastSpell("misdirection", frostTank))
             return botAI->CastSpell("misdirection", frostTank);
@@ -320,7 +320,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
     if (!natureTank)
         return false;
 
-    if (HasNoMarkOfCorruption(bot) && hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)))
+    if (HasNoMarkOfCorruption(bot) && IsHydrossInNaturePhase(hydross))
     {
         if (botAI->CanCastSpell("misdirection", natureTank))
             return botAI->CastSpell("misdirection", natureTank);
@@ -338,7 +338,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    const uint32 instanceId = hydross->GetMap()->GetInstanceId();
+    const uint32 instanceId = hydross->GetInstanceId();
     const uint32 now = getMSTime();
     constexpr uint32 phaseStartStopMs = 5 * IN_MILLISECONDS;
     constexpr uint32 phaseEndStopMs = 1 * IN_MILLISECONDS;
@@ -385,12 +385,12 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    const uint32 instanceId = hydross->GetMap()->GetInstanceId();
-    const uint32 now = getMSTime();
+    uint32 const instanceId = hydross->GetInstanceId();
+    uint32 const now = getMSTime();
 
     bool changed = false;
 
-    if (!hydross->HasAura(Id(SscSpells::SPELL_CORRUPTION)))
+    if (IsHydrossInFrostPhase(hydross))
     {
         if (hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second ||
             hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
@@ -401,7 +401,7 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
             hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second)
             changed = true;
     }
-    else
+    else // Nature phase
     {
         if (hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second ||
             hydrossFrostDpsWaitTimer.erase(instanceId) > 0 ||
@@ -599,7 +599,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
     if (!lurker)
         return false;
 
-    const uint32 instanceId = lurker->GetMap()->GetInstanceId();
+    const uint32 instanceId = lurker->GetInstanceId();
     const uint32 now = getMSTime();
 
     bool changed = false;
@@ -979,7 +979,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
     if (!leotheras)
         return false;
 
-    const uint32 instanceId = leotheras->GetMap()->GetInstanceId();
+    const uint32 instanceId = leotheras->GetInstanceId();
     const uint32 now = getMSTime();
 
     bool changed = false;
@@ -1390,7 +1390,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (karathress && karathressDpsWaitTimer.try_emplace(
-        karathress->GetMap()->GetInstanceId(), getMSTime()).second)
+        karathress->GetInstanceId(), getMSTime()).second)
         return true;
 
     return false;
@@ -1578,10 +1578,12 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != vashj)
         return Attack(vashj);
 
+    int8 phase = GetLadyVashjPhase(vashj);
+
     if (vashj->GetVictim() == bot && bot->IsWithinMeleeRange(vashj))
     {
         // Phase 1: Position Vashj in the center of the platform
-        if (IsLadyVashjInPhase1(botAI))
+        if (phase == 1)
         {
             const Position& position = VASHJ_PLATFORM_CENTER_POSITION;
             float distToPosition =
@@ -1600,7 +1602,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
             }
         }
         // Phase 3: No fixed position, but move Vashj away from Enchanted Elementals
-        else if (IsLadyVashjInPhase3(botAI))
+        else if (phase == 3)
         {
             if (Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental"))
             {
@@ -1774,15 +1776,16 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     const float maxSearchRange =
         PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
     const float maxPursueRange = maxSearchRange - 5.0f;
+    int8 phase = GetLadyVashjPhase(vashj);
 
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!IsValidLadyVashjCombatNpc(unit, botAI))
+        if (!IsValidLadyVashjCombatNpc(unit, botAI, vashj))
             continue;
 
         float distFromCenter = unit->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
-        if (IsLadyVashjInPhase2(botAI) && distFromCenter > maxSearchRange)
+        if (phase == 2 && distFromCenter > maxSearchRange)
             continue;
 
         switch (unit->GetEntry())
@@ -1817,7 +1820,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     }
 
     std::vector<Unit*> targets;
-    if (IsLadyVashjInPhase2(botAI))
+    if (phase == 2)
     {
         if (PlayerbotAI::IsRanged(bot))
         {
@@ -1842,7 +1845,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             targets = { enchanted, elite, strider };
     }
 
-    if (IsLadyVashjInPhase3(botAI))
+    if (phase == 3)
     {
         if (PlayerbotAI::IsTank(bot))
         {
@@ -1887,7 +1890,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
 
-    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI))
+    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI, vashj))
     {
         bot->AttackStop();
         bot->CastStop();
@@ -2091,7 +2094,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
 
-    const uint32 instanceId = vashj->GetMap()->GetInstanceId();
+    const uint32 instanceId = vashj->GetInstanceId();
 
     Unit* closestTrigger = nullptr;
     if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");

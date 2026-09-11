@@ -52,6 +52,16 @@ std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+bool IsHydrossInFrostPhase(Unit* hydross)
+{
+    return hydross && !hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION))
+}
+
+bool IsHydrossInNaturePhase(Unit* hydross)
+{
+    return hydross && hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION))
+}
+
 bool HasMarkOfHydrossAt100Percent(Player* bot)
 {
     return bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_100)) ||
@@ -219,48 +229,50 @@ bool IsMainTankInSameSubgroup(Player* bot)
     return false;
 }
 
-bool IsLadyVashjInPhase1(PlayerbotAI* botAI)
+int8 GetLadyVashjPhase(Unit* vashj)
 {
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    if (!vashj)
+        return -1;
 
-    return vashj && vashj->GetHealthPct() > 70.0f;
-}
+    float healthPct = vashj->GetHealthPct();
+    constexpr uint32 magicBarrier = Id(SscSpells::SPELL_MAGIC_BARRIER);
 
-bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
-{
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    // Transitioning from Phase 1 to Phase 2
+    if (healthPct <= 70.0f && healthPct > 50.0f && !vashj->HasAura(magicBarrier))
+        return 0;
 
-    return vashj && vashj->GetHealthPct() <= 70.0f &&
-        vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
-}
+    // Phase 1
+    if (healthPct > 70.0f)
+        return 1;
 
-bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
-{
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    // Phase 2
+    if (healthPct <= 70.0f && vashj->HasAura(magicBarrier))
+        return 2;
 
-    return vashj && vashj->GetHealthPct() <= 70.0f &&
-        !vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
+    // Phase 3
+    if (healthPct <= 50.0f) // and no Magic Barrier
+        return 3;
+
+    return -1;
 }
 
 // This can just be replaced by a target exclusion of Vashj for Phase 2 I think
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
+bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI, Unit* vashj)
 {
     if (!unit || !unit->IsAlive())
         return false;
 
+    int8 phase = GetLadyVashjPhase(vashj);
     uint32 entry = unit->GetEntry();
 
-    if (IsLadyVashjInPhase2(botAI))
+    if (phase == 2)
     {
         return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
             entry == Id(SscNpcs::NPC_COILFANG_STRIDER);
     }
-    else if (IsLadyVashjInPhase3(botAI))
+    else if (phase == 3)
     {
         return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
