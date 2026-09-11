@@ -32,8 +32,8 @@ public:
         creators["high king maulgar determining kill order"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_determining_kill_order;
 
-        creators["high king maulgar boss channeling whirlwind"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_boss_channeling_whirlwind;
+        creators["high king maulgar channeling whirlwind"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_channeling_whirlwind;
 
         creators["high king maulgar should stand back from krosh"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_should_stand_back_from_krosh;
@@ -77,8 +77,8 @@ private:
     static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI) {
         return new HighKingMaulgarDeterminingKillOrderTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_boss_channeling_whirlwind(PlayerbotAI* botAI) {
-        return new HighKingMaulgarBossChannelingWhirlwindTrigger(botAI);
+    static Trigger* high_king_maulgar_channeling_whirlwind(PlayerbotAI* botAI) {
+        return new HighKingMaulgarChannelingWhirlwindTrigger(botAI);
     }
     static Trigger* high_king_maulgar_should_stand_back_from_krosh(PlayerbotAI* botAI) {
         return new HighKingMaulgarShouldStandBackFromKroshTrigger(botAI);
