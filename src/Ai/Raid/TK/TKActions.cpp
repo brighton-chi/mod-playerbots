@@ -1229,10 +1229,10 @@ bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
-    Unit* mace = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_COSMIC_INFUSER));
-    Unit* dagger = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_INFINITY_BLADES));
-    Unit* sword = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_WARP_SLICER));
+    Unit* axe = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION));
+    Unit* mace = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_COSMIC_INFUSER));
+    Unit* dagger = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_INFINITY_BLADES));
+    Unit* sword = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_WARP_SLICER));
 
     bool const isTank = PlayerbotAI::IsTank(bot);
     bool const isRangedDps = PlayerbotAI::IsRangedDps(bot);
@@ -1283,7 +1283,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         if (weapon.rangedDpsOnly && !isRangedDps)
             continue;
 
-        Unit* candidate = GetLegendaryWeapon(bot, Id(weapon.entry));
+        Unit* candidate = GetLegendaryWeapon(botAI, Id(weapon.entry));
         if (!candidate)
             continue;
 
@@ -1358,7 +1358,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
 
 bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
 {
-    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
+    Unit* axe = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION));
     if (!axe)
         return false;
 
