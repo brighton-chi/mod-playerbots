@@ -12,6 +12,7 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -229,8 +230,11 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (dynamic_cast<CastHealingSpellAction*>(action) ||
+        dynamic_cast<CastFearWardOnMainTankAction*>(action))
+    {
         return 1.0f;
+    }
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
