@@ -37,7 +37,12 @@ bool HyjalResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    reset |= botsBelowManaThreshold.erase(bot->GetGUID()) > 0;
+    if (AI_VALUE(bool, "kaz'rogal below mana threshold"))
+    {
+        RESET_AI_VALUE(bool, "kaz'rogal below mana threshold");
+        reset = true;
+    }
+
     reset |= archimondeAirBurstTargets.erase(bot->GetInstanceId()) > 0;
 
     return reset;
@@ -242,18 +247,15 @@ bool AnetheronMoveAwayFromInfernoTargetAction::Execute(Event /*event*/)
 
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
-    Position const& position = GetInfernalTankPosition(bot);
-    float const distToPosition = bot->GetExactDist2d(position);
-
-    if (distToPosition <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, GetInfernalTankPosition(bot), arrivalDist, nullptr, moveX, moveY, backwards))
+    {
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + ((position.GetPositionX() - botX) / distToPosition) * moveDist;
-    float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -358,19 +360,15 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     float const targetX = kazrogal->GetPositionX() + arcRadius * std::cos(angle);
     float const targetY = kazrogal->GetPositionY() + arcRadius * std::sin(angle);
 
-    float const distToTarget = bot->GetExactDist2d(targetX, targetY);
-    if (distToTarget <= 0.5f)
+    constexpr float moveDist = 3.5f;
+    float moveX;
+    float moveY;
+    float moveZ;
+    if (!CanTakeStepTowards(bot, targetX, targetY, moveDist, moveX, moveY, moveZ))
         return false;
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToTarget);
-    float const moveX = botX + ((targetX - botX) / distToTarget) * moveDist;
-    float const moveY = botY + ((targetY - botY) / distToTarget) * moveDist;
-
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -378,7 +376,7 @@ bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     if (bot->GetPower(POWER_MANA) > MARK_REJOIN_MANA)
     {
-        botsBelowManaThreshold.erase(bot->GetGUID());
+        RESET_AI_VALUE(bool, "kaz'rogal below mana threshold");
         return false;
     }
 
@@ -509,17 +507,15 @@ bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
 
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
-    Position const& position = AZGALOR_DOOMGUARD_POSITION;
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= 5.0f)
+    constexpr float arrivalDist = 5.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, AZGALOR_DOOMGUARD_POSITION, arrivalDist, nullptr, moveX, moveY, backwards))
+    {
         return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    constexpr float maxMoveDist = 3.5f;
-    float const moveDist = std::min(maxMoveDist, distToPosition);
-    float const moveX = botX + ((position.GetPositionX() - botX) / distToPosition) * moveDist;
-    float const moveY = botY + ((position.GetPositionY() - botY) / distToPosition) * moveDist;
+    }
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -744,13 +740,15 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
     if (inPosition)
         return false;
 
-    float const distToBoss = bot->GetExactDist2d(archimonde);
-    if (distToBoss < 0.5f)
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, archimonde->GetPosition(), arrivalDist, nullptr, moveX, moveY, backwards))
+    {
         return false;
-
-    constexpr float maxMoveDist = 3.5f;
-    float const moveX = botX + ((archimonde->GetPositionX() - botX) / distToBoss) * maxMoveDist;
-    float const moveY = botY + ((archimonde->GetPositionY() - botY) / distToBoss) * maxMoveDist;
+    }
 
     if (IsPositionNearDoomfire(botAI, moveX, moveY, DOOMFIRE_DANGER_RADIUS))
         return false;

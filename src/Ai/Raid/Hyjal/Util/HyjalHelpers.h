@@ -13,7 +13,6 @@
 #include <functional>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 class Player;
@@ -146,7 +145,7 @@ GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
 Unit* GetLooseInfernal(PlayerbotAI* botAI);
 Unit* GetNearestInfernal(PlayerbotAI* botAI);
 // The Infernal a ranged bot should attack instead of the boss, if any. It is the oldest Infernal
-// alive, but in practice, a raid should have only one up at a time.
+// alive within engage range, but in practice, a raid should have only one up at a time.
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron);
 Unit* GetInfernalTargetingBot(PlayerbotAI* botAI);
 // Both resolve the first assist tank among the living, so keep them in step.
@@ -182,10 +181,6 @@ inline constexpr float MARK_ESCAPE_DISTANCE = 16.0f;
 
 // Near the gate, so the raid can get started immediately to beat the soft enrage due to Marks.
 inline Position const KAZROGAL_TANK_POSITION = { 5505.440f, -2665.059f, 1480.598f };
-
-// This unordered set allows for the gap between MARK_DANGER_MANA and MARK_REJOIN_MANA to avoid
-// bots running back and forth to/from the group.
-extern std::unordered_set<ObjectGuid> botsBelowManaThreshold;
 
 float GetKazrogalRangedArcRadius(Unit* kazrogal);
 float GetKazrogalRangedArcSpan(float radius);
