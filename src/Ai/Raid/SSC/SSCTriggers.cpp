@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
+#include <algorithm>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -97,11 +98,8 @@ bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter() // THIS IS VERY 
     if (!lurker || lurker->getStandState() == UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
-    if (it != lurkerSpoutTimer.end())
-        return false;
-
-    return getMSTimeDiff(it->second, getMSTime()) >= LURKER_SPOUT_DURATION_MS;
+    // The tracker erases the spout entry once it expires, so its presence alone means a spout
+    return lurkerSpoutTimer.find(lurker->GetInstanceId()) == lurkerSpoutTimer.end();
 }
 
 bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -113,14 +111,10 @@ bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!lurker || lurker->getStandState() == UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
-    if (it != lurkerSpoutTimer.end())
-        return false;
-
-    return getMSTimeDiff(it->second, getMSTime()) >= LURKER_SPOUT_DURATION_MS;
+    return lurkerSpoutTimer.find(lurker->GetInstanceId()) == lurkerSpoutTimer.end();
 }
 
-// Trigger will be active only if there are at least 3 tanks in the raid
+// Only the three guardian tanks, and only when all three exist
 bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -130,14 +124,8 @@ bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
     if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    Player* mainTank = GetGroupMainTank(bot);
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
-        return false;
-
-    return bot == mainTank || bot == firstAssistTank || bot == secondAssistTank;
+    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
+    return std::find(tanks.begin(), tanks.end(), bot) != tanks.end();
 }
 
 bool TheLurkerBelowShouldManageSpoutTimerTrigger::IsActiveInEncounter()

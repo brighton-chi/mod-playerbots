@@ -9,6 +9,7 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <list>
@@ -164,6 +165,69 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
+
+GuidVector FindLurkerGuardianGuids(Player* bot)
+{
+    GuidVector guids;
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(
+        creatures, Id(SscNpcs::NPC_COILFANG_GUARDIAN), LURKER_GUARDIAN_SEARCH_RADIUS);
+
+    for (Creature* creature : creatures)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+
+    return guids;
+}
+
+std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> guardians;
+
+    for (ObjectGuid const& guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc lurker guardians")->RefGet())
+    {
+        Unit* guardian = botAI->GetUnit(guid);
+        if (guardian && guardian->IsAlive())
+            guardians.push_back(guardian);
+    }
+
+    return guardians;
+}
+
+std::vector<Player*> GetLurkerGuardianTanks(Player* bot)
+{
+    std::vector<Player*> tanks = {
+        GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
+
+    if (std::any_of(tanks.begin(), tanks.end(), [](Player* tank) { return !tank; }))
+        return {};
+
+    return tanks;
+}
+
+bool CastTauntOn(PlayerbotAI* botAI, Unit* target)
+{
+    Player* bot = botAI->GetBot();
+    char const* taunt = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
+        case CLASS_DRUID:        taunt = "growl"; break;
+        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
+        case CLASS_WARRIOR:      taunt = "taunt"; break;
+        default:                 return false;
+    }
+
+    return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);
+}
 
 // Leotheras the Blind
 

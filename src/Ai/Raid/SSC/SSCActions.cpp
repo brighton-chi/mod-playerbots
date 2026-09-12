@@ -44,6 +44,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= lurkerSpoutTimer.erase(instanceId) > 0;
+    reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
     reset |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
     reset |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
     reset |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
@@ -383,7 +384,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(bot) ||
+        if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -439,59 +440,98 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// During the submerge phase, if there are >= 3 tanks in the raid,
-// the first 3 will each pick up 1 Guardian
+// During the submerge phase the main tank and the first two assist tanks each claim one Coilfang
+// Guardian off the shared sorted list, taunt it off whoever it aggroed onto, and hold it away from
+// the other two. The Ambushers are left to natural targeting. Mirrors the Kil'jaeden hands pattern.
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-    if (!secondAssistTank)
+    std::vector<Unit*> const guardians = GetLurkerGuardians(botAI);
+    if (guardians.empty())
         return false;
 
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    if (!firstAssistTank)
+    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
+    auto const myIt = std::find(tanks.begin(), tanks.end(), bot);
+    if (myIt == tanks.end())
         return false;
 
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
+    size_t const myIndex = static_cast<size_t>(std::distance(tanks.begin(), myIt));
+
+    Unit* guardian = botAI->GetUnit(ClaimGuardianForTank(guardians, myIndex));
+    if (!guardian || !guardian->IsAlive())
         return false;
 
-    std::vector<Unit*> guardians;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    if (AI_VALUE(Unit*, "current target") != guardian)
+        return Attack(guardian);
 
-    for (auto guid : attackers)
+    // The stock "lose aggro" taunt treats a guardian on another tank as held, so taunt explicitly
+    if (guardian->GetVictim() != bot)
+        return CastTauntOn(botAI, guardian);
+
+    if (!bot->IsWithinMeleeRange(guardian))
+        return false;
+
+    return KeepClearOfOtherTanks(tanks, myIndex);
+}
+
+// Keep my existing claim while that guardian lives; otherwise take the first one no other tank holds
+ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
+    std::vector<Unit*> const& guardians, size_t myIndex)
+{
+    auto& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
+    ObjectGuid& assignedGuid = assignments[myIndex];
+
+    if (std::any_of(guardians.begin(), guardians.end(),
+            [&assignedGuid](Unit* guardian) { return guardian->GetGUID() == assignedGuid; }))
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_COILFANG_GUARDIAN))
-            guardians.push_back(unit);
+        return assignedGuid;
     }
 
-    if (guardians.size() < 3)
+    auto const heldByAnotherTank = [&assignments, myIndex](ObjectGuid guid)
+    {
+        for (size_t i = 0; i < assignments.size(); ++i)
+        {
+            if (i != myIndex && assignments[i] == guid)
+                return true;
+        }
+
+        return false;
+    };
+
+    assignedGuid = ObjectGuid::Empty;
+
+    for (Unit* guardian : guardians)
+    {
+        if (!heldByAnotherTank(guardian->GetGUID()))
+        {
+            assignedGuid = guardian->GetGUID();
+            break;
+        }
+    }
+
+    return assignedGuid;
+}
+
+// The main tank holds where it is; the assist tanks back their guardians away from the others
+bool TheLurkerBelowTanksPickUpAddsAction::KeepClearOfOtherTanks(
+    std::vector<Player*> const& tanks, size_t myIndex)
+{
+    if (myIndex == 0)
         return false;
 
-    std::vector<Player*> tanks = { mainTank, firstAssistTank, secondAssistTank };
-    std::vector<uint8> rtiIndices =
+    auto const& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
+
+    for (size_t i = 0; i < tanks.size(); ++i)
     {
-        RtiTargetValue::starIndex,
-        RtiTargetValue::circleIndex,
-        RtiTargetValue::diamondIndex
-    };
-    std::vector<std::string> rtiNames = { "star", "circle", "diamond" };
+        Unit* otherGuardian = botAI->GetUnit(assignments[i]);
+        if (i == myIndex || !tanks[i]->IsAlive() || !otherGuardian || !otherGuardian->IsAlive())
+            continue;
 
-    for (size_t i = 0; i < 3; ++i)
-    {
-        Player* tank = tanks[i];
-        Unit* guardian = guardians[i];
-        if (bot == tank)
-        {
-            if (MarkTargetWithIcon(bot, guardian, rtiIndices[i]))
-                return true;
+        float const remaining = LURKER_GUARDIAN_TANK_SEPARATION - bot->GetExactDist2d(tanks[i]);
+        if (remaining <= LURKER_GUARDIAN_TANK_MOVE_DEADZONE)
+            continue;
 
-            SetRtiTarget(botAI, rtiNames[i]);
-
-            if (AI_VALUE(Unit*, "current target") != guardian)
-                return Attack(guardian);
-        }
+        if (MoveAway(tanks[i], std::min(remaining, LURKER_GUARDIAN_TANK_MOVE_STEP), true))
+            return true;
     }
 
     return false;

@@ -105,11 +105,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class TheLurkerBelowDisableTankAssistMultiplier : public SscEncounterMultiplier
+class TheLurkerBelowTanksFocusAssignedGuardianMultiplier : public SscEncounterMultiplier
 {
 public:
-    TheLurkerBelowDisableTankAssistMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "the lurker below disable tank assist") {}
+    TheLurkerBelowTanksFocusAssignedGuardianMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "the lurker below tanks focus assigned guardian") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

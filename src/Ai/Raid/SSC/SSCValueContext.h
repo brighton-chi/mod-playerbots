@@ -34,12 +34,24 @@ private:
     float const _searchRadius;
 };
 
+class SscLurkerGuardiansValue : public CalculatedValue<GuidVector>
+{
+public:
+    SscLurkerGuardiansValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "ssc lurker guardians", SscHelpers::LURKER_GUARDIAN_CACHE_INTERVAL) {}
+
+protected:
+    GuidVector Calculate() override { return SscHelpers::FindLurkerGuardianGuids(bot); }
+};
+
 class RaidSscValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
     RaidSscValueContext()
     {
         creators["ssc toxic pool"] = &RaidSscValueContext::ssc_toxic_pool;
+        creators["ssc lurker guardians"] = &RaidSscValueContext::ssc_lurker_guardians;
     }
 
 private:
@@ -47,6 +59,9 @@ private:
         return new SscHazardPositionsValue(
             botAI, "ssc toxic pool", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_POOL),
             SscHelpers::TOXIC_POOL_SEARCH_RADIUS);
+    }
+    static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI) {
+        return new SscLurkerGuardiansValue(botAI);
     }
 };
 

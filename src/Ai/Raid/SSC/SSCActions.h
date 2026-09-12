@@ -141,6 +141,10 @@ public:
     TheLurkerBelowTanksPickUpAddsAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "the lurker below tanks pick up adds") {}
     bool Execute(Event event) override;
+
+private:
+    ObjectGuid ClaimGuardianForTank(std::vector<Unit*> const& guardians, size_t myIndex);
+    bool KeepClearOfOtherTanks(std::vector<Player*> const& tanks, size_t myIndex);
 };
 
 class TheLurkerBelowManageSpoutTimerAction : public Action

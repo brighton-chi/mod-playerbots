@@ -28,6 +28,7 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <algorithm>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -230,41 +231,31 @@ float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* 
     return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
 
-// Disable tank assist during Submerge only if there are 3 or more tanks in the raid
-float TheLurkerBelowDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
+// A guardian tank holding a live claim neither assists, spreads, taunts nor AoE-threats onto
+// anyone else's guardian. A tank whose claim is gone falls back to natural tank assist.
+float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsTank(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT || !PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (bot->GetVictim() == nullptr)
-        return 1.0f;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
-        return 1.0f;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return 1.0f;
-
-    uint8 tankCount = 0;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (!dynamic_cast<TankAssistAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (PlayerbotAI::IsTank(member))
-            ++tankCount;
+        return 1.0f;
     }
 
-    if (tankCount < 3)
+    auto const instanceIt = lurkerGuardianTankAssignments.find(bot->GetInstanceId());
+    if (instanceIt == lurkerGuardianTankAssignments.end())
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
+    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
+    auto const myIt = std::find(tanks.begin(), tanks.end(), bot);
+    if (myIt == tanks.end())
+        return 1.0f;
 
-    return 1.0f;
+    Unit* guardian = botAI->GetUnit(instanceIt->second[std::distance(tanks.begin(), myIt)]);
+    return guardian && guardian->IsAlive() ? 0.0f : 1.0f;
 }
 
 // Leotheras the Blind

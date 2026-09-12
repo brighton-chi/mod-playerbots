@@ -183,6 +183,26 @@ inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f
 extern std::unordered_map<uint32, uint32> lurkerSpoutTimer; // Is there a  visual I can rely on? So I don't need a timer?
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 
+// Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
+// The guardians are found by a sorted, cached grid search so every tank sees the same list in the
+// same order (summon GUIDs are sequential, so sorted is spawn order).
+inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL = 200;
+inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
+inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
+// How far apart the tanks hold their guardians, and the step used to get there.
+inline constexpr float LURKER_GUARDIAN_TANK_SEPARATION = 20.0f;
+inline constexpr float LURKER_GUARDIAN_TANK_MOVE_STEP = 2.25f;
+inline constexpr float LURKER_GUARDIAN_TANK_MOVE_DEADZONE = 1.5f;
+
+extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
+
+GuidVector FindLurkerGuardianGuids(Player* bot);
+std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
+// The guardian tanks in index order; empty unless all three exist.
+std::vector<Player*> GetLurkerGuardianTanks(Player* bot);
+bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
+
 // Leotheras the Blind
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;

@@ -169,7 +169,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // The Lurker Below
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowMaintainRangedSpreadMultiplier(botAI));
-    multipliers.push_back(new TheLurkerBelowDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowTanksFocusAssignedGuardianMultiplier(botAI));
 
     // Leotheras the Blind
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
