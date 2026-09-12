@@ -21,6 +21,7 @@ class Map;
 class Player;
 class PlayerbotAI;
 class Unit;
+
 namespace SscHelpers
 {
 
@@ -48,10 +49,12 @@ enum class SscSpells : uint32
     SPELL_MARK_OF_CORRUPTION_100 = 38222,
     SPELL_MARK_OF_CORRUPTION_250 = 38230,
     SPELL_MARK_OF_CORRUPTION_500 = 40583,
-    SPELL_CORRUPTION             = 37961,
+    SPELL_HYDROSS_CORRUPTION     = 37961,
 
     // The Lurker Below
-    SPELL_SPOUT_VISUAL = 37431,
+    SPELL_SPOUT_VISUAL           = 37431, // 3s wind-up cast
+    SPELL_SPOUT_COUNTERCLOCKWISE = 37429, // 16s aura; facing +0.1 rad every 250ms, cone each tick
+    SPELL_SPOUT_CLOCKWISE        = 37430, // same, -0.1 rad
 
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED     = 37546,
@@ -73,12 +76,19 @@ enum class SscSpells : uint32
     SPELL_BEAR_FORM              =  5487,
     SPELL_DIRE_BEAR_FORM         =  9634,
     SPELL_TREE_OF_LIFE           = 33891,
+    SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
     SPELL_MISDIRECTION           = 35079,
 
     // Mage
     SPELL_SLOW                   = 31589,
+
+    // Paladin
+    SPELL_AVENGING_WRATH         = 31884,
+
+    // Rogue
+    SPELL_CLOAK_OF_SHADOWS       = 31224,
 
     // Shaman
     SPELL_GROUNDING_TOTEM_EFFECT =  8178,
@@ -125,13 +135,21 @@ enum class SscItems : uint32
 };
 
 inline constexpr uint32 SSC_MAP_ID = 548;
-inline constexpr uint32 HAZARD_CACHE_INTERVAL = 500;
+inline constexpr uint32 HAZARD_CACHE_INTERVAL = 200;
 
 // Trash
 
-inline constexpr float TOXIC_POOL_RADIUS = 25.0f; // 25y is the actual hazard radius
-inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_RADIUS + 2.0f; // 2y margin for hazard search
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char const* value);
+// 25y radius + ~2y player CombatReach; see the Hyjal D&D note on persistent ground AoE range in AC.
+inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
+inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f; // For multiplier
+inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
+
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
+// A step straight out of a circular hazard, fanning around the escape heading on collision. Copied
+// from HyjalHelpers pending promotion to EncounterHelpers.
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);
@@ -146,6 +164,12 @@ extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+// The main tank holds Hydross in frost, the first assist tank in nature. Every other tank is an
+// add tank and never touches Hydross.
+bool IsHydrossPhaseTank(Player* bot);
+bool IsHydrossAddTank(Player* bot);
+bool IsHydrossInFrostPhase(Unit* hydross);
+bool IsHydrossInNaturePhase(Unit* hydross);
 bool HasMarkOfHydrossAt100Percent(Player* bot);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* bot);
@@ -153,27 +177,100 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
 
-// Stores the time the current Spout cast started; the entry is erased once it expires
-inline constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
-
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
-extern std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 
-bool IsLurkerCastingSpout(Unit* lurker);
+// The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
+// the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
+// stand state instead.
+bool IsLurkerSpouting(Unit* lurker);
+// Up and fighting: neither submerged nor spouting. The tank and ranged holding triggers share it.
+bool IsLurkerSurfacedAndCalm(Unit* lurker);
+// +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
+int8 GetLurkerSpoutSpin(Unit* lurker);
+
+// Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
+// the speed: 17 yd keeps pace with the beam, 21 yd falls behind at 0.07 rad/s. Each bot gets a
+// fixed radius in this band and a fixed offset around "behind" from its GUID so the raid looks
+// spread rather than stacked, without the destination moving from tick to tick.
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 17.0f;
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
+inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
+inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
+inline constexpr float LURKER_SPOUT_RUN_ANGULAR_DEADZONE = 0.105f; // ~6 degrees
+
+// Ranged stand on fixed stations and dive during Spout: the cone skips anyone IsInWater(), at the
+// cost of Scalding Water (500 fire on entry, 500 every 3s). Ranged DPS use the three islets the
+// Ambushers spawn on (Lurker's CombatReach is 22y, so 40y spells reach them); healers stay on the
+// inner ring to keep the melee in range.
+inline std::array<Position, 3> const LURKER_RANGED_DPS_STATIONS = { {
+    { 77.937f, -384.500f, -19.722f }, // NW islet
+    { 63.022f, -456.310f, -19.793f }, // NE islet
+    { 14.283f, -457.467f, -19.793f }  // E islet
+} };
+inline std::array<Position, 3> const LURKER_HEALER_STATIONS = { {
+    { 16.237f, -438.098f, -19.551f }, // SE
+    { 37.255f, -387.031f, -19.417f }, // SW
+    { 66.268f, -418.774f, -19.592f }  // N
+} };
+// The pathfinder snaps any point within 5y of the water-surface navmesh poly back onto it, which
+// leaves the bot at WATER_WALK rather than IN_WATER. A dive deeper than that finds no poly and goes
+// through as a straight spline. Once in, the bot rises to just under the surface: still IN_WATER,
+// no breath timer.
+inline constexpr float LURKER_DIVE_DEPTH = 5.5f;
+inline constexpr float LURKER_FLOAT_DEPTH = 1.0f;
+inline constexpr float LURKER_STATION_ARRIVAL_DIST = 2.0f;
+
+// The station for this bot's role and index among its ranged peers; false if there are none.
+bool GetLurkerRangedStation(Player* bot, Position& station);
+// A point in water near the station deep enough to dive under the poly snap, probing towards and
+// away from Lurker. Returns the surface level through waterLevel.
+bool FindLurkerDivePoint(
+    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel);
+
+// Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
+// The guardians are found by a sorted, cached grid search so every tank sees the same list in the
+// same order (summon GUIDs are sequential, so sorted is spawn order).
+inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL = 200;
+inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
+inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
+// How far apart the tanks hold their guardians, and the step used to get there.
+inline constexpr float LURKER_GUARDIAN_TANK_SEPARATION = 20.0f;
+inline constexpr float LURKER_GUARDIAN_TANK_MOVE_STEP = 2.25f;
+inline constexpr float LURKER_GUARDIAN_TANK_MOVE_DEADZONE = 1.5f;
+
+extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
+
+GuidVector FindLurkerGuardianGuids(Player* bot);
+std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
+// The guardian tanks in index order; empty unless all three exist.
+std::vector<Player*> GetLurkerGuardianTanks(Player* bot);
+bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
 
 // Leotheras the Blind
 
-extern std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
+
+extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Creature* GetLeotherasHuman(Player* bot);
+bool IsSpellbinderPhase(Unit* leotheras);
+Creature* GetActiveLeotherasHumanoid(Player* bot);
+bool IsLeotherasHumanoidPhase(Player* bot);
 Creature* GetPhase2LeotherasDemon(Player* bot);
+bool IsLeotherasDemonPhase(Player* bot);
 Creature* GetPhase3LeotherasDemon(Player* bot);
+bool IsLeotherasFinalPhase(Player* bot);
 Creature* GetActiveLeotherasDemon(Player* bot);
-Player* GetLeotherasDemonFormTank(Player* bot);
+Player* GetLeotherasWarlockTank(Player* bot);
+bool IsLeotherasWarlockTank(Player* bot);
+bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
+bool HasTooManyChaosBlastStacks(Player* bot);
+bool HasInnerDemon(Player* bot);
+Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 
 // Fathom-Lord Karathress
 
@@ -187,6 +284,8 @@ inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 // Morogrim Tidewalker
+
+inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
@@ -212,16 +311,14 @@ inline constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
 extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-extern std::unordered_map<ObjectGuid, Position> intendedLineup;
-extern std::unordered_map<uint32, uint32> lastImbueAttempt;
-extern std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
+extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
+extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
+extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
+extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot);
-bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
-bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
-bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
+int8 GetLadyVashjPhase(Unit* vashj);
+bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);

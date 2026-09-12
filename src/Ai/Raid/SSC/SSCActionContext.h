@@ -16,8 +16,8 @@ public:
     RaidSscActionContext()
     {
         // General
-        creators["serpent shrine cavern reset encounter states"] =
-            &RaidSscActionContext::serpent_shrine_cavern_reset_encounter_states;
+        creators["ssc reset encounter states"] =
+            &RaidSscActionContext::ssc_reset_encounter_states;
 
         // Trash
         creators["underbog colossus escape toxic pool"] =
@@ -32,9 +32,6 @@ public:
 
         creators["hydross the unstable position nature tank"] =
             &RaidSscActionContext::hydross_the_unstable_position_nature_tank;
-
-        creators["hydross the unstable prioritize elemental adds"] =
-            &RaidSscActionContext::hydross_the_unstable_prioritize_elemental_adds;
 
         creators["hydross the unstable frost phase spread out"] =
             &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_out;
@@ -58,15 +55,15 @@ public:
         creators["the lurker below spread ranged in arc"] =
             &RaidSscActionContext::the_lurker_below_spread_ranged_in_arc;
 
+        creators["the lurker below ranged hold station"] =
+            &RaidSscActionContext::the_lurker_below_ranged_hold_station;
+
         creators["the lurker below tanks pick up adds"] =
             &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
 
-        creators["the lurker below manage spout timer"] =
-            &RaidSscActionContext::the_lurker_below_manage_spout_timer;
-
         // Leotheras the Blind
-        creators["leotheras the blind demon form tank attack boss"] =
-            &RaidSscActionContext::leotheras_the_blind_demon_form_tank_attack_boss;
+        creators["leotheras the blind warlock tank attack boss"] =
+            &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
 
         creators["leotheras the blind melee tanks don't attack demon form"] =
             &RaidSscActionContext::leotheras_the_blind_melee_tanks_dont_attack_demon_form;
@@ -86,24 +83,15 @@ public:
         creators["leotheras the blind final phase assign dps priority"] =
             &RaidSscActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
 
-        creators["leotheras the blind misdirect boss to demon form tank"] =
-            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_demon_form_tank;
+        creators["leotheras the blind misdirect boss to warlock tank"] =
+            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_warlock_tank;
 
         creators["leotheras the blind manage dps wait timers"] =
             &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
 
         // Fathom-Lord Karathress
-        creators["fathom-lord karathress main tank position boss"] =
-            &RaidSscActionContext::fathom_lord_karathress_main_tank_position_boss;
-
-        creators["fathom-lord karathress first assist tank position caribdis"] =
-            &RaidSscActionContext::fathom_lord_karathress_first_assist_tank_position_caribdis;
-
-        creators["fathom-lord karathress second assist tank position sharkkis"] =
-            &RaidSscActionContext::fathom_lord_karathress_second_assist_tank_position_sharkkis;
-
-        creators["fathom-lord karathress third assist tank position tidalvess"] =
-            &RaidSscActionContext::fathom_lord_karathress_third_assist_tank_position_tidalvess;
+        creators["fathom-lord karathress tanks position targets"] =
+            &RaidSscActionContext::fathom_lord_karathress_tanks_position_targets;
 
         creators["fathom-lord karathress position caribdis tank healer"] =
             &RaidSscActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
@@ -170,8 +158,8 @@ public:
 
 private:
     // General
-    static Action* serpent_shrine_cavern_reset_encounter_states(PlayerbotAI* botAI) {
-        return new SerpentShrineCavernResetEncounterStatesAction(botAI);
+    static Action* ssc_reset_encounter_states(PlayerbotAI* botAI) {
+        return new SscResetEncounterStatesAction(botAI);
     }
 
     // Trash
@@ -184,13 +172,12 @@ private:
 
     // Hydross the Unstable <Duke of Currents>
     static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePositionFrostTankAction(botAI);
+        return new HydrossTheUnstablePositionAndSwapTanksAction(
+            botAI, "hydross the unstable position frost tank", true);
     }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePositionNatureTankAction(botAI);
-    }
-    static Action* hydross_the_unstable_prioritize_elemental_adds(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePrioritizeElementalAddsAction(botAI);
+        return new HydrossTheUnstablePositionAndSwapTanksAction(
+            botAI, "hydross the unstable position nature tank", false);
     }
     static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) {
         return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI);
@@ -215,16 +202,16 @@ private:
     static Action* the_lurker_below_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new TheLurkerBelowSpreadRangedInArcAction(botAI);
     }
+    static Action* the_lurker_below_ranged_hold_station(PlayerbotAI* botAI) {
+        return new TheLurkerBelowRangedHoldStationAction(botAI);
+    }
     static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) {
         return new TheLurkerBelowTanksPickUpAddsAction(botAI);
     }
-    static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) {
-        return new TheLurkerBelowManageSpoutTimerAction(botAI);
-    }
 
     // Leotheras the Blind
-    static Action* leotheras_the_blind_demon_form_tank_attack_boss(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindDemonFormTankAttackBossAction(botAI);
+    static Action* leotheras_the_blind_warlock_tank_attack_boss(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindWarlockTankAttackBossAction(botAI);
     }
     static Action* leotheras_the_blind_melee_tanks_dont_attack_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindMeleeTanksDontAttackDemonFormAction(botAI);
@@ -241,8 +228,8 @@ private:
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_misdirect_boss_to_demon_form_tank(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMisdirectBossToDemonFormTankAction(botAI);
+    static Action* leotheras_the_blind_misdirect_boss_to_warlock_tank(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMisdirectBossToWarlockTankAction(botAI);
     }
     static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI);
@@ -252,17 +239,8 @@ private:
     }
 
     // Fathom-Lord Karathress
-    static Action* fathom_lord_karathress_main_tank_position_boss(PlayerbotAI* botAI) {
-        return new FathomLordKarathressMainTankPositionBossAction(botAI);
-    }
-    static Action* fathom_lord_karathress_first_assist_tank_position_caribdis(PlayerbotAI* botAI) {
-        return new FathomLordKarathressFirstAssistTankPositionCaribdisAction(botAI);
-    }
-    static Action* fathom_lord_karathress_second_assist_tank_position_sharkkis(PlayerbotAI* botAI) {
-        return new FathomLordKarathressSecondAssistTankPositionSharkkisAction(botAI);
-    }
-    static Action* fathom_lord_karathress_third_assist_tank_position_tidalvess(PlayerbotAI* botAI) {
-        return new FathomLordKarathressThirdAssistTankPositionTidalvessAction(botAI);
+    static Action* fathom_lord_karathress_tanks_position_targets(PlayerbotAI* botAI) {
+        return new FathomLordKarathressTanksPositionTargetsAction(botAI);
     }
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) {
         return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI);
@@ -279,7 +257,8 @@ private:
 
     // Morogrim Tidewalker
     static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerMisdirectBossToMainTankAction(botAI);
+        return new SscMisdirectTargetToTankAction(
+            botAI, "morogrim tidewalker misdirect boss to main tank", "morogrim tidewalker");
     }
     static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerMoveBossToTankPositionAction(botAI);
@@ -302,13 +281,15 @@ private:
         return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI);
     }
     static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new LadyVashjMisdirectBossToMainTankAction(botAI);
+        return new SscMisdirectTargetToTankAction(
+            botAI, "lady vashj misdirect boss to main tank", "lady vashj");
     }
     static Action* lady_vashj_assign_phase_2_and_phase_3_dps_priority(PlayerbotAI* botAI) {
         return new LadyVashjAssignPhase2AndPhase3DpsPriorityAction(botAI);
     }
     static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) {
-        return new LadyVashjMisdirectStriderToFirstAssistTankAction(botAI);
+        return new SscMisdirectTargetToTankAction(
+            botAI, "lady vashj misdirect strider to first assist tank", "coilfang strider", 0);
     }
     static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) {
         return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI);

@@ -5,21 +5,76 @@
  */
 
 #include "SSCHelpers.h"
+#include "EncounterHelpers.h"
+#include "Map.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
-#include "Timer.h"
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <list>
+
+using namespace EncounterHelpers;
 
 namespace SscHelpers
 {
 
+namespace
+{
+
+// A step towards a point on a circle, at the angle nearest to preferred that the bot can reach.
+bool FindStepToCircle(
+    Player* bot, Position const& center, float radius, float preferredAngle, float moveDist,
+    float& stepX, float& stepY, float& stepZ)
+{
+    float const centerX = center.GetPositionX();
+    float const centerY = center.GetPositionY();
+
+    constexpr uint8 fanSteps = 8;
+    constexpr float fanStep = static_cast<float>(M_PI) / fanSteps;
+
+    for (uint8 step = 0; step <= fanSteps; ++step)
+    {
+        float const delta = fanStep * step;
+        uint8 const candidates = (step == 0) ? 1 : 2;
+        for (uint8 i = 0; i < candidates; ++i)
+        {
+            float const angle = preferredAngle + (i == 0 ? delta : -delta);
+            float const targetX = centerX + std::cos(angle) * radius;
+            float const targetY = centerY + std::sin(angle) * radius;
+
+            if (CanTakeStepTowards(bot, targetX, targetY, moveDist, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+} // end anonymous namespace
+
 // Trash
 
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char const* value)
+std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
+}
+
+bool GetHazardEscapeStep(
+    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
+    float& stepY, float& stepZ)
+{
+    float const centerX = hazard.GetPositionX();
+    float const centerY = hazard.GetPositionY();
+    float escapeAngle =
+        std::atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+    if (bot->GetExactDist2d(centerX, centerY) <= 0.1f)
+        escapeAngle = bot->GetOrientation();
+
+    return FindStepToCircle(
+        bot, hazard, escapeRadius, escapeAngle, moveDist, stepX, stepY, stepZ);
 }
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)
@@ -42,7 +97,7 @@ bool IsNearToxicPool(PlayerbotAI* botAI, float radius)
 
 bool IsInToxicPool(PlayerbotAI* botAI)
 {
-    return IsNearToxicPool(botAI, TOXIC_POOL_RADIUS);
+    return IsNearToxicPool(botAI, TOXIC_POOL_HAZARD_RADIUS);
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -51,6 +106,27 @@ std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
+
+bool IsHydrossPhaseTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) &&
+        (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true));
+}
+
+bool IsHydrossAddTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) && !IsHydrossPhaseTank(bot);
+}
+
+bool IsHydrossInFrostPhase(Unit* hydross)
+{
+    return hydross && !hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION));
+}
+
+bool IsHydrossInNaturePhase(Unit* hydross)
+{
+    return hydross && hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION));
+}
 
 bool HasMarkOfHydrossAt100Percent(Player* bot)
 {
@@ -88,48 +164,187 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 // The Lurker Below
 
-std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
 
-bool IsLurkerCastingSpout(Unit* lurker)
+bool IsLurkerSpouting(Unit* lurker)
 {
-    if (!lurker || !lurker->HasUnitState(UNIT_STATE_CASTING))
+    Creature* creature = lurker ? lurker->ToCreature() : nullptr;
+    return creature && creature->IsInCombat() && creature->GetReactState() == REACT_PASSIVE;
+}
+
+bool IsLurkerSurfacedAndCalm(Unit* lurker)
+{
+    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
+        !IsLurkerSpouting(lurker);
+}
+
+int8 GetLurkerSpoutSpin(Unit* lurker)
+{
+    if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_COUNTERCLOCKWISE)))
+        return 1;
+
+    if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_CLOCKWISE)))
+        return -1;
+
+    return 0;
+}
+
+bool GetLurkerRangedStation(Player* bot, Position& station)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    Spell* currentSpell = lurker->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell)
+    bool const healer = PlayerbotAI::IsHeal(bot);
+    std::vector<Player*> peers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->GetMapId() == SSC_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            PlayerbotAI::IsRanged(member) && PlayerbotAI::IsHeal(member) == healer)
+        {
+            peers.push_back(member);
+        }
+    }
+
+    auto const it = std::find(peers.begin(), peers.end(), bot);
+    if (it == peers.end())
         return false;
 
-    uint32 spellId = currentSpell->m_spellInfo->Id;
-    bool isSpout = spellId == Id(SscSpells::SPELL_SPOUT_VISUAL);
+    size_t const index = static_cast<size_t>(std::distance(peers.begin(), it));
+    auto const& stations = healer ? LURKER_HEALER_STATIONS : LURKER_RANGED_DPS_STATIONS;
+    station = stations[index % stations.size()];
+    return true;
+}
 
-    return isSpout;
+bool FindLurkerDivePoint(
+    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel)
+{
+    Map* map = bot->GetMap();
+    float const angle = station.GetAngle(lurker);
+    constexpr std::array<float, 4> probeDistances = { 3.0f, 5.0f, 7.0f, 9.0f };
+
+    for (float const distance : probeDistances)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            float const x = station.GetPositionX() + side * distance * std::cos(angle);
+            float const y = station.GetPositionY() + side * distance * std::sin(angle);
+            LiquidData const liquid = map->GetLiquidData(
+                bot->GetPhaseMask(), x, y, station.GetPositionZ(), bot->GetCollisionHeight(), {});
+
+            if (liquid.Level <= INVALID_HEIGHT ||
+                liquid.Level - liquid.DepthLevel < LURKER_DIVE_DEPTH + 1.0f)
+            {
+                continue;
+            }
+
+            waterLevel = liquid.Level;
+            dive.Relocate(x, y, liquid.Level - LURKER_DIVE_DEPTH);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+GuidVector FindLurkerGuardianGuids(Player* bot)
+{
+    GuidVector guids;
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(
+        creatures, Id(SscNpcs::NPC_COILFANG_GUARDIAN), LURKER_GUARDIAN_SEARCH_RADIUS);
+
+    for (Creature* creature : creatures)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+
+    return guids;
+}
+
+std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> guardians;
+
+    for (ObjectGuid const& guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc lurker guardians")->RefGet())
+    {
+        Unit* guardian = botAI->GetUnit(guid);
+        if (guardian && guardian->IsAlive())
+            guardians.push_back(guardian);
+    }
+
+    return guardians;
+}
+
+std::vector<Player*> GetLurkerGuardianTanks(Player* bot)
+{
+    std::vector<Player*> tanks = {
+        GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
+
+    if (std::any_of(tanks.begin(), tanks.end(), [](Player* tank) { return !tank; }))
+        return {};
+
+    return tanks;
+}
+
+bool CastTauntOn(PlayerbotAI* botAI, Unit* target)
+{
+    Player* bot = botAI->GetBot();
+    char const* taunt = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
+        case CLASS_DRUID:        taunt = "growl"; break;
+        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
+        case CLASS_WARRIOR:      taunt = "taunt"; break;
+        default:                 return false;
+    }
+
+    return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);
 }
 
 // Leotheras the Blind
 
-std::unordered_map<uint32, uint32> leotherasHumanFormDpsWaitTimer;
-std::unordered_map<uint32, uint32> leotherasDemonFormDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-Creature* GetLeotherasHuman(Player* bot)
+bool IsSpellbinderPhase(Unit* leotheras)
 {
-    constexpr float searchRadius = 100.0f;
-    Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
+    return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
+}
 
-    if (leotheras && leotheras->IsInCombat() &&
-        !leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
+Creature* GetActiveLeotherasHumanoid(Player* bot)
+{
+    Creature* leotheras =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
+
+    if (!leotheras || IsSpellbinderPhase(leotheras))
+        return nullptr;
+
+    if (!leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
     return nullptr;
 }
 
+bool IsLeotherasHumanoidPhase(Player* bot)
+{
+    return GetActiveLeotherasHumanoid(bot) && !GetPhase3LeotherasDemon(bot);
+}
+
 Creature* GetPhase2LeotherasDemon(Player* bot)
 {
-    constexpr float searchRadius = 100.0f;
     Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), searchRadius);
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
 
     if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
@@ -137,34 +352,50 @@ Creature* GetPhase2LeotherasDemon(Player* bot)
     return nullptr;
 }
 
+bool IsLeotherasDemonPhase(Player* bot)
+{
+    return GetPhase2LeotherasDemon(bot);
+}
+
 Creature* GetPhase3LeotherasDemon(Player* bot)
 {
-    constexpr float searchRadius = 100.0f;
-    return bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), searchRadius);
+    return bot->FindNearestCreature(
+        Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), LEOTHERAS_SEARCH_DISTANCE);
+}
+
+bool IsLeotherasFinalPhase(Player* bot)
+{
+    return GetPhase3LeotherasDemon(bot);
 }
 
 Creature* GetActiveLeotherasDemon(Player* bot)
 {
-    Creature* phase2 = GetPhase2LeotherasDemon(bot);
-    Creature* phase3 = GetPhase3LeotherasDemon(bot);
-    return phase2 ? phase2 : phase3;
+    if (Creature* phase2Demon = GetPhase2LeotherasDemon(bot))
+        return phase2Demon;
+
+    if (Creature* phase3Demon = GetPhase3LeotherasDemon(bot))
+        return phase3Demon;
+
+    return nullptr;
 }
 
 // (1) First priority is an assistant Warlock (real player or bot)
 // (2) If no assistant Warlock, then look for any Warlock bot
-Player* GetLeotherasDemonFormTank(Player* bot)
+Player* GetLeotherasWarlockTank(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
     Player* fallbackWarlock = nullptr;
-
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK ||
+            member->GetMapId() != SSC_MAP_ID)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member;
@@ -174,6 +405,53 @@ Player* GetLeotherasDemonFormTank(Player* bot)
     }
 
     return fallbackWarlock;
+}
+
+bool IsLeotherasWarlockTank(Player* bot)
+{
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    return GetLeotherasWarlockTank(bot) == bot;
+}
+
+bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
+{
+    return leotheras &&
+        (leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) ||
+         leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL)));
+}
+
+bool HasTooManyChaosBlastStacks(Player* bot)
+{
+    Aura* chaosBlast = bot->GetAura(Id(SscSpells::SPELL_CHAOS_BLAST));
+    return chaosBlast && chaosBlast->GetStackAmount() >= 5;
+}
+
+bool HasInnerDemon(Player* bot)
+{
+    return bot->HasAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
+}
+
+Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
+{
+    ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& innerDemons = AI_VALUE(GuidVector, "possible targets no los");
+
+    Creature* innerDemon = nullptr;
+    for (auto creatureGuid : innerDemons)
+    {
+        Creature* creature = botAI->GetCreature(creatureGuid);
+        if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
+            creature->GetSummonerGUID() == botGuid)
+        {
+            innerDemon = creature;
+            break;
+        }
+    }
+
+    return innerDemon;
 }
 
 // Fathom-Lord Karathress
@@ -188,10 +466,10 @@ std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 // Lady Vashj <Coilfang Matron>
 
 std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
-std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
-std::unordered_map<ObjectGuid, Position> intendedLineup;
-std::unordered_map<uint32, uint32> lastImbueAttempt;
-std::unordered_map<ObjectGuid, uint32> lastCoreInInventoryTime;
+std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
+std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
+std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
+std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot)
 {
@@ -219,48 +497,50 @@ bool IsMainTankInSameSubgroup(Player* bot)
     return false;
 }
 
-bool IsLadyVashjInPhase1(PlayerbotAI* botAI)
+int8 GetLadyVashjPhase(Unit* vashj)
 {
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    if (!vashj)
+        return -1;
 
-    return vashj && vashj->GetHealthPct() > 70.0f;
-}
+    float healthPct = vashj->GetHealthPct();
+    constexpr uint32 magicBarrier = Id(SscSpells::SPELL_MAGIC_BARRIER);
 
-bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
-{
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    // Transitioning from Phase 1 to Phase 2
+    if (healthPct <= 70.0f && healthPct > 50.0f && !vashj->HasAura(magicBarrier))
+        return 0;
 
-    return vashj && vashj->GetHealthPct() <= 70.0f &&
-        vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
-}
+    // Phase 1
+    if (healthPct > 70.0f)
+        return 1;
 
-bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
-{
-    Unit* vashj =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+    // Phase 2
+    if (healthPct <= 70.0f && vashj->HasAura(magicBarrier))
+        return 2;
 
-    return vashj && vashj->GetHealthPct() <= 70.0f &&
-        !vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER));
+    // Phase 3
+    if (healthPct <= 50.0f) // and no Magic Barrier
+        return 3;
+
+    return -1;
 }
 
 // This can just be replaced by a target exclusion of Vashj for Phase 2 I think
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)
+bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj)
 {
     if (!unit || !unit->IsAlive())
         return false;
 
+    int8 phase = GetLadyVashjPhase(vashj);
     uint32 entry = unit->GetEntry();
 
-    if (IsLadyVashjInPhase2(botAI))
+    if (phase == 2)
     {
         return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
             entry == Id(SscNpcs::NPC_COILFANG_STRIDER);
     }
-    else if (IsLadyVashjInPhase3(botAI))
+    else if (phase == 3)
     {
         return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
             entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
@@ -513,8 +793,8 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
         if (handler->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false))
             return true;
 
-        auto it = lastCoreInInventoryTime.find(handler->GetGUID());
-        if (it != lastCoreInInventoryTime.end() &&
+        auto it = lastVashjCoreInInventoryTime.find(handler->GetGUID());
+        if (it != lastVashjCoreInInventoryTime.end() &&
             getMSTimeDiff(it->second, now) <= lookbackMs)
             return true;
     }
