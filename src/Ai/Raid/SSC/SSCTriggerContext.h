@@ -58,9 +58,6 @@ public:
         creators["the lurker below is submerged"] =
             &RaidSscTriggerContext::the_lurker_below_is_submerged;
 
-        creators["the lurker below should manage spout timer"] =
-            &RaidSscTriggerContext::the_lurker_below_should_manage_spout_timer;
-
         // Leotheras the Blind
         creators["leotheras the blind demon form should be tanked by warlock"] =
             &RaidSscTriggerContext::leotheras_the_blind_demon_form_should_be_tanked_by_warlock;
@@ -198,9 +195,6 @@ private:
     }
     static Trigger* the_lurker_below_is_submerged(PlayerbotAI* botAI) {
         return new TheLurkerBelowIsSubmergedTrigger(botAI);
-    }
-    static Trigger* the_lurker_below_should_manage_spout_timer(PlayerbotAI* botAI) {
-        return new TheLurkerBelowShouldManageSpoutTimerTrigger(botAI);
     }
 
     // Leotheras the Blind

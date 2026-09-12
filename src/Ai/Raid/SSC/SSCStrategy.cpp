@@ -56,9 +56,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below is submerged", {
         NextAction("the lurker below tanks pick up adds", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("the lurker below should manage spout timer", {
-        NextAction("the lurker below manage spout timer", ACTION_EMERGENCY + 10) }));
-
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(
         "leotheras the blind demon form should be tanked by warlock", {

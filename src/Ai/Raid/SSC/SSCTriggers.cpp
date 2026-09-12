@@ -78,15 +78,7 @@ bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
 
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 {
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
-    if (it == lurkerSpoutTimer.end())
-        return false;
-
-    return getMSTimeDiff(it->second, getMSTime()) < LURKER_SPOUT_DURATION_MS;
+    return IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
 bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter() // THIS IS VERY CLOSE TO THE BELOW RANGED TRIGGER, SHOULD COMBINE
@@ -95,11 +87,8 @@ bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter() // THIS IS VERY 
         return false;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker || lurker->getStandState() == UNIT_STAND_STATE_SUBMERGED)
-        return false;
-
-    // The tracker erases the spout entry once it expires, so its presence alone means a spout
-    return lurkerSpoutTimer.find(lurker->GetInstanceId()) == lurkerSpoutTimer.end();
+    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
+        !IsLurkerSpouting(lurker);
 }
 
 bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -108,10 +97,8 @@ bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker || lurker->getStandState() == UNIT_STAND_STATE_SUBMERGED)
-        return false;
-
-    return lurkerSpoutTimer.find(lurker->GetInstanceId()) == lurkerSpoutTimer.end();
+    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
+        !IsLurkerSpouting(lurker);
 }
 
 // Only the three guardian tanks, and only when all three exist
@@ -126,12 +113,6 @@ bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
 
     std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
     return std::find(tanks.begin(), tanks.end(), bot) != tanks.end();
-}
-
-bool TheLurkerBelowShouldManageSpoutTimerTrigger::IsActiveInEncounter()
-{
-    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "the lurker below");
 }
 
 // Leotheras the Blind

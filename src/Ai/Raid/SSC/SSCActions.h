@@ -147,14 +147,6 @@ private:
     bool KeepClearOfOtherTanks(std::vector<Player*> const& tanks, size_t myIndex);
 };
 
-class TheLurkerBelowManageSpoutTimerAction : public Action
-{
-public:
-    TheLurkerBelowManageSpoutTimerAction(PlayerbotAI* botAI)
-        : Action(botAI, "the lurker below manage spout timer") {}
-    bool Execute(Event event) override;
-};
-
 // Leotheras the Blind
 
 class LeotherasTheBlindPositionRangedAction : public MovementAction

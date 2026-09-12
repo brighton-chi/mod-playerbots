@@ -162,16 +162,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowShouldManageSpoutTimerTrigger : public SscEncounterTrigger
-{
-public:
-    TheLurkerBelowShouldManageSpoutTimerTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "the lurker below should manage spout timer") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 // Leotheras the Blind
 
 class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger

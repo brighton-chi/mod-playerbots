@@ -58,9 +58,6 @@ public:
         creators["the lurker below tanks pick up adds"] =
             &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
 
-        creators["the lurker below manage spout timer"] =
-            &RaidSscActionContext::the_lurker_below_manage_spout_timer;
-
         // Leotheras the Blind
         creators["leotheras the blind warlock tank attack boss"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
@@ -204,9 +201,6 @@ private:
     }
     static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) {
         return new TheLurkerBelowTanksPickUpAddsAction(botAI);
-    }
-    static Action* the_lurker_below_manage_spout_timer(PlayerbotAI* botAI) {
-        return new TheLurkerBelowManageSpoutTimerAction(botAI);
     }
 
     // Leotheras the Blind

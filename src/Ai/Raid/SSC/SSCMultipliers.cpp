@@ -205,15 +205,7 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return 1.0f;
-
-    auto it = lurkerSpoutTimer.find(lurker->GetInstanceId());
-    if (it == lurkerSpoutTimer.end())
-        return 1.0f;
-
-    return getMSTimeDiff(it->second, getMSTime()) < LURKER_SPOUT_DURATION_MS ? 0.0f : 1.0f;
+    return IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below")) ? 0.0f : 1.0f;
 }
 
 float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* action)

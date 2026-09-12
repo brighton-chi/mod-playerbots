@@ -43,7 +43,6 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
-    reset |= lurkerSpoutTimer.erase(instanceId) > 0;
     reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
     reset |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
     reset |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
@@ -304,45 +303,59 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
 
 // The Lurker Below
 
-// Run around behind Lurker during Spout
+// Run around Lurker to stay clear of Spout. The wind-up pins his facing to the victim, so
+// "behind" is a fixed point and the shortest way round is right. Once the aura is up the beam
+// sweeps at 0.4 rad/s, faster than any bot on the ring: running against it closes at 0.75 rad/s
+// and meets the beam every ~8s, running with it costs at most one crossing and then never again.
+// So the spin decides the direction and the bot simply keeps running. The cone is 24 degrees, so
+// anywhere well off the beam is safe and the personal offsets around "behind" can be wide.
 bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
 
-    float radius = frand(19.0f, 20.0f);
-    float botAngle = std::atan2(
+    uint32 const seed = bot->GetGUID().GetCounter();
+    float const radius = LURKER_SPOUT_RUN_RADIUS_MIN +
+        (LURKER_SPOUT_RUN_RADIUS_MAX - LURKER_SPOUT_RUN_RADIUS_MIN) * (seed % 100) / 100.0f;
+    float const arcOffset =
+        LURKER_SPOUT_RUN_ARC_HALF_WIDTH * ((seed % 200) - 100) / 100.0f;
+
+    float const botAngle = std::atan2(
         bot->GetPositionY() - lurker->GetPositionY(), bot->GetPositionX() - lurker->GetPositionX());
-    float relativeAngle = Position::NormalizeOrientation(botAngle - lurker->GetOrientation());
-    constexpr float safeArc = M_PI / 2.0f;
+    float const targetAngle = lurker->GetOrientation() + static_cast<float>(M_PI) + arcOffset;
+    float const stepAngle = LURKER_SPOUT_RUN_STEP / radius;
 
-    if (!PlayerbotAI::IsMainTank(bot) &&
-        std::fabs(Position::NormalizeOrientation(relativeAngle - M_PI)) > safeArc / 2.0f)
+    float direction;
+    float step;
+    if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
-        float tangentAngle = botAngle + (relativeAngle > M_PI ? -0.1f : 0.1f);
-        float moveX = lurker->GetPositionX() + radius * std::cos(tangentAngle);
-        float moveY = lurker->GetPositionY() + radius * std::sin(tangentAngle);
-
-        bot->CastStop();
-        return MoveTo(SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        // No clamp: at these radii the bot cannot overtake a target receding at 0.4 rad/s, and a
+        // clamped step near the target would drop below the movement floor and stutter
+        direction = spin;
+        step = stepAngle;
     }
     else
     {
-        float behindAngle = lurker->GetOrientation() + M_PI + frand(-0.5f, 0.5f) * safeArc;
-        float targetX = lurker->GetPositionX() + radius * std::cos(behindAngle);
-        float targetY = lurker->GetPositionY() + radius * std::sin(behindAngle);
+        float delta = Position::NormalizeOrientation(targetAngle - botAngle);
+        if (delta > M_PI)
+            delta -= 2.0f * static_cast<float>(M_PI);
 
-        if (bot->GetExactDist2d(targetX, targetY) > 2.0f)
-        {
-            bot->CastStop();
-            return MoveTo(SSC_MAP_ID, targetX, targetY, lurker->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-        }
+        if (std::fabs(delta) < LURKER_SPOUT_RUN_ANGULAR_DEADZONE)
+            return false;
+
+        direction = delta > 0.0f ? 1.0f : -1.0f;
+        step = std::min(stepAngle, std::fabs(delta));
     }
 
-    return false;
+    float const moveAngle = botAngle + direction * step;
+    float const moveX = lurker->GetPositionX() + radius * std::cos(moveAngle);
+    float const moveY = lurker->GetPositionY() + radius * std::sin(moveAngle);
+
+    bot->CastStop();
+    return MoveTo(
+        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
@@ -535,36 +548,6 @@ bool TheLurkerBelowTanksPickUpAddsAction::KeepClearOfOtherTanks(
     }
 
     return false;
-}
-
-bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
-{
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker)
-        return false;
-
-    uint32 const instanceId = lurker->GetInstanceId();
-    uint32 const now = getMSTime();
-
-    bool changed = false;
-
-    auto it = lurkerSpoutTimer.find(instanceId);
-    if (it != lurkerSpoutTimer.end() &&
-        getMSTimeDiff(it->second, now) >= LURKER_SPOUT_DURATION_MS)
-    {
-        lurkerSpoutTimer.erase(it);
-        changed = true;
-        it = lurkerSpoutTimer.end();
-    }
-
-    if (lurker->FindCurrentSpellBySpellId(Id(SscSpells::SPELL_SPOUT_VISUAL)) &&
-        it == lurkerSpoutTimer.end())
-    {
-        lurkerSpoutTimer.try_emplace(instanceId, now);
-        changed = true;
-    }
-
-    return changed;
 }
 
 // Leotheras the Blind

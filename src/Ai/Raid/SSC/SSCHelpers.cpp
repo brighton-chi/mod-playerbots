@@ -163,10 +163,25 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 // The Lurker Below
 
-std::unordered_map<uint32, uint32> lurkerSpoutTimer;
 std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
     lurkerGuardianTankAssignments;
+
+bool IsLurkerSpouting(Unit* lurker)
+{
+    return lurker && lurker->IsInCombat() && lurker->GetReactState() == REACT_PASSIVE;
+}
+
+int8 GetLurkerSpoutSpin(Unit* lurker)
+{
+    if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_COUNTERCLOCKWISE)))
+        return 1;
+
+    if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_CLOCKWISE)))
+        return -1;
+
+    return 0;
+}
 
 GuidVector FindLurkerGuardianGuids(Player* bot)
 {

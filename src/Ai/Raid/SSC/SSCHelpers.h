@@ -52,7 +52,9 @@ enum class SscSpells : uint32
     SPELL_HYDROSS_CORRUPTION     = 37961,
 
     // The Lurker Below
-    SPELL_SPOUT_VISUAL = 37431,
+    SPELL_SPOUT_VISUAL           = 37431, // 3s wind-up cast
+    SPELL_SPOUT_COUNTERCLOCKWISE = 37429, // 16s aura; facing +0.1 rad every 250ms, cone each tick
+    SPELL_SPOUT_CLOCKWISE        = 37430, // same, -0.1 rad
 
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED     = 37546,
@@ -175,13 +177,26 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
 
-// Stores the time the current Spout cast started; the entry is erased once it expires
-inline constexpr uint32 LURKER_SPOUT_DURATION_MS = 20 * IN_MILLISECONDS;
-
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
-extern std::unordered_map<uint32, uint32> lurkerSpoutTimer; // Is there a  visual I can rely on? So I don't need a timer?
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+
+// The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
+// the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
+// stand state instead.
+bool IsLurkerSpouting(Unit* lurker);
+// +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
+int8 GetLurkerSpoutSpin(Unit* lurker);
+
+// Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
+// the speed: 17 yd keeps pace with the beam, 21 yd falls behind at 0.07 rad/s. Each bot gets a
+// fixed radius in this band and a fixed offset around "behind" from its GUID so the raid looks
+// spread rather than stacked, without the destination moving from tick to tick.
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 17.0f;
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
+inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
+inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
+inline constexpr float LURKER_SPOUT_RUN_ANGULAR_DEADZONE = 0.105f; // ~6 degrees
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the
