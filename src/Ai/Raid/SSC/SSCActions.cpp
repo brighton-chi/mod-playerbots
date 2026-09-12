@@ -65,20 +65,32 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
     if (!GetToxicPoolPosition(botAI, pool))
         return false;
 
-    constexpr float moveDist = 10.0f;
-    constexpr float escapeMargin = 2.0f;
+    // The colossi stand on boardwalks over the lake; a player's pathfinder treats the water as
+    // reachable, so the ring point and the landing must both be on dry ground
+    auto const isDryGround = [this](float x, float y) { return IsDryGround(bot, x, y); };
+
+    // Short enough that a straight step follows the curve of the walk
+    constexpr float moveDist = 5.0f;
     float stepX;
     float stepY;
     float stepZ;
-    if (!GetHazardEscapeStep(
-            bot, pool, TOXIC_POOL_HAZARD_RADIUS + escapeMargin, moveDist, stepX, stepY, stepZ))
+    if (!FindHazardEscapeStep(bot, pool, moveDist, stepX, stepY, stepZ, isDryGround))
     {
+        LOG_DEBUG("playerbots", "toxic pool: {} found no dry escape step from ({:.1f}, {:.1f})",
+            bot->GetName(), pool.GetPositionX(), pool.GetPositionY());
         return false;
     }
 
-    return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+    if (!MoveTo(
+            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false))
+    {
+        LOG_DEBUG("playerbots", "toxic pool: {} MoveTo refused step ({:.1f}, {:.1f}, {:.1f})",
+            bot->GetName(), stepX, stepY, stepZ);
+        return false;
+    }
+
+    return true;
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/) // Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?

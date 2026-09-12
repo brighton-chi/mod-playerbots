@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <functional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -145,11 +146,16 @@ inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
-// A step straight out of a circular hazard, fanning around the escape heading on collision. Copied
-// from HyjalHelpers pending promotion to EncounterHelpers.
-bool GetHazardEscapeStep(
-    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
-    float& stepY, float& stepZ);
+// A step out of a circular hazard. Directions fan out from straight-away in fine steps; the first
+// landing point that passes isAcceptable, is reachable, and is farther from the hazard than the bot
+// wins. Unlike Hyjal's ring-based GetHazardEscapeStep this needs no clear point at the ring: a
+// narrow curved boardwalk still offers two dry directions whatever the ring looks like.
+bool FindHazardEscapeStep(
+    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
+    float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
+// True where the map has ground above any liquid at x/y. A player counts water as reachable, so
+// the pathfinder alone lets an escape step off a boardwalk into the lake.
+bool IsDryGround(Player* bot, float x, float y);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);
