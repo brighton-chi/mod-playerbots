@@ -148,7 +148,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Inert until Soulshatter usage is corrected; see the definition for details.
 // class KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier : public TempestKeepEncounterMultiplier
 // {
 // public:

@@ -311,7 +311,7 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValueInEncounter(Actio
 
 // This multiplier is not needed right now because Soulshatter is cast only when there are
 // multiple enemies. That's probably not the right approach and should be fixed, so this
-// multiplier is kept (commented out) in anticipation of a future correction to Soulshatter usage.
+// multiplier remains in place in anticipation of a future correction to Soulshatter usage.
 // float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
 // {
 //     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

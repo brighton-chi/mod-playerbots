@@ -11,8 +11,7 @@
 
 // This file mirrors the core's boss_kaelthas class so bots can read the encounter phase
 // The core's boss script is at src/server/scripts/Outland/TempestKeep/Eye/boss_kaelthas.cpp
-// The core's IntroduceNewAdvisor(KTYells, KTActions) is omitted along with its two enums; it is
-// non-virtual, so leaving it out changes neither the layout nor the vtable.
+// IntroduceNewAdvisor and its two enums are omitted; non-virtual, so the layout is unchanged.
 
 struct boss_kaelthas : public BossAI
 {

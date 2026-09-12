@@ -18,9 +18,7 @@ namespace TkHelpers
 
 // General
 
-// Embers of Al'ar and Solarium Priests are put in combat with the zone when summoned, so they sit
-// on every group member's threat list and the group-wide "attackers" value sees them without a
-// grid search.
+// Embers and Solarium Priests zone-aggro on summon, so "attackers" sees them.
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
 {
     Unit* lowest = nullptr;
@@ -71,8 +69,7 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
 
 // Trash
 
-// Lowest-GUID centurion with Arcane Flurry up, so every mage agrees on the target. "attackers"
-// already drops polymorphed units, so a sheeped centurion falls out without a separate check.
+// "attackers" already drops polymorphed units.
 Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI)
 {
     Unit* target = nullptr;
@@ -222,8 +219,7 @@ bool IsSecondAlarTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-// Second assist tank is the primary ember tank. Living-only to match the other two tank roles, or
-// a dead first assist tank would make the same bot both the second Al'ar tank and the ember tank.
+// Second assist tank is the primary ember tank
 bool IsPrimaryEmberTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
@@ -263,7 +259,6 @@ GuidVector FindFlamePatchGuids(Player* bot)
     return guids;
 }
 
-// Flame patches are timed summons, so the cached value holds GUIDs and they are resolved on read.
 std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI)
 {
     GuidVector const& guids =
@@ -415,9 +410,7 @@ bool IsSanguinarDebuffHunter(Player* bot)
 // when they called SetInCombatWithZone, or that died and was resurrected afterwards, holds no
 // threat entry on them and never regains one, so it sees a different set of weapons from everyone
 // else, which leaves the raid disagreeing on the kill order and dragging the icon between two
-// weapons. One grid search collects every weapon, alive or dead, into the cached
-// "tk legendary weapons" value; the readers below decide alive/dead at resolve time, so a weapon
-// that dies inside the cache interval is seen as dead at once.
+// weapons. Alive or dead is decided at resolve time, not when the value is calculated.
 GuidVector FindLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {

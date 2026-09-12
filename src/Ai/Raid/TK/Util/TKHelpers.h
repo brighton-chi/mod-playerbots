@@ -51,7 +51,7 @@ enum class TkSpells : uint32
 
     // Kael'thas Sunstrider
     SPELL_PERMANENT_FEIGN_DEATH     = 29266,
-    SPELL_GRAVITY_LAPSE_AURA        = 39432, // The core's SPELL_GRAVITY_LAPSE (35941) is the cast
+    SPELL_GRAVITY_LAPSE_AURA        = 39432, // 35941 is the cast
     SPELL_KAEL_FULL_POWER           = 36187,
     SPELL_MENTAL_PROTECTION_FIELD   = 36480, // Staff of Disintegration
     SPELL_ARCANE_BARRIER            = 36481, // Phaseshift Bulwark
