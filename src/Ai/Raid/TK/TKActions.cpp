@@ -428,12 +428,19 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED);
     }
 
+    // Al'ar stays at its platform for the first 8 seconds of the pretend-death and is only then
+    // moved to the middle, so the push has to come from the room center rather than from Al'ar.
     constexpr float safeDistance = 35.0f;
-    float const currentDistance = bot->GetExactDist2d(ALAR_ROOM_CENTER);
-    if (currentDistance >= safeDistance)
+    if (bot->GetExactDist2d(ALAR_ROOM_CENTER) >= safeDistance)
         return false;
 
-    return MoveAway(alar, safeDistance - currentDistance);
+    float const angle = ALAR_ROOM_CENTER.GetAngle(bot);
+    float const targetX = ALAR_ROOM_CENTER.GetPositionX() + std::cos(angle) * safeDistance;
+    float const targetY = ALAR_ROOM_CENTER.GetPositionY() + std::sin(angle) * safeDistance;
+
+    return MoveTo(
+        TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool AlarSwapTanksOnBossAction::Execute(Event event)
@@ -468,8 +475,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
-    constexpr float searchRadius = 40.0f;
-    std::vector<Unit*> flamePatches = GetFlamePatches(bot, searchRadius);
+    std::vector<Unit*> const flamePatches = GetFlamePatches(botAI);
 
     constexpr float hazardRadius = 8.0f;
 

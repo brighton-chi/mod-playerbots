@@ -18,13 +18,16 @@ namespace TkHelpers
 
 // General
 
+// Embers of Al'ar and Solarium Priests are put in combat with the zone when summoned, so they sit
+// on every group member's threat list and the group-wide "attackers" value sees them without a
+// grid search.
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
 {
     Unit* lowest = nullptr;
     Unit* highest = nullptr;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets no los"))
+    for (ObjectGuid const targetGuid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(targetGuid);
         if (unit && unit->GetEntry() == entry)
@@ -194,10 +197,11 @@ bool IsSecondAlarTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
-// Second assist tank is the primary ember tank
+// Second assist tank is the primary ember tank. Living-only to match the other two tank roles, or
+// a dead first assist tank would make the same bot both the second Al'ar tank and the ember tank.
 bool IsPrimaryEmberTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 // The secondary Ember Tank is needed only during phase 2, and it is initially the first assist
@@ -217,17 +221,36 @@ Player* GetSecondaryEmberTank(Player* bot)
     return assistTank;
 }
 
-std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius)
+GuidVector FindFlamePatchGuids(Player* bot)
 {
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, Id(TkNpcs::NPC_FLAME_PATCH), searchRadius);
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, Id(TkNpcs::NPC_FLAME_PATCH), ALAR_FLAME_PATCH_SEARCH_DISTANCE);
 
-    std::vector<Unit*> flamePatches;
-    flamePatches.reserve(creatureList.size());
+    GuidVector guids;
+    guids.reserve(creatureList.size());
     for (Creature* creature : creatureList)
     {
         if (creature && creature->IsAlive())
-            flamePatches.push_back(creature);
+            guids.push_back(creature->GetGUID());
+    }
+
+    return guids;
+}
+
+// Flame patches are timed summons, so the cached value holds GUIDs and they are resolved on read.
+std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("tk flame patches")->RefGet();
+
+    std::vector<Unit*> flamePatches;
+    flamePatches.reserve(guids.size());
+    for (ObjectGuid const guid : guids)
+    {
+        Unit* flamePatch = botAI->GetUnit(guid);
+        if (flamePatch && flamePatch->IsAlive())
+            flamePatches.push_back(flamePatch);
     }
 
     return flamePatches;

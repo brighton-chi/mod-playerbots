@@ -22,6 +22,16 @@ protected:
     GuidVector Calculate() override { return TkHelpers::FindDeadLegendaryWeaponGuids(bot); }
 };
 
+class TKFlamePatchesValue : public CalculatedValue<GuidVector>
+{
+public:
+    TKFlamePatchesValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(botAI, "tk flame patches", 200) {}
+
+protected:
+    GuidVector Calculate() override { return TkHelpers::FindFlamePatchGuids(bot); }
+};
+
 class RaidTempestKeepValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -29,11 +39,15 @@ public:
     {
         creators["tk dead legendary weapons"] =
             &RaidTempestKeepValueContext::tk_dead_legendary_weapons;
+        creators["tk flame patches"] = &RaidTempestKeepValueContext::tk_flame_patches;
     }
 
 private:
     static UntypedValue* tk_dead_legendary_weapons(PlayerbotAI* botAI) {
         return new TKDeadLegendaryWeaponsValue(botAI);
+    }
+    static UntypedValue* tk_flame_patches(PlayerbotAI* botAI) {
+        return new TKFlamePatchesValue(botAI);
     }
 };
 
