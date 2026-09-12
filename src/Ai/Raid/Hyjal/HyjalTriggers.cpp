@@ -170,7 +170,7 @@ bool KazrogalCanSplitMalevolentCleaveDamageTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_PALADIN)
         return true;
 
-    return !botsBelowManaThreshold.contains(bot->GetGUID());
+    return !AI_VALUE(bool, "kaz'rogal below mana threshold");
 }
 
 bool KazrogalRangedShouldAvoidWarStompTrigger::IsActiveInEncounter()
@@ -181,7 +181,7 @@ bool KazrogalRangedShouldAvoidWarStompTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return false;
 
-    return !botsBelowManaThreshold.contains(bot->GetGUID());
+    return !AI_VALUE(bool, "kaz'rogal below mana threshold");
 }
 
 bool KazrogalLowOnManaTrigger::IsActiveInEncounter()
@@ -200,11 +200,11 @@ bool KazrogalLowOnManaTrigger::IsActiveInEncounter()
 
     if (bot->GetPower(POWER_MANA) <= MARK_DANGER_MANA)
     {
-        botsBelowManaThreshold.insert(bot->GetGUID());
+        SET_AI_VALUE(bool, "kaz'rogal below mana threshold", true);
         return true;
     }
 
-    return botsBelowManaThreshold.contains(bot->GetGUID());
+    return AI_VALUE(bool, "kaz'rogal below mana threshold");
 }
 
 bool KazrogalHunterShouldPreserveManaTrigger::IsActiveInEncounter()

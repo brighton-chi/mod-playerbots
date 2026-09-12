@@ -228,7 +228,7 @@ float KazrogalControlLowManaMovementMultiplier::GetValueInEncounter(Action* acti
     if (!kazrogal || kazrogal->GetVictim() == bot)
         return 1.0f;
 
-    return botsBelowManaThreshold.contains(bot->GetGUID()) ? 0.0f : 1.0f;
+    return AI_VALUE(bool, "kaz'rogal below mana threshold") ? 0.0f : 1.0f;
 }
 
 float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValueInEncounter(Action* action)
