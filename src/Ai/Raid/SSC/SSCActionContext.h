@@ -55,6 +55,9 @@ public:
         creators["the lurker below spread ranged in arc"] =
             &RaidSscActionContext::the_lurker_below_spread_ranged_in_arc;
 
+        creators["the lurker below ranged hold station"] =
+            &RaidSscActionContext::the_lurker_below_ranged_hold_station;
+
         creators["the lurker below tanks pick up adds"] =
             &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
 
@@ -198,6 +201,9 @@ private:
     }
     static Action* the_lurker_below_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new TheLurkerBelowSpreadRangedInArcAction(botAI);
+    }
+    static Action* the_lurker_below_ranged_hold_station(PlayerbotAI* botAI) {
+        return new TheLurkerBelowRangedHoldStationAction(botAI);
     }
     static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) {
         return new TheLurkerBelowTanksPickUpAddsAction(botAI);

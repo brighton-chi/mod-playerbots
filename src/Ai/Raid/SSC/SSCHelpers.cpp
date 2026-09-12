@@ -6,6 +6,7 @@
 
 #include "SSCHelpers.h"
 #include "EncounterHelpers.h"
+#include "Map.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
@@ -181,6 +182,65 @@ int8 GetLurkerSpoutSpin(Unit* lurker)
         return -1;
 
     return 0;
+}
+
+bool GetLurkerRangedStation(Player* bot, Position& station)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    bool const healer = PlayerbotAI::IsHeal(bot);
+    std::vector<Player*> peers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->GetMapId() == SSC_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            PlayerbotAI::IsRanged(member) && PlayerbotAI::IsHeal(member) == healer)
+        {
+            peers.push_back(member);
+        }
+    }
+
+    auto const it = std::find(peers.begin(), peers.end(), bot);
+    if (it == peers.end())
+        return false;
+
+    size_t const index = static_cast<size_t>(std::distance(peers.begin(), it));
+    auto const& stations = healer ? LURKER_HEALER_STATIONS : LURKER_RANGED_DPS_STATIONS;
+    station = stations[index % stations.size()];
+    return true;
+}
+
+bool FindLurkerDivePoint(
+    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel)
+{
+    Map* map = bot->GetMap();
+    float const angle = station.GetAngle(lurker);
+    constexpr std::array<float, 4> probeDistances = { 3.0f, 5.0f, 7.0f, 9.0f };
+
+    for (float const distance : probeDistances)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            float const x = station.GetPositionX() + side * distance * std::cos(angle);
+            float const y = station.GetPositionY() + side * distance * std::sin(angle);
+            LiquidData const liquid = map->GetLiquidData(
+                bot->GetPhaseMask(), x, y, station.GetPositionZ(), bot->GetCollisionHeight(), {});
+
+            if (liquid.Level <= INVALID_HEIGHT ||
+                liquid.Level - liquid.DepthLevel < LURKER_DIVE_DEPTH + 1.0f)
+            {
+                continue;
+            }
+
+            waterLevel = liquid.Level;
+            dive.Relocate(x, y, liquid.Level - LURKER_DIVE_DEPTH);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 GuidVector FindLurkerGuardianGuids(Player* bot)

@@ -50,8 +50,13 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below should be tanked", {
         NextAction("the lurker below position main tank", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("the lurker below ranged should spread", {
-        NextAction("the lurker below spread ranged in arc", ACTION_RAID) }));
+    // Experimental: ranged on fixed stations, diving during Spout. "ranged should spread" and
+    // "spread ranged in arc" stay registered for the revert.
+    triggers.push_back(new TriggerNode("the lurker below ranged should hold station", {
+        NextAction("the lurker below ranged hold station", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("the lurker below ranged should dive", {
+        NextAction("the lurker below ranged hold station", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("the lurker below is submerged", {
         NextAction("the lurker below tanks pick up adds", ACTION_EMERGENCY + 1) }));

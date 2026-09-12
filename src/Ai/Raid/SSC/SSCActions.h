@@ -135,6 +135,17 @@ public:
     bool Execute(Event event) override;
 };
 
+class TheLurkerBelowRangedHoldStationAction : public MovementAction
+{
+public:
+    TheLurkerBelowRangedHoldStationAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "the lurker below ranged hold station") {}
+    bool Execute(Event event) override;
+
+private:
+    bool Dive(Position const& station, Unit* lurker);
+};
+
 class TheLurkerBelowTanksPickUpAddsAction : public AttackAction
 {
 public:

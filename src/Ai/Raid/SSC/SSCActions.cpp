@@ -453,6 +453,59 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+// Ranged hold a fixed station and, during Spout, dive into the water beside it. Every move here is
+// an exact waypoint: on land the station is a known walkable point, and from under the surface the
+// pathfinder has no start poly and would refuse a normal move.
+bool TheLurkerBelowRangedHoldStationAction::Execute(Event /*event*/)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    Position station;
+    if (!GetLurkerRangedStation(bot, station))
+        return false;
+
+    if (IsLurkerSpouting(lurker))
+        return Dive(station, lurker);
+
+    if (!bot->IsInWater() && bot->GetExactDist2d(station) < LURKER_STATION_ARRIVAL_DIST)
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, station.GetPositionX(), station.GetPositionY(), station.GetPositionZ(),
+        false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+bool TheLurkerBelowRangedHoldStationAction::Dive(Position const& station, Unit* lurker)
+{
+    Position dive;
+    float waterLevel;
+    if (!FindLurkerDivePoint(bot, station, lurker, dive, waterLevel))
+        return false;
+
+    if (!bot->IsInWater())
+    {
+        bot->CastStop();
+        return MoveTo(
+            SSC_MAP_ID, dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ(),
+            false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    // The module only sets the swim flag on the water-walk transition, so a straight dive never
+    // gets it: run speed and a running animation under water otherwise
+    if (!bot->isSwimming())
+        bot->SetSwim(true);
+
+    float const floatZ = waterLevel - LURKER_FLOAT_DEPTH;
+    if (std::fabs(bot->GetPositionZ() - floatZ) < 0.5f)
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(), floatZ,
+        false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
 // During the submerge phase the main tank and the first two assist tanks each claim one Coilfang
 // Guardian off the shared sorted list, taunt it off whoever it aggroed onto, and hold it away from
 // the other two. The Ambushers are left to natural targeting. Mirrors the Kil'jaeden hands pattern.

@@ -55,6 +55,12 @@ public:
         creators["the lurker below ranged should spread"] =
             &RaidSscTriggerContext::the_lurker_below_ranged_should_spread;
 
+        creators["the lurker below ranged should hold station"] =
+            &RaidSscTriggerContext::the_lurker_below_ranged_should_hold_station;
+
+        creators["the lurker below ranged should dive"] =
+            &RaidSscTriggerContext::the_lurker_below_ranged_should_dive;
+
         creators["the lurker below is submerged"] =
             &RaidSscTriggerContext::the_lurker_below_is_submerged;
 
@@ -192,6 +198,12 @@ private:
     }
     static Trigger* the_lurker_below_ranged_should_spread(PlayerbotAI* botAI) {
         return new TheLurkerBelowRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* the_lurker_below_ranged_should_hold_station(PlayerbotAI* botAI) {
+        return new TheLurkerBelowRangedShouldHoldStationTrigger(botAI);
+    }
+    static Trigger* the_lurker_below_ranged_should_dive(PlayerbotAI* botAI) {
+        return new TheLurkerBelowRangedShouldDiveTrigger(botAI);
     }
     static Trigger* the_lurker_below_is_submerged(PlayerbotAI* botAI) {
         return new TheLurkerBelowIsSubmergedTrigger(botAI);

@@ -198,6 +198,35 @@ inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI
 inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
 inline constexpr float LURKER_SPOUT_RUN_ANGULAR_DEADZONE = 0.105f; // ~6 degrees
 
+// Ranged stand on fixed stations and dive during Spout: the cone skips anyone IsInWater(), at the
+// cost of Scalding Water (500 fire on entry, 500 every 3s). Ranged DPS use the three islets the
+// Ambushers spawn on (Lurker's CombatReach is 22y, so 40y spells reach them); healers stay on the
+// inner ring to keep the melee in range.
+inline std::array<Position, 3> const LURKER_RANGED_DPS_STATIONS = { {
+    { 77.937f, -384.500f, -19.722f }, // NW islet
+    { 63.022f, -456.310f, -19.793f }, // NE islet
+    { 14.283f, -457.467f, -19.793f }  // E islet
+} };
+inline std::array<Position, 3> const LURKER_HEALER_STATIONS = { {
+    { 16.237f, -438.098f, -19.551f }, // SE
+    { 37.255f, -387.031f, -19.417f }, // SW
+    { 66.268f, -418.774f, -19.592f }  // N
+} };
+// The pathfinder snaps any point within 5y of the water-surface navmesh poly back onto it, which
+// leaves the bot at WATER_WALK rather than IN_WATER. A dive deeper than that finds no poly and goes
+// through as a straight spline. Once in, the bot rises to just under the surface: still IN_WATER,
+// no breath timer.
+inline constexpr float LURKER_DIVE_DEPTH = 5.5f;
+inline constexpr float LURKER_FLOAT_DEPTH = 1.0f;
+inline constexpr float LURKER_STATION_ARRIVAL_DIST = 2.0f;
+
+// The station for this bot's role and index among its ranged peers; false if there are none.
+bool GetLurkerRangedStation(Player* bot, Position& station);
+// A point in water near the station deep enough to dive under the poly snap, probing towards and
+// away from Lurker. Returns the surface level through waterLevel.
+bool FindLurkerDivePoint(
+    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel);
+
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the
 // same order (summon GUIDs are sequential, so sorted is spawn order).

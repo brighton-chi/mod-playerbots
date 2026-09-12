@@ -152,6 +152,27 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Outside Spout and Submerge, ranged sit on their stations
+class TheLurkerBelowRangedShouldHoldStationTrigger : public SscEncounterTrigger
+{
+public:
+    TheLurkerBelowRangedShouldHoldStationTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "the lurker below ranged should hold station") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class TheLurkerBelowRangedShouldDiveTrigger : public SscEncounterTrigger
+{
+public:
+    TheLurkerBelowRangedShouldDiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "the lurker below ranged should dive") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class TheLurkerBelowIsSubmergedTrigger : public SscEncounterTrigger
 {
 public:
