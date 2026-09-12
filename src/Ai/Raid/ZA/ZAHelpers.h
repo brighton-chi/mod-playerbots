@@ -53,12 +53,6 @@ enum class ZaSpells : uint32
     SPELL_SHAPE_OF_THE_LYNX         = 42607,
     SPELL_SHAPE_OF_THE_DRAGONHAWK   = 42608,
     SPELL_CREEPING_PARALYSIS        = 43095,
-    // SPELL_CLAW_RAGE              = 43149,
-
-    // 43149 is a 6s aura Zul'jin self-casts during Lynx phase that ticks twice a second, each tick
-    // casting 43150 on a random target. It's probably his most dangerous ability, but I'm not sure
-    // how to get the target without a spell hook or redeclaration of his bossai, neither of which
-    // seem worth it for this. Adding this comment in case somebody wants to implement a method.
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
