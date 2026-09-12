@@ -51,7 +51,7 @@ enum class TkSpells : uint32
 
     // Kael'thas Sunstrider
     SPELL_PERMANENT_FEIGN_DEATH     = 29266,
-    SPELL_GRAVITY_LAPSE             = 39432,
+    SPELL_GRAVITY_LAPSE_AURA        = 39432, // The core's SPELL_GRAVITY_LAPSE (35941) is the cast
     SPELL_KAEL_FULL_POWER           = 36187,
     SPELL_MENTAL_PROTECTION_FIELD   = 36480, // Staff of Disintegration
     SPELL_ARCANE_BARRIER            = 36481, // Phaseshift Bulwark
@@ -110,6 +110,10 @@ inline constexpr uint32 TK_MAP_ID = 550;
 
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
+
+// Trash
+
+Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI);
 
 // Al'ar <Phoenix God>
 // CombatReach is 15 yards
