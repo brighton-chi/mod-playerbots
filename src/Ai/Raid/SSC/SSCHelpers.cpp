@@ -222,8 +222,7 @@ bool GetLurkerRangedStation(Player* bot, Position& station)
     return true;
 }
 
-bool FindLurkerDivePoint(
-    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel)
+bool FindLurkerDivePoint(Player* bot, Position const& station, Unit* lurker, Position& dive)
 {
     Map* map = bot->GetMap();
     float const angle = station.GetAngle(lurker);
@@ -244,7 +243,6 @@ bool FindLurkerDivePoint(
                 continue;
             }
 
-            waterLevel = liquid.Level;
             dive.Relocate(x, y, liquid.Level - LURKER_DIVE_DEPTH);
             return true;
         }

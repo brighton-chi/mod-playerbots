@@ -220,20 +220,18 @@ inline std::array<Position, 3> const LURKER_HEALER_STATIONS = { {
     { 37.255f, -387.031f, -19.417f }, // SW
     { 66.268f, -418.774f, -19.592f }  // N
 } };
-// The pathfinder snaps any point within 5y of the water-surface navmesh poly back onto it, which
-// leaves the bot at WATER_WALK rather than IN_WATER. A dive deeper than that finds no poly and goes
-// through as a straight spline. Once in, the bot rises to just under the surface: still IN_WATER,
-// no breath timer.
-inline constexpr float LURKER_DIVE_DEPTH = 5.5f;
-inline constexpr float LURKER_FLOAT_DEPTH = 1.0f;
+// Any pathed move ends on the water-surface navmesh poly (PathGenerator finds it up to 50y below
+// the point and snaps to it), which is WATER_WALK, not IN_WATER. So the dive is a JumpTo, a raw
+// spline that lands exactly where asked: 1.5y under is IN_WATER for the cone filter but above the
+// collision height, so no breath timer.
+inline constexpr float LURKER_DIVE_DEPTH = 1.5f;
 inline constexpr float LURKER_STATION_ARRIVAL_DIST = 2.0f;
 
 // The station for this bot's role and index among its ranged peers; false if there are none.
 bool GetLurkerRangedStation(Player* bot, Position& station);
-// A point in water near the station deep enough to dive under the poly snap, probing towards and
-// away from Lurker. Returns the surface level through waterLevel.
-bool FindLurkerDivePoint(
-    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel);
+// A point in water near the station, probing towards and away from Lurker; z is the dive depth
+// under the surface there.
+bool FindLurkerDivePoint(Player* bot, Position const& station, Unit* lurker, Position& dive);
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the

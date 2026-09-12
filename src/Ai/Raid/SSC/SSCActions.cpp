@@ -489,33 +489,40 @@ bool TheLurkerBelowRangedHoldStationAction::Execute(Event /*event*/)
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// JumpTo rather than MoveTo: every pathed move is snapped onto the water-surface poly and ends at
+// WATER_WALK, which the cone does not skip. The jump lands on the requested point under the
+// surface and the bot simply floats there; players have no server-side gravity.
 bool TheLurkerBelowRangedHoldStationAction::Dive(Position const& station, Unit* lurker)
 {
-    Position dive;
-    float waterLevel;
-    if (!FindLurkerDivePoint(bot, station, lurker, dive, waterLevel))
-        return false;
-
-    if (!bot->IsInWater())
+    if (bot->IsInWater())
     {
-        bot->CastStop();
-        return MoveTo(
-            SSC_MAP_ID, dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        // The module only sets the swim flag on the water-walk transition, so a dive never gets
+        // it: run speed and a running animation in the water otherwise
+        if (!bot->isSwimming())
+            bot->SetSwim(true);
+
+        return false;
     }
 
-    // The module only sets the swim flag on the water-walk transition, so a straight dive never
-    // gets it: run speed and a running animation under water otherwise
-    if (!bot->isSwimming())
-        bot->SetSwim(true);
-
-    float const floatZ = waterLevel - LURKER_FLOAT_DEPTH;
-    if (std::fabs(bot->GetPositionZ() - floatZ) < 0.5f)
+    Position dive;
+    if (!FindLurkerDivePoint(bot, station, lurker, dive))
+    {
+        LOG_DEBUG("playerbots", "lurker dive: {} found no water by station ({:.1f}, {:.1f})",
+            bot->GetName(), station.GetPositionX(), station.GetPositionY());
         return false;
+    }
 
-    return MoveTo(
-        SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(), floatZ,
-        false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bot->CastStop();
+    if (!JumpTo(
+            SSC_MAP_ID, dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ(),
+            MovementPriority::MOVEMENT_FORCED))
+    {
+        LOG_DEBUG("playerbots", "lurker dive: {} JumpTo refused ({:.1f}, {:.1f}, {:.1f})",
+            bot->GetName(), dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ());
+        return false;
+    }
+
+    return true;
 }
 
 // During the submerge phase the main tank and the first two assist tanks each claim one Coilfang
