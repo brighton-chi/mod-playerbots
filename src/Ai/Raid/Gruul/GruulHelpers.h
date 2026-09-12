@@ -60,7 +60,7 @@ inline constexpr uint32 GRUUL_MAP_ID = 565;
 
 // For the "high king maulgar krosh mage tank" and "high king maulgar kiggler moonkin tank" values.
 inline constexpr uint32 CASTER_TANK_CACHE_INTERVAL_MS = 1000;
-// Hold cooldowns until Blindeye is at this percent health.
+// Hold cooldowns until Blindeye is at this percent health. Also the gate for on-pull Misdirects.
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
 // Radius is 30y with 2y of MoveAway padding. Stays inside the mod's "enemy out of spell" threshold
 // (spellDistance + CONTACT_DISTANCE + both reaches, ~34y exact against Kiggler), allowing the
