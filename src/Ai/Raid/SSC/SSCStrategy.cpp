@@ -208,7 +208,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     // Hydross the Unstable <Duke of Currents>
-    if (IsHydrossAddTank(bot))
+    if (IsHydrossAddTank(botAI->GetBot()))
     {
         AiObjectContext* context = botAI->GetAiObjectContext();
         if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))

@@ -185,6 +185,8 @@ extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 // the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
 // stand state instead.
 bool IsLurkerSpouting(Unit* lurker);
+// Up and fighting: neither submerged nor spouting. The tank and ranged holding triggers share it.
+bool IsLurkerSurfacedAndCalm(Unit* lurker);
 // +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
 int8 GetLurkerSpoutSpin(Unit* lurker);
 
@@ -255,7 +257,7 @@ extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-bool IsSpellbinderPhase(Creature* leotheras);
+bool IsSpellbinderPhase(Unit* leotheras);
 Creature* GetActiveLeotherasHumanoid(Player* bot);
 bool IsLeotherasHumanoidPhase(Player* bot);
 Creature* GetPhase2LeotherasDemon(Player* bot);
@@ -316,7 +318,7 @@ extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot);
 int8 GetLadyVashjPhase(Unit* vashj);
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI, Unit* vashj);
+bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);

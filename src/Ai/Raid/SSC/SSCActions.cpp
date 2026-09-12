@@ -367,12 +367,12 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != lurker)
         return Attack(lurker);
 
-    constexpr float arrivalDist = 0.5f;
+    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, LURKER_TANK_POSITION, arrivalDist, lurker, moveX, moveY, backwards))
+            bot, LURKER_MAIN_TANK_POSITION, arrivalDist, lurker, moveX, moveY, backwards))
     {
         return false;
     }
@@ -636,7 +636,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
-    if (leotherasHumanoid && bot->GetExactDist2d(leotherasHuman) < safeDistFromBoss &&
+    if (leotherasHumanoid && bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss &&
         leotherasHumanoid->GetVictim() != bot)
     {
         if (FleePosition(leotherasHumanoid->GetPosition(), safeDistFromBoss))
@@ -697,7 +697,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
         return true;
     }
 
-    Creature* leotheras = GetPhase2LeotherasDemon(bot);
+    Creature* leotherasDemon = GetPhase2LeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -848,11 +848,10 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/
     if (leotherasHumanoid->GetVictim() != bot)
         return false;
 
-    return MoveLeotherasFromWarlockTank(leotherasHumanoid);
+    return MoveLeotherasFromWarlockTank();
 }
 
-bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarlockTank(
-    Creature* leotherasHumanoid)
+bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarlockTank()
 {
     Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
     if (!leotherasDemon)
@@ -867,7 +866,7 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarloc
     if (currentDistance >= safeDistance)
         return false;
 
-    return MoveAway(demonVictim, safeDistance - safeDistance, true);
+    return MoveAway(demonVictim, safeDistance - currentDistance, true);
 }
 
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
@@ -887,10 +886,10 @@ bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", tank))
         return botAI->CastSpell("misdirection", tank);
 
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION))
+    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;
 
-    return botAI->CanCastSpell("steady shot", leotherasDemon)) &&
+    return botAI->CanCastSpell("steady shot", leotherasDemon) &&
         botAI->CastSpell("steady shot", leotherasDemon);
 }
 
@@ -1092,11 +1091,15 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     } */
 
     Unit* target = nullptr;
-    Unit* caribdis = nullptr;
 
     constexpr float searchRadius = 75.0f;
-    if (PlayerbotAI::IsMelee(bot) &&
-        (Unit* totem = bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), searchRadius)))
+    // A declaration cannot sit inside a compound condition, so the two role-gated ones are split
+    Unit* totem = PlayerbotAI::IsMelee(bot) ?
+        bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), searchRadius) : nullptr;
+    Unit* caribdis = PlayerbotAI::IsRanged(bot) ?
+        AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") : nullptr;
+
+    if (totem)
     {
         target = totem;
     }
@@ -1104,8 +1107,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         target = tidalvess;
     }
-    else if (PlayerbotAI::IsRanged(bot) &&
-        (Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis")))
+    else if (caribdis)
     {
         target = caribdis;
     }
@@ -1117,7 +1119,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         target = fathomSporebat;
     }
-    else if (Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker");)
+    else if (Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker"))
     {
         target = fathomLurker;
     }
@@ -1132,7 +1134,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
-    if (target = caribdis)
+    if (target == caribdis)
     {
         if (MarkTargetWithCross(bot, caribdis))
             return true;
@@ -1338,7 +1340,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, VASH_PLATFORM_CENTER_POSITION, arrivalDist, vashj, moveX, moveY, backwards))
+                bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance, vashj, moveX, moveY, backwards))
         {
             return false;
         }
@@ -1516,7 +1518,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!IsValidLadyVashjCombatNpc(unit, botAI, vashj))
+        if (!IsValidLadyVashjCombatNpc(unit, vashj))
             continue;
 
         float distFromCenter = unit->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
@@ -1625,7 +1627,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
 
-    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, botAI, vashj))
+    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, vashj))
     {
         bot->AttackStop();
         bot->CastStop();
@@ -1712,7 +1714,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
     if (!tainted)
         return false;
 
-    bool const isWithinMeleeRange = bot->IsWithinMeleeRange(tainted);
+    bool const isWithinTaintedMeleeRange = bot->IsWithinMeleeRange(tainted);
 
     if (!isWithinTaintedMeleeRange)
     {
@@ -1730,6 +1732,7 @@ bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
 
     bot->SetFullHealth();
     bot->RemoveAura(Id(SscSpells::SPELL_POISON_BOLT));
+    return true;
 }
 
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)

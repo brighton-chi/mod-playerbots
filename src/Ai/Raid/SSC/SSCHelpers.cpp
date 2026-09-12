@@ -170,7 +170,14 @@ std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
 
 bool IsLurkerSpouting(Unit* lurker)
 {
-    return lurker && lurker->IsInCombat() && lurker->GetReactState() == REACT_PASSIVE;
+    Creature* creature = lurker ? lurker->ToCreature() : nullptr;
+    return creature && creature->IsInCombat() && creature->GetReactState() == REACT_PASSIVE;
+}
+
+bool IsLurkerSurfacedAndCalm(Unit* lurker)
+{
+    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
+        !IsLurkerSpouting(lurker);
 }
 
 int8 GetLurkerSpoutSpin(Unit* lurker)
@@ -310,7 +317,7 @@ std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-bool IsSpellbinderPhase(Creature* leotheras)
+bool IsSpellbinderPhase(Unit* leotheras)
 {
     return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
 }
@@ -428,7 +435,7 @@ bool HasInnerDemon(Player* bot)
 
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
-    ObjectGuid const botGuid = botAI->GetBot()->GetGuid();
+    ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
     AiObjectContext* context = botAI->GetAiObjectContext();
     auto const& innerDemons = AI_VALUE(GuidVector, "possible targets no los");
 
@@ -518,7 +525,7 @@ int8 GetLadyVashjPhase(Unit* vashj)
 }
 
 // This can just be replaced by a target exclusion of Vashj for Phase 2 I think
-bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI, Unit* vashj)
+bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj)
 {
     if (!unit || !unit->IsAlive())
         return false;

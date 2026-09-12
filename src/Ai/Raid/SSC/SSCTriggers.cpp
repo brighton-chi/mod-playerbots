@@ -85,12 +85,8 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 
 bool TheLurkerBelowRangedShouldHoldStationTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-        !IsLurkerSpouting(lurker);
+    return PlayerbotAI::IsRanged(bot) &&
+        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
 bool TheLurkerBelowRangedShouldDiveTrigger::IsActiveInEncounter()
@@ -99,24 +95,16 @@ bool TheLurkerBelowRangedShouldDiveTrigger::IsActiveInEncounter()
         IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
-bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter() // THIS IS VERY CLOSE TO THE BELOW RANGED TRIGGER, SHOULD COMBINE
+bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-        !IsLurkerSpouting(lurker);
+    return PlayerbotAI::IsMainTank(bot) &&
+        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
 bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
-        !IsLurkerSpouting(lurker);
+    return PlayerbotAI::IsRanged(bot) &&
+        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
 // Only the three guardian tanks, and only when all three exist
@@ -412,7 +400,7 @@ bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
     if (PlayerbotAI::IsHeal(bot))
         return false;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
@@ -507,11 +495,11 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
 
 bool LadyVashjInPhase3Trigger::IsActiveInEncounter()
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 3;
 }
 
-bool LadyVashjEntangleOnMeleeInPhase3Trigger::IsActiveInEncounter()
+bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)

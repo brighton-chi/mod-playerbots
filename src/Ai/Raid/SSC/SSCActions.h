@@ -220,7 +220,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveLeotherasFromWarlockTank(Creature* leotherasHumanoid);
+    bool MoveLeotherasFromWarlockTank();
 };
 
 class LeotherasTheBlindMisdirectBossToWarlockTankAction : public Action

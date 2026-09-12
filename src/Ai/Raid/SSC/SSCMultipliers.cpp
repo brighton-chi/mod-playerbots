@@ -562,7 +562,7 @@ float LadyVashjDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     // Bloodlust/Heroism are phase 3 only
-    if (bot->getClass() =! CLASS_SHAMAN &&
+    if (bot->getClass() != CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) ||
          dynamic_cast<CastHeroismAction*>(action)))
     {
@@ -778,6 +778,6 @@ float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action *action)
     if (!dynamic_cast<CastHandOfFreedomOnPartyAction*>(action))
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 3 ? 0.0f : 1.0f;
 }
