@@ -61,20 +61,20 @@ protected:
 
 // Hydross the Unstable <Duke of Currents>
 
-class HydrossTheUnstablePositionFrostTankAction : public AttackAction
+// One action for both tanks. Each tank has a phase, a mark, a position and a hand-over timer; the
+// frost tank's are the mirror image of the nature tank's.
+class HydrossTheUnstablePositionAndSwapTanksAction : public AttackAction
 {
 public:
-    HydrossTheUnstablePositionFrostTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "hydross the unstable position frost tank") {}
+    HydrossTheUnstablePositionAndSwapTanksAction(
+        PlayerbotAI* botAI, std::string const& name, bool frostTank)
+        : AttackAction(botAI, name), _frostTank(frostTank) {}
     bool Execute(Event event) override;
-};
 
-class HydrossTheUnstablePositionNatureTankAction : public AttackAction
-{
-public:
-    HydrossTheUnstablePositionNatureTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "hydross the unstable position nature tank") {}
-    bool Execute(Event event) override;
+private:
+    bool StepTo(Position const& position, Unit* hydross);
+
+    bool const _frostTank;
 };
 
 class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction

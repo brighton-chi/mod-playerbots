@@ -53,21 +53,21 @@ protected:
 
 // Hydross the Unstable <Duke of Currents>
 
-class HydrossTheUnstableDisableTankReachMultiplier : public SscEncounterMultiplier
+class HydrossTheUnstableDisableOffPhaseTankActionsMultiplier : public SscEncounterMultiplier
 {
 public:
-    HydrossTheUnstableDisableTankReachMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "hydross the unstable disable tank reach") {}
+    HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "hydross the unstable disable off-phase tank actions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class HydrossTheUnstableDisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
+class HydrossTheUnstableDisablePhaseTankAssistMultiplier : public SscEncounterMultiplier
 {
 public:
-    HydrossTheUnstableDisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "hydross the unstable disable auto target and move") {}
+    HydrossTheUnstableDisablePhaseTankAssistMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "hydross the unstable disable phase tank assist") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

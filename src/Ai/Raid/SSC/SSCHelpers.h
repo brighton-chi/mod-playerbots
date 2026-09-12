@@ -162,6 +162,10 @@ extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+// The main tank holds Hydross in frost, the first assist tank in nature. Every other tank is an
+// add tank and never touches Hydross.
+bool IsHydrossPhaseTank(Player* bot);
+bool IsHydrossAddTank(Player* bot);
 bool IsHydrossInFrostPhase(Unit* hydross);
 bool IsHydrossInNaturePhase(Unit* hydross);
 bool HasMarkOfHydrossAt100Percent(Player* bot);

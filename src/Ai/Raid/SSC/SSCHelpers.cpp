@@ -105,14 +105,25 @@ std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+bool IsHydrossPhaseTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) &&
+        (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true));
+}
+
+bool IsHydrossAddTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) && !IsHydrossPhaseTank(bot);
+}
+
 bool IsHydrossInFrostPhase(Unit* hydross)
 {
-    return hydross && !hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION))
+    return hydross && !hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION));
 }
 
 bool IsHydrossInNaturePhase(Unit* hydross)
 {
-    return hydross && hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION))
+    return hydross && hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION));
 }
 
 bool HasMarkOfHydrossAt100Percent(Player* bot)

@@ -5,7 +5,11 @@
  */
 
 #include "SSCStrategy.h"
+#include "Playerbots.h"
+#include "SSCHelpers.h"
 #include "SSCMultipliers.h"
+
+using namespace SscHelpers;
 
 void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -158,8 +162,8 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
 
     // Hydross the Unstable <Duke of Currents>
-    multipliers.push_back(new HydrossTheUnstableDisableTankReachMultiplier(botAI));
-    multipliers.push_back(new HydrossTheUnstableDisableAutoTargetAndMoveMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableDisablePhaseTankAssistMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
 
     // The Lurker Below
@@ -196,4 +200,16 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new LadyVashjDisableAutoTargetAndMoveMultiplier(botAI));
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
+}
+
+// Applies to every target value type: an add tank neither dps-assists nor tank-assists onto Hydross.
+void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
+{
+    // Hydross the Unstable <Duke of Currents>
+    if (IsHydrossAddTank(bot))
+    {
+        AiObjectContext* context = botAI->GetAiObjectContext();
+        if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))
+            exclusions.insert(hydross->GetGUID());
+    }
 }

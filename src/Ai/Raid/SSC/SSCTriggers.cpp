@@ -59,9 +59,12 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActiveInEncounter
         AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
+// Non-hunter DPS only. The phase tank's swap action and the healers' casts must not be stopped,
+// add tanks are on the spawns, and a hunter's auto-shot with Misdirection up is the hand-off.
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
 {
-    return !PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsDps(bot) && bot->getClass() != CLASS_HUNTER &&
+        AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()

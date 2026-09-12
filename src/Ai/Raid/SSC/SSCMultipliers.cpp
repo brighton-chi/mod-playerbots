@@ -81,7 +81,7 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj")
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (vashj && GetLadyVashjPhase(vashj) != 1)
         return 0.0f;
 
@@ -91,13 +91,16 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 
 // Hydross the Unstable <Duke of Currents>
 
-float HydrossTheUnstableDisableTankReachMultiplier::GetValueInEncounter(Action* action)
+// The tank waiting out the other phase must neither close on Hydross nor taunt him. The taunt
+// matters: "has aggro" is false for an explicit main tank whenever Hydross is on the nature tank,
+// so the stock "lose aggro" taunt would drag him back across the line.
+float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     if (!dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+        !dynamic_cast<CastReachTargetSpellAction*>(action) && !IsTauntAction(bot, action))
     {
         return 1.0f;
     }
@@ -106,24 +109,31 @@ float HydrossTheUnstableDisableTankReachMultiplier::GetValueInEncounter(Action* 
     if (!hydross)
         return 1.0f;
 
-    // Block reach target only when in the other tank's phase
     if (IsHydrossInFrostPhase(hydross) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return 0.0f;
 
     return IsHydrossInNaturePhase(hydross) && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
-float HydrossTheUnstableDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action* action)
+// The phase tanks are driven entirely by the position-and-swap action; everyone else keeps the
+// natural assist logic, with Hydross excluded for the add tanks in AppendTargetExclusions.
+float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*(action))
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+
+    if (!IsHydrossPhaseTank(bot))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
 }
 
+// Hold DPS from one second after the 100% mark lands (the tank is walking Hydross to the line and
+// has stopped attacking) until five seconds after the phase flips (threat has just been reset).
+// The current phase tank and the add tanks are exempt; heals always go through.
 float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -132,59 +142,45 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
+    // The tank that just handed Hydross over walks home through this window
+    if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
+        return 1.0f;
+
+    if (IsHydrossAddTank(bot))
+        return 1.0f;
+
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
         return 1.0f;
 
-    // IsMainTank does not otherwise require a tank.
-    bool isFrostPhaseTank = PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
-    bool isNaturePhaseTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
-    bool isAddTank = !isFrostPhaseTank && !isNaturePhaseTank && PlayerbotAI::IsTank(bot);
-
-    Unit* waterElemental = AI_VALUE2(Unit*, "find target", "pure spawn of hydross");
-    Unit* natureElemental = AI_VALUE2(Unit*, "find target", "tainted spawn of hydross");
-    if (PlayerbotAI::IsAssistTank(bot) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        (waterElemental || natureElemental))
+    bool const frostPhase = IsHydrossInFrostPhase(hydross);
+    if (PlayerbotAI::IsTank(bot) &&
+        (frostPhase ? PlayerbotAI::IsMainTank(bot) : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true)))
+    {
         return 1.0f;
-
-    const uint32 instanceId = hydross->GetInstanceId();
-    const uint32 now = getMSTime();
-    constexpr uint32 phaseChangeWaitMs = 1 * IN_MILLISECONDS;
-    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-
-    if (IsHydrossInFrostPhase(hydross) && !PlayerbotAI::IsMainTank(bot))
-    {
-        auto itDps = hydrossFrostDpsWaitTimer.find(instanceId);
-        auto itPhase = hydrossChangeToFrostPhaseTimer.find(instanceId);
-
-        bool justChanged = (itDps == hydrossFrostDpsWaitTimer.end() ||
-                            getMSTimeDiff(itDps->second, now) < dpsWaitMs);
-        bool aboutToChange = (itPhase != hydrossChangeToFrostPhaseTimer.end() &&
-                              getMSTimeDiff(itPhase->second, now) > phaseChangeWaitMs);
-
-        if (!justChanged && !aboutToChange)
-            return 1.0f;
-
-        return 0.0f;
     }
 
-    if (IsHydrossInNaturePhase(hydross) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-    {
-        auto itDps = hydrossNatureDpsWaitTimer.find(instanceId);
-        auto itPhase = hydrossChangeToNaturePhaseTimer.find(instanceId);
+    // The timer for the change *out of* the current phase is the live one; the tracker erases the
+    // other on entering the phase.
+    std::unordered_map<uint32, uint32> const& phaseStartTimer =
+        frostPhase ? hydrossFrostDpsWaitTimer : hydrossNatureDpsWaitTimer;
+    std::unordered_map<uint32, uint32> const& handOverTimer =
+        frostPhase ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
 
-        bool justChanged = (itDps == hydrossNatureDpsWaitTimer.end() ||
-                            getMSTimeDiff(itDps->second, now) < dpsWaitMs);
-        bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
-                              getMSTimeDiff(itPhase->second, now) > phaseChangeWaitMs);
+    uint32 const instanceId = hydross->GetInstanceId();
+    uint32 const now = getMSTime();
+    constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
+    constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
 
-        if (!justChanged && !aboutToChange)
-            return 1.0f;
+    auto itStart = phaseStartTimer.find(instanceId);
+    bool const justChanged =
+        itStart == phaseStartTimer.end() || getMSTimeDiff(itStart->second, now) < phaseStartWaitMs;
 
-        return 0.0f;
-    }
+    auto itHandOver = handOverTimer.find(instanceId);
+    bool const aboutToChange =
+        itHandOver != handOverTimer.end() && getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs;
 
-    return 1.0f;
+    return justChanged || aboutToChange ? 0.0f : 1.0f;
 }
 
 // The Lurker Below

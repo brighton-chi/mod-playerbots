@@ -172,10 +172,12 @@ private:
 
     // Hydross the Unstable <Duke of Currents>
     static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePositionFrostTankAction(botAI);
+        return new HydrossTheUnstablePositionAndSwapTanksAction(
+            botAI, "hydross the unstable position frost tank", true);
     }
     static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstablePositionNatureTankAction(botAI);
+        return new HydrossTheUnstablePositionAndSwapTanksAction(
+            botAI, "hydross the unstable position nature tank", false);
     }
     static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) {
         return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI);

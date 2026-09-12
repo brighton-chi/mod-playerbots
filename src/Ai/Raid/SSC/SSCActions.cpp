@@ -113,20 +113,26 @@ bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
 
 // Hydross the Unstable <Duke of Currents>
 
-// (1) When tanking, move to designated tanking spot on frost side
-// (2) 1 second after 100% Mark of Hydross, move to nature tank's spot to hand off boss
-// (3) When Hydross is in nature form, move back to frost tank spot and wait for transition
-bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
+// Tank Hydross during my phase; once my mark is maxed and the hand-over timer has run, walk him to
+// the other tank's position. During the other phase, wait at my own position.
+bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
         return false;
 
-    Position const& frostPosition = HYDROSS_FROST_TANK_POSITION;
-    Position const& naturePosition = HYDROSS_NATURE_TANK_POSITION;
-    constexpr float arrivalDist = 2.0f;
+    bool const myPhase = _frostTank ? IsHydrossInFrostPhase(hydross) : IsHydrossInNaturePhase(hydross);
+    bool const markMaxed =
+        _frostTank ? HasMarkOfHydrossAt100Percent(bot) : HasMarkOfCorruptionAt100Percent(bot);
+    Position const& myPosition = _frostTank ? HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
+    Position const& otherPosition = _frostTank ? HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
+    std::unordered_map<uint32, uint32> const& handOverTimer =
+        _frostTank ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
 
-    if (IsHydrossInFrostPhase(hydross) && !HasMarkOfHydrossAt100Percent(bot))
+    if (!myPhase)
+        return StepTo(myPosition, hydross);
+
+    if (!markMaxed)
     {
         if (AI_VALUE(Unit*, "current target") != hydross)
             return Attack(hydross);
@@ -134,153 +140,35 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
         if (hydross->GetVictim() != bot || !bot->IsWithinMeleeRange(hydross))
             return false;
 
-        float moveX;
-        float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, frostPosition, arrivalDist, hydross, moveX, moveY, backwards))
-        {
-            return false;
-        }
-
-        return MoveTo(
-            SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        return StepTo(myPosition, hydross);
     }
 
-    if (IsHydrossInFrostPhase(hydross) && HasMarkOfHydrossAt100Percent(bot) &&
-        hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
-    {
-        constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
-        uint32 const now = getMSTime();
-        auto it = hydrossChangeToNaturePhaseTimer.find(hydross->GetInstanceId());
+    if (hydross->GetVictim() != bot || !bot->IsWithinMeleeRange(hydross))
+        return false;
 
-        if (it != hydrossChangeToNaturePhaseTimer.end() &&
-            getMSTimeDiff(it->second, now) >= phaseChangeDelayMs)
-        {
-            float moveX;
-            float moveY;
-            bool backwards;
-            if (!GetStepToPosition(
-                    bot, naturePosition, arrivalDist, hydross, moveX, moveY, backwards))
-            {
-                return false;
-            }
+    constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
+    auto it = handOverTimer.find(hydross->GetInstanceId());
+    if (it != handOverTimer.end() && getMSTimeDiff(it->second, getMSTime()) >= phaseChangeDelayMs)
+        return StepTo(otherPosition, hydross);
 
-            return MoveTo(
-                SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, backwards);
-        }
-        else
-        {
-            bot->AttackStop();
-            bot->CastStop();
-            return true;
-        }
-    }
-
-    if (IsHydrossInNaturePhase(hydross))
-    {
-        float moveX;
-        float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, frostPosition, arrivalDist, hydross, moveX, moveY, backwards))
-        {
-            return false;
-        }
-
-        return MoveTo(
-            SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
-
-    return false;
+    bot->AttackStop();
+    bot->CastStop();
+    return true;
 }
 
-// (1) When tanking, move to designated tanking spot on nature side
-// (2) 1 second after 100% Mark of Corruption, move to frost tank's spot to hand off boss
-// (3) When Hydross is in frost form, move back to nature tank spot and wait for transition
-bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
+bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(
+    Position const& position, Unit* hydross)
 {
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, hydross, moveX, moveY, backwards))
         return false;
 
-    Position const& naturePosition = HYDROSS_NATURE_TANK_POSITION;
-    Position const& frostPosition = HYDROSS_FROST_TANK_POSITION;
-    constexpr float arrivalDist = 2.0f;
-
-    if (IsHydrossInNaturePhase(hydross) && !HasMarkOfCorruptionAt100Percent(bot))
-    {
-        if (AI_VALUE(Unit*, "current target") != hydross)
-            return Attack(hydross);
-
-        if (hydross->GetVictim() != bot || !bot->IsWithinMeleeRange(hydross))
-            return false;
-
-        float moveX;
-        float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, naturePosition, arrivalDist, hydross, moveX, moveY, backwards))
-        {
-            return false;
-        }
-
-        return MoveTo(
-            SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
-
-    if (IsHydrossInNaturePhase(hydross) && HasMarkOfCorruptionAt100Percent(bot) &&
-        hydross->GetVictim() == bot && bot->IsWithinMeleeRange(hydross))
-    {
-        constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
-        uint32 const now = getMSTime();
-        auto it = hydrossChangeToFrostPhaseTimer.find(hydross->GetInstanceId());
-
-        if (it != hydrossChangeToFrostPhaseTimer.end() &&
-            getMSTimeDiff(it->second, now) >= phaseChangeDelayMs)
-        {
-            float moveX;
-            float moveY;
-            bool backwards;
-            if (!GetStepToPosition(
-                    bot, frostPosition, arrivalDist, hydross, moveX, moveY, backwards))
-            {
-                return false;
-            }
-
-            return MoveTo(
-                SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, backwards);
-        }
-        else
-        {
-            bot->AttackStop();
-            bot->CastStop();
-            return true;
-        }
-    }
-
-    if (IsHydrossInFrostPhase(hydross))
-    {
-        float moveX;
-        float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, naturePosition, arrivalDist, hydross, moveX, moveY, backwards))
-        {
-            return false;
-        }
-
-        return MoveTo(
-            SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
-
-    return false;
+    return MoveTo(
+        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // To mitigate the effect of Water Tomb
@@ -318,7 +206,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", hydross) && botAI->CastSpell("steady shot", hydross);
 }
 
-bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/) // Why isn't this aligned to multiplier?
+// Ends the auto-attack already running, which a multiplier cannot; WaitForDps keeps it from restarting
+bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -371,7 +260,6 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/) //
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetTarget(ObjectGuid::Empty);
     bot->SetSelection(ObjectGuid());
-    currentTarget = nullptr;
 
     return true;
 }
@@ -662,7 +550,6 @@ bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetTarget(ObjectGuid::Empty);
     bot->SetSelection(ObjectGuid());
-    currentTarget = nullptr;
 
     return true;
 }
