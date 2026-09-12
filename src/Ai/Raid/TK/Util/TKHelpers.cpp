@@ -69,6 +69,31 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     return nearestPlayer;
 }
 
+// Trash
+
+// Lowest-GUID centurion with Arcane Flurry up, so every mage agrees on the target. "attackers"
+// already drops polymorphed units, so a sheeped centurion falls out without a separate check.
+Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI)
+{
+    Unit* target = nullptr;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (ObjectGuid const attackerGuid : AI_VALUE(GuidVector, "attackers"))
+    {
+        Unit* attacker = botAI->GetUnit(attackerGuid);
+        if (!attacker || attacker->GetEntry() != Id(TkNpcs::NPC_CRIMSON_HAND_CENTURION) ||
+            !attacker->HasAura(Id(TkSpells::SPELL_ARCANE_FLURRY)))
+        {
+            continue;
+        }
+
+        if (!target || attacker->GetGUID() < target->GetGUID())
+            target = attacker;
+    }
+
+    return target;
+}
+
 // Al'ar <Phoenix God>
 
 std::unordered_map<uint32, bool> lastRebirthState;

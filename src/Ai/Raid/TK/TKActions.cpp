@@ -20,7 +20,6 @@
 #include <cmath>
 #include <iterator>
 #include <limits>
-#include <list>
 
 using namespace TkHelpers;
 using namespace EncounterHelpers;
@@ -80,24 +79,7 @@ bool TempestKeepTankPositionAction::MoveToTankPosition(
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> centurions;
-    bot->GetCreatureListWithEntryInGrid(
-        centurions, Id(TkNpcs::NPC_CRIMSON_HAND_CENTURION), searchRadius);
-
-    for (Creature* centurion : centurions)
-    {
-        if (!centurion || !centurion->HasAura(Id(TkSpells::SPELL_ARCANE_FLURRY)) ||
-            botAI->HasAura("polymorph", centurion))
-        {
-            continue;
-        }
-
-        if (!target || centurion->GetGUID() < target->GetGUID())
-            target = centurion;
-    }
-
+    Unit* target = GetCenturionCastingArcaneFlurry(botAI);
     if (!target)
         return false;
 
@@ -2015,7 +1997,7 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 // for flight and instead toggling their flight flags manually upon movement.
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
-    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA)))
         return DropToGround();
 
     return HoverAndSpread();
@@ -2094,7 +2076,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return (hash >> 8) / static_cast<float>(1 << 24);
     };
 
-    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE));
+    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA));
     if (!lapse)
         return false;
 

@@ -307,32 +307,32 @@ float KaelthasSunstriderControlMisdirectionMultiplier::GetValueInEncounter(Actio
 
 // This multiplier is not needed right now because Soulshatter is cast only when there are
 // multiple enemies. That's probably not the right approach and should be fixed, so this
-// multiplier remains in place in anticipation of a future correction to Soulshatter usage.
-float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_WARLOCK)
-        return 1.0f;
-
-    if (!dynamic_cast<CastSoulshatterAction*>(action))
-        return 1.0f;
-
-    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
-    if (!kaelthas)
-        return 1.0f;
-
-    uint32 const phase = GetKaelthasTkPhase(kaelthas);
-    if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
-        return 1.0f;
-
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!IsAdvisorActive(capernian))
-        return 1.0f;
-
-    return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
-}
+// multiplier is kept (commented out) in anticipation of a future correction to Soulshatter usage.
+// float KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
+// {
+//     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+//         return 1.0f;
+//
+//     if (bot->getClass() != CLASS_WARLOCK)
+//         return 1.0f;
+//
+//     if (!dynamic_cast<CastSoulshatterAction*>(action))
+//         return 1.0f;
+//
+//     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+//     if (!kaelthas)
+//         return 1.0f;
+//
+//     uint32 const phase = GetKaelthasTkPhase(kaelthas);
+//     if (phase != PHASE_SINGLE_ADVISOR && phase != PHASE_ALL_ADVISORS)
+//         return 1.0f;
+//
+//     Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+//     if (!IsAdvisorActive(capernian))
+//         return 1.0f;
+//
+//     return GetCapernianTank(bot) == bot ? 0.0f : 1.0f;
+// }
 
 float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValueInEncounter(Action* action)
 {
@@ -508,7 +508,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValueInEncounter(Action* ac
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE)))
+    if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA)))
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&

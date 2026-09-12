@@ -39,8 +39,7 @@ bool TempestKeepStuckFallingTrigger::IsActive()
 
 bool CrimsonHandCenturionCastsArcaneFlurryTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_MAGE &&
-        AI_VALUE2(Unit*, "find target", "crimson hand centurion");
+    return bot->getClass() == CLASS_MAGE && GetCenturionCastingArcaneFlurry(botAI);
 }
 
 // Al'ar <Phoenix God>
