@@ -242,8 +242,8 @@ float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action
 }
 
 // MoveTo does not check speed, and thus even with a snare of -100% or more, it starts a spline
-// and calculates IsWaitingForLastMove from distance / speed, which is infinite in that case and
-// clamps to MaxWaitForMove (5s), blocking all movements for that duration. This multiplier is
+// and MoveDelay calculates distance / speed for IsWaitingForLastMove, which is infinite in that
+// case and clamps to MaxWaitForMove (5s), blocking all movements for that duration. This multiplier is
 // needed to solve the issue for Gruul because the snare he applies (Gronn Lord's Grasp) persists
 // 300ms beyond the Shatter sequence, meaning that bots would otherwise be unable to move for 5s
 // after the Shatter sequence, even though no in-game factors would prevent their movement.
