@@ -313,8 +313,18 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActiveInEncounter()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) &&
-        GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
+    if (!PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    if (!kaelthas)
+        return false;
+
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
+    if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
+        return false;
+
+    return GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
@@ -327,11 +337,11 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
     if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
         return false;
 
-    Unit* axe = GetLegendaryWeapon(bot, Id(TkNpcs::NPC_DEVASTATION));
+    Unit* axe = GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION));
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return !GetDeadLegendaryWeaponGuids(botAI).empty();
+    return HasDeadLegendaryWeapon(botAI);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActiveInEncounter()

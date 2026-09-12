@@ -415,20 +415,10 @@ bool IsSanguinarDebuffHunter(Player* bot)
 // when they called SetInCombatWithZone, or that died and was resurrected afterwards, holds no
 // threat entry on them and never regains one, so it sees a different set of weapons from everyone
 // else, which leaves the raid disagreeing on the kill order and dragging the icon between two
-// weapons
-Unit* GetLegendaryWeapon(Player* bot, uint32 weaponEntry)
-{
-    std::list<Creature*> weapons;
-    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntry, KAELTHAS_ROOM_SEARCH_DISTANCE);
-
-    for (Creature* weapon : weapons)
-        if (weapon && weapon->IsAlive())
-            return weapon;
-
-    return nullptr;
-}
-
-GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
+// weapons. One grid search collects every weapon, alive or dead, into the cached
+// "tk legendary weapons" value; the readers below decide alive/dead at resolve time, so a weapon
+// that dies inside the cache interval is seen as dead at once.
+GuidVector FindLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
         Id(TkNpcs::NPC_STAFF_OF_DISINTEGRATION),
@@ -447,28 +437,55 @@ GuidVector FindDeadLegendaryWeaponGuids(Player* bot)
     guids.reserve(weapons.size());
     for (Creature* weapon : weapons)
     {
-        if (weapon && !weapon->IsAlive())
+        if (weapon)
             guids.push_back(weapon->GetGUID());
     }
 
     return guids;
 }
 
-GuidVector const& GetDeadLegendaryWeaponGuids(PlayerbotAI* botAI)
+namespace
 {
-    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk dead legendary weapons")->RefGet();
+
+GuidVector const& GetLegendaryWeaponGuids(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk legendary weapons")->RefGet();
 }
 
-Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
+Creature* GetLegendaryWeaponByState(PlayerbotAI* botAI, uint32 weaponEntry, bool alive)
 {
-    for (ObjectGuid const guid : GetDeadLegendaryWeaponGuids(botAI))
+    for (ObjectGuid const guid : GetLegendaryWeaponGuids(botAI))
     {
         Creature* weapon = botAI->GetCreature(guid);
-        if (weapon && weapon->GetEntry() == weaponEntry)
+        if (weapon && weapon->GetEntry() == weaponEntry && weapon->IsAlive() == alive)
             return weapon;
     }
 
     return nullptr;
+}
+
+}
+
+Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
+{
+    return GetLegendaryWeaponByState(botAI, weaponEntry, true);
+}
+
+Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
+{
+    return GetLegendaryWeaponByState(botAI, weaponEntry, false);
+}
+
+bool HasDeadLegendaryWeapon(PlayerbotAI* botAI)
+{
+    for (ObjectGuid const guid : GetLegendaryWeaponGuids(botAI))
+    {
+        Creature* weapon = botAI->GetCreature(guid);
+        if (weapon && !weapon->IsAlive())
+            return true;
+    }
+
+    return false;
 }
 
 bool IsLegendaryWeaponItem(uint32 itemId)

@@ -12,16 +12,6 @@
 #include "TKHelpers.h"
 #include "Value.h"
 
-class TKDeadLegendaryWeaponsValue : public CalculatedValue<GuidVector>
-{
-public:
-    TKDeadLegendaryWeaponsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(botAI, "tk dead legendary weapons", 200) {}
-
-protected:
-    GuidVector Calculate() override { return TkHelpers::FindDeadLegendaryWeaponGuids(bot); }
-};
-
 class TKFlamePatchesValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -32,22 +22,31 @@ protected:
     GuidVector Calculate() override { return TkHelpers::FindFlamePatchGuids(bot); }
 };
 
+class TKLegendaryWeaponsValue : public CalculatedValue<GuidVector>
+{
+public:
+    TKLegendaryWeaponsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(botAI, "tk legendary weapons", 200) {}
+
+protected:
+    GuidVector Calculate() override { return TkHelpers::FindLegendaryWeaponGuids(bot); }
+};
+
 class RaidTempestKeepValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
     RaidTempestKeepValueContext()
     {
-        creators["tk dead legendary weapons"] =
-            &RaidTempestKeepValueContext::tk_dead_legendary_weapons;
         creators["tk flame patches"] = &RaidTempestKeepValueContext::tk_flame_patches;
+        creators["tk legendary weapons"] = &RaidTempestKeepValueContext::tk_legendary_weapons;
     }
 
 private:
-    static UntypedValue* tk_dead_legendary_weapons(PlayerbotAI* botAI) {
-        return new TKDeadLegendaryWeaponsValue(botAI);
-    }
     static UntypedValue* tk_flame_patches(PlayerbotAI* botAI) {
         return new TKFlamePatchesValue(botAI);
+    }
+    static UntypedValue* tk_legendary_weapons(PlayerbotAI* botAI) {
+        return new TKLegendaryWeaponsValue(botAI);
     }
 };
 
