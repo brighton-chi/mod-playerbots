@@ -1770,8 +1770,8 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
-    uint8 cast_count = 1;
-    ObjectGuid item_guid = item->GetGUID();
+    uint8 castCount = 1;
+    ObjectGuid itemGuid = item->GetGUID();
     uint32 glyphIndex = 0;
     uint8 castFlags = 0;
     uint32 spellId = 0;
@@ -1790,7 +1790,7 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
         return false;
 
     WorldPacket packet(CMSG_USE_ITEM);
-    packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
+    packet << bagIndex << slot << castCount << spellId << itemGuid << glyphIndex << castFlags;
 
     uint32 targetFlag = TARGET_FLAG_UNIT;
     packet << targetFlag << bot->GetPackGUID();
@@ -2061,9 +2061,9 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
             bot->SendMovementFlagUpdate();
     }
 
-    MotionMaster* mm = bot->GetMotionMaster();
-    if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
-        mm->MovementExpiredOnSlot(MOTION_SLOT_CONTROLLED);
+    MotionMaster* motionMaster = bot->GetMotionMaster();
+    if (motionMaster->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
+        motionMaster->MovementExpiredOnSlot(MOTION_SLOT_CONTROLLED);
 
     auto const roll = [](uint32 value, uint32 salt)
     {

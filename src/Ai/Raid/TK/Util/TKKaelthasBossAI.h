@@ -11,14 +11,8 @@
 
 // This file mirrors the core's boss_kaelthas class so bots can read the encounter phase
 // The core's boss script is at src/server/scripts/Outland/TempestKeep/Eye/boss_kaelthas.cpp
-
-enum KTYells
-{
-};
-
-enum KTActions
-{
-};
+// The core's IntroduceNewAdvisor(KTYells, KTActions) is omitted along with its two enums; it is
+// non-virtual, so leaving it out changes neither the layout nor the vtable.
 
 struct boss_kaelthas : public BossAI
 {
@@ -34,7 +28,6 @@ struct boss_kaelthas : public BossAI
     void SpellHit(Unit* caster, SpellInfo const* spell) override;
     void MovementInform(uint32 type, uint32 point) override;
     void ExecuteMiddleEvent();
-    void IntroduceNewAdvisor(KTYells talkIntroduction, KTActions kaelAction);
     void PhaseEnchantedWeaponsExecute();
     void PhaseAllAdvisorsExecute();
     void PhaseKaelExecute();
