@@ -177,6 +177,8 @@ inline Position const ALAR_SE_RAMP_BASE        = { 281.064f, -36.590f, -2.389f }
 inline Position const ALAR_SW_RAMP_BASE        = { 281.064f,  36.590f, -2.389f };
 inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f };
 
+inline constexpr float ALAR_FLAME_PATCH_SEARCH_DISTANCE = 40.0f;
+
 extern std::unordered_map<uint32, bool> lastRebirthState;
 extern std::unordered_map<uint32, bool> isAlarInPhase2;
 
@@ -189,7 +191,8 @@ bool IsPrimaryEmberTank(Player* bot);
 bool IsFirstAlarTank(Player* bot);
 bool IsSecondAlarTank(Player* bot);
 Player* GetSecondaryEmberTank(Player* bot);
-std::vector<Unit*> GetFlamePatches(Player* bot, float searchRadius);
+GuidVector FindFlamePatchGuids(Player* bot);
+std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI);
 
 // Void Reaver
 // CombatReach is 15 yards
