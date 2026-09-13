@@ -144,7 +144,6 @@ bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris)
     return true;
 }
 
-// Debris only falls after the ceiling collapse at 30%.
 bool IsCeilingCollapsed(Player* bot)
 {
     return ceilingCollapseApplied.contains(bot->GetInstanceId());

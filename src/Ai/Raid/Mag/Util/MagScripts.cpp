@@ -33,6 +33,10 @@ public:
     }
 };
 
+// Not to be confused with the 30% ceiling collapse, which is also called "Debris." This is for the
+// small patches that fall from time-to-time after the ceiling collapses, which deal 87,500 to
+// 112,500 damage on hit (!!!). This is potentially higher damage than Archimonde's instant-wipe
+// ability if he reaches the Well of Eternity, Hand of Death, which hits for 99,999.
 class MagtheridonDebrisDynamicObjectScript : public DynamicObjectScript
 {
 public:

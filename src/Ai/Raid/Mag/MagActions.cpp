@@ -50,7 +50,9 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
     Position const& position = WAITING_FOR_MAGTHERIDON_POSITION;
     if (bot->GetExactDist2d(position) <= 2.0f)
     {
-        bot->SetFacingTo(position.GetOrientation());
+        if (std::fabs(bot->GetOrientation() - position.GetOrientation()) > 0.1f)
+            bot->SetFacingTo(position.GetOrientation());
+
         return true;
     }
 
@@ -372,8 +374,15 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(CubeInfo const& cubeI
     if (getMSTimeDiff(timerIt->second, getMSTime()) < BLAST_NOVA_INTERIM_MS + stagger)
         return false;
 
+    // Already on the ring is fine unless a hazard has since landed on the spot, in which case the
+    // ring search picks the nearest clear point rather than leaving the cube behind.
     constexpr float safeWaitDistance = 10.0f;
-    if (fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f)
+    bool const onRing =
+        fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f;
+    bool const inHazard =
+        IsPositionInActiveDebris(botAI, bot->GetPositionX(), bot->GetPositionY()) ||
+        IsPositionInActiveConflagration(botAI, bot->GetPositionX(), bot->GetPositionY());
+    if (onRing && !inHazard)
         return false;
 
     Position safePos;
@@ -389,7 +398,8 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(CubeInfo const& cubeI
 bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
     CubeInfo const& cubeInfo, float preferredDistance, Position& outPos)
 {
-    constexpr float angleStep = M_PI / 8.0f;
+    constexpr uint8 numAngles = 16;
+    constexpr float angleStep = 2.0f * M_PI / numAngles;
 
     Position debris;
     bool const hasDebris = GetActiveDebrisPosition(botAI, debris);
@@ -398,8 +408,9 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+    for (uint8 i = 0; i < numAngles; ++i)
     {
+        float const angle = i * angleStep;
         float const x = cubeInfo.x + std::cos(angle) * preferredDistance;
         float const y = cubeInfo.y + std::sin(angle) * preferredDistance;
 
@@ -436,9 +447,11 @@ bool MagtheridonMoveOutOfDebrisAction::Execute(Event /*event*/)
 
 bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 {
-    constexpr float maxSearchRadius = 20.0f;
+    constexpr float minSearchRadius = 2.0f;
     constexpr float distanceStep = 1.0f;
-    constexpr float angleStep = M_PI / 12.0f;
+    constexpr uint8 numDistSteps = 18;
+    constexpr uint8 numAngles = 24;
+    constexpr float angleStep = 2.0f * M_PI / numAngles;
 
     Position debris;
     bool const hasDebris = GetActiveDebrisPosition(botAI, debris);
@@ -447,11 +460,12 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
     float minMoveDistance = std::numeric_limits<float>::max();
     bool foundSafe = false;
 
-    // NTS: Need to remove float loop
-    for (float distance = 2.0f; distance <= maxSearchRadius; distance += distanceStep)
+    for (uint8 i = 0; i <= numDistSteps; ++i)
     {
-        for (float angle = 0.0f; angle < 2.0f * M_PI; angle += angleStep)
+        float const distance = minSearchRadius + i * distanceStep;
+        for (uint8 j = 0; j < numAngles; ++j)
         {
+            float const angle = j * angleStep;
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
 

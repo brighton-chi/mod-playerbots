@@ -35,7 +35,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
         !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action))
     {
-        return 1.0;
+        return 1.0f;
     }
 
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");

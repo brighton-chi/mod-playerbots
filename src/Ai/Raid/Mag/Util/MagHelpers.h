@@ -67,8 +67,16 @@ inline constexpr uint32 WEST_CHANNELER_DB_GUID       = 90979;
 inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID  = 90980;
 inline constexpr uint32 EAST_CHANNELER_DB_GUID       = 90982;
 inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
-inline constexpr uint8 BLAST_NOVA_INTERIM_SECONDS    = 45;
-inline constexpr uint32 BLAST_NOVA_INTERIM_MS = BLAST_NOVA_INTERIM_SECONDS * IN_MILLISECONDS;
+
+// Blast Nova is cast 55.65s after Magtheridon joins the fight (marked by the Shadow Cage aura
+// coming off of him) and is repeated every 54.35-55.4s. It is delayed by 7s by each Quake, which
+// is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s.
+// Additionally, the ceiling collapsing at 30% health delays everything by 18s.
+//
+// This is the number of milliseconds since the previous Blast Nova that must pass before a cube
+// clicker returns to go wait by a cube (or in the case of the first Blast Nova, since Magtheridon
+// joined the fight).
+inline constexpr uint32 BLAST_NOVA_INTERIM_MS = 48 * IN_MILLISECONDS;
 
 inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -0.304f, 0.657f };
 inline Position const MAGTHERIDON_TANK_POSITION =        {  -6.147f, -37.812f, -0.411f,   0.0f };
@@ -95,6 +103,7 @@ inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
 std::vector<Position> FindDebrisPositions(Player* bot);
 bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris);
+// Debris begins falling only after the ceiling collapse at 30%.
 bool IsCeilingCollapsed(Player* bot);
 std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
 bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
