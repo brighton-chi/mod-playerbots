@@ -128,11 +128,14 @@ float MagtheridonDebrisDangerMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
+    if (!IsCeilingCollapsed(bot))
+        return 1.0f;
+
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
     constexpr float debrisSuppressionZone = 15.0f;
     return IsPositionInActiveDebris(
-        bot, bot->GetPositionX(), bot->GetPositionY(), debrisSuppressionZone) ? 0.0f : 1.0f;
+        botAI, bot->GetPositionX(), bot->GetPositionY(), debrisSuppressionZone) ? 0.0f : 1.0f;
 }

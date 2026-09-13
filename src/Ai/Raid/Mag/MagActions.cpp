@@ -392,7 +392,7 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
     constexpr float angleStep = M_PI / 8.0f;
 
     Position debris;
-    bool const hasDebris = GetActiveDebrisPosition(bot, debris);
+    bool const hasDebris = GetActiveDebrisPosition(botAI, debris);
     std::vector<GameObject*> const blazes = GetActiveConflagrations(botAI);
 
     float minMoveDistance = std::numeric_limits<float>::max();
@@ -441,7 +441,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
     constexpr float angleStep = M_PI / 12.0f;
 
     Position debris;
-    bool const hasDebris = GetActiveDebrisPosition(bot, debris);
+    bool const hasDebris = GetActiveDebrisPosition(botAI, debris);
     std::vector<GameObject*> const blazes = GetActiveConflagrations(botAI);
 
     float minMoveDistance = std::numeric_limits<float>::max();

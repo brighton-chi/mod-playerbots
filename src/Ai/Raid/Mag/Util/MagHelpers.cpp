@@ -127,11 +127,16 @@ bool IsCubeClicker(Player* bot)
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }
 
-bool GetActiveDebrisPosition(Player* bot, Position& debris)
+std::vector<Position> FindDebrisPositions(Player* bot)
 {
     constexpr float searchRadius = 150.0f;
-    std::vector<Position> const debrisPositions = GetDynamicObjectPositions(
-        bot, searchRadius, Id(MagSpells::SPELL_DEBRIS_SPAWN));
+    return GetDynamicObjectPositions(bot, searchRadius, Id(MagSpells::SPELL_DEBRIS_SPAWN));
+}
+
+bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris)
+{
+    std::vector<Position> const& debrisPositions = botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("mag debris positions")->RefGet();
     if (debrisPositions.empty())
         return false;
 
@@ -139,10 +144,16 @@ bool GetActiveDebrisPosition(Player* bot, Position& debris)
     return true;
 }
 
-bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius)
+// Debris only falls after the ceiling collapse at 30%.
+bool IsCeilingCollapsed(Player* bot)
+{
+    return ceilingCollapseApplied.contains(bot->GetInstanceId());
+}
+
+bool IsPositionInActiveDebris(PlayerbotAI* botAI, float x, float y, float radius)
 {
     Position debris;
-    return GetActiveDebrisPosition(bot, debris) && debris.GetExactDist2d(x, y) <= radius;
+    return GetActiveDebrisPosition(botAI, debris) && debris.GetExactDist2d(x, y) <= radius;
 }
 
 std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI)

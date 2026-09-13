@@ -104,10 +104,10 @@ bool MagtheridonShouldSpreadRangedTrigger::IsActiveInEncounter()
 
 bool MagtheridonStandingInDebrisTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "magtheridon"))
+    if (!IsCeilingCollapsed(bot) || !AI_VALUE2(Unit*, "find target", "magtheridon"))
         return false;
 
-    return IsPositionInActiveDebris(bot, bot->GetPositionX(), bot->GetPositionY());
+    return IsPositionInActiveDebris(botAI, bot->GetPositionX(), bot->GetPositionY());
 }
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActiveInEncounter()

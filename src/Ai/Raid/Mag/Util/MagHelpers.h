@@ -93,10 +93,13 @@ bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
 inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
-bool GetActiveDebrisPosition(Player* bot, Position& debris);
+std::vector<Position> FindDebrisPositions(Player* bot);
+bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris);
+bool IsCeilingCollapsed(Player* bot);
 std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
 bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
-bool IsPositionInActiveDebris(Player* bot, float x, float y, float radius = DEBRIS_HAZARD_RADIUS);
+bool IsPositionInActiveDebris(
+    PlayerbotAI* botAI, float x, float y, float radius = DEBRIS_HAZARD_RADIUS);
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y);
 
 }
