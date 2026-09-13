@@ -204,11 +204,8 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    if (dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action) ||
-        dynamic_cast<TheLurkerBelowRangedHoldStationAction*>(action))
-    {
+    if (dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
         return 1.0f;
-    }
 
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;

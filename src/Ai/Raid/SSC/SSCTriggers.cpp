@@ -76,23 +76,9 @@ bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
 
 // The Lurker Below
 
-// Melee run around; ranged dive instead
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 {
-    return !PlayerbotAI::IsRanged(bot) &&
-        IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
-}
-
-bool TheLurkerBelowRangedShouldHoldStationTrigger::IsActiveInEncounter()
-{
-    return PlayerbotAI::IsRanged(bot) &&
-        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
-}
-
-bool TheLurkerBelowRangedShouldDiveTrigger::IsActiveInEncounter()
-{
-    return PlayerbotAI::IsRanged(bot) &&
-        IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
+    return IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
 bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter()
