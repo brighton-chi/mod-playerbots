@@ -272,7 +272,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 }
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
-// the main tank or first assist tank (whichever is not tanking Al'ar, see helpers for more info).
+// the main tank or first assist tank (whichever is not tanking Al'ar; see helpers for more info).
 bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
 {
     auto const& [firstEmber, secondEmber] = GetTargetUnitPair(botAI, Id(TkNpcs::NPC_EMBER_OF_ALAR));
@@ -411,7 +411,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
     }
 
     // Al'ar stays at its platform for the first 8 seconds of the pretend-death and is only then
-    // moved to the middle, so the push has to come from the room center rather than from Al'ar.
+    // moved to the middle for Rebirth, so move away from the room center, not Al'ar.
     constexpr float safeDistance = 35.0f;
     if (bot->GetExactDist2d(ALAR_ROOM_CENTER) >= safeDistance)
         return false;
@@ -748,8 +748,6 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != astromancer && Attack(astromancer);
 }
 
-// Even though Solarian mainly spams Arcane Missiles at random targets, she is tankable and needs
-// to be tanked to hold her in position.
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 15.0f;
@@ -835,7 +833,6 @@ bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)
     if (!thaladred)
         return false;
 
-    // Thaladred's CombatReach is 4.5y
     constexpr float safeDistance = 20.0f;
     float const currentDistance = bot->GetExactDist2d(thaladred);
     if (currentDistance >= safeDistance)
@@ -1074,7 +1071,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
         position = SANGUINAR_WAITING_POSITION;
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         position = TELONICUS_WAITING_POSITION;
-    else // GetCapernianTank(bot) == bot
+    else // IsCapernianTank(bot)
         position = CAPERNIAN_WAITING_POSITION;
 
     if (bot->GetExactDist2d(position) <= 2.0f)
@@ -1101,8 +1098,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     bool const isPhase3 = phase == PHASE_ALL_ADVISORS;
-    bool const isActiveCapernianTank = isPhase3 && bot->getClass() == CLASS_WARLOCK &&
-        GetCapernianTank(bot) == bot;
+    bool const isActiveCapernianTank = isPhase3 && IsCapernianTank(bot);
 
     Unit* target = nullptr;
 
@@ -1240,7 +1236,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     // Priority 0: Everybody other than the main tank needs to stay away from the axe.
     // But for assist tanks, move away only after getting aggro on the mace, dagger, or sword
-    // Variable return allows failure to MoveAway not to exit the function.
+    // The variable return allows a failure to MoveAway not to exit the function.
     bool didAvoidDevastation = false;
     if (axe && HandleDevastationAvoidance(axe, mace, dagger, sword, isTank, isMeleeDps))
         didAvoidDevastation = true;
@@ -1313,7 +1309,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
             return didAvoidDevastation;
 
         // If every weapon still standing is inside the axe's reach, then melee should hold and
-        // attacking nothing rather than get into Whirlwind range.
+        // attack nothing rather than end up in Whirlwind range.
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
         bot->CastStop();
@@ -1891,10 +1887,8 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoi
     // Phoenixes that turn into eggs remain alive and on threat lists. They simply become
     // unattackable and invisible on top of the egg.
     //
-    // AC bug: the "dead" phoenix keeps its Burn aura (36720) for the whole egg window, so the egg
-    // sits inside a live 8-yard, ~5k-per-2s Burn. The egg is therefore ranged-only, like the
-    // phoenix. Melee sent at it are pushed back out by the stock "avoid aoe" strategy, which sees
-    // the unselectable phoenix as a trigger, and they bounce in and out until it despawns.
+    // Silly AC bug: the "dead" phoenix keeps its Burn aura (36720) so the egg sits inside an active
+    // 8-yard, ~5k-per-2s Burn. The egg is therefore ranged-only, like the phoenix.
     Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
     if (phoenix && phoenix->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         phoenix = nullptr;
@@ -2000,7 +1994,7 @@ bool KaelthasSunstriderBreakMindControlAction::Execute(Event /*event*/)
 
 // The vast majority of this action is not to address avoidance but to implement the Gravity Lapse
 // mechanic, which does not otherwise properly affect bots due to bots not having a packet handler
-// for flight and instead toggling their flight flags manually upon movement.
+// for flight and instead only toggling their flight flags manually upon movement.
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     if (!bot->HasAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA)))
@@ -2088,7 +2082,6 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
 
     uint32 const seed = bot->GetGUID().GetCounter() ^ static_cast<uint32>(lapse->GetApplyTime());
 
-    // Target height is between 10 and 35 yards
     constexpr float minHoverHeight = 10.0f;
     constexpr float maxHoverHeight = 35.0f;
     constexpr uint32 heightSalt = 1u;
