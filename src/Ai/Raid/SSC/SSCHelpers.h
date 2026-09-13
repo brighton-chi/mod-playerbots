@@ -198,40 +198,13 @@ int8 GetLurkerSpoutSpin(Unit* lurker);
 
 // Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
 // the speed: 17 yd keeps pace with the beam, 21 yd falls behind at 0.07 rad/s. Each bot gets a
-// fixed radius in this band and a fixed offset around "behind" from its GUID so the raid looks
-// spread rather than stacked, without the destination moving from tick to tick.
+// fixed radius in this band from its GUID so the raid is not stacked on one ring. The safe arc is
+// a zone, not a point: a bot already inside it holds its bearing during the wind-up.
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 17.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
 inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
-inline constexpr float LURKER_SPOUT_RUN_ANGULAR_DEADZONE = 0.105f; // ~6 degrees
-
-// Ranged stand on fixed stations and dive during Spout: the cone skips anyone IsInWater(), at the
-// cost of Scalding Water (500 fire on entry, 500 every 3s). Ranged DPS use the three islets the
-// Ambushers spawn on (Lurker's CombatReach is 22y, so 40y spells reach them); healers stay on the
-// inner ring to keep the melee in range.
-inline std::array<Position, 3> const LURKER_RANGED_DPS_STATIONS = { {
-    { 77.937f, -384.500f, -19.722f }, // NW islet
-    { 63.022f, -456.310f, -19.793f }, // NE islet
-    { 14.283f, -457.467f, -19.793f }  // E islet
-} };
-inline std::array<Position, 3> const LURKER_HEALER_STATIONS = { {
-    { 16.237f, -438.098f, -19.551f }, // SE
-    { 37.255f, -387.031f, -19.417f }, // SW
-    { 66.268f, -418.774f, -19.592f }  // N
-} };
-// Any pathed move ends on the water-surface navmesh poly (PathGenerator finds it up to 50y below
-// the point and snaps to it), which is WATER_WALK, not IN_WATER. So the dive is a JumpTo, a raw
-// spline that lands exactly where asked: 1.5y under is IN_WATER for the cone filter but above the
-// collision height, so no breath timer.
-inline constexpr float LURKER_DIVE_DEPTH = 1.5f;
-inline constexpr float LURKER_STATION_ARRIVAL_DIST = 2.0f;
-
-// The station for this bot's role and index among its ranged peers; false if there are none.
-bool GetLurkerRangedStation(Player* bot, Position& station);
-// A point in water near the station, probing towards and away from Lurker; z is the dive depth
-// under the surface there.
-bool FindLurkerDivePoint(Player* bot, Position const& station, Unit* lurker, Position& dive);
+inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the
