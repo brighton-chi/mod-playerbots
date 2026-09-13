@@ -35,7 +35,7 @@ bool MagtheridonAssistTanksShouldTankChannelersTrigger::IsActiveInEncounter()
         return false;
 
     if (GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID) &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
     {
         return true;
     }

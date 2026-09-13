@@ -64,7 +64,7 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
 {
     Creature* channeler = nullptr;
     Position position;
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
     {
         channeler = GetChanneler(bot, NORTHWEST_CHANNELER_DB_GUID);
         position = NW_CHANNELER_TANK_POSITION;
@@ -109,7 +109,7 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            GET_PLAYERBOT_AI(member))
+            member->GetMapId() == MAG_MAP_ID && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -197,7 +197,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
-            GET_PLAYERBOT_AI(member))
+            member->GetMapId() == MAG_MAP_ID && GET_PLAYERBOT_AI(member))
         {
             warlocks.push_back(member);
         }
