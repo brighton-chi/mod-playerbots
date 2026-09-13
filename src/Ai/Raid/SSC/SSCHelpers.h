@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <functional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -145,11 +146,16 @@ inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
-// A step straight out of a circular hazard, fanning around the escape heading on collision. Copied
-// from HyjalHelpers pending promotion to EncounterHelpers.
-bool GetHazardEscapeStep(
-    Player* bot, Position const& hazard, float escapeRadius, float moveDist, float& stepX,
-    float& stepY, float& stepZ);
+// A step out of a circular hazard. Directions fan out from straight-away in fine steps; the first
+// landing point that passes isAcceptable, is reachable, and is farther from the hazard than the bot
+// wins. Unlike Hyjal's ring-based GetHazardEscapeStep this needs no clear point at the ring: a
+// narrow curved boardwalk still offers two dry directions whatever the ring looks like.
+bool FindHazardEscapeStep(
+    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
+    float& stepZ, std::function<bool(float, float)> const& isAcceptable = {});
+// True where the map has ground above any liquid at x/y. A player counts water as reachable, so
+// the pathfinder alone lets an escape step off a boardwalk into the lake.
+bool IsDryGround(Player* bot, float x, float y);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);
@@ -214,20 +220,18 @@ inline std::array<Position, 3> const LURKER_HEALER_STATIONS = { {
     { 37.255f, -387.031f, -19.417f }, // SW
     { 66.268f, -418.774f, -19.592f }  // N
 } };
-// The pathfinder snaps any point within 5y of the water-surface navmesh poly back onto it, which
-// leaves the bot at WATER_WALK rather than IN_WATER. A dive deeper than that finds no poly and goes
-// through as a straight spline. Once in, the bot rises to just under the surface: still IN_WATER,
-// no breath timer.
-inline constexpr float LURKER_DIVE_DEPTH = 5.5f;
-inline constexpr float LURKER_FLOAT_DEPTH = 1.0f;
+// Any pathed move ends on the water-surface navmesh poly (PathGenerator finds it up to 50y below
+// the point and snaps to it), which is WATER_WALK, not IN_WATER. So the dive is a JumpTo, a raw
+// spline that lands exactly where asked: 1.5y under is IN_WATER for the cone filter but above the
+// collision height, so no breath timer.
+inline constexpr float LURKER_DIVE_DEPTH = 1.5f;
 inline constexpr float LURKER_STATION_ARRIVAL_DIST = 2.0f;
 
 // The station for this bot's role and index among its ranged peers; false if there are none.
 bool GetLurkerRangedStation(Player* bot, Position& station);
-// A point in water near the station deep enough to dive under the poly snap, probing towards and
-// away from Lurker. Returns the surface level through waterLevel.
-bool FindLurkerDivePoint(
-    Player* bot, Position const& station, Unit* lurker, Position& dive, float& waterLevel);
+// A point in water near the station, probing towards and away from Lurker; z is the dive depth
+// under the surface there.
+bool FindLurkerDivePoint(Player* bot, Position const& station, Unit* lurker, Position& dive);
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the

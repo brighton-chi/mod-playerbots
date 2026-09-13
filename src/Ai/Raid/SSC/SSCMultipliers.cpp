@@ -17,6 +17,7 @@
 #include "HunterActions.h"
 #include "LootAction.h"
 #include "MageActions.h"
+#include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
@@ -56,6 +57,10 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
     if (bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
+
+    // A bot that has just left combat will otherwise sit down to drink in a 2k/s pool
+    if (dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action))
+        return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;

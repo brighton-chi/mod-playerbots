@@ -65,20 +65,32 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
     if (!GetToxicPoolPosition(botAI, pool))
         return false;
 
-    constexpr float moveDist = 10.0f;
-    constexpr float escapeMargin = 2.0f;
+    // The colossi stand on boardwalks over the lake; a player's pathfinder treats the water as
+    // reachable, so the ring point and the landing must both be on dry ground
+    auto const isDryGround = [this](float x, float y) { return IsDryGround(bot, x, y); };
+
+    // Short enough that a straight step follows the curve of the walk
+    constexpr float moveDist = 5.0f;
     float stepX;
     float stepY;
     float stepZ;
-    if (!GetHazardEscapeStep(
-            bot, pool, TOXIC_POOL_HAZARD_RADIUS + escapeMargin, moveDist, stepX, stepY, stepZ))
+    if (!FindHazardEscapeStep(bot, pool, moveDist, stepX, stepY, stepZ, isDryGround))
     {
+        LOG_DEBUG("playerbots", "toxic pool: {} found no dry escape step from ({:.1f}, {:.1f})",
+            bot->GetName(), pool.GetPositionX(), pool.GetPositionY());
         return false;
     }
 
-    return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+    if (!MoveTo(
+            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false))
+    {
+        LOG_DEBUG("playerbots", "toxic pool: {} MoveTo refused step ({:.1f}, {:.1f}, {:.1f})",
+            bot->GetName(), stepX, stepY, stepZ);
+        return false;
+    }
+
+    return true;
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/) // Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?
@@ -477,33 +489,40 @@ bool TheLurkerBelowRangedHoldStationAction::Execute(Event /*event*/)
         false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// JumpTo rather than MoveTo: every pathed move is snapped onto the water-surface poly and ends at
+// WATER_WALK, which the cone does not skip. The jump lands on the requested point under the
+// surface and the bot simply floats there; players have no server-side gravity.
 bool TheLurkerBelowRangedHoldStationAction::Dive(Position const& station, Unit* lurker)
 {
-    Position dive;
-    float waterLevel;
-    if (!FindLurkerDivePoint(bot, station, lurker, dive, waterLevel))
-        return false;
-
-    if (!bot->IsInWater())
+    if (bot->IsInWater())
     {
-        bot->CastStop();
-        return MoveTo(
-            SSC_MAP_ID, dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        // The module only sets the swim flag on the water-walk transition, so a dive never gets
+        // it: run speed and a running animation in the water otherwise
+        if (!bot->isSwimming())
+            bot->SetSwim(true);
+
+        return false;
     }
 
-    // The module only sets the swim flag on the water-walk transition, so a straight dive never
-    // gets it: run speed and a running animation under water otherwise
-    if (!bot->isSwimming())
-        bot->SetSwim(true);
-
-    float const floatZ = waterLevel - LURKER_FLOAT_DEPTH;
-    if (std::fabs(bot->GetPositionZ() - floatZ) < 0.5f)
+    Position dive;
+    if (!FindLurkerDivePoint(bot, station, lurker, dive))
+    {
+        LOG_DEBUG("playerbots", "lurker dive: {} found no water by station ({:.1f}, {:.1f})",
+            bot->GetName(), station.GetPositionX(), station.GetPositionY());
         return false;
+    }
 
-    return MoveTo(
-        SSC_MAP_ID, bot->GetPositionX(), bot->GetPositionY(), floatZ,
-        false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+    bot->CastStop();
+    if (!JumpTo(
+            SSC_MAP_ID, dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ(),
+            MovementPriority::MOVEMENT_FORCED))
+    {
+        LOG_DEBUG("playerbots", "lurker dive: {} JumpTo refused ({:.1f}, {:.1f}, {:.1f})",
+            bot->GetName(), dive.GetPositionX(), dive.GetPositionY(), dive.GetPositionZ());
+        return false;
+    }
+
+    return true;
 }
 
 // During the submerge phase the main tank and the first two assist tanks each claim one Coilfang
