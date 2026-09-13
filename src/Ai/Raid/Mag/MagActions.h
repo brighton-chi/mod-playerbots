@@ -101,6 +101,8 @@ private:
     bool HandleWaitingPhase(MagHelpers::CubeInfo const& cubeInfo);
     bool FindSafePositionNearCube(
         MagHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
+
+    uint32 _blastNovaSeenMs = 0;
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action
@@ -111,7 +113,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool AssignCubeClickers(uint32 instanceId);
+    bool AssignCubeClickers(uint32 instanceId, Unit* magtheridon);
     bool NeedsCubeReassignment(uint32 instanceId);
 };
 

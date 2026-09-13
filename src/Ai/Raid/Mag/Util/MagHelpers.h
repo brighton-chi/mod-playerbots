@@ -60,7 +60,7 @@ struct CubeInfo
     float x, y, z;
 };
 
-// Magtheridon's CombatReach is 12 yards
+// Magtheridon's CombatReach is 12 yards.
 inline constexpr uint32 MAG_MAP_ID                   = 544;
 inline constexpr uint32 SOUTH_CHANNELER_DB_GUID      = 90978;
 inline constexpr uint32 WEST_CHANNELER_DB_GUID       = 90979;
@@ -77,8 +77,12 @@ inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
 // clicker returns to go wait by a cube (or in the case of the first Blast Nova, since Magtheridon
 // joined the fight).
 inline constexpr uint32 BLAST_NOVA_INTERIM_MS = 48 * IN_MILLISECONDS;
+inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
+inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
 
+// The waiting position is SE-ish of Magtheridon.
 inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -0.304f, 0.657f };
+// The tank position is up against the Eastern wall.
 inline Position const MAGTHERIDON_TANK_POSITION =        {  -6.147f, -37.812f, -0.411f,   0.0f };
 inline Position const NW_CHANNELER_TANK_POSITION =       { -11.764f,  30.818f, -0.411f,   0.0f };
 inline Position const NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -0.411f,   0.0f };
@@ -99,12 +103,10 @@ std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
-inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
-inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
-std::vector<Position> FindDebrisPositions(Player* bot);
-bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris);
 // Debris begins falling only after the ceiling collapse at 30%.
 bool IsCeilingCollapsed(Player* bot);
+std::vector<Position> FindDebrisPositions(Player* bot);
+bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris);
 std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
 bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
 bool IsPositionInActiveDebris(

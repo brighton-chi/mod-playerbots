@@ -26,7 +26,7 @@ public:
         if (spellInfo->Id != static_cast<uint32>(MagSpells::SPELL_QUAKE))
             return;
 
-        // To account for Blast Nova delay caused by Quake's DelayAll(6999ms)
+        // To account for Blast Nova delay caused by Quake's DelayAll(6999ms).
         auto it = blastNovaTimer.find(caster->GetInstanceId());
         if (it != blastNovaTimer.end())
             it->second += 7 * IN_MILLISECONDS;

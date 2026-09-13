@@ -9,7 +9,6 @@
 #include "EncounterHelpers.h"
 #include "GameObject.h"
 #include "Map.h"
-#include "ObjectGuid.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <list>
@@ -127,6 +126,11 @@ bool IsCubeClicker(Player* bot)
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
 }
 
+bool IsCeilingCollapsed(Player* bot)
+{
+    return ceilingCollapseApplied.contains(bot->GetInstanceId());
+}
+
 std::vector<Position> FindDebrisPositions(Player* bot)
 {
     constexpr float searchRadius = 150.0f;
@@ -142,11 +146,6 @@ bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris)
 
     debris = debrisPositions.front();
     return true;
-}
-
-bool IsCeilingCollapsed(Player* bot)
-{
-    return ceilingCollapseApplied.contains(bot->GetInstanceId());
 }
 
 bool IsPositionInActiveDebris(PlayerbotAI* botAI, float x, float y, float radius)

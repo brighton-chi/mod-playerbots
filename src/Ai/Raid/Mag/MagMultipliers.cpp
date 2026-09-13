@@ -15,7 +15,6 @@
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
-#include "WipeAction.h"
 
 using namespace MagHelpers;
 using namespace EncounterHelpers;
@@ -38,11 +37,11 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || !IsMagtheridonActive(magtheridon))
+    if (!IsCubeClicker(bot))
         return 1.0f;
 
-    if (!IsCubeClicker(bot))
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
     auto timerIt = blastNovaTimer.find(bot->GetInstanceId());
@@ -55,11 +54,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 // Wait for 6 seconds after Magtheridon becomes attackable before engaging.
 float MagtheridonWaitToAttackMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
-    {
+    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
-    }
 
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
@@ -88,8 +84,7 @@ float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
 
     bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
-    bool const isReachTargetSpell =
-        dynamic_cast<CastReachTargetSpellAction*>(action);
+    bool const isReachTargetSpell = dynamic_cast<CastReachTargetSpellAction*>(action);
 
     if (!isAvoidAoe && !isReachTargetSpell && !IsTauntAction(bot, action) &&
         !dynamic_cast<TankAssistAction*>(action) &&
@@ -105,7 +100,7 @@ float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* actio
     if (isAvoidAoe && magtheridon->GetVictim() != bot)
         return 1.0f;
 
-    // Block the main tank from charging the assist tanks' Channelers when moving to the waiting
+    // Block the main tank from charging the assist tanks' Channelers while moving to the waiting
     // position.
     if (isReachTargetSpell && PlayerbotAI::IsMainTank(bot))
         return IsMagtheridonActive(magtheridon) ? 1.0f : 0.0f;

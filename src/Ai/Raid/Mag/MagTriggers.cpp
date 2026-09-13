@@ -87,11 +87,6 @@ bool MagtheridonShouldSpreadRangedTrigger::IsActiveInEncounter()
     if (!magtheridon || !IsMagtheridonActive(magtheridon) || magtheridon->GetVictim() == bot)
         return false;
 
-    /* constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
-    auto it = dpsWaitTimer.find(magtheridon->GetInstanceId());
-    if (it == dpsWaitTimer.end() || getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs)
-        return false; */
-
     if (!IsCubeClicker(bot))
         return true;
 
@@ -112,8 +107,11 @@ bool MagtheridonStandingInDebrisTrigger::IsActiveInEncounter()
 
 bool MagtheridonIncomingBlastNovaTrigger::IsActiveInEncounter()
 {
+    if (!IsCubeClicker(bot))
+        return false;
+
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    return magtheridon && IsMagtheridonActive(magtheridon) && IsCubeClicker(bot);
+    return magtheridon && IsMagtheridonActive(magtheridon);
 }
 
 bool MagtheridonShouldManageTimersAndAssignmentsTrigger::IsActiveInEncounter()
