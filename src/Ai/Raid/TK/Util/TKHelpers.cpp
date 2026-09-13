@@ -28,7 +28,7 @@ std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
     for (ObjectGuid const targetGuid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(targetGuid);
-        if (unit && unit->GetEntry() == entry)
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
         {
             if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
                 lowest = unit;
