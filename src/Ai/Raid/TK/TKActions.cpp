@@ -1882,13 +1882,19 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::AssistTankPicksUpPhoenix(Un
     return MoveFromGroup(safeDistance);
 }
 
-// Priority: (1) Kael with Shock Barrier (to interrupt Pyroblast), (2) Eggs, (3) Kael without Shock
-// Barrier, and (4) Phoenixes but only for ranged during Kael's RP power-up scene. Phoenixes kill
-// themselves so having them included is only because bots have nothing else to do during the scene.
+// Priority: (1) Kael with Shock Barrier (to interrupt Pyroblast), (2) Eggs (ranged only), (3) Kael
+// without Shock Barrier, and (4) Phoenixes but only for ranged during Kael's RP power-up scene.
+// Phoenixes kill themselves so having them included is only because bots have nothing else to do
+// during the scene.
 bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoidPhoenixes()
 {
     // Phoenixes that turn into eggs remain alive and on threat lists. They simply become
     // unattackable and invisible on top of the egg.
+    //
+    // AC bug: the "dead" phoenix keeps its Burn aura (36720) for the whole egg window, so the egg
+    // sits inside a live 8-yard, ~5k-per-2s Burn. The egg is therefore ranged-only, like the
+    // phoenix. Melee sent at it are pushed back out by the stock "avoid aoe" strategy, which sees
+    // the unselectable phoenix as a trigger, and they bounce in and out until it despawns.
     Unit* phoenix = AI_VALUE2(Unit*, "find target", "phoenix");
     if (phoenix && phoenix->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
         phoenix = nullptr;
@@ -1915,7 +1921,7 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoi
     Unit* target = nullptr;
     if (isKaelthasAttackable && kaelthas->HasAura(Id(TkSpells::SPELL_SHOCK_BARRIER)))
         target = kaelthas;
-    else if (Creature* egg = GetPhoenixEgg(bot))
+    else if (Creature* egg = PlayerbotAI::IsRanged(bot) ? GetPhoenixEgg(bot) : nullptr)
         target = egg;
     else if (isKaelthasAttackable)
         target = kaelthas;
