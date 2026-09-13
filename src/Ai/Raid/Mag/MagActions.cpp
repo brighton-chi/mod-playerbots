@@ -13,7 +13,6 @@
 #include "RtiTargetValue.h"
 #include <cmath>
 #include <limits>
-#include <list>
 #include <vector>
 
 using namespace MagHelpers;
@@ -179,18 +178,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    std::vector<Unit*> abyssals;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 100.0f;
-
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(MagNpcs::NPC_BURNING_ABYSSAL), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            abyssals.push_back(creature);
-    }
+    std::vector<Unit*> const abyssals = GetBurningAbyssals(botAI);
 
     std::vector<Player*> warlocks;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

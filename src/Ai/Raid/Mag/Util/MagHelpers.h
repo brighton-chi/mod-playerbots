@@ -86,6 +86,8 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botT
 extern std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
+GuidVector FindBurningAbyssalGuids(Player* bot);
+std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);

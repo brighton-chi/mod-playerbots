@@ -62,8 +62,7 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActiveInEncounter()
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_WARLOCK &&
-        AI_VALUE2(Unit*, "find target", "burning abyssal"); // NTS: This should probably be a value
+    return bot->getClass() == CLASS_WARLOCK && !GetBurningAbyssals(botAI).empty();
 }
 
 bool MagtheridonShouldBeTankedTrigger::IsActiveInEncounter()

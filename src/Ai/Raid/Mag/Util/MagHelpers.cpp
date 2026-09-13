@@ -11,6 +11,8 @@
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
+#include <algorithm>
+#include <list>
 
 using namespace EncounterHelpers;
 
@@ -69,6 +71,43 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
         return nullptr;
 
     return channeler;
+}
+
+// Sorted by GUID so every warlock indexes the same abyssal.
+GuidVector FindBurningAbyssalGuids(Player* bot)
+{
+    constexpr float searchRadius = 100.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, Id(MagNpcs::NPC_BURNING_ABYSSAL), searchRadius);
+
+    GuidVector guids;
+    guids.reserve(creatureList.size());
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+    return guids;
+}
+
+std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("mag burning abyssals")->RefGet();
+
+    std::vector<Unit*> abyssals;
+    abyssals.reserve(guids.size());
+    for (ObjectGuid const guid : guids)
+    {
+        Unit* abyssal = botAI->GetUnit(guid);
+        if (abyssal && abyssal->IsAlive())
+            abyssals.push_back(abyssal);
+    }
+
+    return abyssals;
 }
 
 bool IsMagtheridonActive(Unit* magtheridon)
