@@ -19,8 +19,6 @@
 using namespace MagHelpers;
 using namespace EncounterHelpers;
 
-// When a cube clicker is in the handling phase (waiting near cube or moving to use), suppress
-// movement actions that would pull them away from the cube.
 float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
@@ -51,8 +49,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
     return getMSTimeDiff(timerIt->second, getMSTime()) >= BLAST_NOVA_INTERIM_MS ? 0.0f : 1.0f;
 }
 
-// Wait for 6 seconds after Magtheridon becomes attackable before engaging.
-float MagtheridonWaitToAttackMultiplier::GetValueInEncounter(Action* action)
+float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
@@ -67,12 +64,11 @@ float MagtheridonWaitToAttackMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    constexpr uint32 dpsWaitMs = 6 * IN_MILLISECONDS;
-    auto it = dpsWaitTimer.find(magtheridon->GetInstanceId());
-    if (it == dpsWaitTimer.end())
+    auto it = magDpsWaitTimer.find(magtheridon->GetInstanceId());
+    if (it == magDpsWaitTimer.end())
         return 0.0f;
 
-    return getMSTimeDiff(it->second, getMSTime()) <= dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(it->second, getMSTime()) <= MAG_DPS_HOLD_MS ? 0.0f : 1.0f;
 }
 
 float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* action)
@@ -100,15 +96,15 @@ float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* actio
     if (isAvoidAoe && magtheridon->GetVictim() != bot)
         return 1.0f;
 
-    // Block the main tank from charging the assist tanks' Channelers while moving to the waiting
-    // position.
+    // The purpose is to block the main tank from charging the assist tanks' Channelers while moving
+    // to the waiting position.
     if (isReachTargetSpell && PlayerbotAI::IsMainTank(bot))
         return IsMagtheridonActive(magtheridon) ? 1.0f : 0.0f;
 
     return 0.0f;
 }
 
-float MagtheridonDebrisDangerMultiplier::GetValueInEncounter(Action* action)
+float MagtheridonAvoidDebrisDangerMultiplier::GetValueInEncounter(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<MagtheridonUseManticronCubeAction*>(action) ||

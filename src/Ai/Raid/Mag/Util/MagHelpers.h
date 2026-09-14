@@ -68,6 +68,8 @@ inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID  = 90980;
 inline constexpr uint32 EAST_CHANNELER_DB_GUID       = 90982;
 inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
 
+// Hold dps for this long after Magtheridon first becomes attackable.
+inline constexpr float MAG_DPS_HOLD_MS = 6000; // 6s
 // Blast Nova is cast 55.65s after Magtheridon joins the fight (marked by the Shadow Cage aura
 // coming off of him) and is repeated every 54.35-55.4s. It is delayed by 7s by each Quake, which
 // is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s.
@@ -76,9 +78,17 @@ inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
 // This is the number of milliseconds since the previous Blast Nova that must pass before a cube
 // clicker returns to go wait by a cube (or in the case of the first Blast Nova, since Magtheridon
 // joined the fight).
-inline constexpr uint32 BLAST_NOVA_INTERIM_MS = 48 * IN_MILLISECONDS;
+inline constexpr uint32 BLAST_NOVA_INTERIM_MS = 48000; // 48s
+// A queued action and the bot's next AI tick are both scheduled for the same moment, and either
+// can be processed first. Pausing the AI for one extra world update (50ms) ensures the queued
+// action occurs first.
+inline constexpr uint32 ONE_WORLD_UPDATE_MS = 50;
 inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
+// At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage & a 2s stun.
+inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
+// The ceiling collapse delays Quake and Blast Nova by 18s.
+inline constexpr uint32 CEILING_COLLAPSE_DELAY_MS = 18000;
 
 // The waiting position is SE-ish of Magtheridon.
 inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -0.304f, 0.657f };
@@ -89,10 +99,10 @@ inline Position const NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -
 inline Position const RANGED_SPREAD_POSITION =           { -14.890f,   1.995f, -0.406f,   0.0f };
 inline Position const HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -0.404f,   0.0f };
 
-extern std::unordered_map<uint32, uint32> dpsWaitTimer;
+extern std::unordered_map<uint32, uint32> magDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> blastNovaTimer;
-extern std::unordered_set<uint32> ceilingCollapseApplied;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
+extern std::unordered_set<uint32> ceilingCollapseApplied;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
 
 extern std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS;

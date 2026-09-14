@@ -52,11 +52,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MagtheridonWarlockCcBurningAbyssalAction : public AttackAction
+class MagtheridonWarlockCcBurningAbyssalAction : public Action
 {
 public:
     MagtheridonWarlockCcBurningAbyssalAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "magtheridon warlock cc burning abyssal") {}
+        : Action(botAI, "magtheridon warlock cc burning abyssal") {}
     bool Execute(Event event) override;
 };
 
@@ -101,15 +101,13 @@ private:
     bool HandleWaitingPhase(MagHelpers::CubeInfo const& cubeInfo);
     bool FindSafePositionNearCube(
         MagHelpers::CubeInfo const& cubeInfo, float preferredDistance, Position& outPos);
-
-    uint32 _blastNovaSeenMs = 0;
 };
 
-class MagtheridonManageTimersAndAssignmentsAction : public Action
+class MagtheridonUpdateTimersAndAssignmentsAction : public Action
 {
 public:
-    MagtheridonManageTimersAndAssignmentsAction(PlayerbotAI* botAI)
-        : Action(botAI, "magtheridon manage timers and assignments") {}
+    MagtheridonUpdateTimersAndAssignmentsAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon update timers and assignments") {}
     bool Execute(Event event) override;
 
 private:

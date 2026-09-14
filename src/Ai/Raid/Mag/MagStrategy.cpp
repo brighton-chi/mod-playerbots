@@ -40,13 +40,13 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("magtheridon should manage timers and assignments", {
-        NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 10) }));
+        NextAction("magtheridon update timers and assignments", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MagtheridonUseManticronCubeMultiplier(botAI));
-    multipliers.push_back(new MagtheridonWaitToAttackMultiplier(botAI));
+    multipliers.push_back(new MagtheridonHoldDpsMultiplier(botAI));
     multipliers.push_back(new MagtheridonControlTankActionsMultiplier(botAI));
-    multipliers.push_back(new MagtheridonDebrisDangerMultiplier(botAI));
+    multipliers.push_back(new MagtheridonAvoidDebrisDangerMultiplier(botAI));
 }

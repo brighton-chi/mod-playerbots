@@ -32,17 +32,17 @@ class MagtheridonUseManticronCubeMultiplier : public MagtheridonEncounterMultipl
 {
 public:
     MagtheridonUseManticronCubeMultiplier(PlayerbotAI* botAI)
-        : MagtheridonEncounterMultiplier(botAI, "magtheridon use manticron cube multiplier") {}
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon use manticron cube") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MagtheridonWaitToAttackMultiplier : public MagtheridonEncounterMultiplier
+class MagtheridonHoldDpsMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
-    MagtheridonWaitToAttackMultiplier(PlayerbotAI* botAI)
-        : MagtheridonEncounterMultiplier(botAI, "magtheridon wait to attack multiplier") {}
+    MagtheridonHoldDpsMultiplier(PlayerbotAI* botAI)
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -52,17 +52,17 @@ class MagtheridonControlTankActionsMultiplier : public MagtheridonEncounterMulti
 {
 public:
     MagtheridonControlTankActionsMultiplier(PlayerbotAI* botAI)
-        : MagtheridonEncounterMultiplier(botAI, "magtheridon control tank actions multiplier") {}
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon control tank actions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MagtheridonDebrisDangerMultiplier : public MagtheridonEncounterMultiplier
+class MagtheridonAvoidDebrisDangerMultiplier : public MagtheridonEncounterMultiplier
 {
 public:
-    MagtheridonDebrisDangerMultiplier(PlayerbotAI* botAI)
-        : MagtheridonEncounterMultiplier(botAI, "magtheridon debris danger multiplier") {}
+    MagtheridonAvoidDebrisDangerMultiplier(PlayerbotAI* botAI)
+        : MagtheridonEncounterMultiplier(botAI, "magtheridon avoid debris danger") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
