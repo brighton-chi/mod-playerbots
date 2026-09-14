@@ -27,7 +27,7 @@ class PlayerbotsDatabaseScript : public DatabaseScript
 public:
     PlayerbotsDatabaseScript() : DatabaseScript("PlayerbotsDatabaseScript") {}
 
-    bool OnDatabasesLoading() override
+    bool OnModuleDatabasesLoading() override
     {
         DatabaseLoader playerbotLoader("server.playerbots");
         playerbotLoader.SetUpdateFlags(sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
@@ -38,9 +38,9 @@ public:
         return playerbotLoader.Load();
     }
 
-    void OnDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
+    void OnModuleDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
 
-    void OnDatabasesClosing() override { PlayerbotsDatabase.Close(); }
+    void OnModuleDatabasesClosing() override { PlayerbotsDatabase.Close(); }
 
     void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
 
@@ -50,8 +50,9 @@ public:
         statementParam = player->GetGUID().GetCounter();
     }
 
-    void OnDatabaseGetDBRevision(std::string& revision) override
+    void OnDatabaseGetDBRevision(std::map<std::string, std::string>& revisions) override
     {
+        std::string revision;
         if (QueryResult resultPlayerbot =
                 PlayerbotsDatabase.Query("SELECT date FROM version_db_playerbots ORDER BY date DESC LIMIT 1"))
         {
@@ -61,6 +62,8 @@ public:
 
         if (revision.empty())
             revision = "Unknown Playerbots Database Revision";
+
+        revisions["Playerbots"] = revision;
     }
 };
 
