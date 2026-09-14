@@ -85,6 +85,8 @@ inline constexpr uint32 BLAST_NOVA_INTERIM_MS = 48000; // 48s
 inline constexpr uint32 ONE_WORLD_UPDATE_MS = 50;
 inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
+// Quake delays Blast Nova by (essentially) 7s
+inline constexpr float QUAKE_DELAY_MS = 6999;
 // At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage & a 2s stun.
 inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
 // The ceiling collapse delays Quake and Blast Nova by 18s.
@@ -96,8 +98,6 @@ inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -
 inline Position const MAGTHERIDON_TANK_POSITION =        {  -6.147f, -37.812f, -0.411f,   0.0f };
 inline Position const NW_CHANNELER_TANK_POSITION =       { -11.764f,  30.818f, -0.411f,   0.0f };
 inline Position const NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -0.411f,   0.0f };
-inline Position const RANGED_SPREAD_POSITION =           { -14.890f,   1.995f, -0.406f,   0.0f };
-inline Position const HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -0.404f,   0.0f };
 
 extern std::unordered_map<uint32, uint32> magDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> blastNovaTimer;
@@ -106,21 +106,22 @@ extern std::unordered_set<uint32> ceilingCollapseApplied;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAssignments;
 
 extern std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS;
+// Get the positions of all Manticron Cubes by their database GUIDs.
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 GuidVector FindBurningAbyssalGuids(Player* bot);
 std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI);
 bool IsMagtheridonActive(Unit* magtheridon);
-bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
 // Debris begins falling only after the ceiling collapse at 30%.
+bool IsBlastNovaCasting(Unit* magtheridon);
 bool IsCeilingCollapsed(Player* bot);
 std::vector<Position> FindDebrisPositions(Player* bot);
 bool GetActiveDebrisPosition(PlayerbotAI* botAI, Position& debris);
-std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
-bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
 bool IsPositionInActiveDebris(
     PlayerbotAI* botAI, float x, float y, float radius = DEBRIS_HAZARD_RADIUS);
+std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI);
+bool IsPositionInConflagration(std::vector<GameObject*> const& blazes, float x, float y);
 bool IsPositionInActiveConflagration(PlayerbotAI* botAI, float x, float y);
 
 }

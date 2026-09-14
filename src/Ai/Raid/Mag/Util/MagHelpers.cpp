@@ -26,7 +26,6 @@ std::unordered_map<uint32, std::unordered_map<ObjectGuid, CubeInfo>> botToCubeAs
 
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
-// Get the positions of all Manticron Cubes by their database GUIDs
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids)
 {
     std::vector<CubeInfo> cubes;
@@ -114,16 +113,16 @@ bool IsMagtheridonActive(Unit* magtheridon)
     return magtheridon && !magtheridon->HasAura(Id(MagSpells::SPELL_SHADOW_CAGE));
 }
 
-bool IsBlastNovaCasting(Unit* magtheridon)
-{
-    return magtheridon && magtheridon->FindCurrentSpellBySpellId(Id(MagSpells::SPELL_BLAST_NOVA));
-}
-
 bool IsCubeClicker(Player* bot)
 {
     auto mapIt = botToCubeAssignments.find(bot->GetInstanceId());
     return mapIt != botToCubeAssignments.end() &&
         mapIt->second.find(bot->GetGUID()) != mapIt->second.end();
+}
+
+bool IsBlastNovaCasting(Unit* magtheridon)
+{
+    return magtheridon && magtheridon->FindCurrentSpellBySpellId(Id(MagSpells::SPELL_BLAST_NOVA));
 }
 
 bool IsCeilingCollapsed(Player* bot)

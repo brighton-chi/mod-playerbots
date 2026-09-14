@@ -328,12 +328,14 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     uint32 const minReleaseDelayMs = 200;
     uint32 const maxReleaseDelayMs = 1500;
     uint32 const releaseDelay = urand(minReleaseDelayMs, maxReleaseDelayMs);
+
     botAI->AddTimedEvent(
         [this]
         {
             bot->CastStop();
         },
         releaseDelay);
+
     botAI->SetNextCheckDelay(releaseDelay + ONE_WORLD_UPDATE_MS);
     return true;
 }
@@ -361,6 +363,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(GameObject* cube)
     uint32 const maxRunDelayMs = 1000;
     uint32 const runDelay = urand(minRunDelayMs, maxRunDelayMs);
     ObjectGuid const cubeGuid = cube->GetGUID();
+
     botAI->AddTimedEvent(
         [this, cubeGuid]
         {
@@ -379,6 +382,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(GameObject* cube)
                 MovementPriority::MOVEMENT_FORCED, true, false);
         },
         runDelay);
+
     botAI->SetNextCheckDelay(runDelay + ONE_WORLD_UPDATE_MS);
     return true;
 }
