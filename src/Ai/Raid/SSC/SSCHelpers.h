@@ -197,10 +197,12 @@ bool IsLurkerSurfacedAndCalm(Unit* lurker);
 int8 GetLurkerSpoutSpin(Unit* lurker);
 
 // Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
-// the speed: 17 yd keeps pace with the beam, 21 yd falls behind at 0.07 rad/s. Each bot gets a
-// fixed radius in this band from its GUID so the raid is not stacked on one ring. The safe arc is
-// a zone, not a point: a bot already inside it holds its bearing during the wind-up.
-inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 17.0f;
+// the speed: 19 yd falls behind the beam at 0.03 rad/s, 21 yd at 0.07. The band must stay on the
+// walkway: a target over the pool edge makes MoveTo refuse and the bot stand still (the main tank
+// spot is 18.6y out). Each bot gets a fixed radius in the band from its GUID so the raid is not
+// stacked on one ring. The safe arc is a zone, not a point: a bot already inside it holds its
+// bearing during the wind-up.
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
 inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
