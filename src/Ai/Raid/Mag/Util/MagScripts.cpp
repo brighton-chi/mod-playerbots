@@ -57,6 +57,9 @@ private:
             if (!botAI || !botAI->HasStrategy("magtheridon", BOT_STATE_COMBAT))
                 continue;
 
+            if (player->HasAura(Id(MagSpells::SPELL_SHADOW_GRASP)))
+                continue;
+
             botAI->RequestSpellInterrupt();
         }
     }

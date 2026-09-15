@@ -69,7 +69,7 @@ inline constexpr uint32 EAST_CHANNELER_DB_GUID       = 90982;
 inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
 
 // Hold dps for this long after Magtheridon first becomes attackable.
-inline constexpr float MAG_DPS_HOLD_MS = 6000; // 6s
+inline constexpr float MAG_DPS_HOLD_MS = 8000; // 8s
 // Blast Nova is cast 55.65s after Magtheridon joins the fight (marked by the Shadow Cage aura
 // coming off of him) and is repeated every 54.35-55.4s. It is delayed by 7s by each Quake, which
 // is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s.

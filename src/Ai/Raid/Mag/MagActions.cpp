@@ -325,8 +325,8 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon)
     }
 
     // Stagger releasing cube so the clickers do not do it on the same tick, which looks stupid.
-    uint32 const minReleaseDelayMs = 200;
-    uint32 const maxReleaseDelayMs = 1500;
+    constexpr uint32 minReleaseDelayMs = 400;
+    constexpr uint32 maxReleaseDelayMs = 1500;
     uint32 const releaseDelay = urand(minReleaseDelayMs, maxReleaseDelayMs);
 
     botAI->AddTimedEvent(
@@ -353,16 +353,16 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(GameObject* cube)
         return true;
     }
 
-    // A spline still in flight is the run-in queued below; let it land.
+    // If the bot is already moving, don't randomize another move.
     if (!bot->movespline->Finalized())
         return true;
 
+    ObjectGuid const cubeGuid = cube->GetGUID();
     // Stagger the run from the waiting spot so the clickers do not all move on the same tick, which
     // looks stupid.
-    uint32 const minRunDelayMs = 200;
-    uint32 const maxRunDelayMs = 1000;
+    constexpr uint32 minRunDelayMs = 200;
+    constexpr uint32 maxRunDelayMs = 1000;
     uint32 const runDelay = urand(minRunDelayMs, maxRunDelayMs);
-    ObjectGuid const cubeGuid = cube->GetGUID();
 
     botAI->AddTimedEvent(
         [this, cubeGuid]

@@ -25,7 +25,7 @@ public:
             &RaidMagtheridonTriggerContext::magtheridon_assist_tanks_should_tank_channelers;
 
         creators["magtheridon pulling west and east channelers"] =
-            &RaidMagtheridonTriggerContext::magtheridon_pull_west_and_EAST_CHANNELER_DB_GUIDs;
+            &RaidMagtheridonTriggerContext::magtheridon_pulling_west_and_east_channelers;
 
         creators["magtheridon determining kill order"] =
             &RaidMagtheridonTriggerContext::magtheridon_determining_kill_order;
@@ -59,7 +59,7 @@ private:
     static Trigger* magtheridon_assist_tanks_should_tank_channelers(PlayerbotAI* botAI) {
         return new MagtheridonAssistTanksShouldTankChannelersTrigger(botAI);
     }
-    static Trigger* magtheridon_pull_west_and_EAST_CHANNELER_DB_GUIDs(PlayerbotAI* botAI) {
+    static Trigger* magtheridon_pulling_west_and_east_channelers(PlayerbotAI* botAI) {
         return new MagtheridonPullingWestAndEastChannelersTrigger(botAI);
     }
     static Trigger* magtheridon_determining_kill_order(PlayerbotAI* botAI) {
