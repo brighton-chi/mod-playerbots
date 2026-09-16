@@ -490,13 +490,10 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
         return Attack(guardian);
 
     // The stock "lose aggro" taunt treats a guardian on another tank as held, so taunt explicitly
-    if (guardian->GetVictim() != bot)
-        return CastTauntOn(botAI, guardian);
-
-    if (!bot->IsWithinMeleeRange(guardian))
+    if (guardian->GetVictim() == bot)
         return false;
 
-    return KeepClearOfOtherTanks(tanks, myIndex);
+    return CastTauntOn(botAI, guardian);
 }
 
 // Keep my existing claim while that guardian lives; otherwise take the first one no other tank holds
@@ -535,32 +532,6 @@ ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
     }
 
     return assignedGuid;
-}
-
-// The main tank holds where it is; the assist tanks back their guardians away from the others
-bool TheLurkerBelowTanksPickUpAddsAction::KeepClearOfOtherTanks(
-    std::vector<Player*> const& tanks, size_t myIndex)
-{
-    if (myIndex == 0)
-        return false;
-
-    auto const& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
-
-    for (size_t i = 0; i < tanks.size(); ++i)
-    {
-        Unit* otherGuardian = botAI->GetUnit(assignments[i]);
-        if (i == myIndex || !tanks[i]->IsAlive() || !otherGuardian || !otherGuardian->IsAlive())
-            continue;
-
-        float const remaining = LURKER_GUARDIAN_TANK_SEPARATION - bot->GetExactDist2d(tanks[i]);
-        if (remaining <= LURKER_GUARDIAN_TANK_MOVE_DEADZONE)
-            continue;
-
-        if (MoveAway(tanks[i], std::min(remaining, LURKER_GUARDIAN_TANK_MOVE_STEP), true))
-            return true;
-    }
-
-    return false;
 }
 
 // Leotheras the Blind

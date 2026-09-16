@@ -144,7 +144,6 @@ public:
 
 private:
     ObjectGuid ClaimGuardianForTank(std::vector<Unit*> const& guardians, size_t myIndex);
-    bool KeepClearOfOtherTanks(std::vector<Player*> const& tanks, size_t myIndex);
 };
 
 // Leotheras the Blind

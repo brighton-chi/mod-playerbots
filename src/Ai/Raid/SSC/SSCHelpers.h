@@ -170,8 +170,8 @@ extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
-// The main tank holds Hydross in frost, the first assist tank in nature. Every other tank is an
-// add tank and never touches Hydross.
+// The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
+// tank is an add tank and picks up the Elementals that spawn upon phase changes.
 bool IsHydrossPhaseTank(Player* bot);
 bool IsHydrossAddTank(Player* bot);
 bool IsHydrossInFrostPhase(Unit* hydross);
@@ -211,10 +211,6 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 // same order (summon GUIDs are sequential, so sorted is spawn order).
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
-// How far apart the tanks hold their guardians, and the step used to get there.
-inline constexpr float LURKER_GUARDIAN_TANK_SEPARATION = 20.0f;
-inline constexpr float LURKER_GUARDIAN_TANK_MOVE_STEP = 2.25f;
-inline constexpr float LURKER_GUARDIAN_TANK_MOVE_DEADZONE = 1.5f;
 
 // The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
 // the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
