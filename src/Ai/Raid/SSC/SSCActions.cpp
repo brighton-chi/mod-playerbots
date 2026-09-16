@@ -286,32 +286,28 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
     uint32 const instanceId = hydross->GetInstanceId();
     uint32 const now = getMSTime();
 
-    bool changed = false;
+    bool updated = false;
 
     if (IsHydrossInFrostPhase(hydross))
     {
-        if (hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second ||
-            hydrossNatureDpsWaitTimer.erase(instanceId) > 0 ||
-            hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0)
-            changed = true;
+        updated |= hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second;
+        updated |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
+        updated |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
 
-        if (HasMarkOfHydrossAt100Percent(bot) &&
-            hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second)
-            changed = true;
+        if (HasMarkOfHydrossAt100Percent(bot))
+            updated |= hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second;
     }
     else // Nature phase
     {
-        if (hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second ||
-            hydrossFrostDpsWaitTimer.erase(instanceId) > 0 ||
-            hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0)
-            changed = true;
+        updated |= hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second;
+        updated |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+        updated |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
 
-        if (HasMarkOfCorruptionAt100Percent(bot) &&
-            hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second)
-            changed = true;
+        if (HasMarkOfCorruptionAt100Percent(bot))
+            updated |= hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second;
     }
 
-    return changed;
+    return updated;
 }
 
 // The Lurker Below
@@ -368,7 +364,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         return MoveTo(
             SSC_MAP_ID, lurkerX + runRadius * std::cos(botAngle),
             lurkerY + runRadius * std::sin(botAngle), lurkerZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     // Wind-up, in front: one far move to the nearer arc edge, issued below the spinning moves'
@@ -388,14 +384,14 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     {
         return MoveTo(
             SSC_MAP_ID, edgeX, edgeY, lurkerZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     float const stepAngle = botAngle + direction * LURKER_SPOUT_RUN_STEP / runRadius;
     return MoveTo(
         SSC_MAP_ID, lurkerX + runRadius * std::cos(stepAngle),
         lurkerY + runRadius * std::sin(stepAngle), lurkerZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Reach closes on Lurker for the pickup; only once he is on the tank does this walk him to the
