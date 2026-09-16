@@ -201,10 +201,20 @@ inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
-// One second of travel per step. Each step is its own path, and a short one that crosses spillover
-// on the walkway detours around it; a longer step skirts it as a small deviation instead.
-inline constexpr float LURKER_SPOUT_RUN_STEP = 7.0f;
+// Targets are far, not stepped. Each move is its own path, and a short hop that crosses spillover
+// on the walkway is detoured around it, then re-targeted from mid-detour on the next tick, so the
+// bot dithers at the puddle. A target a quarter turn ahead is reached by a path along the walkway
+// (the short way round, which is the spin direction) on which the puddle is a kink.
+// The pathfinder does not know about the spin: if the walkway ahead has a gap it cannot cross, it
+// reaches the same target the long way round, into the beam. The lead is halved until the path's
+// first corner heads with the spin, down to this minimum; below it the bot holds instead.
+inline constexpr float LURKER_SPOUT_RUN_LEAD = static_cast<float>(M_PI) / 2.0f;
+inline constexpr float LURKER_SPOUT_RUN_MIN_LEAD = static_cast<float>(M_PI) / 16.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
+
+// True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
+// direction (+1 counter-clockwise, -1 clockwise).
+bool DoesPathRoundLurkerWithSpin(Player* bot, Unit* lurker, float x, float y, float z, int8 spin);
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the

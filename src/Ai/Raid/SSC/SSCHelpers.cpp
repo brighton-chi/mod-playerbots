@@ -7,6 +7,7 @@
 #include "SSCHelpers.h"
 #include "EncounterHelpers.h"
 #include "Map.h"
+#include "PathGenerator.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
@@ -181,6 +182,28 @@ bool IsLurkerSurfacedAndCalm(Unit* lurker)
 {
     return lurker && lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED &&
         !IsLurkerSpouting(lurker);
+}
+
+bool DoesPathRoundLurkerWithSpin(Player* bot, Unit* lurker, float x, float y, float z, int8 spin)
+{
+    PathGenerator path(bot);
+    if (!path.CalculatePath(x, y, z) || (path.GetPathType() & PATHFIND_NOPATH))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    // The first point is the bot; the second is the first corner, which shows the way round
+    float const startAngle = std::atan2(
+        points[0].y - lurker->GetPositionY(), points[0].x - lurker->GetPositionX());
+    float const cornerAngle = std::atan2(
+        points[1].y - lurker->GetPositionY(), points[1].x - lurker->GetPositionX());
+    float delta = Position::NormalizeOrientation(cornerAngle - startAngle);
+    if (delta > M_PI)
+        delta -= 2.0f * static_cast<float>(M_PI);
+
+    return delta * spin > 0.0f;
 }
 
 int8 GetLurkerSpoutSpin(Unit* lurker)
