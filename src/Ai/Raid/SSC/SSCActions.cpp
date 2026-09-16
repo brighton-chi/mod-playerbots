@@ -340,53 +340,62 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     bool const inArc =
         std::fabs(relative - static_cast<float>(M_PI)) <= LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
 
-    float targetAngle = botAngle;
-    // The wind-up move is issued at a lower priority than the spinning one so that the reversal,
-    // if the spin turns out the other way, goes through without waiting out the lock
-    MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    float const lurkerX = lurker->GetPositionX();
+    float const lurkerY = lurker->GetPositionY();
+    float const lurkerZ = lurker->GetPositionZ();
+
+    // Spinning: steps with the spin. Radius is corrected alongside, a step's worth at a time.
     if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
-        // The move lasts seconds; do not compute paths on the ticks MoveTo would refuse anyway
-        if (IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+        float const radialStep = std::clamp(
+            runRadius - distance, -LURKER_SPOUT_RUN_STEP, LURKER_SPOUT_RUN_STEP);
+        float const moveRadius = distance + radialStep;
+        float const moveAngle = botAngle + spin * LURKER_SPOUT_RUN_STEP / runRadius;
+
+        bot->CastStop();
+        return MoveTo(
+            SSC_MAP_ID, lurkerX + moveRadius * std::cos(moveAngle),
+            lurkerY + moveRadius * std::sin(moveAngle), lurkerZ, false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    // Wind-up, already behind him: hold the bearing, trim the radius
+    if (inArc)
+    {
+        if (std::fabs(distance - runRadius) < LURKER_SPOUT_RUN_RADIAL_DEADZONE)
             return false;
 
-        // Shorten the lead until the path sets off with the spin; never run into the beam
-        float lead = LURKER_SPOUT_RUN_LEAD;
-        for (;; lead /= 2.0f)
-        {
-            if (lead < LURKER_SPOUT_RUN_MIN_LEAD)
-                return false;
-
-            targetAngle = botAngle + spin * lead;
-            if (DoesPathRoundLurkerWithSpin(
-                    bot, lurker, lurker->GetPositionX() + runRadius * std::cos(targetAngle),
-                    lurker->GetPositionY() + runRadius * std::sin(targetAngle),
-                    lurker->GetPositionZ(), spin))
-            {
-                break;
-            }
-        }
-
-        priority = MovementPriority::MOVEMENT_FORCED;
+        return MoveTo(
+            SSC_MAP_ID, lurkerX + runRadius * std::cos(botAngle),
+            lurkerY + runRadius * std::sin(botAngle), lurkerZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
-    else if (!inArc)
-    {
-        targetAngle = lurker->GetOrientation() + static_cast<float>(M_PI) +
-            (relative < M_PI ? -LURKER_SPOUT_RUN_ARC_HALF_WIDTH : LURKER_SPOUT_RUN_ARC_HALF_WIDTH);
-    }
-    else if (std::fabs(distance - runRadius) < LURKER_SPOUT_RUN_RADIAL_DEADZONE)
-    {
+
+    // Wind-up, in front: one far move to the nearer arc edge, issued below the spinning moves'
+    // priority so the first of those goes through without waiting out this one's lock. Checked
+    // to set off the short way; if the walkway that way is cut, a step towards the edge instead.
+    int8 const direction = relative < M_PI ? 1 : -1;
+    float const edgeAngle = lurker->GetOrientation() + static_cast<float>(M_PI) -
+        direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
+    float const edgeX = lurkerX + runRadius * std::cos(edgeAngle);
+    float const edgeY = lurkerY + runRadius * std::sin(edgeAngle);
+
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
         return false;
+
+    bot->CastStop();
+    if (DoesPathRoundLurker(bot, lurker, edgeX, edgeY, lurkerZ, direction))
+    {
+        return MoveTo(
+            SSC_MAP_ID, edgeX, edgeY, lurkerZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    float const moveX = lurker->GetPositionX() + runRadius * std::cos(targetAngle);
-    float const moveY = lurker->GetPositionY() + runRadius * std::sin(targetAngle);
-
-    // Seeded from Lurker's Z, which sits just above the walkway
-    bot->CastStop();
+    float const stepAngle = botAngle + direction * LURKER_SPOUT_RUN_STEP / runRadius;
     return MoveTo(
-        SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SSC_MAP_ID, lurkerX + runRadius * std::cos(stepAngle),
+        lurkerY + runRadius * std::sin(stepAngle), lurkerZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // A single direct move rather than steps: the spot lies past spillover on the walkway, and each

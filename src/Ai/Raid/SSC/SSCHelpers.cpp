@@ -184,7 +184,7 @@ bool IsLurkerSurfacedAndCalm(Unit* lurker)
         !IsLurkerSpouting(lurker);
 }
 
-bool DoesPathRoundLurkerWithSpin(Player* bot, Unit* lurker, float x, float y, float z, int8 spin)
+bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction)
 {
     PathGenerator path(bot);
     if (!path.CalculatePath(x, y, z) || (path.GetPathType() & PATHFIND_NOPATH))
@@ -203,7 +203,7 @@ bool DoesPathRoundLurkerWithSpin(Player* bot, Unit* lurker, float x, float y, fl
     if (delta > M_PI)
         delta -= 2.0f * static_cast<float>(M_PI);
 
-    return delta * spin > 0.0f;
+    return delta * direction > 0.0f;
 }
 
 int8 GetLurkerSpoutSpin(Unit* lurker)
