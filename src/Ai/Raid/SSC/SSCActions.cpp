@@ -368,12 +368,15 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const moveX = lurker->GetPositionX() + moveRadius * std::cos(moveAngle);
     float const moveY = lurker->GetPositionY() + moveRadius * std::sin(moveAngle);
 
+    // Seeded from Lurker's Z, which sits just above the walkway
     bot->CastStop();
     return MoveTo(
-        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+// A single direct move rather than steps: the spot lies past spillover on the walkway, and each
+// short step into it was refused. The run-around outranks this move if a Spout starts en route.
 bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -383,19 +386,14 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != lurker)
         return Attack(lurker);
 
-    constexpr float arrivalDist = 2.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, LURKER_MAIN_TANK_POSITION, arrivalDist, lurker, moveX, moveY, backwards))
-    {
+    Position const& position = LURKER_MAIN_TANK_POSITION;
+    constexpr float arrivalDist = 1.0f;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
-    }
 
     return MoveTo(
-        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Assign ranged positions within a 120-degree arc behind Lurker
@@ -441,10 +439,9 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
         float angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
-        constexpr float radius = 27.0f;
 
-        float targetX = lurker->GetPositionX() + radius * std::sin(angle);
-        float targetY = lurker->GetPositionY() + radius * std::cos(angle);
+        float targetX = lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::sin(angle);
+        float targetY = lurker->GetPositionY() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
 
         lurkerRangedPositions.try_emplace(guid, Position(targetX, targetY, lurker->GetPositionZ()));
         it = lurkerRangedPositions.find(guid);
@@ -465,7 +462,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 

@@ -186,16 +186,12 @@ bool HasNoMarkOfCorruption(Player* bot);
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
 extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
+extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
 
-// The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
-// the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
-// stand state instead.
-bool IsLurkerSpouting(Unit* lurker);
-// Up and fighting: neither submerged nor spouting. The tank and ranged holding triggers share it.
-bool IsLurkerSurfacedAndCalm(Unit* lurker);
-// +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
-int8 GetLurkerSpoutSpin(Unit* lurker);
-
+inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
+inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
 // Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
 // the speed: 19 yd falls behind the beam at 0.03 rad/s, 21 yd at 0.07. The band must stay on the
 // walkway: a target over the pool edge makes MoveTo refuse and the bot stand still (the main tank
@@ -205,7 +201,9 @@ int8 GetLurkerSpoutSpin(Unit* lurker);
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
-inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
+// One second of travel per step. Each step is its own path, and a short one that crosses spillover
+// on the walkway detours around it; a longer step skirts it as a small deviation instead.
+inline constexpr float LURKER_SPOUT_RUN_STEP = 7.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
@@ -213,15 +211,19 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 // same order (summon GUIDs are sequential, so sorted is spawn order).
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
-inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
 // How far apart the tanks hold their guardians, and the step used to get there.
 inline constexpr float LURKER_GUARDIAN_TANK_SEPARATION = 20.0f;
 inline constexpr float LURKER_GUARDIAN_TANK_MOVE_STEP = 2.25f;
 inline constexpr float LURKER_GUARDIAN_TANK_MOVE_DEADZONE = 1.5f;
 
-extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
-    lurkerGuardianTankAssignments;
-
+// The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
+// the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
+// stand state instead.
+bool IsLurkerSpouting(Unit* lurker);
+// Up and fighting: neither submerged nor spouting. The tank and ranged holding triggers share it.
+bool IsLurkerSurfacedAndCalm(Unit* lurker);
+// +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
+int8 GetLurkerSpoutSpin(Unit* lurker);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
 // The guardian tanks in index order; empty unless all three exist.
