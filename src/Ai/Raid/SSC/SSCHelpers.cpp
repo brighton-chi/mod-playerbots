@@ -206,6 +206,16 @@ bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, i
     return delta * direction > 0.0f;
 }
 
+bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance)
+{
+    PathGenerator path(bot);
+    if (!path.CalculatePath(x, y, z) || (path.GetPathType() & PATHFIND_NOPATH))
+        return false;
+
+    G3D::Vector3 const& end = path.GetActualEndPosition();
+    return std::hypot(end.x - x, end.y - y) <= tolerance;
+}
+
 int8 GetLurkerSpoutSpin(Unit* lurker)
 {
     if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_COUNTERCLOCKWISE)))

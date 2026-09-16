@@ -398,8 +398,13 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// A single direct move rather than steps: the spot lies past spillover on the walkway, and each
-// short step into it was refused. The run-around outranks this move if a Spout starts en route.
+// Reach closes on Lurker for the pickup; only once he is on the tank does this walk him to the
+// spot, as a single direct move rather than steps (the spot lies past spillover on the walkway,
+// and each short step into it was refused). The run-around outranks the move if a Spout starts en
+// route. From some pickup sides the spot is cut off by a gap in the walkway; a move there would end
+// at the gap, out of range, and Lurker would swing at whoever is in range instead. So the move is
+// only issued if its path arrives; otherwise the tank stays where reach left him, in range, since
+// Lurker's 22y reach makes anywhere on the ring a tanking spot.
 bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -409,10 +414,24 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != lurker)
         return Attack(lurker);
 
+    if (lurker->GetVictim() != bot)
+        return false;
+
     Position const& position = LURKER_MAIN_TANK_POSITION;
     constexpr float arrivalDist = 1.0f;
     if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
+
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
+        return false;
+
+    constexpr float pathTolerance = 3.0f;
+    if (!DoesPathArrive(
+            bot, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            pathTolerance))
+    {
+        return false;
+    }
 
     return MoveTo(
         SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),

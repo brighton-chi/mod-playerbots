@@ -214,6 +214,8 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 // True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
 // direction (+1 counter-clockwise, -1 clockwise).
 bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction);
+// True if a navmesh path from the bot ends within tolerance of x/y rather than short of it.
+bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the
