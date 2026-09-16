@@ -484,6 +484,17 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         return false;
     }
 
+    // A bot knocked into the pool by Whirl cannot step out: a step point over the water has no
+    // walkable height and MoveTo refuses it. Move to the spot itself instead, which the
+    // pathfinder reaches by swimming to shore.
+    if (!IsDryGround(bot, moveX, moveY))
+    {
+        return MoveTo(
+            SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
     return MoveTo(
         SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
