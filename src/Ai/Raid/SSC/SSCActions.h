@@ -41,8 +41,8 @@ public:
 
 // Shared Bosses
 
-// Misdirect a named target onto the main tank, or onto the assist tank at assistTankIndex when
-// one is given. Used for Morogrim Tidewalker, Lady Vashj and her Coilfang Striders.
+// Misdirect to the main tank, or to an assist tank at assistTankIndex. Used for
+// Morogrim Tidewalker, Lady Vashj, and Coilfang Striders.
 class SscMisdirectTargetToTankAction : public Action
 {
 public:
@@ -61,8 +61,8 @@ protected:
 
 // Hydross the Unstable <Duke of Currents>
 
-// One action for both tanks. Each tank has a phase, a mark, a position and a hand-over timer; the
-// frost tank's are the mirror image of the nature tank's.
+// One action for the frost and nature tanks. Each tank has a phase, a mark, a position, and a
+// timer for swapping. The action itself is mirrored between the tanks.
 class HydrossTheUnstablePositionAndSwapTanksAction : public AttackAction
 {
 public:

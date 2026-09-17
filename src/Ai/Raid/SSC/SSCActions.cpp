@@ -55,11 +55,6 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
 // Trash Mobs
 
-// Move straight out of the toxic pool left behind by some colossi upon death. The pool is centred
-// on the corpse, and while that corpse exists it is still the bot's "current target", which
-// FleePosition would steer around rather than away from. Nothing else needs to redirect the bot
-// mid-escape (the multiplier suppresses all other movement inside the holding radius), so the
-// step can be large.
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -126,19 +121,21 @@ bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
 
 // Hydross the Unstable <Duke of Currents>
 
-// Tank Hydross during my phase; once my mark is maxed and the hand-over timer has run, walk him to
-// the other tank's position. During the other phase, wait at my own position.
 bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
         return false;
 
-    bool const myPhase = _frostTank ? IsHydrossInFrostPhase(hydross) : IsHydrossInNaturePhase(hydross);
+    bool const myPhase = _frostTank ?
+        IsHydrossInFrostPhase(hydross) : IsHydrossInNaturePhase(hydross);
     bool const markMaxed =
         _frostTank ? HasMarkOfHydrossAt100Percent(bot) : HasMarkOfCorruptionAt100Percent(bot);
-    Position const& myPosition = _frostTank ? HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
-    Position const& otherPosition = _frostTank ? HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
+
+    Position const& myPosition = _frostTank ?
+        HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
+    Position const& otherPosition = _frostTank ?
+        HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
     std::unordered_map<uint32, uint32> const& handOverTimer =
         _frostTank ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
 
@@ -169,8 +166,7 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
     return true;
 }
 
-bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(
-    Position const& position, Unit* hydross)
+bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& position, Unit* hydross)
 {
     constexpr float arrivalDist = 2.0f;
     float moveX;
@@ -219,7 +215,6 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", hydross) && botAI->CastSpell("steady shot", hydross);
 }
 
-// Ends the auto-attack already running, which a multiplier cannot; WaitForDps keeps it from restarting
 bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -233,7 +228,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 
     bool shouldStopDps = false;
 
-    // 1 second after 100% Mark of Hydross, stop DPS
+    // 1 second after 100% Mark of Hydross, stop dps.
     auto itNature = hydrossChangeToNaturePhaseTimer.find(instanceId);
     if (itNature != hydrossChangeToNaturePhaseTimer.end() &&
         getMSTimeDiff(itNature->second, now) >= phaseEndStopMs)
@@ -241,7 +236,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
         shouldStopDps = true;
     }
 
-    // Keep DPS stopped for 5 seconds after transition into nature phase
+    // Keep dps stopped for 5 seconds after transitioning into nature phase.
     auto itNatureDps = hydrossNatureDpsWaitTimer.find(instanceId);
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() &&
         getMSTimeDiff(itNatureDps->second, now) < phaseStartStopMs)
@@ -249,7 +244,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
         shouldStopDps = true;
     }
 
-    // 1 second after 100% Mark of Corruption, stop DPS
+    // 1 second after 100% Mark of Corruption, stop dps.
     auto itFrost = hydrossChangeToFrostPhaseTimer.find(instanceId);
     if (itFrost != hydrossChangeToFrostPhaseTimer.end() &&
         getMSTimeDiff(itFrost->second, now) >= phaseEndStopMs)
@@ -257,7 +252,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
         shouldStopDps = true;
     }
 
-    // Keep DPS stopped for 5 seconds after transition into frost phase
+    // Keep dps stopped for 5 seconds after transitioning into frost phase.
     auto itFrostDps = hydrossFrostDpsWaitTimer.find(instanceId);
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() &&
         getMSTimeDiff(itFrostDps->second, now) < phaseStartStopMs)
@@ -434,7 +429,7 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Assign ranged positions within a 120-degree arc behind Lurker
+// Assign ranged positions within a 120-degree arc behind Lurker.
 bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -499,15 +494,13 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         return false;
     }
 
-    // A bot knocked into the pool by Whirl cannot step out: a step point over the water has no
-    // walkable height and MoveTo refuses it. Move to the spot itself instead, which the
-    // pathfinder reaches by swimming to shore.
+    // Incremental movement does not work if the bot is in the water (there is no walkable height
+    // and MoveTo returns false. Therefore, this block calls a MoveTo directly to the position.
     if (!IsDryGround(bot, moveX, moveY))
     {
         return MoveTo(
-            SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return MoveTo(
@@ -515,9 +508,9 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// During the submerge phase the main tank and the first two assist tanks each claim one Coilfang
-// Guardian off the shared sorted list, taunt it off whoever it aggroed onto, and hold it away from
-// the other two. The Ambushers are left to natural targeting. Mirrors the Kil'jaeden hands pattern.
+// During the submerge phase, the main tank and the first two assist tanks each grab one Coilfang
+// Guardian. This runs only if there are at least 3 bot tanks. Otherwise, normal tank assist is
+// relied on to pick up the Guardians.
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> const guardians = GetLurkerGuardians(botAI);
@@ -538,14 +531,12 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != guardian)
         return Attack(guardian);
 
-    // The stock "lose aggro" taunt treats a guardian on another tank as held, so taunt explicitly
     if (guardian->GetVictim() == bot)
         return false;
 
     return CastTauntOn(botAI, guardian);
 }
 
-// Keep my existing claim while that guardian lives; otherwise take the first one no other tank holds
 ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
     std::vector<Unit*> const& guardians, size_t myIndex)
 {
@@ -585,8 +576,7 @@ ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
 
 // Leotheras the Blind
 
-// Warlock tank action--see GetLeotherasWarlockTank in RaidSSCHelpers.cpp
-// Use tank strategy for Demon Form and DPS strategy for Human Form
+// Warlock tank action--see GetLeotherasWarlockTank in RaidSSCHelpers.cpp.
 bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
