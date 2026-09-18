@@ -162,6 +162,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class TheLurkerBelowMeleeCannotReachTargetTrigger : public SscEncounterTrigger
+{
+public:
+    TheLurkerBelowMeleeCannotReachTargetTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "the lurker below melee cannot reach target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Leotheras the Blind
 
 class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger

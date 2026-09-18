@@ -54,7 +54,12 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("the lurker below spread ranged in arc", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("the lurker below is submerged", {
-        NextAction("the lurker below tanks pick up adds", ACTION_EMERGENCY + 1) }));
+        NextAction("the lurker below tanks pick up adds", ACTION_RAID) }));
+
+    // This needs to be lower priority than reach melee, which is at least ACTION_HIGH + 1 for
+    // every class.
+    triggers.push_back(new TriggerNode("the lurker below melee cannot reach target", {
+        NextAction("the lurker below melee move directly to target", ACTION_HIGH) }));
 
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(

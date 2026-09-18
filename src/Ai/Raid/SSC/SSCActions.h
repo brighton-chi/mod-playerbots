@@ -146,6 +146,14 @@ private:
     ObjectGuid ClaimGuardianForTank(std::vector<Unit*> const& guardians, size_t myIndex);
 };
 
+class TheLurkerBelowMeleeMoveDirectlyToTargetAction : public MovementAction
+{
+public:
+    TheLurkerBelowMeleeMoveDirectlyToTargetAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "the lurker below melee move directly to target") {}
+    bool Execute(Event event) override;
+};
+
 // Leotheras the Blind
 
 class LeotherasTheBlindPositionRangedAction : public MovementAction

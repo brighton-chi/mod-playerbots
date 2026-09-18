@@ -60,12 +60,9 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActiveInEncounter
         AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
-// Non-hunter DPS only. The phase tank's swap action and the healers' casts must not be stopped,
-// add tanks are on the spawns, and a hunter's auto-shot with Misdirection up is the hand-off.
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsDps(bot) && bot->getClass() != CLASS_HUNTER &&
-        AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
@@ -93,7 +90,6 @@ bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
         IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
-// Only the three guardian tanks, and only when all three exist
 bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -105,6 +101,29 @@ bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
 
     std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
     return std::find(tanks.begin(), tanks.end(), bot) != tanks.end();
+}
+
+// Bots are unable to move across the water via ReachTargetAction. As a result, only bots with
+// charge-type moves can cross onto the isles to attack Ambushers during the submerge phase. They
+// are then stuck there until their charge move comes off of cooldown. To get around it, issue a
+// direct move to a land position.
+bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot))
+        return false;
+
+    // A melee bot with a target out of melee range that is neither moving nor casting is stuck.
+    // GetVictim() is not the test: Attack() sets it from any distance, so a stranded bot that has
+    // targeted Lurker has a victim and would never read as stuck.
+    if (bot->isMoving() || bot->IsNonMeleeSpellCast(false))
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || bot->IsWithinMeleeRange(target))
+        return false;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    return lurker && !IsLurkerSpouting(lurker);
 }
 
 // Leotheras the Blind

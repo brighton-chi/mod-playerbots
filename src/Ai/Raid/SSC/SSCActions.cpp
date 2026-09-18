@@ -241,7 +241,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() &&
         getMSTimeDiff(itNatureDps->second, now) < phaseStartStopMs)
     {
-        shouldStopDps = true;
+        shouldStopDps = bot->getClass() != CLASS_HUNTER ? true : false;
     }
 
     // 1 second after 100% Mark of Corruption, stop dps.
@@ -257,7 +257,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() &&
         getMSTimeDiff(itFrostDps->second, now) < phaseStartStopMs)
     {
-        shouldStopDps = true;
+        shouldStopDps = bot->getClass() != CLASS_HUNTER ? true : false;
     }
 
     if (!shouldStopDps)
@@ -335,13 +335,22 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const lurkerY = lurker->GetPositionY();
     float const lurkerZ = lurker->GetPositionZ();
 
-    // Spinning: steps with the spin. Radius is corrected alongside, a step's worth at a time.
+    // Spinning: steps with the spin. Radius is corrected alongside, a step's worth at a time. A bot
+    // faster than the beam is held at directly-behind rather than allowed to lap into the front.
     if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
+        // Bearing ahead of the beam, measured in the spin direction: 0 is in its path, pi behind
+        float const aheadOfBeam = spin > 0 ? relative : 2.0f * static_cast<float>(M_PI) - relative;
+        float const room = static_cast<float>(M_PI) + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
+        float const stepAngle = std::min(LURKER_SPOUT_RUN_STEP / runRadius, room);
+        constexpr float minStep = 2.0f; // the movement floor; below it, wait for the beam
+        if (stepAngle * runRadius < minStep)
+            return false;
+
         float const radialStep = std::clamp(
             runRadius - distance, -LURKER_SPOUT_RUN_STEP, LURKER_SPOUT_RUN_STEP);
         float const moveRadius = distance + radialStep;
-        float const moveAngle = botAngle + spin * LURKER_SPOUT_RUN_STEP / runRadius;
+        float const moveAngle = botAngle + spin * stepAngle;
 
         bot->CastStop();
         return MoveTo(
@@ -379,14 +388,14 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     {
         return MoveTo(
             SSC_MAP_ID, edgeX, edgeY, lurkerZ, false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     float const stepAngle = botAngle + direction * LURKER_SPOUT_RUN_STEP / runRadius;
     return MoveTo(
         SSC_MAP_ID, lurkerX + runRadius * std::cos(stepAngle),
         lurkerY + runRadius * std::sin(stepAngle), lurkerZ, false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Reach closes on Lurker for the pickup; only once he is on the tank does this walk him to the
@@ -572,6 +581,30 @@ ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
     }
 
     return assignedGuid;
+}
+
+bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target)
+        return false;
+
+    if (bot->IsWithinMeleeRange(target))
+        return false;
+
+    // The module refuses any destination over water (no map height there), so the destination has
+    // to be dry ground, not merely melee range. A Coilfang Ambusher stands on its islet: aim at
+    // the Ambusher itself. Anything else is Lurker: aim at the ring, which is walkway at every
+    // bearing, rather than at his melee range, which is not.
+    bool const isAmbusher = target->GetEntry() == Id(SscNpcs::NPC_COILFANG_AMBUSHER);
+    float const targetDistance = isAmbusher ? 0.0f : LURKER_SPOUT_RUN_RADIUS_MAX;
+    float const angle = target->GetAngle(bot);
+    float const destX = target->GetPositionX() + std::cos(angle) * targetDistance;
+    float const destY = target->GetPositionY() + std::sin(angle) * targetDistance;
+
+    return MoveTo(
+        SSC_MAP_ID, destX, destY, target->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Leotheras the Blind

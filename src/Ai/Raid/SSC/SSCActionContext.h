@@ -58,6 +58,9 @@ public:
         creators["the lurker below tanks pick up adds"] =
             &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
 
+        creators["the lurker below melee move directly to target"] =
+            &RaidSscActionContext::the_lurker_below_melee_move_directly_to_target;
+
         // Leotheras the Blind
         creators["leotheras the blind warlock tank attack boss"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
@@ -201,6 +204,9 @@ private:
     }
     static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) {
         return new TheLurkerBelowTanksPickUpAddsAction(botAI);
+    }
+    static Action* the_lurker_below_melee_move_directly_to_target(PlayerbotAI* botAI) {
+        return new TheLurkerBelowMeleeMoveDirectlyToTargetAction(botAI);
     }
 
     // Leotheras the Blind
