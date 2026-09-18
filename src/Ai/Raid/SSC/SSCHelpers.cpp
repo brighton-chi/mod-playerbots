@@ -31,7 +31,7 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::s
 
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
-    float& stepZ, std::function<bool(float, float)> const& isAcceptable)
+    float& stepZ)
 {
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -57,7 +57,7 @@ bool FindHazardEscapeStep(
             if (hazard.GetExactDist2d(candidateX, candidateY) <= botDistance)
                 continue;
 
-            if (isAcceptable && !isAcceptable(candidateX, candidateY))
+            if (!IsDryGround(bot, candidateX, candidateY))
                 continue;
 
             if (CanTakeStepTowards(bot, candidateX, candidateY, moveDist, stepX, stepY, stepZ))

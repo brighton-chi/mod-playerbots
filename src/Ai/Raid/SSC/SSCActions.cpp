@@ -5,7 +5,6 @@
  */
 
 #include "SSCActions.h"
-#include "AiFactory.h"
 #include "Corpse.h"
 #include "EncounterHelpers.h"
 #include "LootAction.h"
@@ -15,6 +14,12 @@
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
 #include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <limits>
+#include <list>
+#include <unordered_map>
+#include <utility>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -61,35 +66,19 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
     if (!GetToxicPoolPosition(botAI, pool))
         return false;
 
-    // The colossi stand on boardwalks over the lake; a player's pathfinder treats the water as
-    // reachable, so the ring point and the landing must both be on dry ground
-    auto const isDryGround = [this](float x, float y) { return IsDryGround(bot, x, y); };
-
-    // Short enough that a straight step follows the curve of the walk
     constexpr float moveDist = 5.0f;
     float stepX;
     float stepY;
     float stepZ;
-    if (!FindHazardEscapeStep(bot, pool, moveDist, stepX, stepY, stepZ, isDryGround))
-    {
-        LOG_DEBUG("playerbots", "toxic pool: {} found no dry escape step from ({:.1f}, {:.1f})",
-            bot->GetName(), pool.GetPositionX(), pool.GetPositionY());
+    if (!FindHazardEscapeStep(bot, pool, moveDist, stepX, stepY, stepZ))
         return false;
-    }
 
-    if (!MoveTo(
-            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false))
-    {
-        LOG_DEBUG("playerbots", "toxic pool: {} MoveTo refused step ({:.1f}, {:.1f}, {:.1f})",
-            bot->GetName(), stepX, stepY, stepZ);
-        return false;
-    }
-
-    return true;
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/) // Deleted GetFirstAliveUnitByEntry, remains in helpers. Can FindNearestCreature get this totem?
+bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 20.0f;
     Creature* totem =
@@ -466,7 +455,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
             std::distance(rangedMembers.begin(), findIt) : 0;
 
         constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 2.262f;
+        constexpr float arcCenter = 2.262f; // measured in game to be across from the main tank
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         float angle = (count == 1) ? arcCenter :

@@ -153,7 +153,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
 
     bool const frostPhase = IsHydrossInFrostPhase(hydross);
     if (PlayerbotAI::IsTank(bot) &&
-        (frostPhase ? PlayerbotAI::IsMainTank(bot) : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true)))
+        (frostPhase ?
+            PlayerbotAI::IsMainTank(bot) : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true)))
     {
         return 1.0f;
     }
@@ -286,7 +287,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     // Keep Berserk until Phase 3 in case the bear gets Inner Demon.
     if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action) &&
         !GetPhase3LeotherasDemon(bot))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
