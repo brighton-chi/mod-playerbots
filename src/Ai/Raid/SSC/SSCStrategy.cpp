@@ -204,10 +204,9 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
 }
 
-// Applies to every target value type: an add tank neither dps-assists nor tank-assists onto Hydross.
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
-    // Hydross the Unstable <Duke of Currents>
+    // Tanks other than the designated Frost and Nature tanks must pick up adds only.
     if (IsHydrossAddTank(botAI->GetBot()))
     {
         AiObjectContext* context = botAI->GetAiObjectContext();

@@ -58,7 +58,7 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
     if (bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
 
-    // A bot that has just left combat will otherwise sit down to drink in a 2k/s pool
+    // Stop bots from sitting and drinking in a toxic pool. Come on...
     if (dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action))
         return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 
@@ -97,9 +97,6 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 
 // Hydross the Unstable <Duke of Currents>
 
-// The tank waiting out the other phase must neither close on Hydross nor taunt him. The taunt
-// matters: "has aggro" is false for an explicit main tank whenever Hydross is on the nature tank,
-// so the stock "lose aggro" taunt would drag him back across the line.
 float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -121,8 +118,6 @@ float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounte
     return IsHydrossInNaturePhase(hydross) && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
-// The phase tanks are driven entirely by the position-and-swap action; everyone else keeps the
-// natural assist logic, with Hydross excluded for the add tanks in AppendTargetExclusions.
 float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -137,9 +132,7 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
     return AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
 }
 
-// Hold DPS from one second after the 100% mark lands (the tank is walking Hydross to the line and
-// has stopped attacking) until five seconds after the phase flips (threat has just been reset).
-// The current phase tank and the add tanks are exempt; heals always go through.
+// Phase changes reset threat. Hold DPS from 1s after Marks hit 100% until 5s post-phase change.
 float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -148,7 +141,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    // The tank that just handed Hydross over walks home through this window
     if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
         return 1.0f;
 
@@ -166,8 +158,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
         return 1.0f;
     }
 
-    // The timer for the change *out of* the current phase is the live one; the tracker erases the
-    // other on entering the phase.
     std::unordered_map<uint32, uint32> const& phaseStartTimer =
         frostPhase ? hydrossFrostDpsWaitTimer : hydrossNatureDpsWaitTimer;
     std::unordered_map<uint32, uint32> const& handOverTimer =
@@ -228,11 +218,12 @@ float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* 
     return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
 
-// A guardian tank holding a live claim neither assists, spreads, taunts nor AoE-threats onto
-// anyone else's guardian. A tank whose claim is gone falls back to natural tank assist.
 float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT || !PlayerbotAI::IsTank(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     if (!dynamic_cast<TankAssistAction*>(action) &&

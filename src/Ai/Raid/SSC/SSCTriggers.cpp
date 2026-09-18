@@ -103,18 +103,15 @@ bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
     return std::find(tanks.begin(), tanks.end(), bot) != tanks.end();
 }
 
-// Bots are unable to move across the water via ReachTargetAction. As a result, only bots with
-// charge-type moves can cross onto the isles to attack Ambushers during the submerge phase. They
-// are then stuck there until their charge move comes off of cooldown. To get around it, issue a
-// direct move to a land position.
+// Bots are unable to move across the water via ReachMeleeAction. Only bots with charge moves can
+// cross onto the isles to attack Ambushers during the submerge phase. They are then stuck there
+// until their charge comes off of cooldown. To resolve, issue a direct move to a land position.
 bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
     // A melee bot with a target out of melee range that is neither moving nor casting is stuck.
-    // GetVictim() is not the test: Attack() sets it from any distance, so a stranded bot that has
-    // targeted Lurker has a victim and would never read as stuck.
     if (bot->isMoving() || bot->IsNonMeleeSpellCast(false))
         return false;
 
@@ -156,7 +153,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    // If there is no Warlock tank, then traditional tanks will have to do it.
+    // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
     if (!GetLeotherasWarlockTank(bot))
         return false;
 

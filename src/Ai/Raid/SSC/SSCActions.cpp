@@ -307,18 +307,14 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
 
 // The Lurker Below
 
-// Run around Lurker to stay clear of Spout. The 3s wind-up pins his facing to the victim, so the
-// safe arc behind him is fixed: a bot already in it holds its bearing and only trims its radius,
-// a bot in front heads for the nearer edge of the arc the short way. Once the aura is up the beam
-// sweeps at 0.4 rad/s, faster than any bot on the ring: running against it closes at 0.75 rad/s
-// and meets the beam every ~8s, running with it costs at most one crossing and then never again.
-// So from then on the spin decides the direction and everyone simply keeps running.
+// Runnin', runnin', runnin', I'm runnin' over here, run, run, run-run, run.
 bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
         return false;
 
+    // Randomize the radius for each bot so the running looks a bit more natural.
     uint32 const seed = bot->GetGUID().GetCounter();
     float const runRadius = LURKER_SPOUT_RUN_RADIUS_MIN +
         (LURKER_SPOUT_RUN_RADIUS_MAX - LURKER_SPOUT_RUN_RADIUS_MIN) * (seed % 100) / 100.0f;
@@ -326,7 +322,6 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const distance = bot->GetExactDist2d(lurker);
     float const botAngle = std::atan2(
         bot->GetPositionY() - lurker->GetPositionY(), bot->GetPositionX() - lurker->GetPositionX());
-    // Bearing relative to his facing; pi is directly behind
     float const relative = Position::NormalizeOrientation(botAngle - lurker->GetOrientation());
     bool const inArc =
         std::fabs(relative - static_cast<float>(M_PI)) <= LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
@@ -335,15 +330,15 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const lurkerY = lurker->GetPositionY();
     float const lurkerZ = lurker->GetPositionZ();
 
-    // Spinning: steps with the spin. Radius is corrected alongside, a step's worth at a time. A bot
-    // faster than the beam is held at directly-behind rather than allowed to lap into the front.
+    // Lurker is spinning. The only nuance is that bots will not advance more than 30 degrees
+    // past directly behind the boss as Sprinting/Spirit Walking can otherwise lap the spin.
     if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
-        // Bearing ahead of the beam, measured in the spin direction: 0 is in its path, pi behind
         float const aheadOfBeam = spin > 0 ? relative : 2.0f * static_cast<float>(M_PI) - relative;
-        float const room = static_cast<float>(M_PI) + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
+        float const room =
+            static_cast<float>(M_PI) + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
         float const stepAngle = std::min(LURKER_SPOUT_RUN_STEP / runRadius, room);
-        constexpr float minStep = 2.0f; // the movement floor; below it, wait for the beam
+        constexpr float minStep = 2.0f;
         if (stepAngle * runRadius < minStep)
             return false;
 
@@ -359,7 +354,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // Wind-up, already behind him: hold the bearing, trim the radius
+    // Lurker is winding-up, bot is behind the boss: Get to the right radius and wait for the
+    // direction of the spin to be determined.
     if (inArc)
     {
         if (std::fabs(distance - runRadius) < LURKER_SPOUT_RUN_RADIAL_DEADZONE)
@@ -371,9 +367,9 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // Wind-up, in front: one far move to the nearer arc edge, issued below the spinning moves'
-    // priority so the first of those goes through without waiting out this one's lock. Checked
-    // to set off the short way; if the walkway that way is cut, a step towards the edge instead.
+    // Lurker is winding-up, bot is in front of the boss: One far move to the nearer arc edge so the
+    // bot is not in front of the boss when the Spout starts, whatever direction it goes. This has
+    // to be a lower movement priority than the run during the spin phase.
     int8 const direction = relative < M_PI ? 1 : -1;
     float const edgeAngle = lurker->GetOrientation() + static_cast<float>(M_PI) -
         direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
@@ -398,13 +394,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Reach closes on Lurker for the pickup; only once he is on the tank does this walk him to the
-// spot, as a single direct move rather than steps (the spot lies past spillover on the walkway,
-// and each short step into it was refused). The run-around outranks the move if a Spout starts en
-// route. From some pickup sides the spot is cut off by a gap in the walkway; a move there would end
-// at the gap, out of range, and Lurker would swing at whoever is in range instead. So the move is
-// only issued if its path arrives; otherwise the tank stays where reach left him, in range, since
-// Lurker's 22y reach makes anywhere on the ring a tanking spot.
+// Position the main tank in front of a pillar.
 bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -504,7 +494,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     }
 
     // Incremental movement does not work if the bot is in the water (there is no walkable height
-    // and MoveTo returns false. Therefore, this block calls a MoveTo directly to the position.
+    // and MoveTo returns false). Therefore, this block calls a MoveTo directly to the position.
     if (!IsDryGround(bot, moveX, moveY))
     {
         return MoveTo(
@@ -518,7 +508,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 }
 
 // During the submerge phase, the main tank and the first two assist tanks each grab one Coilfang
-// Guardian. This runs only if there are at least 3 bot tanks. Otherwise, normal tank assist is
+// Guardian. This runs only if there are at least three bot tanks. Otherwise, normal tank assist is
 // relied on to pick up the Guardians.
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
@@ -592,10 +582,9 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     if (bot->IsWithinMeleeRange(target))
         return false;
 
-    // The module refuses any destination over water (no map height there), so the destination has
-    // to be dry ground, not merely melee range. A Coilfang Ambusher stands on its islet: aim at
-    // the Ambusher itself. Anything else is Lurker: aim at the ring, which is walkway at every
-    // bearing, rather than at his melee range, which is not.
+    // MoveTo rejects any destination over water (no map height), so the destination has to be dry
+    // land. The Ambushers sometimes chill at the edge of their islets so we issue the move to stop
+    // right on top of them. When returning to Lurker, target the move at the walkway instead.
     bool const isAmbusher = target->GetEntry() == Id(SscNpcs::NPC_COILFANG_AMBUSHER);
     float const targetDistance = isAmbusher ? 0.0f : LURKER_SPOUT_RUN_RADIUS_MAX;
     float const angle = target->GetAngle(bot);
@@ -609,7 +598,7 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
 
 // Leotheras the Blind
 
-// Warlock tank action--see GetLeotherasWarlockTank in RaidSSCHelpers.cpp.
+// Warlock tank action: see GetLeotherasWarlockTank in RaidSSCHelpers.cpp.
 bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
@@ -620,8 +609,8 @@ bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", leotherasDemon);
 }
 
-// Stop melee tanks from attacking upon transformation so they don't take aggro
-// Applies only if there is a Warlock tank present
+// Stop melee tanks from attacking upon transformation so they don't take aggro.
+// Applies only if there is a Warlock tank present.
 bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event*/)
 {
     bot->AttackStop();
