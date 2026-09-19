@@ -8,9 +8,13 @@
 #include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
+#include "CheckMountStateAction.h"
 #include "Config.h"
+#include "BuiltInConfig.h"
+#include "DBUpdater.h"
 #include "DatabaseEnv.h"
-#include "DatabaseLoader.h"
+#include "PlayerbotsDatabase.h"
+#include <mysqld_error.h>
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
@@ -29,13 +33,65 @@ public:
 
     bool OnModuleDatabasesLoading() override
     {
-        DatabaseLoader playerbotLoader("server.playerbots");
-        playerbotLoader.SetUpdateFlags(sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
-                                           ? DatabaseLoader::DATABASE_PLAYERBOTS
-                                           : 0);
-        playerbotLoader.AddDatabase(PlayerbotsDatabase, "Playerbots");
+        std::string const dbString = sConfigMgr->GetOption<std::string>("PlayerbotsDatabaseInfo", "");
+        if (dbString.empty())
+        {
+            LOG_ERROR("server.playerbots", "Playerbots database is not specified in configuration file");
+            return false;
+        }
 
-        return playerbotLoader.Load();
+        uint8 const synchThreads = sConfigMgr->GetOption<uint8>("PlayerbotsDatabase.SynchThreads", 2);
+        PlayerbotsDatabase.SetConnectionInfo(dbString, synchThreads);
+
+        bool const updatesEnabled = sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true);
+        if (updatesEnabled && !DBUpdaterUtil::CheckExecutable())
+            return false;
+
+        uint32 error = PlayerbotsDatabase.Open();
+        if (error == ER_BAD_DB_ERROR && updatesEnabled)
+        {
+            // Database missing: create it through the mysql CLI and connect again
+            if (!ModuleDBUpdater::Create(PlayerbotsDatabase))
+                return false;
+
+            error = PlayerbotsDatabase.Open();
+        }
+
+        if (error)
+        {
+            LOG_ERROR("server.playerbots", "Cannot connect to the playerbots database, error {}", error);
+            return false;
+        }
+
+        if (updatesEnabled)
+        {
+            DBUpdaterInfo const info = {
+                "Playerbots",
+                BuiltInConfig::GetSourceDirectory() + "/modules/mod-playerbots",
+                BuiltInConfig::GetSourceDirectory() + "/modules/mod-playerbots/data/sql/playerbots/base/",
+                "db_playerbot"
+            };
+
+            if (!ModuleDBUpdater::Populate(PlayerbotsDatabase, info))
+            {
+                LOG_ERROR("server.playerbots", "Could not populate the playerbots database, see log for details.");
+                return false;
+            }
+
+            if (!ModuleDBUpdater::Update(PlayerbotsDatabase, info))
+            {
+                LOG_ERROR("server.playerbots", "Could not update the playerbots database, see log for details.");
+                return false;
+            }
+        }
+
+        if (!PlayerbotsDatabase.PrepareStatements())
+        {
+            LOG_ERROR("server.playerbots", "Could not prepare statements of the playerbots database, see log for details.");
+            return false;
+        }
+
+        return true;
     }
 
     void OnModuleDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
@@ -43,12 +99,6 @@ public:
     void OnModuleDatabasesClosing() override { PlayerbotsDatabase.Close(); }
 
     void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
-
-    void OnDatabaseSelectIndexLogout(Player* player, uint32& statementIndex, uint32& statementParam) override
-    {
-        statementIndex = CHAR_UPD_CHAR_OFFLINE;
-        statementParam = player->GetGUID().GetCounter();
-    }
 
     void OnDatabaseGetDBRevision(std::map<std::string, std::string>& revisions) override
     {
@@ -365,6 +415,7 @@ public:
         LOG_INFO("server.loading", " ");
 
         PlayerbotSpellRepository::Instance().Initialize();
+        CheckMountStateAction::LoadPreferredMounts();
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
@@ -516,7 +567,6 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSelfBotAfkScripts();
-
 void AddSC_MagtheridonBotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_HyjalBotScripts();

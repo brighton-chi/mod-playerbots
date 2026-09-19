@@ -376,7 +376,7 @@ bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     if (bot->GetPower(POWER_MANA) > MARK_REJOIN_MANA)
     {
-        RESET_AI_VALUE(bool, "kaz'rogal below mana threshold");
+        SET_AI_VALUE(bool, "kaz'rogal below mana threshold", false);
         return false;
     }
 

@@ -11,6 +11,7 @@
 #include "HFRTriggerContext.h"
 #include "MechTriggerContext.h"
 #include "MgTTriggerContext.h"
+#include "RampTriggerContext.h"
 #include "SethTriggerContext.h"
 #include "UBTriggerContext.h"
 
