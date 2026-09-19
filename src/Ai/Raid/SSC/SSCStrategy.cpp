@@ -76,7 +76,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind too many chaos blast stacks", {
-        NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 6) }));
+        NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind inner demon has awakened", {
         NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 7) }));
@@ -84,7 +84,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind in final phase", {
         NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind warlock tank needs aggro", {
+    triggers.push_back(new TriggerNode("leotheras the blind hunter should misdirect demon form", {
         NextAction("leotheras the blind misdirect boss to warlock tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers", {
@@ -162,6 +162,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Shared Bosses
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
+    multipliers.push_back(new SscDelayDpsCooldownsMultiplier(botAI));
 
     // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(botAI));
@@ -179,7 +180,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(botAI));
+    // multipliers.push_back(new LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(botAI));
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
@@ -189,12 +190,10 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
 
     // Morogrim Tidewalker
-    multipliers.push_back(new MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerMaintainPhase2StackingMultiplier(botAI));
 
     // Lady Vashj <Coilfang Matron>
-    multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new LadyVashjSetGroundingTotemMultiplier(botAI));
     multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));

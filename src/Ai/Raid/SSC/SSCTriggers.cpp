@@ -198,9 +198,6 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
     if (!HasTooManyChaosBlastStacks(bot))
         return false;
 
@@ -230,7 +227,7 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     return IsLeotherasFinalPhase(bot);
 }
 
-bool LeotherasTheBlindWarlockTankNeedsAggroTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -238,7 +235,10 @@ bool LeotherasTheBlindWarlockTankNeedsAggroTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    return !HasInnerDemon(bot);
+    if (HasInnerDemon(bot))
+        return false;
+
+    return GetActiveLeotherasDemon(bot);
 }
 
 bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()

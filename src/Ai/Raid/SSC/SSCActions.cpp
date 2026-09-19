@@ -587,7 +587,7 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
 
 // Leotheras the Blind
 
-// Warlock tank action: see GetLeotherasWarlockTank in RaidSSCHelpers.cpp.
+// Warlock tank action: see GetLeotherasWarlockTank in SSCHelpers.cpp.
 bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
@@ -624,32 +624,26 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
             return true;
     }
 
-    if (!GetActiveLeotherasDemon(bot))
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    if (!leotherasDemon)
         return false;
 
-    constexpr float searchRadius = 10.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, searchRadius);
-    if (!nearestPlayer)
-        return false;
+    // Chaos Blast splashes 8y around whoever the demon is on: the Warlock tank, or a DPS who has
+    // pulled aggro
+    constexpr float safeDistFromBlast = 10.0f;
+    Unit* warlockTank = GetLeotherasWarlockTank(bot);
+    for (Unit* blastTarget : { warlockTank, leotherasDemon->GetVictim() })
+    {
+        if (!blastTarget || blastTarget == bot ||
+            bot->GetExactDist2d(blastTarget) >= safeDistFromBlast)
+        {
+            continue;
+        }
 
-    Player* warlockTank = GetLeotherasWarlockTank(bot);
-    float safeDistance = std::numeric_limits<float>::max();
-    uint32 minInterval = std::numeric_limits<uint32>::max();
-    if (warlockTank != bot && warlockTank == nearestPlayer)
-    {
-        safeDistance = 10.0f;
-        minInterval = 0;
-    }
-    else
-    {
-        safeDistance = 5.0f;
-        minInterval = 1000;
+        return FleePosition(blastTarget->GetPosition(), safeDistFromBlast, 0);
     }
 
-    if (bot->GetExactDist2d(nearestPlayer) >= safeDistance)
-        return false;
-
-    return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
+    return false;
 }
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -678,7 +672,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
         return true;
     }
 
-    Creature* leotherasDemon = GetPhase2LeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
@@ -874,7 +868,8 @@ bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
         botAI->CastSpell("steady shot", leotherasDemon);
 }
 
-// This does not pause DPS after a Whirlwind, which is also an aggro wipe
+// Whirlwind resets threat on every tick, so the humanoid timer is withheld while it runs and
+// restarts on the first tick after it ends.
 bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -888,7 +883,11 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
     if (IsLeotherasHumanoidPhase(bot))
     {
-        changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
+        if (IsLeotherasChannelingWhirlwind(leotheras))
+            changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+        else
+            changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
+
         changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
         changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     }

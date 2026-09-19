@@ -40,12 +40,22 @@ public:
 
 // Shared Bosses
 
-// For Lady Vashj, Fathom-Lord Karathress, and Hydross
+// For Lady Vashj, Fathom-Lord Karathress, Hydross, and Leotheras while a Warlock tanks
 class SscControlMisdirectionMultiplier : public SscEncounterMultiplier
 {
 public:
     SscControlMisdirectionMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "ssc control misdirection") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class SscDelayDpsCooldownsMultiplier : public SscEncounterMultiplier
+{
+public:
+    SscDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "ssc delay dps cooldowns") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -167,15 +177,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LeotherasTheBlindDelayBloodlustAndHeroismMultiplier : public SscEncounterMultiplier
-{
-public:
-    LeotherasTheBlindDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "leotheras the blind delay bloodlust and heroism") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
+// class LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier : public SscEncounterMultiplier
+// {
+// public:
+//     LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
+//         : SscEncounterMultiplier(
+//             botAI, "leotheras the blind disable warlock tank soulshatter") {}
+//
+// protected:
+//     float GetValueInEncounter(Action* action) override;
+// };
 
 // Fathom-Lord Karathress
 
@@ -231,16 +242,6 @@ protected:
 
 // Morogrim Tidewalker
 
-class MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier : public SscEncounterMultiplier
-{
-public:
-    MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "morogrim tidewalker delay bloodlust and heroism") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class MorogrimTidewalkerDisableTankActionsMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -262,16 +263,6 @@ protected:
 };
 
 // Lady Vashj <Coilfang Matron>
-
-class LadyVashjDelayCooldownsMultiplier : public SscEncounterMultiplier
-{
-public:
-    LadyVashjDelayCooldownsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj delay cooldowns") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
 
 class LadyVashjSetGroundingTotemMultiplier : public SscEncounterMultiplier
 {

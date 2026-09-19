@@ -91,8 +91,61 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (vashj && GetLadyVashjPhase(vashj) != 1)
         return 0.0f;
 
+    if (AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
+        GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot))
+    {
+        return 0.0f;
+    }
+
     return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ||
         AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
+}
+
+// Cooldowns are held until each boss is settled: the phase and add gates where a boss has them,
+// and 95% health everywhere else. Trash is left alone.
+float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    bool const isBloodlust = IsBloodlustAction(bot, action);
+
+    if (Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj"))
+    {
+        int8 const phase = GetLadyVashjPhase(vashj);
+        if (phase == 3)
+            return 1.0f;
+
+        // Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2
+        return !isBloodlust && phase == 2 ? 1.0f : 0.0f;
+    }
+
+    if (Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
+    {
+        // Bloodlust/Heroism are for the murloc waves
+        if (isBloodlust)
+            return AI_VALUE2(Unit*, "find target", "tidewalker lurker") ? 1.0f : 0.0f;
+
+        return tidewalker->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+    }
+
+    if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+    {
+        // Tidalvess is the first kill target; once he is down the rest of the fight is open
+        Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+        return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+    }
+
+    for (char const* name : { "hydross the unstable", "the lurker below", "leotheras the blind" })
+    {
+        if (Unit* boss = AI_VALUE2(Unit*, "find target", name))
+            return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+    }
+
+    return 1.0f;
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -299,7 +352,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     if (!HasInnerDemon(bot))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+    if (action->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
 
     if (bot->getClass() == CLASS_DRUID &&
@@ -310,11 +363,16 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         return 0.0f;
     }
 
-    Creature* innerDemon = GetPersonalInnerDemon(botAI);
-    if (!innerDemon)
-        return 1.0f;
-
-    return action->GetTarget() == innerDemon ? 1.0f : 0.0f; // NEED TO CONFIRM IF THIS WORKS INSTEAD OF SUPPRESSING TYPES OF SPELLS
+    return dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastHealingSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<PartyMemberActionNameSupport*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
@@ -330,6 +388,9 @@ float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Actio
     {
         return 1.0f;
     }
+
+    if (dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action))
+        return 1.0f;
 
     if (!HasTooManyChaosBlastStacks(bot))
         return 1.0f;
@@ -361,7 +422,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (PlayerbotAI::IsTank(bot))
             return 1.0f;
 
-        constexpr uint32 dpsWaitMsHumanoidPhase = 5 * IN_MILLISECONDS;
+        constexpr uint32 dpsWaitMsHumanoidPhase = 3 * IN_MILLISECONDS;
         auto it = leotherasHumanoidPhaseDpsWaitTimer.find(instanceId);
         if (it == leotherasHumanoidPhaseDpsWaitTimer.end())
             return 0.0f;
@@ -402,18 +463,26 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     return 1.0f;
 }
 
-// Don't use Bloodlust/Heroism before Leotheras activates
-float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsBloodlustAction(bot, action))
-        return 1.0f;
-
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    return leotheras && IsSpellbinderPhase(leotheras) ? 0.0f : 1.0f;
-}
+// This multiplier is not needed right now because Soulshatter is cast only when there are
+// multiple enemies. That's probably not the right approach and should be fixed, so this multiplier
+// remains here but commented out in anticipation of a future correction to Soulshatter usage.
+// float LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(
+//     Action* action)
+// {
+//     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+//         return 1.0f;
+//
+//     if (bot->getClass() != CLASS_WARLOCK)
+//         return 1.0f;
+//
+//     if (!dynamic_cast<CastSoulshatterAction*>(action))
+//         return 1.0f;
+//
+//     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+//         return 1.0f;
+//
+//     return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot) ? 0.0f : 1.0f;
+// }
 
 // Fathom-Lord Karathress
 
@@ -491,21 +560,6 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
 
 // Morogrim Tidewalker
 
-// Use Bloodlust/Heroism after the first Murloc spawn
-float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsBloodlustAction(bot, action))
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "tidewalker lurker") ? 1.0f : 0.0f;
-}
-
 float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsMainTank(bot))
@@ -538,36 +592,6 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValueInEncounter(Ac
 }
 
 // Lady Vashj <Coilfang Matron>
-
-// Wait until phase 3 to use Bloodlust/Heroism
-// Don't use other major cooldowns in Phase 1, either
-float LadyVashjDelayCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return 1.0f;
-
-    int8 phase = GetLadyVashjPhase(vashj);
-    if (phase == 3)
-        return 1.0f;
-
-    // Bloodlust/Heroism are phase 3 only
-    if (bot->getClass() != CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) ||
-         dynamic_cast<CastHeroismAction*>(action)))
-    {
-        return 0.0f;
-    }
-
-    // Other dps cooldowns can be used in phase 2 or 3
-    return phase == 2 ? 1.0f : 0.0f;
-}
 
 float LadyVashjSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
 {
