@@ -51,14 +51,15 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class SscDelayDpsCooldownsMultiplier : public SscEncounterMultiplier
+// Not encounter-gated: Leotheras is passive and unengaged while the Spellbinders hold him, so his
+// encounter is not in progress during the phase the hold matters most.
+class SscDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
     SscDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "ssc delay dps cooldowns") {}
+        : Multiplier(botAI, "ssc delay dps cooldowns") {}
 
-protected:
-    float GetValueInEncounter(Action* action) override;
+    float GetValue(Action* action) override;
 };
 
 // Hydross the Unstable <Duke of Currents>

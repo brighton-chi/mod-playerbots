@@ -206,11 +206,26 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
+    Player* bot = botAI->GetBot();
+    if (bot->GetMapId() != SSC_MAP_ID)
+        return;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
     // Tanks other than the designated Frost and Nature tanks must pick up adds only.
-    if (IsHydrossAddTank(botAI->GetBot()))
+    if (IsHydrossAddTank(bot))
     {
-        AiObjectContext* context = botAI->GetAiObjectContext();
         if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))
             exclusions.insert(hydross->GetGUID());
     }
+
+    // Leotheras is immune until the Greyheart Spellbinders are killed.
+    Unit* leotheras = GetLeotheras(bot);
+    if (leotheras && IsSpellbinderPhase(leotheras))
+        exclusions.insert(leotheras->GetGUID());
+
+    // Vashj is immune behind Magic Barrier during Phase 2.
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
+        exclusions.insert(vashj->GetGUID());
 }

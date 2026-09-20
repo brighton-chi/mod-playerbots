@@ -138,23 +138,21 @@ enum class SscItems : uint32
 inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL = 200;
 
+Creature* GetCachedCreature(Player* bot, char const* value);
+
 // Trash
 
 // 25y radius + ~2y player CombatReach; see the Hyjal D&D note on persistent ground AoE range in AC.
 inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
-inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f; // For multiplier
-inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f; // 2y margin for hazard search
+inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f;
+inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f;
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
-// A step out of a circular hazard. Directions fan out from straight-away in fine steps; the first
-// landing point that is dry ground, is reachable, and is farther from the hazard than the bot
-// wins. Unlike Hyjal's ring-based GetHazardEscapeStep this needs no clear point at the ring: a
-// narrow curved boardwalk still offers two dry directions whatever the ring looks like.
+// A step out of a circular hazard.
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
     float& stepZ);
-// True where the map has ground above any liquid at x/y. A player counts water as reachable, so
-// the pathfinder alone lets an escape step off a boardwalk into the lake.
+// True where the map has ground above any liquid at x/y.
 bool IsDryGround(Player* bot, float x, float y);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
@@ -201,17 +199,10 @@ inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
-// Two movement regimes, each used where its failure does not bite. A short step that crosses
-// spillover on the walkway is detoured around it and re-targeted from mid-detour next tick, so the
-// bot dithers at the puddle; but a blocked step is refused, never re-routed. A far target is
-// reached by a path on which the puddle is a kink; but if the walkway ahead has a gap the
-// pathfinder reaches the same target the long way round. So the wind-up, when nothing is firing
-// and the bot in the mouth must get clear fast, uses one far move to the arc edge, checked to set
-// off the right way; the spin, when the beam is live, uses steps.
 inline constexpr float LURKER_SPOUT_RUN_STEP = 7.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
-// A bot faster than the beam (Sprint, Dash, cat form) may run this far past directly-behind, in
-// the spin direction, before it waits for the beam; further and it laps round into the front.
+// A bot may run this far past directly behind Lurker, in the spin direction, before it stops.
+// This is to prevent the very intelligent bots from lapping Lurker and getting blasted.
 inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_PI) / 6.0f;
 
 // True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
@@ -243,11 +234,17 @@ bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
 // Leotheras the Blind
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
+inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL = 200;
 
 extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
+// Leotheras and his Shadow, by entry: he is off every threat list while banished, and the Shadow
+// is a summon. Both are cached as "ssc leotheras" and "ssc shadow of leotheras".
+ObjectGuid FindLeotherasGuid(Player* bot);
+ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
+Creature* GetLeotheras(Player* bot);
 bool IsSpellbinderPhase(Unit* leotheras);
 Creature* GetActiveLeotherasHumanoid(Player* bot);
 bool IsLeotherasHumanoidPhase(Player* bot);

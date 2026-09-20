@@ -45,6 +45,28 @@ protected:
     GuidVector Calculate() override { return SscHelpers::FindLurkerGuardianGuids(bot); }
 };
 
+class SscLeotherasValue : public CalculatedValue<ObjectGuid>
+{
+public:
+    SscLeotherasValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(
+              botAI, "ssc leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL) {}
+
+protected:
+    ObjectGuid Calculate() override { return SscHelpers::FindLeotherasGuid(bot); }
+};
+
+class SscShadowOfLeotherasValue : public CalculatedValue<ObjectGuid>
+{
+public:
+    SscShadowOfLeotherasValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(
+              botAI, "ssc shadow of leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL) {}
+
+protected:
+    ObjectGuid Calculate() override { return SscHelpers::FindShadowOfLeotherasGuid(bot); }
+};
+
 class RaidSscValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -52,6 +74,8 @@ public:
     {
         creators["ssc toxic pool"] = &RaidSscValueContext::ssc_toxic_pool;
         creators["ssc lurker guardians"] = &RaidSscValueContext::ssc_lurker_guardians;
+        creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
+        creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
     }
 
 private:
@@ -62,6 +86,12 @@ private:
     }
     static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI) {
         return new SscLurkerGuardiansValue(botAI);
+    }
+    static UntypedValue* ssc_leotheras(PlayerbotAI* botAI) {
+        return new SscLeotherasValue(botAI);
+    }
+    static UntypedValue* ssc_shadow_of_leotheras(PlayerbotAI* botAI) {
+        return new SscShadowOfLeotherasValue(botAI);
     }
 };
 

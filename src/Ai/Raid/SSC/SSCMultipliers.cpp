@@ -101,9 +101,9 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
 }
 
-float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    if (bot->GetMapId() != SSC_MAP_ID || botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!IsDpsCooldownAction(bot, action))
@@ -137,11 +137,14 @@ float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
 
-    for (char const* name : { "leotheras the blind", "the lurker below", "hydross the unstable" })
+    for (char const* name : { "the lurker below", "hydross the unstable" })
     {
         if (Unit* boss = AI_VALUE2(Unit*, "find target", name))
             return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
+
+    if (Unit* leotheras = GetLeotheras(bot))
+        return leotheras->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 
     return 1.0f;
 }
@@ -357,6 +360,18 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         (dynamic_cast<CastDireBearFormAction*>(action) ||
          dynamic_cast<CastBearFormAction*>(action) ||
          dynamic_cast<CastTreeFormAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    // Don't waste time moving. Just kill the Inner Demon asap.
+    if (IsRepositionAction(bot, action))
+        return 0.0f;
+
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
+        !dynamic_cast<MeleeAction*>(action))
     {
         return 0.0f;
     }

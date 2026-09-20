@@ -21,8 +21,18 @@ using namespace EncounterHelpers;
 namespace SscHelpers
 {
 
+// General
 
-// Trash
+Creature* GetCachedCreature(Player* bot, char const* value)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    if (!botAI)
+        return nullptr;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Creature* creature = botAI->GetCreature(AI_VALUE(ObjectGuid, value));
+    return creature && creature->IsAlive() ? creature : nullptr;
+}
 
 std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value)
 {
@@ -80,6 +90,8 @@ bool IsDryGround(Player* bot, float x, float y)
     constexpr float clearance = 0.5f;
     return liquid.Level <= INVALID_HEIGHT || ground > liquid.Level - clearance;
 }
+
+// Trash
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)
 {
@@ -294,6 +306,25 @@ std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
+ObjectGuid FindLeotherasGuid(Player* bot)
+{
+    Creature* leotheras =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
+    return leotheras ? leotheras->GetGUID() : ObjectGuid::Empty;
+}
+
+ObjectGuid FindShadowOfLeotherasGuid(Player* bot)
+{
+    Creature* shadow =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), LEOTHERAS_SEARCH_DISTANCE);
+    return shadow ? shadow->GetGUID() : ObjectGuid::Empty;
+}
+
+Creature* GetLeotheras(Player* bot)
+{
+    return GetCachedCreature(bot, "ssc leotheras");
+}
+
 bool IsSpellbinderPhase(Unit* leotheras)
 {
     return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
@@ -301,9 +332,7 @@ bool IsSpellbinderPhase(Unit* leotheras)
 
 Creature* GetActiveLeotherasHumanoid(Player* bot)
 {
-    Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
-
+    Creature* leotheras = GetLeotheras(bot);
     if (!leotheras || IsSpellbinderPhase(leotheras))
         return nullptr;
 
@@ -320,9 +349,7 @@ bool IsLeotherasHumanoidPhase(Player* bot)
 
 Creature* GetPhase2LeotherasDemon(Player* bot)
 {
-    Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
-
+    Creature* leotheras = GetLeotheras(bot);
     if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
@@ -336,8 +363,7 @@ bool IsLeotherasDemonPhase(Player* bot)
 
 Creature* GetPhase3LeotherasDemon(Player* bot)
 {
-    return bot->FindNearestCreature(
-        Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), LEOTHERAS_SEARCH_DISTANCE);
+    return GetCachedCreature(bot, "ssc shadow of leotheras");
 }
 
 bool IsLeotherasFinalPhase(Player* bot)
