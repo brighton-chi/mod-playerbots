@@ -74,14 +74,17 @@ public:
         creators["leotheras the blind run away from whirlwind"] =
             &RaidSscActionContext::leotheras_the_blind_run_away_from_whirlwind;
 
-        creators["leotheras the blind melee dps run away from boss"] =
-            &RaidSscActionContext::leotheras_the_blind_melee_dps_run_away_from_boss;
+        creators["leotheras the blind melee run away from chaos blast"] =
+            &RaidSscActionContext::leotheras_the_blind_melee_run_away_from_chaos_blast;
 
         creators["leotheras the blind destroy inner demon"] =
             &RaidSscActionContext::leotheras_the_blind_destroy_inner_demon;
 
-        creators["leotheras the blind final phase assign dps priority"] =
-            &RaidSscActionContext::leotheras_the_blind_final_phase_assign_dps_priority;
+        creators["leotheras the blind final phase attack boss"] =
+            &RaidSscActionContext::leotheras_the_blind_final_phase_attack_boss;
+
+        creators["leotheras the blind final phase separate boss from demon"] =
+            &RaidSscActionContext::leotheras_the_blind_final_phase_separate_boss_from_demon;
 
         creators["leotheras the blind misdirect boss to warlock tank"] =
             &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_warlock_tank;
@@ -222,8 +225,8 @@ private:
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI);
     }
-    static Action* leotheras_the_blind_melee_dps_run_away_from_boss(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMeleeDpsRunAwayFromBossAction(botAI);
+    static Action* leotheras_the_blind_melee_run_away_from_chaos_blast(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMeleeRunAwayFromChaosBlastAction(botAI);
     }
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
@@ -231,8 +234,11 @@ private:
     static Action* leotheras_the_blind_misdirect_boss_to_warlock_tank(PlayerbotAI* botAI) {
         return new LeotherasTheBlindMisdirectBossToWarlockTankAction(botAI);
     }
-    static Action* leotheras_the_blind_final_phase_assign_dps_priority(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(botAI);
+    static Action* leotheras_the_blind_final_phase_attack_boss(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindFinalPhaseAttackBossAction(botAI);
+    }
+    static Action* leotheras_the_blind_final_phase_separate_boss_from_demon(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(botAI);
     }
     static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);

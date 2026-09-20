@@ -40,7 +40,7 @@ public:
 
 // Shared Bosses
 
-// For Lady Vashj, Fathom-Lord Karathress, Hydross, and Leotheras while a Warlock tanks
+// For Lady Vashj, Fathom-Lord Karathress, Hydross, and Leotheras (Warlock tank).
 class SscControlMisdirectionMultiplier : public SscEncounterMultiplier
 {
 public:

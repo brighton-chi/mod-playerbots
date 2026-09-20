@@ -628,22 +628,26 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
     if (!leotherasDemon)
         return false;
 
-    // Chaos Blast splashes 8y around whoever the demon is on: the Warlock tank, or a DPS who has
-    // pulled aggro
+    // Chaos Blast deals splash damage within 8y of the target.
     constexpr float safeDistFromBlast = 10.0f;
+    Unit* demonVictim = leotherasDemon->GetVictim();
     Unit* warlockTank = GetLeotherasWarlockTank(bot);
-    for (Unit* blastTarget : { warlockTank, leotherasDemon->GetVictim() })
-    {
-        if (!blastTarget || blastTarget == bot ||
-            bot->GetExactDist2d(blastTarget) >= safeDistFromBlast)
-        {
-            continue;
-        }
 
-        return FleePosition(blastTarget->GetPosition(), safeDistFromBlast, 0);
+    Unit* fleeFrom = nullptr;
+    if (demonVictim && demonVictim != bot && bot->GetExactDist2d(demonVictim) < safeDistFromBlast)
+    {
+        fleeFrom = demonVictim;
+    }
+    else if (warlockTank && warlockTank != bot &&
+        bot->GetExactDist2d(warlockTank) < safeDistFromBlast)
+    {
+        fleeFrom = warlockTank;
     }
 
-    return false;
+    if (!fleeFrom)
+        return false;
+
+    return FleePosition(fleeFrom->GetPosition(), safeDistFromBlast, 0);
 }
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -661,9 +665,9 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     return MoveAway(leotherasHumanoid, safeDistance - currentDistance);
 }
 
-// This method is likely unnecessary unless the player does not use a Warlock tank
-// If a melee tank is used, other melee needs to run away after too many Chaos Blast stacks
-bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
+// This method is likely unnecessary unless the player does not use a Warlock tank.
+// But if a melee tank is used, other melee needs to run away after too many Chaos Blast stacks.
+bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_ROGUE &&
         botAI->CanCastSpell(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
@@ -688,7 +692,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
     return MoveAway(demonVictim, safeDistance - currentDistance);
 }
 
-// Hardcoded actions for healers and bear tanks to kill Inner Demons
+// Hardcoded actions for healers and bear tanks to kill Inner Demons.
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Creature* innerDemon = GetPersonalInnerDemon(botAI);
@@ -704,9 +708,9 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != innerDemon && Attack(innerDemon);
 }
 
-// At 50% nerfed damage, bears have trouble killing their Inner Demons without a specific strategy
+// At 50% nerfed damage, bears have trouble killing their Inner Demons without a specific strategy.
 // Warrior and Paladin tanks have no trouble in my experience (Prot Warriors have high DPS, and
-// Prot Paladins have an advantage in that Inner Demons are weak to Holy)
+// Prot Paladins have an advantage in that Inner Demons are weak to Holy).
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
     if (bot->HasAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM)))
@@ -724,24 +728,33 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     if (!bot->HasAura(Id(SscSpells::SPELL_CAT_FORM)) &&
         botAI->CanCastSpell(Id(SscSpells::SPELL_CAT_FORM), bot) &&
         botAI->CastSpell(Id(SscSpells::SPELL_CAT_FORM), bot))
+    {
         return true;
+    }
 
     if (botAI->CanCastSpell(Id(SscSpells::SPELL_DRUID_BERSERK), bot) &&
         botAI->CastSpell(Id(SscSpells::SPELL_DRUID_BERSERK), bot))
+    {
         return true;
+    }
 
     if (bot->GetPower(POWER_ENERGY) < 30 &&
         botAI->CanCastSpell("tiger's fury", bot) && botAI->CastSpell("tiger's fury", bot))
+    {
         return true;
+    }
 
-    if (bot->GetComboPoints() >= 4 &&
-        botAI->CanCastSpell("ferocious bite", innerDemon) &&
+    if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon) &&
         botAI->CastSpell("ferocious bite", innerDemon))
+    {
         return true;
+    }
 
     if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 25.0f &&
         botAI->CanCastSpell("rake", innerDemon) && botAI->CastSpell("rake", innerDemon))
+    {
         return true;
+    }
 
     return botAI->CanCastSpell("mangle (cat)", innerDemon) &&
         botAI->CastSpell("mangle (cat)", innerDemon);
@@ -749,85 +762,94 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
 
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)
 {
-    if (bot->getClass() == CLASS_DRUID)
+    switch (bot->getClass())
     {
-        if (bot->HasAura(Id(SscSpells::SPELL_TREE_OF_LIFE)))
-        {
-            bot->RemoveOwnedAura(
-                Id(SscSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
-        }
+        case CLASS_DRUID:
+            if (bot->HasAura(Id(SscSpells::SPELL_TREE_OF_LIFE)))
+            {
+                bot->RemoveOwnedAura(
+                    Id(SscSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+            }
 
-        if (botAI->CanCastSpell("barkskin", bot) &&
-            botAI->CastSpell("barkskin", bot))
-            return true;
+            if (botAI->CanCastSpell("barkskin", bot) && botAI->CastSpell("barkskin", bot))
+                return true;
 
-        return botAI->CanCastSpell("wrath", innerDemon) && botAI->CastSpell("wrath", innerDemon);
+            return botAI->CanCastSpell("wrath", innerDemon) &&
+                botAI->CastSpell("wrath", innerDemon);
+
+        case CLASS_PALADIN:
+            if (botAI->CanCastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot) &&
+                botAI->CastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot))
+            {
+                return true;
+            }
+
+            if (botAI->CanCastSpell("consecration", bot) && botAI->CastSpell("consecration", bot))
+                return true;
+
+            if (botAI->CanCastSpell("exorcism", innerDemon) &&
+                botAI->CastSpell("exorcism", innerDemon))
+            {
+                return true;
+            }
+
+            if (botAI->CanCastSpell("hammer of wrath", innerDemon) &&
+                botAI->CastSpell("hammer of wrath", innerDemon))
+            {
+                return true;
+            }
+
+            if (botAI->CanCastSpell("holy shock", innerDemon) &&
+                botAI->CastSpell("holy shock", innerDemon))
+            {
+                return true;
+            }
+
+            return botAI->CanCastSpell("judgement of light", innerDemon) &&
+                botAI->CastSpell("judgement of light", innerDemon);
+
+        case CLASS_PRIEST:
+            return botAI->CanCastSpell("smite", innerDemon) &&
+                botAI->CastSpell("smite", innerDemon);
+
+        case CLASS_SHAMAN:
+            if (botAI->CanCastSpell("earth shock", innerDemon) &&
+                botAI->CastSpell("earth shock", innerDemon))
+            {
+                return true;
+            }
+
+            if (botAI->CanCastSpell("chain lightning", innerDemon) &&
+                botAI->CastSpell("chain lightning", innerDemon))
+            {
+                return true;
+            }
+
+            return botAI->CanCastSpell("lightning bolt", innerDemon) &&
+                botAI->CastSpell("lightning bolt", innerDemon);
+
+        default:
+            return false;
     }
-
-    if (bot->getClass() == CLASS_PALADIN)
-    {
-        if (botAI->CanCastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot) &&
-            botAI->CastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot))
-            return true;
-
-        if (botAI->CanCastSpell("consecration", bot) &&
-            botAI->CastSpell("consecration", bot))
-            return true;
-
-        if (botAI->CanCastSpell("exorcism", innerDemon) &&
-            botAI->CastSpell("exorcism", innerDemon))
-            return true;
-
-        if (botAI->CanCastSpell("hammer of wrath", innerDemon) &&
-            botAI->CastSpell("hammer of wrath", innerDemon))
-            return true;
-
-        if (botAI->CanCastSpell("holy shock", innerDemon) &&
-            botAI->CastSpell("holy shock", innerDemon))
-            return true;
-
-        return botAI->CanCastSpell("judgement of light", innerDemon) &&
-            botAI->CastSpell("judgement of light", innerDemon);
-    }
-
-    if (bot->getClass() == CLASS_PRIEST)
-        return botAI->CanCastSpell("smite", innerDemon) && botAI->CastSpell("smite", innerDemon);
-
-    if (bot->getClass() == CLASS_SHAMAN)
-    {
-        if (botAI->CanCastSpell("earth shock", innerDemon) &&
-            botAI->CastSpell("earth shock", innerDemon))
-            return true;
-
-        if (botAI->CanCastSpell("chain lightning", innerDemon) &&
-            botAI->CastSpell("chain lightning", innerDemon))
-            return true;
-
-        return botAI->CanCastSpell("lightning bolt", innerDemon) &&
-            botAI->CastSpell("lightning bolt", innerDemon);
-    }
-
-    return false;
 }
 
-// Everybody except the Warlock tank should focus on Leotheras in Phase 3
-bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/)
+// Everybody except the Warlock tank should focus on Leotheras in Phase 3.
+bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
 {
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
     if (!leotherasHumanoid)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != leotherasHumanoid)
-        return Attack(leotherasHumanoid);
-
-    if (leotherasHumanoid->GetVictim() != bot)
-        return false;
-
-    return MoveLeotherasFromWarlockTank();
+    return AI_VALUE(Unit*, "current target") != leotherasHumanoid && Attack(leotherasHumanoid);
 }
 
-bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarlockTank()
+// Leotheras's victim needs to keep him away from the Shadow's Chaos Blasts on its target.
+bool LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction::Execute(Event /*event*/)
 {
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
+    if (!leotherasHumanoid || leotherasHumanoid->GetVictim() != bot)
+        return false;
+
     Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
@@ -844,13 +866,13 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::MoveLeotherasFromWarloc
     return MoveAway(demonVictim, safeDistance - currentDistance, true);
 }
 
-// Misdirect to Warlock tank or to main tank if there is no Warlock tank
 bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
     if (!leotherasDemon)
         return false;
 
+    // If there is no Warlock tank, then misdirect to the main tank.
     Player* tank = GetLeotherasWarlockTank(bot);
     if (!tank)
         tank = GetGroupMainTank(bot);
@@ -868,8 +890,6 @@ bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
         botAI->CastSpell("steady shot", leotherasDemon);
 }
 
-// Whirlwind resets threat on every tick, so the humanoid timer is withheld while it runs and
-// restarts on the first tick after it ends.
 bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
@@ -883,6 +903,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
     if (IsLeotherasHumanoidPhase(bot))
     {
+        // Whirlwind resets threat on every tick. Restart the dps wait timer when it ends.
         if (IsLeotherasChannelingWhirlwind(leotheras))
             changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
         else

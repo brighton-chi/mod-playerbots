@@ -101,8 +101,6 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
 }
 
-// Cooldowns are held until each boss is settled: the phase and add gates where a boss has them,
-// and 95% health everywhere else. Trash is left alone.
 float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -119,13 +117,13 @@ float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         if (phase == 3)
             return 1.0f;
 
-        // Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2
+        // Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2.
         return !isBloodlust && phase == 2 ? 1.0f : 0.0f;
     }
 
     if (Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        // Bloodlust/Heroism are for the murloc waves
+        // Bloodlust/Heroism are for the murloc waves.
         if (isBloodlust)
             return AI_VALUE2(Unit*, "find target", "tidewalker lurker") ? 1.0f : 0.0f;
 
@@ -134,12 +132,12 @@ float SscDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
     if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        // Tidalvess is the first kill target; once he is down the rest of the fight is open
+        // Tidalvess is the first kill target; once he is down the rest of the fight is open.
         Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
 
-    for (char const* name : { "hydross the unstable", "the lurker below", "leotheras the blind" })
+    for (char const* name : { "leotheras the blind", "the lurker below", "hydross the unstable" })
     {
         if (Unit* boss = AI_VALUE2(Unit*, "find target", name))
             return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
@@ -363,14 +361,18 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         return 0.0f;
     }
 
+    // Exclude abilities with a target that isn't the bot or the Inner Demon, plus self heals.
     return dynamic_cast<DpsAssistAction*>(action) ||
         dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<CastHealingSpellAction*>(action) ||
         dynamic_cast<CastCureSpellAction*>(action) ||
         dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<CastBuffSpellAction*>(action) ||
         dynamic_cast<ResurrectPartyMemberAction*>(action) ||
         dynamic_cast<PartyMemberActionNameSupport*>(action) ||
+        dynamic_cast<MainTankActionNameSupport*>(action) ||
+        dynamic_cast<GroupBuffSpellAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action) ||
+        dynamic_cast<CastInnervateOnHealerAction*>(action) ||
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
         dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action) ? 0.0f : 1.0f;
 }

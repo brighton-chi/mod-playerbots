@@ -18,6 +18,7 @@ using namespace SscHelpers;
 using namespace EncounterHelpers;
 
 // General
+
 bool SscNoEncounterInProgressTrigger::IsActive()
 {
     return !IsEncounterInProgress(bot, SSC_MAP_ID);

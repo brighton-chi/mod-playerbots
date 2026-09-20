@@ -76,13 +76,14 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind too many chaos blast stacks", {
-        NextAction("leotheras the blind melee dps run away from boss", ACTION_EMERGENCY + 8) }));
+        NextAction("leotheras the blind melee run away from chaos blast", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind inner demon has awakened", {
         NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind in final phase", {
-        NextAction("leotheras the blind final phase assign dps priority", ACTION_RAID + 1) }));
+        NextAction("leotheras the blind final phase separate boss from demon", ACTION_RAID + 2),
+        NextAction("leotheras the blind final phase attack boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind hunter should misdirect demon form", {
         NextAction("leotheras the blind misdirect boss to warlock tank", ACTION_RAID + 2) }));

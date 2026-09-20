@@ -190,11 +190,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMeleeDpsRunAwayFromBossAction : public MovementAction
+class LeotherasTheBlindMeleeRunAwayFromChaosBlastAction : public MovementAction
 {
 public:
-    LeotherasTheBlindMeleeDpsRunAwayFromBossAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "leotheras the blind melee dps run away from boss") {}
+    LeotherasTheBlindMeleeRunAwayFromChaosBlastAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "leotheras the blind melee run away from chaos blast") {}
     bool Execute(Event event) override;
 };
 
@@ -210,15 +210,20 @@ private:
     bool HandleHealerStrategy(Unit* innerDemon);
 };
 
-class LeotherasTheBlindFinalPhaseAssignDpsPriorityAction : public AttackAction
+class LeotherasTheBlindFinalPhaseAttackBossAction : public AttackAction
 {
 public:
-    LeotherasTheBlindFinalPhaseAssignDpsPriorityAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind final phase assign dps priority") {}
+    LeotherasTheBlindFinalPhaseAttackBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "leotheras the blind final phase attack boss") {}
     bool Execute(Event event) override;
+};
 
-private:
-    bool MoveLeotherasFromWarlockTank();
+class LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction : public MovementAction
+{
+public:
+    LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "leotheras the blind final phase separate boss from demon") {}
+    bool Execute(Event event) override;
 };
 
 class LeotherasTheBlindMisdirectBossToWarlockTankAction : public Action
