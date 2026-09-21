@@ -206,7 +206,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool FightInnerDemon(Unit* innerDemon);
     bool HandleFeralTankStrategy(Unit* innerDemon);
     bool HandleHealerStrategy(Unit* innerDemon);
     bool HandleHunterStrategy(Unit* innerDemon);

@@ -33,7 +33,8 @@ bool UnderbogColossusInToxicPoolTrigger::IsActive()
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -168,11 +169,6 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras || IsSpellbinderPhase(leotheras))
-        return false;
-
-    // A Hunter kites its Inner Demon and can end up beside the Chaos Blast target so they need to
-    // be permitted to move, even with an Inner Demnon.
-    if (HasInnerDemon(bot) && bot->getClass() != CLASS_HUNTER)
         return false;
 
     return !IsLeotherasChannelingWhirlwind(leotheras);

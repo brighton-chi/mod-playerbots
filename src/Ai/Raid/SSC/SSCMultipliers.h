@@ -178,16 +178,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// class LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier : public SscEncounterMultiplier
-// {
-// public:
-//     LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
-//         : SscEncounterMultiplier(
-//             botAI, "leotheras the blind disable warlock tank soulshatter") {}
-//
-// protected:
-//     float GetValueInEncounter(Action* action) override;
-// };
+class LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier : public SscEncounterMultiplier
+{
+public:
+    LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(
+            botAI, "leotheras the blind disable warlock tank soulshatter") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
 
 // Fathom-Lord Karathress
 

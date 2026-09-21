@@ -595,6 +595,12 @@ bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
     if (!leotherasDemon)
         return false;
 
+    if (bot->HasAura(Id(SscSpells::SPELL_VIGILANCE)))
+    {
+        bot->RemoveOwnedAura(
+            Id(SscSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
+
     return botAI->CanCastSpell("searing pain", leotherasDemon) &&
         botAI->CastSpell("searing pain", leotherasDemon);
 }
@@ -617,8 +623,8 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
-    if (leotherasHumanoid && bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss &&
-        leotherasHumanoid->GetVictim() != bot)
+    if (leotherasHumanoid && !HasInnerDemon(bot) && leotherasHumanoid->GetVictim() != bot
+        bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss)
     {
         if (FleePosition(leotherasHumanoid->GetPosition(), safeDistFromBoss))
             return true;
@@ -692,21 +698,12 @@ bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
     return MoveAway(demonVictim, safeDistance - currentDistance);
 }
 
-// Hardcoded actions for healers and bear tanks to kill Inner Demons.
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Creature* innerDemon = GetPersonalInnerDemon(botAI);
-    if (!innerDemon || !FightInnerDemon(innerDemon))
+    if (!innerDemon)
         return false;
 
-    // A tick is 100ms and everything cast here is on the global cooldown, so the engine would be
-    // back long before the next cast is possible and the stock nodes would fill the gap
-    botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
-    return true;
-}
-
-bool LeotherasTheBlindDestroyInnerDemonAction::FightInnerDemon(Unit* innerDemon)
-{
     // All classes and specs swap their autoattack to the Inner Demon.
     if (AI_VALUE(Unit*, "current target") != innerDemon)
     {
@@ -727,8 +724,8 @@ bool LeotherasTheBlindDestroyInnerDemonAction::FightInnerDemon(Unit* innerDemon)
     return false;
 }
 
-// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this hardcodes
-// a rotation to try to maximize single-target damage over 30s.
+// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this rotation
+// tries to maximize single-target damage over 30s.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
     constexpr uint32 faerieFire = Id(SscSpells::SPELL_FAERIE_FIRE_FERAL);
@@ -758,21 +755,13 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
     }
 
     // The first cast of Faerie Fire (Feral) is to apply the armor debuff. After that, cast on CD
-    // after Mangle just for damage.
+    // (but lower priority than Mangle) just for damage.
     if (botAI->CanCastSpell(faerieFire, innerDemon) && botAI->CastSpell(faerieFire, innerDemon))
         return true;
 
-    // constexpr int32 lacerateBleedMs = 15 * IN_MILLISECONDS;
     Aura const* whisper = bot->GetAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
     if (!whisper)
         return false;
-
-    /* if (whisper->GetDuration() > lacerateBleedMs && bot->GetPower(POWER_RAGE) >= 40 &&
-        !botAI->HasAura("lacerate", innerDemon, true, true) &&
-        botAI->CanCastSpell("lacerate", innerDemon) && botAI->CastSpell("lacerate", innerDemon))
-    {
-        return true;
-    } */
 
     bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 40;
     constexpr int32 maulFreeUseMs = 4 * IN_MILLISECONDS;
@@ -780,55 +769,33 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         botAI->CanCastSpell("maul", innerDemon) && botAI->CastSpell("maul", innerDemon);
 }
 
-// Hunters will not attempt to kite if they are targeted. This custom method attempts to implement
-// a form of kiting against the Inner Demons, as Hunters have trouble killing them in time with
-// melee only when damage is nerfed with IP.
+// Hunters can have a bit of trouble since they need to take down their Inner Demons in melee.
+// This action ensures they have Hawk up and use Explosive Trap, which is the main source of
+// damage against the Inner Demon in melee. Immolation Trap is used if Readiness is cast so the
+// trap cooldown resets (since a second Explosive Trap will not stack its DoT).
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
 {
-    if (!bot->IsWithinMeleeRange(innerDemon))
-        return false;
 
-    // The snare and the trap are only worth their GCDs as the opening of a kite, and the kite is
-    // the Disengage: with that on cooldown the hunter just melees
-    uint32 const disengage = AI_VALUE2(uint32, "spell id", "disengage");
-    if (!disengage || bot->HasSpellCooldown(disengage))
-        return false;
-
-    uint32 const freezingTrap = AI_VALUE2(uint32, "spell id", "freezing trap");
-    bool const trapReady = freezingTrap && !bot->HasSpellCooldown(freezingTrap);
-
-    constexpr uint32 wingClip = Id(SscSpells::SPELL_WING_CLIP);
-    if (trapReady && !innerDemon->HasAura(wingClip) &&
-        botAI->CanCastSpell(wingClip, innerDemon) && botAI->CastSpell(wingClip, innerDemon))
+    if (!botAI->HasAura("aspect of the dragonhawk", bot) &&
+        !botAI->HasAura("aspect of the hawk", bot))
     {
-        return true;
+        if (botAI->CanCastSpell("aspect of the dragonhawk", bot) &&
+            botAI->CastSpell("aspect of the dragonhawk", bot))
+        {
+            return true;
+        }
+
+        return botAI->CanCastSpell("aspect of the hawk", bot) &&
+            botAI->CastSpell("aspect of the hawk", bot);
     }
 
-    // The trap goes down before the leap. Right after Wing Clip it is only the global cooldown in
-    // the way, so wait for it rather than skip to Disengage, which is off the global cooldown
-    if (trapReady && !innerDemon->isFrozen())
-        return botAI->CanCastSpell(freezingTrap, bot) && botAI->CastSpell(freezingTrap, bot);
-
-    // The leap only once the demon is held, by the trap or by an Entrapment root off the stock
-    // Explosive Trap; the trap takes a moment to arm
-    if ((!innerDemon->isFrozen() && !innerDemon->HasRootAura()) ||
-        !botAI->CanCastSpell(disengage, innerDemon))
+    if (!botAI->HasAura("explosive trap effect", innerDemon))
     {
-        return false;
+        return botAI->CanCastSpell("explosive trap", bot) &&
+            botAI->CastSpell("explosive trap", bot);
     }
 
-    // If within 25 yards of the Warlock tank, Disengage should leap away from the Warlock tank.
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
-    Unit* blastTarget = leotherasDemon ? leotherasDemon->GetVictim() : nullptr;
-    if (!blastTarget)
-        blastTarget = GetLeotherasWarlockTank(bot);
-
-    constexpr float leapClearance = 25.0f;
-    Unit* faceTarget = blastTarget && blastTarget != bot &&
-        bot->GetExactDist2d(blastTarget) < leapClearance ? blastTarget : innerDemon;
-
-    bot->SetOrientation(bot->GetAngle(faceTarget));
-    return botAI->CastSpell(disengage, innerDemon);
+    return botAI->CanCastSpell("immolation trap", bot) && botAI->CastSpell("immolation trap", bot);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)
@@ -914,7 +881,7 @@ bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != leotherasHumanoid && Attack(leotherasHumanoid);
 }
 
-// Leotheras's victim needs to keep him away from the Shadow's Chaos Blasts on its target.
+// Leotheras's tank needs to keep him away from the Shadow's target (due to Chaos Blasts).
 bool LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction::Execute(Event /*event*/)
 {
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);

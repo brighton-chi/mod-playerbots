@@ -271,8 +271,7 @@ float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* 
         return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) &&
-        !IsRepositionAction(bot, action))
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
@@ -345,12 +344,22 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     // Auto-attack only while the Warlock has him: abilities would spend the rage being banked for
     // an Inner Demon, and the target choosers would take the tanks off him
     if (GetPhase2LeotherasDemon(bot) &&
-        (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+        (dynamic_cast<TankAssistAction*>(action) ||
          (dynamic_cast<CastSpellAction*>(action) &&
           !dynamic_cast<CastDireBearFormAction*>(action) &&
           !dynamic_cast<CastBearFormAction*>(action))))
     {
         return 0.0f;
+    }
+
+    if (bot->getClass() == CLASS_WARRIOR && GetActiveLeotherasDemon(bot))
+    {
+        Player* warlockTank = GetLeotherasWarlockTank(bot);
+        if (!warlockTank)
+            return 1.0f;
+
+        if (dynamic_cast<CastVigilanceAction*>(action) && action->GetTarget() == warlockTank)
+            return 0.0f;
     }
 
     // Keep Berserk until Phase 3 in case the bear gets Inner Demon.
@@ -371,13 +380,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     if (action->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
 
-    // Don't waste time moving. Just kill the Inner Demon asap. The hunter's kite is the destroy
-    // action's own Disengage, so the stock one is out too: a freshly summoned demon has no victim
-    // for a moment, which satisfies the stock trigger and would jump before the trap is down. The
-    // ranged positioning stays for the hunter, whose leap can land beside the Chaos Blast target.
-    if (IsRepositionAction(bot, action))
-        return 0.0f;
-
+    // Don't waste time moving. Just kill the Inner Demon asap.
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
@@ -387,8 +390,11 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         return 0.0f;
     }
 
-    // Per class: spells that prevent attacking or drop threat, AoE with no threat type, and other
-    // useless spells.
+    if (IsRepositionAction(bot, action))
+        return 0.0f;
+
+    // Per class: spells that prevent attacking or drop threat, AoEs with no threat type, useless
+    // spells, and spells that need to be blocked to facilitate the custom Inner Demon action.
     switch (bot->getClass())
     {
         case CLASS_DRUID:
@@ -399,7 +405,16 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         case CLASS_HUNTER:
             if (dynamic_cast<CastDeterrenceAction*>(action) ||
                 dynamic_cast<CastFeignDeathAction*>(action) ||
-                dynamic_cast<CastWingClipAction*>(action))
+                dynamic_cast<CastWingClipAction*>(action) ||
+                dynamic_cast<CastFreezingTrap*>(action) ||
+                dynamic_cast<CastExplosiveTrapAction*>(action) ||
+                dynamic_cast<CastImmolationTrapAction*>(action) ||
+                dynamic_cast<CastAspectOfTheHawkAction*>(action) ||
+                dynamic_cast<CastAspectOfTheWildAction*>(action) ||
+                dynamic_cast<CastAspectOfTheDragonhawkAction*>(action) ||
+                dynamic_cast<CastAspectOfThePackAction*>(action) ||
+                dynamic_cast<CastAspectOfTheCheetahAction*>(action) ||
+                dynamic_cast<CastAspectOfTheMonkeyAction*>(action))
             {
                 return 0.0f;
             }
@@ -429,7 +444,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
             break;
 
         case CLASS_WARLOCK:
-            if (dynamic_cast<CastSoulshatterAction*>(action))
+            if (dynamic_cast<CastCurseOfDoomAction*>(action))
                 return 0.0f;
             break;
 
@@ -541,12 +556,11 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (!warlockTank && PlayerbotAI::IsTank(bot))
             return 1.0f;
 
-        constexpr uint32 dpsWaitMsDemonPhase = 12 * IN_MILLISECONDS;
         auto it = leotherasDemonPhaseDpsWaitTimer.find(instanceId);
         if (it == leotherasDemonPhaseDpsWaitTimer.end())
             return 0.0f;
 
-        return getMSTimeDiff(it->second, now) < dpsWaitMsDemonPhase ? 0.0f : 1.0f;
+        return getMSTimeDiff(it->second, now) < LEOTHERAS_DEMON_DPS_WAIT_MS ? 0.0f : 1.0f;
     }
 
     if (IsLeotherasFinalPhase(bot))
@@ -554,37 +568,35 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (warlockTank == bot || PlayerbotAI::IsTank(bot))
             return 1.0f;
 
-        constexpr uint32 dpsWaitMsFinalPhase = 8 * IN_MILLISECONDS;
         auto it = leotherasFinalPhaseDpsWaitTimer.find(instanceId);
         if (it == leotherasFinalPhaseDpsWaitTimer.end())
             return 0.0f;
 
-        return getMSTimeDiff(it->second, now) < dpsWaitMsFinalPhase ? 0.0f : 1.0f;
+        return getMSTimeDiff(it->second, now) < LEOTHERAS_FINAL_DPS_WAIT_MS ? 0.0f : 1.0f;
     }
 
     return 1.0f;
 }
 
-// This multiplier is not needed right now because Soulshatter is cast only when there are
-// multiple enemies. That's probably not the right approach and should be fixed, so this multiplier
-// remains here but commented out in anticipation of a future correction to Soulshatter usage.
-// float LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(
-//     Action* action)
-// {
-//     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-//         return 1.0f;
-//
-//     if (bot->getClass() != CLASS_WARLOCK)
-//         return 1.0f;
-//
-//     if (!dynamic_cast<CastSoulshatterAction*>(action))
-//         return 1.0f;
-//
-//     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
-//         return 1.0f;
-//
-//     return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot) ? 0.0f : 1.0f;
-// }
+// Soulshatter is eligible to be cast when there are at least two attackers, which is the case in
+// the final phase. This is needed to keep the Warlock tank from dropping threat on the Shadow.
+float LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(
+    Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (!dynamic_cast<CastSoulshatterAction*>(action))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return 1.0f;
+
+    return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot) ? 0.0f : 1.0f;
+}
 
 // Fathom-Lord Karathress
 

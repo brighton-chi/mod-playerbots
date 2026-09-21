@@ -79,7 +79,6 @@ enum class SscSpells : uint32
     SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
-    SPELL_WING_CLIP              =  2974,
     SPELL_MISDIRECTION           = 35079,
 
     // Mage
@@ -96,6 +95,9 @@ enum class SscSpells : uint32
 
     // Warlock
     SPELL_CURSE_OF_EXHAUSTION    = 18223,
+
+    // Warrior
+    SPELL_VIGILANCE              = 50720,
 };
 
 enum class SscNpcs : uint32
@@ -236,7 +238,9 @@ bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3000;
+inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 
 extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
 // When the current Whirlwind will end, from the aura's remaining duration.

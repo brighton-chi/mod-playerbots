@@ -181,7 +181,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
-    // multipliers.push_back(new LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(botAI));
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
