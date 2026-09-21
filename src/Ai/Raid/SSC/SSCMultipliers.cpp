@@ -20,6 +20,7 @@
 #include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
+#include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "SSCActions.h"
@@ -91,10 +92,16 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (vashj && GetLadyVashjPhase(vashj) != 1)
         return 0.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
-        GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot))
+    if (Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind"))
     {
-        return 0.0f;
+        if (HasInnerDemon(bot))
+            return 0.0f;
+
+        if (IsLeotherasChannelingWhirlwind(leotheras))
+            return 0.0f;
+
+        if (GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot))
+            return 0.0f;
     }
 
     return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ||
@@ -335,8 +342,16 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    if (GetPhase2LeotherasDemon(bot) && dynamic_cast<AttackAction*>(action))
+    // Auto-attack only while the Warlock has him: abilities would spend the rage being banked for
+    // an Inner Demon, and the target choosers would take the tanks off him
+    if (GetPhase2LeotherasDemon(bot) &&
+        (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+         (dynamic_cast<CastSpellAction*>(action) &&
+          !dynamic_cast<CastDireBearFormAction*>(action) &&
+          !dynamic_cast<CastBearFormAction*>(action))))
+    {
         return 0.0f;
+    }
 
     // Keep Berserk until Phase 3 in case the bear gets Inner Demon.
     if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action) &&
@@ -372,30 +387,70 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         return 0.0f;
     }
 
-    if (bot->getClass() == CLASS_DRUID &&
-        (dynamic_cast<CastDireBearFormAction*>(action) ||
-         dynamic_cast<CastBearFormAction*>(action) ||
-         dynamic_cast<CastTreeFormAction*>(action)))
+    // Per class: spells that prevent attacking or drop threat, AoE with no threat type, and other
+    // useless spells.
+    switch (bot->getClass())
     {
-        return 0.0f;
-    }
+        case CLASS_DRUID:
+            if (dynamic_cast<CastTreeFormAction*>(action))
+                return 0.0f;
+            break;
 
-    // Warrior AoE abilities have no threat type.
-    if (bot->getClass() == CLASS_WARRIOR &&
-        (dynamic_cast<CastThunderClapAction*>(action) ||
-         dynamic_cast<CastCleaveAction*>(action) ||
-         dynamic_cast<CastChallengingShoutAction*>(action) ||
-         dynamic_cast<CastDemoralizingShoutAction*>(action) ||
-         dynamic_cast<CastDemoralizingShoutWithoutLifeTimeCheckAction*>(action) ||
-         dynamic_cast<CastShockwaveAction*>(action) ||
-         dynamic_cast<CastPiercingHowlAction*>(action) ||
-         dynamic_cast<CastIntimidatingShoutAction*>(action) ||
-         dynamic_cast<CastSweepingStrikesAction*>(action) ||
-         dynamic_cast<CastBladestormAction*>(action) ||
-         dynamic_cast<CastWhirlwindAction*>(action) ||
-         dynamic_cast<CastVigilanceAction*>(action)))
-    {
-        return 0.0f;
+        case CLASS_HUNTER:
+            if (dynamic_cast<CastDeterrenceAction*>(action) ||
+                dynamic_cast<CastFeignDeathAction*>(action) ||
+                dynamic_cast<CastWingClipAction*>(action))
+            {
+                return 0.0f;
+            }
+            break;
+
+        case CLASS_MAGE:
+            if (dynamic_cast<CastIceBlockAction*>(action) ||
+                dynamic_cast<CastInvisibilityAction*>(action))
+            {
+                return 0.0f;
+            }
+            break;
+
+        case CLASS_PALADIN:
+            if (dynamic_cast<CastDivineShieldAction*>(action))
+                return 0.0f;
+            break;
+
+        case CLASS_PRIEST:
+            if (dynamic_cast<CastFadeAction*>(action))
+                return 0.0f;
+            break;
+
+        case CLASS_ROGUE:
+            if (dynamic_cast<CastFeintAction*>(action) || dynamic_cast<CastVanishAction*>(action))
+                return 0.0f;
+            break;
+
+        case CLASS_WARLOCK:
+            if (dynamic_cast<CastSoulshatterAction*>(action))
+                return 0.0f;
+            break;
+
+        case CLASS_WARRIOR:
+            if (dynamic_cast<CastThunderClapAction*>(action) ||
+                dynamic_cast<CastCleaveAction*>(action) ||
+                dynamic_cast<CastChallengingShoutAction*>(action) ||
+                dynamic_cast<CastDemoralizingShoutAction*>(action) ||
+                dynamic_cast<CastDemoralizingShoutWithoutLifeTimeCheckAction*>(action) ||
+                dynamic_cast<CastShockwaveAction*>(action) ||
+                dynamic_cast<CastPiercingHowlAction*>(action) ||
+                dynamic_cast<CastIntimidatingShoutAction*>(action) ||
+                dynamic_cast<CastSweepingStrikesAction*>(action) ||
+                dynamic_cast<CastVigilanceAction*>(action))
+            {
+                return 0.0f;
+            }
+            break;
+
+        default:
+            break;
     }
 
     // Exclude abilities with a target that isn't the bot or the Inner Demon, plus self heals.

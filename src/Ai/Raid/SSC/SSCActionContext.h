@@ -65,8 +65,8 @@ public:
         creators["leotheras the blind warlock tank attack boss"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
 
-        creators["leotheras the blind melee tanks don't attack demon form"] =
-            &RaidSscActionContext::leotheras_the_blind_melee_tanks_dont_attack_demon_form;
+        creators["leotheras the blind tanks build rage on demon form"] =
+            &RaidSscActionContext::leotheras_the_blind_tanks_build_rage_on_demon_form;
 
         creators["leotheras the blind position ranged"] =
             &RaidSscActionContext::leotheras_the_blind_position_ranged;
@@ -216,8 +216,8 @@ private:
     static Action* leotheras_the_blind_warlock_tank_attack_boss(PlayerbotAI* botAI) {
         return new LeotherasTheBlindWarlockTankAttackBossAction(botAI);
     }
-    static Action* leotheras_the_blind_melee_tanks_dont_attack_demon_form(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMeleeTanksDontAttackDemonFormAction(botAI);
+    static Action* leotheras_the_blind_tanks_build_rage_on_demon_form(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindTanksBuildRageOnDemonFormAction(botAI);
     }
     static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) {
         return new LeotherasTheBlindPositionRangedAction(botAI);

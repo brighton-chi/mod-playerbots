@@ -599,17 +599,16 @@ bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", leotherasDemon);
 }
 
-// Stop melee tanks from attacking upon transformation so they don't take aggro.
-// Applies only if there is a Warlock tank present.
-bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event*/)
+// With a Warlock tanking the demon form, the melee tanks only auto-attack it: their abilities are
+// held by the multiplier, so the rage they bank is there in full when an Inner Demon lands on
+// them. Rage does not decay in combat, and white hits alone cannot outthreat Searing Pain.
+bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 {
-    bot->AttackStop();
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetTarget(ObjectGuid::Empty);
-    bot->SetSelection(ObjectGuid());
+    Creature* leotherasDemon = GetPhase2LeotherasDemon(bot);
+    if (!leotherasDemon)
+        return false;
 
-    return true;
+    return AI_VALUE(Unit*, "current target") != leotherasDemon && Attack(leotherasDemon);
 }
 
 // Intent is to keep enough distance from Leotheras and spread to prepare for Whirlwind
@@ -697,9 +696,17 @@ bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Creature* innerDemon = GetPersonalInnerDemon(botAI);
-    if (!innerDemon)
+    if (!innerDemon || !FightInnerDemon(innerDemon))
         return false;
 
+    // A tick is 100ms and everything cast here is on the global cooldown, so the engine would be
+    // back long before the next cast is possible and the stock nodes would fill the gap
+    botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
+    return true;
+}
+
+bool LeotherasTheBlindDestroyInnerDemonAction::FightInnerDemon(Unit* innerDemon)
+{
     // All classes and specs swap their autoattack to the Inner Demon.
     if (AI_VALUE(Unit*, "current target") != innerDemon)
     {
@@ -720,25 +727,20 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this forces them
-// into cat and hardcodes a rotation to avoid needing to do a strategy swap.
+// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this hardcodes
+// a rotation to try to maximize single-target damage over 30s.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
-    if (bot->HasAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM)))
+    constexpr uint32 faerieFire = Id(SscSpells::SPELL_FAERIE_FIRE_FERAL);
+    if (!innerDemon->HasAura(faerieFire) && botAI->CanCastSpell(faerieFire, innerDemon) &&
+        botAI->CastSpell(faerieFire, innerDemon))
     {
-        bot->RemoveOwnedAura(
-            Id(SscSpells::SPELL_DIRE_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+        return true;
     }
 
-    if (bot->HasAura(Id(SscSpells::SPELL_BEAR_FORM)))
-    {
-        bot->RemoveOwnedAura(
-            Id(SscSpells::SPELL_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
-    }
-
-    constexpr uint32 catForm = Id(SscSpells::SPELL_CAT_FORM);
-    if (!bot->HasAura(catForm) && botAI->CanCastSpell(catForm, bot) &&
-        botAI->CastSpell(catForm, bot))
+    bool const isBelowEnrageRageThreshold = bot->GetPower(POWER_RAGE) < 70;
+    if (isBelowEnrageRageThreshold &&
+        botAI->CanCastSpell("enrage", bot) && botAI->CastSpell("enrage", bot))
     {
         return true;
     }
@@ -749,26 +751,33 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
         return true;
     }
 
-    if (bot->GetPower(POWER_ENERGY) < 30 &&
-        botAI->CanCastSpell("tiger's fury", bot) && botAI->CastSpell("tiger's fury", bot))
+    if (botAI->CanCastSpell("mangle (bear)", innerDemon) &&
+        botAI->CastSpell("mangle (bear)", innerDemon))
     {
         return true;
     }
 
-    if (bot->GetComboPoints() >= 4 && botAI->CanCastSpell("ferocious bite", innerDemon) &&
-        botAI->CastSpell("ferocious bite", innerDemon))
+    // The first cast of Faerie Fire (Feral) is to apply the armor debuff. After that, cast on CD
+    // after Mangle just for damage.
+    if (botAI->CanCastSpell(faerieFire, innerDemon) && botAI->CastSpell(faerieFire, innerDemon))
+        return true;
+
+    // constexpr int32 lacerateBleedMs = 15 * IN_MILLISECONDS;
+    Aura const* whisper = bot->GetAura(Id(SscSpells::SPELL_INSIDIOUS_WHISPER));
+    if (!whisper)
+        return false;
+
+    /* if (whisper->GetDuration() > lacerateBleedMs && bot->GetPower(POWER_RAGE) >= 40 &&
+        !botAI->HasAura("lacerate", innerDemon, true, true) &&
+        botAI->CanCastSpell("lacerate", innerDemon) && botAI->CastSpell("lacerate", innerDemon))
     {
         return true;
-    }
+    } */
 
-    if (bot->GetComboPoints() == 0 && innerDemon->GetHealthPct() > 25.0f &&
-        botAI->CanCastSpell("rake", innerDemon) && botAI->CastSpell("rake", innerDemon))
-    {
-        return true;
-    }
-
-    return botAI->CanCastSpell("mangle (cat)", innerDemon) &&
-        botAI->CastSpell("mangle (cat)", innerDemon);
+    bool const isAboveMaulRageThreshold = bot->GetPower(POWER_RAGE) > 40;
+    constexpr int32 maulFreeUseMs = 4 * IN_MILLISECONDS;
+    return (isAboveMaulRageThreshold || whisper->GetDuration() < maulFreeUseMs) &&
+        botAI->CanCastSpell("maul", innerDemon) && botAI->CastSpell("maul", innerDemon);
 }
 
 // Hunters will not attempt to kite if they are targeted. This custom method attempts to implement
@@ -779,23 +788,31 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerD
     if (!bot->IsWithinMeleeRange(innerDemon))
         return false;
 
+    // The snare and the trap are only worth their GCDs as the opening of a kite, and the kite is
+    // the Disengage: with that on cooldown the hunter just melees
+    uint32 const disengage = AI_VALUE2(uint32, "spell id", "disengage");
+    if (!disengage || bot->HasSpellCooldown(disengage))
+        return false;
+
+    uint32 const freezingTrap = AI_VALUE2(uint32, "spell id", "freezing trap");
+    bool const trapReady = freezingTrap && !bot->HasSpellCooldown(freezingTrap);
+
     constexpr uint32 wingClip = Id(SscSpells::SPELL_WING_CLIP);
-    if (!innerDemon->HasAura(wingClip) && botAI->CanCastSpell(wingClip, innerDemon) &&
-        botAI->CastSpell(wingClip, innerDemon))
+    if (trapReady && !innerDemon->HasAura(wingClip) &&
+        botAI->CanCastSpell(wingClip, innerDemon) && botAI->CastSpell(wingClip, innerDemon))
     {
         return true;
     }
 
     // The trap goes down before the leap. Right after Wing Clip it is only the global cooldown in
     // the way, so wait for it rather than skip to Disengage, which is off the global cooldown
-    uint32 const trapId = AI_VALUE2(uint32, "spell id", "freezing trap");
-    if (!innerDemon->isFrozen() && trapId && !bot->HasSpellCooldown(trapId))
-        return botAI->CanCastSpell("freezing trap", bot) && botAI->CastSpell("freezing trap", bot);
+    if (trapReady && !innerDemon->isFrozen())
+        return botAI->CanCastSpell(freezingTrap, bot) && botAI->CastSpell(freezingTrap, bot);
 
     // The leap only once the demon is held, by the trap or by an Entrapment root off the stock
     // Explosive Trap; the trap takes a moment to arm
     if ((!innerDemon->isFrozen() && !innerDemon->HasRootAura()) ||
-        !botAI->CanCastSpell("disengage", innerDemon))
+        !botAI->CanCastSpell(disengage, innerDemon))
     {
         return false;
     }
@@ -811,7 +828,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerD
         bot->GetExactDist2d(blastTarget) < leapClearance ? blastTarget : innerDemon;
 
     bot->SetOrientation(bot->GetAngle(faceTarget));
-    return botAI->CastSpell("disengage", innerDemon);
+    return botAI->CastSpell(disengage, innerDemon);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)

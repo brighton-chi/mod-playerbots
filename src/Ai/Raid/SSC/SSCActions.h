@@ -174,11 +174,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMeleeTanksDontAttackDemonFormAction : public Action
+class LeotherasTheBlindTanksBuildRageOnDemonFormAction : public AttackAction
 {
 public:
-    LeotherasTheBlindMeleeTanksDontAttackDemonFormAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind melee tanks don't attack demon form") {}
+    LeotherasTheBlindTanksBuildRageOnDemonFormAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "leotheras the blind tanks build rage on demon form") {}
     bool Execute(Event event) override;
 };
 
@@ -206,6 +206,7 @@ public:
     bool Execute(Event event) override;
 
 private:
+    bool FightInnerDemon(Unit* innerDemon);
     bool HandleFeralTankStrategy(Unit* innerDemon);
     bool HandleHealerStrategy(Unit* innerDemon);
     bool HandleHunterStrategy(Unit* innerDemon);

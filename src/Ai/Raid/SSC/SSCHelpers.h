@@ -72,9 +72,9 @@ enum class SscSpells : uint32
     SPELL_ENTANGLE               = 38316,
 
     // Druid
-    SPELL_CAT_FORM               =   768,
     SPELL_BEAR_FORM              =  5487,
     SPELL_DIRE_BEAR_FORM         =  9634,
+    SPELL_FAERIE_FIRE_FERAL      = 16857,
     SPELL_TREE_OF_LIFE           = 33891,
     SPELL_DRUID_BERSERK          = 50334,
 
