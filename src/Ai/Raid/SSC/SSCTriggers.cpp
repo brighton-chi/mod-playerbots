@@ -170,7 +170,9 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!leotheras || IsSpellbinderPhase(leotheras))
         return false;
 
-    if (HasInnerDemon(bot))
+    // A Hunter kites its Inner Demon and can end up beside the Chaos Blast target so they need to
+    // be permitted to move, even with an Inner Demnon.
+    if (HasInnerDemon(bot) && bot->getClass() != CLASS_HUNTER)
         return false;
 
     return !IsLeotherasChannelingWhirlwind(leotheras);

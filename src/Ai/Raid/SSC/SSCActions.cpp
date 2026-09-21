@@ -720,40 +720,25 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     return false;
 }
 
-// Hunters will not attempt to kite if they are targeted. This custom method attempts to implement
-// a form of kiting against the Inner Demons, as Hunters have trouble killing them in time with
-// melee only when damage is nerfed with IP.
-bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
-{
-    if (!bot->IsWithinMeleeRange(innerDemon))
-        return false;
-
-    if (!botAI->HasAura("wing clip", innerDemon) &&
-        botAI->CanCastSpell("wing clip", innerDemon) && botAI->CastSpell("wing clip", innerDemon))
-    {
-        return true;
-    }
-
-    if (!innerDemon->isFrozen() &&
-        botAI->CanCastSpell("freezing trap", bot) && botAI->CastSpell("freezing trap", bot))
-    {
-        return true;
-    }
-
-    if (!botAI->CanCastSpell("disengage", innerDemon))
-        return false;
-
-    bot->SetOrientation(bot->GetAngle(innerDemon));
-    return botAI->CastSpell("disengage", innerDemon);
-}
-
 // Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this forces them
 // into cat and hardcodes a rotation to avoid needing to do a strategy swap.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
-    if (!bot->HasAura(Id(SscSpells::SPELL_CAT_FORM)) &&
-        botAI->CanCastSpell(Id(SscSpells::SPELL_CAT_FORM), bot) &&
-        botAI->CastSpell(Id(SscSpells::SPELL_CAT_FORM), bot))
+    if (bot->HasAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM)))
+    {
+        bot->RemoveOwnedAura(
+            Id(SscSpells::SPELL_DIRE_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
+
+    if (bot->HasAura(Id(SscSpells::SPELL_BEAR_FORM)))
+    {
+        bot->RemoveOwnedAura(
+            Id(SscSpells::SPELL_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
+
+    constexpr uint32 catForm = Id(SscSpells::SPELL_CAT_FORM);
+    if (!bot->HasAura(catForm) && botAI->CanCastSpell(catForm, bot) &&
+        botAI->CastSpell(catForm, bot))
     {
         return true;
     }
@@ -784,6 +769,49 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
 
     return botAI->CanCastSpell("mangle (cat)", innerDemon) &&
         botAI->CastSpell("mangle (cat)", innerDemon);
+}
+
+// Hunters will not attempt to kite if they are targeted. This custom method attempts to implement
+// a form of kiting against the Inner Demons, as Hunters have trouble killing them in time with
+// melee only when damage is nerfed with IP.
+bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
+{
+    if (!bot->IsWithinMeleeRange(innerDemon))
+        return false;
+
+    constexpr uint32 wingClip = Id(SscSpells::SPELL_WING_CLIP);
+    if (!innerDemon->HasAura(wingClip) && botAI->CanCastSpell(wingClip, innerDemon) &&
+        botAI->CastSpell(wingClip, innerDemon))
+    {
+        return true;
+    }
+
+    // The trap goes down before the leap. Right after Wing Clip it is only the global cooldown in
+    // the way, so wait for it rather than skip to Disengage, which is off the global cooldown
+    uint32 const trapId = AI_VALUE2(uint32, "spell id", "freezing trap");
+    if (!innerDemon->isFrozen() && trapId && !bot->HasSpellCooldown(trapId))
+        return botAI->CanCastSpell("freezing trap", bot) && botAI->CastSpell("freezing trap", bot);
+
+    // The leap only once the demon is held, by the trap or by an Entrapment root off the stock
+    // Explosive Trap; the trap takes a moment to arm
+    if ((!innerDemon->isFrozen() && !innerDemon->HasRootAura()) ||
+        !botAI->CanCastSpell("disengage", innerDemon))
+    {
+        return false;
+    }
+
+    // If within 25 yards of the Warlock tank, Disengage should leap away from the Warlock tank.
+    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Unit* blastTarget = leotherasDemon ? leotherasDemon->GetVictim() : nullptr;
+    if (!blastTarget)
+        blastTarget = GetLeotherasWarlockTank(bot);
+
+    constexpr float leapClearance = 25.0f;
+    Unit* faceTarget = blastTarget && blastTarget != bot &&
+        bot->GetExactDist2d(blastTarget) < leapClearance ? blastTarget : innerDemon;
+
+    bot->SetOrientation(bot->GetAngle(faceTarget));
+    return botAI->CastSpell("disengage", innerDemon);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerDemon)

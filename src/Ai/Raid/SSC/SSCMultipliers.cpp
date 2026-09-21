@@ -356,20 +356,20 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     if (action->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
 
-    // Don't waste time moving. Just kill the Inner Demon asap. Hunters are the exception, as they
-    // need to be allowed to attempt kiting to get some shots off.
-    if (bot->getClass() != CLASS_HUNTER)
-    {
-        if (IsRepositionAction(bot, action))
-            return 0.0f;
+    // Don't waste time moving. Just kill the Inner Demon asap. The hunter's kite is the destroy
+    // action's own Disengage, so the stock one is out too: a freshly summoned demon has no victim
+    // for a moment, which satisfies the stock trigger and would jump before the trap is down. The
+    // ranged positioning stays for the hunter, whose leap can land beside the Chaos Blast target.
+    if (IsRepositionAction(bot, action))
+        return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
-            !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
-            !dynamic_cast<MeleeAction*>(action))
-        {
-            return 0.0f;
-        }
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindPositionRangedAction*>(action) &&
+        !dynamic_cast<MeleeAction*>(action))
+    {
+        return 0.0f;
     }
 
     if (bot->getClass() == CLASS_DRUID &&
