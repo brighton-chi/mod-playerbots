@@ -208,6 +208,7 @@ public:
 private:
     bool HandleFeralTankStrategy(Unit* innerDemon);
     bool HandleHealerStrategy(Unit* innerDemon);
+    bool HandleHunterStrategy(Unit* innerDemon);
 };
 
 class LeotherasTheBlindFinalPhaseAttackBossAction : public AttackAction

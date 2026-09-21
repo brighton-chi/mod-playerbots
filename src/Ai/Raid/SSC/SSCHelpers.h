@@ -73,8 +73,6 @@ enum class SscSpells : uint32
 
     // Druid
     SPELL_CAT_FORM               =   768,
-    SPELL_BEAR_FORM              =  5487,
-    SPELL_DIRE_BEAR_FORM         =  9634,
     SPELL_TREE_OF_LIFE           = 33891,
     SPELL_DRUID_BERSERK          = 50334,
 
@@ -136,7 +134,7 @@ enum class SscItems : uint32
 };
 
 inline constexpr uint32 SSC_MAP_ID = 548;
-inline constexpr uint32 HAZARD_CACHE_INTERVAL = 200;
+inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 
 Creature* GetCachedCreature(Player* bot, char const* value);
 
@@ -214,7 +212,7 @@ bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 // Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
 // The guardians are found by a sorted, cached grid search so every tank sees the same list in the
 // same order (summon GUIDs are sequential, so sorted is spawn order).
-inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL = 200;
+inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
 // The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
@@ -234,14 +232,15 @@ bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
 // Leotheras the Blind
 
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
-inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL = 200;
+inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3000;
 
 extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+// When the current Whirlwind will end, from the aura's remaining duration.
+extern std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
 extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
-// Leotheras and his Shadow, by entry: he is off every threat list while banished, and the Shadow
-// is a summon. Both are cached as "ssc leotheras" and "ssc shadow of leotheras".
 ObjectGuid FindLeotherasGuid(Player* bot);
 ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
 Creature* GetLeotheras(Player* bot);

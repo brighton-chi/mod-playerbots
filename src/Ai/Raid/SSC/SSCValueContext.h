@@ -20,7 +20,7 @@ public:
     SscHazardPositionsValue(
         PlayerbotAI* botAI, std::string const& name, uint32 spellId, float searchRadius)
         : CalculatedValue<std::vector<Position>>(
-              botAI, name, SscHelpers::HAZARD_CACHE_INTERVAL),
+              botAI, name, SscHelpers::HAZARD_CACHE_INTERVAL_MS),
           _spellId(spellId), _searchRadius(searchRadius) {}
 
 protected:
@@ -39,7 +39,7 @@ class SscLurkerGuardiansValue : public CalculatedValue<GuidVector>
 public:
     SscLurkerGuardiansValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "ssc lurker guardians", SscHelpers::LURKER_GUARDIAN_CACHE_INTERVAL) {}
+              botAI, "ssc lurker guardians", SscHelpers::LURKER_GUARDIAN_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return SscHelpers::FindLurkerGuardianGuids(bot); }
@@ -50,7 +50,7 @@ class SscLeotherasValue : public CalculatedValue<ObjectGuid>
 public:
     SscLeotherasValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "ssc leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL) {}
+              botAI, "ssc leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SscHelpers::FindLeotherasGuid(bot); }
@@ -61,7 +61,7 @@ class SscShadowOfLeotherasValue : public CalculatedValue<ObjectGuid>
 public:
     SscShadowOfLeotherasValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "ssc shadow of leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL) {}
+              botAI, "ssc shadow of leotheras", SscHelpers::LEOTHERAS_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return SscHelpers::FindShadowOfLeotherasGuid(bot); }

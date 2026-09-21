@@ -303,6 +303,7 @@ bool CastTauntOn(PlayerbotAI* botAI, Unit* target)
 // Leotheras the Blind
 
 std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
 std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 

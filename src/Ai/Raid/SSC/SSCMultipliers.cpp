@@ -356,6 +356,22 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     if (action->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
 
+    // Don't waste time moving. Just kill the Inner Demon asap. Hunters are the exception, as they
+    // need to be allowed to attempt kiting to get some shots off.
+    if (bot->getClass() != CLASS_HUNTER)
+    {
+        if (IsRepositionAction(bot, action))
+            return 0.0f;
+
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
+            !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
+            !dynamic_cast<MeleeAction*>(action))
+        {
+            return 0.0f;
+        }
+    }
+
     if (bot->getClass() == CLASS_DRUID &&
         (dynamic_cast<CastDireBearFormAction*>(action) ||
          dynamic_cast<CastBearFormAction*>(action) ||
@@ -364,14 +380,20 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         return 0.0f;
     }
 
-    // Don't waste time moving. Just kill the Inner Demon asap.
-    if (IsRepositionAction(bot, action))
-        return 0.0f;
-
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
-        !dynamic_cast<MeleeAction*>(action))
+    // Warrior AoE abilities have no threat type.
+    if (bot->getClass() == CLASS_WARRIOR &&
+        (dynamic_cast<CastThunderClapAction*>(action) ||
+         dynamic_cast<CastCleaveAction*>(action) ||
+         dynamic_cast<CastChallengingShoutAction*>(action) ||
+         dynamic_cast<CastDemoralizingShoutAction*>(action) ||
+         dynamic_cast<CastDemoralizingShoutWithoutLifeTimeCheckAction*>(action) ||
+         dynamic_cast<CastShockwaveAction*>(action) ||
+         dynamic_cast<CastPiercingHowlAction*>(action) ||
+         dynamic_cast<CastIntimidatingShoutAction*>(action) ||
+         dynamic_cast<CastSweepingStrikesAction*>(action) ||
+         dynamic_cast<CastBladestormAction*>(action) ||
+         dynamic_cast<CastWhirlwindAction*>(action) ||
+         dynamic_cast<CastVigilanceAction*>(action)))
     {
         return 0.0f;
     }
@@ -379,6 +401,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     // Exclude abilities with a target that isn't the bot or the Inner Demon, plus self heals.
     return dynamic_cast<DpsAssistAction*>(action) ||
         dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastSnareSpellAction*>(action) ||
         dynamic_cast<CastHealingSpellAction*>(action) ||
         dynamic_cast<CastCureSpellAction*>(action) ||
         dynamic_cast<CurePartyMemberAction*>(action) ||
@@ -439,12 +462,19 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (PlayerbotAI::IsTank(bot))
             return 1.0f;
 
-        constexpr uint32 dpsWaitMsHumanoidPhase = 3 * IN_MILLISECONDS;
         auto it = leotherasHumanoidPhaseDpsWaitTimer.find(instanceId);
-        if (it == leotherasHumanoidPhaseDpsWaitTimer.end())
+        if (it == leotherasHumanoidPhaseDpsWaitTimer.end() ||
+            getMSTimeDiff(it->second, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
+        {
             return 0.0f;
+        }
 
-        return getMSTimeDiff(it->second, now) < dpsWaitMsHumanoidPhase ? 0.0f : 1.0f;
+        // Hold only after the Whirlwind ends; ranged keep attacking from outside it
+        auto whirlwind = leotherasWhirlwindEndTime.find(instanceId);
+        if (whirlwind == leotherasWhirlwindEndTime.end() || now < whirlwind->second)
+            return 1.0f;
+
+        return now - whirlwind->second < LEOTHERAS_HUMANOID_DPS_WAIT_MS ? 0.0f : 1.0f;
     }
 
     Player* warlockTank = GetLeotherasWarlockTank(bot);

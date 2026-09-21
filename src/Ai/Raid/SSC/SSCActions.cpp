@@ -47,6 +47,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= nearestVashjGeneratorTriggerGuid.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+    reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
     reset |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
@@ -699,32 +700,57 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     if (!innerDemon)
         return false;
 
+    // All classes and specs swap their autoattack to the Inner Demon.
+    if (AI_VALUE(Unit*, "current target") != innerDemon)
+    {
+        bot->CastStop();
+        return Attack(innerDemon);
+    }
+
+    // Specific classes and specs have hardcoded methods to kill their Inner Demons.
     if (bot->getClass() == CLASS_DRUID && PlayerbotAI::IsTank(bot))
         return HandleFeralTankStrategy(innerDemon);
+
+    if (bot->getClass() == CLASS_HUNTER)
+        return HandleHunterStrategy(innerDemon);
 
     if (PlayerbotAI::IsHeal(bot))
         return HandleHealerStrategy(innerDemon);
 
-    return AI_VALUE(Unit*, "current target") != innerDemon && Attack(innerDemon);
+    return false;
 }
 
-// At 50% nerfed damage, bears have trouble killing their Inner Demons without a specific strategy.
-// Warrior and Paladin tanks have no trouble in my experience (Prot Warriors have high DPS, and
-// Prot Paladins have an advantage in that Inner Demons are weak to Holy).
+// Hunters will not attempt to kite if they are targeted. This custom method attempts to implement
+// a form of kiting against the Inner Demons, as Hunters have trouble killing them in time with
+// melee only when damage is nerfed with IP.
+bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
+{
+    if (!bot->IsWithinMeleeRange(innerDemon))
+        return false;
+
+    if (!botAI->HasAura("wing clip", innerDemon) &&
+        botAI->CanCastSpell("wing clip", innerDemon) && botAI->CastSpell("wing clip", innerDemon))
+    {
+        return true;
+    }
+
+    if (!innerDemon->isFrozen() &&
+        botAI->CanCastSpell("freezing trap", bot) && botAI->CastSpell("freezing trap", bot))
+    {
+        return true;
+    }
+
+    if (!botAI->CanCastSpell("disengage", innerDemon))
+        return false;
+
+    bot->SetOrientation(bot->GetAngle(innerDemon));
+    return botAI->CastSpell("disengage", innerDemon);
+}
+
+// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this forces them
+// into cat and hardcodes a rotation to avoid needing to do a strategy swap.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
-    if (bot->HasAura(Id(SscSpells::SPELL_DIRE_BEAR_FORM)))
-    {
-        bot->RemoveOwnedAura(
-            Id(SscSpells::SPELL_DIRE_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
-    }
-
-    if (bot->HasAura(Id(SscSpells::SPELL_BEAR_FORM)))
-    {
-        bot->RemoveOwnedAura(
-            Id(SscSpells::SPELL_BEAR_FORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
-    }
-
     if (!bot->HasAura(Id(SscSpells::SPELL_CAT_FORM)) &&
         botAI->CanCastSpell(Id(SscSpells::SPELL_CAT_FORM), bot) &&
         botAI->CastSpell(Id(SscSpells::SPELL_CAT_FORM), bot))
@@ -903,11 +929,31 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
     if (IsLeotherasHumanoidPhase(bot))
     {
-        // Whirlwind resets threat on every tick. Restart the dps wait timer when it ends.
-        if (IsLeotherasChannelingWhirlwind(leotheras))
-            changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
-        else
-            changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
+        changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
+
+        // Whirlwind resets threat on every tick. Hold dps for a moment after it ends. Do not hold
+        // dps while Whirlwind is active.
+        if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_WHIRLWIND)))
+        {
+            changed |= leotherasWhirlwindEndTime.try_emplace(
+                instanceId, now + whirlwind->GetDuration()).second;
+        }
+        else if (auto it = leotherasWhirlwindEndTime.find(instanceId);
+            it != leotherasWhirlwindEndTime.end())
+        {
+            // This addresses the situation in which Whirlwind ends early due to the transition into
+            // the final phase being triggered.
+            if (now < it->second)
+            {
+                it->second = now;
+                changed = true;
+            }
+            else if (now - it->second >= LEOTHERAS_HUMANOID_DPS_WAIT_MS)
+            {
+                leotherasWhirlwindEndTime.erase(it);
+                changed = true;
+            }
+        }
 
         changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
         changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
@@ -916,12 +962,14 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
     {
         changed |= leotherasDemonPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
         changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
         changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     }
     else if (IsLeotherasFinalPhase(bot))
     {
         changed |= leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
         changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
         changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
     }
 
