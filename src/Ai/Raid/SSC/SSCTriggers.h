@@ -318,6 +318,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FathomLordKarathressLiftedByCycloneTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressLiftedByCycloneTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress lifted by cyclone") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Morogrim Tidewalker
 
 class MorogrimTidewalkerPullingBossTrigger : public SscEncounterTrigger

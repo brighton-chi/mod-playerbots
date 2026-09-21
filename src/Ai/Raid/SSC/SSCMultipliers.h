@@ -241,6 +241,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class FathomLordKarathressKeepSpitfireTotemTargetMultiplier : public SscEncounterMultiplier
+{
+public:
+    FathomLordKarathressKeepSpitfireTotemTargetMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress keep spitfire totem target") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Morogrim Tidewalker
 
 class MorogrimTidewalkerDisableTankActionsMultiplier : public SscEncounterMultiplier

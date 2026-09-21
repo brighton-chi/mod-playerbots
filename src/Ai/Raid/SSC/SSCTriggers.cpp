@@ -269,7 +269,7 @@ bool FathomLordKarathressPullingBossesTrigger::IsActiveInEncounter()
     return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
-bool FathomLordKarathressDeterminingKillOrderTrigger::IsActiveInEncounter() // All I have to get healers into combat is non-combat engine exception from dps assist. will it work?
+bool FathomLordKarathressDeterminingKillOrderTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsHeal(bot))
         return false;
@@ -284,9 +284,9 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActiveInEncounter() // A
         return !AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
-        return !AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+        return !GetSharkkisTankTarget(botAI);
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, true))
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, false))
         return !AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
 
     return false;
@@ -296,6 +296,12 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+}
+
+// The aura outlasts the knockback arc by a few seconds, which is the window for the drop
+bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
+{
+    return bot->HasAura(Id(SscSpells::SPELL_CYCLONE));
 }
 
 // Morogrim Tidewalker

@@ -50,6 +50,22 @@ bool IsBloodlustAction(Player* bot, Action* action)
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 }
 
+// The taunts that take more than the tank's own target
+bool IsAoeTauntAction(Player* bot, Action* action)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DRUID:
+            return dynamic_cast<CastChallengingRoarAction*>(action);
+        case CLASS_PALADIN:
+            return dynamic_cast<CastRighteousDefenseAction*>(action);
+        case CLASS_WARRIOR:
+            return dynamic_cast<CastChallengingShoutAction*>(action);
+        default:
+            return false;
+    }
+}
+
 } // end anonymous namespace
 
 // Trash
@@ -605,14 +621,20 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<AvoidAoeAction*>(action) &&
-        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
-    {
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
         return 1.0f;
-    }
 
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
+
+    // Single-target taunts land on the tank's own target and are how a guard that latched onto
+    // the wrong tank, a loose pet or a knocked-off guard is taken back. AoE threat and the AoE
+    // taunts are held only while somebody else's council member is close enough to be caught.
+    if (IsAoeThreatAction(bot, action) || IsAoeTauntAction(bot, action))
+        return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ?
+            0.0f : 1.0f;
+
+    return 1.0f;
 }
 
 float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
@@ -640,13 +662,12 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
 
 float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsTank(bot))
+    // Normally I don't blanket exempt healers as a role and instead only let healing spells through
+    // only, but this is a pretty chaotic pull so I don't want to limit healers' abilities.
+    if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
@@ -657,8 +678,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
     if (it == karathressDpsWaitTimer.end())
         return 0.0f;
 
-    constexpr uint32 dpsWaitMs = 12 * IN_MILLISECONDS;
-    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(it->second, getMSTime()) < KARATHRESS_DPS_WAIT_MS ? 0.0f : 1.0f;
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)
@@ -666,10 +686,33 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") ? 0.0f : 1.0f;
+    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
+        return 0.0f;
+
+    // Caribdis healer needs to maintain position.
+    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+        return 1.0f;
+
+    if (!dynamic_cast<ReachTargetAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "fathom-guard caribis") ? 0.0f : 1.0f;
+}
+
+// The ledge between Sharkkis and Karathress breaks line of sight to a totem at his feet while
+// melee climb it. That makes the totem an invalid target, and the drop hands the bot back to
+// Sharkkis until the totem is in sight again from the bottom. The totem stays the target as long
+// as it stands.
+float FathomLordKarathressKeepSpitfireTotemTargetMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<DropTargetAction*>(action))
+        return 1.0f;
+
+    Unit* totem = GetSpitfireTotem(bot);
+    return totem && AI_VALUE(Unit*, "current target") == totem ? 0.0f : 1.0f;
 }
 
 // Morogrim Tidewalker

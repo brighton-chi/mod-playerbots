@@ -9,6 +9,7 @@
 #include "EncounterHelpers.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
+#include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -55,6 +56,12 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
     reset |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
     reset |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+
+    if (!AI_VALUE2(bool, "combat", "self target"))
+    {
+        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+    }
 
     return reset;
 }
@@ -623,7 +630,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
-    if (leotherasHumanoid && !HasInnerDemon(bot) && leotherasHumanoid->GetVictim() != bot
+    if (leotherasHumanoid && !HasInnerDemon(bot) && leotherasHumanoid->GetVictim() != bot &&
         bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss)
     {
         if (FleePosition(leotherasHumanoid->GetPosition(), safeDistFromBoss))
@@ -1013,10 +1020,10 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
     }
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
-        target = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+        target = GetSharkkisTankTarget(botAI);
         position = SHARKKIS_TANK_POSITION;
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, true))
+    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, false))
     {
         target = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         position = TIDALVESS_TANK_POSITION;
@@ -1029,6 +1036,9 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
         return Attack(target);
 
     if (target->GetVictim() != bot || !bot->IsWithinMeleeRange(target))
+        return false;
+
+    if (IsHoldingAnotherTanksCouncilMember(botAI))
         return false;
 
     constexpr float arrivalDist = 4.0f;
@@ -1153,22 +1163,20 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 
     Unit* target = nullptr;
 
-    constexpr float searchRadius = 75.0f;
-    // A declaration cannot sit inside a compound condition, so the two role-gated ones are split
-    Unit* totem = PlayerbotAI::IsMelee(bot) ?
-        bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), searchRadius) : nullptr;
-    Unit* caribdis = PlayerbotAI::IsRanged(bot) ?
-        AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") : nullptr;
+    // Karathress inherits the totem when Tidalvess dies, so it stays first for the whole fight
+    Unit* totem = GetSpitfireTotem(bot);
+    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
     if (totem)
     {
         target = totem;
     }
-    else if (Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
+    else if (tidalvess)
     {
         target = tidalvess;
     }
-    else if (caribdis)
+    else if (caribdis && PlayerbotAI::IsRanged(bot))
     {
         target = caribdis;
     }
@@ -1186,6 +1194,20 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
+        // Only melee get here with Caribdis alive; they hold rather than hand him her Blessing
+        if (caribdis && karathress->GetHealthPct() <= KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
+        {
+            if (AI_VALUE(Unit*, "current target") != karathress)
+                return false;
+
+            bot->AttackStop();
+            bot->CastStop();
+            context->GetValue<Unit*>("current target")->Set(nullptr);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid::Empty);
+            return true;
+        }
+
         target = karathress;
     }
 
@@ -1227,6 +1249,27 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     return karathressDpsWaitTimer.try_emplace(karathress->GetInstanceId(), getMSTime()).second;
+}
+
+// A Cyclone tosses every second and the arc takes longer than that, so from the second toss on
+// the knockback handler is working from a mid-air position: its raycast fails and the destination
+// keeps the bot's own height. Nothing brings the bot down once the Cyclone leaves, but any
+// ordinary move does, since its destination is on the ground: the bot is sent to the floor
+// beneath it once the last arc has finished.
+bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
+{
+    if (!bot->movespline->Finalized())
+        return false;
+
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+    float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, x, y, floorZ, false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Morogrim Tidewalker

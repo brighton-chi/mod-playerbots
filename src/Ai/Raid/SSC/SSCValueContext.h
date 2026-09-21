@@ -67,6 +67,17 @@ protected:
     ObjectGuid Calculate() override { return SscHelpers::FindShadowOfLeotherasGuid(bot); }
 };
 
+class SscSpitfireTotemValue : public CalculatedValue<ObjectGuid>
+{
+public:
+    SscSpitfireTotemValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(
+              botAI, "ssc spitfire totem", SscHelpers::SPITFIRE_TOTEM_CACHE_INTERVAL_MS) {}
+
+protected:
+    ObjectGuid Calculate() override { return SscHelpers::FindSpitfireTotemGuid(bot); }
+};
+
 class RaidSscValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -76,6 +87,7 @@ public:
         creators["ssc lurker guardians"] = &RaidSscValueContext::ssc_lurker_guardians;
         creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
+        creators["ssc spitfire totem"] = &RaidSscValueContext::ssc_spitfire_totem;
     }
 
 private:
@@ -92,6 +104,9 @@ private:
     }
     static UntypedValue* ssc_shadow_of_leotheras(PlayerbotAI* botAI) {
         return new SscShadowOfLeotherasValue(botAI);
+    }
+    static UntypedValue* ssc_spitfire_totem(PlayerbotAI* botAI) {
+        return new SscSpitfireTotemValue(botAI);
     }
 };
 

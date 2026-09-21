@@ -64,6 +64,9 @@ enum class SscSpells : uint32
     SPELL_CHAOS_BLAST            = 37675,
     SPELL_INSIDIOUS_WHISPER      = 37676,
 
+    // Fathom-Lord Karathress
+    SPELL_CYCLONE                = 38517, // 4 yd feather fall + knockback every 1s, 5s aura
+
     // Lady Vashj <Coilfang Matron>
     SPELL_FEAR_WARD              =  6346,
     SPELL_MAGIC_BARRIER          = 38112,
@@ -120,6 +123,8 @@ enum class SscNpcs : uint32
 
     // Fathom-Lord Karathress
     NPC_SPITFIRE_TOTEM           = 22091,
+    NPC_FATHOM_LURKER            = 22119,
+    NPC_FATHOM_SPOREBAT          = 22120,
 
     // Lady Vashj <Coilfang Matron>
     NPC_WORLD_INVISIBLE_TRIGGER  = 12999,
@@ -271,11 +276,34 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
 inline Position const TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
 inline Position const SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
-inline Position const CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f };
-inline Position const CARIBDIS_HEALER_POSITION = { 466.203f, -503.201f, -13.158f };
+inline Position const CARIBDIS_TANK_POSITION = /*{ 464.462f, -475.820f, -13.158f };*/ { 462.72876f, -482.8895f, -13.158224f };
+inline Position const CARIBDIS_HEALER_POSITION = /*{ 466.203f, -503.201f, -13.158f };*/ { 475.181f, -507.385f, -13.158f };
 inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
 
+// Every living guard buffs Karathress at 75%, so he is held above this while one still stands
+inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 80.0f;
+// Widest tank AoE is Death and Decay at 10 yd
+inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
+// One toss leaves a bot about 1.5 yd up; navmesh Z sits well under 1 yd off the floor
+inline constexpr float CYCLONE_DROP_HEIGHT = 1.0f;
+inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
+inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
+
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
+
+// Totems cannot hold a threat list, so the Spitfire Totem is found by entry and cached as
+// "ssc spitfire totem".
+ObjectGuid FindSpitfireTotemGuid(Player* bot);
+Creature* GetSpitfireTotem(Player* bot);
+Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
+// Karathress belongs to the main tank; Caribdis, Sharkkis and Tidalvess to the assist tanks in
+// that order
+Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
+// A guard that latched onto the wrong tank on the pull is peeled by its own tank, so the tank
+// holding it must not walk off with it
+bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI);
+bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 
 // Morogrim Tidewalker
 

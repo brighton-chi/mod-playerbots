@@ -105,6 +105,9 @@ public:
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
 
+        creators["fathom-lord karathress lifted by cyclone"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_lifted_by_cyclone;
+
         // Morogrim Tidewalker
         creators["morogrim tidewalker should be tanked"] =
             &RaidSscTriggerContext::morogrim_tidewalker_should_be_tanked;
@@ -247,6 +250,9 @@ private:
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldManageDpsTimerTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_lifted_by_cyclone(PlayerbotAI* botAI) {
+        return new FathomLordKarathressLiftedByCycloneTrigger(botAI);
     }
 
     // Morogrim Tidewalker

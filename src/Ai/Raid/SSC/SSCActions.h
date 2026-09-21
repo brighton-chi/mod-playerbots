@@ -285,6 +285,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class FathomLordKarathressDropFromCycloneAction : public MovementAction
+{
+public:
+    FathomLordKarathressDropFromCycloneAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "fathom-lord karathress drop from cyclone") {}
+    bool Execute(Event event) override;
+};
+
 // Morogrim Tidewalker
 
 class MorogrimTidewalkerMoveBossToTankPositionAction : public AttackAction

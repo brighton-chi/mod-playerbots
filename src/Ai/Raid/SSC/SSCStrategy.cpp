@@ -107,6 +107,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer", {
         NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("fathom-lord karathress lifted by cyclone", {
+        NextAction("fathom-lord karathress drop from cyclone", ACTION_EMERGENCY + 9) }));
+
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode("morogrim tidewalker should be tanked", {
         NextAction("morogrim tidewalker move boss to tank position", ACTION_RAID) }));
@@ -189,6 +192,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressKeepSpitfireTotemTargetMultiplier(botAI));
 
     // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
