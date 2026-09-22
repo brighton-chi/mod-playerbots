@@ -696,23 +696,33 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return 1.0f;
 
-    if (!dynamic_cast<ReachTargetAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<FathomLordKarathressPositionCaribdisTankHealerAction*>(action) ||
+        dynamic_cast<FathomLordKarathressDropFromCycloneAction*>(action))
+    {
         return 1.0f;
+    }
 
-    return AI_VALUE2(Unit*, "find target", "fathom-guard caribis") ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
 }
 
-// The ledge between Sharkkis and Karathress breaks line of sight to a totem at his feet while
-// melee climb it. That makes the totem an invalid target, and the drop hands the bot back to
-// Sharkkis until the totem is in sight again from the bottom. The totem stays the target as long
-// as it stands.
-float FathomLordKarathressKeepSpitfireTotemTargetMultiplier::GetValueInEncounter(Action* action)
+// A target out of line of sight is invalid, and the drop hands the bot back to whatever is in
+// sight from where it stands. The ledge between Sharkkis and Karathress does that to a totem at
+// his feet while melee climb it, and the walk out to Caribdis does it to her. Both stay the
+// target as long as they stand.
+float FathomLordKarathressKeepTargetOutOfSightMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))
         return 1.0f;
 
-    Unit* totem = GetSpitfireTotem(bot);
-    return totem && AI_VALUE(Unit*, "current target") == totem ? 0.0f : 1.0f;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target)
+        return 1.0f;
+
+    if (target == GetSpitfireTotem(bot))
+        return 0.0f;
+
+    return target == AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
 }
 
 // Morogrim Tidewalker

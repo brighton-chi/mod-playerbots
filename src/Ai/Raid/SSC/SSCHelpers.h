@@ -276,10 +276,16 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
 inline Position const TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
 inline Position const SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
-inline Position const CARIBDIS_TANK_POSITION = /*{ 464.462f, -475.820f, -13.158f };*/ { 462.72876f, -482.8895f, -13.158224f };
+inline Position const CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f }; // far back in corner
+// inline Position const CARIBDIS_TANK_POSITION = { 462.729f, -482.890f, -13.158f }; closer
 inline Position const CARIBDIS_HEALER_POSITION = /*{ 466.203f, -503.201f, -13.158f };*/ { 475.181f, -507.385f, -13.158f };
 inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
 
+// The healer keeps to Caribdis herself, so she is covered wherever any tank puts her, and her
+// victim is not used as the anchor because it jumps into the room whenever the tank loses her.
+// The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
+inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
+inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 // Every living guard buffs Karathress at 75%, so he is held above this while one still stands
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 80.0f;
 // Widest tank AoE is Death and Decay at 10 yd

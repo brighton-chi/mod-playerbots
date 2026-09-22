@@ -241,11 +241,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FathomLordKarathressKeepSpitfireTotemTargetMultiplier : public SscEncounterMultiplier
+class FathomLordKarathressKeepTargetOutOfSightMultiplier : public SscEncounterMultiplier
 {
 public:
-    FathomLordKarathressKeepSpitfireTotemTargetMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "fathom-lord karathress keep spitfire totem target") {}
+    FathomLordKarathressKeepTargetOutOfSightMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress keep target out of sight") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

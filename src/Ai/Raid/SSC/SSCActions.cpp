@@ -1060,19 +1060,11 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
 // Use the assistant flag to select the healer
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDist = 4.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, CARIBDIS_HEALER_POSITION, arrivalDist, nullptr, moveX, moveY, backwards))
-    {
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (!caribdis || bot->IsWithinCombatRange(caribdis, CARIBDIS_HEALER_MAX_DISTANCE))
         return false;
-    }
 
-    return MoveTo(
-        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+    return ReachCombatTo(caribdis, CARIBDIS_HEALER_DISTANCE);
 }
 
 // Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank
@@ -1215,7 +1207,15 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != target)
+    {
+        // Caribdis is tanked out of sight of the room. Attack refuses a target out of line of
+        // sight, so she is approached along the path first; once she is in sight the normal
+        // acquisition and reach take over.
+        if (target == caribdis && !bot->IsWithinLOSInMap(caribdis))
+            return ReachCombatTo(caribdis, botAI->GetRange("spell"));
+
         return Attack(target);
+    }
 
     if (target == caribdis)
     {
@@ -1267,8 +1267,10 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
         return false;
 
+    // Exact waypoint: a pathed move searches for a route from the bot's own position first, and a
+    // bot lifted above the navmesh has none. The point generator falls back to a straight spline.
     return MoveTo(
-        SSC_MAP_ID, x, y, floorZ, false, false, false, false,
+        SSC_MAP_ID, x, y, floorZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
