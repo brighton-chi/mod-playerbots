@@ -241,6 +241,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class FathomLordKarathressNoCastingWhileLiftedMultiplier : public SscEncounterMultiplier
+{
+public:
+    FathomLordKarathressNoCastingWhileLiftedMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress no casting while lifted") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class FathomLordKarathressKeepTargetOutOfSightMultiplier : public SscEncounterMultiplier
 {
 public:

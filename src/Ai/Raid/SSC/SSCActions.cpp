@@ -1212,7 +1212,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         // sight, so she is approached along the path first; once she is in sight the normal
         // acquisition and reach take over.
         if (target == caribdis && !bot->IsWithinLOSInMap(caribdis))
-            return ReachCombatTo(caribdis, botAI->GetRange("spell"));
+            return ApproachCaribdis(caribdis);
 
         return Attack(target);
     }
@@ -1221,6 +1221,10 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         if (MarkTargetWithCross(bot, caribdis))
             return true;
+
+        // Flee is held for the whole fight, so ranged keep out of Tidal Surge themselves
+        if (bot->IsWithinDist(caribdis, CARIBDIS_RANGED_MIN_DISTANCE))
+            return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
     }
     else if (MarkTargetWithSkull(bot, target))
     {
@@ -1242,6 +1246,18 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         spreadDistance, MovementPriority::MOVEMENT_COMBAT); */
 }
 
+bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdis)
+{
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, caribdis, botAI->GetRange("spell"), stepX, stepY))
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
 bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
@@ -1249,6 +1265,13 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     return karathressDpsWaitTimer.try_emplace(karathress->GetInstanceId(), getMSTime()).second;
+}
+
+bool FathomLordKarathressSpreadRangedAction::Execute(Event /*event*/)
+{
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
 // A Cyclone tosses every second and the arc takes longer than that, so from the second toss on

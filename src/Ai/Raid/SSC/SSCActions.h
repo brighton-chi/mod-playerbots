@@ -275,6 +275,9 @@ public:
     FathomLordKarathressAssignDpsPriorityAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "fathom-lord karathress assign dps priority") {}
     bool Execute(Event event) override;
+
+private:
+    bool ApproachCaribdis(Unit* caribdis);
 };
 
 class FathomLordKarathressManageDpsTimerAction : public Action
@@ -282,6 +285,14 @@ class FathomLordKarathressManageDpsTimerAction : public Action
 public:
     FathomLordKarathressManageDpsTimerAction(PlayerbotAI* botAI)
         : Action(botAI, "fathom-lord karathress manage dps timer") {}
+    bool Execute(Event event) override;
+};
+
+class FathomLordKarathressSpreadRangedAction : public MovementAction
+{
+public:
+    FathomLordKarathressSpreadRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "fathom-lord karathress spread ranged") {}
     bool Execute(Event event) override;
 };
 

@@ -706,6 +706,18 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
 }
 
+// Player point movement neither launches nor continues while a cast is up, and a bot lifted by a
+// Cyclone still has its target in range, so it would cast its way through every attempt to bring
+// it down. Casting is held for the length of the Cyclone aura, which covers the tosses and the
+// drop that follows.
+float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CastSpellAction*>(action))
+        return 1.0f;
+
+    return bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ? 0.0f : 1.0f;
+}
+
 // A target out of line of sight is invalid, and the drop hands the bot back to whatever is in
 // sight from where it stands. The ledge between Sharkkis and Karathress does that to a totem at
 // his feet while melee climb it, and the walk out to Caribdis does it to her. Both stay the

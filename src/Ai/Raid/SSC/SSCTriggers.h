@@ -318,6 +318,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FathomLordKarathressRangedShouldSpreadTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class FathomLordKarathressLiftedByCycloneTrigger : public SscEncounterTrigger
 {
 public:

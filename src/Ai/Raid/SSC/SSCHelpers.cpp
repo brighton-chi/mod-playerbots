@@ -548,6 +548,64 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     return false;
 }
 
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
+{
+    if (bot->IsWithinDist(target, stopDistance))
+        return false;
+
+    PathGenerator path(bot);
+    path.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    G3D::Vector3 const targetPos(
+        target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+
+    // Walk forward one step's worth of path, ending early at the point where the path comes
+    // within the distance to hold
+    float remaining = PATH_STEP_DISTANCE;
+    for (std::size_t i = 1; i < points.size(); ++i)
+    {
+        G3D::Vector3 const& from = points[i - 1];
+        G3D::Vector3 const& to = points[i];
+
+        float const segment = (to - from).length();
+        if (segment <= 0.0f)
+            continue;
+
+        float const toDist = (to - targetPos).length();
+        float ratio = 1.0f;
+
+        if (toDist < stopDistance)
+        {
+            float const fromDist = (from - targetPos).length();
+            if (fromDist <= stopDistance)
+                break;
+
+            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+        }
+
+        if (segment * ratio >= remaining)
+            ratio = remaining / segment;
+
+        remaining -= segment * ratio;
+
+        G3D::Vector3 const step = from + (to - from) * ratio;
+        stepX = step.x;
+        stepY = step.y;
+
+        if (remaining <= 0.0f || ratio < 1.0f)
+            return true;
+    }
+
+    return remaining < PATH_STEP_DISTANCE;
+}
+
 // Sharkkis's tank holds his pets too. A pet on somebody else comes first, then Sharkkis, then a
 // pet that is already on the tank; null once none of them is left.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)

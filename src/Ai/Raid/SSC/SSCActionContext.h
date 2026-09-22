@@ -108,6 +108,9 @@ public:
         creators["fathom-lord karathress manage dps timer"] =
             &RaidSscActionContext::fathom_lord_karathress_manage_dps_timer;
 
+        creators["fathom-lord karathress spread ranged"] =
+            &RaidSscActionContext::fathom_lord_karathress_spread_ranged;
+
         creators["fathom-lord karathress drop from cyclone"] =
             &RaidSscActionContext::fathom_lord_karathress_drop_from_cyclone;
 
@@ -262,6 +265,9 @@ private:
     }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) {
         return new FathomLordKarathressManageDpsTimerAction(botAI);
+    }
+    static Action* fathom_lord_karathress_spread_ranged(PlayerbotAI* botAI) {
+        return new FathomLordKarathressSpreadRangedAction(botAI);
     }
     static Action* fathom_lord_karathress_drop_from_cyclone(PlayerbotAI* botAI) {
         return new FathomLordKarathressDropFromCycloneAction(botAI);

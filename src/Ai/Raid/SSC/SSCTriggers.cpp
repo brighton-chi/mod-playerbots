@@ -298,6 +298,16 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 
+// Only the bots close enough to Caribdis for a Cyclone to be summoned on them need the spread
+bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    return caribdis && bot->IsWithinDist(caribdis, CARIBDIS_CYCLONE_SUMMON_RANGE);
+}
+
 // The aura outlasts the knockback arc by a few seconds, which is the window for the drop
 bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
 {

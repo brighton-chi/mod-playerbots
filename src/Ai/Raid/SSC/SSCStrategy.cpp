@@ -107,6 +107,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer", {
         NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("fathom-lord karathress ranged should spread", {
+        NextAction("fathom-lord karathress spread ranged", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("fathom-lord karathress lifted by cyclone", {
         NextAction("fathom-lord karathress drop from cyclone", ACTION_EMERGENCY + 9) }));
 
@@ -192,6 +195,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressNoCastingWhileLiftedMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressKeepTargetOutOfSightMultiplier(botAI));
 
     // Morogrim Tidewalker

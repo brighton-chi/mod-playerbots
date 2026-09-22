@@ -286,8 +286,17 @@ inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.
 // The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
-// Every living guard buffs Karathress at 75%, so he is held above this while one still stands
-inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 80.0f;
+// A step short enough to navigate poor terrain, matching the stepper in EncounterHelpers
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
+// Tidal Surge's range is 10 yards.
+inline constexpr float CARIBDIS_RANGED_MIN_DISTANCE = 12.0f;
+// A Cyclone spawns on a random player within casting range of Caribdis and catches everything
+// within 4 yd of itself, so spread keeps its arrival to the one bot it was summoned on
+inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
+inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 5.0f;
+// Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
+// ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
+inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
 // Widest tank AoE is Death and Decay at 10 yd
 inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
 // One toss leaves a bot about 1.5 yd up; navmesh Z sits well under 1 yd off the floor
@@ -303,6 +312,11 @@ extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(Player* bot);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
+// One step along the bot's path to the target, stopping short of it by stopDistance. The step
+// follows the path corner by corner rather than aiming at the far end of it, so a pillar between
+// the bot and the target is walked around instead of into.
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 // Karathress belongs to the main tank; Caribdis, Sharkkis and Tidalvess to the assist tanks in
 // that order
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
