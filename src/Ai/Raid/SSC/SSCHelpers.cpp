@@ -475,6 +475,12 @@ Creature* GetSpitfireTotem(Player* bot)
     return GetCachedCreature(bot, "ssc spitfire totem");
 }
 
+bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
+{
+    return totem && (PlayerbotAI::IsMelee(bot) ||
+        bot->IsWithinDist(totem, SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE));
+}
+
 namespace
 {
 

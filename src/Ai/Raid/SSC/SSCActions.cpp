@@ -1059,13 +1059,29 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
 
 // Caribdis's tank spot is far away so a dedicated healer is needed
 // Use the assistant flag to select the healer
+// Her tank stands on her, so seeing her is seeing the tank. Out of sight the walk goes on until
+// she is in sight, as it does for ranged; in sight it closes only to the healing distance.
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (!caribdis || bot->IsWithinCombatRange(caribdis, CARIBDIS_HEALER_MAX_DISTANCE))
+    if (!caribdis)
         return false;
 
-    return ReachCombatTo(caribdis, CARIBDIS_HEALER_DISTANCE);
+    bool const inSight = bot->IsWithinLOSInMap(caribdis);
+    if (inSight && bot->IsWithinDist(caribdis, CARIBDIS_HEALER_MAX_DISTANCE))
+        return false;
+
+    float const stopDistance =
+        inSight ? CARIBDIS_HEALER_DISTANCE : CARIBDIS_APPROACH_STOP_DISTANCE;
+
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, caribdis, stopDistance, stepX, stepY))
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank
@@ -1135,33 +1151,15 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
 // to get her down than real players (standard is ranged DPS help with Sharkkis first)
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    /* constexpr float searchRadius = 75.0f;
-    Creature* totem = bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), searchRadius);
-    if (totem && PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
-    {
-        if (MarkTargetWithSkull(bot, totem))
-            return true;
-
-        if (AI_VALUE(Unit*, "current target") != totem)
-            return Attack(totem);
-
-        // Direct movement order due to path between Sharkkis and totem sometimes being screwy
-        if (bot->IsWithinMeleeRange(totem))
-            return false;
-
-        return MoveTo(SSC_MAP_ID, totem->GetPositionX(), totem->GetPositionY(),
-            bot->GetPositionZ(), false, false, false, true,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
-    } */
-
     Unit* target = nullptr;
 
-    // Karathress inherits the totem when Tidalvess dies, so it stays first for the whole fight
+    // Karathress inherits the totem when Tidalvess dies, so it stays first for the whole fight,
+    // for melee and for the ranged near it
     Unit* totem = GetSpitfireTotem(bot);
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 
-    if (totem)
+    if (ShouldAttackSpitfireTotem(bot, totem))
     {
         target = totem;
     }
@@ -1225,24 +1223,14 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         if (bot->IsWithinDist(caribdis, CARIBDIS_RANGED_MIN_DISTANCE))
             return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
     }
-    else if (MarkTargetWithSkull(bot, target))
+    // While a totem stands, skull stays on it: ranged out of its reach are on something else, and
+    // marking that would flip the skull against the bots on the totem
+    else if ((!totem || target == totem) && MarkTargetWithSkull(bot, target))
     {
         return true;
     }
 
     return false;
-
-    /* if (!caribdis)
-        return false;
-
-    Position const& position = CARIBDIS_RANGED_DPS_POSITION;
-    if (bot->GetExactDist2d(position) <= 2.0f)
-        return false;
-
-    constexpr float spreadDistance = 8.0f;
-    return MoveInside(
-        SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        spreadDistance, MovementPriority::MOVEMENT_COMBAT); */
 }
 
 bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdis)
@@ -1250,45 +1238,11 @@ bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdi
     float stepX;
     float stepY;
     if (!GetPathStepTowardUnit(bot, caribdis, CARIBDIS_APPROACH_STOP_DISTANCE, stepX, stepY))
-    {
-        // TEMP: a failed step leaves the bot unable to move at all while she is out of sight
-        LogKillOrder("approach step failed", caribdis);
         return false;
-    }
 
-    bool const moved = MoveTo(
+    return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, false);
-
-    if (!moved)
-        LogKillOrder("approach move refused", caribdis);
-
-    return moved;
-}
-
-// TEMP kill-order diagnostics
-void FathomLordKarathressAssignDpsPriorityAction::LogKillOrder(char const* stage, Unit* target)
-{
-    uint32 const now = getMSTime();
-    if (_lastBranchLogTime && getMSTimeDiff(_lastBranchLogTime, now) < 3000)
-        return;
-
-    _lastBranchLogTime = now;
-
-    Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    Unit* victim = bot->GetVictim();
-    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-
-    LOG_INFO("playerbots",
-        "[SSC order] {} class {} | {} | picked {} | current {} | victim {} | caribdis {} "
-        "dist {:.1f} los {} | ranged {} dps {} canmove {}",
-        bot->GetName(), static_cast<uint32>(bot->getClass()), stage,
-        target ? target->GetName() : "none",
-        currentTarget ? currentTarget->GetName() : "none", victim ? victim->GetName() : "none",
-        caribdis ? 1 : 0, caribdis ? bot->GetExactDist(caribdis) : -1.0f,
-        caribdis && bot->IsWithinLOSInMap(caribdis) ? 1 : 0,
-        PlayerbotAI::IsRanged(bot) ? 1 : 0, PlayerbotAI::IsDps(bot) ? 1 : 0,
-        botAI->CanMove() ? 1 : 0);
 }
 
 bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
@@ -1314,22 +1268,23 @@ bool FathomLordKarathressSpreadRangedAction::Execute(Event /*event*/)
 // beneath it once the last arc has finished.
 bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
 {
-    float const x = bot->GetPositionX();
-    float const y = bot->GetPositionY();
-    float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
-
-    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
-        return false;
-
     // The knockback builds its spline from wherever the bot is, and mid-air that raycast fails:
     // the spline never finishes, so its generator is never popped off the controlled slot, and a
-    // bot with that slot taken refuses every move it is given. It is cleared by hand here.
+    // bot with that slot taken refuses every move it is given. It is cleared by hand here, at any
+    // height: a bot left just above the floor would otherwise keep it for good.
     MotionMaster* mm = bot->GetMotionMaster();
     if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE)
     {
         mm->Clear();
         bot->StopMoving();
     }
+
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+    float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+
+    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
+        return false;
 
     if (!bot->movespline->Finalized())
         return false;

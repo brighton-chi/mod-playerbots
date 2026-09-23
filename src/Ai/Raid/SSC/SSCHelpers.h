@@ -248,7 +248,7 @@ inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 
 extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
-// When the current Whirlwind will end, from the aura's remaining duration.
+// When the current Whirlwind will end, determined by the aura's remaining duration.
 extern std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
 extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
@@ -273,13 +273,10 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 
 // Fathom-Lord Karathress
 
-inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f, -7.548f };
-inline Position const TIDALVESS_TANK_POSITION = { 511.282f, -501.162f, -13.158f };
-inline Position const SHARKKIS_TANK_POSITION = { 508.057f, -541.109f, -10.133f };
-inline Position const CARIBDIS_TANK_POSITION = { 464.462f, -475.820f, -13.158f }; // far back in corner
-// inline Position const CARIBDIS_TANK_POSITION = { 462.729f, -482.890f, -13.158f }; closer
-inline Position const CARIBDIS_HEALER_POSITION = /*{ 466.203f, -503.201f, -13.158f };*/ { 475.181f, -507.385f, -13.158f };
-inline Position const CARIBDIS_RANGED_DPS_POSITION = { 463.197f, -501.190f, -13.158f };
+inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
+inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
+inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
+inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
 
 // The healer keeps to Caribdis herself, so she is covered wherever any tank puts her, and her
 // victim is not used as the anchor because it jumps into the room whenever the tank loses her.
@@ -296,7 +293,7 @@ inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // A Cyclone spawns on a random player within casting range of Caribdis and catches everything
 // within 4 yd of itself, so spread keeps its arrival to the one bot it was summoned on
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
-inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 5.0f;
+inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 4.0f;
 // Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
 // ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
@@ -305,6 +302,9 @@ inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
 // One toss leaves a bot about 1.5 yd up; navmesh Z sits well under 1 yd off the floor
 inline constexpr float CYCLONE_DROP_HEIGHT = 1.0f;
 inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
+// Ranged take a totem only when it is this close, so the group on Caribdis is not called back to
+// the room for every totem Karathress drops once Tidalvess is dead
+inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
 inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
 
@@ -314,6 +314,7 @@ extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 // "ssc spitfire totem".
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(Player* bot);
+bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 // One step along the bot's path to the target, stopping short of it by stopDistance. The step
 // follows the path corner by corner rather than aiming at the far end of it, so a pillar between

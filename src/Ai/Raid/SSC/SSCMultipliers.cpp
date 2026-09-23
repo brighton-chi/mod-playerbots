@@ -17,6 +17,7 @@
 #include "HunterActions.h"
 #include "LootAction.h"
 #include "MageActions.h"
+#include "MoveSpline.h"
 #include "NonCombatActions.h"
 #include "PaladinActions.h"
 #include "Playerbots.h"
@@ -707,15 +708,25 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
 }
 
 // Player point movement neither launches nor continues while a cast is up, and a bot lifted by a
-// Cyclone still has its target in range, so it would cast its way through every attempt to bring
-// it down. Casting is held for the length of the Cyclone aura, which covers the tosses and the
-// drop that follows.
+// Cyclone still has its target in range. Casting is held through the tosses, and through the drop
+// afterwards: a cast started on the way down stops the fall where it is, and by then the trigger
+// that issued it has nothing left to fire on.
 float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
-    return bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ? 0.0f : 1.0f;
+    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
+        return 0.0f;
+
+    // Only a bot that is moving can be partway down, so the height is looked up for no one else
+    if (bot->movespline->Finalized())
+        return 1.0f;
+
+    float const floorZ = bot->GetMapHeight(
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CYCLONE_DROP_HEIGHT ?
+        0.0f : 1.0f;
 }
 
 // The walk out to Caribdis is long and out of sight the whole way, and a bot spread out of sight
@@ -731,16 +742,20 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
         return 1.0f;
     }
 
-    if (!PlayerbotAI::IsRanged(bot))
+    // Healers are ranged too, but the walk is not theirs and they need to move freely
+    if (!PlayerbotAI::IsRanged(bot) || !PlayerbotAI::IsDps(bot))
         return 1.0f;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     if (!caribdis)
         return 1.0f;
 
-    // Only while she is the ranged kill target: the totem and Tidalvess come before her
-    if (GetSpitfireTotem(bot) || AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
+    // Only while she is the kill target: a totem in reach and Tidalvess come before her
+    if (ShouldAttackSpitfireTotem(bot, GetSpitfireTotem(bot)) ||
+        AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
+    {
         return 1.0f;
+    }
 
     return bot->IsWithinLOSInMap(caribdis) ? 1.0f : 0.0f;
 }

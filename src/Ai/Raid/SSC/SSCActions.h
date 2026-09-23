@@ -278,11 +278,6 @@ public:
 
 private:
     bool ApproachCaribdis(Unit* caribdis);
-
-    // TEMP kill-order diagnostics
-    void LogKillOrder(char const* stage, Unit* target);
-
-    uint32 _lastBranchLogTime = 0;
 };
 
 class FathomLordKarathressManageDpsTimerAction : public Action
