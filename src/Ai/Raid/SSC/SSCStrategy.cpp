@@ -187,7 +187,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDisableTankSoulshatterMultiplier(botAI));
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
@@ -201,7 +201,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new MorogrimTidewalkerMaintainPhase2StackingMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerStayStackedMultiplier(botAI));
 
     // Lady Vashj <Coilfang Matron>
     multipliers.push_back(new LadyVashjSetGroundingTotemMultiplier(botAI));

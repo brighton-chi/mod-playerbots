@@ -76,7 +76,7 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
     if (bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
 
-    // Stop bots from sitting and drinking in a toxic pool. Come on...
+    // Don't sit and drink in a toxic pool. Come on...
     if (dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action))
         return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 
@@ -597,7 +597,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 
 // Soulshatter is eligible to be cast when there are at least two attackers, which is the case in
 // the final phase. This is needed to keep the Warlock tank from dropping threat on the Shadow.
-float LeotherasTheBlindDisableWarlockTankSoulshatterMultiplier::GetValueInEncounter(
+float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
     Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -632,8 +632,10 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     // the wrong tank, a loose pet or a knocked-off guard is taken back. AoE threat and the AoE
     // taunts are held only while somebody else's council member is close enough to be caught.
     if (IsAoeThreatAction(bot, action) || IsAoeTauntAction(bot, action))
+    {
         return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ?
             0.0f : 1.0f;
+    }
 
     return 1.0f;
 }
@@ -786,30 +788,25 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action
     if (!PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
 }
 
-float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValueInEncounter(Action* action)
+float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker || tidewalker->GetHealthPct() > 25.0f)
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action))
-        return 0.0f;
-
-    return 1.0f;
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Lady Vashj <Coilfang Matron>

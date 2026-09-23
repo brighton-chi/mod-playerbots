@@ -314,8 +314,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToPhase1TankPosition();
-    bool MoveToPhase2TankPosition();
+    bool MoveToPhase1TankPosition(Unit* tidewalker);
+    bool MoveToPhase2TankPosition(Unit* tidewalker);
+    bool StepTowardPosition(Position const& position, float arrivalDist, Unit* tidewalker);
 };
 
 class MorogrimTidewalkerPhase2RepositionRangedAction : public MovementAction

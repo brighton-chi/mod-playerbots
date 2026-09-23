@@ -1313,79 +1313,52 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
         return false;
 
     if (tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f)
-        return MoveToPhase1TankPosition();
+        return MoveToPhase1TankPosition(tidewalker);
 
-    return MoveToPhase2TankPosition();
+    return MoveToPhase2TankPosition(tidewalker);
 }
 
 // Phase 1: tank position is up against the Northeast pillar
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition()
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
-    const Position& phase1 = TIDEWALKER_PHASE_1_TANK_POSITION;
-    float distToPhase1 = bot->GetExactDist2d(phase1.GetPositionX(), phase1.GetPositionY());
-    if (distToPhase1 > 1.0f)
-    {
-        float dX = phase1.GetPositionX() - bot->GetPositionX();
-        float dY = phase1.GetPositionY() - bot->GetPositionY();
-        float moveDist = std::min(5.0f, distToPhase1);
-        float moveX = bot->GetPositionX() + (dX / distToPhase1) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToPhase1) * moveDist;
-
-        return MoveTo(SSC_MAP_ID, moveX, moveY, phase1.GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-    }
-
-    return false;
+    constexpr float arrivalDist = 1.0f;
+    return StepTowardPosition(TIDEWALKER_PHASE_1_TANK_POSITION, arrivalDist, tidewalker);
 }
 
 // Phase 2: move in two steps to get around the pillar and back up into the Northeast corner
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition()
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
-    const Position& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
-    const Position& transition = TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
-
     auto itStep = tidewalkerTankStep.find(bot->GetGUID());
     uint8 step = (itStep != tidewalkerTankStep.end()) ? itStep->second : 0;
 
     if (step == 0)
     {
-        float distToTransition =
-            bot->GetExactDist2d(transition.GetPositionX(), transition.GetPositionY());
+        // Advances on arrival only: a refused step returns false as well
+        Position const& transition = TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
+        constexpr float transitionArrivalDist = 2.0f;
+        if (bot->GetExactDist2d(transition) > transitionArrivalDist)
+            return StepTowardPosition(transition, transitionArrivalDist, tidewalker);
 
-        if (distToTransition > 2.0f)
-        {
-            float dX = transition.GetPositionX() - bot->GetPositionX();
-            float dY = transition.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToTransition);
-            float moveX = bot->GetPositionX() + (dX / distToTransition) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToTransition) * moveDist;
-
-            return MoveTo(SSC_MAP_ID, moveX, moveY, transition.GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-        else
-            tidewalkerTankStep.try_emplace(bot->GetGUID(), 1);
+        tidewalkerTankStep.try_emplace(bot->GetGUID(), 1);
     }
 
-    if (step == 1)
-    {
-        float distToPhase2 =
-            bot->GetExactDist2d(phase2.GetPositionX(), phase2.GetPositionY());
+    constexpr float arrivalDist = 1.0f;
+    return StepTowardPosition(TIDEWALKER_PHASE_2_TANK_POSITION, arrivalDist, tidewalker);
+}
 
-        if (distToPhase2 > 1.0f)
-        {
-            float dX = phase2.GetPositionX() - bot->GetPositionX();
-            float dY = phase2.GetPositionY() - bot->GetPositionY();
-            float moveDist = std::min(5.0f, distToPhase2);
-            float moveX = bot->GetPositionX() + (dX / distToPhase2) * moveDist;
-            float moveY = bot->GetPositionY() + (dY / distToPhase2) * moveDist;
+// Walks backwards only when the position lies away from the boss, so the tank keeps facing him
+bool MorogrimTidewalkerMoveBossToTankPositionAction::StepTowardPosition(
+    Position const& position, float arrivalDist, Unit* tidewalker)
+{
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, tidewalker, moveX, moveY, backwards))
+        return false;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, phase2.GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
-        }
-    }
-
-    return false;
+    return MoveTo(
+        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Ranged stack behind the boss in the Northeast corner in phase 2
@@ -1415,7 +1388,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToTransition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToTransition) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, transition.GetPositionZ(), false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
         else
@@ -1438,7 +1411,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPhase2) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPhase2) * moveDist;
 
-            return MoveTo(SSC_MAP_ID, moveX, moveY, phase2.GetPositionZ(), false, false,
+            return MoveTo(SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
