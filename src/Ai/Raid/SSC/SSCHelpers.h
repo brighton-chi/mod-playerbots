@@ -339,9 +339,10 @@ inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-// Ranged stack this far behind him, about where the old fixed spot sat once he reached the
-// corner, and close in only when they drift past the stack radius from it
-inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 10.0f;
+// The stack point is this far behind his centre. Ranged come in from farther out and stop at the
+// stack radius short of it, about 8 yd from his centre: level with the melee, who stand at 8.25
+// (0.75 + 1.5 + his 6.0 combat reach)
+inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 
 // Lady Vashj <Coilfang Matron>

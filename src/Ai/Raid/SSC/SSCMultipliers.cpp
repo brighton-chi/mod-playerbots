@@ -799,11 +799,14 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
-    {
+    if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
-    }
+
+    if (dynamic_cast<MorogrimTidewalkerPhase2RepositionRangedAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 0.0f : 1.0f;

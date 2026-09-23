@@ -12,12 +12,10 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <iterator>
 #include <limits>
@@ -1306,13 +1304,6 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
     if (!tidewalker)
         return false;
 
-    // TEMP
-    if (!_globuleRoutesLogged)
-    {
-        _globuleRoutesLogged = true;
-        LogGlobuleRoutes();
-    }
-
     if (AI_VALUE(Unit*, "current target") != tidewalker)
         return Attack(tidewalker);
 
@@ -1323,40 +1314,6 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
         return MoveToPhase1TankPosition(tidewalker);
 
     return MoveToPhase2TankPosition(tidewalker);
-}
-
-// TEMP: the Water Globule spawn points (spell_target_position for 37854, 37858, 37860, 37861),
-// 3.5 yd/s from speed_run 0.5, and the 35 s summon duration
-void MorogrimTidewalkerMoveBossToTankPositionAction::LogGlobuleRoutes()
-{
-    constexpr std::array<std::array<float, 3>, 4> spawns = {{
-        { 372.85f, -690.84f, -13.91f },
-        { 366.27f, -709.4f, -13.92f },
-        { 365.53f, -737.12f, -14.0f },
-        { 337.69f, -732.87f, -13.74f },
-    }};
-    constexpr float globuleSpeed = 3.5f;
-    constexpr float globuleLifetime = 35.0f;
-
-    Position const& corner = TIDEWALKER_PHASE_2_TANK_POSITION;
-    for (std::size_t i = 0; i < spawns.size(); ++i)
-    {
-        std::array<float, 3> const& spawn = spawns[i];
-
-        PathGenerator path(bot);
-        bool const result = path.CalculatePath(
-            spawn[0], spawn[1], spawn[2], corner.GetPositionX(), corner.GetPositionY(),
-            corner.GetPositionZ(), false);
-        float const length = path.getPathLength();
-        float const straight = corner.GetExactDist(spawn[0], spawn[1], spawn[2]);
-
-        LOG_INFO("playerbots",
-            "[SSC globule] spawn {} | result {} type {} points {} | path {:.1f} yd straight "
-            "{:.1f} yd | arrives {:.1f} s, {:.1f} s before despawn",
-            i + 1, result ? 1 : 0, static_cast<uint32>(path.GetPathType()),
-            path.GetPath().size(), length, straight, length / globuleSpeed,
-            globuleLifetime - length / globuleSpeed);
-    }
 }
 
 // Phase 1: tank position is up against the Northeast pillar
