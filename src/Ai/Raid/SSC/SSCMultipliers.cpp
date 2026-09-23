@@ -847,18 +847,14 @@ float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValueInEncounter(Action*
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action))
-        return 0.0f;
-
-    if (Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-        !vashj || GetLadyVashjPhase(vashj) != 1)
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
 
-    return 1.0f;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 1 ? 0.0f : 1.0f;
 }
 
 float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Action* action)
