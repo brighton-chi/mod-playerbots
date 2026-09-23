@@ -118,11 +118,11 @@ public:
         creators["morogrim tidewalker misdirect boss to main tank"] =
             &RaidSscActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
 
-        creators["morogrim tidewalker move boss to tank position"] =
-            &RaidSscActionContext::morogrim_tidewalker_move_boss_to_tank_position;
+        creators["morogrim tidewalker position main tank"] =
+            &RaidSscActionContext::morogrim_tidewalker_position_main_tank;
 
-        creators["morogrim tidewalker phase 2 reposition ranged"] =
-            &RaidSscActionContext::morogrim_tidewalker_phase_2_reposition_ranged;
+        creators["morogrim tidewalker stack ranged behind boss"] =
+            &RaidSscActionContext::morogrim_tidewalker_stack_ranged_behind_boss;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj main tank position boss"] =
@@ -278,11 +278,11 @@ private:
         return new SscMisdirectTargetToTankAction(
             botAI, "morogrim tidewalker misdirect boss to main tank", "morogrim tidewalker");
     }
-    static Action* morogrim_tidewalker_move_boss_to_tank_position(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerMoveBossToTankPositionAction(botAI);
+    static Action* morogrim_tidewalker_position_main_tank(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerPositionMainTankAction(botAI);
     }
-    static Action* morogrim_tidewalker_phase_2_reposition_ranged(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerPhase2RepositionRangedAction(botAI);
+    static Action* morogrim_tidewalker_stack_ranged_behind_boss(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerStackRangedBehindBossAction(botAI);
     }
 
     // Lady Vashj <Coilfang Matron>

@@ -653,6 +653,20 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
     return heldPet;
 }
 
+// Morogrim Tidewalker
+
+Position GetTidewalkerStackPoint(Unit* tidewalker)
+{
+    Unit* victim = tidewalker->GetVictim();
+    float const behindAngle = (victim ? tidewalker->GetAngle(victim) :
+        tidewalker->GetOrientation()) + static_cast<float>(M_PI);
+
+    return Position(
+        tidewalker->GetPositionX() + std::cos(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
+        tidewalker->GetPositionY() + std::sin(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
+        tidewalker->GetPositionZ());
+}
+
 // Lady Vashj <Coilfang Matron>
 
 std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;

@@ -785,7 +785,7 @@ float FathomLordKarathressKeepTargetOutOfSightMultiplier::GetValueInEncounter(Ac
 
 float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
@@ -794,6 +794,8 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action
     return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
 }
 
+// Only a bot already in the stack is held there. One still on its way keeps its other movement,
+// so a stack step it cannot take does not leave it unable to reach anything at all.
 float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -802,14 +804,18 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<MorogrimTidewalkerPhase2RepositionRangedAction*>(action))
+    if (dynamic_cast<MorogrimTidewalkerStackRangedBehindBossAction*>(action))
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 0.0f : 1.0f;
+    if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
+        return 1.0f;
+
+    return bot->GetExactDist(GetTidewalkerStackPoint(tidewalker)) <=
+        TIDEWALKER_RANGED_STACK_RADIUS ? 0.0f : 1.0f;
 }
 
 // Lady Vashj <Coilfang Matron>

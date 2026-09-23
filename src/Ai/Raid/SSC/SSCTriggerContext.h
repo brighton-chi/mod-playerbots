@@ -118,8 +118,8 @@ public:
         creators["morogrim tidewalker pulling boss"] =
             &RaidSscTriggerContext::morogrim_tidewalker_pulling_boss;
 
-        creators["morogrim tidewalker in phase 2"] =
-            &RaidSscTriggerContext::morogrim_tidewalker_in_phase_2;
+        creators["morogrim tidewalker ranged should stack"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_ranged_should_stack;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj should be tanked"] =
@@ -268,8 +268,8 @@ private:
     static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerPullingBossTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_in_phase_2(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerInPhase2Trigger(botAI);
+    static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
     }
 
     // Lady Vashj <Coilfang Matron>

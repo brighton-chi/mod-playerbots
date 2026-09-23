@@ -333,13 +333,14 @@ bool MorogrimTidewalkerShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
 }
 
-bool MorogrimTidewalkerInPhase2Trigger::IsActiveInEncounter()
+bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
+    // Ranged set off with the tank: behind him, they cannot get in front of him on the way
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealthPct() < TIDEWALKER_PHASE_2_HEALTH_PCT;
+    return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
 }
 
 // Lady Vashj <Coilfang Matron>

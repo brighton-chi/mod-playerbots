@@ -336,6 +336,8 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 // Morogrim Tidewalker
 
 inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
+// The move to the corner starts a little early so it is done before the first globules arrive
+inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
@@ -344,6 +346,9 @@ inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, 
 // (0.75 + 1.5 + his 6.0 combat reach)
 inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
+
+// Behind him is away from his victim, so the point follows him as the tank takes him to the corner
+Position GetTidewalkerStackPoint(Unit* tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 

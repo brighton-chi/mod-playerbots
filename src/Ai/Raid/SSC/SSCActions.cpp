@@ -1298,7 +1298,7 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
 
 // Separate tanking positions are used for phase 1 and phase 2 to address the Water Globule
 // mechanic in phase 2
-bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
+bool MorogrimTidewalkerPositionMainTankAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -1310,14 +1310,14 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
     if (tidewalker->GetVictim() != bot || !bot->IsWithinMeleeRange(tidewalker))
         return false;
 
-    if (tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f)
+    if (tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
         return MoveToPhase1TankPosition(tidewalker);
 
     return MoveToPhase2TankPosition(tidewalker);
 }
 
 // Phase 1: tank position is up against the Northeast pillar
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Unit* tidewalker)
+bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
     constexpr float arrivalDist = 1.0f;
     float moveX;
@@ -1337,7 +1337,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
 
 // Phase 2: the path takes the tank around the pillar and back up into the Northeast corner. The
 // step is shortened when it runs away from the boss, since that one is walked backwards.
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Unit* tidewalker)
+bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
     Position const& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
     constexpr float arrivalDist = 1.0f;
@@ -1366,21 +1366,15 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
 
 // Ranged stack behind the boss in the Northeast corner in phase 2
 // No corresponding method for melee since they will do so anyway
-bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event /*event*/)
+bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
         return false;
 
-    // Behind him is away from his victim. The spot moves with him as the tank takes him to the
-    // corner, so ranged trail him there and are never between him and the tank.
-    Unit* victim = tidewalker->GetVictim();
-    float const behindAngle = (victim ? tidewalker->GetAngle(victim) :
-        tidewalker->GetOrientation()) + static_cast<float>(M_PI);
-    Position const behind(
-        tidewalker->GetPositionX() + std::cos(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
-        tidewalker->GetPositionY() + std::sin(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
-        tidewalker->GetPositionZ());
+    // The point moves with him as the tank takes him to the corner, so ranged trail him there and
+    // are never between him and the tank
+    Position const behind = GetTidewalkerStackPoint(tidewalker);
 
     float stepX;
     float stepY;

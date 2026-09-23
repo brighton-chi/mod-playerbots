@@ -115,10 +115,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode("morogrim tidewalker should be tanked", {
-        NextAction("morogrim tidewalker move boss to tank position", ACTION_RAID) }));
+        NextAction("morogrim tidewalker position main tank", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("morogrim tidewalker in phase 2", {
-        NextAction("morogrim tidewalker phase 2 reposition ranged", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("morogrim tidewalker ranged should stack", {
+        NextAction("morogrim tidewalker stack ranged behind boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss", {
         NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID) }));
