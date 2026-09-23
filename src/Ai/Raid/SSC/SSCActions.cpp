@@ -7,7 +7,6 @@
 #include "SSCActions.h"
 #include "Corpse.h"
 #include "EncounterHelpers.h"
-#include "LastMovementValue.h"
 #include "LootAction.h"
 #include "LootObjectStack.h"
 #include "MotionMaster.h"
@@ -18,7 +17,6 @@
 #include "SSCHelpers.h"
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -1323,17 +1321,7 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
     float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
 
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
-    {
-        LogState("on floor", floorZ, "");
         return false;
-    }
-
-    // More tosses are coming while the aura is up, so the arc is left to run
-    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
-    {
-        LogState("aura up", floorZ, "");
-        return false;
-    }
 
     // The knockback builds its spline from wherever the bot is, and mid-air that raycast fails:
     // the spline never finishes, so its generator is never popped off the controlled slot, and a
@@ -1341,79 +1329,18 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
     MotionMaster* mm = bot->GetMotionMaster();
     if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE)
     {
-        LogState("clearing knockback", floorZ, "");
         mm->Clear();
         bot->StopMoving();
     }
 
     if (!bot->movespline->Finalized())
-    {
-        LogState("spline running", floorZ, "");
         return false;
-    }
-
-    // TEMP: name the guard that stops the move before it is attempted
-    char const* blocked = "none";
-    if (!IsMovingAllowed())
-        blocked = "not allowed";
-    else if (IsDuplicateMove(x, y, floorZ))
-        blocked = "duplicate";
-    else if (IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
-        blocked = "waiting";
 
     // Exact waypoint: a pathed move searches for a route from the bot's own position first, and a
     // bot lifted above the navmesh has none. The point generator falls back to a straight spline.
-    bool const moved = MoveTo(
+    return MoveTo(
         SSC_MAP_ID, x, y, floorZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, true, false);
-
-    LogState(moved ? "moved" : "move refused", floorZ, blocked);
-    return moved;
-}
-
-// TEMP cyclone diagnostics
-void FathomLordKarathressDropFromCycloneAction::LogState(
-    char const* stage, float floorZ, char const* extra)
-{
-    // The repeating states are throttled; the one-off ones always print
-    bool const repeating = !std::strcmp(stage, "on floor") || !std::strcmp(stage, "aura up") ||
-        !std::strcmp(stage, "spline running");
-
-    uint32 const now = getMSTime();
-    if (repeating && _lastLogTime && getMSTimeDiff(_lastLogTime, now) < 1000)
-        return;
-
-    _lastLogTime = now;
-
-    LastMovement& lastMovement = AI_VALUE(LastMovement&, "last movement");
-    MotionMaster* mm = bot->GetMotionMaster();
-
-    LOG_INFO("playerbots",
-        "[SSC cyclone] {} | {} | aura {} | z {:.2f} floor {:.2f} above {:.2f} | spline fin {} "
-        "| mm cur {} controlled {} | canmove {} root {} lostctrl {} casting {} castblock {} "
-        "| flags fall {} fly {} canfly {} nograv {} swim {} waterwalk {} root {} "
-        "| lastmove prio {} delay {:.0f} age {}",
-        bot->GetName(), stage, bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ? 1 : 0,
-        bot->GetPositionZ(), floorZ, bot->GetPositionZ() - floorZ,
-        bot->movespline->Finalized() ? 1 : 0,
-        static_cast<uint32>(mm->GetCurrentMovementGeneratorType()),
-        static_cast<uint32>(mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED)),
-        botAI->CanMove() ? 1 : 0, bot->IsRooted() ? 1 : 0,
-        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) ? 1 : 0,
-        bot->HasUnitState(UNIT_STATE_CASTING) ? 1 : 0,
-        bot->IsMovementPreventedByCasting() ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING) ? 1 : 0,
-        bot->HasUnitMovementFlag(MOVEMENTFLAG_ROOT) ? 1 : 0,
-        static_cast<uint32>(lastMovement.priority), lastMovement.lastdelayTime,
-        getMSTimeDiff(lastMovement.msTime, now));
-
-    if (std::strcmp(extra, "none") != 0 && *extra)
-        LOG_INFO("playerbots", "[SSC cyclone] {} | blocked by {}", bot->GetName(), extra);
 }
 
 // Morogrim Tidewalker

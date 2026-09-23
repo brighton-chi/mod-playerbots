@@ -307,12 +307,6 @@ public:
     FathomLordKarathressDropFromCycloneAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "fathom-lord karathress drop from cyclone") {}
     bool Execute(Event event) override;
-
-private:
-    // TEMP cyclone diagnostics
-    void LogState(char const* stage, float floorZ, char const* extra);
-
-    uint32 _lastLogTime = 0;
 };
 
 // Morogrim Tidewalker
