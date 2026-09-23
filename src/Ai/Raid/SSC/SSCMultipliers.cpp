@@ -718,9 +718,10 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
     return bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ? 0.0f : 1.0f;
 }
 
-// The walk out to Caribdis is long and out of sight the whole way. Anything else that moves the
-// bot pulls it back the other way: the spread, and the stock reach on whatever it was shooting
-// before her. Only the walk itself and the Cyclone drop are left running.
+// The walk out to Caribdis is long and out of sight the whole way, and a bot spread out of sight
+// once there has the same walk back. Anything else that moves the bot pulls it the other way:
+// the spread, and the stock reach on whatever it was shooting before her. Only the walk itself
+// and the Cyclone drop are left running.
 float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) ||
@@ -734,7 +735,11 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
         return 1.0f;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    if (!caribdis || AI_VALUE(Unit*, "current target") == caribdis)
+    if (!caribdis)
+        return 1.0f;
+
+    // Only while she is the ranged kill target: the totem and Tidalvess come before her
+    if (GetSpitfireTotem(bot) || AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
         return 1.0f;
 
     return bot->IsWithinLOSInMap(caribdis) ? 1.0f : 0.0f;

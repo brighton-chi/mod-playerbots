@@ -1207,16 +1207,14 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") != target)
-    {
-        // Caribdis is tanked out of sight of the room. Attack refuses a target out of line of
-        // sight, so she is approached along the path first; once she is in sight the normal
-        // acquisition and reach take over.
-        if (target == caribdis && !bot->IsWithinLOSInMap(caribdis))
-            return ApproachCaribdis(caribdis);
+    // Caribdis is tanked out of sight of the room. Attack refuses a target out of line of sight,
+    // and a bot that loses sight of her after acquiring her is still in range, so nothing else
+    // walks it back: she is approached along the path whenever she is out of sight.
+    if (target == caribdis && !bot->IsWithinLOSInMap(caribdis))
+        return ApproachCaribdis(caribdis);
 
+    if (AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
-    }
 
     if (target == caribdis)
     {
