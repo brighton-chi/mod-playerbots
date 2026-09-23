@@ -560,8 +560,20 @@ bool GetPathStepTowardUnit(
     if (bot->IsWithinDist(target, stopDistance))
         return false;
 
+    return GetPathStepTowardPoint(
+        bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
+}
+
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY)
+{
+    if (bot->GetExactDist(destination) <= stopDistance)
+        return false;
+
     PathGenerator path(bot);
-    path.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+    path.CalculatePath(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
     if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
         return false;
 
@@ -570,11 +582,11 @@ bool GetPathStepTowardUnit(
         return false;
 
     G3D::Vector3 const targetPos(
-        target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 
     // Walk forward one step's worth of path, ending early at the point where the path comes
     // within the distance to hold
-    float remaining = PATH_STEP_DISTANCE;
+    float remaining = stepDistance;
     for (std::size_t i = 1; i < points.size(); ++i)
     {
         G3D::Vector3 const& from = points[i - 1];
@@ -609,7 +621,7 @@ bool GetPathStepTowardUnit(
             return true;
     }
 
-    return remaining < PATH_STEP_DISTANCE;
+    return remaining < stepDistance;
 }
 
 // Sharkkis's tank holds his pets too. A pet on somebody else comes first, then Sharkkis, then a
@@ -640,11 +652,6 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 
     return heldPet;
 }
-
-// Morogrim Tidewalker
-
-std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
-std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
 // Lady Vashj <Coilfang Matron>
 

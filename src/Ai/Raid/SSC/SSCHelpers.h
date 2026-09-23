@@ -283,8 +283,9 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 // The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
-// A step short enough to navigate poor terrain, matching the stepper in EncounterHelpers
+// Steps short enough to navigate poor terrain, matching the stepper in EncounterHelpers
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
+inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 // Tidal Surge's range is 10 yards.
 inline constexpr float CARIBDIS_RANGED_MIN_DISTANCE = 12.0f;
 // Out of sight, range means nothing: a bot within spell range behind the pillar still cannot shoot,
@@ -316,9 +317,12 @@ ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(Player* bot);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
-// One step along the bot's path to the target, stopping short of it by stopDistance. The step
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step
 // follows the path corner by corner rather than aiming at the far end of it, so a pillar between
-// the bot and the target is walked around instead of into.
+// the bot and the point is walked around instead of into.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 // Karathress belongs to the main tank; Caribdis, Sharkkis and Tidalvess to the assist tanks in
@@ -334,12 +338,11 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
-inline Position const TIDEWALKER_PHASE_TRANSITION_WAYPOINT = { 407.035f, -759.479f, -7.168f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-inline Position const TIDEWALKER_PHASE_2_RANGED_POSITION = { 432.595f, -766.288f, -7.145f };
-
-extern std::unordered_map<ObjectGuid, uint8> tidewalkerTankStep;
-extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
+// Ranged stack this far behind him, about where the old fixed spot sat once he reached the
+// corner, and close in only when they drift past the stack radius from it
+inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 10.0f;
+inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 
 // Lady Vashj <Coilfang Matron>
 

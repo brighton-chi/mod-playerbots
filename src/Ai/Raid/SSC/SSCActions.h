@@ -316,7 +316,11 @@ public:
 private:
     bool MoveToPhase1TankPosition(Unit* tidewalker);
     bool MoveToPhase2TankPosition(Unit* tidewalker);
-    bool StepTowardPosition(Position const& position, float arrivalDist, Unit* tidewalker);
+
+    // TEMP: navmesh route from each Water Globule spawn to the phase 2 corner, logged once
+    void LogGlobuleRoutes();
+
+    bool _globuleRoutesLogged = false;
 };
 
 class MorogrimTidewalkerPhase2RepositionRangedAction : public MovementAction
