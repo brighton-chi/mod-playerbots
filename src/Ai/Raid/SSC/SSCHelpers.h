@@ -290,6 +290,9 @@ inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 // Tidal Surge's range is 10 yards.
 inline constexpr float CARIBDIS_RANGED_MIN_DISTANCE = 12.0f;
+// Out of sight, range means nothing: a bot within spell range behind the pillar still cannot shoot,
+// so the walk goes on until she is in sight. This only stops it running into her.
+inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // A Cyclone spawns on a random player within casting range of Caribdis and catches everything
 // within 4 yd of itself, so spread keeps its arrival to the one bot it was summoned on
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;

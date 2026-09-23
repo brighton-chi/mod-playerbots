@@ -196,6 +196,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressNoCastingWhileLiftedMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressApproachingCaribdisMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressKeepTargetOutOfSightMultiplier(botAI));
 
     // Morogrim Tidewalker

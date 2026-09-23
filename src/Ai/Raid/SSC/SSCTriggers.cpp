@@ -308,10 +308,16 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
     return caribdis && bot->IsWithinDist(caribdis, CARIBDIS_CYCLONE_SUMMON_RANGE);
 }
 
-// The aura outlasts the knockback arc by a few seconds, which is the window for the drop
+// The aura outlasts the knockback arc by a few seconds, which is the window for the drop.
+// TEMP: the height check keeps the action running after the aura has gone, for diagnostics.
 bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(SscSpells::SPELL_CYCLONE));
+    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
+        return true;
+
+    float const floorZ = bot->GetMapHeight(
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CYCLONE_DROP_HEIGHT;
 }
 
 // Morogrim Tidewalker

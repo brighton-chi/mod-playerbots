@@ -278,6 +278,11 @@ public:
 
 private:
     bool ApproachCaribdis(Unit* caribdis);
+
+    // TEMP kill-order diagnostics
+    void LogKillOrder(char const* stage, Unit* target);
+
+    uint32 _lastBranchLogTime = 0;
 };
 
 class FathomLordKarathressManageDpsTimerAction : public Action
@@ -302,6 +307,12 @@ public:
     FathomLordKarathressDropFromCycloneAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "fathom-lord karathress drop from cyclone") {}
     bool Execute(Event event) override;
+
+private:
+    // TEMP cyclone diagnostics
+    void LogState(char const* stage, float floorZ, char const* extra);
+
+    uint32 _lastLogTime = 0;
 };
 
 // Morogrim Tidewalker

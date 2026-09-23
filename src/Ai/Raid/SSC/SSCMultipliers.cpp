@@ -718,6 +718,28 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
     return bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ? 0.0f : 1.0f;
 }
 
+// The walk out to Caribdis is long and out of sight the whole way. Anything else that moves the
+// bot pulls it back the other way: the spread, and the stock reach on whatever it was shooting
+// before her. Only the walk itself and the Cyclone drop are left running.
+float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action) ||
+        dynamic_cast<FathomLordKarathressDropFromCycloneAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (!PlayerbotAI::IsRanged(bot))
+        return 1.0f;
+
+    Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (!caribdis || AI_VALUE(Unit*, "current target") == caribdis)
+        return 1.0f;
+
+    return bot->IsWithinLOSInMap(caribdis) ? 1.0f : 0.0f;
+}
+
 // A target out of line of sight is invalid, and the drop hands the bot back to whatever is in
 // sight from where it stands. The ledge between Sharkkis and Karathress does that to a totem at
 // his feet while melee climb it, and the walk out to Caribdis does it to her. Both stay the
