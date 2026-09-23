@@ -1389,6 +1389,24 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// Brings back a healer that ended up far out, such as one carried off by Watery Grave. Healers
+// otherwise move as they normally would.
+bool MorogrimTidewalkerReturnHealerToBossAction::Execute(Event /*event*/)
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (!tidewalker)
+        return false;
+
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, tidewalker, TIDEWALKER_HEALER_MAX_DISTANCE, stepX, stepY))
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
 // Lady Vashj <Coilfang Matron>
 
 bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)

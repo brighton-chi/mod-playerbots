@@ -5,11 +5,10 @@
  */
 
 #include "SSCStrategy.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SSCHelpers.h"
 #include "SSCMultipliers.h"
-
-using namespace SscHelpers;
 
 void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -120,6 +119,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("morogrim tidewalker ranged should stack", {
         NextAction("morogrim tidewalker stack ranged behind boss", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("morogrim tidewalker healer is too far from boss", {
+        NextAction("morogrim tidewalker return healer to boss", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss", {
         NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID) }));
 
@@ -213,6 +215,60 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
 }
 
+namespace
+{
+
+using namespace SscHelpers;
+
+// Tanks other than the designated Frost and Nature tanks must pick up adds only.
+void AppendHydrossAddTankExclusions(
+    Player* bot, AiObjectContext* context, GuidSet& exclusions)
+{
+    if (!IsHydrossAddTank(bot))
+        return;
+
+    if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))
+        exclusions.insert(hydross->GetGUID());
+}
+
+// Leotheras is immune until the Greyheart Spellbinders are killed.
+void AppendLeotherasTheBlindSpellbinderPhaseExclusions(
+    Player* bot, AiObjectContext* context, GuidSet& exclusions)
+{
+    Unit* leotheras = GetLeotheras(bot);
+    if (leotheras && IsSpellbinderPhase(leotheras))
+        exclusions.insert(leotheras->GetGUID());
+}
+
+void AppendLadyVashjGeneratorPhaseExclusions(AiObjectContext* context, GuidSet& exclusions)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
+        exclusions.insert(vashj->GetGUID());
+}
+
+// Don't attack any Murlocs not within the eligible distance.
+void AppendMorogrimTidewalkerMurlocExclusions(
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+{
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    if (!tidewalker)
+        return;
+
+    constexpr float eligibleDistance = 50.0f;
+    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->GetEntry() == Id(SscNpcs::NPC_TIDEWALKER_LURKER) &&
+            unit->GetExactDist2d(tidewalker) > eligibleDistance)
+        {
+            exclusions.insert(guid);
+        }
+    }
+}
+
+} // end anonymous namespace
+
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
@@ -220,21 +276,8 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-
-    // Tanks other than the designated Frost and Nature tanks must pick up adds only.
-    if (IsHydrossAddTank(bot))
-    {
-        if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))
-            exclusions.insert(hydross->GetGUID());
-    }
-
-    // Leotheras is immune until the Greyheart Spellbinders are killed.
-    Unit* leotheras = GetLeotheras(bot);
-    if (leotheras && IsSpellbinderPhase(leotheras))
-        exclusions.insert(leotheras->GetGUID());
-
-    // Vashj is immune behind Magic Barrier during Phase 2.
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
-        exclusions.insert(vashj->GetGUID());
+    AppendHydrossAddTankExclusions(bot, context, exclusions);
+    AppendLeotherasTheBlindSpellbinderPhaseExclusions(bot, context, exclusions);
+    AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
+    AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
 }

@@ -147,9 +147,9 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 
     if (Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        // Bloodlust/Heroism are for the murloc waves.
+        // Bloodlust/Heroism are saved for the last phase, once the raid is stacked in the corner.
         if (isBloodlust)
-            return AI_VALUE2(Unit*, "find target", "tidewalker lurker") ? 1.0f : 0.0f;
+            return tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 1.0f : 0.0f;
 
         return tidewalker->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }

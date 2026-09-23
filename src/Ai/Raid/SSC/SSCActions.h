@@ -326,6 +326,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class MorogrimTidewalkerReturnHealerToBossAction : public MovementAction
+{
+public:
+    MorogrimTidewalkerReturnHealerToBossAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "morogrim tidewalker return healer to boss") {}
+    bool Execute(Event event) override;
+};
+
 // Lady Vashj <Coilfang Matron>
 
 class LadyVashjMainTankPositionBossAction : public AttackAction

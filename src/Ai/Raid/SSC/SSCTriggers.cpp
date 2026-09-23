@@ -343,6 +343,17 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
     return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
 }
 
+// Phase 1 only: from the move to the corner on, healers are part of the ranged stack
+bool MorogrimTidewalkerHealerIsTooFarFromBossTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    return tidewalker && tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT &&
+        !bot->IsWithinDist(tidewalker, TIDEWALKER_HEALER_MAX_DISTANCE);
+}
+
 // Lady Vashj <Coilfang Matron>
 
 bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()

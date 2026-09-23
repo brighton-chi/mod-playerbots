@@ -370,6 +370,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MorogrimTidewalkerHealerIsTooFarFromBossTrigger : public SscEncounterTrigger
+{
+public:
+    MorogrimTidewalkerHealerIsTooFarFromBossTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "morogrim tidewalker healer is too far from boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Lady Vashj <Coilfang Matron>
 
 class LadyVashjShouldBeTankedTrigger : public SscEncounterTrigger

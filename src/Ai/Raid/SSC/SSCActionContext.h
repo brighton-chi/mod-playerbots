@@ -124,6 +124,9 @@ public:
         creators["morogrim tidewalker stack ranged behind boss"] =
             &RaidSscActionContext::morogrim_tidewalker_stack_ranged_behind_boss;
 
+        creators["morogrim tidewalker return healer to boss"] =
+            &RaidSscActionContext::morogrim_tidewalker_return_healer_to_boss;
+
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj main tank position boss"] =
             &RaidSscActionContext::lady_vashj_main_tank_position_boss;
@@ -283,6 +286,9 @@ private:
     }
     static Action* morogrim_tidewalker_stack_ranged_behind_boss(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerStackRangedBehindBossAction(botAI);
+    }
+    static Action* morogrim_tidewalker_return_healer_to_boss(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerReturnHealerToBossAction(botAI);
     }
 
     // Lady Vashj <Coilfang Matron>

@@ -121,6 +121,9 @@ public:
         creators["morogrim tidewalker ranged should stack"] =
             &RaidSscTriggerContext::morogrim_tidewalker_ranged_should_stack;
 
+        creators["morogrim tidewalker healer is too far from boss"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_healer_is_too_far_from_boss;
+
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj should be tanked"] =
             &RaidSscTriggerContext::lady_vashj_should_be_tanked;
@@ -270,6 +273,9 @@ private:
     }
     static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
+    }
+    static Trigger* morogrim_tidewalker_healer_is_too_far_from_boss(PlayerbotAI* botAI) {
+        return new MorogrimTidewalkerHealerIsTooFarFromBossTrigger(botAI);
     }
 
     // Lady Vashj <Coilfang Matron>
