@@ -92,6 +92,71 @@ bool IsDryGround(Player* bot, float x, float y)
     return liquid.Level <= INVALID_HEIGHT || ground > liquid.Level - clearance;
 }
 
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
+{
+    return GetPathStepTowardPoint(
+        bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
+}
+
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY)
+{
+    if (bot->GetExactDist(destination) < stopDistance)
+        return false;
+
+    PathGenerator path(bot);
+    path.CalculatePath(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    G3D::Vector3 const targetPos(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+
+    float remaining = stepDistance;
+    for (std::size_t i = 1; i < points.size(); ++i)
+    {
+        G3D::Vector3 const& from = points[i - 1];
+        G3D::Vector3 const& to = points[i];
+
+        float const segment = (to - from).length();
+        if (segment <= 0.0f)
+            continue;
+
+        float const toDist = (to - targetPos).length();
+        float ratio = 1.0f;
+
+        if (toDist < stopDistance)
+        {
+            float const fromDist = (from - targetPos).length();
+            if (fromDist <= stopDistance)
+                break;
+
+            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+        }
+
+        if (segment * ratio >= remaining)
+            ratio = remaining / segment;
+
+        remaining -= segment * ratio;
+
+        G3D::Vector3 const step = from + (to - from) * ratio;
+        stepX = step.x;
+        stepY = step.y;
+
+        if (remaining <= 0.0f || ratio < 1.0f)
+            return true;
+    }
+
+    return remaining < stepDistance;
+}
+
 // Trash
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)
@@ -181,7 +246,6 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 // The Lurker Below
 
-std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
     lurkerGuardianTankAssignments;
 
@@ -464,7 +528,7 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
         bot->GetDistance(totem) < SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE);
 }
 
-namespace
+namespace // Karathress
 {
 
 struct CouncilAssignment
@@ -480,12 +544,30 @@ constexpr std::array<CouncilAssignment, 4> KARATHRESS_COUNCIL = {{
     { "fathom-guard tidalvess", 2 },
 }};
 
+// GetGroupAssistTank does not allow dead tanks to be indexed, so this helper serves that purpose.
 Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
 {
-    return assistTankIndex < 0 ? GetGroupMainTank(bot) : GetGroupAssistTank(bot, assistTankIndex);
+    if (assistTankIndex < 0)
+        return GetGroupMainTank(bot);
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() &&
+            PlayerbotAI::IsAssistTankOfIndex(member, assistTankIndex, false))
+        {
+            return member;
+        }
+    }
+
+    return nullptr;
 }
 
-} // end anonymous namespace
+} // end anonymous namespace (Karathress)
 
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 {
@@ -534,71 +616,6 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     }
 
     return false;
-}
-
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
-{
-    return GetPathStepTowardPoint(
-        bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
-}
-
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY)
-{
-    if (bot->GetExactDist(destination) < stopDistance)
-        return false;
-
-    PathGenerator path(bot);
-    path.CalculatePath(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
-        return false;
-
-    Movement::PointsArray const& points = path.GetPath();
-    if (points.size() < 2)
-        return false;
-
-    G3D::Vector3 const targetPos(
-        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
-
-    float remaining = stepDistance;
-    for (std::size_t i = 1; i < points.size(); ++i)
-    {
-        G3D::Vector3 const& from = points[i - 1];
-        G3D::Vector3 const& to = points[i];
-
-        float const segment = (to - from).length();
-        if (segment <= 0.0f)
-            continue;
-
-        float const toDist = (to - targetPos).length();
-        float ratio = 1.0f;
-
-        if (toDist < stopDistance)
-        {
-            float const fromDist = (from - targetPos).length();
-            if (fromDist <= stopDistance)
-                break;
-
-            ratio = (fromDist - stopDistance) / (fromDist - toDist);
-        }
-
-        if (segment * ratio >= remaining)
-            ratio = remaining / segment;
-
-        remaining -= segment * ratio;
-
-        G3D::Vector3 const step = from + (to - from) * ratio;
-        stepX = step.x;
-        stepY = step.y;
-
-        if (remaining <= 0.0f || ratio < 1.0f)
-            return true;
-    }
-
-    return remaining < stepDistance;
 }
 
 // Sharkkis's tank holds his pets too. Sharkkis on somebody else comes first, then a pet on

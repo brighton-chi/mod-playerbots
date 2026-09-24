@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "Position.h"
 #include <string>
 #include <vector>
 
@@ -103,11 +104,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class HydrossTheUnstableManageTimersAction : public Action
+class HydrossTheUnstableManagePhaseTimersAction : public Action
 {
 public:
-    HydrossTheUnstableManageTimersAction(PlayerbotAI* botAI)
-        : Action(botAI, "hydross the unstable manage timers") {}
+    HydrossTheUnstableManagePhaseTimersAction(PlayerbotAI* botAI)
+        : Action(botAI, "hydross the unstable manage phase timers") {}
     bool Execute(Event event) override;
 };
 
@@ -135,6 +136,18 @@ public:
     TheLurkerBelowSpreadRangedInArcAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "the lurker below spread ranged in arc") {}
     bool Execute(Event event) override;
+    bool ResetRangedPosition()
+    {
+        if (!_hasRangedPosition)
+            return false;
+
+        _hasRangedPosition = false;
+        return true;
+    }
+
+private:
+    Position _rangedPosition;
+    bool _hasRangedPosition = false;
 };
 
 class TheLurkerBelowTanksPickUpAddsAction : public AttackAction

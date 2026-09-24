@@ -40,7 +40,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("hydross the unstable stop dps upon phase change", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers", {
-        NextAction("hydross the unstable manage timers", ACTION_EMERGENCY + 10) }));
+        NextAction("hydross the unstable manage phase timers", ACTION_EMERGENCY + 10) }));
 
     // The Lurker Below
     triggers.push_back(new TriggerNode("the lurker below spout is active", {
@@ -232,8 +232,7 @@ void AppendHydrossAddTankExclusions(
 }
 
 // Leotheras is immune until the Greyheart Spellbinders are killed.
-void AppendLeotherasTheBlindSpellbinderPhaseExclusions(
-    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+void AppendLeotherasTheBlindSpellbinderPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* leotheras = GetLeotheras(botAI);
     if (leotheras && IsSpellbinderPhase(leotheras))
@@ -255,12 +254,11 @@ void AppendMorogrimTidewalkerMurlocExclusions(
     if (!tidewalker)
         return;
 
-    constexpr float eligibleDistance = 50.0f;
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetEntry() == Id(SscNpcs::NPC_TIDEWALKER_LURKER) &&
-            unit->GetExactDist2d(tidewalker) > eligibleDistance)
+            unit->GetExactDist2d(tidewalker) > TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE)
         {
             exclusions.insert(guid);
         }
@@ -277,7 +275,7 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);
-    AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, context, exclusions);
+    AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
 }

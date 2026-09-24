@@ -52,9 +52,8 @@ enum class SscSpells : uint32
     SPELL_HYDROSS_CORRUPTION     = 37961,
 
     // The Lurker Below
-    SPELL_SPOUT_VISUAL           = 37431, // 3s wind-up cast
-    SPELL_SPOUT_COUNTERCLOCKWISE = 37429, // 16s aura; facing +0.1 rad every 250ms, cone each tick
-    SPELL_SPOUT_CLOCKWISE        = 37430, // same, -0.1 rad
+    SPELL_SPOUT_COUNTERCLOCKWISE = 37429,
+    SPELL_SPOUT_CLOCKWISE        = 37430,
 
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED     = 37546,
@@ -75,8 +74,6 @@ enum class SscSpells : uint32
     SPELL_ENTANGLE               = 38316,
 
     // Druid
-    SPELL_BEAR_FORM              =  5487,
-    SPELL_DIRE_BEAR_FORM         =  9634,
     SPELL_FAERIE_FIRE_FERAL      = 16857,
     SPELL_TREE_OF_LIFE           = 33891,
     SPELL_DRUID_BERSERK          = 50334,
@@ -107,10 +104,6 @@ enum class SscNpcs : uint32
 {
     // Trash Mobs
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
-
-    // Hydross the Unstable <Duke of Currents>
-    NPC_PURE_SPAWN_OF_HYDROSS    = 22035,
-    NPC_TAINTED_SPAWN_OF_HYDROSS = 22036,
 
     // The Lurker Below
     NPC_COILFANG_AMBUSHER        = 21865,
@@ -150,12 +143,23 @@ enum class SscItems : uint32
 
 inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
+// Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
+inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
 // A step out of a circular hazard.
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
 // True where the map has ground above any liquid at x/y.
 bool IsDryGround(Player* bot, float x, float y);
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step
+// follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
+// around a pillar between it and the point.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 
 // Trash
 
@@ -217,16 +221,16 @@ inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
-extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
 extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
     lurkerGuardianTankAssignments;
 
-// Reading REACT_PASSIVE is the easiest way to capture the entire Spout sequence, including the
-// wind-up that is not associated with a particular aura.
+// Reading REACT_PASSIVE is the easiest way to capture the entire Spout sequence.
+// The actual spell mechanics are a 3s wind-up (37431), followed by a 16s aura for the spin at a
+// speed of 0.1 rad/250ms. The spin aura differs for counterclockwise (37429) and clockwise (37430).
 bool IsLurkerSpouting(Unit* lurker);
 // Captures when Lurker is neither Spouting nor submerged.
 bool IsLurkerSurfacedAndCalm(Unit* lurker);
-// +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
+// +1 counter-clockwise, -1 clockwise, 0 during the wind-up.
 int8 GetLurkerSpoutSpin(Unit* lurker);
 // True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
 // direction (+1 counter-clockwise, -1 clockwise).
@@ -277,9 +281,6 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 // The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
-// Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
-inline constexpr float PATH_STEP_DISTANCE = 3.5f;
-inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 // Tidal Surge's range is 10 yards.
 inline constexpr float CARIBDIS_RANGED_MIN_DISTANCE = 12.0f;
 // Out of sight, range means nothing: a bot within spell range behind the pillar still cannot shoot,
@@ -314,14 +315,6 @@ ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
-// One step along the bot's path to a point, stopping short of it by stopDistance. The step
-// follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
-// around a pillar between it and the point.
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY);
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
 // For a tank to move to its designated position, it must not only acquire its own target but not
 // be holding any other tank's target.
@@ -339,6 +332,8 @@ inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_H
 inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 45.0f;
 inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
+// Murlocs farther than this distance from Tidewalker are excluded by AppendTargetExclusions.
+inline constexpr float TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE = 50.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
@@ -357,7 +352,6 @@ struct GeneratorInfo
 };
 
 inline constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
-inline constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
 
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
