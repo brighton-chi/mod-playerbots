@@ -411,11 +411,9 @@ private:
     bool LineUpFirstCorePasser(Player* designatedLooter);
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(
-        Player* designatedLooter, Player* firstCorePasser,
-        Player* secondCorePasser, Unit* closestTrigger);
+        Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool LineUpFourthCorePasser(
-        Player* firstCorePasser, Player* secondCorePasser,
-        Player* thirdCorePasser, Unit* closestTrigger);
+        Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
     bool IsFirstCorePasserInPosition(Player* firstCorePasser);
     bool IsSecondCorePasserInPosition(Player* secondCorePasser);
     bool IsThirdCorePasserInPosition(Player* thirdCorePasser);

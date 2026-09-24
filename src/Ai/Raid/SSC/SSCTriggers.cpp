@@ -351,8 +351,8 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
     return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
 }
 
-// Phase 1 only to keep bots from chasing murlocs across the room, which is particularly prone to
-// happening to bots that leave Watery Graves right as murlocs spawn.
+// Phase 1 only. To keep bots from chasing murlocs across the room, which is particularly prone to
+// happening with bots that leave Watery Graves right as murlocs spawn.
 bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot))
@@ -431,9 +431,13 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActiveInEncounter()
     if (!vashj)
         return false;
 
-    return (vashj->GetHealthPct() <= 100.0f && vashj->GetHealthPct() > 90.0f) ||
-           (!vashj->HasUnitState(UNIT_STATE_ROOT) && vashj->GetHealthPct() <= 50.0f &&
-            vashj->GetHealthPct() > 40.0f);
+    if (vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+        return true;
+
+    if (GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    return vashj->GetHealthPct() > 45.0f; // Proxy for Phase 3 start... Maybe we use a threat comparison since the standard misdirect action is zeroed.
 }
 
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
@@ -518,8 +522,10 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
 
     bool isCoreHandler = false;
     for (Player* handler : coreHandlers)
+    {
         if (handler == bot)
             isCoreHandler = true;
+    }
 
     if (!isCoreHandler)
         return false;

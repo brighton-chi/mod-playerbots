@@ -686,7 +686,7 @@ int8 GetLadyVashjPhase(Unit* vashj)
     if (!vashj)
         return -1;
 
-    float healthPct = vashj->GetHealthPct();
+    float const healthPct = vashj->GetHealthPct();
     constexpr uint32 magicBarrier = Id(SscSpells::SPELL_MAGIC_BARRIER);
 
     // Transitioning from Phase 1 to Phase 2
@@ -936,7 +936,7 @@ bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
     if (myIndex == -1)
         return false;
 
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     constexpr uint32 lookbackMs = 3 * IN_MILLISECONDS;
 
     for (int8 i = 0; i <= myIndex; ++i)
