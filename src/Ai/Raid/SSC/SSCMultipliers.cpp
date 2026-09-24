@@ -704,10 +704,8 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
 }
 
-// Player point movement neither launches nor continues while a cast is up, and a bot lifted by a
-// Cyclone still has its target in range. Casting is held through the tosses, and through the drop
-// afterwards: a cast started on the way down stops the fall where it is, and by then the trigger
-// that issued it has nothing left to fire on.
+// Hold casts through the Cyclone and the drop after it. Point moves stall mid-cast, so a cast on
+// the way down leaves the bot stuck in the air.
 float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action))
@@ -726,10 +724,8 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
         0.0f : 1.0f;
 }
 
-// The walk out to Caribdis is long and out of sight the whole way, and a bot spread out of sight
-// once there has the same walk back. Anything else that moves the bot pulls it the other way:
-// the spread, and the stock reach on whatever it was shooting before her. Only the walk itself
-// and the Cyclone drop are left running.
+// Out of sight of Caribdis, only the walk to her and the Cyclone drop can move the bot. Spread
+// and the stock reach on its old target would just pull it back.
 float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) ||
@@ -757,11 +753,9 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
     return bot->IsWithinLOSInMap(caribdis) ? 1.0f : 0.0f;
 }
 
-// A target out of line of sight is invalid, and the drop hands the bot back to whatever is in
-// sight from where it stands. The ledge between Sharkkis and Karathress does that to a totem at
-// his feet while melee climb it, and the walk out to Caribdis does it to her. Both stay the
-// target as long as they stand.
-float FathomLordKarathressKeepTargetOutOfSightMultiplier::GetValueInEncounter(Action* action)
+// Keep the totem and Caribdis targeted when LoS breaks (the ledge, the walk out to her).
+// Otherwise the bot drops them and grabs whatever it can see.
+float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))
         return 1.0f;

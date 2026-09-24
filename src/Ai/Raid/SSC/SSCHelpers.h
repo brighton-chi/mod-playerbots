@@ -336,7 +336,7 @@ inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_H
 // Any non-tank farther than this from him in phase 1 is brought back, such as one sent out by
 // Watery Grave, rather than staying to fight murlocs where it landed. Healing a grave victim only
 // takes a healer to within heal range of it, which stays inside this for every grave.
-inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 40.0f;
+inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 45.0f;
 inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 

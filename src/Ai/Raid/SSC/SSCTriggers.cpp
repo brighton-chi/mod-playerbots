@@ -303,7 +303,7 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    return caribdis && bot->IsWithinDist(caribdis, CARIBDIS_CYCLONE_SUMMON_RANGE);
+    return caribdis && bot->GetDistance(caribdis) < CARIBDIS_CYCLONE_SUMMON_RANGE;
 }
 
 // A bot left hanging still has the knockback's generator in its controlled slot once the tosses
@@ -360,7 +360,7 @@ bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     return tidewalker && tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT &&
-        !bot->IsWithinDist(tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS);
+        bot->GetExactDist(tidewalker) >= TIDEWALKER_MAX_DISTANCE_FROM_BOSS;
 }
 
 // Lady Vashj <Coilfang Matron>
