@@ -22,7 +22,8 @@ using namespace EncounterHelpers;
 namespace SscHelpers
 {
 
-// General
+namespace
+{
 
 Creature* GetCachedCreature(Player* bot, char const* value)
 {
@@ -40,9 +41,12 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::s
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
 
+} // end anonymous namespace
+
+// General
+
 bool FindHazardEscapeStep(
-    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
-    float& stepZ)
+    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ)
 {
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -207,7 +211,6 @@ bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, i
     if (points.size() < 2)
         return false;
 
-    // The first point is the bot; the second is the first corner, which shows the way round
     float const startAngle = std::atan2(
         points[0].y - lurker->GetPositionY(), points[0].x - lurker->GetPositionX());
     float const cornerAngle = std::atan2(
@@ -283,22 +286,6 @@ std::vector<Player*> GetLurkerGuardianTanks(Player* bot)
         return {};
 
     return tanks;
-}
-
-bool CastTauntOn(PlayerbotAI* botAI, Unit* target)
-{
-    Player* bot = botAI->GetBot();
-    char const* taunt = nullptr;
-    switch (bot->getClass())
-    {
-        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
-        case CLASS_DRUID:        taunt = "growl"; break;
-        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
-        case CLASS_WARRIOR:      taunt = "taunt"; break;
-        default:                 return false;
-    }
-
-    return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);
 }
 
 // Leotheras the Blind
@@ -384,8 +371,8 @@ Creature* GetActiveLeotherasDemon(Player* bot)
     return nullptr;
 }
 
-// (1) First priority is an assistant Warlock (real player or bot)
-// (2) If no assistant Warlock, then look for any Warlock bot
+// (1) First priority is an assistant Warlock (real player or bot).
+// (2) If no assistant Warlock, then look for any Warlock bot.
 Player* GetLeotherasWarlockTank(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -530,7 +517,6 @@ bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI)
         if (!member || member->GetVictim() != bot)
             continue;
 
-        // Both lookups return living tanks only: nobody waits on a tank who cannot come
         Player* tank = GetCouncilTank(bot, assignment.assistTankIndex);
         if (tank && tank != bot)
             return true;
@@ -584,8 +570,6 @@ bool GetPathStepTowardPoint(
     G3D::Vector3 const targetPos(
         destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 
-    // Walk forward one step's worth of path, ending early at the point where the path comes
-    // within the distance to hold
     float remaining = stepDistance;
     for (std::size_t i = 1; i < points.size(); ++i)
     {
@@ -728,8 +712,7 @@ int8 GetLadyVashjPhase(Unit* vashj)
     return -1;
 }
 
-// This can just be replaced by a target exclusion of Vashj for Phase 2 I think
-bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj)
+bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj) // This can just be replaced by a target exclusion of Vashj for Phase 2 I think
 {
     if (!unit || !unit->IsAlive())
         return false;

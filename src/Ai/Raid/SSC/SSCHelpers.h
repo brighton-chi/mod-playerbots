@@ -201,12 +201,12 @@ extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_CO
 
 inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
 inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
-// Spout sweeps at 0.4 rad/s. A bot running at 7 yd/s manages 7 / r rad/s, so the ring radius is
-// the speed: 19 yd falls behind the beam at 0.03 rad/s, 21 yd at 0.07. The band must stay on the
-// walkway: a target over the pool edge makes MoveTo refuse and the bot stand still (the main tank
-// spot is 18.6y out). Each bot gets a fixed radius in the band from its GUID so the raid is not
-// stacked on one ring. The safe arc is a zone, not a point: a bot already inside it holds its
-// bearing during the wind-up.
+// Spout avoidance mechanics:
+// Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look more
+// artificial, and the intent is to keep the radius close to Lurker while keeping the circle on dry
+// land as much as possible (water is not completely avoidable due to a couple of spillways).
+// Within the 19-21y band that is within a 60° cone behind Lurker, a bot is considered safe. Any
+// bot in that safe zone will wait during the Spout windup until the spin direction is determined.
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
@@ -219,28 +219,25 @@ inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_P
 // True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
 // direction (+1 counter-clockwise, -1 clockwise).
 bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction);
-// True if a navmesh path from the bot ends within tolerance of x/y rather than short of it.
+// True if a navmesh path from the bot ends within tolerance of x/y.
 bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 
-// Submerge: three Coilfang Guardians, one each for the main tank and the first two assist tanks.
-// The guardians are found by a sorted, cached grid search so every tank sees the same list in the
-// same order (summon GUIDs are sequential, so sorted is spawn order).
+// Submerge: A Coilfang Guardian is assigned to each of the main tank and first two assist tanks.
+// Assignment is by summon GUID (so spawn order) and persists after a Guardian is killed.
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
-// The script sets REACT_PASSIVE on the first tick of the Spout wind-up and REACT_AGGRESSIVE when
-// the rotation aura drops 19s later, and at no other point while in combat; Submerge uses the
-// stand state instead.
+// Reading REACT_PASSIVE is the easiest way to capture the entire Spout sequence, including the
+// wind-up that is not associated with a particular aura.
 bool IsLurkerSpouting(Unit* lurker);
-// Up and fighting: neither submerged nor spouting. The tank and ranged holding triggers share it.
+// Captures when Lurker is neither Spouting nor submerged.
 bool IsLurkerSurfacedAndCalm(Unit* lurker);
 // +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
 int8 GetLurkerSpoutSpin(Unit* lurker);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
-// The guardian tanks in index order; empty unless all three exist.
+// The Guardian tanks in index order; empty if there are fewer than 3 bot tanks.
 std::vector<Player*> GetLurkerGuardianTanks(Player* bot);
-bool CastTauntOn(PlayerbotAI* botAI, Unit* target);
 
 // Leotheras the Blind
 
@@ -286,7 +283,7 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 // The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
-// Steps short enough to navigate poor terrain, matching the stepper in EncounterHelpers
+// Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 // Tidal Surge's range is 10 yards.
@@ -301,59 +298,53 @@ inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 4.0f;
 // Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
 // ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
-// Widest tank AoE is Death and Decay at 10 yd
+// The widest tank AoE is Death and Decay at 10 yd.
 inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
 // One toss leaves a bot about 1.5 yd up; navmesh Z sits well under 1 yd off the floor
 inline constexpr float CYCLONE_DROP_HEIGHT = 1.0f;
 inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
-// Ranged take a totem only when it is this close, so the group on Caribdis is not called back to
-// the room for every totem Karathress drops once Tidalvess is dead
+// Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
+// Caribdis, which is the point, as ranged needs to maintain their spread due to Cyclones.
 inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
 inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
 
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
-// Totems cannot hold a threat list, so the Spitfire Totem is found by entry and cached as
-// "ssc spitfire totem".
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(Player* bot);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 // One step along the bot's path to a point, stopping short of it by stopDistance. The step
-// follows the path corner by corner rather than aiming at the far end of it, so a pillar between
-// the bot and the point is walked around instead of into.
+// follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
+// around a pillar between it and the point.
 bool GetPathStepTowardPoint(
     Player* bot, Position const& destination, float stopDistance, float stepDistance,
     float& stepX, float& stepY);
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
-// Karathress belongs to the main tank; Caribdis, Sharkkis and Tidalvess to the assist tanks in
-// that order
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
-// A guard that latched onto the wrong tank on the pull is peeled by its own tank, so the tank
-// holding it must not walk off with it
+// For a tank to move to its designated position, it must not only acquire its own target but not
+// be holding any other tank's target.
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 
 // Morogrim Tidewalker
 
 inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
-// The move to the corner starts a little early so it is done before the first globules arrive
+// The move to the corner starts a little early so it is done before the first Globules arrive.
 inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f;
 // Any non-tank farther than this from him in phase 1 is brought back, such as one sent out by
 // Watery Grave, rather than staying to fight murlocs where it landed. Healing a grave victim only
 // takes a healer to within heal range of it, which stays inside this for every grave.
 inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 40.0f;
-inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
-inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-// The stack point is this far behind his centre. Ranged come in from farther out and stop at the
-// stack radius short of it, about 8 yd from his centre: level with the melee, who stand at 8.25
-// (0.75 + 1.5 + his 6.0 combat reach)
 inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 
-// Behind him is away from his victim, so the point follows him as the tank takes him to the corner
+inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
+inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
+// The stack point is measured not based on Tidewalker but instead is computed by drawing a line
+// between the main tank and Tidewalker. This approach is cleaner during the phase transition.
 Position GetTidewalkerStackPoint(Unit* tidewalker);
 
 // Lady Vashj <Coilfang Matron>

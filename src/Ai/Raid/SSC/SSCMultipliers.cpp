@@ -556,7 +556,6 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
             return 0.0f;
         }
 
-        // Hold only after the Whirlwind ends; ranged keep attacking from outside it
         auto whirlwind = leotherasWhirlwindEndTime.find(instanceId);
         if (whirlwind == leotherasWhirlwindEndTime.end() || now < whirlwind->second)
             return 1.0f;
@@ -596,7 +595,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 }
 
 // Soulshatter is eligible to be cast when there are at least two attackers, which is the case in
-// the final phase. This is needed to keep the Warlock tank from dropping threat on the Shadow.
+// the final phase. So this is needed to keep the Warlock tank from dropping threat on the Shadow.
 float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
     Action* action)
 {
@@ -628,9 +627,7 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    // Single-target taunts land on the tank's own target and are how a guard that latched onto
-    // the wrong tank, a loose pet or a knocked-off guard is taken back. AoE threat and the AoE
-    // taunts are held only while somebody else's council member is close enough to be caught.
+    // Hold AoE threat and taunts only when another tank's target is close enough to be hit.
     if (IsAoeThreatAction(bot, action) || IsAoeTauntAction(bot, action))
     {
         return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ?
@@ -665,8 +662,6 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
 
 float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    // Normally I don't blanket exempt healers as a role and instead only let healing spells through
-    // only, but this is a pretty chaotic pull so I don't want to limit healers' abilities.
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
@@ -794,8 +789,7 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action
     return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
 }
 
-// Only a bot already in the stack is held there. One still on its way keeps its other movement,
-// so a stack step it cannot take does not leave it unable to reach anything at all.
+// This doesn't apply en route to the stack, only when actually stacked.
 float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsRanged(bot))

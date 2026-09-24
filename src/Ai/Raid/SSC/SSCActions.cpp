@@ -529,7 +529,17 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
     if (guardian->GetVictim() == bot)
         return false;
 
-    return CastTauntOn(botAI, guardian);
+    char const* taunt = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
+        case CLASS_DRUID:        taunt = "growl"; break;
+        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
+        case CLASS_WARRIOR:      taunt = "taunt"; break;
+        default:                 return false;
+    }
+
+    return botAI->CanCastSpell(taunt, guardian) && botAI->CastSpell(taunt, guardian);
 }
 
 ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
