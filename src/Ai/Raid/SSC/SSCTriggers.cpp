@@ -34,16 +34,14 @@ bool UnderbogColossusInToxicPoolTrigger::IsActive()
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
+    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
 }
 
 // Hydross the Unstable <Duke of Currents>
 
 bool HydrossTheUnstableShouldBeTankedByFrostTankTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) &&
-        AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
