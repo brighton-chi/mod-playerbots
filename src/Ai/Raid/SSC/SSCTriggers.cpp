@@ -313,8 +313,20 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
 // are over; while the aura is up, more tosses are coming and the arc is left to run
 bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
 {
-    return !bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) &&
-        bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE;
+    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ||
+        bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != EFFECT_MOTION_TYPE)
+    {
+        return false;
+    }
+
+    // Only a bot left well off the floor. Any other knockback, such as Knock Away from Sharkkis's
+    // pets (a flat shove topping out under half a yard), is left to run its course.
+    float const floorZ = bot->GetMapHeight(
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") != nullptr;
 }
 
 // Morogrim Tidewalker
@@ -343,15 +355,15 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
     return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
 }
 
-// Phase 1 only: from the move to the corner on, healers are part of the ranged stack
-bool MorogrimTidewalkerHealerIsTooFarFromBossTrigger::IsActiveInEncounter()
+// Phase 1 only: from the move to the corner on, ranged are in the stack and melee are on him
+bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsHeal(bot))
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     return tidewalker && tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT &&
-        !bot->IsWithinDist(tidewalker, TIDEWALKER_HEALER_MAX_DISTANCE);
+        !bot->IsWithinDist(tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS);
 }
 
 // Lady Vashj <Coilfang Matron>

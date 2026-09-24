@@ -370,11 +370,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MorogrimTidewalkerHealerIsTooFarFromBossTrigger : public SscEncounterTrigger
+class MorogrimTidewalkerTooFarFromBossTrigger : public SscEncounterTrigger
 {
 public:
-    MorogrimTidewalkerHealerIsTooFarFromBossTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "morogrim tidewalker healer is too far from boss") {}
+    MorogrimTidewalkerTooFarFromBossTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "morogrim tidewalker too far from boss") {}
 
 protected:
     bool IsActiveInEncounter() override;

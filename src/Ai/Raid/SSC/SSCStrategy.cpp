@@ -119,8 +119,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("morogrim tidewalker ranged should stack", {
         NextAction("morogrim tidewalker stack ranged behind boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("morogrim tidewalker healer is too far from boss", {
-        NextAction("morogrim tidewalker return healer to boss", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("morogrim tidewalker too far from boss", {
+        NextAction("morogrim tidewalker return to boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss", {
         NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID) }));
