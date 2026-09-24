@@ -38,7 +38,13 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= hasReachedVashjRangedPosition.erase(guid) > 0;
     reset |= intendedVashjCorePasserLineup.erase(guid) > 0;
     reset |= lastVashjCoreInInventoryTime.erase(guid) > 0;
-    reset |= lurkerRangedPositions.erase(guid) > 0;
+
+    Action* spreadAction = context->GetAction("the lurker below spread ranged in arc");
+    if (spreadAction &&
+        static_cast<TheLurkerBelowSpreadRangedInArcAction*>(spreadAction)->ResetRangedPosition())
+    {
+        reset = true;
+    }
 
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return reset;
@@ -221,6 +227,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     uint32 const now = getMSTime();
     constexpr uint32 phaseStartStopMs = 5 * IN_MILLISECONDS;
     constexpr uint32 phaseEndStopMs = 1 * IN_MILLISECONDS;
+    bool const isHunter = bot->getClass() == CLASS_HUNTER;
 
     bool shouldStopDps = false;
 
@@ -237,7 +244,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     if (itNatureDps != hydrossNatureDpsWaitTimer.end() &&
         getMSTimeDiff(itNatureDps->second, now) < phaseStartStopMs)
     {
-        shouldStopDps = bot->getClass() != CLASS_HUNTER ? true : false;
+        shouldStopDps = !isHunter;
     }
 
     // 1 second after 100% Mark of Corruption, stop dps.
@@ -253,22 +260,22 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
     if (itFrostDps != hydrossFrostDpsWaitTimer.end() &&
         getMSTimeDiff(itFrostDps->second, now) < phaseStartStopMs)
     {
-        shouldStopDps = bot->getClass() != CLASS_HUNTER ? true : false;
+        shouldStopDps = !isHunter;
     }
 
     if (!shouldStopDps)
         return false;
 
     bot->AttackStop();
+    bot->InterruptSpell(CURRENT_MELEE_SPELL);
     bot->CastStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetTarget(ObjectGuid::Empty);
     bot->SetSelection(ObjectGuid());
 
     return true;
 }
 
-bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
+bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -431,31 +438,28 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     if (!lurker)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    std::vector<Player*> rangedMembers;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (!_hasRangedPosition)
     {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
-            !PlayerbotAI::IsRanged(member))
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        std::vector<Player*> rangedMembers;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            continue;
+            Player* member = ref->GetSource();
+            if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+                !PlayerbotAI::IsRanged(member))
+            {
+                continue;
+            }
+
+            rangedMembers.push_back(member);
         }
 
-        rangedMembers.push_back(member);
-    }
+        if (rangedMembers.empty())
+            return false;
 
-    if (rangedMembers.empty())
-        return false;
-
-    ObjectGuid const guid = bot->GetGUID();
-
-    auto it = lurkerRangedPositions.find(guid);
-    if (it == lurkerRangedPositions.end())
-    {
         size_t count = rangedMembers.size();
         auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
         size_t botIndex = (findIt != rangedMembers.end()) ?
@@ -471,14 +475,11 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         float targetX = lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::sin(angle);
         float targetY = lurker->GetPositionY() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
 
-        lurkerRangedPositions.try_emplace(guid, Position(targetX, targetY, lurker->GetPositionZ()));
-        it = lurkerRangedPositions.find(guid);
+        _rangedPosition = Position(targetX, targetY, lurker->GetPositionZ());
+        _hasRangedPosition = true;
     }
 
-    if (it == lurkerRangedPositions.end())
-        return false;
-
-    Position const& position = it->second;
+    Position const& position = _rangedPosition;
     constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
@@ -706,7 +707,7 @@ bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
     if (!demonVictim || demonVictim == bot)
         return false;
 
-    float currentDistance = bot->GetExactDist2d(demonVictim);
+    float const currentDistance = bot->GetExactDist2d(demonVictim);
     constexpr float safeDistance = 10.0f;
     if (currentDistance >= safeDistance)
         return false;
@@ -791,7 +792,6 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
 // trap cooldown resets (since a second Explosive Trap will not stack its DoT).
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
 {
-
     if (!botAI->HasAura("aspect of the dragonhawk", bot) &&
         !botAI->HasAura("aspect of the hawk", bot))
     {
@@ -1200,10 +1200,10 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
                 return false;
 
             bot->AttackStop();
+            bot->InterruptSpell(CURRENT_MELEE_SPELL);
             bot->CastStop();
             context->GetValue<Unit*>("current target")->Set(nullptr);
-            bot->SetTarget(ObjectGuid::Empty);
-            bot->SetSelection(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
             return true;
         }
 
@@ -1438,7 +1438,8 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance, vashj, moveX, moveY, backwards))
+                bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance,
+                vashj, moveX, moveY, backwards))
         {
             return false;
         }
@@ -1450,8 +1451,9 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
 
     // Phase 3: No fixed position, but move Vashj away from Enchanted Elementals
     constexpr float searchRadius = 15.0f;
+    // NEED TO CHANGE THIS TO GET ALL ENCHANTED, NOT JUST ONE
     Creature* enchanted =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL), searchRadius); // NEED TO CHANGE THIS TO GET ALL ENCHANTED, NOT JUST ONE
+        bot->FindNearestCreature(Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL), searchRadius);
     if (!enchanted)
         return false;
 
@@ -1723,18 +1725,18 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (currentTarget && currentTarget == vashj && phase == 2)
     {
         bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
         bot->CastStop();
         context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetTarget(ObjectGuid::Empty);
         bot->SetSelection(ObjectGuid());
-        currentTarget = nullptr;
     }
 
     if (target && currentTarget != target && AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
     // If bots have wandered too far from the center, move them back
-    if (bot->GetExactDist2d(vashj) <= maxPursueRange) // THIS DOESN'T WORK SINCE MOVETO A WORLD OBJECT IS LIMITED TO SPELL DIST
+    // THIS DOESN'T WORK SINCE MOVETO A WORLD OBJECT IS LIMITED TO SPELL DIST
+    if (bot->GetExactDist2d(vashj) <= maxPursueRange)
         return false;
 
     return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);

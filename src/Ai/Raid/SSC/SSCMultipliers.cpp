@@ -117,7 +117,7 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         if (IsLeotherasChannelingWhirlwind(leotheras))
             return 0.0f;
 
-        if (GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(botAI))
+        if (GetActiveLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
             return 0.0f;
     }
 
@@ -156,7 +156,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 
     if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        // Tidalvess is the first kill target; once he is down the rest of the fight is open.
+        // Held until Tidalvess, the first council member in the kill order, is engaged
         Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
@@ -253,7 +253,8 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
 
     auto itHandOver = handOverTimer.find(instanceId);
     bool const aboutToChange =
-        itHandOver != handOverTimer.end() && getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs;
+        itHandOver != handOverTimer.end() &&
+        getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs;
 
     return justChanged || aboutToChange ? 0.0f : 1.0f;
 }
@@ -369,13 +370,11 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
         return 0.0f;
     }
 
-    if (bot->getClass() == CLASS_WARRIOR && GetActiveLeotherasDemon(botAI))
+    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action) &&
+        GetActiveLeotherasDemon(botAI))
     {
         Player* warlockTank = GetLeotherasWarlockTank(bot);
-        if (!warlockTank)
-            return 1.0f;
-
-        if (dynamic_cast<CastVigilanceAction*>(action) && action->GetTarget() == warlockTank)
+        if (warlockTank && action->GetTarget() == warlockTank)
             return 0.0f;
     }
 
@@ -563,13 +562,12 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         return now - whirlwind->second < LEOTHERAS_HUMANOID_DPS_WAIT_MS ? 0.0f : 1.0f;
     }
 
-    Player* warlockTank = GetLeotherasWarlockTank(bot);
     if (IsLeotherasDemonPhase(botAI))
     {
-        if (warlockTank == bot)
+        if (IsLeotherasWarlockTank(bot))
             return 1.0f;
 
-        if (!warlockTank && PlayerbotAI::IsTank(bot))
+        if (PlayerbotAI::IsTank(bot) && !GetLeotherasWarlockTank(bot))
             return 1.0f;
 
         auto it = leotherasDemonPhaseDpsWaitTimer.find(instanceId);
@@ -581,7 +579,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 
     if (IsLeotherasFinalPhase(botAI))
     {
-        if (warlockTank == bot || PlayerbotAI::IsTank(bot))
+        if (PlayerbotAI::IsTank(bot) || IsLeotherasWarlockTank(bot))
             return 1.0f;
 
         auto it = leotherasFinalPhaseDpsWaitTimer.find(instanceId);
@@ -611,7 +609,7 @@ float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(botAI) ? 0.0f : 1.0f;
+    return GetActiveLeotherasDemon(botAI) && IsLeotherasWarlockTank(bot) ? 0.0f : 1.0f;
 }
 
 // Fathom-Lord Karathress

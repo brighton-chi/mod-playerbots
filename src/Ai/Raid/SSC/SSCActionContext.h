@@ -42,8 +42,8 @@ public:
         creators["hydross the unstable stop dps upon phase change"] =
             &RaidSscActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
 
-        creators["hydross the unstable manage timers"] =
-            &RaidSscActionContext::hydross_the_unstable_manage_timers;
+        creators["hydross the unstable manage phase timers"] =
+            &RaidSscActionContext::hydross_the_unstable_manage_phase_timers;
 
         // The Lurker Below
         creators["the lurker below run around behind boss"] =
@@ -200,8 +200,8 @@ private:
     static Action* hydross_the_unstable_stop_dps_upon_phase_change(PlayerbotAI* botAI) {
         return new HydrossTheUnstableStopDpsUponPhaseChangeAction(botAI);
     }
-    static Action* hydross_the_unstable_manage_timers(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableManageTimersAction(botAI);
+    static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableManagePhaseTimersAction(botAI);
     }
 
     // The Lurker Below

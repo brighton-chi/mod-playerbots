@@ -52,7 +52,8 @@ bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
 
 bool HydrossTheUnstableRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsRanged(bot) &&
+        IsHydrossInFrostPhase(AI_VALUE2(Unit*, "find target", "hydross the unstable"));
 }
 
 bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActiveInEncounter()
@@ -134,13 +135,13 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (!IsLeotherasWarlockTank(bot))
-        return false;
-
     if (HasInnerDemon(bot))
         return false;
 
-    return GetActiveLeotherasDemon(botAI);
+    if (!GetActiveLeotherasDemon(botAI))
+        return false;
+
+    return IsLeotherasWarlockTank(bot);
 }
 
 bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
@@ -154,11 +155,11 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
-    if (!GetLeotherasWarlockTank(bot))
+    if (!GetPhase2LeotherasDemon(botAI))
         return false;
 
-    return GetPhase2LeotherasDemon(botAI);
+    // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
+    return GetLeotherasWarlockTank(bot);
 }
 
 bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -219,10 +220,10 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     if (HasInnerDemon(bot))
         return false;
 
-    if (IsLeotherasWarlockTank(bot))
+    if (!IsLeotherasFinalPhase(botAI))
         return false;
 
-    return IsLeotherasFinalPhase(botAI);
+    return !IsLeotherasWarlockTank(bot);
 }
 
 bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter()
@@ -437,7 +438,9 @@ bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActiveInEncounter()
     if (GetLadyVashjPhase(vashj) != 3)
         return false;
 
-    return vashj->GetHealthPct() > 45.0f; // Proxy for Phase 3 start... Maybe we use a threat comparison since the standard misdirect action is zeroed.
+    // Proxy for Phase 3 start...
+    // Maybe we use a threat comparison since the standard misdirect action is zeroed?
+    return vashj->GetHealthPct() > 45.0f;
 }
 
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
