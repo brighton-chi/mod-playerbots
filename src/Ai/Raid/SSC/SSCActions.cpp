@@ -1268,8 +1268,7 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
 {
     // The knockback builds its spline from wherever the bot is, and mid-air that raycast fails:
     // the spline never finishes, so its generator is never popped off the controlled slot, and a
-    // bot with that slot taken refuses every move it is given. It is cleared by hand here, at any
-    // height: a bot left just above the floor would otherwise keep it for good.
+    // bot with that slot taken refuses every move it is given. It is cleared by hand here.
     MotionMaster* mm = bot->GetMotionMaster();
     if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE)
     {
@@ -1389,9 +1388,9 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Brings back a healer that ended up far out, such as one carried off by Watery Grave. Healers
-// otherwise move as they normally would.
-bool MorogrimTidewalkerReturnHealerToBossAction::Execute(Event /*event*/)
+// Brings back a non-tank that ended up far out, such as one carried off by Watery Grave. Inside
+// the distance, everybody moves as they normally would.
+bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -1399,7 +1398,7 @@ bool MorogrimTidewalkerReturnHealerToBossAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, tidewalker, TIDEWALKER_HEALER_MAX_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(bot, tidewalker, TIDEWALKER_MAX_DISTANCE_FROM_BOSS, stepX, stepY))
         return false;
 
     return MoveTo(

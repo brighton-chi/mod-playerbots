@@ -341,10 +341,10 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 // The move to the corner starts a little early so it is done before the first globules arrive
 inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f;
-// A healer farther than this from him in phase 1 is brought back. Reaching a Watery Grave victim
-// only takes a healer to within heal range of it, which stays inside this for every grave.
-inline constexpr float TIDEWALKER_HEALER_MAX_DISTANCE = 40.0f;
-
+// Any non-tank farther than this from him in phase 1 is brought back, such as one sent out by
+// Watery Grave, rather than staying to fight murlocs where it landed. Healing a grave victim only
+// takes a healer to within heal range of it, which stays inside this for every grave.
+inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 40.0f;
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
 // The stack point is this far behind his centre. Ranged come in from farther out and stop at the

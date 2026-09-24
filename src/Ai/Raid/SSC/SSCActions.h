@@ -326,11 +326,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MorogrimTidewalkerReturnHealerToBossAction : public MovementAction
+class MorogrimTidewalkerReturnToBossAction : public MovementAction
 {
 public:
-    MorogrimTidewalkerReturnHealerToBossAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "morogrim tidewalker return healer to boss") {}
+    MorogrimTidewalkerReturnToBossAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "morogrim tidewalker return to boss") {}
     bool Execute(Event event) override;
 };
 
