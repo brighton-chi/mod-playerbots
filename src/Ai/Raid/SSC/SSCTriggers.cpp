@@ -140,7 +140,7 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (HasInnerDemon(bot))
         return false;
 
-    return GetActiveLeotherasDemon(bot);
+    return GetActiveLeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
@@ -158,7 +158,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (!GetLeotherasWarlockTank(bot))
         return false;
 
-    return GetPhase2LeotherasDemon(bot);
+    return GetPhase2LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -199,7 +199,7 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (!HasTooManyChaosBlastStacks(bot))
         return false;
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     return leotherasDemon && leotherasDemon->GetVictim() != bot;
 }
 
@@ -222,7 +222,7 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     if (IsLeotherasWarlockTank(bot))
         return false;
 
-    return IsLeotherasFinalPhase(bot);
+    return IsLeotherasFinalPhase(botAI);
 }
 
 bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter()
@@ -236,7 +236,7 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    return GetActiveLeotherasDemon(bot);
+    return GetActiveLeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()

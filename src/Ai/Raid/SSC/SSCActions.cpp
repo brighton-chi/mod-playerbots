@@ -607,7 +607,7 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
 // Warlock tank action: see GetLeotherasWarlockTank in SSCHelpers.cpp.
 bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -626,7 +626,7 @@ bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 // them. Rage does not decay in combat, and white hits alone cannot outthreat Searing Pain.
 bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetPhase2LeotherasDemon(bot);
+    Creature* leotherasDemon = GetPhase2LeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -638,7 +638,7 @@ bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
     if (leotherasHumanoid && !HasInnerDemon(bot) && leotherasHumanoid->GetVictim() != bot &&
         bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss)
     {
@@ -646,7 +646,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
             return true;
     }
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -674,7 +674,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
     if (!leotherasHumanoid)
         return false;
 
@@ -698,7 +698,7 @@ bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
         return true;
     }
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -890,7 +890,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 // Everybody except the Warlock tank should focus on Leotheras in Phase 3.
 bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
 {
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
     if (!leotherasHumanoid)
         return false;
 
@@ -900,11 +900,11 @@ bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
 // Leotheras's tank needs to keep him away from the Shadow's target (due to Chaos Blasts).
 bool LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction::Execute(Event /*event*/)
 {
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(bot);
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
     if (!leotherasHumanoid || leotherasHumanoid->GetVictim() != bot)
         return false;
 
-    Creature* leotherasDemon = GetPhase3LeotherasDemon(bot);
+    Creature* leotherasDemon = GetPhase3LeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -922,7 +922,7 @@ bool LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction::Execute(Event /*eve
 
 bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -955,7 +955,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
     bool changed = false;
 
-    if (IsLeotherasHumanoidPhase(bot))
+    if (IsLeotherasHumanoidPhase(botAI))
     {
         changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
 
@@ -986,14 +986,14 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
         changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
         changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     }
-    else if (IsLeotherasDemonPhase(bot))
+    else if (IsLeotherasDemonPhase(botAI))
     {
         changed |= leotherasDemonPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
         changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
         changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
         changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     }
-    else if (IsLeotherasFinalPhase(bot))
+    else if (IsLeotherasFinalPhase(botAI))
     {
         changed |= leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
         changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
@@ -1163,7 +1163,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 
     // Karathress inherits the totem when Tidalvess dies, so it stays first for the whole fight,
     // for melee and for the ranged near it
-    Unit* totem = GetSpitfireTotem(bot);
+    Unit* totem = GetSpitfireTotem(botAI);
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
 

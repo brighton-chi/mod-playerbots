@@ -117,7 +117,7 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         if (IsLeotherasChannelingWhirlwind(leotheras))
             return 0.0f;
 
-        if (GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot))
+        if (GetLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(botAI))
             return 0.0f;
     }
 
@@ -167,7 +167,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
             return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
 
-    if (Unit* leotheras = GetLeotheras(bot))
+    if (Unit* leotheras = GetLeotheras(botAI))
         return leotheras->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 
     return 1.0f;
@@ -360,7 +360,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
 
     // Auto-attack only while the Warlock has him: abilities would spend the rage being banked for
     // an Inner Demon, and the target choosers would take the tanks off him
-    if (GetPhase2LeotherasDemon(bot) &&
+    if (GetPhase2LeotherasDemon(botAI) &&
         (dynamic_cast<TankAssistAction*>(action) ||
          (dynamic_cast<CastSpellAction*>(action) &&
           !dynamic_cast<CastDireBearFormAction*>(action) &&
@@ -369,7 +369,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
         return 0.0f;
     }
 
-    if (bot->getClass() == CLASS_WARRIOR && GetActiveLeotherasDemon(bot))
+    if (bot->getClass() == CLASS_WARRIOR && GetActiveLeotherasDemon(botAI))
     {
         Player* warlockTank = GetLeotherasWarlockTank(bot);
         if (!warlockTank)
@@ -381,7 +381,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
 
     // Keep Berserk until Phase 3 in case the bear gets Inner Demon.
     if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action) &&
-        !GetPhase3LeotherasDemon(bot))
+        !GetPhase3LeotherasDemon(botAI))
     {
         return 0.0f;
     }
@@ -522,7 +522,7 @@ float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Actio
     if (!HasTooManyChaosBlastStacks(bot))
         return 1.0f;
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(bot);
+    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
     return leotherasDemon && leotherasDemon->GetVictim() != bot ? 0.0f : 1.0f;
 }
 
@@ -544,7 +544,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     uint32 const instanceId = leotheras->GetInstanceId();
     uint32 const now = getMSTime();
 
-    if (IsLeotherasHumanoidPhase(bot))
+    if (IsLeotherasHumanoidPhase(botAI))
     {
         if (PlayerbotAI::IsTank(bot))
             return 1.0f;
@@ -564,7 +564,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     }
 
     Player* warlockTank = GetLeotherasWarlockTank(bot);
-    if (IsLeotherasDemonPhase(bot))
+    if (IsLeotherasDemonPhase(botAI))
     {
         if (warlockTank == bot)
             return 1.0f;
@@ -579,7 +579,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         return getMSTimeDiff(it->second, now) < LEOTHERAS_DEMON_DPS_WAIT_MS ? 0.0f : 1.0f;
     }
 
-    if (IsLeotherasFinalPhase(bot))
+    if (IsLeotherasFinalPhase(botAI))
     {
         if (warlockTank == bot || PlayerbotAI::IsTank(bot))
             return 1.0f;
@@ -611,7 +611,7 @@ float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(bot) ? 0.0f : 1.0f;
+    return IsLeotherasWarlockTank(bot) && GetActiveLeotherasDemon(botAI) ? 0.0f : 1.0f;
 }
 
 // Fathom-Lord Karathress
@@ -748,7 +748,7 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
         return 1.0f;
 
     // Only while she is the kill target: a totem in reach and Tidalvess come before her
-    if (ShouldAttackSpitfireTotem(bot, GetSpitfireTotem(bot)) ||
+    if (ShouldAttackSpitfireTotem(bot, GetSpitfireTotem(botAI)) ||
         AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess"))
     {
         return 1.0f;
@@ -770,7 +770,7 @@ float FathomLordKarathressKeepTargetOutOfSightMultiplier::GetValueInEncounter(Ac
     if (!target)
         return 1.0f;
 
-    if (target == GetSpitfireTotem(bot))
+    if (target == GetSpitfireTotem(botAI))
         return 0.0f;
 
     return target == AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
