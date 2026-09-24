@@ -199,7 +199,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressNoCastingWhileLiftedMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressApproachingCaribdisMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressKeepTargetOutOfSightMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressDontDropOutOfSightTargetMultiplier(botAI));
 
     // Morogrim Tidewalker
     multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));

@@ -1076,7 +1076,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
         return false;
 
     bool const inSight = bot->IsWithinLOSInMap(caribdis);
-    if (inSight && bot->IsWithinDist(caribdis, CARIBDIS_HEALER_MAX_DISTANCE))
+    if (inSight && bot->GetExactDist(caribdis) < CARIBDIS_HEALER_MAX_DISTANCE)
         return false;
 
     float const stopDistance =
@@ -1228,7 +1228,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             return true;
 
         // Flee is held for the whole fight, so ranged keep out of Tidal Surge themselves
-        if (bot->IsWithinDist(caribdis, CARIBDIS_RANGED_MIN_DISTANCE))
+        if (bot->GetExactDist(caribdis) < CARIBDIS_RANGED_MIN_DISTANCE)
             return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
     }
     // While a totem stands, skull stays on it: ranged out of its reach are on something else, and

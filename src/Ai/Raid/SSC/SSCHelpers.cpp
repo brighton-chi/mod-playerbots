@@ -461,7 +461,7 @@ Creature* GetSpitfireTotem(PlayerbotAI* botAI)
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
 {
     return totem && (PlayerbotAI::IsMelee(bot) ||
-        bot->IsWithinDist(totem, SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE));
+        bot->GetDistance(totem) < SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE);
 }
 
 namespace
@@ -529,7 +529,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     for (CouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
-        if (member && member != ownMember && bot->IsWithinDist(member, range))
+        if (member && member != ownMember && bot->GetDistance(member) < range)
             return true;
     }
 
@@ -539,9 +539,6 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
 {
-    if (bot->IsWithinDist(target, stopDistance))
-        return false;
-
     return GetPathStepTowardPoint(
         bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
 }
@@ -550,7 +547,7 @@ bool GetPathStepTowardPoint(
     Player* bot, Position const& destination, float stopDistance, float stepDistance,
     float& stepX, float& stepY)
 {
-    if (bot->GetExactDist(destination) <= stopDistance)
+    if (bot->GetExactDist(destination) < stopDistance)
         return false;
 
     PathGenerator path(bot);
@@ -604,11 +601,16 @@ bool GetPathStepTowardPoint(
     return remaining < stepDistance;
 }
 
-// Sharkkis's tank holds his pets too. A pet on somebody else comes first, then Sharkkis, then a
-// pet that is already on the tank; null once none of them is left.
+// Sharkkis's tank holds his pets too. Sharkkis on somebody else comes first, then a pet on
+// somebody else, then Sharkkis, then a pet that is already on the tank; null once none is left.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+    if (sharkkis && sharkkis->GetVictim() != bot)
+        return sharkkis;
+
     Unit* heldPet = nullptr;
     for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
@@ -626,8 +628,7 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
         heldPet = pet;
     }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    if (Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis"))
+    if (sharkkis)
         return sharkkis;
 
     return heldPet;
