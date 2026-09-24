@@ -112,7 +112,7 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    // A melee bot with a target out of melee range that is neither moving nor casting is stuck.
+    // Consider the bot stuck if it is not moving or casting even with a target out of melee range.
     if (bot->isMoving() || bot->IsNonMeleeSpellCast(false))
         return false;
 
@@ -126,7 +126,7 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 
 // Leotheras the Blind
 
-bool LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
@@ -297,7 +297,6 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 
-// Only the bots close enough to Caribdis for a Cyclone to be summoned on them need the spread
 bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -324,7 +323,7 @@ bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
     if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") != nullptr;
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
 
 // Morogrim Tidewalker
@@ -348,12 +347,12 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    // Ranged set off with the tank: behind him, they cannot get in front of him on the way
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
 }
 
-// Phase 1 only: from the move to the corner on, ranged are in the stack and melee are on him
+// Phase 1 only to keep bots from chasing murlocs across the room, which is particularly prone to
+// happening to bots that leave Watery Graves right as murlocs spawn.
 bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot))

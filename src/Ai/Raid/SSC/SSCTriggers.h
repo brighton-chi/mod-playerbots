@@ -184,12 +184,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger : public SscEncounterTrigger
+class LeotherasTheBlindWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
+    LeotherasTheBlindWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(
-            botAI, "leotheras the blind demon form should be tanked by warlock") {}
+            botAI, "leotheras the blind warlock should tank demon form") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -62,7 +62,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Leotheras the Blind
     triggers.push_back(new TriggerNode(
-        "leotheras the blind demon form should be tanked by warlock", {
+        "leotheras the blind warlock should tank demon form", {
         NextAction("leotheras the blind warlock tank attack boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
