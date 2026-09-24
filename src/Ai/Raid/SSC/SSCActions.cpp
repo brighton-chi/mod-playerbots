@@ -1599,8 +1599,8 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     // Search and attack radius are intended to keep bots from going down the stairs
-    const float maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
-    const float maxPursueRange = maxSearchRange - 5.0f;
+    float const maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
+    float const maxPursueRange = maxSearchRange - 5.0f;
     int8 phase = GetLadyVashjPhase(vashj);
 
     Unit* enchanted = nullptr;
@@ -1762,7 +1762,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
             AI_VALUE(Unit*, "current target") != strider)
             return Attack(strider);
 
-        float currentDistance = bot->GetExactDist2d(vashj);
+        float const currentDistance = bot->GetExactDist2d(vashj);
         constexpr float safeDistance = 28.0f;
         if (strider->GetVictim() != bot || currentDistance >= safeDistance)
             return false;
@@ -1773,7 +1773,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
     // Don't move away if raid cheats are enabled, or in any case if the bot is a tank
     if (!botAI->HasCheat(BotCheatMask::raid))
     {
-        float currentDistance = bot->GetExactDist2d(strider);
+        float const currentDistance = bot->GetExactDist2d(strider);
         constexpr float safeDistance = 20.0f;
         if (!PlayerbotAI::IsTank(bot) && currentDistance < safeDistance)
             return MoveAway(strider, safeDistance - currentDistance);
@@ -1854,7 +1854,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 
     context->GetValue<LootObject>("loot target")->Set(loot);
 
-    const float maxLootRange = sPlayerbotAIConfig.lootDistance;
+    float const maxLootRange = sPlayerbotAIConfig.lootDistance;
     constexpr float distFromObject = 2.0f;
 
     if (bot->GetDistance(elemental) > maxLootRange)
@@ -1870,7 +1870,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     *packet << coreIndex;
     bot->GetSession()->QueuePacket(packet);
 
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
 
     return true;
@@ -1888,7 +1888,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
     Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
 
-    const uint32 instanceId = vashj->GetInstanceId();
+    uint32 const instanceId = vashj->GetInstanceId();
 
     Unit* closestTrigger = nullptr;
     if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
@@ -1930,12 +1930,12 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
             return true;
         }
         else if (bot == thirdCorePasser && LineUpThirdCorePasser(
-                 designatedLooter, firstCorePasser, secondCorePasser, closestTrigger))
+                 firstCorePasser, secondCorePasser, closestTrigger))
         {
             return true;
         }
         else if (bot == fourthCorePasser && LineUpFourthCorePasser(
-                 firstCorePasser, secondCorePasser, thirdCorePasser, closestTrigger))
+                 secondCorePasser, thirdCorePasser, closestTrigger))
         {
             return true;
         }
@@ -1944,11 +1944,10 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     {
         // Designated core looter logic
         // Applicable only if cheat mode is on and thus looter is a bot
-        if (bot == designatedLooter &&
-            IsFirstCorePasserInPosition(firstCorePasser))
+        if (bot == designatedLooter && IsFirstCorePasserInPosition(firstCorePasser))
         {
             constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            const uint32 now = getMSTime();
+            uint32 const now = getMSTime();
             auto it = lastVashjCoreImbueAttempt.find(instanceId);
             if (it == lastVashjCoreImbueAttempt.end() ||
                 getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
@@ -1961,11 +1960,10 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         }
         // First core passer: receive core from looter at the top of the stairs,
         // pass to second core passer
-        else if (bot == firstCorePasser &&
-                 IsSecondCorePasserInPosition(secondCorePasser))
+        else if (bot == firstCorePasser && IsSecondCorePasserInPosition(secondCorePasser))
         {
             constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            const uint32 now = getMSTime();
+            uint32 const now = getMSTime();
             auto it = lastVashjCoreImbueAttempt.find(instanceId);
             if (it == lastVashjCoreImbueAttempt.end() ||
                 getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
@@ -1983,7 +1981,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                  IsThirdCorePasserInPosition(thirdCorePasser))
         {
             constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            const uint32 now = getMSTime();
+            uint32 const now = getMSTime();
             auto it = lastVashjCoreImbueAttempt.find(instanceId);
             if (it == lastVashjCoreImbueAttempt.end() ||
                 getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
@@ -2001,7 +1999,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
                  IsFourthCorePasserInPosition(fourthCorePasser))
         {
             constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            const uint32 now = getMSTime();
+            uint32 const now = getMSTime();
             auto it = lastVashjCoreImbueAttempt.find(instanceId);
             if (it == lastVashjCoreImbueAttempt.end() ||
                 getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
@@ -2021,14 +2019,13 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
-    Player* designatedLooter)
+bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter)
 {
     if (!designatedLooter)
         return false;
 
-    const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
-    const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
+    float const centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
+    float const centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
     constexpr float radius = 57.5f;
 
     auto it = intendedVashjCorePasserLineup.find(bot->GetGUID());
@@ -2042,7 +2039,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
         float targetY = centerY + radius * std::sin(angle);
         constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
 
-        intendedVashjCorePasserLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+        intendedVashjCorePasserLineup.try_emplace(
+            bot->GetGUID(), Position(targetX, targetY, targetZ));
         it = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
@@ -2081,7 +2079,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
 
         dx /= distToTrigger; dy /= distToTrigger;
 
-        float targetX, targetY;
+        float targetX;
+        float targetY;
         constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
         constexpr float thresholdDist = 40.0f;
         constexpr float nearTriggerDist = 1.5f;
@@ -2099,7 +2098,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
             targetY = fy + dy * farDistance;
         }
 
-        intendedVashjCorePasserLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+        intendedVashjCorePasserLineup.try_emplace(
+            bot->GetGUID(), Position(targetX, targetY, targetZ));
         itSecond = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
@@ -2114,7 +2114,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
-    Player*, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
+    Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
 {
     if (!secondCorePasser || !closestTrigger)
         return false;
@@ -2147,7 +2147,8 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
 
         dx /= distToTrigger; dy /= distToTrigger;
 
-        float targetX, targetY;
+        float targetX;
+        float targetY;
         constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
         constexpr float thresholdDist = 40.0f;
         constexpr float nearTriggerDist = 1.5f;
@@ -2181,7 +2182,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
-    Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
+    Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
 {
     if (!thirdCorePasser || !closestTrigger)
         return false;
@@ -2245,14 +2246,11 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firs
         return false;
 
     auto itSnap = intendedVashjCorePasserLineup.find(firstCorePasser->GetGUID());
-    if (itSnap != intendedVashjCorePasserLineup.end())
-    {
-        float dist2d = firstCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
-                                                       itSnap->second.GetPositionY());
-        return dist2d <= 2.0f;
-    }
+    if (itSnap == intendedVashjCorePasserLineup.end())
+        return false;
 
-    return false;
+    return firstCorePasser->GetExactDist2d(
+        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* secondCorePasser)
@@ -2261,14 +2259,11 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* sec
         return false;
 
     auto itSnap = intendedVashjCorePasserLineup.find(secondCorePasser->GetGUID());
-    if (itSnap != intendedVashjCorePasserLineup.end())
-    {
-        float dist2d = secondCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
-                                                        itSnap->second.GetPositionY());
-        return dist2d <= 2.0f;
-    }
+    if (itSnap == intendedVashjCorePasserLineup.end())
+        return false;
 
-    return false;
+    return secondCorePasser->GetExactDist2d(
+        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thirdCorePasser)
@@ -2277,14 +2272,11 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thir
         return false;
 
     auto itSnap = intendedVashjCorePasserLineup.find(thirdCorePasser->GetGUID());
-    if (itSnap != intendedVashjCorePasserLineup.end())
-    {
-        float dist2d = thirdCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
-                                                       itSnap->second.GetPositionY());
-        return dist2d <= 2.0f;
-    }
+    if (itSnap == intendedVashjCorePasserLineup.end())
+        return false;
 
-    return false;
+    return thirdCorePasser->GetExactDist2d(
+        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fourthCorePasser)
@@ -2293,14 +2285,11 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fou
         return false;
 
     auto itSnap = intendedVashjCorePasserLineup.find(fourthCorePasser->GetGUID());
-    if (itSnap != intendedVashjCorePasserLineup.end())
-    {
-        float dist2d = fourthCorePasser->GetExactDist2d(itSnap->second.GetPositionX(),
-                                                        itSnap->second.GetPositionY());
-        return dist2d <= 2.0f;
-    }
+    if (itSnap == intendedVashjCorePasserLineup.end())
+        return false;
 
-    return false;
+    return fourthCorePasser->GetExactDist2d(
+        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
 }
 
 bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanceId)
@@ -2322,8 +2311,8 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
     if (bot->IsNonMeleeSpellCast(false))
         return false;
 
-    const uint8 bagIndex = core->GetBagSlot();
-    const uint8 slot = core->GetSlot();
+    uint8 const bagIndex = core->GetBagSlot();
+    uint8 const slot = core->GetSlot();
     constexpr uint8 cast_count = 0;
     uint32 spellId = 0;
 
@@ -2336,7 +2325,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
         }
     }
 
-    const ObjectGuid item_guid = core->GetGUID();
+    ObjectGuid const item_guid = core->GetGUID();
     constexpr uint32 glyphIndex = 0;
     constexpr uint8 castFlags = 0;
 
@@ -2542,8 +2531,8 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
         }
         if (bot->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE)) || nearSpore)
         {
-            if (botAI->CanCastSpell("cloak of shadows", bot))
-                return botAI->CastSpell("cloak of shadows", bot);
+            if (botAI->CanCastSpell(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS), bot))
+                return botAI->CastSpell(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS), bot);
         }
     }
 
