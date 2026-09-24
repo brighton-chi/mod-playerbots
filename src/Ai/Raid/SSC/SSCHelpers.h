@@ -369,7 +369,6 @@ extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 bool IsMainTankInSameSubgroup(Player* bot);
 int8 GetLadyVashjPhase(Unit* vashj);
-bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
