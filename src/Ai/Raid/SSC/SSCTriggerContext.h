@@ -62,8 +62,8 @@ public:
             &RaidSscTriggerContext::the_lurker_below_melee_cannot_reach_target;
 
         // Leotheras the Blind
-        creators["leotheras the blind demon form should be tanked by warlock"] =
-            &RaidSscTriggerContext::leotheras_the_blind_demon_form_should_be_tanked_by_warlock;
+        creators["leotheras the blind warlock should tank demon form"] =
+            &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
 
         creators["leotheras the blind only warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
@@ -213,8 +213,8 @@ private:
     }
 
     // Leotheras the Blind
-    static Trigger* leotheras_the_blind_demon_form_should_be_tanked_by_warlock(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindDemonFormShouldBeTankedByWarlockTrigger(botAI);
+    static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_only_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(botAI);
