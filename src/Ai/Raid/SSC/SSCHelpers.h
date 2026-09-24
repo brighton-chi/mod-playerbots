@@ -146,10 +146,16 @@ enum class SscItems : uint32
     ITEM_TAINTED_CORE            = 31088,
 };
 
+// General
+
 inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 
-Creature* GetCachedCreature(Player* bot, char const* value);
+// A step out of a circular hazard.
+bool FindHazardEscapeStep(
+    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
+// True where the map has ground above any liquid at x/y.
+bool IsDryGround(Player* bot, float x, float y);
 
 // Trash
 
@@ -158,13 +164,6 @@ inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
 inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f;
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f;
 
-std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::string const& value);
-// A step out of a circular hazard.
-bool FindHazardEscapeStep(
-    Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY,
-    float& stepZ);
-// True where the map has ground above any liquid at x/y.
-bool IsDryGround(Player* bot, float x, float y);
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);
@@ -192,15 +191,9 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
 
-inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
-
-extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
-inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
-extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
-    lurkerGuardianTankAssignments;
-
 inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
 inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
+
 // Spout avoidance mechanics:
 // Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look more
 // artificial, and the intent is to keep the radius close to Lurker while keeping the circle on dry
@@ -216,16 +209,17 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 // This is to prevent the very intelligent bots from lapping Lurker and getting blasted.
 inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_PI) / 6.0f;
 
-// True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
-// direction (+1 counter-clockwise, -1 clockwise).
-bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction);
-// True if a navmesh path from the bot ends within tolerance of x/y.
-bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
-
 // Submerge: A Coilfang Guardian is assigned to each of the main tank and first two assist tanks.
 // Assignment is by summon GUID (so spawn order) and persists after a Guardian is killed.
+inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
+
+inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
+
+extern std::unordered_map<ObjectGuid, Position> lurkerRangedPositions;
+extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
+    lurkerGuardianTankAssignments;
 
 // Reading REACT_PASSIVE is the easiest way to capture the entire Spout sequence, including the
 // wind-up that is not associated with a particular aura.
@@ -234,6 +228,11 @@ bool IsLurkerSpouting(Unit* lurker);
 bool IsLurkerSurfacedAndCalm(Unit* lurker);
 // +1 counter-clockwise, -1 clockwise, 0 during the 3s wind-up before the spin starts.
 int8 GetLurkerSpoutSpin(Unit* lurker);
+// True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
+// direction (+1 counter-clockwise, -1 clockwise).
+bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction);
+// True if a navmesh path from the bot ends within tolerance of x/y.
+bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
 // The Guardian tanks in index order; empty if there are fewer than 3 bot tanks.
@@ -255,15 +254,15 @@ extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
 
 ObjectGuid FindLeotherasGuid(Player* bot);
 ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
-Creature* GetLeotheras(Player* bot);
+Creature* GetLeotheras(PlayerbotAI* botAI);
 bool IsSpellbinderPhase(Unit* leotheras);
-Creature* GetActiveLeotherasHumanoid(Player* bot);
-bool IsLeotherasHumanoidPhase(Player* bot);
-Creature* GetPhase2LeotherasDemon(Player* bot);
-bool IsLeotherasDemonPhase(Player* bot);
-Creature* GetPhase3LeotherasDemon(Player* bot);
-bool IsLeotherasFinalPhase(Player* bot);
-Creature* GetActiveLeotherasDemon(Player* bot);
+Creature* GetActiveLeotherasHumanoid(PlayerbotAI* botAI);
+bool IsLeotherasHumanoidPhase(PlayerbotAI* botAI);
+Creature* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
+bool IsLeotherasDemonPhase(PlayerbotAI* botAI);
+Creature* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
+bool IsLeotherasFinalPhase(PlayerbotAI* botAI);
+Creature* GetActiveLeotherasDemon(PlayerbotAI* botAI);
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
@@ -272,11 +271,6 @@ bool HasInnerDemon(Player* bot);
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 
 // Fathom-Lord Karathress
-
-inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
-inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
-inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
-inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
 
 // The healer keeps to Caribdis herself, so she is covered wherever any tank puts her, and her
 // victim is not used as the anchor because it jumps into the room whenever the tank loses her.
@@ -309,10 +303,15 @@ inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
 inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
 
+inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
+inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
+inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
+inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
+
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
-Creature* GetSpitfireTotem(Player* bot);
+Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 // One step along the bot's path to a point, stopping short of it by stopDistance. The step

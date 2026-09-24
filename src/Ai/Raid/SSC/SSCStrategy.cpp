@@ -233,9 +233,9 @@ void AppendHydrossAddTankExclusions(
 
 // Leotheras is immune until the Greyheart Spellbinders are killed.
 void AppendLeotherasTheBlindSpellbinderPhaseExclusions(
-    Player* bot, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    Unit* leotheras = GetLeotheras(bot);
+    Unit* leotheras = GetLeotheras(botAI);
     if (leotheras && IsSpellbinderPhase(leotheras))
         exclusions.insert(leotheras->GetGUID());
 }
@@ -277,7 +277,7 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);
-    AppendLeotherasTheBlindSpellbinderPhaseExclusions(bot, context, exclusions);
+    AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, context, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
 }

@@ -25,12 +25,8 @@ namespace SscHelpers
 namespace
 {
 
-Creature* GetCachedCreature(Player* bot, char const* value)
+Creature* GetCachedCreature(PlayerbotAI* botAI, char const* value)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    if (!botAI)
-        return nullptr;
-
     AiObjectContext* context = botAI->GetAiObjectContext();
     Creature* creature = botAI->GetCreature(AI_VALUE(ObjectGuid, value));
     return creature && creature->IsAlive() ? creature : nullptr;
@@ -309,9 +305,9 @@ ObjectGuid FindShadowOfLeotherasGuid(Player* bot)
     return shadow ? shadow->GetGUID() : ObjectGuid::Empty;
 }
 
-Creature* GetLeotheras(Player* bot)
+Creature* GetLeotheras(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(bot, "ssc leotheras");
+    return GetCachedCreature(botAI, "ssc leotheras");
 }
 
 bool IsSpellbinderPhase(Unit* leotheras)
@@ -319,9 +315,9 @@ bool IsSpellbinderPhase(Unit* leotheras)
     return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
 }
 
-Creature* GetActiveLeotherasHumanoid(Player* bot)
+Creature* GetActiveLeotherasHumanoid(PlayerbotAI* botAI)
 {
-    Creature* leotheras = GetLeotheras(bot);
+    Creature* leotheras = GetLeotheras(botAI);
     if (!leotheras || IsSpellbinderPhase(leotheras))
         return nullptr;
 
@@ -331,41 +327,41 @@ Creature* GetActiveLeotherasHumanoid(Player* bot)
     return nullptr;
 }
 
-bool IsLeotherasHumanoidPhase(Player* bot)
+bool IsLeotherasHumanoidPhase(PlayerbotAI* botAI)
 {
-    return GetActiveLeotherasHumanoid(bot) && !GetPhase3LeotherasDemon(bot);
+    return GetActiveLeotherasHumanoid(botAI) && !GetPhase3LeotherasDemon(botAI);
 }
 
-Creature* GetPhase2LeotherasDemon(Player* bot)
+Creature* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
 {
-    Creature* leotheras = GetLeotheras(bot);
+    Creature* leotheras = GetLeotheras(botAI);
     if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
         return leotheras;
 
     return nullptr;
 }
 
-bool IsLeotherasDemonPhase(Player* bot)
+bool IsLeotherasDemonPhase(PlayerbotAI* botAI)
 {
-    return GetPhase2LeotherasDemon(bot);
+    return GetPhase2LeotherasDemon(botAI);
 }
 
-Creature* GetPhase3LeotherasDemon(Player* bot)
+Creature* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(bot, "ssc shadow of leotheras");
+    return GetCachedCreature(botAI, "ssc shadow of leotheras");
 }
 
-bool IsLeotherasFinalPhase(Player* bot)
+bool IsLeotherasFinalPhase(PlayerbotAI* botAI)
 {
-    return GetPhase3LeotherasDemon(bot);
+    return GetPhase3LeotherasDemon(botAI);
 }
 
-Creature* GetActiveLeotherasDemon(Player* bot)
+Creature* GetActiveLeotherasDemon(PlayerbotAI* botAI)
 {
-    if (Creature* phase2Demon = GetPhase2LeotherasDemon(bot))
+    if (Creature* phase2Demon = GetPhase2LeotherasDemon(botAI))
         return phase2Demon;
 
-    if (Creature* phase3Demon = GetPhase3LeotherasDemon(bot))
+    if (Creature* phase3Demon = GetPhase3LeotherasDemon(botAI))
         return phase3Demon;
 
     return nullptr;
@@ -457,9 +453,9 @@ ObjectGuid FindSpitfireTotemGuid(Player* bot)
     return totem ? totem->GetGUID() : ObjectGuid::Empty;
 }
 
-Creature* GetSpitfireTotem(Player* bot)
+Creature* GetSpitfireTotem(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(bot, "ssc spitfire totem");
+    return GetCachedCreature(botAI, "ssc spitfire totem");
 }
 
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
