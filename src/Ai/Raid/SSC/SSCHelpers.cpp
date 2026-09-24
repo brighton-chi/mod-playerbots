@@ -708,34 +708,6 @@ int8 GetLadyVashjPhase(Unit* vashj)
     return -1;
 }
 
-bool IsValidLadyVashjCombatNpc(Unit* unit, Unit* vashj) // This can just be replaced by a target exclusion of Vashj for Phase 2 I think
-{
-    if (!unit || !unit->IsAlive())
-        return false;
-
-    int8 phase = GetLadyVashjPhase(vashj);
-    uint32 entry = unit->GetEntry();
-
-    if (phase == 2)
-    {
-        return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
-            entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
-            entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
-            entry == Id(SscNpcs::NPC_COILFANG_STRIDER);
-    }
-    else if (phase == 3)
-    {
-        return entry == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) ||
-            entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
-            entry == Id(SscNpcs::NPC_COILFANG_ELITE) ||
-            entry == Id(SscNpcs::NPC_COILFANG_STRIDER) ||
-            entry == Id(SscNpcs::NPC_TOXIC_SPOREBAT) ||
-            entry == Id(SscNpcs::NPC_LADY_VASHJ);
-    }
-
-    return false;
-}
-
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();

@@ -1481,12 +1481,11 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         }
     }
 
-    const ObjectGuid guid = bot->GetGUID();
+    ObjectGuid const guid = bot->GetGUID();
     auto itReached = hasReachedVashjRangedPosition.find(guid);
 
     auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
-    size_t botIndex = (it != spreadMembers.end()) ?
-        std::distance(spreadMembers.begin(), it) : 0;
+    size_t botIndex = (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
     size_t count = spreadMembers.size();
     if (count == 0)
         return false;
@@ -1501,8 +1500,8 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
     else
         angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
 
-    const Position& center = VASHJ_PLATFORM_CENTER_POSITION;
-    float radius = 25.0f;
+    Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
+    constexpr float radius = 25.0f;
     float targetX = center.GetPositionX() + radius * std::cos(angle);
     float targetY = center.GetPositionY() + radius * std::sin(angle);
     float targetZ = center.GetPositionZ();
@@ -1580,10 +1579,6 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 
 bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
     Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
     float platformZ = center.GetPositionZ();
     if (bot->GetPositionZ() - platformZ > 2.0f)
@@ -1599,25 +1594,24 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         return true;
     }
 
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    Unit* target = nullptr;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    // Search and attack radius are intended to keep bots from going down the stairs
+    const float maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
+    const float maxPursueRange = maxSearchRange - 5.0f;
+    int8 phase = GetLadyVashjPhase(vashj);
+
     Unit* enchanted = nullptr;
     Unit* elite = nullptr;
     Unit* strider = nullptr;
     Unit* sporebat = nullptr;
 
-    // Search and attack radius are intended to keep bots from going down the stairs
-    const float maxSearchRange =
-        PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
-    const float maxPursueRange = maxSearchRange - 5.0f;
-    int8 phase = GetLadyVashjPhase(vashj);
-
+    auto const& attackers = AI_VALUE(GuidVector, "possible targets no los");
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!IsValidLadyVashjCombatNpc(unit, vashj))
-            continue;
 
         float distFromCenter = unit->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
         if (phase == 2 && distFromCenter > maxSearchRange)
@@ -1714,6 +1708,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             targets = { enchanted, elite, strider, vashj };
     }
 
+    Unit* target = nullptr;
     for (Unit* candidate : targets)
     {
         if (candidate && bot->GetExactDist2d(candidate) <= maxPursueRange)
@@ -1725,7 +1720,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 
     Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
 
-    if (currentTarget && !IsValidLadyVashjCombatNpc(currentTarget, vashj))
+    if (currentTarget && currentTarget == vashj && phase == 2)
     {
         bot->AttackStop();
         bot->CastStop();
@@ -2051,7 +2046,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
         it = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
-    const Position& pos = it->second;
+    Position const& pos = it->second;
     float targetX = pos.GetPositionX();
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
@@ -2108,7 +2103,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
         itSecond = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
-    const Position& pos = itSecond->second;
+    Position const& pos = itSecond->second;
     float targetX = pos.GetPositionX();
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
@@ -2119,8 +2114,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
-    Player*, Player* firstCorePasser,
-    Player* secondCorePasser, Unit* closestTrigger)
+    Player*, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
 {
     if (!secondCorePasser || !closestTrigger)
         return false;
@@ -2171,11 +2165,12 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
             targetY = sy + dy * farDistance;
         }
 
-        intendedVashjCorePasserLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+        intendedVashjCorePasserLineup.try_emplace(
+            bot->GetGUID(), Position(targetX, targetY, targetZ));
         itThird = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
-    const Position& pos = itThird->second;
+    Position const& pos = itThird->second;
     float targetX = pos.GetPositionX();
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
@@ -2186,8 +2181,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
-    Player*, Player* secondCorePasser,
-    Player* thirdCorePasser, Unit* closestTrigger)
+    Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
 {
     if (!thirdCorePasser || !closestTrigger)
         return false;
@@ -2228,11 +2222,12 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
         float targetY = ty - dy * nearTriggerDist;
         constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
 
-        intendedVashjCorePasserLineup.try_emplace(bot->GetGUID(), Position(targetX, targetY, targetZ));
+        intendedVashjCorePasserLineup.try_emplace(
+            bot->GetGUID(), Position(targetX, targetY, targetZ));
         itFourth = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
 
-    const Position& pos = itFourth->second;
+    Position const& pos = itFourth->second;
     float targetX = pos.GetPositionX();
     float targetY = pos.GetPositionY();
     float targetZ = pos.GetPositionZ();
@@ -2308,7 +2303,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fou
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(const uint32 instanceId)
+bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanceId)
 {
     auto const& generators =
         GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
@@ -2399,7 +2394,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     if (!vashj)
         return false;
 
-    const Position& vashjCenter = VASHJ_PLATFORM_CENTER_POSITION;
+    Position const& vashjCenter = VASHJ_PLATFORM_CENTER_POSITION;
     constexpr float maxRadius = 60.0f;
 
     Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
@@ -2504,8 +2499,7 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
     return true;
 }
 
-// When Toxic Sporebats spit poison, they summon "Spore Drop Trigger" NPCs
-// that create the toxic pools
+// When Toxic Sporebats spit poison, they summon "Spore Drop Trigger" NPCs that create toxic pools
 std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Player* bot)
 {
     std::vector<Unit*> sporeDropTriggers;
@@ -2530,8 +2524,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    auto const& spores =
-        LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(bot);
+    auto const& spores = LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(bot);
     constexpr float toxicSporeRadius = 6.0f;
 
     // If Rogues are Entangled and either have Static Charge or

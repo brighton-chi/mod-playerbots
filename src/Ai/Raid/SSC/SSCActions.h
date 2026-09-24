@@ -420,7 +420,7 @@ private:
     bool IsSecondCorePasserInPosition(Player* secondCorePasser);
     bool IsThirdCorePasserInPosition(Player* thirdCorePasser);
     bool IsFourthCorePasserInPosition(Player* fourthCorePasser);
-    bool UseCoreOnNearestGenerator(const uint32 instanceId);
+    bool UseCoreOnNearestGenerator(uint32 instanceId);
 };
 
 class LadyVashjAvoidToxicSporesAction : public MovementAction
