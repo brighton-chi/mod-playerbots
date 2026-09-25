@@ -745,7 +745,7 @@ bool IsOnVashjDais(float x, float y, float margin)
 
 bool FindVashjDaisStepAwayFromPositions(
     Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards)
+    float& stepZ, bool& backwards, std::vector<Position> const* spores)
 {
     // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
     // for the notch the rock cuts and for pathing near the edge.
@@ -761,6 +761,14 @@ bool FindVashjDaisStepAwayFromPositions(
         return closest;
     };
 
+    auto nearSpore = [spores](float x, float y)
+    {
+        return spores && std::any_of(spores->begin(), spores->end(), [x, y](Position const& spore)
+        {
+            return spore.GetExactDist2d(x, y) < TOXIC_SPORES_AVOID_RADIUS;
+        });
+    };
+
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
 
@@ -771,7 +779,7 @@ bool FindVashjDaisStepAwayFromPositions(
         float const angle = 2.0f * static_cast<float>(M_PI) * i / directions;
         float const x = botX + std::cos(angle) * PATH_STEP_DISTANCE;
         float const y = botY + std::sin(angle) * PATH_STEP_DISTANCE;
-        if (IsOnVashjDais(x, y, daisMargin))
+        if (IsOnVashjDais(x, y, daisMargin) && !nearSpore(x, y))
             candidates.emplace_back(angle, closestPosition(x, y));
     }
 
@@ -804,7 +812,7 @@ bool FindVashjDaisStepAwayFromPositions(
 
 bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards)
+    float& stepZ, bool& backwards, std::vector<Position> const* spores)
 {
     std::vector<Position> positions;
     positions.reserve(units.size());
@@ -812,7 +820,7 @@ bool FindVashjDaisStepAwayFromUnits(
         positions.push_back(unit->GetPosition());
 
     return FindVashjDaisStepAwayFromPositions(
-        bot, positions, facing, stepX, stepY, stepZ, backwards);
+        bot, positions, facing, stepX, stepY, stepZ, backwards, spores);
 }
 
 bool HasStaticCharge(Player* player)

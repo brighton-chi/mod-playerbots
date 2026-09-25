@@ -391,6 +391,17 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
     return !HasStaticCharge(bot);
 }
 
+// Hunters are left free to go after Sporebats, and the Static Charge action moves a holder on its
+// own.
+bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsRanged(bot) || bot->getClass() == CLASS_HUNTER || HasStaticCharge(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3;
+}
+
 bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -522,18 +533,18 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
     return AnyRecentCoreInInventory(botAI, bot);
 }
 
-// Hunters shooting Sporebats sometimes walk up into the air after them, or end up on the
-// pipes above the dais. A bot never falls on its own, so it stays up there.
-bool LadyVashjHunterIsAboveTheDaisTrigger::IsActiveInEncounter()
+// Bots going after Sporebats sometimes walk up into the air, or end up on the pipes above the
+// dais. A bot never falls on its own, so it stays up there.
+bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    if (bot->GetPositionZ() - VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ() <= 2.0f)
-        return false;
-
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3;
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    // Search down from the dais, not from the bot, so a bot on the pipes still reads as high
+    float const floorZ = bot->GetMapHeight(
+        bot->GetPositionX(), bot->GetPositionY(), VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > 1.5f;
 }
 
 bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
@@ -542,10 +553,13 @@ bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
+    float const radius = vashj->GetVictim() == bot ?
+        TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
+
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    return std::any_of(spores.begin(), spores.end(), [this](Position const& spore)
+    return std::any_of(spores.begin(), spores.end(), [this, radius](Position const& spore)
     {
-        return bot->GetExactDist2d(spore) < TOXIC_SPORES_AVOID_RADIUS;
+        return bot->GetExactDist2d(spore) < radius;
     });
 }
 

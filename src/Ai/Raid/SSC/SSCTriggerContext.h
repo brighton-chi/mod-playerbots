@@ -131,6 +131,9 @@ public:
         creators["lady vashj ranged should spread in phase 1"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_spread_in_phase_1;
 
+        creators["lady vashj ranged should position in phase 3"] =
+            &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
+
         creators["lady vashj shaman should ground shock blast"] =
             &RaidSscTriggerContext::lady_vashj_shaman_should_ground_shock_blast;
 
@@ -154,8 +157,8 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
-        creators["lady vashj hunter is above the dais"] =
-            &RaidSscTriggerContext::lady_vashj_hunter_is_above_the_dais;
+        creators["lady vashj bot is above the ground"] =
+            &RaidSscTriggerContext::lady_vashj_bot_is_above_the_ground;
 
         creators["lady vashj bot is in toxic spores"] =
             &RaidSscTriggerContext::lady_vashj_bot_is_in_toxic_spores;
@@ -291,6 +294,9 @@ private:
     static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldSpreadInPhase1Trigger(botAI);
     }
+    static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI) {
+        return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
+    }
     static Trigger* lady_vashj_shaman_should_ground_shock_blast(PlayerbotAI* botAI) {
         return new LadyVashjShamanShouldGroundShockBlastTrigger(botAI);
     }
@@ -315,8 +321,8 @@ private:
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
     }
-    static Trigger* lady_vashj_hunter_is_above_the_dais(PlayerbotAI* botAI) {
-        return new LadyVashjHunterIsAboveTheDaisTrigger(botAI);
+    static Trigger* lady_vashj_bot_is_above_the_ground(PlayerbotAI* botAI) {
+        return new LadyVashjBotIsAboveTheGroundTrigger(botAI);
     }
     static Trigger* lady_vashj_bot_is_in_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjBotIsInToxicSporesTrigger(botAI);

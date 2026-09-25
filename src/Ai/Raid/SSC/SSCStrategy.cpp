@@ -132,6 +132,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj ranged should spread in phase 1", {
         NextAction("lady vashj phase 1 spread ranged in arc", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3", {
+        NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("lady vashj shaman should ground shock blast", {
         NextAction("lady vashj set grounding totem in main tank group", ACTION_EMERGENCY + 1) }));
 
@@ -157,8 +160,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj hunter should misdirect strider", {
         NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("lady vashj hunter is above the dais", {
-        NextAction("lady vashj hunter return to the dais", ACTION_EMERGENCY + 9) }));
+    triggers.push_back(new TriggerNode("lady vashj bot is above the ground", {
+        NextAction("lady vashj return to the ground", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("lady vashj bot is in toxic spores", {
         NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));

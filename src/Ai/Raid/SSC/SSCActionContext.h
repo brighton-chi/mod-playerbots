@@ -134,6 +134,9 @@ public:
         creators["lady vashj phase 1 spread ranged in arc"] =
             &RaidSscActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
 
+        creators["lady vashj phase 3 position ranged"] =
+            &RaidSscActionContext::lady_vashj_phase_3_position_ranged;
+
         creators["lady vashj set grounding totem in main tank group"] =
             &RaidSscActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
 
@@ -161,8 +164,8 @@ public:
         creators["lady vashj pass the tainted core"] =
             &RaidSscActionContext::lady_vashj_pass_the_tainted_core;
 
-        creators["lady vashj hunter return to the dais"] =
-            &RaidSscActionContext::lady_vashj_hunter_return_to_the_dais;
+        creators["lady vashj return to the ground"] =
+            &RaidSscActionContext::lady_vashj_return_to_the_ground;
 
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
@@ -304,6 +307,9 @@ private:
     static Action* lady_vashj_phase_1_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new LadyVashjPhase1SpreadRangedInArcAction(botAI);
     }
+    static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI) {
+        return new LadyVashjPhase3PositionRangedAction(botAI);
+    }
     static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) {
         return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI);
     }
@@ -333,8 +339,8 @@ private:
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) {
         return new LadyVashjPassTheTaintedCoreAction(botAI);
     }
-    static Action* lady_vashj_hunter_return_to_the_dais(PlayerbotAI* botAI) {
-        return new LadyVashjHunterReturnToTheDaisAction(botAI);
+    static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
+        return new LadyVashjReturnToTheGroundAction(botAI);
     }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);
