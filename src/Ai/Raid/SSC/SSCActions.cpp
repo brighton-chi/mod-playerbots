@@ -1490,8 +1490,10 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromEnchantedElementals(Unit* 
     float stepY;
     float stepZ;
     bool backwards;
+    // Her tank's spore trigger fires at the tank radius, so steps have to stay that far out too
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, elementals, vashj, stepX, stepY, stepZ, backwards))
+            bot, elementals, vashj, stepX, stepY, stepZ, backwards,
+            &GetToxicSporePositions(botAI), TOXIC_SPORES_TANK_AVOID_RADIUS))
     {
         return false;
     }
@@ -1708,7 +1710,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     float stepZ;
     bool backwards;
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, avoid, nullptr, stepX, stepY, stepZ, backwards))
+            bot, avoid, nullptr, stepX, stepY, stepZ, backwards, &GetToxicSporePositions(botAI)))
     {
         return false;
     }
