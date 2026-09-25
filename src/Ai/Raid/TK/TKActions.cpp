@@ -460,12 +460,13 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
     std::vector<Unit*> const flamePatches = GetFlamePatches(botAI);
 
     constexpr float hazardRadius = 8.0f;
+    constexpr float avoidRadius = 9.0f;
 
     for (Unit* flamePatch : flamePatches)
     {
         if (bot->GetExactDist2d(flamePatch) < hazardRadius)
         {
-            Position safestPos = FindSafestNearbyPosition(flamePatches, hazardRadius);
+            Position safestPos = FindSafestNearbyPosition(flamePatches, avoidRadius);
             bot->CastStop();
             return MoveTo(
                 TK_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
@@ -545,7 +546,8 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::IsPathSafe(
 
         for (Unit* flamePatch : flamePatches)
         {
-            if (flamePatch->GetExactDist2d(checkX, checkY) < hazardRadius)
+            float const limit = std::min(flamePatch->GetExactDist2d(start), hazardRadius);
+            if (flamePatch->GetExactDist2d(checkX, checkY) < limit)
                 return false;
         }
     }
