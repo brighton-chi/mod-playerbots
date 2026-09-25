@@ -389,14 +389,16 @@ std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 bool IsOnVashjDais(float x, float y, float margin);
 // A step that leads away from every position given while staying on the dais. facing is optional,
 // for a tank: when the bot is its victim, a step leading away from it is walked backwards. spores
-// is optional too: when given, no step ends within TOXIC_SPORES_AVOID_RADIUS of one.
+// is optional too: when given, no step ends within sporeRadius of one.
 bool FindVashjDaisStepAwayFromPositions(
     Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr);
+    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
+    float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
 // The same, away from where each unit given stands now.
 bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr);
+    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
+    float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
 bool HasStaticCharge(Player* player);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);

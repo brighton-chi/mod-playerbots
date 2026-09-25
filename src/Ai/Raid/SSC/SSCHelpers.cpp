@@ -745,7 +745,7 @@ bool IsOnVashjDais(float x, float y, float margin)
 
 bool FindVashjDaisStepAwayFromPositions(
     Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores)
+    float& stepZ, bool& backwards, std::vector<Position> const* spores, float sporeRadius)
 {
     // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
     // for the notch the rock cuts and for pathing near the edge.
@@ -761,12 +761,13 @@ bool FindVashjDaisStepAwayFromPositions(
         return closest;
     };
 
-    auto nearSpore = [spores](float x, float y)
+    auto nearSpore = [spores, sporeRadius](float x, float y)
     {
-        return spores && std::any_of(spores->begin(), spores->end(), [x, y](Position const& spore)
-        {
-            return spore.GetExactDist2d(x, y) < TOXIC_SPORES_AVOID_RADIUS;
-        });
+        return spores && std::any_of(spores->begin(), spores->end(),
+            [x, y, sporeRadius](Position const& spore)
+            {
+                return spore.GetExactDist2d(x, y) < sporeRadius;
+            });
     };
 
     float const botX = bot->GetPositionX();
@@ -812,7 +813,7 @@ bool FindVashjDaisStepAwayFromPositions(
 
 bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores)
+    float& stepZ, bool& backwards, std::vector<Position> const* spores, float sporeRadius)
 {
     std::vector<Position> positions;
     positions.reserve(units.size());
@@ -820,7 +821,7 @@ bool FindVashjDaisStepAwayFromUnits(
         positions.push_back(unit->GetPosition());
 
     return FindVashjDaisStepAwayFromPositions(
-        bot, positions, facing, stepX, stepY, stepZ, backwards, spores);
+        bot, positions, facing, stepX, stepY, stepZ, backwards, spores, sporeRadius);
 }
 
 bool HasStaticCharge(Player* player)
