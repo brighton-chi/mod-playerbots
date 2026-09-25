@@ -82,9 +82,6 @@ enum class SscSpells : uint32
     // Hunter
     SPELL_MISDIRECTION           = 35079,
 
-    // Mage
-    SPELL_SLOW                   = 31589,
-
     // Paladin
     SPELL_AVENGING_WRATH         = 31884,
 
@@ -93,9 +90,6 @@ enum class SscSpells : uint32
 
     // Shaman
     SPELL_GROUNDING_TOTEM_EFFECT =  8178,
-
-    // Warlock
-    SPELL_CURSE_OF_EXHAUSTION    = 18223,
 
     // Warrior
     SPELL_VIGILANCE              = 50720,
