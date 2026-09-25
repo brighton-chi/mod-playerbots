@@ -1742,6 +1742,8 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     for (auto guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
+        if (!unit)
+            continue;
 
         float distFromCenter = unit->GetExactDist2d(center.GetPositionX(), center.GetPositionY());
         if (phase == 2 && distFromCenter > maxSearchRange)
@@ -1778,10 +1780,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
                     sporebat = unit;
                 break;
             }
-
-            case Id(SscNpcs::NPC_LADY_VASHJ):
-                vashj = unit;
-                break;
 
             default:
                 break;
@@ -1892,8 +1890,8 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
 
 bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
 {
-    // Automatically apply Fear Ward to tanks to make Strider tankable This simulates the real-life
-    // strategy where the  Strider can be meleed by players wearing an Ogre Suit (due to the
+    // Automatically apply Fear Ward to tanks to make Strider tankable. This simulates the real-life
+    // strategy where the Strider can be meleed by players wearing an Ogre Suit (due to the
     // extended combat reach).
     if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
         bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
