@@ -811,21 +811,26 @@ float LadyVashjSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    if (!dynamic_cast<CastWindfuryTotemAction*>(action) &&
+        !dynamic_cast<SetWindfuryTotemAction*>(action) &&
+        !dynamic_cast<CastWrathOfAirTotemAction*>(action) &&
+        !dynamic_cast<SetWrathOfAirTotemAction*>(action) &&
+        !dynamic_cast<CastNatureResistanceTotemAction*>(action) &&
+        !dynamic_cast<SetNatureResistanceTotemAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
         return 1.0f;
 
-    if (!IsMainTankInSameSubgroup(bot))
+    // Shock Blast is cast in phases 1 and 3 only
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase != 1 && phase != 3)
         return 1.0f;
 
-    if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
-        dynamic_cast<SetWindfuryTotemAction*>(action) ||
-        dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
-        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
-        dynamic_cast<SetNatureResistanceTotemAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    return GetVashjGroundingShaman(bot) == bot ? 0.0f : 1.0f;
 }
 
 float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValueInEncounter(Action* action)
@@ -845,20 +850,22 @@ float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValueInEncounter(Action*
 
 float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsMainTank(bot) || !bot->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE)))
+    // Only melee need holding back from a charged tank. Everyone else still has to reach targets to
+    // heal or cast, and ReachPartyMemberToHealAction is a ReachTargetAction.
+    if (!PlayerbotAI::IsMelee(bot) && !HasStaticCharge(bot))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && ShouldAvoidVashjStaticCharge(bot, vashj) ? 0.0f : 1.0f;
 }
 
 // Bots should not loot the core with normal looting logic
@@ -940,7 +947,7 @@ float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *a
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    int8 phase = GetLadyVashjPhase(vashj);
+    int8 const phase = GetLadyVashjPhase(vashj);
 
     if (phase == 2)
     {
@@ -998,7 +1005,7 @@ float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *a
 
 float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action *action)
 {
-    if (botAI->GetState() != BOT_STATE_NON_COMBAT)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (bot->getClass() != CLASS_PALADIN)

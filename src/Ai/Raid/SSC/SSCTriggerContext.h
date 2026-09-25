@@ -137,8 +137,7 @@ public:
         creators["lady vashj static charge on group member"] =
             &RaidSscTriggerContext::lady_vashj_static_charge_on_group_member;
 
-        creators["lady vashj pulling boss in phase 1 and phase 3"] =
-            &RaidSscTriggerContext::lady_vashj_pulling_boss_in_phase_1_and_phase_3;
+        creators["lady vashj pulling boss"] = &RaidSscTriggerContext::lady_vashj_pulling_boss;
 
         creators["lady vashj adds spawn in phase 2 and phase 3"] =
             &RaidSscTriggerContext::lady_vashj_adds_spawn_in_phase_2_and_phase_3;
@@ -159,6 +158,9 @@ public:
 
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
+
+        creators["lady vashj rogue has static charge"] =
+            &RaidSscTriggerContext::lady_vashj_rogue_has_static_charge;
     }
 
 private:
@@ -291,8 +293,8 @@ private:
     static Trigger* lady_vashj_static_charge_on_group_member(PlayerbotAI* botAI) {
         return new LadyVashjStaticChargeOnGroupMemberTrigger(botAI);
     }
-    static Trigger* lady_vashj_pulling_boss_in_phase_1_and_phase_3(PlayerbotAI* botAI) {
-        return new LadyVashjPullingBossInPhase1AndPhase3Trigger(botAI);
+    static Trigger* lady_vashj_pulling_boss(PlayerbotAI* botAI) {
+        return new LadyVashjPullingBossTrigger(botAI);
     }
     static Trigger* lady_vashj_adds_spawn_in_phase_2_and_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjAddsSpawnInPhase2AndPhase3Trigger(botAI);
@@ -314,6 +316,9 @@ private:
     }
     static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);
+    }
+    static Trigger* lady_vashj_rogue_has_static_charge(PlayerbotAI* botAI) {
+        return new LadyVashjRogueHasStaticChargeTrigger(botAI);
     }
 };
 

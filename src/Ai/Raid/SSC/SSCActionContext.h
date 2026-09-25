@@ -164,8 +164,11 @@ public:
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
 
-        creators["lady vashj use free action abilities"] =
-            &RaidSscActionContext::lady_vashj_use_free_action_abilities;
+        creators["lady vashj paladin use hand of freedom"] =
+            &RaidSscActionContext::lady_vashj_paladin_use_hand_of_freedom;
+
+        creators["lady vashj rogue use cloak of shadows"] =
+            &RaidSscActionContext::lady_vashj_rogue_use_cloak_of_shadows;
     }
 
 private:
@@ -330,8 +333,11 @@ private:
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);
     }
-    static Action* lady_vashj_use_free_action_abilities(PlayerbotAI* botAI) {
-        return new LadyVashjUseFreeActionAbilitiesAction(botAI);
+    static Action* lady_vashj_paladin_use_hand_of_freedom(PlayerbotAI* botAI) {
+        return new LadyVashjPaladinUseHandOfFreedomAction(botAI);
+    }
+    static Action* lady_vashj_rogue_use_cloak_of_shadows(PlayerbotAI* botAI) {
+        return new LadyVashjRogueUseCloakOfShadowsAction(botAI);
     }
 };
 
