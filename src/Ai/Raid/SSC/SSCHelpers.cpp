@@ -689,6 +689,26 @@ bool IsInPolygon(float x, float y, std::array<Position, N> const& polygon)
     return inside;
 }
 
+// Distance in 2D to the nearest point on the polygon's outline.
+template <std::size_t N>
+float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& polygon)
+{
+    float closest = std::numeric_limits<float>::max();
+    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    {
+        float const ax = polygon[j].GetPositionX();
+        float const ay = polygon[j].GetPositionY();
+        float const dx = polygon[i].GetPositionX() - ax;
+        float const dy = polygon[i].GetPositionY() - ay;
+        float const lengthSq = dx * dx + dy * dy;
+        float const t = lengthSq > 0.0f ?
+            std::clamp(((x - ax) * dx + (y - ay) * dy) / lengthSq, 0.0f, 1.0f) : 0.0f;
+        closest = std::min(closest, std::hypot(x - (ax + t * dx), y - (ay + t * dy)));
+    }
+
+    return closest;
+}
+
 } // end anonymous namespace (Vashj)
 
 std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
@@ -740,7 +760,8 @@ bool IsOnVashjDais(float x, float y, float margin)
     float const offset = std::fmod(angle, sector) - sector / 2.0f;
     float const edgeDistance = std::hypot(dx, dy) * std::cos(offset);
 
-    return edgeDistance <= VASHJ_DAIS_APOTHEM - margin && !IsInPolygon(x, y, VASHJ_NORTH_ROCK);
+    return edgeDistance <= VASHJ_DAIS_APOTHEM - margin && !IsInPolygon(x, y, VASHJ_NORTH_ROCK) &&
+        DistanceToPolygonOutline(x, y, VASHJ_NORTH_ROCK) >= VASHJ_NORTH_ROCK_CLEARANCE;
 }
 
 bool FindVashjDaisStepAwayFromPositions(
