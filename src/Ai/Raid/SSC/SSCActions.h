@@ -466,12 +466,6 @@ public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj avoid toxic spores") {}
     bool Execute(Event event) override;
-
-private:
-    bool FindSafestNearbyPosition(std::vector<Position> const& spores, Position& bestPos);
-    bool IsPathSafeFromSpores(
-        Position const& start, Position const& end,
-        std::vector<Position> const& spores, float hazardRadius);
 };
 
 class LadyVashjPaladinUseHandOfFreedomAction : public Action
