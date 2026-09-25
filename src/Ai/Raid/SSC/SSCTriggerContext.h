@@ -154,6 +154,9 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
+        creators["lady vashj hunter is above the dais"] =
+            &RaidSscTriggerContext::lady_vashj_hunter_is_above_the_dais;
+
         creators["lady vashj in phase 3"] = &RaidSscTriggerContext::lady_vashj_in_phase_3;
 
         creators["lady vashj entangle on melee"] =
@@ -310,6 +313,9 @@ private:
     }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
+    }
+    static Trigger* lady_vashj_hunter_is_above_the_dais(PlayerbotAI* botAI) {
+        return new LadyVashjHunterIsAboveTheDaisTrigger(botAI);
     }
     static Trigger* lady_vashj_in_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjInPhase3Trigger(botAI);

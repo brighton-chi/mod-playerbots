@@ -522,6 +522,20 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
     return AnyRecentCoreInInventory(botAI, bot);
 }
 
+// Hunters shooting Sporebats sometimes walk up into the air after them, or end up on the
+// pipes above the dais. A bot never falls on its own, so it stays up there.
+bool LadyVashjHunterIsAboveTheDaisTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    if (bot->GetPositionZ() - VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ() <= 2.0f)
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3;
+}
+
 bool LadyVashjInPhase3Trigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

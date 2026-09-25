@@ -723,6 +723,11 @@ int8 GetLadyVashjPhase(Unit* vashj)
     return -1;
 }
 
+std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI)
+{
+    return GetCachedHazardPositions(botAI, "ssc toxic spores");
+}
+
 bool IsOnVashjDais(float x, float y, float margin)
 {
     float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();

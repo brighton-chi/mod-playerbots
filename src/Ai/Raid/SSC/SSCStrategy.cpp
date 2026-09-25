@@ -157,6 +157,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj hunter should misdirect strider", {
         NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2) }));
 
+    triggers.push_back(new TriggerNode("lady vashj hunter is above the dais", {
+        NextAction("lady vashj hunter return to the dais", ACTION_EMERGENCY + 9) }));
+
     triggers.push_back(new TriggerNode("lady vashj in phase 3", {
         NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));
 

@@ -72,6 +72,7 @@ enum class SscSpells : uint32
     SPELL_POISON_BOLT            = 38253,
     SPELL_STATIC_CHARGE          = 38280,
     SPELL_ENTANGLE               = 38316,
+    SPELL_TOXIC_SPORES           = 38575, // the pool a Spore Drop Trigger lays
 
     // Druid
     SPELL_FAERIE_FIRE_FERAL      = 16857,
@@ -368,12 +369,16 @@ inline std::array const VASHJ_NORTH_ROCK = {
     Position{ 120.362f, -931.205f, 22.520f },
 };
 
+// Wide enough for the spore avoidance search, which looks up to 40 yd out from the bot.
+inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
+
 extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
 extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 int8 GetLadyVashjPhase(Unit* vashj);
+std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and not under the north rock.
 bool IsOnVashjDais(float x, float y, float margin);
 // A step that leads away from every unit given while staying on the dais. facing is optional, for a

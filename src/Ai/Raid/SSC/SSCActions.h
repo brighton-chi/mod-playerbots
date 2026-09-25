@@ -407,6 +407,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjHunterReturnToTheDaisAction : public Action
+{
+public:
+    LadyVashjHunterReturnToTheDaisAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj hunter return to the dais") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjTankAttackAndMoveAwayStriderAction : public AttackAction
 {
 public:
@@ -458,15 +466,14 @@ public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj avoid toxic spores") {}
     bool Execute(Event event) override;
-    static std::vector<Unit*> GetAllSporeDropTriggers(Player* bot);
 
 private:
     Position FindSafestNearbyPosition(
-        std::vector<Unit*> const& spores, Position const& position,
+        std::vector<Position> const& spores, Position const& position,
         float maxRadius, float hazardRadius);
     bool IsPathSafeFromSpores(
         Position const& start, Position const& end,
-        std::vector<Unit*> const& spores, float hazardRadius);
+        std::vector<Position> const& spores, float hazardRadius);
 };
 
 class LadyVashjPaladinUseHandOfFreedomAction : public Action

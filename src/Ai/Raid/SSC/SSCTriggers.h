@@ -482,6 +482,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjHunterIsAboveTheDaisTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjHunterIsAboveTheDaisTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj hunter is above the dais") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjInPhase3Trigger : public SscEncounterTrigger
 {
 public:
