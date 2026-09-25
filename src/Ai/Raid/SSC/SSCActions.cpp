@@ -1804,8 +1804,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             targets = { enchanted, elite };
         else if (PlayerbotAI::IsTank(bot))
         {
-            if (botAI->HasCheat(BotCheatMask::raid) &&
-                PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+            if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
                 targets = { strider, elite, enchanted };
             else
                 targets = { elite, strider, enchanted };
@@ -1819,14 +1818,9 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         if (PlayerbotAI::IsTank(bot))
         {
             if (PlayerbotAI::IsMainTank(bot))
-            {
                 targets = { vashj };
-            }
-            else if (botAI->HasCheat(BotCheatMask::raid) &&
-                     PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-            {
+            else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
                 targets = { strider, elite, enchanted, vashj };
-            }
             else
                 targets = { elite, strider, enchanted, vashj };
         }
@@ -1898,61 +1892,42 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
 
 bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
+    // Automatically apply Fear Ward to tanks to make Strider tankable This simulates the real-life
+    // strategy where the  Strider can be meleed by players wearing an Ogre Suit (due to the
+    // extended combat reach).
+    if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
+        bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 
     Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
     if (!strider)
         return false;
 
-    // Raid cheat automatically applies Fear Ward to tanks to make Strider tankable
-    // This simulates the real-life strategy where the Strider can be meleed by
-    // players wearing an Ogre Suit (due to the extended combat reach)
-    if (botAI->HasCheat(BotCheatMask::raid) && PlayerbotAI::IsTank(bot))
+    // Only the first assist tank affirmatively picks up Striders
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
+        AI_VALUE(Unit*, "current target") != strider)
     {
-        if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
-            bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
-
-        if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-            AI_VALUE(Unit*, "current target") != strider)
-            return Attack(strider);
-
-        float const currentDistance = bot->GetExactDist2d(vashj);
-        constexpr float safeDistance = 28.0f;
-        if (strider->GetVictim() != bot || currentDistance >= safeDistance)
-            return false;
-
-        return MoveAway(vashj, safeDistance - currentDistance, true);
+        return Attack(strider);
     }
 
-    // Don't move away if raid cheats are enabled, or in any case if the bot is a tank
-    if (!botAI->HasCheat(BotCheatMask::raid))
-    {
-        float const currentDistance = bot->GetExactDist2d(strider);
-        constexpr float safeDistance = 20.0f;
-        if (!PlayerbotAI::IsTank(bot) && currentDistance < safeDistance)
-            return MoveAway(strider, safeDistance - currentDistance);
+    if (strider->GetVictim() != bot)
+        return false;
 
-        // Try to root/slow the Strider if it is not tankable (poor man's kiting strategy)
-        if (!botAI->HasAura("frost shock", strider) && bot->getClass() == CLASS_SHAMAN &&
-            botAI->CanCastSpell("frost shock", strider))
-        {
-            return botAI->CastSpell("frost shock", strider);
-        }
-        else if (!strider->HasAura(Id(SscSpells::SPELL_CURSE_OF_EXHAUSTION)) && bot->getClass() == CLASS_WARLOCK &&
-                 botAI->CanCastSpell("curse of exhaustion", strider))
-        {
-            return botAI->CastSpell("curse of exhaustion", strider);
-        }
-        else if (!strider->HasAura(Id(SscSpells::SPELL_SLOW)) && bot->getClass() == CLASS_MAGE &&
-                 botAI->CanCastSpell("slow", strider))
-        {
-            return botAI->CastSpell("slow", strider);
-        }
-    }
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
 
-    return false;
+    // But all tanks move away from Vashj if they are holding a Strider, except the Main Tank in
+    // phase 3, who is holding Vashj.
+    if (GetLadyVashjPhase(vashj) == 3 && PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    // Keep the Strider away from Vashj, where bots tend to congregate to take down elementals.
+    float const currentDistance = bot->GetExactDist2d(vashj);
+    constexpr float safeDistance = 28.0f;
+    if (currentDistance >= safeDistance)
+        return false;
+
+    return MoveAway(vashj, safeDistance - currentDistance, true);
 }
 
 // If cheats are enabled, the first returned melee DPS bot will teleport to Tainted Elementals

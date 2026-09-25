@@ -446,16 +446,16 @@ bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
     return phase == 2 || phase == 3;
 }
 
+// Strider actions are predicated on the fact that you will have only one Strider up at once.
+// If you have more than one up at a time, you likely do not have the DPS to complete the fight.
 bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "coilfang strider");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "coilfang strider");
 }
 
-// Striders are not tankable without a cheat to block Fear so there is no point in misdirecting
-// if raid cheats are not enabled. Unlike a boss pull, a strider already on its tank needs nothing.
 bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER || !botAI->HasCheat(BotCheatMask::raid))
+    if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
