@@ -367,6 +367,8 @@ inline std::array const VASHJ_NORTH_ROCK = {
     Position{  77.624f, -925.960f, 41.165f },
     Position{ 120.362f, -931.205f, 22.520f },
 };
+// Steps keep this far off the rock outline. Vashj is large and snags on it trailing her tank.
+inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
@@ -385,7 +387,8 @@ extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
-// True if x/y is on the dais, at least margin inside its edge, and not under the north rock.
+// True if x/y is on the dais, at least margin inside its edge, and clear of the north rock by
+// VASHJ_NORTH_ROCK_CLEARANCE.
 bool IsOnVashjDais(float x, float y, float margin);
 // A step that leads away from every position given while staying on the dais. facing is optional,
 // for a tank: when the bot is its victim, a step leading away from it is walked backwards. spores
