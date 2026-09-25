@@ -88,6 +88,7 @@ public:
         creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
         creators["ssc spitfire totem"] = &RaidSscValueContext::ssc_spitfire_totem;
+        creators["ssc toxic spores"] = &RaidSscValueContext::ssc_toxic_spores;
     }
 
 private:
@@ -107,6 +108,11 @@ private:
     }
     static UntypedValue* ssc_spitfire_totem(PlayerbotAI* botAI) {
         return new SscSpitfireTotemValue(botAI);
+    }
+    static UntypedValue* ssc_toxic_spores(PlayerbotAI* botAI) {
+        return new SscHazardPositionsValue(
+            botAI, "ssc toxic spores", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_SPORES),
+            SscHelpers::TOXIC_SPORES_SEARCH_RADIUS);
     }
 };
 

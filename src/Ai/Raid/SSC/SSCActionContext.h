@@ -161,6 +161,9 @@ public:
         creators["lady vashj pass the tainted core"] =
             &RaidSscActionContext::lady_vashj_pass_the_tainted_core;
 
+        creators["lady vashj hunter return to the dais"] =
+            &RaidSscActionContext::lady_vashj_hunter_return_to_the_dais;
+
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
 
@@ -329,6 +332,9 @@ private:
     }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) {
         return new LadyVashjPassTheTaintedCoreAction(botAI);
+    }
+    static Action* lady_vashj_hunter_return_to_the_dais(PlayerbotAI* botAI) {
+        return new LadyVashjHunterReturnToTheDaisAction(botAI);
     }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);

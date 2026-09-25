@@ -1665,19 +1665,6 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 {
     Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
-    float platformZ = center.GetPositionZ();
-    if (bot->GetPositionZ() - platformZ > 2.0f)
-    {
-        // This block is needed to prevent bots from floating into the air to attack sporebats
-        bot->AttackStop();
-        bot->CastStop();
-        bot->StopMoving();
-        bot->GetMotionMaster()->Clear();
-        bot->NearTeleportTo(
-            bot->GetPositionX(), bot->GetPositionY(), platformZ, bot->GetOrientation());
-
-        return true;
-    }
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1823,6 +1810,41 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool LadyVashjHunterReturnToTheDaisAction::Execute(Event /*event*/)
+{
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+
+    // Search down from the dais, not from the bot, so the floor found is the dais or the
+    // stairs and never the pipes the bot may be standing on
+    float const floorZ = bot->GetMapHeight(x, y, VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
+    if (floorZ <= INVALID_HEIGHT)
+        return false;
+
+    // TEMPORARY diagnostic: how hunters leave the floor. Remove once settled.
+    LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
+    G3D::Vector3 const splineEnd = bot->movespline->FinalDestination();
+    Unit* target = AI_VALUE(Unit*, "current target");
+    LOG_INFO("playerbots",
+        "Vashj off floor: {} at {:.1f} {:.1f} {:.1f}, surface under {:.1f}, dais {:.1f}; "
+        "target {} z {:.1f}; last move {:.1f} {:.1f} {:.1f}; "
+        "spline end {:.1f} {:.1f} {:.1f} finalized {}; motion {}",
+        bot->GetName(), x, y, bot->GetPositionZ(),
+        bot->GetMapHeight(x, y, bot->GetPositionZ()), floorZ,
+        target ? target->GetEntry() : 0, target ? target->GetPositionZ() : 0.0f,
+        lastMove.lastMoveToX, lastMove.lastMoveToY, lastMove.lastMoveToZ,
+        splineEnd.x, splineEnd.y, splineEnd.z, bot->movespline->Finalized(),
+        static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()));
+
+    bot->AttackStop();
+    bot->CastStop();
+    bot->StopMoving();
+    bot->GetMotionMaster()->Clear();
+    bot->NearTeleportTo(x, y, floorZ, bot->GetOrientation());
+
+    return true;
 }
 
 bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
@@ -2446,13 +2468,13 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
 // so that they do not go down the stairs
 bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 {
-    auto const& spores = GetAllSporeDropTriggers(bot);
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     if (spores.empty())
         return false;
 
     constexpr float hazardRadius = 7.0f;
     bool inDanger = false;
-    for (Unit* spore : spores)
+    for (Position const& spore : spores)
     {
         if (bot->GetExactDist2d(spore) < hazardRadius)
         {
@@ -2482,7 +2504,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 }
 
 Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
-    std::vector<Unit*> const& spores, Position const& vashjCenter,
+    std::vector<Position> const& spores, Position const& vashjCenter,
     float maxRadius, float hazardRadius)
 {
     constexpr float searchStep = M_PI / 8.0f;
@@ -2507,9 +2529,9 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
                 continue;
 
             bool isSafe = true;
-            for (Unit* spore : spores)
+            for (Position const& spore : spores)
             {
-                if (spore->GetExactDist2d(x, y) < hazardRadius)
+                if (spore.GetExactDist2d(x, y) < hazardRadius)
                 {
                     isSafe = false;
                     break;
@@ -2550,7 +2572,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
 
 bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
     Position const& start, Position const& end,
-    std::vector<Unit*> const& spores, float hazardRadius)
+    std::vector<Position> const& spores, float hazardRadius)
 {
     constexpr uint8 numChecks = 10;
     float dx = end.GetPositionX() - start.GetPositionX();
@@ -2562,34 +2584,15 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
         float checkX = start.GetPositionX() + dx * ratio;
         float checkY = start.GetPositionY() + dy * ratio;
 
-        for (Unit* spore : spores)
+        for (Position const& spore : spores)
         {
-            float distToSpore = spore->GetExactDist2d(checkX, checkY);
+            float distToSpore = spore.GetExactDist2d(checkX, checkY);
             if (distToSpore < hazardRadius)
                 return false;
         }
     }
 
     return true;
-}
-
-// When Toxic Sporebats spit poison, they summon "Spore Drop Trigger" NPCs that create toxic pools
-std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(Player* bot)
-{
-    std::vector<Unit*> sporeDropTriggers;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(SscNpcs::NPC_SPORE_DROP_TRIGGER), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            sporeDropTriggers.push_back(creature);
-    }
-
-    return sporeDropTriggers;
 }
 
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
@@ -2605,7 +2608,7 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
     // Her target never moves for Static Charge, and phase 1 has no spores to leave
     Unit* const skip = GetLadyVashjPhase(vashj) == 1 ? vashj->GetVictim() : nullptr;
 
-    auto const& spores = LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(bot);
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     constexpr float toxicSporeRadius = 6.0f;
 
     Player* mainTankToxic = nullptr;
@@ -2623,7 +2626,7 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
         }
 
         bool nearToxicSpore = false;
-        for (Unit* spore : spores)
+        for (Position const& spore : spores)
         {
             if (member->GetExactDist2d(spore) < toxicSporeRadius)
             {
