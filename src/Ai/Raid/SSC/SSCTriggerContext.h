@@ -157,7 +157,8 @@ public:
         creators["lady vashj hunter is above the dais"] =
             &RaidSscTriggerContext::lady_vashj_hunter_is_above_the_dais;
 
-        creators["lady vashj in phase 3"] = &RaidSscTriggerContext::lady_vashj_in_phase_3;
+        creators["lady vashj bot is in toxic spores"] =
+            &RaidSscTriggerContext::lady_vashj_bot_is_in_toxic_spores;
 
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
@@ -317,8 +318,8 @@ private:
     static Trigger* lady_vashj_hunter_is_above_the_dais(PlayerbotAI* botAI) {
         return new LadyVashjHunterIsAboveTheDaisTrigger(botAI);
     }
-    static Trigger* lady_vashj_in_phase_3(PlayerbotAI* botAI) {
-        return new LadyVashjInPhase3Trigger(botAI);
+    static Trigger* lady_vashj_bot_is_in_toxic_spores(PlayerbotAI* botAI) {
+        return new LadyVashjBotIsInToxicSporesTrigger(botAI);
     }
     static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);

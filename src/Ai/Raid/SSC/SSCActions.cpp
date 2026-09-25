@@ -2468,32 +2468,14 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
 // so that they do not go down the stairs
 bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 {
-    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    if (spores.empty())
-        return false;
-
-    constexpr float hazardRadius = 7.0f;
-    bool inDanger = false;
-    for (Position const& spore : spores)
-    {
-        if (bot->GetExactDist2d(spore) < hazardRadius)
-        {
-            inDanger = true;
-            break;
-        }
-    }
-
-    if (!inDanger)
-        return false;
-
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
-    Position const& vashjCenter = VASHJ_PLATFORM_CENTER_POSITION;
-    constexpr float maxRadius = 60.0f;
+    Position safestPos;
+    if (!FindSafestNearbyPosition(GetToxicSporePositions(botAI), safestPos))
+        return false;
 
-    Position safestPos = FindSafestNearbyPosition(spores, vashjCenter, maxRadius, hazardRadius);
     bool backwards = vashj->GetVictim() == bot;
     MovementPriority priority = backwards ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
@@ -2503,17 +2485,18 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
                   priority, true, backwards);
 }
 
-Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
-    std::vector<Position> const& spores, Position const& vashjCenter,
-    float maxRadius, float hazardRadius)
+bool LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
+    std::vector<Position> const& spores, Position& bestPos)
 {
     constexpr float searchStep = M_PI / 8.0f;
     constexpr float minDistance = 2.0f;
     constexpr float maxDistance = 40.0f;
     constexpr float distanceStep = 1.0f;
+    // Same margin as the tank's own steps, since the main tank uses this search too
+    constexpr float daisMargin = 1.0f;
 
-    Position bestPos;
     float minMoveDistance = std::numeric_limits<float>::max();
+    bool found = false;
     bool foundSafe = false;
 
     for (float distance = minDistance;
@@ -2525,13 +2508,13 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
             float y = bot->GetPositionY() + distance * std::sin(angle);
             float z = bot->GetPositionZ();
 
-            if (vashjCenter.GetExactDist2d(x, y) > maxRadius)
+            if (!IsOnVashjDais(x, y, daisMargin))
                 continue;
 
             bool isSafe = true;
             for (Position const& spore : spores)
             {
-                if (spore.GetExactDist2d(x, y) < hazardRadius)
+                if (spore.GetExactDist2d(x, y) < TOXIC_SPORES_AVOID_RADIUS)
                 {
                     isSafe = false;
                     break;
@@ -2543,8 +2526,8 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
 
             Position testPos(x, y, z);
 
-            bool pathSafe =
-                IsPathSafeFromSpores(bot->GetPosition(), testPos, spores, hazardRadius);
+            bool pathSafe = IsPathSafeFromSpores(
+                bot->GetPosition(), testPos, spores, TOXIC_SPORES_AVOID_RADIUS);
             if (pathSafe || !foundSafe)
             {
                 float moveDistance = bot->GetExactDist2d(x, y);
@@ -2553,12 +2536,14 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
                 {
                     bestPos = testPos;
                     minMoveDistance = moveDistance;
+                    found = true;
                     foundSafe = true;
                 }
                 else if (!foundSafe && moveDistance < minMoveDistance)
                 {
                     bestPos = testPos;
                     minMoveDistance = moveDistance;
+                    found = true;
                 }
             }
         }
@@ -2567,7 +2552,7 @@ Position LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
             break;
     }
 
-    return bestPos;
+    return found;
 }
 
 bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
@@ -2586,8 +2571,9 @@ bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
 
         for (Position const& spore : spores)
         {
-            float distToSpore = spore.GetExactDist2d(checkX, checkY);
-            if (distToSpore < hazardRadius)
+            // A pool the bot is already in only rules out a path that leads deeper into it
+            float const limit = std::min(spore.GetExactDist2d(start), hazardRadius);
+            if (spore.GetExactDist2d(checkX, checkY) < limit)
                 return false;
         }
     }
@@ -2609,7 +2595,6 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
     Unit* const skip = GetLadyVashjPhase(vashj) == 1 ? vashj->GetVictim() : nullptr;
 
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    constexpr float toxicSporeRadius = 6.0f;
 
     Player* mainTankToxic = nullptr;
     Player* anyToxic = nullptr;
@@ -2628,7 +2613,7 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
         bool nearToxicSpore = false;
         for (Position const& spore : spores)
         {
-            if (member->GetExactDist2d(spore) < toxicSporeRadius)
+            if (member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS)
             {
                 nearToxicSpore = true;
                 break;

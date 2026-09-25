@@ -536,10 +536,17 @@ bool LadyVashjHunterIsAboveTheDaisTrigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 3;
 }
 
-bool LadyVashjInPhase3Trigger::IsActiveInEncounter()
+bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3;
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+    return std::any_of(spores.begin(), spores.end(), [this](Position const& spore)
+    {
+        return bot->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
+    });
 }
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
