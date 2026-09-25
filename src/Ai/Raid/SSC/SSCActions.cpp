@@ -1576,6 +1576,62 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// Nothing else puts ranged at range in phase 3. Out of Entangle first, then a little apart, so one
+// spore catches fewer of them.
+bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    constexpr float vashjDistance = 15.0f;
+    constexpr float spreadDistance = 4.0f;
+
+    std::vector<Unit*> avoid;
+    if (bot->GetExactDist2d(vashj) < vashjDistance)
+    {
+        avoid.push_back(vashj);
+    }
+    else if (Group* group = bot->GetGroup())
+    {
+        bool tooClose = false;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() ||
+                member->GetMapId() != SSC_MAP_ID)
+            {
+                continue;
+            }
+
+            avoid.push_back(member);
+            if (bot->GetExactDist2d(member) < spreadDistance)
+                tooClose = true;
+        }
+
+        if (!tooClose)
+            return false;
+    }
+
+    if (avoid.empty())
+        return false;
+
+    float stepX;
+    float stepY;
+    float stepZ;
+    bool backwards;
+    if (!FindVashjDaisStepAwayFromUnits(
+            bot, avoid, nullptr, stepX, stepY, stepZ, backwards,
+            &GetToxicSporePositions(botAI)))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+}
+
 // For absorbing Shock Burst
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
 {
@@ -1707,9 +1763,19 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
                 break;
 
             case Id(SscNpcs::NPC_TOXIC_SPOREBAT):
+            {
+                // Chasing a bat any higher, or off the dais, walks hunters up into the air
+                constexpr float maxSporebatHeight = 40.0f;
+                if (unit->GetPositionZ() - center.GetPositionZ() > maxSporebatHeight ||
+                    !IsOnVashjDais(unit->GetPositionX(), unit->GetPositionY(), 0.0f))
+                {
+                    break;
+                }
+
                 if (!sporebat || bot->GetDistance(unit) < bot->GetDistance(sporebat))
                     sporebat = unit;
                 break;
+            }
 
             case Id(SscNpcs::NPC_LADY_VASHJ):
                 vashj = unit;
@@ -1752,10 +1818,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         {
             if (PlayerbotAI::IsMainTank(bot))
             {
-                if (MarkTargetWithDiamond(bot, vashj))
-                    return true;
-
-                SetRtiTarget(botAI, "diamond");
                 targets = { vashj };
             }
             else if (botAI->HasCheat(BotCheatMask::raid) &&
@@ -1812,7 +1874,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);
 }
 
-bool LadyVashjHunterReturnToTheDaisAction::Execute(Event /*event*/)
+bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
 {
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
@@ -1822,21 +1884,6 @@ bool LadyVashjHunterReturnToTheDaisAction::Execute(Event /*event*/)
     float const floorZ = bot->GetMapHeight(x, y, VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
     if (floorZ <= INVALID_HEIGHT)
         return false;
-
-    // TEMPORARY diagnostic: how hunters leave the floor. Remove once settled.
-    LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
-    G3D::Vector3 const splineEnd = bot->movespline->FinalDestination();
-    Unit* target = AI_VALUE(Unit*, "current target");
-    LOG_INFO("playerbots",
-        "Vashj off floor: {} at {:.1f} {:.1f} {:.1f}, surface under {:.1f}, dais {:.1f}; "
-        "target {} z {:.1f}; last move {:.1f} {:.1f} {:.1f}; "
-        "spline end {:.1f} {:.1f} {:.1f} finalized {}; motion {}",
-        bot->GetName(), x, y, bot->GetPositionZ(),
-        bot->GetMapHeight(x, y, bot->GetPositionZ()), floorZ,
-        target ? target->GetEntry() : 0, target ? target->GetPositionZ() : 0.0f,
-        lastMove.lastMoveToX, lastMove.lastMoveToY, lastMove.lastMoveToZ,
-        splineEnd.x, splineEnd.y, splineEnd.z, bot->movespline->Finalized(),
-        static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()));
 
     bot->AttackStop();
     bot->CastStop();
@@ -2472,17 +2519,38 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     if (!vashj)
         return false;
 
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+    bool const tanking = vashj->GetVictim() == bot;
+
     float stepX;
     float stepY;
     float stepZ;
     bool backwards;
-    if (!FindVashjDaisStepAwayFromPositions(
-            bot, GetToxicSporePositions(botAI), vashj, stepX, stepY, stepZ, backwards))
+    bool found = FindVashjDaisStepAwayFromPositions(
+        bot, spores, vashj, stepX, stepY, stepZ, backwards);
+
+    // When no step gains on every pool, still step away from the closest one if it is close enough
+    // to hurt, even toward another.
+    if (!found)
     {
-        return false;
+        auto const closest = std::min_element(spores.begin(), spores.end(),
+            [this](Position const& a, Position const& b)
+            {
+                return bot->GetExactDist2dSq(a) < bot->GetExactDist2dSq(b);
+            });
+
+        if (closest != spores.end() && bot->GetExactDist2d(*closest) < TOXIC_SPORES_AVOID_RADIUS)
+        {
+            std::vector<Position> const nearest = { *closest };
+            found = FindVashjDaisStepAwayFromPositions(
+                bot, nearest, vashj, stepX, stepY, stepZ, backwards);
+        }
     }
 
-    MovementPriority const priority = vashj->GetVictim() == bot ?
+    if (!found)
+        return false;
+
+    MovementPriority const priority = tanking ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
 
     return MoveTo(

@@ -402,6 +402,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjRangedShouldPositionInPhase3Trigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjRangedShouldPositionInPhase3Trigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj ranged should position in phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjShamanShouldGroundShockBlastTrigger : public SscEncounterTrigger
 {
 public:
@@ -482,11 +492,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjHunterIsAboveTheDaisTrigger : public SscEncounterTrigger
+class LadyVashjBotIsAboveTheGroundTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjHunterIsAboveTheDaisTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj hunter is above the dais") {}
+    LadyVashjBotIsAboveTheGroundTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot is above the ground") {}
 
 protected:
     bool IsActiveInEncounter() override;

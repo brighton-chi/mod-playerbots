@@ -372,7 +372,10 @@ inline std::array const VASHJ_NORTH_ROCK = {
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
 // Where bots choose to stand, with room to spare past the edge of the pool.
 inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 7.5f;
-// Wide enough for the spore avoidance search, which looks up to 40 yd out from the bot.
+// Her tank stands farther off, so the melee on her far side are clear too: she stops about 3.5 yd
+// from the tank, and melee about 3.75 yd from her, so 7.25 plus TOXIC_SPORES_AVOID_RADIUS.
+inline constexpr float TOXIC_SPORES_TANK_AVOID_RADIUS = 15.0f;
+// Well past the widest avoid radius.
 inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 
 extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
@@ -385,14 +388,15 @@ std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and not under the north rock.
 bool IsOnVashjDais(float x, float y, float margin);
 // A step that leads away from every position given while staying on the dais. facing is optional,
-// for a tank: when the bot is its victim, a step leading away from it is walked backwards.
+// for a tank: when the bot is its victim, a step leading away from it is walked backwards. spores
+// is optional too: when given, no step ends within TOXIC_SPORES_AVOID_RADIUS of one.
 bool FindVashjDaisStepAwayFromPositions(
     Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards);
+    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr);
 // The same, away from where each unit given stands now.
 bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards);
+    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr);
 bool HasStaticCharge(Player* player);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);

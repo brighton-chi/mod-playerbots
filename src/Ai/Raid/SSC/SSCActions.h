@@ -383,6 +383,14 @@ private:
     bool _reachedRangedPosition = false;
 };
 
+class LadyVashjPhase3PositionRangedAction : public MovementAction
+{
+public:
+    LadyVashjPhase3PositionRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj phase 3 position ranged") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjSetGroundingTotemInMainTankGroupAction : public MovementAction
 {
 public:
@@ -407,11 +415,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjHunterReturnToTheDaisAction : public Action
+class LadyVashjReturnToTheGroundAction : public Action
 {
 public:
-    LadyVashjHunterReturnToTheDaisAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj hunter return to the dais") {}
+    LadyVashjReturnToTheGroundAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj return to the ground") {}
     bool Execute(Event event) override;
 };
 
