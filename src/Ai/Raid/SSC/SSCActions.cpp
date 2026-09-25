@@ -2472,113 +2472,21 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     if (!vashj)
         return false;
 
-    Position safestPos;
-    if (!FindSafestNearbyPosition(GetToxicSporePositions(botAI), safestPos))
+    float stepX;
+    float stepY;
+    float stepZ;
+    bool backwards;
+    if (!FindVashjDaisStepAwayFromPositions(
+            bot, GetToxicSporePositions(botAI), vashj, stepX, stepY, stepZ, backwards))
+    {
         return false;
+    }
 
-    bool backwards = vashj->GetVictim() == bot;
-    MovementPriority priority = backwards ?
+    MovementPriority const priority = vashj->GetVictim() == bot ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
 
-    return MoveTo(SSC_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                  safestPos.GetPositionZ(), false, false, false, true,
-                  priority, true, backwards);
-}
-
-bool LadyVashjAvoidToxicSporesAction::FindSafestNearbyPosition(
-    std::vector<Position> const& spores, Position& bestPos)
-{
-    constexpr float searchStep = M_PI / 8.0f;
-    constexpr float minDistance = 2.0f;
-    constexpr float maxDistance = 40.0f;
-    constexpr float distanceStep = 1.0f;
-    // Same margin as the tank's own steps, since the main tank uses this search too
-    constexpr float daisMargin = 1.0f;
-
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool found = false;
-    bool foundSafe = false;
-
-    for (float distance = minDistance;
-         distance <= maxDistance; distance += distanceStep)
-    {
-        for (float angle = 0.0f; angle < 2 * M_PI; angle += searchStep)
-        {
-            float x = bot->GetPositionX() + distance * std::cos(angle);
-            float y = bot->GetPositionY() + distance * std::sin(angle);
-            float z = bot->GetPositionZ();
-
-            if (!IsOnVashjDais(x, y, daisMargin))
-                continue;
-
-            bool isSafe = true;
-            for (Position const& spore : spores)
-            {
-                if (spore.GetExactDist2d(x, y) < TOXIC_SPORES_AVOID_RADIUS)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            Position testPos(x, y, z);
-
-            bool pathSafe = IsPathSafeFromSpores(
-                bot->GetPosition(), testPos, spores, TOXIC_SPORES_AVOID_RADIUS);
-            if (pathSafe || !foundSafe)
-            {
-                float moveDistance = bot->GetExactDist2d(x, y);
-
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    found = true;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    found = true;
-                }
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    return found;
-}
-
-bool LadyVashjAvoidToxicSporesAction::IsPathSafeFromSpores(
-    Position const& start, Position const& end,
-    std::vector<Position> const& spores, float hazardRadius)
-{
-    constexpr uint8 numChecks = 10;
-    float dx = end.GetPositionX() - start.GetPositionX();
-    float dy = end.GetPositionY() - start.GetPositionY();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        float ratio = static_cast<float>(i) / numChecks;
-        float checkX = start.GetPositionX() + dx * ratio;
-        float checkY = start.GetPositionY() + dy * ratio;
-
-        for (Position const& spore : spores)
-        {
-            // A pool the bot is already in only rules out a path that leads deeper into it
-            float const limit = std::min(spore.GetExactDist2d(start), hazardRadius);
-            if (spore.GetExactDist2d(checkX, checkY) < limit)
-                return false;
-        }
-    }
-
-    return true;
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)

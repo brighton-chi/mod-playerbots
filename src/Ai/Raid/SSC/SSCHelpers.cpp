@@ -743,8 +743,8 @@ bool IsOnVashjDais(float x, float y, float margin)
     return edgeDistance <= VASHJ_DAIS_APOTHEM - margin && !IsInPolygon(x, y, VASHJ_NORTH_ROCK);
 }
 
-bool FindVashjDaisStepAwayFromUnits(
-    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
+bool FindVashjDaisStepAwayFromPositions(
+    Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
     float& stepZ, bool& backwards)
 {
     // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
@@ -752,11 +752,11 @@ bool FindVashjDaisStepAwayFromUnits(
     constexpr float daisMargin = 1.0f;
     constexpr uint8 directions = 24;
 
-    auto closestUnit = [&units](float x, float y)
+    auto closestPosition = [&positions](float x, float y)
     {
         float closest = std::numeric_limits<float>::max();
-        for (Unit* unit : units)
-            closest = std::min(closest, unit->GetExactDist2d(x, y));
+        for (Position const& position : positions)
+            closest = std::min(closest, position.GetExactDist2d(x, y));
 
         return closest;
     };
@@ -764,7 +764,7 @@ bool FindVashjDaisStepAwayFromUnits(
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
 
-    // Angle and distance to the closest unit for each step that stays on the dais
+    // Angle and distance to the closest position for each step that stays on the dais
     std::vector<std::pair<float, float>> candidates;
     for (uint8 i = 0; i < directions; ++i)
     {
@@ -772,14 +772,14 @@ bool FindVashjDaisStepAwayFromUnits(
         float const x = botX + std::cos(angle) * PATH_STEP_DISTANCE;
         float const y = botY + std::sin(angle) * PATH_STEP_DISTANCE;
         if (IsOnVashjDais(x, y, daisMargin))
-            candidates.emplace_back(angle, closestUnit(x, y));
+            candidates.emplace_back(angle, closestPosition(x, y));
     }
 
     std::sort(candidates.begin(), candidates.end(),
         [](auto const& a, auto const& b) { return a.second > b.second; });
 
     bool const tanking = facing && facing->GetVictim() == bot;
-    float const current = closestUnit(botX, botY);
+    float const current = closestPosition(botX, botY);
     for (auto const& [angle, closest] : candidates)
     {
         if (closest <= current)
@@ -800,6 +800,19 @@ bool FindVashjDaisStepAwayFromUnits(
     }
 
     return false;
+}
+
+bool FindVashjDaisStepAwayFromUnits(
+    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
+    float& stepZ, bool& backwards)
+{
+    std::vector<Position> positions;
+    positions.reserve(units.size());
+    for (Unit* unit : units)
+        positions.push_back(unit->GetPosition());
+
+    return FindVashjDaisStepAwayFromPositions(
+        bot, positions, facing, stepX, stepY, stepZ, backwards);
 }
 
 bool HasStaticCharge(Player* player)

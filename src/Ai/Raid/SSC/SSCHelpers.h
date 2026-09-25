@@ -371,7 +371,7 @@ inline std::array const VASHJ_NORTH_ROCK = {
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
 // Where bots choose to stand, with room to spare past the edge of the pool.
-inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 8.0f;
+inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 7.5f;
 // Wide enough for the spore avoidance search, which looks up to 40 yd out from the bot.
 inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 
@@ -384,8 +384,12 @@ int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and not under the north rock.
 bool IsOnVashjDais(float x, float y, float margin);
-// A step that leads away from every unit given while staying on the dais. facing is optional, for a
-// tank: when the bot is its victim, a step leading away from it is walked backwards.
+// A step that leads away from every position given while staying on the dais. facing is optional,
+// for a tank: when the bot is its victim, a step leading away from it is walked backwards.
+bool FindVashjDaisStepAwayFromPositions(
+    Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
+    float& stepZ, bool& backwards);
+// The same, away from where each unit given stands now.
 bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
     float& stepZ, bool& backwards);

@@ -545,7 +545,7 @@ bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     return std::any_of(spores.begin(), spores.end(), [this](Position const& spore)
     {
-        return bot->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
+        return bot->GetExactDist2d(spore) < TOXIC_SPORES_AVOID_RADIUS;
     });
 }
 
