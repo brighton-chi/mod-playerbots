@@ -468,9 +468,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position FindSafestNearbyPosition(
-        std::vector<Position> const& spores, Position const& position,
-        float maxRadius, float hazardRadius);
+    bool FindSafestNearbyPosition(std::vector<Position> const& spores, Position& bestPos);
     bool IsPathSafeFromSpores(
         Position const& start, Position const& end,
         std::vector<Position> const& spores, float hazardRadius);

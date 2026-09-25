@@ -747,8 +747,9 @@ bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
     float& stepZ, bool& backwards)
 {
-    // Vashj trails her tank, so steps keep this far inside the edge to hold her on the dais too.
-    constexpr float daisMargin = 3.0f;
+    // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
+    // for the notch the rock cuts and for pathing near the edge.
+    constexpr float daisMargin = 1.0f;
     constexpr uint8 directions = 24;
 
     auto closestUnit = [&units](float x, float y)

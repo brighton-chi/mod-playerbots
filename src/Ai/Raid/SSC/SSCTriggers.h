@@ -492,11 +492,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjInPhase3Trigger : public SscEncounterTrigger
+class LadyVashjBotIsInToxicSporesTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjInPhase3Trigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj in phase 3") {}
+    LadyVashjBotIsInToxicSporesTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot is in toxic spores") {}
 
 protected:
     bool IsActiveInEncounter() override;

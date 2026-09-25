@@ -131,7 +131,6 @@ enum class SscNpcs : uint32
     NPC_COILFANG_ELITE           = 22055,
     NPC_COILFANG_STRIDER         = 22056,
     NPC_TOXIC_SPOREBAT           = 22140,
-    NPC_SPORE_DROP_TRIGGER       = 22207,
 };
 
 enum class SscItems : uint32
@@ -369,6 +368,10 @@ inline std::array const VASHJ_NORTH_ROCK = {
     Position{ 120.362f, -931.205f, 22.520f },
 };
 
+// A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
+inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
+// Where bots choose to stand, with room to spare past the edge of the pool.
+inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 8.0f;
 // Wide enough for the spore avoidance search, which looks up to 40 yd out from the bot.
 inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 
