@@ -355,6 +355,10 @@ public:
     LadyVashjMainTankPositionBossAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "lady vashj main tank position boss") {}
     bool Execute(Event event) override;
+
+private:
+    bool MoveToPhase1TankPosition(Unit* vashj);
+    bool MoveAwayFromEnchantedElementals(Unit* vashj);
 };
 
 class LadyVashjPhase1SpreadRangedInArcAction : public MovementAction
@@ -363,6 +367,20 @@ public:
     LadyVashjPhase1SpreadRangedInArcAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj phase 1 spread ranged in arc") {}
     bool Execute(Event event) override;
+    bool ResetRangedPosition()
+    {
+        if (!_hasRangedPosition)
+            return false;
+
+        _hasRangedPosition = false;
+        _reachedRangedPosition = false;
+        return true;
+    }
+
+private:
+    Position _rangedPosition;
+    bool _hasRangedPosition = false;
+    bool _reachedRangedPosition = false;
 };
 
 class LadyVashjSetGroundingTotemInMainTankGroupAction : public MovementAction
@@ -451,11 +469,19 @@ private:
         std::vector<Unit*> const& spores, float hazardRadius);
 };
 
-class LadyVashjUseFreeActionAbilitiesAction : public Action
+class LadyVashjPaladinUseHandOfFreedomAction : public Action
 {
 public:
-    LadyVashjUseFreeActionAbilitiesAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj use free action abilities") {}
+    LadyVashjPaladinUseHandOfFreedomAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj paladin use hand of freedom") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjRogueUseCloakOfShadowsAction : public Action
+{
+public:
+    LadyVashjRogueUseCloakOfShadowsAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj rogue use cloak of shadows") {}
     bool Execute(Event event) override;
 };
 

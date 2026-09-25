@@ -422,11 +422,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjPullingBossInPhase1AndPhase3Trigger : public SscEncounterTrigger
+class LadyVashjPullingBossTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjPullingBossInPhase1AndPhase3Trigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj pulling boss in phase 1 and phase 3") {}
+    LadyVashjPullingBossTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj pulling boss") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -497,6 +497,16 @@ class LadyVashjEntangleOnMeleeTrigger : public SscEncounterTrigger
 public:
     LadyVashjEntangleOnMeleeTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "lady vashj entangle on melee") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LadyVashjRogueHasStaticChargeTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjRogueHasStaticChargeTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj rogue has static charge") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -138,7 +138,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj static charge on group member", {
         NextAction("lady vashj static charge move away from group", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3", {
+    triggers.push_back(new TriggerNode("lady vashj pulling boss", {
         NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat", {
@@ -161,7 +161,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("lady vashj entangle on melee", {
-        NextAction("lady vashj use free action abilities", ACTION_EMERGENCY + 8) }));
+        NextAction("lady vashj paladin use hand of freedom", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("lady vashj rogue has static charge", {
+        NextAction("lady vashj rogue use cloak of shadows", ACTION_EMERGENCY + 8) }));
 }
 
 void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

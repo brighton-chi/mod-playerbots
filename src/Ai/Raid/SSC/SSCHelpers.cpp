@@ -16,6 +16,7 @@
 #include <cmath>
 #include <limits>
 #include <list>
+#include <utility>
 
 using namespace EncounterHelpers;
 
@@ -667,37 +668,33 @@ Position GetTidewalkerStackPoint(Unit* tidewalker)
 
 // Lady Vashj <Coilfang Matron>
 
-std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+namespace // Vashj
+{
+
+// Even-odd ray cast in 2D.
+template <std::size_t N>
+bool IsInPolygon(float x, float y, std::array<Position, N> const& polygon)
+{
+    bool inside = false;
+    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    {
+        float const xi = polygon[i].GetPositionX();
+        float const yi = polygon[i].GetPositionY();
+        float const xj = polygon[j].GetPositionX();
+        float const yj = polygon[j].GetPositionY();
+        if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+            inside = !inside;
+    }
+
+    return inside;
+}
+
+} // end anonymous namespace (Vashj)
+
 std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
 std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
-
-bool IsMainTankInSameSubgroup(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group || !group->isRaidGroup())
-        return false;
-
-    uint8 botSubGroup = group->GetMemberGroup(bot->GetGUID());
-    if (botSubGroup >= MAX_RAID_SUBGROUPS)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive())
-            continue;
-
-        if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
-            continue;
-
-        if (PlayerbotAI::IsMainTank(member))
-            return true;
-    }
-
-    return false;
-}
 
 int8 GetLadyVashjPhase(Unit* vashj)
 {
@@ -724,6 +721,117 @@ int8 GetLadyVashjPhase(Unit* vashj)
         return 3;
 
     return -1;
+}
+
+bool IsOnVashjDais(float x, float y, float margin)
+{
+    float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
+    float const dy = y - VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
+
+    // Distance from the center square to the nearest edge. The edges face 15, 45, 75... degrees,
+    // so fold the angle into one 30 degree sector and measure off the middle of it.
+    constexpr float sector = static_cast<float>(M_PI) / 6.0f;
+    float const angle = Position::NormalizeOrientation(std::atan2(dy, dx));
+    float const offset = std::fmod(angle, sector) - sector / 2.0f;
+    float const edgeDistance = std::hypot(dx, dy) * std::cos(offset);
+
+    return edgeDistance <= VASHJ_DAIS_APOTHEM - margin && !IsInPolygon(x, y, VASHJ_NORTH_ROCK);
+}
+
+bool FindVashjDaisStepAwayFromUnits(
+    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
+    float& stepZ, bool& backwards)
+{
+    // Vashj trails her tank, so steps keep this far inside the edge to hold her on the dais too.
+    constexpr float daisMargin = 3.0f;
+    constexpr uint8 directions = 24;
+
+    auto closestUnit = [&units](float x, float y)
+    {
+        float closest = std::numeric_limits<float>::max();
+        for (Unit* unit : units)
+            closest = std::min(closest, unit->GetExactDist2d(x, y));
+
+        return closest;
+    };
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+
+    // Angle and distance to the closest unit for each step that stays on the dais
+    std::vector<std::pair<float, float>> candidates;
+    for (uint8 i = 0; i < directions; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / directions;
+        float const x = botX + std::cos(angle) * PATH_STEP_DISTANCE;
+        float const y = botY + std::sin(angle) * PATH_STEP_DISTANCE;
+        if (IsOnVashjDais(x, y, daisMargin))
+            candidates.emplace_back(angle, closestUnit(x, y));
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+        [](auto const& a, auto const& b) { return a.second > b.second; });
+
+    bool const tanking = facing && facing->GetVictim() == bot;
+    float const current = closestUnit(botX, botY);
+    for (auto const& [angle, closest] : candidates)
+    {
+        if (closest <= current)
+            break;
+
+        float const dirX = std::cos(angle);
+        float const dirY = std::sin(angle);
+        backwards = tanking && dirX * (facing->GetPositionX() - botX) +
+            dirY * (facing->GetPositionY() - botY) < 0.0f;
+
+        float const moveDist = backwards ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
+        if (CanTakeStepTowards(
+                bot, botX + dirX * PATH_STEP_DISTANCE, botY + dirY * PATH_STEP_DISTANCE,
+                moveDist, stepX, stepY, stepZ))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool HasStaticCharge(Player* player)
+{
+    return player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
+}
+
+bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj)
+{
+    Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
+    if (bot == vashjVictim)
+        return false;
+
+    return HasStaticCharge(bot) || (vashjVictim && HasStaticCharge(vashjVictim));
+}
+
+Player* GetVashjGroundingShaman(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* mainTank = GetGroupMainTank(bot);
+    if (!mainTank)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->getClass() == CLASS_SHAMAN && member->IsAlive() &&
+            member->GetMapId() == SSC_MAP_ID && group->SameSubGroup(mainTank, member) &&
+            GET_PLAYERBOT_AI(member))
+        {
+            return member;
+        }
+    }
+
+    return nullptr;
 }
 
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot)

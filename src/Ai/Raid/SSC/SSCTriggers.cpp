@@ -375,7 +375,7 @@ bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()
     if (!vashj)
         return false;
 
-    int8 phase = GetLadyVashjPhase(vashj);
+    int8 const phase = GetLadyVashjPhase(vashj);
     return phase == 1 || phase == 3;
 }
 
@@ -385,7 +385,10 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 1;
+    if (!vashj || GetLadyVashjPhase(vashj) != 1)
+        return false;
+
+    return !HasStaticCharge(bot);
 }
 
 bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
@@ -397,50 +400,26 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
     if (!vashj)
         return false;
 
-    int8 phase = GetLadyVashjPhase(vashj);
+    int8 const phase = GetLadyVashjPhase(vashj);
     if (phase != 1 && phase != 3)
         return false;
 
-    return IsMainTankInSameSubgroup(bot);
+    return GetVashjGroundingShaman(bot) == bot;
 }
 
 bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE)))
-            return true;
-    }
-
-    return false;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && ShouldAvoidVashjStaticCharge(bot, vashj);
 }
 
-bool LadyVashjPullingBossInPhase1AndPhase3Trigger::IsActiveInEncounter()
+bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    if (vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-        return true;
-
-    if (GetLadyVashjPhase(vashj) != 3)
-        return false;
-
-    // Proxy for Phase 3 start...
-    // Maybe we use a threat comparison since the standard misdirect action is zeroed?
-    return vashj->GetHealthPct() > 45.0f;
+    return vashj && vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
@@ -452,7 +431,7 @@ bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
     if (!vashj)
         return false;
 
-    int8 phase = GetLadyVashjPhase(vashj);
+    int8 const phase = GetLadyVashjPhase(vashj);
     return phase == 2 || phase == 3;
 }
 
@@ -533,13 +512,13 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
     if (!isCoreHandler)
         return false;
 
-    // First and second passers move to positions as soon as the elemental appears
+    // First and second passers move to positions as soon as the elemental appears.
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (tainted && coreHandlers[0] && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
         (bot == coreHandlers[1] || bot == coreHandlers[2]))
         return true;
 
-    // Main logic: run if core is in play for this bot or a prior handler
+    // Main logic: run if core is in play for this bot or a prior handler.
     return AnyRecentCoreInInventory(botAI, bot);
 }
 
@@ -551,18 +530,31 @@ bool LadyVashjInPhase3Trigger::IsActiveInEncounter()
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 {
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+    if (!vashj)
+        return false;
+
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase != 1 && phase != 3)
         return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
+    // In phase 1 only a melee holding Static Charge needs freeing, and never her target, who
+    // doesn't move for it. The stock Hand of Freedom takes the nearest rooted member otherwise.
+    Unit* vashjVictim = vashj->GetVictim();
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)))
+            continue;
+
+        if (phase == 1 && (member == vashjVictim || !HasStaticCharge(member)))
             continue;
 
         if (PlayerbotAI::IsMelee(member))
@@ -570,4 +562,9 @@ bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
     }
 
     return false;
+}
+
+bool LadyVashjRogueHasStaticChargeTrigger::IsActiveInEncounter()
+{
+    return bot->getClass() == CLASS_ROGUE && HasStaticCharge(bot);
 }

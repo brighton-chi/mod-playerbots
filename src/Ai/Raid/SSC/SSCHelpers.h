@@ -355,14 +355,38 @@ inline constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
 
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
-extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
+// The dais is a regular dodecagon on the platform center, corners every 30 degrees from due
+// north. This is the distance from the center to the middle of each edge.
+inline constexpr float VASHJ_DAIS_APOTHEM = 57.05f;
+// The rock over the north edge of the dais, from the stair base up across the dais and back down.
+inline std::array const VASHJ_NORTH_ROCK = {
+    Position{ 119.256f, -910.155f, 22.314f },
+    Position{  85.970f, -893.277f, 38.525f },
+    Position{  73.946f, -897.039f, 41.173f },
+    Position{  68.584f, -917.259f, 41.333f },
+    Position{  77.624f, -925.960f, 41.165f },
+    Position{ 120.362f, -931.205f, 22.520f },
+};
+
 extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
 extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
-bool IsMainTankInSameSubgroup(Player* bot);
 int8 GetLadyVashjPhase(Unit* vashj);
+// True if x/y is on the dais, at least margin inside its edge, and not under the north rock.
+bool IsOnVashjDais(float x, float y, float margin);
+// A step that leads away from every unit given while staying on the dais. facing is optional, for a
+// tank: when the bot is its victim, a step leading away from it is walked backwards.
+bool FindVashjDaisStepAwayFromUnits(
+    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
+    float& stepZ, bool& backwards);
+bool HasStaticCharge(Player* player);
+// True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
+bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
+// The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the
+// tank's subgroup. Grounding Totem Effect is a party aura, so no Shaman outside it can cover it.
+Player* GetVashjGroundingShaman(Player* bot);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
