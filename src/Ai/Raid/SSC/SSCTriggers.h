@@ -532,6 +532,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjBotHoldsTaintedCoreInPhase3Trigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjBotHoldsTaintedCoreInPhase3Trigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot holds tainted core in phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjTaintedCoreWasLootedTrigger : public SscEncounterTrigger
 {
 public:

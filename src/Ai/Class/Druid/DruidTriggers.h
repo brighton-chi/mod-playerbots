@@ -462,7 +462,7 @@ public:
         : Trigger(botAI, name), _spell(spell) {}
 
     Value<Unit*>* GetTargetValue() override;
-    bool IsActive() override { return GetTarget() != nullptr; }
+    bool IsActive() override;
 
 private:
     std::string _spell;

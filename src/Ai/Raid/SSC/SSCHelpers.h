@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -389,7 +390,38 @@ inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 // can't walk them back through a pool on the way to their target.
 inline constexpr float TOXIC_SPORES_MELEE_CONTROL_RADIUS = 10.0f;
 
-// Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, in the order they are filled.
+// For the "ssc vashj adds" value. Only which adds exist is cached, not what is read from them
+// (positions, health, victims).
+inline constexpr uint32 VASHJ_ADDS_CACHE_INTERVAL_MS = 200;
+
+// What the "ssc vashj adds" value stores, by kind.
+struct VashjAddGuids
+{
+    GuidVector enchanted;
+    GuidVector elites;
+    GuidVector striders;
+    GuidVector sporebats;
+};
+
+// A kind of target, for LadyVashjAssignPhase2AndPhase3DpsPriorityAction.
+enum class VashjTargetKind : uint8
+{
+    TaintedElemental,
+    CoilfangStrider,
+    CoilfangElite,
+    EnchantedElemental,
+    ToxicSporebat,
+    LadyVashj,
+};
+
+struct VashjTargetTier
+{
+    VashjTargetKind kind;
+    // Enchanted Elementals only: the farthest from Vashj this tier takes one
+    float maxDistanceFromVashj = std::numeric_limits<float>::max();
+};
+
+// Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, numbered 1 to 4 in this order.
 // Every slot is 22y+ off the Elite and Strider spawns and the line they walk in on, since both
 // attack anyone within 20y of them, and 5y+ off the north rock.
 inline constexpr size_t VASHJ_CLUSTER_RANGED_SLOTS = 3;
@@ -448,6 +480,13 @@ struct VashjClusterSlot
 };
 
 inline constexpr size_t VASHJ_CLUSTER_COUNT = std::tuple_size_v<decltype(VASHJ_CLUSTERS)>;
+// Which clusters get a slot filled first, as indexes into VASHJ_CLUSTERS. Cluster 3 comes first:
+// it takes the Tainted spawn east of the rock, the farthest from any cluster, so with too few
+// ranged dps to fill every cluster it is the one to keep full.
+inline constexpr std::array VASHJ_CLUSTER_FILL_ORDER = {
+    int8{ 2 }, int8{ 0 }, int8{ 1 }, int8{ 3 },
+};
+static_assert(VASHJ_CLUSTER_FILL_ORDER.size() == VASHJ_CLUSTER_COUNT);
 // Per instance, the bot holding each cluster slot: [cluster][slot].
 using VashjClusterHolders =
     std::array<std::array<ObjectGuid, VASHJ_CLUSTER_RANGED_SLOTS + 1>, VASHJ_CLUSTER_COUNT>;
@@ -501,6 +540,7 @@ extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 
 int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
+VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and clear of the north rock by
 // rockClearance.
 bool IsOnVashjDais(
@@ -542,11 +582,14 @@ bool GetMeleeRingStepClearOfSpores(
 bool GetStepOutOfNearestSpore(
     Player* bot, std::vector<Position> const& spores, float radius, float& stepX, float& stepY,
     float& stepZ);
-// Phase 3 ranged dps, not Hunters or Static Charge holders: true if their current target is out
-// of cast range and the straight walk to where they would be in range passes within
-// TOXIC_SPORES_AVOID_RADIUS of a pool. Stock reach-spell would walk them into the pool and the
-// spore action straight back out, over and over.
-bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot);
+// Phase 3 ranged dps (not Hunters) and healers, not holding Static Charge: true if a pool blocks
+// the reach they would make, ranged dps to cast range of their current target and healers to heal
+// range of the member they need to heal. Blocked means that target is out of range and the
+// straight walk to where it would be in range passes within TOXIC_SPORES_AVOID_RADIUS of a pool.
+// Stock reach would walk them into the pool and the spore action straight back out, over and
+// over. target and range are set to the reach's either way.
+bool GetVashjReachBlockedBySpores(
+    PlayerbotAI* botAI, Player* bot, Unit*& target, float& range);
 // A step toward the point, 2y inside cast range of target, that is cheapest to reach in a straight
 // line: the distance plus several times the yards of the line within TOXIC_SPORES_AVOID_RADIUS of
 // a pool. The point is on the dais and clear of pools itself.

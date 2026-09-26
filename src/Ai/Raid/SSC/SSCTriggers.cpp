@@ -518,9 +518,15 @@ bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
 }
 
 // Only a new elemental, or a looter who died on the way, needs a looter chosen.
+// Phase 2 only, as are the attack and loot triggers below: a core looted in phase 3 has no
+// generator left, and its Paralyze would root the looter.
 bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
@@ -541,6 +547,10 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
+        return false;
+
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     return tainted && (GetDesignatedCoreLooter(botAI, bot) == bot ||
         IsVashjTaintedElementalKiller(bot, tainted));
@@ -550,6 +560,10 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(botAI, bot) != bot)
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
 
     Creature* tainted = GetVashjTaintedElemental(bot);
@@ -568,6 +582,15 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
     }
 
     return tainted && !hasCore;
+}
+
+// A core still held when phase 3 starts, say from a stalled chain, has no generator left, and its
+// Paralyze roots the holder until it leaves the bags.
+bool LadyVashjBotHoldsTaintedCoreInPhase3Trigger::IsActiveInEncounter()
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3 &&
+        bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
@@ -659,7 +682,9 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 
 bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 {
-    return IsVashjRangedReachBlockedBySpores(botAI, bot);
+    Unit* target;
+    float range;
+    return GetVashjReachBlockedBySpores(botAI, bot, target, range);
 }
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()

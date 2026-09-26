@@ -176,6 +176,9 @@ public:
         creators["lady vashj pass the tainted core"] =
             &RaidSscActionContext::lady_vashj_pass_the_tainted_core;
 
+        creators["lady vashj destroy tainted core"] =
+            &RaidSscActionContext::lady_vashj_destroy_tainted_core;
+
         creators["lady vashj return to the ground"] =
             &RaidSscActionContext::lady_vashj_return_to_the_ground;
 
@@ -370,6 +373,9 @@ private:
     }
     static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) {
         return new LadyVashjPassTheTaintedCoreAction(botAI);
+    }
+    static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI) {
+        return new LadyVashjDestroyTaintedCoreAction(botAI);
     }
     static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
         return new LadyVashjReturnToTheGroundAction(botAI);

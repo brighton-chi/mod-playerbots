@@ -78,6 +78,20 @@ protected:
     ObjectGuid Calculate() override { return SscHelpers::FindSpitfireTotemGuid(bot); }
 };
 
+class SscVashjAddsValue : public CalculatedValue<SscHelpers::VashjAddGuids>
+{
+public:
+    SscVashjAddsValue(PlayerbotAI* botAI)
+        : CalculatedValue<SscHelpers::VashjAddGuids>(
+              botAI, "ssc vashj adds", SscHelpers::VASHJ_ADDS_CACHE_INTERVAL_MS) {}
+
+protected:
+    SscHelpers::VashjAddGuids Calculate() override
+    {
+        return SscHelpers::FindVashjAddGuids(botAI);
+    }
+};
+
 class RaidSscValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -89,6 +103,7 @@ public:
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
         creators["ssc spitfire totem"] = &RaidSscValueContext::ssc_spitfire_totem;
         creators["ssc toxic spores"] = &RaidSscValueContext::ssc_toxic_spores;
+        creators["ssc vashj adds"] = &RaidSscValueContext::ssc_vashj_adds;
     }
 
 private:
@@ -113,6 +128,9 @@ private:
         return new SscHazardPositionsValue(
             botAI, "ssc toxic spores", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_SPORES),
             SscHelpers::TOXIC_SPORES_SEARCH_RADIUS);
+    }
+    static UntypedValue* ssc_vashj_adds(PlayerbotAI* botAI) {
+        return new SscVashjAddsValue(botAI);
     }
 };
 

@@ -271,7 +271,8 @@ Unit* BlanketHotTargetValue::Calculate()
         return member && member->IsAlive() &&
                !member->IsGameMaster() &&
                bot->GetDistance2d(member) <= sPlayerbotAIConfig.spellDistance &&
-               !botAI->HasAura(qualifier, member, false, true);
+               !botAI->HasAura(qualifier, member, false, true) &&
+               bot->IsWithinLOSInMap(member);
     };
 
     Player* firstMelee  = nullptr;

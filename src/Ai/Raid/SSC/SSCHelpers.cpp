@@ -800,6 +800,38 @@ std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI)
     return GetCachedHazardPositions(botAI, "ssc toxic spores");
 }
 
+VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI)
+{
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    VashjAddGuids adds;
+    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit)
+            continue;
+
+        switch (unit->GetEntry())
+        {
+            case Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL):
+                adds.enchanted.push_back(guid);
+                break;
+            case Id(SscNpcs::NPC_COILFANG_ELITE):
+                adds.elites.push_back(guid);
+                break;
+            case Id(SscNpcs::NPC_COILFANG_STRIDER):
+                adds.striders.push_back(guid);
+                break;
+            case Id(SscNpcs::NPC_TOXIC_SPOREBAT):
+                adds.sporebats.push_back(guid);
+                break;
+            default:
+                break;
+        }
+    }
+
+    return adds;
+}
+
 bool IsOnVashjDais(float x, float y, float margin, float rockClearance)
 {
     float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
@@ -980,9 +1012,14 @@ float GetCastRingRadius(Player* bot, Unit* target, float castRange)
 
 } // end anonymous namespace (cast ring)
 
-bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot)
+bool GetVashjReachBlockedBySpores(
+    PlayerbotAI* botAI, Player* bot, Unit*& target, float& range)
 {
-    if (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER ||
+    target = nullptr;
+    range = 0.0f;
+
+    bool const isHealer = PlayerbotAI::IsHeal(bot);
+    if ((!isHealer && (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER)) ||
         HasStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
     {
         return false;
@@ -993,12 +1030,12 @@ bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot)
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
-    Unit* target = context->GetValue<Unit*>("current target")->Get();
-    float const castRange = botAI->GetRange("spell");
-    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, castRange))
+    target = context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    range = botAI->GetRange(isHealer ? "heal" : "spell");
+    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
         return false;
 
-    float const ringRadius = GetCastRingRadius(bot, target, castRange);
+    float const ringRadius = GetCastRingRadius(bot, target, range);
     float const distance = bot->GetExactDist2d(target);
     if (distance <= ringRadius)
         return false;
@@ -1258,18 +1295,19 @@ std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 namespace
 {
 
-// Each cluster's first ranged slot, then each one's second and third, then the healers
+// Each cluster's first ranged slot, then each one's second and third, then the healers, the
+// clusters in VASHJ_CLUSTER_FILL_ORDER each time
 std::vector<VashjClusterSlot> GetVashjClusterFillOrder()
 {
     std::vector<VashjClusterSlot> order;
     for (size_t slot = 0; slot < VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
     {
-        for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
-            order.push_back({ static_cast<int8>(cluster), static_cast<int8>(slot) });
+        for (int8 cluster : VASHJ_CLUSTER_FILL_ORDER)
+            order.push_back({ cluster, static_cast<int8>(slot) });
     }
 
-    for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
-        order.push_back({ static_cast<int8>(cluster), VASHJ_CLUSTER_HEALER_SLOT });
+    for (int8 cluster : VASHJ_CLUSTER_FILL_ORDER)
+        order.push_back({ cluster, VASHJ_CLUSTER_HEALER_SLOT });
 
     return order;
 }
@@ -1862,8 +1900,7 @@ std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
 }
 
 // Returns the nearest active Shield Generator to the reference position
-// Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures,
-// which despawn after use
+// Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures, which despawn after use.
 Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* vashj, Position const& reference)
 {
     if (!vashj)

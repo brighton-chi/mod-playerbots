@@ -172,6 +172,9 @@ public:
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
 
+        creators["lady vashj bot holds tainted core in phase 3"] =
+            &RaidSscTriggerContext::lady_vashj_bot_holds_tainted_core_in_phase_3;
+
         creators["lady vashj pet should switch target"] =
             &RaidSscTriggerContext::lady_vashj_pet_should_switch_target;
 
@@ -359,6 +362,9 @@ private:
     }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
+    }
+    static Trigger* lady_vashj_bot_holds_tainted_core_in_phase_3(PlayerbotAI* botAI) {
+        return new LadyVashjBotHoldsTaintedCoreInPhase3Trigger(botAI);
     }
     static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI) {
         return new LadyVashjPetShouldSwitchTargetTrigger(botAI);

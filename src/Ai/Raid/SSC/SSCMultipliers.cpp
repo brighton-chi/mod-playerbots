@@ -932,48 +932,58 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
 // So the standard target selection system must be disabled
 float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *action)
 {
+    bool const isAssist =
+        dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action);
+    bool const isFollowOrFlee =
+        dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action);
+    bool const isDebuffOnAttacker = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+    bool const isFormation = dynamic_cast<CombatFormationMoveAction*>(action);
+    bool const isReach = dynamic_cast<ReachTargetAction*>(action);
+    bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
+    if (!isAssist && !isFollowOrFlee && !isDebuffOnAttacker && !isFormation && !isReach &&
+        !isAvoidAoe && !dynamic_cast<CastHealingSpellAction*>(action) &&
+        !IsRepositionAction(bot, action))
+    {
+        return 1.0f;
+    }
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
+    if (isAvoidAoe)
         return 0.0f;
 
     int8 const phase = GetLadyVashjPhase(vashj);
 
     if (phase == 2)
     {
-        if (botAI->GetState() == BOT_STATE_COMBAT &&
-            (dynamic_cast<DpsAssistAction*>(action) ||
-             dynamic_cast<TankAssistAction*>(action)))
-        {
+        if (isAssist && botAI->GetState() == BOT_STATE_COMBAT)
             return 0.0f;
-        }
 
         if (dynamic_cast<FleeAction*>(action))
             return 0.0f;
 
-        if (bot->GetExactDist2d(vashj) < 60.0f &&
-            dynamic_cast<FollowAction*>(action))
+        if (dynamic_cast<FollowAction*>(action) && bot->GetExactDist2d(vashj) < 60.0f)
             return 0.0f;
 
         if (!PlayerbotAI::IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;
 
-        Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-        if (enchanted && AI_VALUE(Unit*, "current target") == enchanted &&
-            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-            return 0.0f;
+        if (isDebuffOnAttacker)
+        {
+            Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
+            if (enchanted && AI_VALUE(Unit*, "current target") == enchanted)
+                return 0.0f;
+        }
 
         // Cluster ranged shoot from their slots. Only those sent after a Tainted Elemental walk
         // to it, and those stepping in to cast range of a Strider.
-        if (PlayerbotAI::IsRangedDps(bot) &&
-            (dynamic_cast<ReachTargetAction*>(action) ||
-             dynamic_cast<CombatFormationMoveAction*>(action) ||
-             IsRepositionAction(bot, action)))
+        if ((isReach || isFormation || IsRepositionAction(bot, action)) &&
+            PlayerbotAI::IsRangedDps(bot))
         {
-            bool const stepsInToStrider = dynamic_cast<ReachTargetAction*>(action) &&
-                IsVashjStriderToStepInTo(bot, AI_VALUE(Unit*, "current target"));
+            bool const stepsInToStrider =
+                isReach && IsVashjStriderToStepInTo(bot, AI_VALUE(Unit*, "current target"));
             if (!stepsInToStrider)
             {
                 Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
@@ -983,9 +993,7 @@ float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *a
         }
 
         // Cluster healers heal from their slots too
-        if (PlayerbotAI::IsHeal(bot) &&
-            (dynamic_cast<ReachTargetAction*>(action) ||
-             dynamic_cast<CombatFormationMoveAction*>(action)) &&
+        if ((isReach || isFormation) && PlayerbotAI::IsHeal(bot) &&
             GetVashjClusterSlot(bot).cluster >= 0)
         {
             return 0.0f;
@@ -994,27 +1002,24 @@ float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *a
 
     if (phase == 3)
     {
-        if (botAI->GetState() == BOT_STATE_COMBAT &&
-            (dynamic_cast<DpsAssistAction*>(action) ||
-             dynamic_cast<TankAssistAction*>(action)))
-        {
+        if (isAssist && botAI->GetState() == BOT_STATE_COMBAT)
             return 0.0f;
-        }
+
+        if (!isFollowOrFlee && !isDebuffOnAttacker && !isFormation)
+            return 1.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
         Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         if (enchanted || strider || elite)
         {
-            if (dynamic_cast<FollowAction*>(action) ||
-                dynamic_cast<FleeAction*>(action))
+            if (isFollowOrFlee)
                 return 0.0f;
 
-            if (enchanted && AI_VALUE(Unit*, "current target") == enchanted &&
-                dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            if (isDebuffOnAttacker && enchanted && AI_VALUE(Unit*, "current target") == enchanted)
                 return 0.0f;
         }
-        else if (dynamic_cast<CombatFormationMoveAction*>(action))
+        else if (isFormation)
             return 0.0f;
     }
 
@@ -1063,12 +1068,18 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
     return IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-// Stock reach-spell only while its straight walk is clear of pools; otherwise the ranged spore
-// action goes round them.
+// Stock reach-spell for ranged dps, and reach-to-heal for healers, only while its straight walk is
+// clear of pools; otherwise the ranged spore action goes round them.
 float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<ReachSpellAction*>(action))
+    bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
+    if (!isHealerReach && !dynamic_cast<ReachSpellAction*>(action))
         return 1.0f;
 
-    return IsVashjRangedReachBlockedBySpores(botAI, bot) ? 0.0f : 1.0f;
+    if (isHealerReach != PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
+    Unit* target;
+    float range;
+    return GetVashjReachBlockedBySpores(botAI, bot, target, range) ? 0.0f : 1.0f;
 }

@@ -491,6 +491,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjDestroyTaintedCoreAction : public Action
+{
+public:
+    LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj destroy tainted core") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjPassTheTaintedCoreAction : public MovementAction
 {
 public:
