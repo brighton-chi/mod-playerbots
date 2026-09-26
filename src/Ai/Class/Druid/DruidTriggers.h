@@ -444,6 +444,30 @@ public:
     }
 };
 
+// Blanketing keeps the Druid in Tree Form between HoT refreshes, so healer dps must be disabled
+// when the blanketing strategy is active and the Druid is in a group.
+class DruidHealerShouldAttackTrigger : public HealerShouldAttackTrigger
+{
+public:
+    DruidHealerShouldAttackTrigger(PlayerbotAI* botAI) : HealerShouldAttackTrigger(botAI) {}
+
+    std::string const getName() override { return "healer should attack and not blanketing"; }
+    bool IsActive() override;
+};
+
+class BlanketHotTrigger : public Trigger
+{
+public:
+    BlanketHotTrigger(PlayerbotAI* botAI, std::string const& name, std::string const& spell)
+        : Trigger(botAI, name), _spell(spell) {}
+
+    Value<Unit*>* GetTargetValue() override;
+    bool IsActive() override { return GetTarget() != nullptr; }
+
+private:
+    std::string _spell;
+};
+
 class ProwlTrigger : public Trigger
 {
 public:

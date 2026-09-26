@@ -37,6 +37,24 @@ bool TreeFormTrigger::IsActive()
 
 bool CatFormTrigger::IsActive() { return !botAI->HasAura("cat form", bot); }
 
+bool DruidHealerShouldAttackTrigger::IsActive()
+{
+    if (bot->GetGroup() && botAI->HasStrategy("blanketing", BOT_STATE_COMBAT))
+        return false;
+
+    return HealerShouldAttackTrigger::IsActive();
+}
+
+Value<Unit*>* BlanketHotTrigger::GetTargetValue() { return context->GetValue<Unit*>("blanket hot target", _spell); }
+
+bool BlanketHotTrigger::IsActive()
+{
+    if (!botAI->HasStrategy("resto", BOT_STATE_COMBAT))
+        return false;
+
+    return GetTarget();
+}
+
 bool AquaticFormTrigger::IsActive()
 {
     return !bot->IsInCombat() && !botAI->HasAura("aquatic form", bot) &&
