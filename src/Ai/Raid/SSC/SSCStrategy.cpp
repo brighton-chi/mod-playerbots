@@ -132,6 +132,12 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj ranged should spread in phase 1", {
         NextAction("lady vashj phase 1 spread ranged in arc", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("lady vashj cluster slots need holders", {
+        NextAction("lady vashj assign cluster slots", ACTION_EMERGENCY + 14) }));
+
+    triggers.push_back(new TriggerNode("lady vashj should hold cluster in phase 2", {
+        NextAction("lady vashj phase 2 position in cluster", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3", {
         NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));
 
@@ -144,8 +150,13 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj pulling boss", {
         NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat", {
-        NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 12),
+    triggers.push_back(new TriggerNode("lady vashj tainted elemental needs looter", {
+        NextAction("lady vashj assign tainted core looter", ACTION_EMERGENCY + 13) }));
+
+    triggers.push_back(new TriggerNode("lady vashj bot should attack tainted elemental", {
+        NextAction("lady vashj attack tainted elemental", ACTION_EMERGENCY + 12) }));
+
+    triggers.push_back(new TriggerNode("lady vashj bot is tainted core looter", {
         NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted core was looted", {
@@ -155,10 +166,16 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching", {
-        NextAction("lady vashj tank attack and move away strider", ACTION_EMERGENCY + 1) }));
+        NextAction("lady vashj tank attack and position strider", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("lady vashj coilfang elite should be tanked", {
+        NextAction("lady vashj position coilfang elite", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj hunter should misdirect strider", {
         NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2) }));
+
+    triggers.push_back(new TriggerNode("lady vashj pet should switch target", {
+        NextAction("lady vashj command pet target", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("lady vashj bot is above the ground", {
         NextAction("lady vashj return to the ground", ACTION_EMERGENCY + 9) }));

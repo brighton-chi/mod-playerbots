@@ -131,6 +131,12 @@ public:
         creators["lady vashj ranged should spread in phase 1"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_spread_in_phase_1;
 
+        creators["lady vashj cluster slots need holders"] =
+            &RaidSscTriggerContext::lady_vashj_cluster_slots_need_holders;
+
+        creators["lady vashj should hold cluster in phase 2"] =
+            &RaidSscTriggerContext::lady_vashj_should_hold_cluster_in_phase_2;
+
         creators["lady vashj ranged should position in phase 3"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
 
@@ -148,14 +154,26 @@ public:
         creators["lady vashj coilfang strider is approaching"] =
             &RaidSscTriggerContext::lady_vashj_coilfang_strider_is_approaching;
 
+        creators["lady vashj coilfang elite should be tanked"] =
+            &RaidSscTriggerContext::lady_vashj_coilfang_elite_should_be_tanked;
+
         creators["lady vashj hunter should misdirect strider"] =
             &RaidSscTriggerContext::lady_vashj_hunter_should_misdirect_strider;
 
-        creators["lady vashj tainted elemental cheat"] =
-            &RaidSscTriggerContext::lady_vashj_tainted_elemental_cheat;
+        creators["lady vashj tainted elemental needs looter"] =
+            &RaidSscTriggerContext::lady_vashj_tainted_elemental_needs_looter;
+
+        creators["lady vashj bot should attack tainted elemental"] =
+            &RaidSscTriggerContext::lady_vashj_bot_should_attack_tainted_elemental;
+
+        creators["lady vashj bot is tainted core looter"] =
+            &RaidSscTriggerContext::lady_vashj_bot_is_tainted_core_looter;
 
         creators["lady vashj tainted core was looted"] =
             &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
+
+        creators["lady vashj pet should switch target"] =
+            &RaidSscTriggerContext::lady_vashj_pet_should_switch_target;
 
         creators["lady vashj bot is above the ground"] =
             &RaidSscTriggerContext::lady_vashj_bot_is_above_the_ground;
@@ -294,6 +312,12 @@ private:
     static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldSpreadInPhase1Trigger(botAI);
     }
+    static Trigger* lady_vashj_cluster_slots_need_holders(PlayerbotAI* botAI) {
+        return new LadyVashjClusterSlotsNeedHoldersTrigger(botAI);
+    }
+    static Trigger* lady_vashj_should_hold_cluster_in_phase_2(PlayerbotAI* botAI) {
+        return new LadyVashjShouldHoldClusterInPhase2Trigger(botAI);
+    }
     static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
     }
@@ -312,14 +336,26 @@ private:
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) {
         return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI);
     }
+    static Trigger* lady_vashj_coilfang_elite_should_be_tanked(PlayerbotAI* botAI) {
+        return new LadyVashjCoilfangEliteShouldBeTankedTrigger(botAI);
+    }
     static Trigger* lady_vashj_hunter_should_misdirect_strider(PlayerbotAI* botAI) {
         return new LadyVashjHunterShouldMisdirectStriderTrigger(botAI);
     }
-    static Trigger* lady_vashj_tainted_elemental_cheat(PlayerbotAI* botAI) {
-        return new LadyVashjTaintedElementalCheatTrigger(botAI);
+    static Trigger* lady_vashj_tainted_elemental_needs_looter(PlayerbotAI* botAI) {
+        return new LadyVashjTaintedElementalNeedsLooterTrigger(botAI);
+    }
+    static Trigger* lady_vashj_bot_should_attack_tainted_elemental(PlayerbotAI* botAI) {
+        return new LadyVashjBotShouldAttackTaintedElementalTrigger(botAI);
+    }
+    static Trigger* lady_vashj_bot_is_tainted_core_looter(PlayerbotAI* botAI) {
+        return new LadyVashjBotIsTaintedCoreLooterTrigger(botAI);
     }
     static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
         return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
+    }
+    static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI) {
+        return new LadyVashjPetShouldSwitchTargetTrigger(botAI);
     }
     static Trigger* lady_vashj_bot_is_above_the_ground(PlayerbotAI* botAI) {
         return new LadyVashjBotIsAboveTheGroundTrigger(botAI);

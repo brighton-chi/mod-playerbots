@@ -134,6 +134,12 @@ public:
         creators["lady vashj phase 1 spread ranged in arc"] =
             &RaidSscActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
 
+        creators["lady vashj assign cluster slots"] =
+            &RaidSscActionContext::lady_vashj_assign_cluster_slots;
+
+        creators["lady vashj phase 2 position in cluster"] =
+            &RaidSscActionContext::lady_vashj_phase_2_position_in_cluster;
+
         creators["lady vashj phase 3 position ranged"] =
             &RaidSscActionContext::lady_vashj_phase_3_position_ranged;
 
@@ -152,20 +158,29 @@ public:
         creators["lady vashj misdirect strider to first assist tank"] =
             &RaidSscActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
 
-        creators["lady vashj tank attack and move away strider"] =
-            &RaidSscActionContext::lady_vashj_tank_attack_and_move_away_strider;
+        creators["lady vashj tank attack and position strider"] =
+            &RaidSscActionContext::lady_vashj_tank_attack_and_position_strider;
+
+        creators["lady vashj position coilfang elite"] =
+            &RaidSscActionContext::lady_vashj_position_coilfang_elite;
+
+        creators["lady vashj assign tainted core looter"] =
+            &RaidSscActionContext::lady_vashj_assign_tainted_core_looter;
+
+        creators["lady vashj attack tainted elemental"] =
+            &RaidSscActionContext::lady_vashj_attack_tainted_elemental;
 
         creators["lady vashj loot tainted core"] =
             &RaidSscActionContext::lady_vashj_loot_tainted_core;
-
-        creators["lady vashj teleport to tainted elemental"] =
-            &RaidSscActionContext::lady_vashj_teleport_to_tainted_elemental;
 
         creators["lady vashj pass the tainted core"] =
             &RaidSscActionContext::lady_vashj_pass_the_tainted_core;
 
         creators["lady vashj return to the ground"] =
             &RaidSscActionContext::lady_vashj_return_to_the_ground;
+
+        creators["lady vashj command pet target"] =
+            &RaidSscActionContext::lady_vashj_command_pet_target;
 
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
@@ -307,6 +322,12 @@ private:
     static Action* lady_vashj_phase_1_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new LadyVashjPhase1SpreadRangedInArcAction(botAI);
     }
+    static Action* lady_vashj_assign_cluster_slots(PlayerbotAI* botAI) {
+        return new LadyVashjAssignClusterSlotsAction(botAI);
+    }
+    static Action* lady_vashj_phase_2_position_in_cluster(PlayerbotAI* botAI) {
+        return new LadyVashjPhase2PositionInClusterAction(botAI);
+    }
     static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI) {
         return new LadyVashjPhase3PositionRangedAction(botAI);
     }
@@ -327,11 +348,17 @@ private:
         return new SscMisdirectTargetToTankAction(
             botAI, "lady vashj misdirect strider to first assist tank", "coilfang strider", 0);
     }
-    static Action* lady_vashj_tank_attack_and_move_away_strider(PlayerbotAI* botAI) {
-        return new LadyVashjTankAttackAndMoveAwayStriderAction(botAI);
+    static Action* lady_vashj_tank_attack_and_position_strider(PlayerbotAI* botAI) {
+        return new LadyVashjTankAttackAndPositionStriderAction(botAI);
     }
-    static Action* lady_vashj_teleport_to_tainted_elemental(PlayerbotAI* botAI) {
-        return new LadyVashjTeleportToTaintedElementalAction(botAI);
+    static Action* lady_vashj_position_coilfang_elite(PlayerbotAI* botAI) {
+        return new LadyVashjPositionCoilfangEliteAction(botAI);
+    }
+    static Action* lady_vashj_assign_tainted_core_looter(PlayerbotAI* botAI) {
+        return new LadyVashjAssignTaintedCoreLooterAction(botAI);
+    }
+    static Action* lady_vashj_attack_tainted_elemental(PlayerbotAI* botAI) {
+        return new LadyVashjAttackTaintedElementalAction(botAI);
     }
     static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) {
         return new LadyVashjLootTaintedCoreAction(botAI);
@@ -341,6 +368,9 @@ private:
     }
     static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
         return new LadyVashjReturnToTheGroundAction(botAI);
+    }
+    static Action* lady_vashj_command_pet_target(PlayerbotAI* botAI) {
+        return new LadyVashjCommandPetTargetAction(botAI);
     }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);
