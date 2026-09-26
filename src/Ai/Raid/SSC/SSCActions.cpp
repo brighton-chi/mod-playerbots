@@ -540,17 +540,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
     if (guardian->GetVictim() == bot)
         return false;
 
-    char const* taunt = nullptr;
-    switch (bot->getClass())
-    {
-        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
-        case CLASS_DRUID:        taunt = "growl"; break;
-        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
-        case CLASS_WARRIOR:      taunt = "taunt"; break;
-        default:                 return false;
-    }
-
-    return botAI->CanCastSpell(taunt, guardian) && botAI->CastSpell(taunt, guardian);
+    return CastTankTaunt(botAI, bot, guardian);
 }
 
 ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
@@ -1443,7 +1433,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
     if (GetLadyVashjPhase(vashj) == 1)
         return MoveToPhase1TankPosition(vashj);
 
-    return MoveAwayFromEnchantedElementals(vashj);
+    return MoveAwayFromElementalsAndStriders(vashj);
 }
 
 // Phase 1: Position Vashj in the center of the platform
@@ -1465,8 +1455,9 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Phase 3: No fixed position, but move Vashj away from Enchanted Elementals
-bool LadyVashjMainTankPositionBossAction::MoveAwayFromEnchantedElementals(Unit* vashj)
+// Phase 3: No fixed position, but move Vashj away from Enchanted Elementals and from Striders
+// that another tank has, or nobody does
+bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit* vashj)
 {
     constexpr float searchRadius = 25.0f;
     std::list<Creature*> creatures;
@@ -1475,15 +1466,31 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromEnchantedElementals(Unit* 
 
     // Surge lands at about 4.4y from her center, so this leaves about 2s of their walk
     constexpr float safeDistance = 10.0f;
-    std::vector<Unit*> elementals;
+    std::vector<Unit*> units;
     bool tooClose = false;
     for (Creature* creature : creatures)
     {
         if (!creature->IsAlive())
             continue;
 
-        elementals.push_back(creature);
+        units.push_back(creature);
         if (vashj->GetExactDist2d(creature) < safeDistance)
+            tooClose = true;
+    }
+
+    // Panic fears within 11y, so this keeps it off the melee on her far side. One on her tank
+    // follows it anyway.
+    constexpr float striderSafeDistance = 18.0f;
+    std::list<Creature*> striders;
+    vashj->GetCreatureListWithEntryInGrid(
+        striders, Id(SscNpcs::NPC_COILFANG_STRIDER), searchRadius);
+    for (Creature* strider : striders)
+    {
+        if (!strider->IsAlive() || strider->GetVictim() == bot)
+            continue;
+
+        units.push_back(strider);
+        if (vashj->GetExactDist2d(strider) < striderSafeDistance)
             tooClose = true;
     }
 
@@ -1496,7 +1503,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromEnchantedElementals(Unit* 
     bool backwards;
     // Her tank's spore trigger fires at the tank radius, so steps have to stay that far out too
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, elementals, vashj, stepX, stepY, stepZ, backwards,
+            bot, units, vashj, stepX, stepY, stepZ, backwards,
             &GetToxicSporePositions(botAI), TOXIC_SPORES_TANK_AVOID_RADIUS))
     {
         return false;
@@ -1795,6 +1802,15 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     // Everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody pulls one
     // onto a cluster
     bool const waitForTank = phase == 2 && !PlayerbotAI::IsTank(bot);
+    // One tank per Elite or Strider, so the others stay free for the next ones. A new one goes to
+    // the nearest free tank, which is the one on the side it comes from while they wait in the
+    // middle.
+    bool const oneTankEach = phase == 2 && PlayerbotAI::IsTank(bot);
+    auto const isForAnotherTank = [this](Unit* add)
+    {
+        Player* owner = GetVashjAddOwningTank(bot, add);
+        return owner ? owner != bot : !IsNearestFreeVashjTank(bot, add);
+    };
 
     Unit* enchanted = nullptr;
     Unit* enchantedNearestBot = nullptr;
@@ -1834,16 +1850,22 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
                 break;
 
             case Id(SscNpcs::NPC_COILFANG_ELITE):
-                if (waitForTank && !IsTankedByTank(unit))
+                if ((waitForTank && !IsTankedByTank(unit)) ||
+                    (oneTankEach && isForAnotherTank(unit)))
+                {
                     break;
+                }
 
                 if (!elite || unit->GetHealthPct() < elite->GetHealthPct())
                     elite = unit;
                 break;
 
             case Id(SscNpcs::NPC_COILFANG_STRIDER):
-                if (waitForTank && !IsTankedByTank(unit))
+                if ((waitForTank && !IsTankedByTank(unit)) ||
+                    (oneTankEach && isForAnotherTank(unit)))
+                {
                     break;
+                }
 
                 if (!strider || unit->GetHealthPct() < strider->GetHealthPct())
                     strider = unit;
@@ -1872,9 +1894,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     std::vector<Unit*> targets;
     if (phase == 2)
     {
-        Unit* enchantedNearVashj =
-            enchanted && vashj->GetExactDist2d(enchanted) <= VASHJ_ENCHANTED_NEAR_HER_DISTANCE ?
-            enchanted : nullptr;
+        float const enchantedDistance = enchanted ? vashj->GetExactDist2d(enchanted) : 0.0f;
+        Unit* enchantedNearVashj = enchanted &&
+            enchantedDistance <= VASHJ_ENCHANTED_NEAR_HER_DISTANCE ? enchanted : nullptr;
+        Unit* enchantedInTankLeash =
+            enchanted && enchantedDistance <= VASHJ_TANK_LEASH_DISTANCE ? enchanted : nullptr;
 
         // Striders need several ranged on them at once
         if (holdsClusterSlot)
@@ -1887,9 +1911,9 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         else if (PlayerbotAI::IsTank(bot))
         {
             if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-                targets = { strider, elite, enchantedNearVashj };
+                targets = { strider, elite, enchantedInTankLeash };
             else
-                targets = { elite, strider, enchantedNearVashj };
+                targets = { elite, strider, enchantedInTankLeash };
         }
         else
             targets = { enchanted, elite, strider };
@@ -1920,7 +1944,18 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             targets = { enchanted, elite, strider, vashj };
     }
 
+    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
+
+    // A tank keeps the Elite or Strider it has rather than switching to a free one
     Unit* target = tainted;
+    if (!target && oneTankEach && currentTarget && currentTarget->IsAlive() &&
+        (currentTarget->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
+         currentTarget->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
+        GetVashjAddOwningTank(bot, currentTarget) == bot)
+    {
+        target = currentTarget;
+    }
+
     if (!target)
     {
         for (Unit* candidate : targets)
@@ -1933,8 +1968,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    Unit* currentTarget = context->GetValue<Unit*>("current target")->Get();
-
     if (currentTarget && currentTarget == vashj && phase == 2)
     {
         bot->AttackStop();
@@ -1944,9 +1977,9 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         bot->SetSelection(ObjectGuid());
     }
 
-    // A tank with nothing in the middle drops an Enchanted farther out and waits there instead
-    if (!target && phase == 2 && PlayerbotAI::IsTank(bot) && currentTarget &&
-        currentTarget->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL))
+    // A tank with nothing of its own drops what it has (an Enchanted farther out, or another
+    // tank's Elite or Strider) and waits in the middle instead
+    if (!target && oneTankEach && currentTarget && currentTarget != vashj)
     {
         bot->AttackStop();
         bot->InterruptSpell(CURRENT_MELEE_SPELL);
@@ -2003,21 +2036,31 @@ bool LadyVashjTankAttackAndPositionStriderAction::Execute(Event /*event*/)
     if (!strider)
         return false;
 
-    // Only the first assist tank affirmatively picks up Striders
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        AI_VALUE(Unit*, "current target") != strider)
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    // In phase 3 only the first assist tank affirmatively picks up Striders, unless another tank
+    // has it. In phase 2 the nearest free tank does, through the dps priority action.
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase == 3 && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
     {
-        return Attack(strider);
+        Player* owner = GetVashjAddOwningTank(bot, strider);
+        if (owner && owner != bot)
+            return false;
+
+        if (AI_VALUE(Unit*, "current target") != strider)
+            return Attack(strider);
+
+        // A Strider stays on whoever it was on, including a main tank who held it into phase 3
+        // and has gone back to Vashj, until it is taunted off
+        if (strider->GetVictim() != bot)
+            return CastTankTaunt(botAI, bot, strider);
     }
 
     if (strider->GetVictim() != bot)
         return false;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    int8 const phase = GetLadyVashjPhase(vashj);
     if (phase == 2)
         return MoveStriderToHoldPosition(strider);
 
@@ -2072,7 +2115,8 @@ bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 }
 
 // The tank takes the Elite to the nearer of the two Elite tank positions, where a cluster's ranged
-// reach it. For a human tank: in front of the north rock, or south-east of the middle.
+// reach it. For a human tank: about 12y in front of the north rock's tip, or south-east of the
+// middle.
 bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
 {
     Unit* elite = AI_VALUE(Unit*, "current target");

@@ -358,7 +358,7 @@ public:
 
 private:
     bool MoveToPhase1TankPosition(Unit* vashj);
-    bool MoveAwayFromEnchantedElementals(Unit* vashj);
+    bool MoveAwayFromElementalsAndStriders(Unit* vashj);
 };
 
 class LadyVashjPhase1SpreadRangedInArcAction : public MovementAction

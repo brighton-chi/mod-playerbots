@@ -160,9 +160,6 @@ public:
         creators["lady vashj tank is idle away from the middle"] =
             &RaidSscTriggerContext::lady_vashj_tank_is_idle_away_from_the_middle;
 
-        creators["lady vashj hunter should misdirect strider"] =
-            &RaidSscTriggerContext::lady_vashj_hunter_should_misdirect_strider;
-
         creators["lady vashj tainted elemental needs looter"] =
             &RaidSscTriggerContext::lady_vashj_tainted_elemental_needs_looter;
 
@@ -344,9 +341,6 @@ private:
     }
     static Trigger* lady_vashj_tank_is_idle_away_from_the_middle(PlayerbotAI* botAI) {
         return new LadyVashjTankIsIdleAwayFromTheMiddleTrigger(botAI);
-    }
-    static Trigger* lady_vashj_hunter_should_misdirect_strider(PlayerbotAI* botAI) {
-        return new LadyVashjHunterShouldMisdirectStriderTrigger(botAI);
     }
     static Trigger* lady_vashj_tainted_elemental_needs_looter(PlayerbotAI* botAI) {
         return new LadyVashjTaintedElementalNeedsLooterTrigger(botAI);

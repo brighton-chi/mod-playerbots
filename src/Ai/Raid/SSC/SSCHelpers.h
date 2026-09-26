@@ -456,13 +456,17 @@ inline constexpr float VASHJ_STRIDER_STEP_IN_DISTANCE = 50.0f;
 // Where Elites are tanked in phase 2, each in range of all three ranged of one cluster (4, then 1):
 // 12y+ from every cluster slot and healer post, 18y+ from every Strider hold so the melee behind
 // them are clear of Panic, and 22y+ from the walk-in lines out past 30y from the centre, where an
-// add is usually not yet tanked. Elites spawn 42-46y from the nearer one.
+// add is usually not yet tanked. Elites spawn 42-46y from the nearer one. The first is the nearest
+// spot to Vashj meeting all that (29y from her, the second 27y), with each ranged's line to it 7y+
+// from the generator centres.
 inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
-    Position{ 63.5f, -911.0f, 41.8f },
+    Position{ 57.0f, -913.0f, 42.0f },
     Position{  5.5f, -934.0f, 42.1f },
 };
-// Melee and tanks take only Enchanted Elementals within this of Vashj, before other targets.
+// Melee take Enchanted Elementals within this of Vashj before other targets.
 inline constexpr float VASHJ_ENCHANTED_NEAR_HER_DISTANCE = 20.0f;
+// Tanks not holding an Elite or Strider in phase 2 take only Enchanted within this of Vashj.
+inline constexpr float VASHJ_TANK_LEASH_DISTANCE = 15.0f;
 // Tanks with nothing to tank in phase 2 wait within this of Vashj, to reach adds on any side.
 inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
 
@@ -535,6 +539,14 @@ Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
 // True if a tank is the unit's victim.
 bool IsTankedByTank(Unit* unit);
+// The bot's class taunt on target. False if it has none, or can't cast it now.
+bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
+// The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
+// is attacking, else the first in group order. Nullptr if no tank is attacking it.
+Player* GetVashjAddOwningTank(Player* bot, Unit* add);
+// True if no other living bot tank is nearer the add among those not holding an Elite or Strider
+// of their own.
+bool IsNearestFreeVashjTank(Player* bot, Unit* add);
 // A step for a tank that brings the mob it is tanking onto spot. The mob trails its tank by about
 // its combat reach, so the tank walks on past the spot until the mob itself stands on it. False
 // once the mob is within arrivalDistance of the spot.

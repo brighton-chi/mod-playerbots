@@ -155,9 +155,6 @@ public:
         creators["lady vashj assign phase 2 and phase 3 dps priority"] =
             &RaidSscActionContext::lady_vashj_assign_phase_2_and_phase_3_dps_priority;
 
-        creators["lady vashj misdirect strider to first assist tank"] =
-            &RaidSscActionContext::lady_vashj_misdirect_strider_to_first_assist_tank;
-
         creators["lady vashj tank attack and position strider"] =
             &RaidSscActionContext::lady_vashj_tank_attack_and_position_strider;
 
@@ -346,10 +343,6 @@ private:
     }
     static Action* lady_vashj_assign_phase_2_and_phase_3_dps_priority(PlayerbotAI* botAI) {
         return new LadyVashjAssignPhase2AndPhase3DpsPriorityAction(botAI);
-    }
-    static Action* lady_vashj_misdirect_strider_to_first_assist_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectTargetToTankAction(
-            botAI, "lady vashj misdirect strider to first assist tank", "coilfang strider", 0);
     }
     static Action* lady_vashj_tank_attack_and_position_strider(PlayerbotAI* botAI) {
         return new LadyVashjTankAttackAndPositionStriderAction(botAI);
