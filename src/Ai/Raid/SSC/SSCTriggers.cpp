@@ -650,6 +650,11 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
         IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS);
 }
 
+bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
+{
+    return IsVashjRangedReachBlockedBySpores(botAI, bot);
+}
+
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_PALADIN)

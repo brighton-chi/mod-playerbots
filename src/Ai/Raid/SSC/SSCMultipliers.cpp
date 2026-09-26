@@ -1062,3 +1062,13 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
 
     return IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
+
+// Stock reach-spell only while its straight walk is clear of pools; otherwise the ranged spore
+// action goes round them.
+float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<ReachSpellAction*>(action))
+        return 1.0f;
+
+    return IsVashjRangedReachBlockedBySpores(botAI, bot) ? 0.0f : 1.0f;
+}

@@ -2921,6 +2921,21 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     bool const tanking = vashj->GetVictim() == bot;
 
+    // A breakout walk ends at the spot, after a while, or once a pool lands near the spot
+    if (hasBreakoutSpot)
+    {
+        constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
+        hasBreakoutSpot = tanking &&
+            getMSTimeDiff(breakoutStartTime, getMSTime()) < maxBreakoutMs &&
+            std::none_of(spores.begin(), spores.end(), [this](Position const& spore)
+            {
+                return spore.GetExactDist2d(breakoutSpot) < TOXIC_SPORES_TANK_AVOID_RADIUS;
+            });
+
+        if (hasBreakoutSpot && StepTowardBreakoutSpot(vashj))
+            return true;
+    }
+
     float stepX;
     float stepY;
     float stepZ;
@@ -2946,6 +2961,14 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         }
     }
 
+    // Her tank pinned where no step gains on the pools crosses the edge of one if it has to
+    if (!found && tanking && FindVashjTankBreakoutSpot(bot, spores, breakoutSpot))
+    {
+        hasBreakoutSpot = true;
+        breakoutStartTime = getMSTime();
+        return StepTowardBreakoutSpot(vashj);
+    }
+
     if (!found)
         return false;
 
@@ -2954,6 +2977,42 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
+}
+
+bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
+{
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const distance = bot->GetExactDist2d(breakoutSpot);
+
+    constexpr float arrivalDistance = 1.5f;
+    if (distance <= arrivalDistance)
+    {
+        hasBreakoutSpot = false;
+        return false;
+    }
+
+    // Backwards when the way leads away from her, as with the other tank steps
+    float const dirX = (breakoutSpot.GetPositionX() - botX) / distance;
+    float const dirY = (breakoutSpot.GetPositionY() - botY) / distance;
+    bool const backwards = dirX * (vashj->GetPositionX() - botX) +
+        dirY * (vashj->GetPositionY() - botY) < 0.0f;
+    float const moveDist = backwards ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
+
+    float stepX;
+    float stepY;
+    float stepZ;
+    if (!CanTakeStepTowards(
+            bot, breakoutSpot.GetPositionX(), breakoutSpot.GetPositionY(), moveDist, stepX,
+            stepY, stepZ))
+    {
+        hasBreakoutSpot = false;
+        return false;
+    }
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
 // Melee stay in reach of their target, at the nearest angle around it that no pool covers. When
@@ -2984,6 +3043,29 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 
     if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
             bot, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
+// Recomputed every tick; walking a clear line keeps the same point best, and once the straight
+// line to cast range is clear, stock reach-spell takes over again.
+bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    float stepX;
+    float stepY;
+    float stepZ;
+    if (!GetStepToCastRangeAroundSpores(
+            bot, target, botAI->GetRange("spell"), GetToxicSporePositions(botAI), stepX, stepY,
+            stepZ))
     {
         return false;
     }

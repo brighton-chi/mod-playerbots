@@ -367,9 +367,10 @@ inline std::array const VASHJ_NORTH_ROCK = {
 };
 // Steps keep this far off the rock outline. Vashj is large and snags on it trailing her tank.
 inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
-// Where melee stand to dodge pools. The larger clearance is for her path, not theirs, and in the
-// notch west of the rock it rules out two thirds of the ring round her.
-inline constexpr float VASHJ_MELEE_ROCK_CLEARANCE = 1.0f;
+// Where bots other than her tank stand or walk to dodge pools. The larger clearance is for her
+// path, not theirs, and in the notch west of the rock it rules out two thirds of the ring round
+// her.
+inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 1.0f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
@@ -512,6 +513,11 @@ bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
     float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
     float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
+// For her tank pinned by pools, where no single step gains on them: the spot up to 35y away,
+// TOXIC_SPORES_TANK_AVOID_RADIUS or more from every pool, cheapest to reach in a straight line
+// that stays on the dais, counting yards walked through a pool several times over.
+bool FindVashjTankBreakoutSpot(
+    Player* bot, std::vector<Position> const& spores, Position& spot);
 bool HasStaticCharge(Player* player);
 // Melee dps not holding Static Charge, who dodge pools around their target in phase 3. Tanks and
 // Static Charge holders have their own movement.
@@ -529,6 +535,17 @@ bool GetMeleeRingStepClearOfSpores(
 bool GetStepOutOfNearestSpore(
     Player* bot, std::vector<Position> const& spores, float radius, float& stepX, float& stepY,
     float& stepZ);
+// Phase 3 ranged dps, not Hunters or Static Charge holders: true if their current target is out
+// of cast range and the straight walk to where they would be in range passes within
+// TOXIC_SPORES_AVOID_RADIUS of a pool. Stock reach-spell would walk them into the pool and the
+// spore action straight back out, over and over.
+bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot);
+// A step toward the point, 2y inside cast range of target, that is cheapest to reach in a straight
+// line: the distance plus several times the yards of the line within TOXIC_SPORES_AVOID_RADIUS of
+// a pool. The point is on the dais and clear of pools itself.
+bool GetStepToCastRangeAroundSpores(
+    Player* bot, Unit* target, float castRange, std::vector<Position> const& spores, float& stepX,
+    float& stepY, float& stepZ);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 // The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the

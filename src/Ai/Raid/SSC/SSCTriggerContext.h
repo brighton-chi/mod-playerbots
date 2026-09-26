@@ -184,6 +184,9 @@ public:
         creators["lady vashj melee near toxic spores"] =
             &RaidSscTriggerContext::lady_vashj_melee_near_toxic_spores;
 
+        creators["lady vashj ranged reach blocked by toxic spores"] =
+            &RaidSscTriggerContext::lady_vashj_ranged_reach_blocked_by_toxic_spores;
+
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
 
@@ -368,6 +371,9 @@ private:
     }
     static Trigger* lady_vashj_melee_near_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjMeleeNearToxicSporesTrigger(botAI);
+    }
+    static Trigger* lady_vashj_ranged_reach_blocked_by_toxic_spores(PlayerbotAI* botAI) {
+        return new LadyVashjRangedReachBlockedByToxicSporesTrigger(botAI);
     }
     static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);

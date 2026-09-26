@@ -582,6 +582,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjRangedReachBlockedByToxicSporesTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjRangedReachBlockedByToxicSporesTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj ranged reach blocked by toxic spores") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjEntangleOnMeleeTrigger : public SscEncounterTrigger
 {
 public:

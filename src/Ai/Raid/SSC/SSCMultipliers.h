@@ -375,4 +375,14 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class LadyVashjRangedDoNotReachThroughSporesMultiplier : public SscEncounterMultiplier
+{
+public:
+    LadyVashjRangedDoNotReachThroughSporesMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj ranged do not reach through spores") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif

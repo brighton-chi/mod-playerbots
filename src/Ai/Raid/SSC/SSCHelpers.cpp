@@ -712,6 +712,29 @@ float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& 
     return closest;
 }
 
+// Length in 2D of the part of the segment from a to b inside the circle.
+float SegmentLengthInCircle(
+    Position const& a, Position const& b, Position const& center, float radius)
+{
+    float const dx = b.GetPositionX() - a.GetPositionX();
+    float const dy = b.GetPositionY() - a.GetPositionY();
+    float const fx = a.GetPositionX() - center.GetPositionX();
+    float const fy = a.GetPositionY() - center.GetPositionY();
+
+    // |a + t(b - a) - center| = radius, for t along the segment
+    float const qa = dx * dx + dy * dy;
+    float const qb = 2.0f * (fx * dx + fy * dy);
+    float const qc = fx * fx + fy * fy - radius * radius;
+    float const discriminant = qb * qb - 4.0f * qa * qc;
+    if (qa <= 0.0f || discriminant <= 0.0f)
+        return 0.0f;
+
+    float const root = std::sqrt(discriminant);
+    float const enter = std::max(0.0f, (-qb - root) / (2.0f * qa));
+    float const leave = std::min(1.0f, (-qb + root) / (2.0f * qa));
+    return leave > enter ? (leave - enter) * std::sqrt(qa) : 0.0f;
+}
+
 // True if the segment from a to b crosses the polygon's outline in 2D.
 template <std::size_t N>
 bool SegmentCrossesPolygon(
@@ -879,6 +902,185 @@ bool HasStaticCharge(Player* player)
     return player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
 }
 
+bool FindVashjTankBreakoutSpot(
+    Player* bot, std::vector<Position> const& spores, Position& spot)
+{
+    constexpr uint8 directions = 24;
+    constexpr uint8 rings = 7;
+    constexpr float ringSpacing = 5.0f;
+    constexpr float daisMargin = 1.0f;
+    constexpr float pathSampleSpacing = 2.0f;
+    // A yard through a pool costs about 0.7s of 2775-3225 nature a second walking backwards
+    constexpr float poolYardCost = 3.0f;
+
+    Position const from = bot->GetPosition();
+    float bestCost = std::numeric_limits<float>::max();
+    bool found = false;
+
+    for (uint8 ring = 1; ring <= rings; ++ring)
+    {
+        float const radius = ringSpacing * ring;
+        for (uint8 i = 0; i < directions; ++i)
+        {
+            float const angle = 2.0f * static_cast<float>(M_PI) * i / directions;
+            Position const candidate(
+                from.GetPositionX() + std::cos(angle) * radius,
+                from.GetPositionY() + std::sin(angle) * radius, from.GetPositionZ());
+
+            if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(), daisMargin) ||
+                std::any_of(spores.begin(), spores.end(), [&candidate](Position const& spore)
+                {
+                    return spore.GetExactDist2d(candidate) < TOXIC_SPORES_TANK_AVOID_RADIUS;
+                }))
+            {
+                continue;
+            }
+
+            // She trails her tank along the same line, so it keeps to the dais and off the rock
+            uint8 const samples = static_cast<uint8>(radius / pathSampleSpacing);
+            bool onDais = true;
+            for (uint8 s = 1; s < samples && onDais; ++s)
+            {
+                float const t = static_cast<float>(s) / samples;
+                onDais = IsOnVashjDais(
+                    from.GetPositionX() + (candidate.GetPositionX() - from.GetPositionX()) * t,
+                    from.GetPositionY() + (candidate.GetPositionY() - from.GetPositionY()) * t,
+                    daisMargin);
+            }
+
+            if (!onDais)
+                continue;
+
+            float inPools = 0.0f;
+            for (Position const& spore : spores)
+                inPools += SegmentLengthInCircle(from, candidate, spore, TOXIC_SPORES_HIT_RADIUS);
+
+            float const cost = radius + poolYardCost * inPools;
+            if (cost < bestCost)
+            {
+                bestCost = cost;
+                spot = candidate;
+                found = true;
+            }
+        }
+    }
+
+    return found;
+}
+
+namespace
+{
+
+// Centre to centre, 2y inside the range IsWithinCombatRange() allows
+float GetCastRingRadius(Player* bot, Unit* target, float castRange)
+{
+    constexpr float margin = 2.0f;
+    return castRange + bot->GetCombatReach() + target->GetCombatReach() - margin;
+}
+
+} // end anonymous namespace (cast ring)
+
+bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot)
+{
+    if (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER || HasStaticCharge(bot))
+        return false;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* vashj = context->GetValue<Unit*>("find target", "lady vashj")->Get();
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    Unit* target = context->GetValue<Unit*>("current target")->Get();
+    float const castRange = botAI->GetRange("spell");
+    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, castRange))
+        return false;
+
+    float const ringRadius = GetCastRingRadius(bot, target, castRange);
+    float const distance = bot->GetExactDist2d(target);
+    if (distance <= ringRadius)
+        return false;
+
+    // Where a straight reach would stop
+    float const t = ringRadius / distance;
+    Position const stop(
+        target->GetPositionX() + (bot->GetPositionX() - target->GetPositionX()) * t,
+        target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * t,
+        bot->GetPositionZ());
+
+    Position const from = bot->GetPosition();
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+    return std::any_of(spores.begin(), spores.end(), [&from, &stop](Position const& spore)
+    {
+        return SegmentLengthInCircle(from, stop, spore, TOXIC_SPORES_AVOID_RADIUS) > 0.0f;
+    });
+}
+
+bool GetStepToCastRangeAroundSpores(
+    Player* bot, Unit* target, float castRange, std::vector<Position> const& spores, float& stepX,
+    float& stepY, float& stepZ)
+{
+    constexpr uint8 samples = 72;
+    constexpr float daisMargin = 1.0f;
+    constexpr float pathSampleSpacing = 2.0f;
+    // A clear way round beats a crossing up to about three times shorter
+    constexpr float poolYardCost = 3.0f;
+
+    float const ringRadius = GetCastRingRadius(bot, target, castRange);
+    Position const from = bot->GetPosition();
+    float bestCost = std::numeric_limits<float>::max();
+    float bestX = 0.0f;
+    float bestY = 0.0f;
+    bool found = false;
+
+    for (uint8 i = 0; i < samples; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / samples;
+        Position const candidate(
+            target->GetPositionX() + std::cos(angle) * ringRadius,
+            target->GetPositionY() + std::sin(angle) * ringRadius, from.GetPositionZ());
+
+        if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(), daisMargin,
+                VASHJ_STANDING_ROCK_CLEARANCE) ||
+            std::any_of(spores.begin(), spores.end(), [&candidate](Position const& spore)
+            {
+                return spore.GetExactDist2d(candidate) < TOXIC_SPORES_AVOID_RADIUS;
+            }))
+        {
+            continue;
+        }
+
+        float const distance = from.GetExactDist2d(candidate);
+        uint8 const pathSamples = static_cast<uint8>(distance / pathSampleSpacing);
+        bool onDais = true;
+        for (uint8 s = 1; s < pathSamples && onDais; ++s)
+        {
+            float const t = static_cast<float>(s) / pathSamples;
+            onDais = IsOnVashjDais(
+                from.GetPositionX() + (candidate.GetPositionX() - from.GetPositionX()) * t,
+                from.GetPositionY() + (candidate.GetPositionY() - from.GetPositionY()) * t,
+                daisMargin, VASHJ_STANDING_ROCK_CLEARANCE);
+        }
+
+        if (!onDais)
+            continue;
+
+        float inPools = 0.0f;
+        for (Position const& spore : spores)
+            inPools += SegmentLengthInCircle(from, candidate, spore, TOXIC_SPORES_AVOID_RADIUS);
+
+        float const cost = distance + poolYardCost * inPools;
+        if (cost < bestCost)
+        {
+            bestCost = cost;
+            bestX = candidate.GetPositionX();
+            bestY = candidate.GetPositionY();
+            found = true;
+        }
+    }
+
+    return found && CanTakeStepTowards(bot, bestX, bestY, PATH_STEP_DISTANCE, stepX, stepY, stepZ);
+}
+
 bool IsVashjRingMelee(Player* bot)
 {
     return PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsTank(bot) && !HasStaticCharge(bot);
@@ -917,7 +1119,7 @@ bool GetMeleeRingStepClearOfSpores(
 
     auto isClear = [&nearby, radius](float x, float y)
     {
-        return IsOnVashjDais(x, y, daisMargin, VASHJ_MELEE_ROCK_CLEARANCE) &&
+        return IsOnVashjDais(x, y, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE) &&
             std::none_of(nearby.begin(), nearby.end(), [x, y, radius](Position const& spore)
             {
                 return spore.GetExactDist2d(x, y) < radius;
@@ -991,7 +1193,7 @@ bool GetStepOutOfNearestSpore(
             float const angle = botAngle + side * sampleAngle * i;
             float const x = sporeX + std::cos(angle) * radius;
             float const y = sporeY + std::sin(angle) * radius;
-            if (IsOnVashjDais(x, y, daisMargin, VASHJ_MELEE_ROCK_CLEARANCE) &&
+            if (IsOnVashjDais(x, y, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE) &&
                 CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
             {
                 return true;

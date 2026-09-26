@@ -527,6 +527,14 @@ public:
         PlayerbotAI* botAI, std::string const& name = "lady vashj avoid toxic spores")
         : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool StepTowardBreakoutSpot(Unit* vashj);
+
+    // Her tank, pinned by pools, walks to this spot and doesn't stop on the way
+    Position breakoutSpot;
+    bool hasBreakoutSpot = false;
+    uint32 breakoutStartTime = 0;
 };
 
 class LadyVashjMeleeMoveAroundToxicSporesAction : public LadyVashjAvoidToxicSporesAction
@@ -534,6 +542,14 @@ class LadyVashjMeleeMoveAroundToxicSporesAction : public LadyVashjAvoidToxicSpor
 public:
     LadyVashjMeleeMoveAroundToxicSporesAction(PlayerbotAI* botAI)
         : LadyVashjAvoidToxicSporesAction(botAI, "lady vashj melee move around toxic spores") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjRangedReachAroundToxicSporesAction : public MovementAction
+{
+public:
+    LadyVashjRangedReachAroundToxicSporesAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj ranged reach around toxic spores") {}
     bool Execute(Event event) override;
 };
 
