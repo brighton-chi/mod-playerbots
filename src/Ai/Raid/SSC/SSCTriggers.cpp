@@ -5,14 +5,13 @@
  */
 
 #include "SSCTriggers.h"
-#include "Corpse.h"
 #include "EncounterHelpers.h"
-#include "LootObjectStack.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
+#include "TemporarySummon.h"
 #include <algorithm>
 
 using namespace SscHelpers;
@@ -391,6 +390,24 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
     return !HasStaticCharge(bot);
 }
 
+bool LadyVashjClusterSlotsNeedHoldersTrigger::IsActiveInEncounter()
+{
+    if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 2 && HasVashjClusterVacancy(bot);
+}
+
+bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsRangedDps(bot) && !PlayerbotAI::IsHeal(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 2;
+}
+
 // Hunters are left free to go after Sporebats, and the Static Charge action moves a holder on its
 // own.
 bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
@@ -453,6 +470,22 @@ bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "coilfang strider");
 }
 
+bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* elite = AI_VALUE(Unit*, "current target");
+    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) ||
+        elite->GetVictim() != bot)
+    {
+        return false;
+    }
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 2;
+}
+
 bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -466,43 +499,57 @@ bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
     return firstAssistTank && strider->GetVictim() != firstAssistTank;
 }
 
-bool LadyVashjTaintedElementalCheatTrigger::IsActiveInEncounter()
+// Only a new elemental, or a looter who died on the way, needs a looter chosen.
+bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
 {
-    if (!botAI->HasCheat(BotCheatMask::raid))
+    if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (!tainted)
         return false;
 
-    bool taintedPresent = false;
-    if (AI_VALUE2(Unit*, "find target", "tainted elemental"))
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end() || it->second.tainted != tainted->GetGUID())
+        return true;
+
+    Player* looter = ObjectAccessor::GetPlayer(*bot, it->second.looter);
+    return !looter || !looter->IsAlive();
+}
+
+// The looter and the two ranged dps closest to the elemental.
+bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    return tainted && (GetDesignatedCoreLooter(botAI, bot) == bot ||
+        IsVashjTaintedElementalKiller(bot, tainted));
+}
+
+// Stays true on the corpse until the core is looted.
+bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(botAI, bot) != bot)
+        return false;
+
+    Creature* tainted = GetVashjTaintedElemental(bot);
+    bool const hasCore = bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
+
+    // TEMP LOG
+    if (hasCore && TaintedLogFirstTime(bot, "core"))
     {
-        taintedPresent = true;
+        LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} has the core",
+            TaintedLogElapsedMs(bot), bot->GetName());
     }
-    else
+    if (!tainted && TaintedLogFirstTime(bot, "gone"))
     {
-        GuidVector corpses = AI_VALUE(GuidVector, "nearest corpses");
-        for (auto const& guid : corpses)
-        {
-            LootObject loot(bot, guid);
-            WorldObject* object = loot.GetWorldObject(bot);
-            if (!object)
-                continue;
-
-            if (Creature* creature = object->ToCreature();
-                creature->GetEntry() == Id(SscNpcs::NPC_TAINTED_ELEMENTAL) && !creature->IsAlive())
-            {
-                taintedPresent = true;
-                break;
-            }
-        }
+        LOG_INFO("playerbots", "[SSC tainted] +{}ms elemental gone, core looted: {}",
+            TaintedLogElapsedMs(bot), TaintedLogSeen(bot, "core") ? "yes" : "NO");
     }
 
-    if (!taintedPresent)
-        return false;
-
-    return GetDesignatedCoreLooter(botAI, bot) == bot &&
-           !bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
+    return tainted && !hasCore;
 }
 
 bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
@@ -523,14 +570,29 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
     if (!isCoreHandler)
         return false;
 
-    // First and second passers move to positions as soon as the elemental appears.
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && coreHandlers[0] && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
-        (bot == coreHandlers[1] || bot == coreHandlers[2]))
-        return true;
-
     // Main logic: run if core is in play for this bot or a prior handler.
     return AnyRecentCoreInInventory(botAI, bot);
+}
+
+bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase != 2 && phase != 3)
+        return false;
+
+    if (Unit* target = GetVashjPetTarget(botAI, pet, vashj))
+        return pet->GetVictim() != target;
+
+    // Nothing worth attacking, so only a pet still on an immune Vashj needs calling back
+    return pet->GetVictim() == vashj;
 }
 
 // Bots going after Sporebats sometimes walk up into the air, or end up on the pipes above the

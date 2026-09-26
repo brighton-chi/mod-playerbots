@@ -910,7 +910,7 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
         return 0.0f;
 
     // The designated looter must stay on the Tainted Elemental until it has the core.
-    if (botAI->HasCheat(BotCheatMask::raid) && bot == coreHandlers[0] && !hasCore(bot) &&
+    if (bot == coreHandlers[0] && !hasCore(bot) &&
         dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action))
     {
         constexpr float corpseSearchRadius = 30.0f;
@@ -918,14 +918,6 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
             bot->FindNearestCreature(Id(SscNpcs::NPC_TAINTED_ELEMENTAL), corpseSearchRadius, false))
             return 0.0f;
     }
-
-    // First and second passers block movement when the looter teleports to the elemental
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && coreHandlers[0] && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
-        (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
-        (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
-        return 0.0f;
 
     // If any prior handler (including self) recently had the core, block other movement
     if (AnyRecentCoreInInventory(botAI, bot) &&
@@ -972,6 +964,32 @@ float LadyVashjDisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action *a
         if (enchanted && AI_VALUE(Unit*, "current target") == enchanted &&
             dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
             return 0.0f;
+
+        // Cluster ranged shoot from their slots. Only those sent after a Tainted Elemental walk
+        // to it, and those stepping in to cast range of a Strider.
+        if (PlayerbotAI::IsRangedDps(bot) &&
+            (dynamic_cast<ReachTargetAction*>(action) ||
+             dynamic_cast<CombatFormationMoveAction*>(action) ||
+             IsRepositionAction(bot, action)))
+        {
+            bool const stepsInToStrider = dynamic_cast<ReachTargetAction*>(action) &&
+                IsVashjStriderToStepInTo(bot, AI_VALUE(Unit*, "current target"));
+            if (!stepsInToStrider)
+            {
+                Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+                if (!tainted || !IsVashjTaintedElementalKiller(bot, tainted))
+                    return 0.0f;
+            }
+        }
+
+        // Cluster healers heal from their slots too
+        if (PlayerbotAI::IsHeal(bot) &&
+            (dynamic_cast<ReachTargetAction*>(action) ||
+             dynamic_cast<CombatFormationMoveAction*>(action)) &&
+            GetVashjClusterSlot(bot).cluster >= 0)
+        {
+            return 0.0f;
+        }
     }
 
     if (phase == 3)

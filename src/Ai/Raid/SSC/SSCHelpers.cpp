@@ -16,6 +16,9 @@
 #include <cmath>
 #include <limits>
 #include <list>
+#include <mutex>
+#include <string>
+#include <unordered_set>
 #include <utility>
 
 using namespace EncounterHelpers;
@@ -711,6 +714,7 @@ float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& 
 
 } // end anonymous namespace (Vashj)
 
+std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
@@ -883,201 +887,461 @@ Player* GetVashjGroundingShaman(Player* bot)
     return nullptr;
 }
 
-Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot)
+std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
+
+namespace
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
 
-    Player* leader = nullptr;
-    ObjectGuid leaderGuid = group->GetLeaderGUID();
-    if (!leaderGuid.IsEmpty())
-        leader = ObjectAccessor::FindPlayer(leaderGuid);
-
-    // If cheats are disabled, the group leader will be the designated looter
-    if (!botAI->HasCheat(BotCheatMask::raid))
-        return leader;
-
-    // Priority: (1) assistant melee DPS, (2) other melee DPS, (3) any ranged DPS
-    Player* meleeDpsAssistant = nullptr;
-    Player* meleeDps = nullptr;
-    Player* rangedDps = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+// Each cluster's first ranged slot, then each one's second and third, then the healers
+std::vector<VashjClusterSlot> GetVashjClusterFillOrder()
+{
+    std::vector<VashjClusterSlot> order;
+    for (size_t slot = 0; slot < VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == leader || !GET_PLAYERBOT_AI(member))
-            continue;
-
-        if (!meleeDpsAssistant && PlayerbotAI::IsMelee(member) &&
-            PlayerbotAI::IsDps(member) && group->IsAssistant(member->GetGUID()))
-        {
-            meleeDpsAssistant = member;
-            break;
-        }
-
-        if (!meleeDps && PlayerbotAI::IsMelee(member) && PlayerbotAI::IsDps(member))
-            meleeDps = member;
-
-        if (!rangedDps && PlayerbotAI::IsRangedDps(member))
-            rangedDps = member;
+        for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
+            order.push_back({ static_cast<int8>(cluster), static_cast<int8>(slot) });
     }
 
-    if (meleeDpsAssistant)
-        return meleeDpsAssistant;
-    if (meleeDps)
-        return meleeDps;
-    if (rangedDps)
-        return rangedDps;
-    return leader;
+    for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
+        order.push_back({ static_cast<int8>(cluster), VASHJ_CLUSTER_HEALER_SLOT });
+
+    return order;
 }
 
-Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid)
 {
+    Player* holder = ObjectAccessor::GetPlayer(*bot, guid);
+    return holder && holder->IsAlive();
+}
+
+} // end anonymous namespace (cluster holders)
+
+bool HasVashjClusterVacancy(Player* bot)
+{
+    auto it = vashjClusterHolders.find(bot->GetInstanceId());
+    if (it == vashjClusterHolders.end())
+        return true;
+
+    for (auto const& cluster : it->second)
+    {
+        for (ObjectGuid const& guid : cluster)
+        {
+            if (!IsLiveVashjClusterHolder(bot, guid))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool UpdateVashjClusterHolders(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
+    auto holdsSlot = [&holders](ObjectGuid guid)
+    {
+        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
+        {
+            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
+        });
+    };
+
+    std::vector<Player*> rangedSpares;
+    std::vector<Player*> healerSpares;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
+        {
+            continue;
+        }
+
+        if (PlayerbotAI::IsRangedDps(member))
+            rangedSpares.push_back(member);
+        else if (PlayerbotAI::IsHeal(member))
+            healerSpares.push_back(member);
+    }
+
+    bool changed = false;
+    size_t nextRanged = 0;
+    size_t nextHealer = 0;
+    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
+    {
+        ObjectGuid& holder = holders[slot.cluster][slot.slot];
+        if (IsLiveVashjClusterHolder(bot, holder))
+            continue;
+
+        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
+        std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
+        size_t& next = isHealerSlot ? nextHealer : nextRanged;
+        if (next >= spares.size())
+            continue;
+
+        holder = spares[next++]->GetGUID();
+        changed = true;
+    }
+
+    return changed;
+}
+
+VashjClusterSlot GetVashjClusterSlot(Player* bot)
+{
+    VashjClusterSlot result;
+    auto it = vashjClusterHolders.find(bot->GetInstanceId());
+    if (it == vashjClusterHolders.end())
+        return result;
+
+    ObjectGuid const guid = bot->GetGUID();
+    for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
+    {
+        for (size_t slot = 0; slot <= VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
+        {
+            if (it->second[cluster][slot] == guid)
+            {
+                result.cluster = static_cast<int8>(cluster);
+                result.slot = static_cast<int8>(slot);
+                return result;
+            }
+        }
+    }
+
+    return result;
+}
+
+Position const& GetVashjClusterPosition(VashjClusterSlot const& slot)
+{
+    VashjCluster const& cluster = VASHJ_CLUSTERS[slot.cluster];
+    return slot.slot == VASHJ_CLUSTER_HEALER_SLOT ? cluster.healer : cluster.ranged[slot.slot];
+}
+
+std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
+{
+    std::vector<Player*> ranged;
+    auto it = vashjClusterHolders.find(bot->GetInstanceId());
+    if (it == vashjClusterHolders.end() || cluster < 0)
+        return ranged;
+
+    for (size_t slot = 0; slot < VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
+    {
+        Player* holder = ObjectAccessor::GetPlayer(*bot, it->second[cluster][slot]);
+        if (holder && holder->IsAlive())
+            ranged.push_back(holder);
+    }
+
+    return ranged;
+}
+
+Player* GetVashjClusterHealer(Player* bot, int8 cluster)
+{
+    auto it = vashjClusterHolders.find(bot->GetInstanceId());
+    if (it == vashjClusterHolders.end() || cluster < 0)
+        return nullptr;
+
+    Player* holder =
+        ObjectAccessor::GetPlayer(*bot, it->second[cluster][VASHJ_CLUSTER_HEALER_SLOT]);
+    return holder && holder->IsAlive() ? holder : nullptr;
+}
+
+int8 GetNearestVashjCluster(Unit* unit)
+{
+    int8 nearest = 0;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
+    {
+        float const distance = unit->GetExactDist2d(VASHJ_CLUSTERS[i].ranged[0]);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = static_cast<int8>(i);
+        }
+    }
+
+    return nearest;
+}
+
+Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
+{
+    if (Player* healer = GetVashjClusterHealer(bot, cluster))
+        return healer;
+
+    Player* looter = nullptr;
+    float looterDistance = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
+    {
+        Player* healer = GetVashjClusterHealer(bot, static_cast<int8>(i));
+        float const distance = tainted->GetExactDist2d(VASHJ_CLUSTERS[i].healer);
+        if (healer && distance < looterDistance)
+        {
+            looterDistance = distance;
+            looter = healer;
+        }
+    }
+
+    if (looter)
+        return looter;
+
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;
 
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || PlayerbotAI::IsTank(member))
+        {
+            continue;
+        }
+
+        float const distance = member->GetExactDist(tainted);
+        if (distance < looterDistance)
+        {
+            looterDistance = distance;
+            looter = member;
+        }
+    }
+
+    return looter;
+}
+
+Creature* GetVashjTaintedElemental(Player* bot)
+{
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end())
+        return nullptr;
+
+    return ObjectAccessor::GetCreature(*bot, it->second.tainted);
+}
+
+bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted)
+{
+    if (!PlayerbotAI::IsRangedDps(bot))
+        return false;
+
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end() || it->second.tainted != tainted->GetGUID() ||
+        it->second.looter == bot->GetGUID())
+    {
+        return false;
+    }
+
+    VashjClusterSlot const slot = GetVashjClusterSlot(bot);
+    return slot.cluster >= 0 && slot.cluster == it->second.cluster;
+}
+
+// Chosen once per Tainted Elemental by the mechanic tracker bot
+// (LadyVashjAssignTaintedCoreLooterAction).
+Player* GetDesignatedCoreLooter(PlayerbotAI* /*botAI*/, Player* bot)
+{
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end())
+        return nullptr;
+
+    return ObjectAccessor::GetPlayer(*bot, it->second.looter);
+}
+
+bool IsTankedByTank(Unit* unit)
+{
+    Player* victim = unit->GetVictim() ? unit->GetVictim()->ToPlayer() : nullptr;
+    return victim && PlayerbotAI::IsTank(victim);
+}
+
+bool GetStepToBringTankedUnitTo(
+    Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
+    float& stepY, bool& backwards)
+{
+    float const mobDistance = mob->GetExactDist2d(spot);
+    if (mobDistance <= arrivalDistance)
+        return false;
+
+    // Past the spot, on the far side from the mob, by as far as the tank now leads it
+    float const lead = bot->GetExactDist2d(mob) / mobDistance;
+    Position const destination(
+        spot.GetPositionX() + (spot.GetPositionX() - mob->GetPositionX()) * lead,
+        spot.GetPositionY() + (spot.GetPositionY() - mob->GetPositionY()) * lead,
+        spot.GetPositionZ());
+
+    return GetStepToPosition(bot, destination, arrivalDistance, mob, stepX, stepY, backwards);
+}
+
+bool IsVashjStriderToStepInTo(Player* bot, Unit* unit)
+{
+    return unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER) &&
+        bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsTankedByTank(unit);
+}
+
+// Useless means Vashj while the barrier makes her immune; a Strider, whose Panic fears any pet
+// that closes to melee (the Imp and Water Elemental cast from range); and a Sporebat, which a pet
+// can't reach.
+Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
+{
+    int8 const phase = GetLadyVashjPhase(vashj);
+    uint32 const petEntry = pet->GetEntry();
+    bool const petStaysAtRange = petEntry == Id(SscNpcs::NPC_IMP) ||
+        petEntry == Id(SscNpcs::NPC_WATER_ELEMENTAL) ||
+        petEntry == Id(SscNpcs::NPC_WATER_ELEMENTAL_PERM);
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target && target->IsAlive())
+    {
+        uint32 const entry = target->GetEntry();
+        bool const useless = (target == vashj && phase == 2) ||
+            (entry == Id(SscNpcs::NPC_COILFANG_STRIDER) && !petStaysAtRange) ||
+            entry == Id(SscNpcs::NPC_TOXIC_SPOREBAT);
+        if (!useless)
+            return target;
+    }
+
+    // Next in every ranged list after a Strider or Sporebat
+    Unit* enchanted = nullptr;
+    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) &&
+            (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted)))
+        {
+            enchanted = unit;
+        }
+    }
+
+    if (enchanted)
+        return enchanted;
+
+    return phase == 3 ? vashj : nullptr;
+}
+
+// TEMP LOG (Tainted Elemental timing), remove after testing
+namespace
+{
+
+std::mutex taintedLogMutex;
+std::unordered_map<uint32, uint32> taintedLogStart;
+std::unordered_set<std::string> taintedLogSeen;
+std::unordered_map<std::string, uint32> taintedLogLast;
+
+std::string TaintedLogKey(Player* bot, char const* key)
+{
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    return std::to_string(bot->GetGUID().GetRawValue()) + key +
+        (it != vashjTaintedCoreLooter.end() ?
+            std::to_string(it->second.tainted.GetRawValue()) : std::string());
+}
+
+} // end anonymous namespace (TEMP LOG)
+
+void StartTaintedLog(Player* bot)
+{
+    std::lock_guard<std::mutex> lock(taintedLogMutex);
+    taintedLogStart[bot->GetInstanceId()] = getMSTime();
+}
+
+uint32 TaintedLogElapsedMs(Player* bot)
+{
+    std::lock_guard<std::mutex> lock(taintedLogMutex);
+    auto it = taintedLogStart.find(bot->GetInstanceId());
+    return it != taintedLogStart.end() ? getMSTimeDiff(it->second, getMSTime()) : 0;
+}
+
+bool TaintedLogFirstTime(Player* bot, char const* key)
+{
+    std::string const fullKey = TaintedLogKey(bot, key);
+    std::lock_guard<std::mutex> lock(taintedLogMutex);
+    return taintedLogSeen.insert(fullKey).second;
+}
+
+bool TaintedLogSeen(Player* bot, char const* key)
+{
+    std::string const fullKey = TaintedLogKey(bot, key);
+    std::lock_guard<std::mutex> lock(taintedLogMutex);
+    return taintedLogSeen.count(fullKey) > 0;
+}
+
+bool TaintedLogThrottle(Player* bot, char const* key)
+{
+    std::string const fullKey = TaintedLogKey(bot, key);
+    uint32 const now = getMSTime();
+    std::lock_guard<std::mutex> lock(taintedLogMutex);
+    uint32& last = taintedLogLast[fullKey];
+    if (last && getMSTimeDiff(last, now) < IN_MILLISECONDS)
+        return false;
+
+    last = now;
+    return true;
+}
+
+namespace
+{
+
+// The living ranged dps of the cluster that killed the Tainted Elemental, other than the looter
+std::vector<Player*> GetVashjClusterCorePassers(Player* bot, Player* looter)
+{
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end())
+        return {};
+
+    std::vector<Player*> passers = GetVashjClusterRanged(bot, it->second.cluster);
+    std::erase(passers, looter);
+    return passers;
+}
+
+// The living melee dps other than the looter, in group order
+std::vector<Player*> GetVashjMeleeCorePassers(Player* bot, Player* looter)
+{
+    std::vector<Player*> passers;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return passers;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || !member->IsAlive())
-            continue;
-
-        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
-            return member;
+        if (member && member != looter && member->IsAlive() &&
+            member->GetMapId() == SSC_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            PlayerbotAI::IsMelee(member) && PlayerbotAI::IsDps(member))
+        {
+            passers.push_back(member);
+        }
     }
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || !member->IsAlive())
-            continue;
+    return passers;
+}
 
-        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
-            return member;
-    }
+} // end anonymous namespace (core passers)
 
-    return nullptr;
+// Passers 1 and 2 are ranged dps from the cluster that killed the Tainted Elemental, already on
+// the stairs near the corpse. Passers 3 and 4 are the first melee dps in group order, who fight
+// near the generators.
+Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
+{
+    std::vector<Player*> const passers =
+        GetVashjClusterCorePassers(bot, GetDesignatedCoreLooter(botAI, bot));
+    return passers.size() > 0 ? passers[0] : nullptr;
 }
 
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
-            return member;
-    }
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
-            return member;
-    }
-
-    return nullptr;
+    std::vector<Player*> const passers =
+        GetVashjClusterCorePassers(bot, GetDesignatedCoreLooter(botAI, bot));
+    return passers.size() > 1 ? passers[1] : nullptr;
 }
 
 Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            member == secondCorePasser || !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
-            return member;
-    }
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            member == secondCorePasser || !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
-            return member;
-    }
-
-    return nullptr;
+    std::vector<Player*> const passers =
+        GetVashjMeleeCorePassers(bot, GetDesignatedCoreLooter(botAI, bot));
+    return passers.size() > 0 ? passers[0] : nullptr;
 }
 
 Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            member == secondCorePasser || member == thirdCorePasser || !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && PlayerbotAI::IsAssistHealOfIndex(member, 0, true))
-            return member;
-    }
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == designatedLooter || member == firstCorePasser ||
-            member == secondCorePasser || member == thirdCorePasser || !member->IsAlive())
-        {
-            continue;
-        }
-
-        if (GET_PLAYERBOT_AI(member) && !PlayerbotAI::IsTank(member))
-            return member;
-    }
-
-    return nullptr;
+    std::vector<Player*> const passers =
+        GetVashjMeleeCorePassers(bot, GetDesignatedCoreLooter(botAI, bot));
+    return passers.size() > 1 ? passers[1] : nullptr;
 }
 
 std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot)
