@@ -1035,3 +1035,30 @@ float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action *action)
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 3 ? 0.0f : 1.0f;
 }
+
+// Near a pool, only the melee spore action moves melee dps. Stock reach-melee would take them
+// straight back through it.
+float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<LadyVashjMeleeMoveAroundToxicSporesAction*>(action) ||
+        dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action) ||
+        dynamic_cast<LadyVashjSetGroundingTotemInMainTankGroupAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (!IsVashjRingMelee(bot))
+        return 1.0f;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return 1.0f;
+
+    return IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+}

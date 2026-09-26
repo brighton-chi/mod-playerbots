@@ -2956,6 +2956,31 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
+// Melee stay in reach of their target, at the nearest angle around it that no pool covers. When
+// pools cover the whole ring, they step out of the pools as other bots do, and her tank, whose
+// avoid radius reaches past the ring, moves her.
+bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+
+    float stepX;
+    float stepY;
+    float stepZ;
+    if (target && target->IsAlive() && GetMeleeRingStepClearOfSpores(
+            bot, target, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
+    {
+        return MoveTo(
+            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
+    }
+
+    if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_AVOID_RADIUS))
+        return false;
+
+    return LadyVashjAvoidToxicSporesAction::Execute(event);
+}
+
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

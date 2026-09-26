@@ -183,6 +183,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj bot is in toxic spores", {
         NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));
 
+    triggers.push_back(new TriggerNode("lady vashj melee near toxic spores", {
+        NextAction("lady vashj melee move around toxic spores", ACTION_EMERGENCY + 6) }));
+
     triggers.push_back(new TriggerNode("lady vashj entangle on melee", {
         NextAction("lady vashj paladin use hand of freedom", ACTION_EMERGENCY + 8) }));
 
@@ -239,6 +242,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjCorePassersPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new LadyVashjDisableAutoTargetAndMoveMultiplier(botAI));
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
+    multipliers.push_back(new LadyVashjMeleeControlSporeAvoidanceMultiplier(botAI));
 }
 
 namespace

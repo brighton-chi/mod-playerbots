@@ -377,6 +377,9 @@ inline constexpr float TOXIC_SPORES_AVOID_RADIUS = 7.5f;
 inline constexpr float TOXIC_SPORES_TANK_AVOID_RADIUS = 15.0f;
 // Well past the widest avoid radius.
 inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
+// Melee dps within this of a pool are moved only by the melee spore action, so stock reach-melee
+// can't walk them back through a pool on the way to their target.
+inline constexpr float TOXIC_SPORES_MELEE_CONTROL_RADIUS = 10.0f;
 
 // Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, in the order they are filled.
 // Every slot is 22y+ off the Elite and Strider spawns and the line they walk in on, since both
@@ -506,6 +509,17 @@ bool FindVashjDaisStepAwayFromUnits(
     float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
     float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
 bool HasStaticCharge(Player* player);
+// Melee dps not holding Static Charge, who dodge pools around their target in phase 3. Tanks and
+// Static Charge holders have their own movement.
+bool IsVashjRingMelee(Player* bot);
+// True if any pool is within radius of the bot.
+bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
+// A step toward the nearest point, on a ring just inside the bot's melee range of target, that is
+// radius or more from every pool and on the dais. False if the bot already stands clear in melee
+// range, or if no point of the ring is clear.
+bool GetMeleeRingStepClearOfSpores(
+    Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
+    float& stepY, float& stepZ);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 // The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the
