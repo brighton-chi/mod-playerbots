@@ -82,7 +82,11 @@ enum class SscSpells : uint32
     SPELL_MISDIRECTION           = 35079,
 
     // Paladin
+    SPELL_DIVINE_SHIELD          =   642,
     SPELL_AVENGING_WRATH         = 31884,
+
+    // Priest
+    SPELL_DISPERSION             = 47585,
 
     // Rogue
     SPELL_CLOAK_OF_SHADOWS       = 31224,
@@ -524,6 +528,9 @@ bool HasStaticCharge(Player* player);
 bool IsVashjRingMelee(Player* bot);
 // True if any pool is within radius of the bot.
 bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
+// A Paladin under Divine Shield or a Priest under Dispersion, who may walk straight through pools
+// on the way somewhere, though not stop in one.
+bool CanWalkThroughToxicSpores(Player* bot);
 // A step toward the nearest point, on a ring just inside the bot's melee range of target, that is
 // radius or more from every pool and on the dais. False if the bot already stands clear in melee
 // range, or if no point of the ring is clear.

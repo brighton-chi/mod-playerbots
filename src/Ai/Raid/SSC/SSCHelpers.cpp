@@ -982,8 +982,11 @@ float GetCastRingRadius(Player* bot, Unit* target, float castRange)
 
 bool IsVashjRangedReachBlockedBySpores(PlayerbotAI* botAI, Player* bot)
 {
-    if (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER || HasStaticCharge(bot))
+    if (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER ||
+        HasStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
+    {
         return false;
+    }
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* vashj = context->GetValue<Unit*>("find target", "lady vashj")->Get();
@@ -1079,6 +1082,19 @@ bool GetStepToCastRangeAroundSpores(
     }
 
     return found && CanTakeStepTowards(bot, bestX, bestY, PATH_STEP_DISTANCE, stepX, stepY, stepZ);
+}
+
+bool CanWalkThroughToxicSpores(Player* bot)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_PALADIN:
+            return bot->HasAura(Id(SscSpells::SPELL_DIVINE_SHIELD));
+        case CLASS_PRIEST:
+            return bot->HasAura(Id(SscSpells::SPELL_DISPERSION));
+        default:
+            return false;
+    }
 }
 
 bool IsVashjRingMelee(Player* bot)

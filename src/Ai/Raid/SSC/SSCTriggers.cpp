@@ -450,16 +450,18 @@ bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
     return vashj && vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
+// Healers only in phase 3, so healer dps has a target there and never picks a Sporebat, which
+// walks them up into the air. In phase 2 they hold their cluster slots.
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
     int8 const phase = GetLadyVashjPhase(vashj);
+    if (PlayerbotAI::IsHeal(bot))
+        return phase == 3;
+
     return phase == 2 || phase == 3;
 }
 
@@ -635,8 +637,13 @@ bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
-    float const radius = vashj->GetVictim() == bot ?
-        TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
+    bool const tanking = vashj->GetVictim() == bot;
+
+    // Shielded bots walk through on their way; her tank's radius is for the melee behind her
+    if (!tanking && bot->isMoving() && CanWalkThroughToxicSpores(bot))
+        return false;
+
+    float const radius = tanking ? TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
     return IsNearToxicSpores(botAI, bot, radius);
 }
 
