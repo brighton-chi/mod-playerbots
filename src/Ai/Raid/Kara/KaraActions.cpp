@@ -76,8 +76,8 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool KarazhanSetTremorTotemAction::Execute(Event /*event*/)
 {
-    constexpr uint32 tremorTotem = Id(KaraSpells::SPELL_TREMOR_TOTEM);
-    return botAI->CanCastSpell(tremorTotem, bot) && botAI->CastSpell(tremorTotem, bot);
+    return botAI->CanCastSpell(Id(KaraSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(Id(KaraSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 // Trash
