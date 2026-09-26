@@ -777,7 +777,7 @@ std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI)
     return GetCachedHazardPositions(botAI, "ssc toxic spores");
 }
 
-bool IsOnVashjDais(float x, float y, float margin)
+bool IsOnVashjDais(float x, float y, float margin, float rockClearance)
 {
     float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     float const dy = y - VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
@@ -790,7 +790,7 @@ bool IsOnVashjDais(float x, float y, float margin)
     float const edgeDistance = std::hypot(dx, dy) * std::cos(offset);
 
     return edgeDistance <= VASHJ_DAIS_APOTHEM - margin && !IsInPolygon(x, y, VASHJ_NORTH_ROCK) &&
-        DistanceToPolygonOutline(x, y, VASHJ_NORTH_ROCK) >= VASHJ_NORTH_ROCK_CLEARANCE;
+        DistanceToPolygonOutline(x, y, VASHJ_NORTH_ROCK) >= rockClearance;
 }
 
 bool FindVashjDaisStepAwayFromPositions(
@@ -917,7 +917,7 @@ bool GetMeleeRingStepClearOfSpores(
 
     auto isClear = [&nearby, radius](float x, float y)
     {
-        return IsOnVashjDais(x, y, daisMargin) &&
+        return IsOnVashjDais(x, y, daisMargin, VASHJ_MELEE_ROCK_CLEARANCE) &&
             std::none_of(nearby.begin(), nearby.end(), [x, y, radius](Position const& spore)
             {
                 return spore.GetExactDist2d(x, y) < radius;
@@ -949,7 +949,53 @@ bool GetMeleeRingStepClearOfSpores(
             if (bot->GetExactDist2d(x, y) <= arrivalDistance)
                 return false;
 
-            return CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ);
+            // A corner flag, say, can block the way to one point but not the next
+            if (CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool GetStepOutOfNearestSpore(
+    Player* bot, std::vector<Position> const& spores, float radius, float& stepX, float& stepY,
+    float& stepZ)
+{
+    auto const nearest = std::min_element(spores.begin(), spores.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2dSq(a) < bot->GetExactDist2dSq(b);
+        });
+
+    if (nearest == spores.end())
+        return false;
+
+    constexpr float daisMargin = 1.0f;
+    float const sporeX = nearest->GetPositionX();
+    float const sporeY = nearest->GetPositionY();
+    float const botAngle = bot->GetExactDist2d(sporeX, sporeY) > 0.1f ?
+        std::atan2(bot->GetPositionY() - sporeY, bot->GetPositionX() - sporeX) :
+        bot->GetOrientation();
+
+    // Fanning out from straight away from the pool, so the first point found is the nearest
+    constexpr uint8 samplesPerSide = 36;
+    constexpr float sampleAngle = static_cast<float>(M_PI) / samplesPerSide;
+    for (uint8 i = 0; i <= samplesPerSide; ++i)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            if (i == 0 && side < 0)
+                continue;
+
+            float const angle = botAngle + side * sampleAngle * i;
+            float const x = sporeX + std::cos(angle) * radius;
+            float const y = sporeY + std::sin(angle) * radius;
+            if (IsOnVashjDais(x, y, daisMargin, VASHJ_MELEE_ROCK_CLEARANCE) &&
+                CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
+            {
+                return true;
+            }
         }
     }
 

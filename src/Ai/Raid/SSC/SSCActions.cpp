@@ -2958,7 +2958,8 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 
 // Melee stay in reach of their target, at the nearest angle around it that no pool covers. When
 // pools cover the whole ring, they step out of the pools as other bots do, and her tank, whose
-// avoid radius reaches past the ring, moves her.
+// avoid radius reaches past the ring, moves her. Boxed in where that finds nothing, a melee in a
+// pool walks straight out of the nearest one.
 bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
@@ -2978,7 +2979,18 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
     if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_AVOID_RADIUS))
         return false;
 
-    return LadyVashjAvoidToxicSporesAction::Execute(event);
+    if (LadyVashjAvoidToxicSporesAction::Execute(event))
+        return true;
+
+    if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
+            bot, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)

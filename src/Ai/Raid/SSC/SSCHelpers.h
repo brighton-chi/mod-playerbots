@@ -367,6 +367,9 @@ inline std::array const VASHJ_NORTH_ROCK = {
 };
 // Steps keep this far off the rock outline. Vashj is large and snags on it trailing her tank.
 inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
+// Where melee stand to dodge pools. The larger clearance is for her path, not theirs, and in the
+// notch west of the rock it rules out two thirds of the ring round her.
+inline constexpr float VASHJ_MELEE_ROCK_CLEARANCE = 1.0f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
@@ -494,8 +497,9 @@ extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
 int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and clear of the north rock by
-// VASHJ_NORTH_ROCK_CLEARANCE.
-bool IsOnVashjDais(float x, float y, float margin);
+// rockClearance.
+bool IsOnVashjDais(
+    float x, float y, float margin, float rockClearance = VASHJ_NORTH_ROCK_CLEARANCE);
 // A step that leads away from every position given while staying on the dais. facing is optional,
 // for a tank: when the bot is its victim, a step leading away from it is walked backwards. spores
 // is optional too: when given, no step ends within sporeRadius of one.
@@ -520,6 +524,11 @@ bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
 bool GetMeleeRingStepClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
     float& stepY, float& stepZ);
+// A step toward the nearest point on the dais radius from the pool nearest the bot, whatever
+// other pools are there. The last way out of a pool for a boxed-in melee.
+bool GetStepOutOfNearestSpore(
+    Player* bot, std::vector<Position> const& spores, float radius, float& stepX, float& stepY,
+    float& stepZ);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 // The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the
