@@ -47,10 +47,14 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return 0.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "spectral charger"))
+    if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
+        AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
+        AI_VALUE2(Unit*, "find target", "roar"))
+    {
         return 0.0f;
+    }
 
-    return AI_VALUE2(Unit*, "find target", "the big bad wolf") ? 0.0f : 1.0f;
+    return 1.0f;
 }
 
 // Attumen the Huntsman

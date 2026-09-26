@@ -15,8 +15,6 @@ using namespace EncounterHelpers;
 
 // General
 
-// This will return true during Terestian Illhoof. It's not a problem as there is nothing to be
-// cleared that relates to him, but it is something to keep in mind going forward.
 bool KarazhanNoEncounterInProgressTrigger::IsActive()
 {
     return !IsEncounterInProgress(bot, KARA_MAP_ID);
@@ -31,9 +29,12 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    return (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z) ||
-        AI_VALUE2(Unit*, "find target", "spectral charger") ||
-        AI_VALUE2(Unit*, "find target", "the big bad wolf");
+    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+        return true;
+
+    return AI_VALUE2(Unit*, "find target", "spectral charger") ||
+        AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
+        AI_VALUE2(Unit*, "find target", "roar");
 }
 
 // Trash
