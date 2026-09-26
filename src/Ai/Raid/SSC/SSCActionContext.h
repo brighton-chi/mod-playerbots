@@ -164,6 +164,9 @@ public:
         creators["lady vashj position coilfang elite"] =
             &RaidSscActionContext::lady_vashj_position_coilfang_elite;
 
+        creators["lady vashj tank wait in the middle"] =
+            &RaidSscActionContext::lady_vashj_tank_wait_in_the_middle;
+
         creators["lady vashj assign tainted core looter"] =
             &RaidSscActionContext::lady_vashj_assign_tainted_core_looter;
 
@@ -353,6 +356,9 @@ private:
     }
     static Action* lady_vashj_position_coilfang_elite(PlayerbotAI* botAI) {
         return new LadyVashjPositionCoilfangEliteAction(botAI);
+    }
+    static Action* lady_vashj_tank_wait_in_the_middle(PlayerbotAI* botAI) {
+        return new LadyVashjTankWaitInTheMiddleAction(botAI);
     }
     static Action* lady_vashj_assign_tainted_core_looter(PlayerbotAI* botAI) {
         return new LadyVashjAssignTaintedCoreLooterAction(botAI);

@@ -712,10 +712,35 @@ float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& 
     return closest;
 }
 
+// True if the segment from a to b crosses the polygon's outline in 2D.
+template <std::size_t N>
+bool SegmentCrossesPolygon(
+    Position const& a, Position const& b, std::array<Position, N> const& polygon)
+{
+    // Positive when r is left of the line from p to q
+    auto side = [](Position const& p, Position const& q, Position const& r)
+    {
+        return (q.GetPositionX() - p.GetPositionX()) * (r.GetPositionY() - p.GetPositionY()) -
+            (q.GetPositionY() - p.GetPositionY()) * (r.GetPositionX() - p.GetPositionX());
+    };
+
+    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    {
+        Position const& c = polygon[j];
+        Position const& d = polygon[i];
+        if ((side(c, d, a) > 0.0f) != (side(c, d, b) > 0.0f) &&
+            (side(a, b, c) > 0.0f) != (side(a, b, d) > 0.0f))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 } // end anonymous namespace (Vashj)
 
 std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
 std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
@@ -1046,14 +1071,18 @@ Player* GetVashjClusterHealer(Player* bot, int8 cluster)
     return holder && holder->IsAlive() ? holder : nullptr;
 }
 
+// From the Tainted spawn just east of the rock, cluster 4 is nearest but would have to walk round
+// it, so cluster 3 takes it. No other spawn changes.
 int8 GetNearestVashjCluster(Unit* unit)
 {
     int8 nearest = 0;
     float nearestDistance = std::numeric_limits<float>::max();
     for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
     {
-        float const distance = unit->GetExactDist2d(VASHJ_CLUSTERS[i].ranged[0]);
-        if (distance < nearestDistance)
+        Position const& slot = VASHJ_CLUSTERS[i].ranged[0];
+        float const distance = unit->GetExactDist2d(slot);
+        if (distance < nearestDistance &&
+            !SegmentCrossesPolygon(slot, unit->GetPosition(), VASHJ_NORTH_ROCK))
         {
             nearestDistance = distance;
             nearest = static_cast<int8>(i);
@@ -1425,17 +1454,19 @@ std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
     return generators;
 }
 
-// Returns the nearest active Shield Generator to the bot
+// Returns the nearest active Shield Generator to the reference position
 // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures,
 // which despawn after use
-Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
+Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* vashj, Position const& reference)
 {
-    if (!reference)
+    if (!vashj)
         return nullptr;
 
+    // Searched from Vashj, rooted at home in phase 2 within 1.2y of the centre. The triggers are
+    // summoned on the generators, 31-32y from the centre.
     std::list<Creature*> triggers;
-    constexpr float searchRange = 150.0f;
-    reference->GetCreatureListWithEntryInGrid(
+    constexpr float searchRange = 40.0f;
+    vashj->GetCreatureListWithEntryInGrid(
         triggers, Id(SscNpcs::NPC_WORLD_INVISIBLE_TRIGGER), searchRange);
 
     Creature* nearest = nullptr;
@@ -1446,7 +1477,7 @@ Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
         if (!creature->IsAlive())
             continue;
 
-        float dist = reference->GetDistance(creature);
+        float dist = creature->GetExactDist2d(reference);
         if (dist < minDist)
         {
             minDist = dist;
