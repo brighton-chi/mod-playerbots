@@ -365,4 +365,14 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class LadyVashjMeleeControlSporeAvoidanceMultiplier : public SscEncounterMultiplier
+{
+public:
+    LadyVashjMeleeControlSporeAvoidanceMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj melee control spore avoidance") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif

@@ -185,6 +185,9 @@ public:
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
 
+        creators["lady vashj melee move around toxic spores"] =
+            &RaidSscActionContext::lady_vashj_melee_move_around_toxic_spores;
+
         creators["lady vashj paladin use hand of freedom"] =
             &RaidSscActionContext::lady_vashj_paladin_use_hand_of_freedom;
 
@@ -373,6 +376,9 @@ private:
     }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);
+    }
+    static Action* lady_vashj_melee_move_around_toxic_spores(PlayerbotAI* botAI) {
+        return new LadyVashjMeleeMoveAroundToxicSporesAction(botAI);
     }
     static Action* lady_vashj_paladin_use_hand_of_freedom(PlayerbotAI* botAI) {
         return new LadyVashjPaladinUseHandOfFreedomAction(botAI);

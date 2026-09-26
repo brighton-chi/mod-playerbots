@@ -181,6 +181,9 @@ public:
         creators["lady vashj bot is in toxic spores"] =
             &RaidSscTriggerContext::lady_vashj_bot_is_in_toxic_spores;
 
+        creators["lady vashj melee near toxic spores"] =
+            &RaidSscTriggerContext::lady_vashj_melee_near_toxic_spores;
+
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
 
@@ -362,6 +365,9 @@ private:
     }
     static Trigger* lady_vashj_bot_is_in_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjBotIsInToxicSporesTrigger(botAI);
+    }
+    static Trigger* lady_vashj_melee_near_toxic_spores(PlayerbotAI* botAI) {
+        return new LadyVashjMeleeNearToxicSporesTrigger(botAI);
     }
     static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);

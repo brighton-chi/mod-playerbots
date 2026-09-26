@@ -625,20 +625,29 @@ bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
     return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > 1.5f;
 }
 
+// Melee dps have their own trigger, below.
 bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
 {
+    if (IsVashjRingMelee(bot))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
     float const radius = vashj->GetVictim() == bot ?
         TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
+    return IsNearToxicSpores(botAI, bot, radius);
+}
 
-    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    return std::any_of(spores.begin(), spores.end(), [this, radius](Position const& spore)
-    {
-        return bot->GetExactDist2d(spore) < radius;
-    });
+bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
+{
+    if (!IsVashjRingMelee(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3 &&
+        IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS);
 }
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()

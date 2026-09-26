@@ -523,8 +523,17 @@ public:
 class LadyVashjAvoidToxicSporesAction : public MovementAction
 {
 public:
-    LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "lady vashj avoid toxic spores") {}
+    LadyVashjAvoidToxicSporesAction(
+        PlayerbotAI* botAI, std::string const& name = "lady vashj avoid toxic spores")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjMeleeMoveAroundToxicSporesAction : public LadyVashjAvoidToxicSporesAction
+{
+public:
+    LadyVashjMeleeMoveAroundToxicSporesAction(PlayerbotAI* botAI)
+        : LadyVashjAvoidToxicSporesAction(botAI, "lady vashj melee move around toxic spores") {}
     bool Execute(Event event) override;
 };
 

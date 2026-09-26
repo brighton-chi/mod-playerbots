@@ -572,6 +572,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjMeleeNearToxicSporesTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjMeleeNearToxicSporesTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj melee near toxic spores") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjEntangleOnMeleeTrigger : public SscEncounterTrigger
 {
 public:

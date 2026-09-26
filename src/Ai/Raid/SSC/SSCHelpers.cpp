@@ -879,6 +879,83 @@ bool HasStaticCharge(Player* player)
     return player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
 }
 
+bool IsVashjRingMelee(Player* bot)
+{
+    return PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsTank(bot) && !HasStaticCharge(bot);
+}
+
+bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)
+{
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+    return std::any_of(spores.begin(), spores.end(), [bot, radius](Position const& spore)
+    {
+        return bot->GetExactDist2d(spore) < radius;
+    });
+}
+
+// Like Azgalor's Rain of Fire maneuver, but sampled every 5 degrees so each point can be checked
+// against the dais and the rock too.
+bool GetMeleeRingStepClearOfSpores(
+    Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
+    float& stepY, float& stepZ)
+{
+    // Slack so rounding and drift can't leave the bot just out of reach
+    constexpr float meleeRangeInset = 1.0f;
+    constexpr float daisMargin = 1.0f;
+    float const meleeRange = bot->GetMeleeRange(target);
+    float const ringRadius = meleeRange - meleeRangeInset;
+    float const targetX = target->GetPositionX();
+    float const targetY = target->GetPositionY();
+
+    // Only pools within reach of the ring, or of a bot already in melee range, matter
+    std::vector<Position> nearby;
+    for (Position const& spore : spores)
+    {
+        if (spore.GetExactDist2d(targetX, targetY) < meleeRange + radius)
+            nearby.push_back(spore);
+    }
+
+    auto isClear = [&nearby, radius](float x, float y)
+    {
+        return IsOnVashjDais(x, y, daisMargin) &&
+            std::none_of(nearby.begin(), nearby.end(), [x, y, radius](Position const& spore)
+            {
+                return spore.GetExactDist2d(x, y) < radius;
+            });
+    };
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    if (bot->IsWithinMeleeRange(target) && isClear(botX, botY))
+        return false;
+
+    float const botAngle = std::atan2(botY - targetY, botX - targetX);
+    constexpr uint8 samplesPerSide = 36;
+    constexpr float sampleAngle = static_cast<float>(M_PI) / samplesPerSide;
+    for (uint8 i = 0; i <= samplesPerSide; ++i)
+    {
+        for (int8 side = 1; side >= -1; side -= 2)
+        {
+            if (i == 0 && side < 0)
+                continue;
+
+            float const angle = botAngle + side * sampleAngle * i;
+            float const x = targetX + std::cos(angle) * ringRadius;
+            float const y = targetY + std::sin(angle) * ringRadius;
+            if (!isClear(x, y))
+                continue;
+
+            constexpr float arrivalDistance = 0.5f;
+            if (bot->GetExactDist2d(x, y) <= arrivalDistance)
+                return false;
+
+            return CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ);
+        }
+    }
+
+    return false;
+}
+
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj)
 {
     Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
