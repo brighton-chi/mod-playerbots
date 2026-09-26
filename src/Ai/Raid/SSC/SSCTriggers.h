@@ -492,6 +492,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjTankIsIdleAwayFromTheMiddleTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjTankIsIdleAwayFromTheMiddleTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj tank is idle away from the middle") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjHunterShouldMisdirectStriderTrigger : public SscEncounterTrigger
 {
 public:

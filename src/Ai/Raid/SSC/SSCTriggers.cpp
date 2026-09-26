@@ -486,6 +486,35 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
+// Idle means not on an Elite, a Strider, or an Enchanted near her.
+bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 2 ||
+        bot->GetExactDist(vashj) < VASHJ_IDLE_TANK_DISTANCE)
+    {
+        return false;
+    }
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return true;
+
+    switch (target->GetEntry())
+    {
+        case Id(SscNpcs::NPC_COILFANG_ELITE):
+        case Id(SscNpcs::NPC_COILFANG_STRIDER):
+            return false;
+        case Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL):
+            return vashj->GetExactDist2d(target) > VASHJ_ENCHANTED_NEAR_HER_DISTANCE;
+        default:
+            return true;
+    }
+}
+
 bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)

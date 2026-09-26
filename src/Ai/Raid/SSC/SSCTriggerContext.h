@@ -157,6 +157,9 @@ public:
         creators["lady vashj coilfang elite should be tanked"] =
             &RaidSscTriggerContext::lady_vashj_coilfang_elite_should_be_tanked;
 
+        creators["lady vashj tank is idle away from the middle"] =
+            &RaidSscTriggerContext::lady_vashj_tank_is_idle_away_from_the_middle;
+
         creators["lady vashj hunter should misdirect strider"] =
             &RaidSscTriggerContext::lady_vashj_hunter_should_misdirect_strider;
 
@@ -338,6 +341,9 @@ private:
     }
     static Trigger* lady_vashj_coilfang_elite_should_be_tanked(PlayerbotAI* botAI) {
         return new LadyVashjCoilfangEliteShouldBeTankedTrigger(botAI);
+    }
+    static Trigger* lady_vashj_tank_is_idle_away_from_the_middle(PlayerbotAI* botAI) {
+        return new LadyVashjTankIsIdleAwayFromTheMiddleTrigger(botAI);
     }
     static Trigger* lady_vashj_hunter_should_misdirect_strider(PlayerbotAI* botAI) {
         return new LadyVashjHunterShouldMisdirectStriderTrigger(botAI);

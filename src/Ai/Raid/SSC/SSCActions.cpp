@@ -61,7 +61,6 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= vashjClusterHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
     reset |= lastVashjCoreImbueAttempt.erase(instanceId) > 0;
-    reset |= nearestVashjGeneratorTriggerGuid.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
@@ -1873,25 +1872,24 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     std::vector<Unit*> targets;
     if (phase == 2)
     {
+        Unit* enchantedNearVashj =
+            enchanted && vashj->GetExactDist2d(enchanted) <= VASHJ_ENCHANTED_NEAR_HER_DISTANCE ?
+            enchanted : nullptr;
+
         // Striders need several ranged on them at once
         if (holdsClusterSlot)
             targets = { strider, enchanted, elite };
         // Melee stay near her and the Elites: Enchanted about to reach her first, then Elites,
         // then whichever other Enchanted is nearest
         else if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
-        {
-            constexpr float nearVashjDistance = 20.0f;
-            Unit* enchantedNearVashj =
-                enchanted && vashj->GetExactDist2d(enchanted) <= nearVashjDistance ?
-                enchanted : nullptr;
             targets = { enchantedNearVashj, elite, enchantedNearestBot };
-        }
+        // Tanks stay in the middle for the next Elite or Strider, wherever it comes from
         else if (PlayerbotAI::IsTank(bot))
         {
             if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-                targets = { strider, elite, enchanted };
+                targets = { strider, elite, enchantedNearVashj };
             else
-                targets = { elite, strider, enchanted };
+                targets = { elite, strider, enchantedNearVashj };
         }
         else
             targets = { enchanted, elite, strider };
@@ -1946,14 +1944,29 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         bot->SetSelection(ObjectGuid());
     }
 
+    // A tank with nothing in the middle drops an Enchanted farther out and waits there instead
+    if (!target && phase == 2 && PlayerbotAI::IsTank(bot) && currentTarget &&
+        currentTarget->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL))
+    {
+        bot->AttackStop();
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+    }
+
     if (target && currentTarget != target && AI_VALUE(Unit*, "current target") != target)
         return Attack(target);
 
     // If bots have wandered too far from the center, move them back
     // THIS DOESN'T WORK SINCE MOVETO A WORLD OBJECT IS LIMITED TO SPELL DIST
-    // Cluster bots are taken back to their slots by their own action instead
-    if (holdsClusterSlot || bot->GetExactDist2d(vashj) <= maxPursueRange)
+    // Cluster bots are taken back to their slots by their own action instead. So are idle tanks in
+    // phase 2, to the middle; a tank holding a Strider past the south-east hold is about 55y out,
+    // and this would drag it off the hold.
+    if (holdsClusterSlot || (phase == 2 && PlayerbotAI::IsTank(bot)) ||
+        bot->GetExactDist2d(vashj) <= maxPursueRange)
+    {
         return false;
+    }
 
     return MoveTo(vashj, maxPursueRange - 10.0f, MovementPriority::MOVEMENT_FORCED);
 }
@@ -2041,6 +2054,23 @@ bool LadyVashjTankAttackAndPositionStriderAction::MoveStriderToHoldPosition(Unit
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+// Walks a path, which goes round the generators.
+bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
+{
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_IDLE_TANK_DISTANCE, stepX, stepY))
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
 // The tank takes the Elite to the nearer of the two Elite tank positions, where a cluster's ranged
 // reach it. For a human tank: in front of the north rock, or south-east of the middle.
 bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
@@ -2112,7 +2142,8 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
         previous->second.tainted == tainted->GetGUID();
 
     vashjTaintedCoreLooter.insert_or_assign(bot->GetInstanceId(),
-        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), cluster });
+        TaintedCoreLooter{ tainted->GetGUID(), tainted->GetPosition(), looter->GetGUID(),
+            cluster });
 
     // TEMP LOG
     if (!repick)
@@ -2327,22 +2358,12 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 
     uint32 const instanceId = vashj->GetInstanceId();
 
-    Unit* closestTrigger = nullptr;
-    if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        (closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted)))
-    {
-        nearestVashjGeneratorTriggerGuid.try_emplace(instanceId, closestTrigger->GetGUID());
-    }
+    auto itLooter = vashjTaintedCoreLooter.find(instanceId);
+    if (itLooter == vashjTaintedCoreLooter.end())
+        return false;
 
-    auto itSnap = nearestVashjGeneratorTriggerGuid.find(instanceId);
-    if (itSnap != nearestVashjGeneratorTriggerGuid.end() && !itSnap->second.IsEmpty())
-    {
-        if (Unit* snapUnit = botAI->GetUnit(itSnap->second))
-            closestTrigger = snapUnit;
-        else
-            nearestVashjGeneratorTriggerGuid.erase(instanceId);
-    }
-
+    Unit* closestTrigger =
+        GetNearestActiveShieldGeneratorTriggerByEntry(vashj, itLooter->second.taintedPosition);
     if (!closestTrigger)
         return false;
 

@@ -459,6 +459,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjTankWaitInTheMiddleAction : public MovementAction
+{
+public:
+    LadyVashjTankWaitInTheMiddleAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj tank wait in the middle") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjAssignTaintedCoreLooterAction : public Action
 {
 public:

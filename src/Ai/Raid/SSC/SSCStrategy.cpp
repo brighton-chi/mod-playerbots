@@ -171,6 +171,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj coilfang elite should be tanked", {
         NextAction("lady vashj position coilfang elite", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("lady vashj tank is idle away from the middle", {
+        NextAction("lady vashj tank wait in the middle", ACTION_RAID - 1) }));
+
     triggers.push_back(new TriggerNode("lady vashj hunter should misdirect strider", {
         NextAction("lady vashj misdirect strider to first assist tank", ACTION_EMERGENCY + 2) }));
 

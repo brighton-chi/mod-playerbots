@@ -461,11 +461,18 @@ inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
     Position{ 63.5f, -911.0f, 41.8f },
     Position{  5.5f, -934.0f, 42.1f },
 };
+// Melee and tanks take only Enchanted Elementals within this of Vashj, before other targets.
+inline constexpr float VASHJ_ENCHANTED_NEAR_HER_DISTANCE = 20.0f;
+// Tanks with nothing to tank in phase 2 wait within this of Vashj, to reach adds on any side.
+inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
 
 // The Tainted Elemental a looter was chosen for, per instance
 struct TaintedCoreLooter
 {
     ObjectGuid tainted;
+    // It never moves, and its corpse despawns 15s after it spawns, so the core is passed toward
+    // the generator nearest where it stood
+    Position taintedPosition;
     ObjectGuid looter;
     // The cluster nearest the elemental, whose ranged dps kill it
     int8 cluster = -1;
@@ -473,7 +480,6 @@ struct TaintedCoreLooter
 
 extern std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-extern std::unordered_map<uint32, ObjectGuid> nearestVashjGeneratorTriggerGuid;
 extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
 extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
 extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
@@ -514,6 +520,7 @@ Position const& GetVashjClusterPosition(VashjClusterSlot const& slot);
 std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster);
 // Nullptr if the cluster has no healer or it is dead.
 Player* GetVashjClusterHealer(Player* bot, int8 cluster);
+// Skips a cluster whose straight line to the unit crosses the north rock.
 int8 GetNearestVashjCluster(Unit* unit);
 // The cluster's healer; else the healer of the nearest cluster that has one; else the closest
 // non-tank bot.
@@ -559,7 +566,7 @@ std::vector<uint32> const SHIELD_GENERATOR_DB_GUIDS =
 };
 std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
     Map* map, std::vector<uint32> const& generatorDbGuids);
-Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference);
+Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* vashj, Position const& reference);
 GeneratorInfo const* GetNearestGeneratorToBot(
     Player* bot, std::vector<GeneratorInfo> const& generators);
 
