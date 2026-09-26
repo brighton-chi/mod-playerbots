@@ -1179,6 +1179,72 @@ bool IsTankedByTank(Unit* unit)
     return victim && PlayerbotAI::IsTank(victim);
 }
 
+bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
+{
+    char const* taunt = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
+        case CLASS_DRUID:        taunt = "growl"; break;
+        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
+        case CLASS_WARRIOR:      taunt = "taunt"; break;
+        default:                 return false;
+    }
+
+    return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);
+}
+
+Player* GetVashjAddOwningTank(Player* bot, Unit* add)
+{
+    Player* victim = add->GetVictim() ? add->GetVictim()->ToPlayer() : nullptr;
+    if (victim && victim->IsAlive() && victim->GetVictim() == add && PlayerbotAI::IsTank(victim))
+        return victim;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->GetVictim() == add &&
+            PlayerbotAI::IsTank(member))
+        {
+            return member;
+        }
+    }
+
+    return nullptr;
+}
+
+bool IsNearestFreeVashjTank(Player* bot, Unit* add)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return true;
+
+    float const botDistance = bot->GetExactDist2d(add);
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() || !member->IsInMap(bot) ||
+            !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsTank(member))
+        {
+            continue;
+        }
+
+        Unit* victim = member->GetVictim();
+        bool const busy = victim &&
+            (victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
+             victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
+            GetVashjAddOwningTank(bot, victim) == member;
+        if (!busy && member->GetExactDist2d(add) < botDistance)
+            return false;
+    }
+
+    return true;
+}
+
 bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards)

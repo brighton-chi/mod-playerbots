@@ -486,7 +486,7 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// Idle means not on an Elite, a Strider, or an Enchanted near her.
+// Idle means not on an Elite, a Strider, or an Enchanted within the tank leash.
 bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -509,23 +509,10 @@ bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
         case Id(SscNpcs::NPC_COILFANG_STRIDER):
             return false;
         case Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL):
-            return vashj->GetExactDist2d(target) > VASHJ_ENCHANTED_NEAR_HER_DISTANCE;
+            return vashj->GetExactDist2d(target) > VASHJ_TANK_LEASH_DISTANCE;
         default:
             return true;
     }
-}
-
-bool LadyVashjHunterShouldMisdirectStriderTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    if (!strider)
-        return false;
-
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    return firstAssistTank && strider->GetVictim() != firstAssistTank;
 }
 
 // Only a new elemental, or a looter who died on the way, needs a looter chosen.

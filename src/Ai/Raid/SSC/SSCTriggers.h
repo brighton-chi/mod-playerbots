@@ -502,16 +502,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjHunterShouldMisdirectStriderTrigger : public SscEncounterTrigger
-{
-public:
-    LadyVashjHunterShouldMisdirectStriderTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj hunter should misdirect strider") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class LadyVashjTaintedElementalNeedsLooterTrigger : public SscEncounterTrigger
 {
 public:
