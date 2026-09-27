@@ -196,7 +196,7 @@ private:
     }
     static Trigger* healer_should_attack_and_not_blanketing(PlayerbotAI* botAI)
     {
-        return new DruidHealerShouldAttackTrigger(botAI);
+        return new HealerShouldAttackAndNotBlanketingTrigger(botAI);
     }
     static Trigger* aquatic_form(PlayerbotAI* ai) { return new AquaticFormTrigger(ai); }
 };
