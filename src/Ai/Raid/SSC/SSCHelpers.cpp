@@ -1885,7 +1885,8 @@ std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
             continue;
 
         GameObject* go = bounds.first->second;
-        if (!go || go->GetGoState() != GO_STATE_READY)
+        // A used generator stays GO_STATE_READY; it is marked by setting this flag on itself
+        if (!go || go->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
             continue;
 
         GeneratorInfo info;
