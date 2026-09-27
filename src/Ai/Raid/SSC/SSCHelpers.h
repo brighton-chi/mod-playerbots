@@ -588,8 +588,11 @@ struct VashjCoreChain
     ObjectGuid generator;
     // Who throws to the first catcher: the looter, or the holder a new plan started from
     ObjectGuid start;
-    // In throw order; the last one uses the core on the generator
+    // In throw order; the last one uses the core on the generator. The first spot's bot is picked
+    // with the plan, every later one's when the spot is released.
     std::vector<VashjCoreCatcher> catchers;
+    // Left out after its throws failed, when this plan replaced one
+    ObjectGuid excluded;
     // The start and catchers of the chain this one replaced: one may still hold its core
     std::vector<ObjectGuid> earlier;
     // The highest catcher index that has held the core; those before it are done
@@ -742,6 +745,8 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter);
 bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded);
 // Gives a catcher's spot to the nearest other bot that can take it.
 bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
+// Picks the nearest bot for a catcher's spot, from where the raid stands now, and lets it set out.
+void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
 VashjCoreChain* GetVashjCoreChain(Player* bot);
 // The bot's place among the chain's catchers, or -1.
 int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);

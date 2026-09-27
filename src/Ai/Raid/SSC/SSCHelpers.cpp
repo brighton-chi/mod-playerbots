@@ -1800,7 +1800,7 @@ void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what)
     {
         Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
         catchers += Acore::StringFormat("{} at {:.1f} {:.1f} {:.1f}{}; ",
-            player ? player->GetName() : "nobody", catcher.spot.GetPositionX(),
+            player ? player->GetName() : "nobody yet", catcher.spot.GetPositionX(),
             catcher.spot.GetPositionY(), catcher.spot.GetPositionZ(),
             catcher.prepositions ? "" : " after the kill");
     }
@@ -2070,7 +2070,8 @@ Player* FindVashjCoreCatcher(
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !member->IsInMap(bot) || !GET_PLAYERBOT_AI(member) ||
             PlayerbotAI::IsTank(member) || member->GetGUID() == chain.start ||
-            member->GetGUID() == excluded || GetVashjCoreCatcherIndex(chain, member) >= 0)
+            member->GetGUID() == excluded || member->GetGUID() == chain.excluded ||
+            GetVashjCoreCatcherIndex(chain, member) >= 0)
         {
             continue;
         }
@@ -2101,27 +2102,21 @@ void SetVashjCoreCatcher(
     catcher.arrived = false;
 }
 
-// The first catcher is the killer nearest its spot, if any is left; every other spot goes to the
-// nearest bot that can take it, killers included.
-void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain, ObjectGuid excluded)
+// Only the first spot is filled with the plan, by the killer nearest it if any is left. The pass
+// action releases and fills every later spot as the chain moves up (ReleaseVashjCoreCatcher).
+void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain)
 {
-    for (size_t i = 0; i < chain.catchers.size(); ++i)
-    {
-        VashjCoreCatcher& catcher = chain.catchers[i];
-        Player* player = i == 0 ?
-            FindVashjCoreCatcher(bot, chain, catcher.spot, true, excluded) : nullptr;
-        if (!player)
-            player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, excluded);
+    if (chain.catchers.empty())
+        return;
 
-        SetVashjCoreCatcher(bot, chain, catcher, player);
-    }
+    VashjCoreCatcher& first = chain.catchers.front();
+    Player* player = FindVashjCoreCatcher(bot, chain, first.spot, true, ObjectGuid::Empty);
+    if (!player)
+        player = FindVashjCoreCatcher(bot, chain, first.spot, false, ObjectGuid::Empty);
 
-    // The rest are released by the pass action as the chain moves up
-    if (!chain.catchers.empty())
-    {
-        chain.catchers.front().released = true;
-        chain.catchers.front().releaseTime = getMSTime();
-    }
+    SetVashjCoreCatcher(bot, chain, first, player);
+    first.released = true;
+    first.releaseTime = getMSTime();
 }
 
 void ResetVashjCoreThrows(VashjCoreChain& chain)
@@ -2165,7 +2160,7 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter)
     }
 
     chain.failed = chain.catchers.empty();
-    AssignVashjCoreCatchers(bot, chain, ObjectGuid::Empty);
+    AssignVashjCoreCatchers(bot, chain);
     TaintedLogChain(bot, chain, "planned"); // TEMP LOG
     vashjCoreChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
 }
@@ -2191,7 +2186,8 @@ bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excl
     }
 
     chain.failed = chain.catchers.empty();
-    AssignVashjCoreCatchers(holder, chain, excluded);
+    chain.excluded = excluded;
+    AssignVashjCoreCatchers(holder, chain);
     TaintedLogChain(holder, chain, "re-planned"); // TEMP LOG
     return !chain.failed;
 }
@@ -2213,6 +2209,23 @@ bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
         TaintedLogElapsedMs(bot), index, player->GetName());
 
     return true;
+}
+
+void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
+{
+    VashjCoreCatcher& catcher = chain.catchers[index];
+    if (catcher.released)
+        return;
+
+    Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, ObjectGuid::Empty);
+    SetVashjCoreCatcher(bot, chain, catcher, player);
+    catcher.released = true;
+    catcher.releaseTime = getMSTime();
+
+    // TEMP LOG
+    LOG_INFO("playerbots", "[SSC tainted] +{}ms catcher {} released to {}, {:.1f} yd from its spot",
+        TaintedLogElapsedMs(bot), index, player ? player->GetName() : "nobody",
+        player ? player->GetExactDist2d(catcher.spot) : 0.0f);
 }
 
 VashjCoreChain* GetVashjCoreChain(Player* bot)

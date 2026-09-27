@@ -2565,18 +2565,9 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
     bool const last = next == chain->catchers.size();
     float const arrival = last ? lastArrivalDistance : arrivalDistance;
     VashjCoreCatcher& catcher = chain->catchers[index];
-    auto releaseNext = [&]()
-    {
-        if (!last && !chain->catchers[next].released)
-        {
-            chain->catchers[next].released = true;
-            chain->catchers[next].releaseTime = getMSTime();
-        }
-    };
-
-    // The second catcher sets out with the first
-    if (index == 0)
-        releaseNext();
+    // The second catcher is picked and sets out with the first
+    if (index == 0 && !last)
+        ReleaseVashjCoreCatcher(bot, *chain, next);
 
     if (bot->GetExactDist2d(catcher.spot) <= arrival)
     {
@@ -2584,7 +2575,8 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
         if (!catcher.arrived)
         {
             catcher.arrived = true;
-            releaseNext();
+            if (!last)
+                ReleaseVashjCoreCatcher(bot, *chain, next);
         }
 
         return false;
