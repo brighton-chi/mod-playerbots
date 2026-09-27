@@ -2554,18 +2554,43 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 // False once there, so the catcher can fight or heal from its spot while it waits.
 bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
 {
-    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    VashjCoreChain* chain = GetVashjCoreChain(bot);
     if (!chain)
         return false;
 
     // The last catcher closer in, so it is sure to be within use range of the generator
     constexpr float arrivalDistance = 1.0f;
     constexpr float lastArrivalDistance = 0.5f;
-    bool const last = static_cast<size_t>(index + 1) == chain->catchers.size();
+    size_t const next = static_cast<size_t>(index + 1);
+    bool const last = next == chain->catchers.size();
     float const arrival = last ? lastArrivalDistance : arrivalDistance;
-    Position const& spot = chain->catchers[index].spot;
-    if (bot->GetExactDist2d(spot) <= arrival)
+    VashjCoreCatcher& catcher = chain->catchers[index];
+    auto releaseNext = [&]()
+    {
+        if (!last && !chain->catchers[next].released)
+        {
+            chain->catchers[next].released = true;
+            chain->catchers[next].releaseTime = getMSTime();
+        }
+    };
+
+    // The second catcher sets out with the first
+    if (index == 0)
+        releaseNext();
+
+    if (bot->GetExactDist2d(catcher.spot) <= arrival)
+    {
+        // Each later one once the catcher before it stands on its spot
+        if (!catcher.arrived)
+        {
+            catcher.arrived = true;
+            releaseNext();
+        }
+
         return false;
+    }
+
+    Position const& spot = catcher.spot;
 
     float stepX;
     float stepY;
@@ -2636,13 +2661,16 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(size_t next, Item* core, GameO
 
     chain->blockedStart = 0;
 
-    constexpr uint32 retryMs = 1500;
+    // At least this long between any two throws of the chain, as lastVashjCoreImbueAttempt did:
+    // passes one right after another look rushed, and a bot could throw twice in a row. It is also
+    // the wait before a throw that didn't land is tried again.
+    constexpr uint32 throwIntervalMs = 2 * IN_MILLISECONDS;
+    if (chain->throwTime && getMSTimeDiff(chain->throwTime, now) < throwIntervalMs)
+        return false;
+
     constexpr uint8 maxThrows = 2;
     if (chain->throwTarget == player->GetGUID())
     {
-        if (getMSTimeDiff(chain->throwTime, now) < retryMs)
-            return false;
-
         if (++chain->failedThrows >= maxThrows)
         {
             ReplanVashjCoreChain(bot, *chain, player->GetGUID());

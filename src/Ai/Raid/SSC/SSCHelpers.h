@@ -569,11 +569,15 @@ struct VashjCoreCatcher
 {
     Position spot;
     ObjectGuid bot;
-    // Walks to the spot once readyDelay has passed since assignedTime. A killer doesn't: it walks
-    // once the elemental is dead.
-    bool prepositions = false;
-    uint32 assignedTime = 0;
+    // The first catcher is released when the chain is planned, the second when the first sets out,
+    // each later one when the catcher before it stands on its spot. It sets out readyDelay after
+    // its release, a player's reaction time.
+    bool released = false;
+    uint32 releaseTime = 0;
     uint32 readyDelay = 0;
+    // False for a killer, who sets out only once the elemental is dead
+    bool prepositions = false;
+    bool arrived = false;
 };
 
 // One core's way to a generator, per instance. Planned by the mechanic tracker bot when the looter
@@ -592,6 +596,7 @@ struct VashjCoreChain
     int8 reached = -1;
     // No way to a generator was found; the holder destroys the core
     bool failed = false;
+    // The last throw, kept through a new plan so the next still waits its turn
     ObjectGuid throwTarget;
     uint32 throwTime = 0;
     uint8 failedThrows = 0;

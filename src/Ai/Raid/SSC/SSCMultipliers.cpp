@@ -868,10 +868,12 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Acti
     return vashj && ShouldAvoidVashjStaticCharge(bot, vashj) ? 0.0f : 1.0f;
 }
 
-// Bots should not loot the core with normal looting logic
+// Bots should not loot the core with normal looting logic. Both the walk to a corpse and opening
+// it: a bot in the non-combat engine mid-fight runs the loot strategy, and one already beside the
+// corpse needs no walk.
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<LootAction*>(action))
+    if (!dynamic_cast<LootAction*>(action) && !dynamic_cast<OpenLootAction*>(action))
         return 1.0f;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

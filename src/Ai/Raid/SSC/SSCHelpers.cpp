@@ -2090,15 +2090,15 @@ Player* FindVashjCoreCatcher(
     return nearest;
 }
 
-// Gives a spot to player: a killer walks there once the elemental is dead, anyone else as a raid
-// would on a call, after a player's reaction time.
+// Gives a spot to player: a killer walks there once the elemental is dead, anyone else as soon as
+// the spot is released and it has reacted. The spot's release stays as it was.
 void SetVashjCoreCatcher(
     Player* bot, VashjCoreChain const& chain, VashjCoreCatcher& catcher, Player* player)
 {
     catcher.bot = player ? player->GetGUID() : ObjectGuid::Empty;
     catcher.prepositions = !player || !IsVashjCoreChainKiller(bot, chain, player);
-    catcher.assignedTime = getMSTime();
-    catcher.readyDelay = catcher.prepositions ? urand(1000, 2000) : 0;
+    catcher.readyDelay = urand(1000, 2000);
+    catcher.arrived = false;
 }
 
 // The first catcher is the killer nearest its spot, if any is left; every other spot goes to the
@@ -2115,13 +2115,19 @@ void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain, ObjectGuid excl
 
         SetVashjCoreCatcher(bot, chain, catcher, player);
     }
+
+    // The rest are released by the pass action as the chain moves up
+    if (!chain.catchers.empty())
+    {
+        chain.catchers.front().released = true;
+        chain.catchers.front().releaseTime = getMSTime();
+    }
 }
 
 void ResetVashjCoreThrows(VashjCoreChain& chain)
 {
     chain.reached = -1;
     chain.throwTarget.Clear();
-    chain.throwTime = 0;
     chain.failedThrows = 0;
     chain.waitTarget.Clear();
     chain.waitStart = 0;
@@ -2261,15 +2267,14 @@ bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 ind
         return false;
 
     VashjCoreCatcher const& catcher = chain.catchers[index];
-    if (catcher.prepositions)
-    {
-        if (getMSTimeDiff(catcher.assignedTime, getMSTime()) < catcher.readyDelay)
-            return false;
-    }
-    else if (Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
-             tainted && tainted->IsAlive())
-    {
+    if (!catcher.released || getMSTimeDiff(catcher.releaseTime, getMSTime()) < catcher.readyDelay)
         return false;
+
+    if (!catcher.prepositions)
+    {
+        Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
+        if (tainted && tainted->IsAlive())
+            return false;
     }
 
     return IsVashjCoreChainLive(bot, chain);
