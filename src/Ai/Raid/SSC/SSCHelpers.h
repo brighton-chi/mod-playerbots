@@ -513,10 +513,9 @@ inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
     Position{ 57.0f, -913.0f, 42.0f },
     Position{  5.5f, -934.0f, 42.1f },
 };
-// Melee take Enchanted Elementals within this of Vashj before other targets.
+// Melee take Enchanted Elementals within this of Vashj before other targets, and tanks not
+// holding an Elite or Strider in phase 2 take no others.
 inline constexpr float VASHJ_ENCHANTED_NEAR_HER_DISTANCE = 20.0f;
-// Tanks not holding an Elite or Strider in phase 2 take only Enchanted within this of Vashj.
-inline constexpr float VASHJ_TANK_LEASH_DISTANCE = 15.0f;
 // Tanks with nothing to tank in phase 2 wait within this of Vashj, to reach adds on any side.
 inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
 

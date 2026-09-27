@@ -488,7 +488,7 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// Idle means not on an Elite, a Strider, or an Enchanted within the tank leash.
+// Idle means not on an Elite, a Strider, or an Enchanted near her.
 bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -511,7 +511,7 @@ bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
         case Id(SscNpcs::NPC_COILFANG_STRIDER):
             return false;
         case Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL):
-            return vashj->GetExactDist2d(target) > VASHJ_TANK_LEASH_DISTANCE;
+            return vashj->GetExactDist2d(target) > VASHJ_ENCHANTED_NEAR_HER_DISTANCE;
         default:
             return true;
     }

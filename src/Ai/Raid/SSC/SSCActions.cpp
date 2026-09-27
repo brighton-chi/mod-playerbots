@@ -1850,7 +1850,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             tiers.insert(tiers.end(), {
                 { Kind::CoilfangStrider },
                 { Kind::CoilfangElite },
-                { Kind::EnchantedElemental, VASHJ_TANK_LEASH_DISTANCE },
+                { Kind::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
             });
         }
         else
@@ -2489,8 +2489,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     // Not gated behind CheatMask because the auto application of Fear Ward is necessary
     // to address an issue with bot movement, which is that bots cannot be rooted and
     // therefore will move when feared while holding the Tainted Core
-    if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
-        bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
+    // if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
+    //     bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 
     Item* item = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
     if (!item || !botAI->HasItemInInventory(Id(SscItems::ITEM_TAINTED_CORE)))
