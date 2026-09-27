@@ -169,11 +169,11 @@ public:
         creators["lady vashj bot is tainted core looter"] =
             &RaidSscTriggerContext::lady_vashj_bot_is_tainted_core_looter;
 
-        creators["lady vashj tainted core was looted"] =
-            &RaidSscTriggerContext::lady_vashj_tainted_core_was_looted;
+        creators["lady vashj bot is in tainted core chain"] =
+            &RaidSscTriggerContext::lady_vashj_bot_is_in_tainted_core_chain;
 
-        creators["lady vashj bot holds tainted core in phase 3"] =
-            &RaidSscTriggerContext::lady_vashj_bot_holds_tainted_core_in_phase_3;
+        creators["lady vashj bot should destroy tainted core"] =
+            &RaidSscTriggerContext::lady_vashj_bot_should_destroy_tainted_core;
 
         creators["lady vashj pet should switch target"] =
             &RaidSscTriggerContext::lady_vashj_pet_should_switch_target;
@@ -360,11 +360,11 @@ private:
     static Trigger* lady_vashj_bot_is_tainted_core_looter(PlayerbotAI* botAI) {
         return new LadyVashjBotIsTaintedCoreLooterTrigger(botAI);
     }
-    static Trigger* lady_vashj_tainted_core_was_looted(PlayerbotAI* botAI) {
-        return new LadyVashjTaintedCoreWasLootedTrigger(botAI);
+    static Trigger* lady_vashj_bot_is_in_tainted_core_chain(PlayerbotAI* botAI) {
+        return new LadyVashjBotIsInTaintedCoreChainTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_holds_tainted_core_in_phase_3(PlayerbotAI* botAI) {
-        return new LadyVashjBotHoldsTaintedCoreInPhase3Trigger(botAI);
+    static Trigger* lady_vashj_bot_should_destroy_tainted_core(PlayerbotAI* botAI) {
+        return new LadyVashjBotShouldDestroyTaintedCoreTrigger(botAI);
     }
     static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI) {
         return new LadyVashjPetShouldSwitchTargetTrigger(botAI);

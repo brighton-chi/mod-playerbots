@@ -531,11 +531,80 @@ struct TaintedCoreLooter
     int8 cluster = -1;
 };
 
+// The four rim triggers Elites and Striders spawn at, 54-56.5y out
+inline std::array const VASHJ_ADD_SPAWN_POSITIONS = {
+    Position{  43.329f, -869.731f, 41.2f },
+    Position{ -22.597f, -900.382f, 41.2f },
+    Position{  13.781f, -975.633f, 41.2f },
+    Position{  78.381f, -950.659f, 41.2f },
+};
+// The rock on the stairs between corners 1 and 2, base -> stairs -> base
+inline std::array const VASHJ_SOUTH_WEST_ROCK = {
+    Position{ -16.473f, -843.635f, 22.78f },
+    Position{ -10.493f, -849.837f, 27.23f },
+    Position{ -10.034f, -860.397f, 32.37f },
+    Position{ -14.241f, -865.373f, 32.69f },
+    Position{ -46.103f, -872.655f, 22.53f },
+};
+// Every Shield Generator, used or not. A used one still blocks movement and line of sight.
+inline std::array const VASHJ_SHIELD_GENERATOR_POSITIONS = {
+    Position{ 52.048f, -901.236f, 44.0f },
+    Position{ 52.448f, -944.825f, 44.0f },
+    Position{  7.810f, -945.244f, 44.0f },
+    Position{  7.417f, -901.109f, 44.0f },
+};
+
+// Throw Key reaches 40y edge to edge, about 43y centre to centre. Spots are planned this far
+// apart centre to centre, in 3D.
+inline constexpr float VASHJ_CORE_THROW_PLAN_DISTANCE = 40.0f;
+// The looter stands up to about 6y from the corpse, and the first throw is planned from the corpse.
+inline constexpr float VASHJ_CORE_LOOTER_OFFSET = 6.0f;
+// Elites and Striders attack anyone within 20y of them.
+inline constexpr float VASHJ_CORE_SPOT_SPAWN_CLEARANCE = 22.0f;
+// Other catchers stand this far from every generator's centre, off its base.
+inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
+inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 4;
+
+struct VashjCoreCatcher
+{
+    Position spot;
+    ObjectGuid bot;
+    // Walks to the spot once readyDelay has passed since assignedTime. A killer doesn't: it walks
+    // once the elemental is dead.
+    bool prepositions = false;
+    uint32 assignedTime = 0;
+    uint32 readyDelay = 0;
+};
+
+// One core's way to a generator, per instance. Planned by the mechanic tracker bot when the looter
+// is picked; the holder plans it again from where it is rooted if the next throw can't be made.
+struct VashjCoreChain
+{
+    ObjectGuid tainted;
+    ObjectGuid generator;
+    // Who throws to the first catcher: the looter, or the holder a new plan started from
+    ObjectGuid start;
+    // In throw order; the last one uses the core on the generator
+    std::vector<VashjCoreCatcher> catchers;
+    // The start and catchers of the chain this one replaced: one may still hold its core
+    std::vector<ObjectGuid> earlier;
+    // The highest catcher index that has held the core; those before it are done
+    int8 reached = -1;
+    // No way to a generator was found; the holder destroys the core
+    bool failed = false;
+    ObjectGuid throwTarget;
+    uint32 throwTime = 0;
+    uint8 failedThrows = 0;
+    // The catcher the holder is waiting on and since when, and since when that catcher has stood
+    // on its spot out of reach
+    ObjectGuid waitTarget;
+    uint32 waitStart = 0;
+    uint32 blockedStart = 0;
+};
+
 extern std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-extern std::unordered_map<ObjectGuid, Position> intendedVashjCorePasserLineup;
-extern std::unordered_map<uint32, uint32> lastVashjCoreImbueAttempt;
-extern std::unordered_map<ObjectGuid, uint32> lastVashjCoreInInventoryTime;
+extern std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
 
 int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
@@ -655,15 +724,27 @@ bool TaintedLogFirstTime(Player* bot, char const* key);
 bool TaintedLogSeen(Player* bot, char const* key);
 // At most once a second per bot and key.
 bool TaintedLogThrottle(Player* bot, char const* key);
-void TaintedLogThrow(PlayerbotAI* botAI, Player* bot, Player* receiver);
+void TaintedLogThrow(Player* bot, Player* receiver, int catcher);
+void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what);
 // Logs when the number of usable generators changes.
 void TaintedLogGenerators(Player* bot);
-Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
-std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot);
-bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot);
+bool HasTaintedCore(Player* player);
+// A new chain for the elemental, from where it stands to the usable generator nearest it, with
+// looter as its start.
+void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter);
+// Plans the chain again from the holder, rooted where it stands, to the same generator if still
+// usable. excluded gets no spot. Marks the chain failed if there is no way.
+bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded);
+// Gives a catcher's spot to the nearest other bot that can take it.
+bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
+VashjCoreChain* GetVashjCoreChain(Player* bot);
+// The bot's place among the chain's catchers, or -1.
+int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);
+// True while the chain is under way: its elemental stands or lies unlooted, the core's last holder
+// or the one it was last thrown to has it, or a throw has just been made.
+bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain);
+// True while the catcher should be walking to or standing on its spot.
+bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
 std::vector<uint32> const SHIELD_GENERATOR_DB_GUIDS =
 {
     47482, // NW
@@ -673,9 +754,6 @@ std::vector<uint32> const SHIELD_GENERATOR_DB_GUIDS =
 };
 std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
     Map* map, std::vector<uint32> const& generatorDbGuids);
-Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* vashj, Position const& reference);
-GeneratorInfo const* GetNearestGeneratorToBot(
-    Player* bot, std::vector<GeneratorInfo> const& generators);
 
 }
 

@@ -14,6 +14,9 @@
 #include <string>
 #include <vector>
 
+class GameObject;
+class Item;
+
 // General
 
 class SscResetEncounterStatesAction : public Action
@@ -507,17 +510,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool LineUpFirstCorePasser(Player* designatedLooter);
-    bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
-    bool LineUpThirdCorePasser(
-        Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    bool LineUpFourthCorePasser(
-        Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInPosition(Player* firstCorePasser);
-    bool IsSecondCorePasserInPosition(Player* secondCorePasser);
-    bool IsThirdCorePasserInPosition(Player* thirdCorePasser);
-    bool IsFourthCorePasserInPosition(Player* fourthCorePasser);
-    bool UseCoreOnNearestGenerator(uint32 instanceId);
+    bool MoveToCoreSpot(int8 index);
+    bool ThrowCore(size_t next, Item* core, GameObject* generator);
+    bool UseCoreOnGenerator(GameObject* generator);
 };
 
 class LadyVashjCommandPetTargetAction : public Action

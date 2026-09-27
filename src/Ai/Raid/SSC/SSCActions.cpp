@@ -36,9 +36,6 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     bool reset = false;
 
-    reset |= intendedVashjCorePasserLineup.erase(guid) > 0;
-    reset |= lastVashjCoreInInventoryTime.erase(guid) > 0;
-
     Action* vashjSpreadAction = context->GetAction("lady vashj phase 1 spread ranged in arc");
     if (vashjSpreadAction && static_cast<LadyVashjPhase1SpreadRangedInArcAction*>(
             vashjSpreadAction)->ResetRangedPosition())
@@ -58,7 +55,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     reset |= vashjClusterHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
-    reset |= lastVashjCoreImbueAttempt.erase(instanceId) > 0;
+    reset |= vashjCoreChains.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
@@ -2260,6 +2257,21 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     if (!repick)
         StartTaintedLog(bot);
 
+    // A new elemental gets a new chain. A re-picked looter takes over the start of the old one, and
+    // gives up any catcher's spot it had.
+    VashjCoreChain* chain = GetVashjCoreChain(bot);
+    if (!chain || chain->tainted != tainted->GetGUID())
+    {
+        if (Creature* creature = tainted->ToCreature())
+            PlanVashjCoreChain(bot, creature, looter);
+    }
+    else
+    {
+        chain->start = looter->GetGUID();
+        if (int8 const index = GetVashjCoreCatcherIndex(*chain, looter); index >= 0)
+            ReassignVashjCoreCatcher(bot, *chain, static_cast<size_t>(index));
+    }
+
     char const* role = PlayerbotAI::IsHeal(looter) ? "healer" :
         PlayerbotAI::IsRangedDps(looter) ? "ranged dps" :
         PlayerbotAI::IsMelee(looter) ? "melee" : "other";
@@ -2461,9 +2473,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             TaintedLogElapsedMs(bot), bot->GetName());
     }
 
-    uint32 const now = getMSTime();
-    lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-
     return true;
 }
 
@@ -2477,27 +2486,12 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
     return true;
 }
 
+// Every member of the chain runs this: catchers walk to their spots, and whoever holds the core
+// throws it on or, in reach of the generator, uses it.
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(botAI, bot);
-
-    uint32 const instanceId = vashj->GetInstanceId();
-
-    auto itLooter = vashjTaintedCoreLooter.find(instanceId);
-    if (itLooter == vashjTaintedCoreLooter.end())
-        return false;
-
-    Unit* closestTrigger =
-        GetNearestActiveShieldGeneratorTriggerByEntry(vashj, itLooter->second.taintedPosition);
-    if (!closestTrigger)
+    VashjCoreChain* chain = GetVashjCoreChain(bot);
+    if (!chain || chain->failed)
         return false;
 
     // Not gated behind CheatMask because the auto application of Fear Ward is necessary
@@ -2506,431 +2500,167 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     // if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
     //     bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 
-    Item* item = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
+    int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
+    Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
+    if (!core)
+        return index >= 0 && MoveToCoreSpot(index);
+
+    GameObject* generator = botAI->GetGameObject(chain->generator);
 
     // TEMP LOG
-    if (item && TaintedLogFirstTime(bot, "held"))
+    if (TaintedLogFirstTime(bot, "held"))
     {
         LOG_INFO("playerbots", "[SSC tainted] +{}ms {} has the core, {:.1f} yd from the generator",
-            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(closestTrigger));
+            TaintedLogElapsedMs(bot), bot->GetName(),
+            generator ? bot->GetExactDist2d(generator) : 0.0f);
     }
 
-    if (!item || !botAI->HasItemInInventory(Id(SscItems::ITEM_TAINTED_CORE)))
+    if (index > chain->reached)
+        chain->reached = index;
+
+    if (!generator || generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
     {
-        // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
-        if (bot == firstCorePasser &&
-            LineUpFirstCorePasser(designatedLooter))
-        {
-            return true;
-        }
-        else if (bot == secondCorePasser &&
-                 LineUpSecondCorePasser(firstCorePasser, closestTrigger))
-        {
-            return true;
-        }
-        else if (bot == thirdCorePasser && LineUpThirdCorePasser(
-                 firstCorePasser, secondCorePasser, closestTrigger))
-        {
-            return true;
-        }
-        else if (bot == fourthCorePasser && LineUpFourthCorePasser(
-                 secondCorePasser, thirdCorePasser, closestTrigger))
-        {
-            return true;
-        }
+        ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+        return true;
     }
-    else if (item && botAI->HasItemInInventory(Id(SscItems::ITEM_TAINTED_CORE)))
+
+    if (generator->IsAtInteractDistance(*bot, generator->GetInteractionDistance()))
+        return UseCoreOnGenerator(generator);
+
+    // The last catcher, rooted out of reach of the generator
+    size_t const next = static_cast<size_t>(index + 1);
+    if (next >= chain->catchers.size())
     {
-        // Designated core looter logic
-        // Applicable only if cheat mode is on and thus looter is a bot
-        if (bot == designatedLooter && IsFirstCorePasserInPosition(firstCorePasser))
-        {
-            constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            uint32 const now = getMSTime();
-            auto it = lastVashjCoreImbueAttempt.find(instanceId);
-            if (it == lastVashjCoreImbueAttempt.end() ||
-                getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
-            {
-                lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
-                botAI->ImbueItem(item, firstCorePasser);
-                TaintedLogThrow(botAI, bot, firstCorePasser); // TEMP LOG
-                lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                return true;
-            }
-        }
-        // First core passer: receive core from looter at the top of the stairs,
-        // pass to second core passer
-        else if (bot == firstCorePasser && IsSecondCorePasserInPosition(secondCorePasser))
-        {
-            constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            uint32 const now = getMSTime();
-            auto it = lastVashjCoreImbueAttempt.find(instanceId);
-            if (it == lastVashjCoreImbueAttempt.end() ||
-                getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
-            {
-                lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
-                botAI->ImbueItem(item, secondCorePasser);
-                TaintedLogThrow(botAI, bot, secondCorePasser); // TEMP LOG
-                lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                return true;
-            }
-        }
-        // Second core passer: if closest usable generator is within passing distance
-        // of the first passer, move to the generator; otherwise, move as close as
-        // possible to the generator while staying in passing range
-        else if (bot == secondCorePasser && !UseCoreOnNearestGenerator(instanceId) &&
-                 IsThirdCorePasserInPosition(thirdCorePasser))
-        {
-            constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            uint32 const now = getMSTime();
-            auto it = lastVashjCoreImbueAttempt.find(instanceId);
-            if (it == lastVashjCoreImbueAttempt.end() ||
-                getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
-            {
-                lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
-                botAI->ImbueItem(item, thirdCorePasser);
-                TaintedLogThrow(botAI, bot, thirdCorePasser); // TEMP LOG
-                lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                return true;
-            }
-        }
-        // Third core passer: if closest usable generator is within passing distance
-        // of the second passer, move to the generator; otherwise, move as close as
-        // possible to the generator while staying in passing range
-        else if (bot == thirdCorePasser && !UseCoreOnNearestGenerator(instanceId) &&
-                 IsFourthCorePasserInPosition(fourthCorePasser))
-        {
-            constexpr uint32 imbueRetryDelayMs = 2 * IN_MILLISECONDS;
-            uint32 const now = getMSTime();
-            auto it = lastVashjCoreImbueAttempt.find(instanceId);
-            if (it == lastVashjCoreImbueAttempt.end() ||
-                getMSTimeDiff(it->second, now) >= imbueRetryDelayMs)
-            {
-                lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
-                botAI->ImbueItem(item, fourthCorePasser);
-                TaintedLogThrow(botAI, bot, fourthCorePasser); // TEMP LOG
-                lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
-                return true;
-            }
-        }
-        // Fourth core passer: the fourth passer is rarely needed and no more than
-        // four ever should be, so it should use the Core on the nearest generator
-        else if (bot == fourthCorePasser && UseCoreOnNearestGenerator(instanceId))
-            return true;
+        ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+        return true;
     }
+
+    if (ThrowCore(next, core, generator))
+        return true;
 
     // TEMP LOG
-    if (item && TaintedLogThrottle(bot, "holding"))
+    if (TaintedLogThrottle(bot, "holding"))
     {
         LOG_INFO("playerbots",
             "[SSC tainted] +{}ms {} holds the core, no throw or use, casting {}, {:.1f} yd from "
             "the generator",
             TaintedLogElapsedMs(bot), bot->GetName(),
-            bot->IsNonMeleeSpellCast(false) ? "yes" : "no", bot->GetExactDist2d(closestTrigger));
+            bot->IsNonMeleeSpellCast(false) ? "yes" : "no", bot->GetExactDist2d(generator));
     }
 
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(Player* designatedLooter)
+// False once there, so the catcher can fight or heal from its spot while it waits.
+bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
 {
-    if (!designatedLooter)
+    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    if (!chain)
         return false;
 
-    float const centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
-    float const centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
-    constexpr float radius = 57.5f;
+    // The last catcher closer in, so it is sure to be within use range of the generator
+    constexpr float arrivalDistance = 1.0f;
+    constexpr float lastArrivalDistance = 0.5f;
+    bool const last = static_cast<size_t>(index + 1) == chain->catchers.size();
+    float const arrival = last ? lastArrivalDistance : arrivalDistance;
+    Position const& spot = chain->catchers[index].spot;
+    if (bot->GetExactDist2d(spot) <= arrival)
+        return false;
 
-    auto it = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    if (it == intendedVashjCorePasserLineup.end())
-    {
-        float mx = designatedLooter->GetPositionX();
-        float my = designatedLooter->GetPositionY();
-        float angle = atan2(my - centerY, mx - centerX);
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardPoint(bot, spot, arrival / 2.0f, PATH_STEP_DISTANCE, stepX, stepY))
+        return false;
 
-        float targetX = centerX + radius * std::cos(angle);
-        float targetY = centerY + radius * std::sin(angle);
-        constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
-
-        intendedVashjCorePasserLineup.try_emplace(
-            bot->GetGUID(), Position(targetX, targetY, targetZ));
-        it = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    }
-
-    Position const& pos = it->second;
-    float targetX = pos.GetPositionX();
-    float targetY = pos.GetPositionY();
-    float targetZ = pos.GetPositionZ();
-
-    bot->CastStop();
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
-    Player* firstCorePasser, Unit* closestTrigger)
+// Throws once the next catcher stands on its spot with the throw in range and in sight. For the
+// last catcher, on its spot means within use range of the generator, since the core roots it. A
+// throw that doesn't land is tried once more, then the chain is planned again from here without
+// that catcher. A catcher that never arrives is replaced; one standing out of reach means a new
+// plan.
+bool LadyVashjPassTheTaintedCoreAction::ThrowCore(size_t next, Item* core, GameObject* generator)
 {
-    if (!firstCorePasser || !closestTrigger)
+    VashjCoreChain* chain = GetVashjCoreChain(bot);
+    if (!chain)
         return false;
 
-    auto itFirst = intendedVashjCorePasserLineup.find(firstCorePasser->GetGUID());
-    if (itFirst == intendedVashjCorePasserLineup.end())
-        return false;
-
-    auto itSecond = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    if (itSecond == intendedVashjCorePasserLineup.end())
+    uint32 const now = getMSTime();
+    VashjCoreCatcher const& catcher = chain->catchers[next];
+    Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
+    if (!player || !player->IsAlive() || !player->IsInMap(bot))
     {
-        float fx = itFirst->second.GetPositionX();
-        float fy = itFirst->second.GetPositionY();
+        ReassignVashjCoreCatcher(bot, *chain, next);
+        return false;
+    }
 
-        float dx = closestTrigger->GetPositionX() - fx;
-        float dy = closestTrigger->GetPositionY() - fy;
-        float distToTrigger = std::sqrt(dx * dx + dy * dy);
+    if (chain->waitTarget != player->GetGUID())
+    {
+        chain->waitTarget = player->GetGUID();
+        chain->waitStart = now;
+        chain->blockedStart = 0;
+    }
 
-        if (distToTrigger == 0.0f)
+    bool const last = next + 1 == chain->catchers.size();
+    constexpr float onSpotDistance = 1.5f;
+    bool const onSpot = last ?
+        generator->IsAtInteractDistance(*player, generator->GetInteractionDistance()) :
+        player->GetExactDist2d(catcher.spot) <= onSpotDistance;
+    if (!onSpot)
+    {
+        constexpr uint32 lateMs = 10 * IN_MILLISECONDS;
+        if (getMSTimeDiff(chain->waitStart, now) > lateMs)
+            ReassignVashjCoreCatcher(bot, *chain, next);
+
+        return false;
+    }
+
+    // Throw Key's range, edge to edge in 3D as the spell measures it
+    constexpr float throwKeyRange = 40.0f;
+    if (bot->GetDistance(player) > throwKeyRange || !bot->IsWithinLOSInMap(player))
+    {
+        constexpr uint32 blockedMs = 3 * IN_MILLISECONDS;
+        if (!chain->blockedStart)
+            chain->blockedStart = now;
+        else if (getMSTimeDiff(chain->blockedStart, now) > blockedMs)
+        {
+            ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+            return true;
+        }
+
+        return false;
+    }
+
+    chain->blockedStart = 0;
+
+    constexpr uint32 retryMs = 1500;
+    constexpr uint8 maxThrows = 2;
+    if (chain->throwTarget == player->GetGUID())
+    {
+        if (getMSTimeDiff(chain->throwTime, now) < retryMs)
             return false;
 
-        dx /= distToTrigger; dy /= distToTrigger;
-
-        float targetX;
-        float targetY;
-        constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
-        constexpr float thresholdDist = 40.0f;
-        constexpr float nearTriggerDist = 1.5f;
-        constexpr float farDistance = 38.0f;
-
-        if (distToTrigger <= thresholdDist)
+        if (++chain->failedThrows >= maxThrows)
         {
-            float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
-            targetX = fx + dx * moveDist;
-            targetY = fy + dy * moveDist;
+            ReplanVashjCoreChain(bot, *chain, player->GetGUID());
+            return true;
         }
-        else
-        {
-            targetX = fx + dx * farDistance;
-            targetY = fy + dy * farDistance;
-        }
-
-        intendedVashjCorePasserLineup.try_emplace(
-            bot->GetGUID(), Position(targetX, targetY, targetZ));
-        itSecond = intendedVashjCorePasserLineup.find(bot->GetGUID());
     }
+    else
+        chain->failedThrows = 0;
 
-    Position const& pos = itSecond->second;
-    float targetX = pos.GetPositionX();
-    float targetY = pos.GetPositionY();
-    float targetZ = pos.GetPositionZ();
-
-    bot->CastStop();
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    chain->throwTarget = player->GetGUID();
+    chain->throwTime = now;
+    botAI->ImbueItem(core, player);
+    TaintedLogThrow(bot, player, static_cast<int>(next)); // TEMP LOG
+    return true;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
-    Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(GameObject* generator)
 {
-    if (!secondCorePasser || !closestTrigger)
-        return false;
-
-    bool needThirdPasser =
-        (IsFirstCorePasserInPosition(firstCorePasser) &&
-         firstCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
-        (IsSecondCorePasserInPosition(secondCorePasser) &&
-         secondCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
-
-    if (!needThirdPasser)
-        return false;
-
-    auto itSecond = intendedVashjCorePasserLineup.find(secondCorePasser->GetGUID());
-    if (itSecond == intendedVashjCorePasserLineup.end())
-        return false;
-
-    auto itThird = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    if (itThird == intendedVashjCorePasserLineup.end())
-    {
-        float sx = itSecond->second.GetPositionX();
-        float sy = itSecond->second.GetPositionY();
-
-        float dx = closestTrigger->GetPositionX() - sx;
-        float dy = closestTrigger->GetPositionY() - sy;
-        float distToTrigger = std::sqrt(dx * dx + dy * dy);
-
-        if (distToTrigger == 0.0f)
-            return false;
-
-        dx /= distToTrigger; dy /= distToTrigger;
-
-        float targetX;
-        float targetY;
-        constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
-        constexpr float thresholdDist = 40.0f;
-        constexpr float nearTriggerDist = 1.5f;
-        constexpr float farDistance = 38.0f;
-
-        if (distToTrigger <= thresholdDist)
-        {
-            float moveDist = std::max(distToTrigger - nearTriggerDist, 0.0f);
-            targetX = sx + dx * moveDist;
-            targetY = sy + dy * moveDist;
-        }
-        else
-        {
-            targetX = sx + dx * farDistance;
-            targetY = sy + dy * farDistance;
-        }
-
-        intendedVashjCorePasserLineup.try_emplace(
-            bot->GetGUID(), Position(targetX, targetY, targetZ));
-        itThird = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    }
-
-    Position const& pos = itThird->second;
-    float targetX = pos.GetPositionX();
-    float targetY = pos.GetPositionY();
-    float targetZ = pos.GetPositionZ();
-
-    bot->CastStop();
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
-    Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
-{
-    if (!thirdCorePasser || !closestTrigger)
-        return false;
-
-    bool needFourthPasser =
-        (IsSecondCorePasserInPosition(secondCorePasser) &&
-         secondCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
-        (IsThirdCorePasserInPosition(thirdCorePasser) &&
-         thirdCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
-
-    if (!needFourthPasser)
-        return false;
-
-    auto itThird = intendedVashjCorePasserLineup.find(thirdCorePasser->GetGUID());
-    if (itThird == intendedVashjCorePasserLineup.end())
-        return false;
-
-    auto itFourth = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    if (itFourth == intendedVashjCorePasserLineup.end())
-    {
-        float sx = itThird->second.GetPositionX();
-        float sy = itThird->second.GetPositionY();
-
-        float tx = closestTrigger->GetPositionX();
-        float ty = closestTrigger->GetPositionY();
-
-        float dx = tx - sx;
-        float dy = ty - sy;
-        float distToTrigger = std::sqrt(dx * dx + dy * dy);
-
-        if (distToTrigger == 0.0f)
-            return false;
-
-        dx /= distToTrigger; dy /= distToTrigger;
-
-        constexpr float nearTriggerDist = 1.5f;
-        float targetX = tx - dx * nearTriggerDist;
-        float targetY = ty - dy * nearTriggerDist;
-        constexpr float targetZ = VASHJ_PLATFORM_CENTER_Z;
-
-        intendedVashjCorePasserLineup.try_emplace(
-            bot->GetGUID(), Position(targetX, targetY, targetZ));
-        itFourth = intendedVashjCorePasserLineup.find(bot->GetGUID());
-    }
-
-    Position const& pos = itFourth->second;
-    float targetX = pos.GetPositionX();
-    float targetY = pos.GetPositionY();
-    float targetZ = pos.GetPositionZ();
-
-    bot->CastStop();
-    return MoveTo(SSC_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-// The next four functions check if the respective passer is <= 2 yards of their intended
-// position and are used to determine when the prior bot in the chain can pass the core
-bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firstCorePasser)
-{
-    if (!firstCorePasser)
-        return false;
-
-    auto itSnap = intendedVashjCorePasserLineup.find(firstCorePasser->GetGUID());
-    if (itSnap == intendedVashjCorePasserLineup.end())
-        return false;
-
-    return firstCorePasser->GetExactDist2d(
-        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
-}
-
-bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* secondCorePasser)
-{
-    if (!secondCorePasser)
-        return false;
-
-    auto itSnap = intendedVashjCorePasserLineup.find(secondCorePasser->GetGUID());
-    if (itSnap == intendedVashjCorePasserLineup.end())
-        return false;
-
-    return secondCorePasser->GetExactDist2d(
-        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
-}
-
-bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thirdCorePasser)
-{
-    if (!thirdCorePasser)
-        return false;
-
-    auto itSnap = intendedVashjCorePasserLineup.find(thirdCorePasser->GetGUID());
-    if (itSnap == intendedVashjCorePasserLineup.end())
-        return false;
-
-    return thirdCorePasser->GetExactDist2d(
-        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
-}
-
-bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fourthCorePasser)
-{
-    if (!fourthCorePasser)
-        return false;
-
-    auto itSnap = intendedVashjCorePasserLineup.find(fourthCorePasser->GetGUID());
-    if (itSnap == intendedVashjCorePasserLineup.end())
-        return false;
-
-    return fourthCorePasser->GetExactDist2d(
-        itSnap->second.GetPositionX(), itSnap->second.GetPositionY()) <= 2.0f;
-}
-
-bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanceId)
-{
-    auto const& generators =
-        GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS);
-    GeneratorInfo const* nearestGen = GetNearestGeneratorToBot(bot, generators);
-    if (!nearestGen)
-        return false;
-
-    GameObject* generator = botAI->GetGameObject(nearestGen->guid);
-    if (!generator)
-        return false;
-
-    if (bot->GetExactDist2d(generator) > 4.5f)
-    {
-        // TEMP LOG
-        if (bot->GetExactDist2d(generator) <= 10.0f && TaintedLogThrottle(bot, "genfar"))
-        {
-            LOG_INFO("playerbots",
-                "[SSC tainted] +{}ms {} too far to use the core at {:.1f} yd (interact {})",
-                TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(generator),
-                generator->IsAtInteractDistance(bot) ? "yes" : "NO");
-        }
-
-        return false;
-    }
-
     Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
     if (!core)
         return false;
@@ -2950,54 +2680,17 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
     if (bot->IsNonMeleeSpellCast(false))
         return false;
 
-    uint8 const bagIndex = core->GetBagSlot();
-    uint8 const slot = core->GetSlot();
-    constexpr uint8 cast_count = 0;
-    uint32 spellId = 0;
-
-    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
-    {
-        if (core->GetTemplate()->Spells[i].SpellId > 0)
-        {
-            spellId = core->GetTemplate()->Spells[i].SpellId;
-            break;
-        }
-    }
-
-    ObjectGuid const item_guid = core->GetGUID();
-    constexpr uint32 glyphIndex = 0;
-    constexpr uint8 castFlags = 0;
-
-    WorldPacket packet(CMSG_USE_ITEM);
-    packet << bagIndex;
-    packet << slot;
-    packet << cast_count;
-    packet << spellId;
-    packet << item_guid;
-    packet << glyphIndex;
-    packet << castFlags;
-    packet << (uint32)TARGET_FLAG_GAMEOBJECT;
-    packet << generator->GetGUID().WriteAsPacked();
-
-    bot->GetSession()->HandleUseItemOpcode(packet);
+    // Casts Opening on the generator, as a player using the core on it. The generator reacts only
+    // to Opening hitting it, so GameObject::Use() does nothing. The packet is queued, but the queue
+    // is drained before the bot's next AI tick, which then skips while Opening is cast; a second
+    // use mid-cast would restart it.
+    botAI->ImbueItem(core, TARGET_FLAG_GAMEOBJECT, generator->GetGUID());
 
     // TEMP LOG
     LOG_INFO("playerbots",
-        "[SSC tainted] +{}ms {} uses the core at {:.1f} yd (interact {}), casting {}",
+        "[SSC tainted] +{}ms {} uses the core at {:.1f} yd, at {:.1f} {:.1f} {:.1f}",
         TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(generator),
-        generator->IsAtInteractDistance(bot) ? "yes" : "NO",
-        bot->IsNonMeleeSpellCast(false) ? "yes" : "NO");
-
-    lastVashjCoreImbueAttempt.erase(instanceId);
-    auto coreHandlers = GetCoreHandlers(botAI, bot);
-    for (Player* handler : coreHandlers)
-    {
-        if (handler)
-        {
-            intendedVashjCorePasserLineup.erase(handler->GetGUID());
-            lastVashjCoreInInventoryTime.erase(handler->GetGUID());
-        }
-    }
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
     return true;
 }

@@ -889,29 +889,27 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
     if (dynamic_cast<WipeAction*>(action))
         return 1.0f;
 
-    auto coreHandlers = GetCoreHandlers(botAI, bot);
-
-    bool isCoreHandler = false;
-    for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
-    {
-        if (coreHandlers[i] && coreHandlers[i] == bot)
-            isCoreHandler = true;
-    }
-    if (!isCoreHandler)
+    // Only the chain's start and catchers are held here
+    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    if (!chain)
         return 1.0f;
 
-    auto hasCore = [](Player* player)
-    {
-        return player && player->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
-    };
+    int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
+    if (index < 0 && chain->start != bot->GetGUID())
+        return 1.0f;
 
-    // If the bot actually has the core, only allow core handling
-    if (hasCore(bot) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-        return 0.0f;
+    bool const isPass = dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action);
+
+    // A holder only passes, uses or destroys the core
+    if (HasTaintedCore(bot))
+    {
+        return isPass || dynamic_cast<LadyVashjDestroyTaintedCoreAction*>(action) ?
+            1.0f : 0.0f;
+    }
 
     // The designated looter must stay on the Tainted Elemental until it has the core.
-    if (bot == coreHandlers[0] && !hasCore(bot) &&
-        dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action))
+    if (dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action) &&
+        GetDesignatedCoreLooter(botAI, bot) == bot)
     {
         constexpr float corpseSearchRadius = 30.0f;
         if (AI_VALUE2(Unit*, "find target", "tainted elemental") ||
@@ -919,11 +917,12 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
             return 0.0f;
     }
 
-    // If any prior handler (including self) recently had the core, block other movement
-    if (AnyRecentCoreInInventory(botAI, bot) &&
-        dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+    // A catcher on its way to, or standing on, its spot moves for nothing else
+    if (!isPass && index >= 0 && dynamic_cast<MovementAction*>(action) &&
+        IsVashjCoreCatcherActive(bot, *chain, index))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

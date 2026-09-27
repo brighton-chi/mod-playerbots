@@ -532,21 +532,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotHoldsTaintedCoreInPhase3Trigger : public SscEncounterTrigger
+class LadyVashjBotShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotHoldsTaintedCoreInPhase3Trigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot holds tainted core in phase 3") {}
+    LadyVashjBotShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot should destroy tainted core") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjTaintedCoreWasLootedTrigger : public SscEncounterTrigger
+class LadyVashjBotIsInTaintedCoreChainTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjTaintedCoreWasLootedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj tainted core was looted") {}
+    LadyVashjBotIsInTaintedCoreChainTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot is in tainted core chain") {}
 
 protected:
     bool IsActiveInEncounter() override;

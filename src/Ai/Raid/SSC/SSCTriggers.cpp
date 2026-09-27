@@ -584,37 +584,61 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
     return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
 }
 
-// A core still held when phase 3 starts, say from a stalled chain, has no generator left, and its
-// Paralyze roots the holder until it leaves the bags.
-bool LadyVashjBotHoldsTaintedCoreInPhase3Trigger::IsActiveInEncounter()
+// A core with nowhere to go: in phase 3, with no generator left; from a chain that found no way; or
+// still held when the next core is ready to loot. Its Paralyze roots the holder until it leaves the
+// bags.
+bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3 &&
-        bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase == 3)
+        return HasTaintedCore(bot);
+
+    if (phase != 2)
+        return false;
+
+    // In phase 2 only a member of this chain or the one it replaced can hold a core
+    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    if (!chain)
+        return false;
+
+    ObjectGuid const guid = bot->GetGUID();
+    bool const member = chain->start == guid || GetVashjCoreCatcherIndex(*chain, bot) >= 0 ||
+        std::find(chain->earlier.begin(), chain->earlier.end(), guid) != chain->earlier.end();
+    if (!member)
+        return false;
+
+    if (!chain->failed)
+    {
+        Creature* next = GetVashjTaintedElemental(bot);
+        if (!next || next->IsAlive() || GetTaintedCoreLootSlot(next) < 0)
+            return false;
+    }
+
+    return HasTaintedCore(bot);
 }
 
-bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
+// The chain's start or one of its catchers, while it holds the core or is due at its spot.
+bool LadyVashjBotIsInTaintedCoreChainTrigger::IsActiveInEncounter()
 {
+    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    if (!chain || chain->failed)
+        return false;
+
+    int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
+    if (index < 0 && chain->start != bot->GetGUID())
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
 
-    auto coreHandlers = GetCoreHandlers(botAI, bot);
-
-    bool isCoreHandler = false;
-    for (Player* handler : coreHandlers)
-    {
-        if (handler == bot)
-            isCoreHandler = true;
-    }
-
-    if (!isCoreHandler)
-        return false;
-
     TaintedLogGenerators(bot); // TEMP LOG
 
-    // Main logic: run if core is in play for this bot or a prior handler.
-    return AnyRecentCoreInInventory(botAI, bot);
+    if (HasTaintedCore(bot))
+        return true;
+
+    return index >= 0 && IsVashjCoreCatcherActive(bot, *chain, index);
 }
 
 bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
