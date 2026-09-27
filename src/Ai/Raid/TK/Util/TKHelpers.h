@@ -51,11 +51,12 @@ enum class TkSpells : uint32
 
     // Kael'thas Sunstrider
     SPELL_PERMANENT_FEIGN_DEATH     = 29266,
-    SPELL_GRAVITY_LAPSE_AURA        = 39432, // AC uses this name (SPELL_GRAVITY_LAPSE is 35941)
+    SPELL_EMBER_BLAST               = 34341, // For Phoenixes. Al'ar has this same aura.
     SPELL_MENTAL_PROTECTION_FIELD   = 36480, // Staff of Disintegration
     SPELL_ARCANE_BARRIER            = 36481, // Phaseshift Bulwark
     SPELL_KAELTHAS_MIND_CONTROL     = 36797,
     SPELL_SHOCK_BARRIER             = 36815,
+    SPELL_GRAVITY_LAPSE_AURA        = 39432, // AC uses this name (SPELL_GRAVITY_LAPSE is 35941)
 
     // Hunter
     SPELL_MISDIRECTION              = 35079,
