@@ -639,9 +639,9 @@ bool FindVashjDaisStepAwayFromUnits(
 bool FindVashjTankBreakoutSpot(
     Player* bot, std::vector<Position> const& spores, Position& spot);
 bool HasStaticCharge(Player* player);
-// Melee dps not holding Static Charge, who dodge pools around their target in phase 3. Tanks and
-// Static Charge holders have their own movement.
-bool IsVashjRingMelee(Player* bot);
+// Melee dps who dodge pools around their target in phase 3. Tanks and Static Charge holders have
+// their own movement, and while her target holds it, melee step away from it like everyone else.
+bool IsVashjRingMelee(Player* bot, Unit* vashj);
 // True if any pool is within radius of the bot.
 bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
 // A Paladin under Divine Shield or a Priest under Dispersion, who may walk straight through pools

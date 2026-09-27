@@ -679,11 +679,8 @@ bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
 // Melee dps have their own trigger, below.
 bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
 {
-    if (IsVashjRingMelee(bot))
-        return false;
-
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+    if (!vashj || GetLadyVashjPhase(vashj) != 3 || IsVashjRingMelee(bot, vashj))
         return false;
 
     bool const tanking = vashj->GetVictim() == bot;
@@ -698,11 +695,11 @@ bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
 
 bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 {
-    if (!IsVashjRingMelee(bot))
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3 &&
+    return vashj && GetLadyVashjPhase(vashj) == 3 && IsVashjRingMelee(bot, vashj) &&
         IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS);
 }
 

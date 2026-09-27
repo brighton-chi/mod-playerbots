@@ -1138,9 +1138,13 @@ bool CanWalkThroughToxicSpores(Player* bot)
     }
 }
 
-bool IsVashjRingMelee(Player* bot)
+bool IsVashjRingMelee(Player* bot, Unit* vashj)
 {
-    return PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsTank(bot) && !HasStaticCharge(bot);
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot) || HasStaticCharge(bot))
+        return false;
+
+    Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
+    return !vashjVictim || !HasStaticCharge(vashjVictim);
 }
 
 bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)

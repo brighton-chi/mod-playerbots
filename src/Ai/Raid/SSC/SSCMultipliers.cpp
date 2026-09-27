@@ -1059,11 +1059,11 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
-    if (!IsVashjRingMelee(bot))
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+    if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj))
         return 1.0f;
 
     return IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
