@@ -1525,6 +1525,18 @@ Creature* GetVashjTaintedElemental(Player* bot)
     return ObjectAccessor::GetCreature(*bot, it->second.tainted);
 }
 
+int8 GetTaintedCoreLootSlot(Creature* elemental)
+{
+    std::vector<LootItem> const& items = elemental->loot.items;
+    for (size_t i = 0; i < items.size(); ++i)
+    {
+        if (items[i].itemid == Id(SscItems::ITEM_TAINTED_CORE) && !items[i].is_looted)
+            return static_cast<int8>(i);
+    }
+
+    return -1;
+}
+
 bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted)
 {
     if (!PlayerbotAI::IsRangedDps(bot))
@@ -1697,6 +1709,7 @@ std::mutex taintedLogMutex;
 std::unordered_map<uint32, uint32> taintedLogStart;
 std::unordered_set<std::string> taintedLogSeen;
 std::unordered_map<std::string, uint32> taintedLogLast;
+std::unordered_map<uint32, size_t> taintedLogGenerators;
 
 std::string TaintedLogKey(Player* bot, char const* key)
 {
@@ -1746,6 +1759,42 @@ bool TaintedLogThrottle(Player* bot, char const* key)
 
     last = now;
     return true;
+}
+
+void TaintedLogThrow(PlayerbotAI* botAI, Player* bot, Player* receiver)
+{
+    std::array<Player*, 5> const handlers = GetCoreHandlers(botAI, bot);
+    int passer = -1;
+    for (size_t i = 0; i < handlers.size(); ++i)
+    {
+        if (handlers[i] == receiver)
+            passer = static_cast<int>(i);
+    }
+
+    LOG_INFO("playerbots",
+        "[SSC tainted] +{}ms {} throws the core to {} (passer {}) at {:.1f} yd, LoS {}, "
+        "from {:.1f} {:.1f} {:.1f} to {:.1f} {:.1f} {:.1f}",
+        TaintedLogElapsedMs(bot), bot->GetName(), receiver->GetName(), passer,
+        bot->GetExactDist(receiver), bot->IsWithinLOSInMap(receiver) ? "yes" : "NO",
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+        receiver->GetPositionX(), receiver->GetPositionY(), receiver->GetPositionZ());
+}
+
+void TaintedLogGenerators(Player* bot)
+{
+    size_t const usable =
+        GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS).size();
+    {
+        std::lock_guard<std::mutex> lock(taintedLogMutex);
+        auto [it, inserted] = taintedLogGenerators.try_emplace(bot->GetInstanceId(), usable);
+        if (inserted || it->second == usable)
+            return;
+
+        it->second = usable;
+    }
+
+    LOG_INFO("playerbots", "[SSC tainted] +{}ms usable generators now {}",
+        TaintedLogElapsedMs(bot), usable);
 }
 
 namespace

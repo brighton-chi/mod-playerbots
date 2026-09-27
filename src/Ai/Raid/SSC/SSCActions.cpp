@@ -9,8 +9,6 @@
 #include "Corpse.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
-#include "LootAction.h"
-#include "LootObjectStack.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
@@ -1601,8 +1599,12 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
     Position const& clusterPosition = GetVashjClusterPosition(slot);
 
     // The looter stays on the elemental until the core is looted
-    if (GetDesignatedCoreLooter(botAI, bot) == bot && GetVashjTaintedElemental(bot))
-        return false;
+    if (GetDesignatedCoreLooter(botAI, bot) == bot)
+    {
+        Creature* elemental = GetVashjTaintedElemental(bot);
+        if (elemental && (elemental->IsAlive() || GetTaintedCoreLootSlot(elemental) >= 0))
+            return false;
+    }
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (tainted && IsVashjTaintedElementalKiller(bot, tainted))
@@ -2289,27 +2291,23 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
 
 // The killers walk until they have the elemental in attack range and in sight, then attack. From
 // a cluster the edge of the dais usually blocks the view down to it, and Attack() refuses a target
-// out of sight. Ranged stop at spell range, which keeps hunters out of their dead zone. The looter
-// walks straight to it instead, so it is on the corpse when it dies, and attacks once there.
+// out of sight. Ranged stop at spell range, which keeps hunters out of their dead zone.
 bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
 {
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (!tainted)
         return false;
 
-    bool const isLooter = GetDesignatedCoreLooter(botAI, bot) == bot;
-
     // TEMP LOG
     if (TaintedLogFirstTime(bot, "sent"))
     {
-        LOG_INFO("playerbots", "[SSC tainted] +{}ms {} {} sent from {:.1f} yd",
-            TaintedLogElapsedMs(bot), isLooter ? "looter" : "killer", bot->GetName(),
-            bot->GetExactDist(tainted));
+        LOG_INFO("playerbots", "[SSC tainted] +{}ms killer {} sent from {:.1f} yd",
+            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(tainted));
     }
 
     constexpr float stopDistance = 3.0f;
-    bool const inRange = isLooter ? bot->GetExactDist(tainted) <= stopDistance :
-        PlayerbotAI::IsRanged(bot) ? bot->IsWithinCombatRange(tainted, botAI->GetRange("spell")) :
+    bool const inRange = PlayerbotAI::IsRanged(bot) ?
+        bot->IsWithinCombatRange(tainted, botAI->GetRange("spell")) :
         bot->IsWithinMeleeRange(tainted);
     if (!inRange || !bot->IsWithinLOSInMap(tainted))
     {
@@ -2358,8 +2356,62 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     return false;
 }
 
+// The looter waits beside the elemental, so it is on the corpse when it dies. It sends the loot
+// packets itself: OpenLootAction holds the bot's next tick back by lootDelay (1s by default),
+// which would hold back the first throw.
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 {
+    Creature* elemental = GetVashjTaintedElemental(bot);
+    if (!elemental)
+        return false;
+
+    // TEMP LOG
+    if (!elemental->IsAlive() && TaintedLogFirstTime(bot, "dead"))
+    {
+        LOG_INFO("playerbots",
+            "[SSC tainted] +{}ms dead, looter {} at {:.1f} yd, looter at {:.1f} {:.1f} {:.1f}, "
+            "corpse at {:.1f} {:.1f} {:.1f}",
+            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(elemental),
+            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            elemental->GetPositionX(), elemental->GetPositionY(), elemental->GetPositionZ());
+    }
+
+    // Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
+    // measures it, so the height gap needs no check of its own.
+    constexpr float maxLootRange = INTERACTION_DISTANCE - 2.0f;
+
+    if (bot->GetDistance(elemental) > maxLootRange)
+    {
+        // TEMP LOG
+        if (TaintedLogThrottle(bot, "tocorpse"))
+        {
+            LOG_INFO("playerbots",
+                "[SSC tainted] +{}ms looter {} walking to {} at {:.1f} yd, height gap {:.1f}, "
+                "looter at {:.1f} {:.1f} {:.1f}",
+                TaintedLogElapsedMs(bot), bot->GetName(),
+                elemental->IsAlive() ? "elemental" : "corpse", bot->GetDistance(elemental),
+                std::abs(elemental->GetPositionZ() - bot->GetPositionZ()), bot->GetPositionX(),
+                bot->GetPositionY(), bot->GetPositionZ());
+        }
+
+        // Steps stop just inside loot range, centre to centre
+        constexpr float rangeMargin = 0.5f;
+        float const stopDistance =
+            maxLootRange + bot->GetCombatReach() + elemental->GetCombatReach() - rangeMargin;
+
+        float stepX;
+        float stepY;
+        if (!GetPathStepTowardUnit(bot, elemental, stopDistance, stepX, stepY))
+            return false;
+
+        return MoveTo(
+            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    if (elemental->IsAlive())
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -2371,43 +2423,12 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             return false;
     }
 
-    Creature* elemental = GetVashjTaintedElemental(bot);
-    if (!elemental || elemental->IsAlive())
+    int8 const coreSlot = GetTaintedCoreLootSlot(elemental);
+    if (coreSlot < 0)
         return false;
 
-    // TEMP LOG
-    if (TaintedLogFirstTime(bot, "dead"))
-    {
-        LOG_INFO("playerbots", "[SSC tainted] +{}ms dead, looter {} at {:.1f} yd",
-            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(elemental));
-    }
-
-    // OpenLootAction refuses beyond this. The walk comes before IsLootPossible(), which also
-    // refuses while the height gap is over this, as it is from partway up the stairs.
-    constexpr float maxLootRange = INTERACTION_DISTANCE - 2.0f;
-    constexpr float distFromObject = 2.0f;
-
-    if (bot->GetDistance(elemental) > maxLootRange)
-    {
-        // TEMP LOG
-        if (TaintedLogThrottle(bot, "tocorpse"))
-        {
-            LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} walking to corpse at {:.1f} yd",
-                TaintedLogElapsedMs(bot), bot->GetName(), bot->GetDistance(elemental));
-        }
-
-        float stepX;
-        float stepY;
-        if (!GetPathStepTowardUnit(bot, elemental, distFromObject, stepX, stepY))
-            return false;
-
-        return MoveTo(
-            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    LootObject loot(bot, elemental->GetGUID());
-    if (!loot.IsLootPossible(bot))
+    // As LootObject::IsLootPossible() checks a corpse, less its height limit
+    if (!bot->isAllowedToLoot(elemental))
     {
         // TEMP LOG
         if (TaintedLogThrottle(bot, "notpossible"))
@@ -2419,26 +2440,19 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
         return false;
     }
 
-    context->GetValue<LootObject>("loot target")->Set(loot);
+    // Open, take the core, close, as a player's client does. Handled in this order on the bot's
+    // next session update. Closing clears the corpse's lootable flag once it is empty.
+    WorldPacket* openPacket = new WorldPacket(CMSG_LOOT, 8);
+    *openPacket << elemental->GetGUID();
+    bot->GetSession()->QueuePacket(openPacket);
 
-    OpenLootAction open(botAI);
-    if (!open.Execute(Event()))
-    {
-        // TEMP LOG
-        if (TaintedLogThrottle(bot, "openfailed"))
-        {
-            LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} open loot failed at {:.1f} yd",
-                TaintedLogElapsedMs(bot), bot->GetName(), bot->GetDistance(elemental));
-        }
+    WorldPacket* storePacket = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
+    *storePacket << static_cast<uint8>(coreSlot);
+    bot->GetSession()->QueuePacket(storePacket);
 
-        return false;
-    }
-
-    bot->SetLootGUID(elemental->GetGUID());
-    constexpr uint8 coreIndex = 0;
-    WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-    *packet << coreIndex;
-    bot->GetSession()->QueuePacket(packet);
+    WorldPacket* releasePacket = new WorldPacket(CMSG_LOOT_RELEASE, 8);
+    *releasePacket << elemental->GetGUID();
+    bot->GetSession()->QueuePacket(releasePacket);
 
     // TEMP LOG
     if (TaintedLogFirstTime(bot, "packet") || TaintedLogThrottle(bot, "packet"))
@@ -2493,6 +2507,14 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     //     bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 
     Item* item = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
+
+    // TEMP LOG
+    if (item && TaintedLogFirstTime(bot, "held"))
+    {
+        LOG_INFO("playerbots", "[SSC tainted] +{}ms {} has the core, {:.1f} yd from the generator",
+            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(closestTrigger));
+    }
+
     if (!item || !botAI->HasItemInInventory(Id(SscItems::ITEM_TAINTED_CORE)))
     {
         // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
@@ -2531,6 +2553,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
             {
                 lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, firstCorePasser);
+                TaintedLogThrow(botAI, bot, firstCorePasser); // TEMP LOG
                 lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
                 return true;
             }
@@ -2547,6 +2570,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
             {
                 lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, secondCorePasser);
+                TaintedLogThrow(botAI, bot, secondCorePasser); // TEMP LOG
                 lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
                 return true;
             }
@@ -2565,6 +2589,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
             {
                 lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, thirdCorePasser);
+                TaintedLogThrow(botAI, bot, thirdCorePasser); // TEMP LOG
                 lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
                 return true;
             }
@@ -2583,6 +2608,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
             {
                 lastVashjCoreImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, fourthCorePasser);
+                TaintedLogThrow(botAI, bot, fourthCorePasser); // TEMP LOG
                 lastVashjCoreInInventoryTime.insert_or_assign(bot->GetGUID(), now);
                 return true;
             }
@@ -2591,6 +2617,16 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         // four ever should be, so it should use the Core on the nearest generator
         else if (bot == fourthCorePasser && UseCoreOnNearestGenerator(instanceId))
             return true;
+    }
+
+    // TEMP LOG
+    if (item && TaintedLogThrottle(bot, "holding"))
+    {
+        LOG_INFO("playerbots",
+            "[SSC tainted] +{}ms {} holds the core, no throw or use, casting {}, {:.1f} yd from "
+            "the generator",
+            TaintedLogElapsedMs(bot), bot->GetName(),
+            bot->IsNonMeleeSpellCast(false) ? "yes" : "no", bot->GetExactDist2d(closestTrigger));
     }
 
     return false;
@@ -2878,12 +2914,38 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
         return false;
 
     GameObject* generator = botAI->GetGameObject(nearestGen->guid);
-    if (!generator || bot->GetExactDist2d(generator) > 4.5f)
+    if (!generator)
         return false;
 
-    Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
-    if (!core || bot->CanUseItem(core) != EQUIP_ERR_OK)
+    if (bot->GetExactDist2d(generator) > 4.5f)
+    {
+        // TEMP LOG
+        if (bot->GetExactDist2d(generator) <= 10.0f && TaintedLogThrottle(bot, "genfar"))
+        {
+            LOG_INFO("playerbots",
+                "[SSC tainted] +{}ms {} too far to use the core at {:.1f} yd (interact {})",
+                TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(generator),
+                generator->IsAtInteractDistance(bot) ? "yes" : "NO");
+        }
+
         return false;
+    }
+
+    Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
+    if (!core)
+        return false;
+
+    if (InventoryResult const canUse = bot->CanUseItem(core); canUse != EQUIP_ERR_OK)
+    {
+        // TEMP LOG
+        if (TaintedLogThrottle(bot, "cantuse"))
+        {
+            LOG_INFO("playerbots", "[SSC tainted] +{}ms {} can't use the core, error {}",
+                TaintedLogElapsedMs(bot), bot->GetName(), static_cast<int>(canUse));
+        }
+
+        return false;
+    }
 
     if (bot->IsNonMeleeSpellCast(false))
         return false;
@@ -2918,6 +2980,13 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(uint32 instanc
     packet << generator->GetGUID().WriteAsPacked();
 
     bot->GetSession()->HandleUseItemOpcode(packet);
+
+    // TEMP LOG
+    LOG_INFO("playerbots",
+        "[SSC tainted] +{}ms {} uses the core at {:.1f} yd (interact {}), casting {}",
+        TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist2d(generator),
+        generator->IsAtInteractDistance(bot) ? "yes" : "NO",
+        bot->IsNonMeleeSpellCast(false) ? "yes" : "NO");
 
     lastVashjCoreImbueAttempt.erase(instanceId);
     auto coreHandlers = GetCoreHandlers(botAI, bot);

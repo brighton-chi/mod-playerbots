@@ -541,7 +541,8 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     return !looter || !looter->IsAlive();
 }
 
-// The looter and the two ranged dps closest to the elemental.
+// The ranged dps of the cluster nearest the elemental. Its looter waits beside it instead (see
+// the loot action).
 bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot))
@@ -552,11 +553,10 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
         return false;
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    return tainted && (GetDesignatedCoreLooter(botAI, bot) == bot ||
-        IsVashjTaintedElementalKiller(bot, tainted));
+    return tainted && IsVashjTaintedElementalKiller(bot, tainted);
 }
 
-// Stays true on the corpse until the core is looted.
+// From the looter's pick until the core is taken from the corpse.
 bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(botAI, bot) != bot)
@@ -567,9 +567,9 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
         return false;
 
     Creature* tainted = GetVashjTaintedElemental(bot);
-    bool const hasCore = bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
 
     // TEMP LOG
+    bool const hasCore = bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
     if (hasCore && TaintedLogFirstTime(bot, "core"))
     {
         LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} has the core",
@@ -581,7 +581,7 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
             TaintedLogElapsedMs(bot), TaintedLogSeen(bot, "core") ? "yes" : "NO");
     }
 
-    return tainted && !hasCore;
+    return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
 }
 
 // A core still held when phase 3 starts, say from a stalled chain, has no generator left, and its
@@ -610,6 +610,8 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActiveInEncounter()
 
     if (!isCoreHandler)
         return false;
+
+    TaintedLogGenerators(bot); // TEMP LOG
 
     // Main logic: run if core is in play for this bot or a prior handler.
     return AnyRecentCoreInInventory(botAI, bot);

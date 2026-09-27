@@ -620,6 +620,9 @@ int8 GetNearestVashjCluster(Unit* unit);
 Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster);
 // The Tainted Elemental the current looter was chosen for, alive or a corpse.
 Creature* GetVashjTaintedElemental(Player* bot);
+// The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
+// the core is taken. The corpse stays flagged lootable until its looter releases the loot.
+int8 GetTaintedCoreLootSlot(Creature* elemental);
 // True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter.
 bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted);
 Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
@@ -652,6 +655,9 @@ bool TaintedLogFirstTime(Player* bot, char const* key);
 bool TaintedLogSeen(Player* bot, char const* key);
 // At most once a second per bot and key.
 bool TaintedLogThrottle(Player* bot, char const* key);
+void TaintedLogThrow(PlayerbotAI* botAI, Player* bot, Player* receiver);
+// Logs when the number of usable generators changes.
+void TaintedLogGenerators(Player* bot);
 Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
 Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
