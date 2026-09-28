@@ -41,7 +41,6 @@ class Unit;
 class WorldObject;
 class WorldPosition;
 
-
 struct CreatureData;
 struct GameObjectData;
 
