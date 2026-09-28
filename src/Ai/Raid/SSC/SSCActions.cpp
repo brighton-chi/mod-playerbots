@@ -1783,6 +1783,14 @@ bool IsVashjTargetAllowed(
     if (!unit || !unit->IsAlive())
         return false;
 
+    // Melee dps anywhere in reach of it could be standing in a Strider's Panic, and be feared away
+    // again and again. Vashj too.
+    for (Unit* strider : facts.panicStriders)
+    {
+        if (unit->GetExactDist(strider) <= VASHJ_STRIDER_PANIC_RADIUS + bot->GetMeleeRange(unit))
+            return false;
+    }
+
     if (tier.target == VashjTarget::TaintedElemental)
         return unit == facts.tainted;
 
@@ -1938,6 +1946,17 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
             facts.tainted = tainted;
     }
 
+    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
+    {
+        for (ObjectGuid const& guid : adds.striders)
+        {
+            Unit* strider = botAI->GetUnit(guid);
+            if (strider && strider->IsAlive())
+                facts.panicStriders.push_back(strider);
+        }
+    }
+
     std::vector<VashjTargetTier> const& tiers =
         GetVashjTargetTiers(bot, facts.phase, facts.tainted != nullptr);
 
@@ -1955,7 +1974,6 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     for (size_t i = 0; i < currentTier; ++i)
     {
         Unit* candidate = GetBestVashjTarget(botAI, bot, facts, adds, tiers[i]);

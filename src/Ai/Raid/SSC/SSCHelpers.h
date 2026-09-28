@@ -435,6 +435,8 @@ struct VashjTargetFacts
     // goes to the nearest free tank, which is the one on the side it comes from while they wait
     // in the middle.
     bool oneTankEach = false;
+    // Melee dps: the living Striders, whose Panic their targets must be clear of
+    std::vector<Unit*> panicStriders;
 };
 
 // Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, numbered 1 to 4 in this order.
@@ -507,6 +509,9 @@ static_assert(VASHJ_CLUSTER_FILL_ORDER.size() == VASHJ_CLUSTER_COUNT);
 using VashjClusterHolders =
     std::array<std::array<ObjectGuid, VASHJ_CLUSTER_RANGED_SLOTS + 1>, VASHJ_CLUSTER_COUNT>;
 
+// Panic (38258) fears every player within this of a Strider, centre to centre: an area spell
+// round an NPC caster adds neither reach.
+inline constexpr float VASHJ_STRIDER_PANIC_RADIUS = 11.0f;
 // Where Striders are tanked in phase 2, one in each gap between two clusters: 16y+ from every
 // cluster slot and healer post (Panic fears within 11y), 18y+ from the generators and 30y+ from
 // the centre. A Strider's combat reach is 9, so a 30y spell reaches it from about 40y; with the

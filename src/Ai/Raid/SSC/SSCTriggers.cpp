@@ -412,7 +412,7 @@ bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
 // own.
 bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot) || bot->getClass() == CLASS_HUNTER || HasStaticCharge(bot))
+    if (!PlayerbotAI::IsCaster(bot) || HasStaticCharge(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -703,6 +703,10 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 
 bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 {
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
     Unit* target;
     float range;
     return GetVashjReachBlockedBySpores(botAI, bot, target, range);

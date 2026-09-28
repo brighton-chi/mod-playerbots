@@ -1022,18 +1022,13 @@ bool GetVashjReachBlockedBySpores(
     target = nullptr;
     range = 0.0f;
 
-    bool const isHealer = PlayerbotAI::IsHeal(bot);
-    if ((!isHealer && (!PlayerbotAI::IsRangedDps(bot) || bot->getClass() == CLASS_HUNTER)) ||
-        HasStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
-    {
+    // Healers and ranged dps other than hunters
+    if (!PlayerbotAI::IsCaster(bot) || HasStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
         return false;
-    }
+
+    bool const isHealer = PlayerbotAI::IsHeal(bot);
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* vashj = context->GetValue<Unit*>("find target", "lady vashj")->Get();
-    if (!vashj || GetLadyVashjPhase(vashj) != 3)
-        return false;
-
     target = context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
     range = botAI->GetRange(isHealer ? "heal" : "spell");
     if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))

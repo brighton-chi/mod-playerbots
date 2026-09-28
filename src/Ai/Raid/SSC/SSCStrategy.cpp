@@ -237,7 +237,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDontDropOutOfSightTargetMultiplier(botAI));
 
     // Morogrim Tidewalker
-    multipliers.push_back(new MorogrimTidewalkerDisableTankActionsMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerDisableTankFaceMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerStayStackedMultiplier(botAI));
 
     // Lady Vashj <Coilfang Matron>

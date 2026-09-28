@@ -287,6 +287,9 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
 
 float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
@@ -392,6 +395,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
 
 float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!HasInnerDemon(bot))
         return 1.0f;
 
@@ -615,6 +621,9 @@ float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
 
 float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -644,6 +653,9 @@ float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Actio
 
 float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
@@ -767,12 +779,15 @@ float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounte
 
 // Morogrim Tidewalker
 
-float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
+float MorogrimTidewalkerDisableTankFaceMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+    if (!dynamic_cast<TankFaceAction*>(action))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
@@ -781,6 +796,9 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValueInEncounter(Action
 // This doesn't apply en route to the stack, only when actually stacked.
 float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
@@ -1086,11 +1104,15 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
 float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
-    if (!isHealerReach && !dynamic_cast<ReachSpellAction*>(action))
+    bool const isSpellReach = dynamic_cast<ReachSpellAction*>(action);
+
+    // The reach the helper below measures: a healer's reach-to-heal, anyone else's reach-spell
+    if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isSpellReach)
         return 1.0f;
 
-    if (isHealerReach != PlayerbotAI::IsHeal(bot))
-        return 1.0f;
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
 
     Unit* target;
     float range;
