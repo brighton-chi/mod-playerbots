@@ -7,9 +7,27 @@
 #ifndef PLAYERBOTS_KARATRIGGERS_H
 #define PLAYERBOTS_KARATRIGGERS_H
 
+#include "EncounterHelpers.h"
+#include "KaraHelpers.h"
 #include "Trigger.h"
 
 // General
+
+class KarazhanEncounterTrigger : public Trigger
+{
+public:
+    KarazhanEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
+
+    bool IsActive() final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, KaraHelpers::KARA_MAP_ID) &&
+            IsActiveInEncounter();
+    }
+
+protected:
+    virtual bool IsActiveInEncounter() = 0;
+};
 
 class KarazhanNoEncounterInProgressTrigger : public Trigger
 {
@@ -41,306 +59,376 @@ public:
 
 // Attumen the Huntsman
 
-class AttumenTheHuntsmanPhaseOneActiveTrigger : public Trigger
+class AttumenTheHuntsmanPhaseOneActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     AttumenTheHuntsmanPhaseOneActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "attumen the huntsman phase one active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "attumen the huntsman phase one active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AttumenTheHuntsmanPhaseTwoActiveTrigger : public Trigger
+class AttumenTheHuntsmanPhaseTwoActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     AttumenTheHuntsmanPhaseTwoActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "attumen the huntsman phase two active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "attumen the huntsman phase two active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class AttumenTheHuntsmanPhaseTransitionTrigger : public Trigger
+class AttumenTheHuntsmanPhaseTransitionTrigger : public KarazhanEncounterTrigger
 {
 public:
     AttumenTheHuntsmanPhaseTransitionTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "attumen the huntsman phase transition") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "attumen the huntsman phase transition") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Moroes <Tower Steward>
 
-class MoroesShouldPrioritizeAddsTrigger : public Trigger
+class MoroesShouldPrioritizeAddsTrigger : public KarazhanEncounterTrigger
 {
 public:
     MoroesShouldPrioritizeAddsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "moroes should prioritize adds") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "moroes should prioritize adds") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Maiden of Virtue
 
-class MaidenOfVirtueBossEngagedByTanksTrigger : public Trigger
+class MaidenOfVirtueShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    MaidenOfVirtueBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "maiden of virtue boss engaged by tanks") {}
-    bool IsActive() override;
+    MaidenOfVirtueShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "maiden of virtue should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MaidenOfVirtueHolyWrathDealsChainDamageTrigger : public Trigger
+class MaidenOfVirtueRangedShouldSpreadTrigger : public KarazhanEncounterTrigger
 {
 public:
-    MaidenOfVirtueHolyWrathDealsChainDamageTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "maiden of virtue holy wrath deals chain damage") {}
-    bool IsActive() override;
+    MaidenOfVirtueRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "maiden of virtue ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger : public Trigger
+class MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger : public KarazhanEncounterTrigger
 {
 public:
     MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "maiden of virtue grounding totem consumes holy fire") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "maiden of virtue grounding totem consumes holy fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // The Big Bad Wolf
 
-class BigBadWolfBossEngagedByTankTrigger : public Trigger
+class BigBadWolfShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    BigBadWolfBossEngagedByTankTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "big bad wolf boss engaged by tank") {}
-    bool IsActive() override;
+    BigBadWolfShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "big bad wolf should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class BigBadWolfBossIsChasingLittleRedRidingHoodTrigger : public Trigger
+class BigBadWolfChasingLittleRedRidingHoodTrigger : public KarazhanEncounterTrigger
 {
 public:
-    BigBadWolfBossIsChasingLittleRedRidingHoodTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "big bad wolf boss is chasing little red riding hood") {}
-    bool IsActive() override;
+    BigBadWolfChasingLittleRedRidingHoodTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "big bad wolf chasing little red riding hood") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Romulo and Julianne
 
-class RomuloAndJulianneBothBossesRevivedTrigger : public Trigger
+class RomuloAndJulianneBothBossesRevivedTrigger : public KarazhanEncounterTrigger
 {
 public:
     RomuloAndJulianneBothBossesRevivedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "romulo and julianne both bosses revived") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "romulo and julianne both bosses revived") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // The Wizard of Oz
 
-class WizardOfOzNeedTargetPriorityTrigger : public Trigger
+class WizardOfOzNeedTargetPriorityTrigger : public KarazhanEncounterTrigger
 {
 public:
     WizardOfOzNeedTargetPriorityTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "wizard of oz need target priority") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "wizard of oz need target priority") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class WizardOfOzStrawmanIsVulnerableToFireTrigger : public Trigger
+class WizardOfOzStrawmanIsVulnerableToFireTrigger : public KarazhanEncounterTrigger
 {
 public:
     WizardOfOzStrawmanIsVulnerableToFireTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "wizard of oz strawman is vulnerable to fire") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "wizard of oz strawman is vulnerable to fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // The Curator
 
-class TheCuratorAstralFlareSpawnedTrigger : public Trigger
+class TheCuratorAstralFlareSpawnedTrigger : public KarazhanEncounterTrigger
 {
 public:
     TheCuratorAstralFlareSpawnedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the curator astral flare spawned") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "the curator astral flare spawned") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheCuratorBossEngagedByTanksTrigger : public Trigger
+class TheCuratorShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    TheCuratorBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the curator boss engaged by tanks") {}
-    bool IsActive() override;
+    TheCuratorShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "the curator should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TheCuratorBossEngagedByRangedTrigger : public Trigger
+class TheCuratorRangedShouldSpreadTrigger : public KarazhanEncounterTrigger
 {
 public:
-    TheCuratorBossEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "the curator boss engaged by ranged") {}
-    bool IsActive() override;
+    TheCuratorRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "the curator ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Terestian Illhoof
 
-class TerestianIllhoofShouldPrioritizeChainsTrigger : public Trigger
+class TerestianIllhoofShouldPrioritizeChainsTrigger : public KarazhanEncounterTrigger
 {
 public:
     TerestianIllhoofShouldPrioritizeChainsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "terestian illhoof should prioritize chains") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "terestian illhoof should prioritize chains") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Shade of Aran
 
-class ShadeOfAranArcaneExplosionIsCastingTrigger : public Trigger
+class ShadeOfAranArcaneExplosionIsCastingTrigger : public KarazhanEncounterTrigger
 {
 public:
     ShadeOfAranArcaneExplosionIsCastingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "shade of aran arcane explosion is casting") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "shade of aran arcane explosion is casting") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ShadeOfAranFlameWreathIsActiveTrigger : public Trigger
+class ShadeOfAranFlameWreathIsActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     ShadeOfAranFlameWreathIsActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "shade of aran flame wreath is active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "shade of aran flame wreath is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ShadeOfAranConjuredElementalsSummonedTrigger : public Trigger
+class ShadeOfAranConjuredElementalsSummonedTrigger : public KarazhanEncounterTrigger
 {
 public:
     ShadeOfAranConjuredElementalsSummonedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "shade of aran conjured elementals summoned") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "shade of aran conjured elementals summoned") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ShadeOfAranBossCastsCounterspellNearbyTrigger : public Trigger
+class ShadeOfAranRangedShouldMaintainDistanceTrigger : public KarazhanEncounterTrigger
 {
 public:
-    ShadeOfAranBossCastsCounterspellNearbyTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "shade of aran boss casts counterspell nearby") {}
-    bool IsActive() override;
+    ShadeOfAranRangedShouldMaintainDistanceTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "shade of aran ranged should maintain distance") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Netherspite
 
-class NetherspiteRedBeamIsActiveTrigger : public Trigger
+class NetherspiteRedBeamIsActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     NetherspiteRedBeamIsActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite red beam is active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "netherspite red beam is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NetherspiteBlueBeamIsActiveTrigger : public Trigger
+class NetherspiteBlueBeamIsActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     NetherspiteBlueBeamIsActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite blue beam is active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "netherspite blue beam is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NetherspiteGreenBeamIsActiveTrigger : public Trigger
+class NetherspiteGreenBeamIsActiveTrigger : public KarazhanEncounterTrigger
 {
 public:
     NetherspiteGreenBeamIsActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite green beam is active") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "netherspite green beam is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NetherspiteBotIsNotBeamBlockerTrigger : public Trigger
+class NetherspiteBotIsNotBeamBlockerTrigger : public KarazhanEncounterTrigger
 {
 public:
     NetherspiteBotIsNotBeamBlockerTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite bot is not beam blocker") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "netherspite bot is not beam blocker") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NetherspiteBossIsBanishedTrigger : public Trigger
+class NetherspiteInBanishPhaseTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NetherspiteBossIsBanishedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite boss is banished") {}
-    bool IsActive() override;
+    NetherspiteInBanishPhaseTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "netherspite in banish phase") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NetherspiteShouldManageTimersAndTrackersTrigger : public Trigger
+class NetherspiteShouldManageTimersAndTrackersTrigger : public KarazhanEncounterTrigger
 {
 public:
     NetherspiteShouldManageTimersAndTrackersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "netherspite should manage timers and trackers") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "netherspite should manage timers and trackers") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Prince Malchezaar
 
-class PrinceMalchezaarBotIsEnfeebledTrigger : public Trigger
+class PrinceMalchezaarBotIsEnfeebledTrigger : public KarazhanEncounterTrigger
 {
 public:
     PrinceMalchezaarBotIsEnfeebledTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "prince malchezaar bot is enfeebled") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "prince malchezaar bot is enfeebled") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class PrinceMalchezaarEngagedByNonTanksTrigger : public Trigger
+class PrinceMalchezaarEngagedByNonTanksTrigger : public KarazhanEncounterTrigger
 {
 public:
     PrinceMalchezaarEngagedByNonTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "prince malchezaar engaged by non-tanks") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "prince malchezaar engaged by non-tanks") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class PrinceMalchezaarBossEngagedByTanksTrigger : public Trigger
+class PrinceMalchezaarShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    PrinceMalchezaarBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "prince malchezaar boss engaged by tanks") {}
-    bool IsActive() override;
+    PrinceMalchezaarShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "prince malchezaar should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Nightbane
 
-class NightbaneBossEngagedByTanksTrigger : public Trigger
+class NightbaneShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneBossEngagedByTanksTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane boss engaged by tanks") {}
-    bool IsActive() override;
+    NightbaneShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "nightbane should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NightbaneGroundPhaseEngagedByRangedTrigger : public Trigger
+class NightbaneGroundPhaseEngagedByRangedTrigger : public KarazhanEncounterTrigger
 {
 public:
     NightbaneGroundPhaseEngagedByRangedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane ground phase engaged by ranged") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "nightbane ground phase engaged by ranged") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger : public Trigger
+class NightbanePetsChaseFlyingBossOutOfBoundsTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane pets ignore collision to chase flying boss") {}
-    bool IsActive() override;
+    NightbanePetsChaseFlyingBossOutOfBoundsTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "nightbane pets chase flying boss out of bounds") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NightbaneBossIsFlyingTrigger : public Trigger
+class NightbaneInFlightPhaseTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneBossIsFlyingTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane boss is flying") {}
-    bool IsActive() override;
+    NightbaneInFlightPhaseTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(botAI, "nightbane in flight phase") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NightbaneBotWentOutOfBoundsTrigger : public Trigger
+class NightbaneBotWentOutOfBoundsTrigger : public KarazhanEncounterTrigger
 {
 public:
     NightbaneBotWentOutOfBoundsTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane bot went out of bounds") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "nightbane bot went out of bounds") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class NightbaneShouldManageTimersAndTrackersTrigger : public Trigger
+class NightbaneShouldManageTimersAndTrackersTrigger : public KarazhanEncounterTrigger
 {
 public:
     NightbaneShouldManageTimersAndTrackersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "nightbane should manage timers and trackers") {}
-    bool IsActive() override;
+        : KarazhanEncounterTrigger(botAI, "nightbane should manage timers and trackers") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 #endif

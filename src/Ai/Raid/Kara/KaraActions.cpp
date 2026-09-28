@@ -191,14 +191,14 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Mounted Attumen's CombatReach is 0 [sic] yards
+// Mounted Attumen's CombatReach is 0 yards so defaults to 1.5 yards
 bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 {
-    float const distanceBehind = bot->getClass() == CLASS_HUNTER? 8.0f : 2.0f;
+    float const distanceBehind = bot->getClass() == CLASS_HUNTER ? 8.0f : 2.0f;
     float const orientation = attumen->GetOrientation() + M_PI;
     float const rearX = attumen->GetPositionX() + std::cos(orientation) * distanceBehind;
     float const rearY = attumen->GetPositionY() + std::sin(orientation) * distanceBehind;
@@ -207,8 +207,8 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, rearX, rearY, attumen->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, rearX, rearY, attumen->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)

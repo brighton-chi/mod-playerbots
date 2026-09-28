@@ -41,21 +41,21 @@ public:
             &RaidKarazhanTriggerContext::moroes_should_prioritize_adds;
 
         // Maiden of Virtue
-        creators["maiden of virtue boss engaged by tanks"] =
-            &RaidKarazhanTriggerContext::maiden_of_virtue_boss_engaged_by_tanks;
+        creators["maiden of virtue should be tanked"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_should_be_tanked;
 
-        creators["maiden of virtue holy wrath deals chain damage"] =
-            &RaidKarazhanTriggerContext::maiden_of_virtue_holy_wrath_deals_chain_damage;
+        creators["maiden of virtue ranged should spread"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_ranged_should_spread;
 
         creators["maiden of virtue grounding totem consumes holy fire"] =
             &RaidKarazhanTriggerContext::maiden_of_virtue_grounding_totem_consumes_holy_fire;
 
         // The Big Bad Wolf
-        creators["big bad wolf boss engaged by tank"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_boss_engaged_by_tank;
+        creators["big bad wolf should be tanked"] =
+            &RaidKarazhanTriggerContext::big_bad_wolf_should_be_tanked;
 
-        creators["big bad wolf boss is chasing little red riding hood"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_boss_is_chasing_little_red_riding_hood;
+        creators["big bad wolf chasing little red riding hood"] =
+            &RaidKarazhanTriggerContext::big_bad_wolf_chasing_little_red_riding_hood;
 
         // Romulo and Julianne
         creators["romulo and julianne both bosses revived"] =
@@ -72,11 +72,11 @@ public:
         creators["the curator astral flare spawned"] =
             &RaidKarazhanTriggerContext::the_curator_astral_flare_spawned;
 
-        creators["the curator boss engaged by tanks"] =
-            &RaidKarazhanTriggerContext::the_curator_boss_engaged_by_tanks;
+        creators["the curator should be tanked"] =
+            &RaidKarazhanTriggerContext::the_curator_should_be_tanked;
 
-        creators["the curator boss engaged by ranged"] =
-            &RaidKarazhanTriggerContext::the_curator_boss_engaged_by_ranged;
+        creators["the curator ranged should spread"] =
+            &RaidKarazhanTriggerContext::the_curator_ranged_should_spread;
 
         // Terestian Illhoof
         creators["terestian illhoof should prioritize chains"] =
@@ -92,8 +92,8 @@ public:
         creators["shade of aran conjured elementals summoned"] =
             &RaidKarazhanTriggerContext::shade_of_aran_conjured_elementals_summoned;
 
-        creators["shade of aran boss casts counterspell nearby"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_boss_casts_counterspell_nearby;
+        creators["shade of aran ranged should maintain distance"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_ranged_should_maintain_distance;
 
         // Netherspite
         creators["netherspite red beam is active"] =
@@ -108,8 +108,8 @@ public:
         creators["netherspite bot is not beam blocker"] =
             &RaidKarazhanTriggerContext::netherspite_bot_is_not_beam_blocker;
 
-        creators["netherspite boss is banished"] =
-            &RaidKarazhanTriggerContext::netherspite_boss_is_banished;
+        creators["netherspite in banish phase"] =
+            &RaidKarazhanTriggerContext::netherspite_in_banish_phase;
 
         creators["netherspite should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::netherspite_need_to_manage_timers_and_trackers;
@@ -121,21 +121,21 @@ public:
         creators["prince malchezaar engaged by non-tanks"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_engaged_by_non_tanks;
 
-        creators["prince malchezaar boss engaged by tanks"] =
-            &RaidKarazhanTriggerContext::prince_malchezaar_boss_engaged_by_tanks;
+        creators["prince malchezaar should be tanked"] =
+            &RaidKarazhanTriggerContext::prince_malchezaar_should_be_tanked;
 
         // Nightbane
-        creators["nightbane boss engaged by tanks"] =
-            &RaidKarazhanTriggerContext::nightbane_boss_engaged_by_tanks;
+        creators["nightbane should be tanked"] =
+            &RaidKarazhanTriggerContext::nightbane_should_be_tanked;
 
         creators["nightbane ground phase engaged by ranged"] =
-            &RaidKarazhanTriggerContext::nightbane_ranged_bots_are_in_charred_earth;
+            &RaidKarazhanTriggerContext::nightbane_ground_phase_engaged_by_ranged;
 
-        creators["nightbane pets ignore collision to chase flying boss"] =
-            &RaidKarazhanTriggerContext::nightbane_pets_ignore_collision_to_chase_flying_boss;
+        creators["nightbane pets chase flying boss out of bounds"] =
+            &RaidKarazhanTriggerContext::nightbane_pets_chase_flying_boss_out_of_bounds;
 
-        creators["nightbane boss is flying"] =
-            &RaidKarazhanTriggerContext::nightbane_boss_is_flying;
+        creators["nightbane in flight phase"] =
+            &RaidKarazhanTriggerContext::nightbane_in_flight_phase;
 
         creators["nightbane bot went out of bounds"] =
             &RaidKarazhanTriggerContext::nightbane_bot_went_out_of_bounds;
@@ -175,23 +175,24 @@ private:
     }
 
     // Maiden of Virtue
-    static Trigger* maiden_of_virtue_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new MaidenOfVirtueBossEngagedByTanksTrigger(botAI);
+    static Trigger* maiden_of_virtue_should_be_tanked(PlayerbotAI* botAI) {
+        return new MaidenOfVirtueShouldBeTankedTrigger(botAI);
     }
-    static Trigger* maiden_of_virtue_holy_wrath_deals_chain_damage(PlayerbotAI* botAI) {
-        return new MaidenOfVirtueHolyWrathDealsChainDamageTrigger(botAI);
+    static Trigger* maiden_of_virtue_ranged_should_spread(PlayerbotAI* botAI) {
+        return new MaidenOfVirtueRangedShouldSpreadTrigger(botAI);
     }
     static Trigger* maiden_of_virtue_grounding_totem_consumes_holy_fire(PlayerbotAI* botAI) {
         return new MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger(botAI);
     }
 
     // The Big Bad Wolf
-    static Trigger* big_bad_wolf_boss_engaged_by_tank(PlayerbotAI* botAI) {
-        return new BigBadWolfBossEngagedByTankTrigger(botAI);
+    static Trigger* big_bad_wolf_should_be_tanked(PlayerbotAI* botAI) {
+        return new BigBadWolfShouldBeTankedTrigger(botAI);
     }
-    static Trigger* big_bad_wolf_boss_is_chasing_little_red_riding_hood(PlayerbotAI* botAI) {
-        return new BigBadWolfBossIsChasingLittleRedRidingHoodTrigger(botAI);
+    static Trigger* big_bad_wolf_chasing_little_red_riding_hood(PlayerbotAI* botAI) {
+        return new BigBadWolfChasingLittleRedRidingHoodTrigger(botAI);
     }
+
     // Romulo and Julianne
     static Trigger* romulo_and_julianne_both_bosses_revived(PlayerbotAI* botAI) {
         return new RomuloAndJulianneBothBossesRevivedTrigger(botAI);
@@ -209,11 +210,11 @@ private:
     static Trigger* the_curator_astral_flare_spawned(PlayerbotAI* botAI) {
         return new TheCuratorAstralFlareSpawnedTrigger(botAI);
     }
-    static Trigger* the_curator_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new TheCuratorBossEngagedByTanksTrigger(botAI);
+    static Trigger* the_curator_should_be_tanked(PlayerbotAI* botAI) {
+        return new TheCuratorShouldBeTankedTrigger(botAI);
     }
-    static Trigger* the_curator_boss_engaged_by_ranged(PlayerbotAI* botAI) {
-        return new TheCuratorBossEngagedByRangedTrigger(botAI);
+    static Trigger* the_curator_ranged_should_spread(PlayerbotAI* botAI) {
+        return new TheCuratorRangedShouldSpreadTrigger(botAI);
     }
 
     // Terestian Illhoof
@@ -231,8 +232,8 @@ private:
     static Trigger* shade_of_aran_conjured_elementals_summoned(PlayerbotAI* botAI) {
         return new ShadeOfAranConjuredElementalsSummonedTrigger(botAI);
     }
-    static Trigger* shade_of_aran_boss_casts_counterspell_nearby(PlayerbotAI* botAI) {
-        return new ShadeOfAranBossCastsCounterspellNearbyTrigger(botAI);
+    static Trigger* shade_of_aran_ranged_should_maintain_distance(PlayerbotAI* botAI) {
+        return new ShadeOfAranRangedShouldMaintainDistanceTrigger(botAI);
     }
 
     // Netherspite
@@ -248,8 +249,8 @@ private:
     static Trigger* netherspite_bot_is_not_beam_blocker(PlayerbotAI* botAI) {
         return new NetherspiteBotIsNotBeamBlockerTrigger(botAI);
     }
-    static Trigger* netherspite_boss_is_banished(PlayerbotAI* botAI) {
-        return new NetherspiteBossIsBanishedTrigger(botAI);
+    static Trigger* netherspite_in_banish_phase(PlayerbotAI* botAI) {
+        return new NetherspiteInBanishPhaseTrigger(botAI);
     }
     static Trigger* netherspite_need_to_manage_timers_and_trackers(PlayerbotAI* botAI) {
         return new NetherspiteShouldManageTimersAndTrackersTrigger(botAI);
@@ -262,22 +263,22 @@ private:
     static Trigger* prince_malchezaar_engaged_by_non_tanks(PlayerbotAI* botAI) {
         return new PrinceMalchezaarEngagedByNonTanksTrigger(botAI);
     }
-    static Trigger* prince_malchezaar_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new PrinceMalchezaarBossEngagedByTanksTrigger(botAI);
+    static Trigger* prince_malchezaar_should_be_tanked(PlayerbotAI* botAI) {
+        return new PrinceMalchezaarShouldBeTankedTrigger(botAI);
     }
 
     // Nightbane
-    static Trigger* nightbane_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new NightbaneBossEngagedByTanksTrigger(botAI);
+    static Trigger* nightbane_should_be_tanked(PlayerbotAI* botAI) {
+        return new NightbaneShouldBeTankedTrigger(botAI);
     }
-    static Trigger* nightbane_ranged_bots_are_in_charred_earth(PlayerbotAI* botAI) {
+    static Trigger* nightbane_ground_phase_engaged_by_ranged(PlayerbotAI* botAI) {
         return new NightbaneGroundPhaseEngagedByRangedTrigger(botAI);
     }
-    static Trigger* nightbane_pets_ignore_collision_to_chase_flying_boss(PlayerbotAI* botAI) {
-        return new NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger(botAI);
+    static Trigger* nightbane_pets_chase_flying_boss_out_of_bounds(PlayerbotAI* botAI) {
+        return new NightbanePetsChaseFlyingBossOutOfBoundsTrigger(botAI);
     }
-    static Trigger* nightbane_boss_is_flying(PlayerbotAI* botAI) {
-        return new NightbaneBossIsFlyingTrigger(botAI);
+    static Trigger* nightbane_in_flight_phase(PlayerbotAI* botAI) {
+        return new NightbaneInFlightPhaseTrigger(botAI);
     }
     static Trigger* nightbane_bot_went_out_of_bounds(PlayerbotAI* botAI) {
         return new NightbaneBotWentOutOfBoundsTrigger(botAI);
