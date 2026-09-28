@@ -797,8 +797,11 @@ Creature* GetAssignedTaintedElemental(Player* bot);
 int8 GetTaintedCoreLootSlot(Creature* tainted);
 // From the elemental's spawn until its core is taken from the corpse.
 bool IsTaintedCoreStillToLoot(Creature* tainted);
-// True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter.
-bool IsTaintedElementalKiller(Player* bot, Unit* tainted);
+// True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter
+// (only matters when no cluster has a healer left and the looter is picked from the rest).
+bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted);
+// Chosen once per Tainted Elemental by the mechanic tracker bot via
+// LadyVashjAssignTaintedCoreLooterAction.
 Player* GetDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
@@ -823,7 +826,7 @@ bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards);
 // True for a tanked Strider within VASHJ_STRIDER_STEP_IN_DISTANCE of the bot.
-bool IsVashjStriderToStepInTo(Player* bot, Unit* unit);
+bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
 // TEMP LOG (Tainted Elemental timing), remove after testing. Elapsed is from the looter pick.
 void StartTaintedLog(Player* bot);
 uint32 TaintedLogElapsedMs(Player* bot);

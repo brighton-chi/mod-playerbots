@@ -535,7 +535,7 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
         return false;
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    return tainted && IsTaintedElementalKiller(bot, tainted);
+    return tainted && IsAssignedToAttackTaintedElemental(bot, tainted);
 }
 
 // From the looter's pick until the core is taken from the corpse.

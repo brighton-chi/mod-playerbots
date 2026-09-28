@@ -1483,7 +1483,7 @@ bool IsTaintedCoreStillToLoot(Creature* tainted)
     return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
 }
 
-bool IsTaintedElementalKiller(Player* bot, Unit* tainted)
+bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted)
 {
     if (!tainted)
         return false;
@@ -1502,8 +1502,6 @@ bool IsTaintedElementalKiller(Player* bot, Unit* tainted)
     return slot.cluster >= 0 && slot.cluster == it->second.cluster;
 }
 
-// Chosen once per Tainted Elemental by the mechanic tracker bot
-// (LadyVashjAssignTaintedCoreLooterAction).
 Player* GetDesignatedCoreLooter(Player* bot)
 {
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
@@ -1640,7 +1638,7 @@ bool GetStepToBringTankedUnitTo(
     return GetStepToPosition(bot, destination, arrivalDistance, mob, stepX, stepY, backwards);
 }
 
-bool IsVashjStriderToStepInTo(Player* bot, Unit* unit)
+bool IsTankedStriderInStepInReach(Player* bot, Unit* unit)
 {
     return unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER) &&
         bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(unit);
@@ -2058,16 +2056,16 @@ GameObject* PlanVashjCoreRoute(
 }
 
 // One of the ranged dps sent to kill the elemental, while it lives
-bool IsVashjCoreChainKiller(Player* bot, VashjCoreChain const& chain, Player* player)
+bool IsBusyAttackingTaintedElemental(Player* bot, VashjCoreChain const& chain, Player* player)
 {
     Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
-    return tainted && tainted->IsAlive() && IsTaintedElementalKiller(player, tainted);
+    return tainted && tainted->IsAlive() && IsAssignedToAttackTaintedElemental(player, tainted);
 }
 
 // The living bot nearest the spot that can catch: not a tank, not the chain's start, not already
-// a catcher, not holding a core. killersOnly limits it to the elemental's killers.
+// a catcher, not holding a core. attackersOnly limits it to the elemental's killers.
 Player* FindVashjCoreCatcher(
-    Player* bot, VashjCoreChain const& chain, Position const& spot, bool killersOnly,
+    Player* bot, VashjCoreChain const& chain, Position const& spot, bool attackersOnly,
     ObjectGuid excluded)
 {
     Group* group = bot->GetGroup();
@@ -2089,7 +2087,7 @@ Player* FindVashjCoreCatcher(
 
         float const distance = member->GetExactDist2d(spot);
         if (distance >= nearestDistance ||
-            (killersOnly && !IsVashjCoreChainKiller(bot, chain, member)) ||
+            (attackersOnly && !IsBusyAttackingTaintedElemental(bot, chain, member)) ||
             HasTaintedCore(member))
         {
             continue;
@@ -2108,7 +2106,7 @@ void SetVashjCoreCatcher(
     Player* bot, VashjCoreChain const& chain, VashjCoreCatcher& catcher, Player* player)
 {
     catcher.bot = player ? player->GetGUID() : ObjectGuid::Empty;
-    catcher.prepositions = !player || !IsVashjCoreChainKiller(bot, chain, player);
+    catcher.prepositions = !player || !IsBusyAttackingTaintedElemental(bot, chain, player);
     catcher.readyDelay = urand(1000, 2000);
     catcher.arrived = false;
 }

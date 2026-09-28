@@ -999,11 +999,11 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     // and those stepping in to cast range of a Strider.
     if (PlayerbotAI::IsRangedDps(bot))
     {
-        if (isReachAction && IsVashjStriderToStepInTo(bot, AI_VALUE(Unit*, "current target")))
+        if (isReachAction && IsTankedStriderInStepInReach(bot, AI_VALUE(Unit*, "current target")))
             return 1.0f;
 
         Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        return tainted && IsTaintedElementalKiller(bot, tainted) ? 1.0f : 0.0f;
+        return tainted && IsAssignedToAttackTaintedElemental(bot, tainted) ? 1.0f : 0.0f;
     }
 
     // Cluster healers heal from their slots too. Other healers still reach to heal, but never walk

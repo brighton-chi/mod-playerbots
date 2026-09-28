@@ -1596,12 +1596,12 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
     }
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && IsTaintedElementalKiller(bot, tainted))
+    if (tainted && IsAssignedToAttackTaintedElemental(bot, tainted))
         return false;
 
     // Stepped in to a Strider; back once it dies or is dragged away
     if (PlayerbotAI::IsRangedDps(bot) &&
-        IsVashjStriderToStepInTo(bot, AI_VALUE(Unit*, "current target")))
+        IsTankedStriderInStepInReach(bot, AI_VALUE(Unit*, "current target")))
     {
         return false;
     }
@@ -1798,7 +1798,7 @@ bool IsVashjTargetAllowed(
 
     // A tanked Strider a little out of range is stepped in to; anything else must be in range
     if (facts.holdsClusterSlot && !bot->IsWithinCombatRange(unit, facts.spellRange) &&
-        !IsVashjStriderToStepInTo(bot, unit))
+        !IsTankedStriderInStepInReach(bot, unit))
     {
         return false;
     }
@@ -1941,7 +1941,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     if (facts.holdsClusterSlot)
     {
         Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        if (tainted && IsTaintedElementalKiller(bot, tainted))
+        if (tainted && IsAssignedToAttackTaintedElemental(bot, tainted))
             facts.tainted = tainted;
     }
 
@@ -2265,7 +2265,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && IsTaintedElementalKiller(member, tainted))
+            if (member && member->IsAlive() && IsAssignedToAttackTaintedElemental(member, tainted))
             {
                 killers += std::string(member->GetName()) + " " +
                     std::to_string(static_cast<int>(member->GetExactDist(tainted))) + " yd; ";
