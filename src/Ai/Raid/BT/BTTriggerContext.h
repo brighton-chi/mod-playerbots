@@ -23,8 +23,8 @@ public:
         creators["high warlord naj'entus pulling boss"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
 
-        creators["high warlord naj'entus boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_boss_engaged_by_tanks;
+        creators["high warlord naj'entus should be tanked"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_should_be_tanked;
 
         creators["high warlord naj'entus casts needle spines"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_casts_needle_spines;
@@ -59,8 +59,8 @@ public:
         creators["teron gorefiend pulling boss"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
 
-        creators["teron gorefiend boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_tanks;
+        creators["teron gorefiend should be tanked"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_should_be_tanked;
 
         creators["teron gorefiend boss engaged by ranged"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_boss_engaged_by_ranged;
@@ -78,8 +78,8 @@ public:
         creators["gurtogg bloodboil pulling boss"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_pulling_boss;
 
-        creators["gurtogg bloodboil boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_engaged_by_tanks;
+        creators["gurtogg bloodboil should be tanked"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_be_tanked;
 
         creators["gurtogg bloodboil boss casts bloodboil"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_boss_casts_bloodboil;
@@ -110,8 +110,8 @@ public:
         creators["mother shahraz pulling boss"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
 
-        creators["mother shahraz boss engaged by tanks"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_boss_engaged_by_tanks;
+        creators["mother shahraz should be tanked"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_should_be_tanked;
 
         creators["mother shahraz tanks are positioning boss"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_tanks_are_positioning_boss;
@@ -219,8 +219,8 @@ private:
     static Trigger* high_warlord_najentus_pulling_boss(PlayerbotAI* botAI) {
         return new HighWarlordNajentusPullingBossTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new HighWarlordNajentusBossEngagedByTanksTrigger(botAI);
+    static Trigger* high_warlord_najentus_should_be_tanked(PlayerbotAI* botAI) {
+        return new HighWarlordNajentusShouldBeTankedTrigger(botAI);
     }
     static Trigger* high_warlord_najentus_casts_needle_spines(PlayerbotAI* botAI) {
         return new HighWarlordNajentusCastsNeedleSpinesTrigger(botAI);
@@ -258,8 +258,8 @@ private:
     static Trigger* teron_gorefiend_pulling_boss(PlayerbotAI* botAI) {
         return new TeronGorefiendPullingBossTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new TeronGorefiendBossEngagedByTanksTrigger(botAI);
+    static Trigger* teron_gorefiend_should_be_tanked(PlayerbotAI* botAI) {
+        return new TeronGorefiendShouldBeTankedTrigger(botAI);
     }
     static Trigger* teron_gorefiend_boss_engaged_by_ranged(PlayerbotAI* botAI) {
         return new TeronGorefiendBossEngagedByRangedTrigger(botAI);
@@ -278,8 +278,8 @@ private:
     static Trigger* gurtogg_bloodboil_pulling_boss(PlayerbotAI* botAI) {
         return new GurtoggBloodboilPullingBossTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new GurtoggBloodboilBossEngagedByTanksTrigger(botAI);
+    static Trigger* gurtogg_bloodboil_should_be_tanked(PlayerbotAI* botAI) {
+        return new GurtoggBloodboilShouldBeTankedTrigger(botAI);
     }
     static Trigger* gurtogg_bloodboil_boss_casts_bloodboil(PlayerbotAI* botAI) {
         return new GurtoggBloodboilBossCastsBloodboilTrigger(botAI);
@@ -312,8 +312,8 @@ private:
     static Trigger* mother_shahraz_pulling_boss(PlayerbotAI* botAI) {
         return new MotherShahrazPullingBossTrigger(botAI);
     }
-    static Trigger* mother_shahraz_boss_engaged_by_tanks(PlayerbotAI* botAI) {
-        return new MotherShahrazBossEngagedByTanksTrigger(botAI);
+    static Trigger* mother_shahraz_should_be_tanked(PlayerbotAI* botAI) {
+        return new MotherShahrazShouldBeTankedTrigger(botAI);
     }
     static Trigger* mother_shahraz_tanks_are_positioning_boss(PlayerbotAI* botAI) {
         return new MotherShahrazTanksArePositioningBossTrigger(botAI);

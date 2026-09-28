@@ -99,8 +99,8 @@ public:
         creators["fathom-lord karathress pulling bosses"] =
             &RaidSscTriggerContext::fathom_lord_karathress_pulling_bosses;
 
-        creators["fathom-lord karathress determining kill order"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_determining_kill_order;
+        creators["fathom-lord karathress should assign dps priority"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
 
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
@@ -287,8 +287,8 @@ private:
     static Trigger* fathom_lord_karathress_pulling_bosses(PlayerbotAI* botAI) {
         return new FathomLordKarathressPullingBossesTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_determining_kill_order(PlayerbotAI* botAI) {
-        return new FathomLordKarathressDeterminingKillOrderTrigger(botAI);
+    static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI) {
+        return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldManageDpsTimerTrigger(botAI);

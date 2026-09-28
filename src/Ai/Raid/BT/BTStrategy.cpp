@@ -17,7 +17,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss", {
         NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("high warlord naj'entus boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("high warlord naj'entus should be tanked", {
         NextAction("high warlord naj'entus tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus casts needle spines", {
@@ -53,7 +53,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend pulling boss", {
         NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("teron gorefiend boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("teron gorefiend should be tanked", {
         NextAction("teron gorefiend tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend boss engaged by ranged", {
@@ -72,7 +72,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gurtogg bloodboil pulling boss", {
         NextAction("gurtogg bloodboil misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("gurtogg bloodboil boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("gurtogg bloodboil should be tanked", {
         NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gurtogg bloodboil boss casts bloodboil", {
@@ -104,7 +104,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("mother shahraz pulling boss", {
         NextAction("mother shahraz misdirect boss to main tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("mother shahraz boss engaged by tanks", {
+    triggers.push_back(new TriggerNode("mother shahraz should be tanked", {
         NextAction("mother shahraz tanks position boss under pillar", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("mother shahraz tanks are positioning boss", {

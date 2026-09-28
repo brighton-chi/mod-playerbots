@@ -298,11 +298,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressDeterminingKillOrderTrigger : public SscEncounterTrigger
+class FathomLordKarathressShouldAssignDpsPriorityTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress determining kill order") {}
+    FathomLordKarathressShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress should assign dps priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

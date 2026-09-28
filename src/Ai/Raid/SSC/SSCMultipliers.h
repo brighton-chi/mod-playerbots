@@ -51,8 +51,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Not encounter-gated: Leotheras is passive and unengaged while the Spellbinders hold him, so his
-// encounter is not in progress during the phase the hold matters most.
+// Not encounter gated because Leotheras is not set to engaged until the Spellbinders are killed.
 class SscDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:

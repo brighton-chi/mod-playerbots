@@ -159,7 +159,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance", {
         NextAction("m'uru second assist tank guard ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("m'uru determining dps priority", {
+    triggers.push_back(new TriggerNode("m'uru should assign dps priority", {
         NextAction("m'uru assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned", {

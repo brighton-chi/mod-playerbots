@@ -256,7 +256,7 @@ bool FathomLordKarathressPullingBossesTrigger::IsActiveInEncounter()
     return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
-bool FathomLordKarathressDeterminingKillOrderTrigger::IsActiveInEncounter()
+bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsHeal(bot))
         return false;

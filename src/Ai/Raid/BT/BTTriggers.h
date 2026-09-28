@@ -31,11 +31,11 @@ public:
     bool IsActive() override;
 };
 
-class HighWarlordNajentusBossEngagedByTanksTrigger : public Trigger
+class HighWarlordNajentusShouldBeTankedTrigger : public Trigger
 {
 public:
-    HighWarlordNajentusBossEngagedByTanksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus boss engaged by tanks") {}
+    HighWarlordNajentusShouldBeTankedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus should be tanked") {}
     bool IsActive() override;
 };
 
@@ -124,11 +124,11 @@ public:
     bool IsActive() override;
 };
 
-class TeronGorefiendBossEngagedByTanksTrigger : public Trigger
+class TeronGorefiendShouldBeTankedTrigger : public Trigger
 {
 public:
-    TeronGorefiendBossEngagedByTanksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by tanks") {}
+    TeronGorefiendShouldBeTankedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend should be tanked") {}
     bool IsActive() override;
 };
 
@@ -174,11 +174,11 @@ public:
     bool IsActive() override;
 };
 
-class GurtoggBloodboilBossEngagedByTanksTrigger : public Trigger
+class GurtoggBloodboilShouldBeTankedTrigger : public Trigger
 {
 public:
-    GurtoggBloodboilBossEngagedByTanksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss engaged by tanks") {}
+    GurtoggBloodboilShouldBeTankedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil should be tanked") {}
     bool IsActive() override;
 };
 
@@ -258,11 +258,11 @@ public:
     bool IsActive() override;
 };
 
-class MotherShahrazBossEngagedByTanksTrigger : public Trigger
+class MotherShahrazShouldBeTankedTrigger : public Trigger
 {
 public:
-    MotherShahrazBossEngagedByTanksTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz boss engaged by tanks") {}
+    MotherShahrazShouldBeTankedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz should be tanked") {}
     bool IsActive() override;
 };
 

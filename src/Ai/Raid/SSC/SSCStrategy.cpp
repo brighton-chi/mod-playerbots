@@ -100,7 +100,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress pulling bosses", {
         NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress determining kill order", {
+    triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority", {
         NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer", {
