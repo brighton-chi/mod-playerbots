@@ -13,14 +13,12 @@
 #include "Playerbots.h"
 #include "SSCValueContext.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <limits>
 #include <list>
 #include <mutex>
 #include <string>
 #include <unordered_set>
-#include <utility>
 
 using namespace EncounterHelpers;
 
@@ -780,6 +778,7 @@ bool SegmentCrossesPolygon(
 
 std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
+std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 
 int8 GetLadyVashjPhase(Unit* vashj)
 {
@@ -933,7 +932,7 @@ bool FindVashjDaisStepAwayFromUnits(
         bot, positions, facing, stepX, stepY, stepZ, backwards, spores, sporeRadius);
 }
 
-bool HasStaticCharge(Player* player)
+bool HasVashjStaticCharge(Player* player)
 {
     return player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
 }
@@ -1016,14 +1015,13 @@ float GetCastRingRadius(Player* bot, Unit* target, float castRange)
 
 } // end anonymous namespace (cast ring)
 
-bool GetVashjReachBlockedBySpores(
-    PlayerbotAI* botAI, Player* bot, Unit*& target, float& range)
+bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target, float& range)
 {
     target = nullptr;
     range = 0.0f;
 
     // Healers and ranged dps other than hunters
-    if (!PlayerbotAI::IsCaster(bot) || HasStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
+    if (!PlayerbotAI::IsCaster(bot) || HasVashjStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
         return false;
 
     bool const isHealer = PlayerbotAI::IsHeal(bot);
@@ -1135,11 +1133,11 @@ bool CanWalkThroughToxicSpores(Player* bot)
 
 bool IsVashjRingMelee(Player* bot, Unit* vashj)
 {
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot) || HasStaticCharge(bot))
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot) || HasVashjStaticCharge(bot))
         return false;
 
     Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
-    return !vashjVictim || !HasStaticCharge(vashjVictim);
+    return !vashjVictim || !HasVashjStaticCharge(vashjVictim);
 }
 
 bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)
@@ -1262,11 +1260,14 @@ bool GetStepOutOfNearestSpore(
 
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj)
 {
+    if (!vashj)
+        return false;
+
     Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
     if (bot == vashjVictim)
         return false;
 
-    return HasStaticCharge(bot) || (vashjVictim && HasStaticCharge(vashjVictim));
+    return HasVashjStaticCharge(bot) || (vashjVictim && HasVashjStaticCharge(vashjVictim));
 }
 
 Player* GetVashjGroundingShaman(Player* bot)
@@ -1293,13 +1294,6 @@ Player* GetVashjGroundingShaman(Player* bot)
     return nullptr;
 }
 
-std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
-
-namespace
-{
-
-// Each cluster's first ranged slot, then each one's second and third, then the healers, the
-// clusters in VASHJ_CLUSTER_FILL_ORDER each time
 std::vector<VashjClusterSlot> GetVashjClusterFillOrder()
 {
     std::vector<VashjClusterSlot> order;
@@ -1321,8 +1315,6 @@ bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid)
     return holder && holder->IsAlive();
 }
 
-} // end anonymous namespace (cluster holders)
-
 bool HasVashjClusterVacancy(Player* bot)
 {
     auto it = vashjClusterHolders.find(bot->GetInstanceId());
@@ -1339,60 +1331,6 @@ bool HasVashjClusterVacancy(Player* bot)
     }
 
     return false;
-}
-
-bool UpdateVashjClusterHolders(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
-    auto holdsSlot = [&holders](ObjectGuid guid)
-    {
-        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
-        {
-            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
-        });
-    };
-
-    std::vector<Player*> rangedSpares;
-    std::vector<Player*> healerSpares;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
-        {
-            continue;
-        }
-
-        if (PlayerbotAI::IsRangedDps(member))
-            rangedSpares.push_back(member);
-        else if (PlayerbotAI::IsHeal(member))
-            healerSpares.push_back(member);
-    }
-
-    bool changed = false;
-    size_t nextRanged = 0;
-    size_t nextHealer = 0;
-    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
-    {
-        ObjectGuid& holder = holders[slot.cluster][slot.slot];
-        if (IsLiveVashjClusterHolder(bot, holder))
-            continue;
-
-        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
-        std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
-        size_t& next = isHealerSlot ? nextHealer : nextRanged;
-        if (next >= spares.size())
-            continue;
-
-        holder = spares[next++]->GetGUID();
-        changed = true;
-    }
-
-    return changed;
 }
 
 VashjClusterSlot GetVashjClusterSlot(Player* bot)
@@ -1519,7 +1457,7 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
     return looter;
 }
 
-Creature* GetVashjTaintedElemental(Player* bot)
+Creature* GetAssignedTaintedElemental(Player* bot)
 {
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
     if (it == vashjTaintedCoreLooter.end())
@@ -1528,9 +1466,9 @@ Creature* GetVashjTaintedElemental(Player* bot)
     return ObjectAccessor::GetCreature(*bot, it->second.tainted);
 }
 
-int8 GetTaintedCoreLootSlot(Creature* elemental)
+int8 GetTaintedCoreLootSlot(Creature* tainted)
 {
-    std::vector<LootItem> const& items = elemental->loot.items;
+    std::vector<LootItem> const& items = tainted->loot.items;
     for (size_t i = 0; i < items.size(); ++i)
     {
         if (items[i].itemid == Id(SscItems::ITEM_TAINTED_CORE) && !items[i].is_looted)
@@ -1540,13 +1478,16 @@ int8 GetTaintedCoreLootSlot(Creature* elemental)
     return -1;
 }
 
-bool IsTaintedCoreStillToLoot(Creature* elemental)
+bool IsTaintedCoreStillToLoot(Creature* tainted)
 {
-    return elemental->IsAlive() || GetTaintedCoreLootSlot(elemental) >= 0;
+    return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
 }
 
-bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted)
+bool IsTaintedElementalKiller(Player* bot, Unit* tainted)
 {
+    if (!tainted)
+        return false;
+
     if (!PlayerbotAI::IsRangedDps(bot))
         return false;
 
@@ -1572,7 +1513,7 @@ Player* GetDesignatedCoreLooter(Player* bot)
     return ObjectAccessor::GetPlayer(*bot, it->second.looter);
 }
 
-bool IsTankedByTank(Unit* unit)
+bool IsVashjAddHeldByTank(Unit* unit)
 {
     Player* victim = unit->GetVictim() ? unit->GetVictim()->ToPlayer() : nullptr;
     return victim && PlayerbotAI::IsTank(victim);
@@ -1644,8 +1585,7 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add)
     return true;
 }
 
-std::vector<VashjTargetTier> const& GetVashjTargetTiers(
-    Player* bot, int8 phase, bool killsTainted)
+std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted)
 {
     bool const isTank = PlayerbotAI::IsTank(bot);
     bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
@@ -1703,7 +1643,7 @@ bool GetStepToBringTankedUnitTo(
 bool IsVashjStriderToStepInTo(Player* bot, Unit* unit)
 {
     return unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER) &&
-        bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsTankedByTank(unit);
+        bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(unit);
 }
 
 // Useless means Vashj while the barrier makes her immune; a Strider, whose Panic fears any pet
@@ -2121,7 +2061,7 @@ GameObject* PlanVashjCoreRoute(
 bool IsVashjCoreChainKiller(Player* bot, VashjCoreChain const& chain, Player* player)
 {
     Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
-    return tainted && tainted->IsAlive() && IsVashjTaintedElementalKiller(player, tainted);
+    return tainted && tainted->IsAlive() && IsTaintedElementalKiller(player, tainted);
 }
 
 // The living bot nearest the spot that can catch: not a tank, not the chain's start, not already

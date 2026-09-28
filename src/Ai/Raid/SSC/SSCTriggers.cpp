@@ -13,6 +13,7 @@
 #include "SSCHelpers.h"
 #include "TemporarySummon.h"
 #include <algorithm>
+#include <vector>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -134,10 +135,7 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
-    if (!GetActiveLeotherasDemon(botAI))
+    if (HasInnerDemon(bot) || !GetActiveLeotherasDemon(botAI))
         return false;
 
     return IsLeotherasWarlockTank(bot);
@@ -151,10 +149,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
-    if (!GetPhase2LeotherasDemon(botAI))
+    if (HasInnerDemon(bot) || !GetPhase2LeotherasDemon(botAI))
         return false;
 
     // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
@@ -178,14 +173,10 @@ bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
+    if (!IsLeotherasChannelingWhirlwind(AI_VALUE2(Unit*, "find target", "leotheras the blind")))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
-    return IsLeotherasChannelingWhirlwind(leotheras);
+    return !HasInnerDemon(bot);
 }
 
 bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
@@ -216,10 +207,7 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot))
-        return false;
-
-    if (!IsLeotherasFinalPhase(botAI))
+    if (HasInnerDemon(bot) || !IsLeotherasFinalPhase(botAI))
         return false;
 
     return !IsLeotherasWarlockTank(bot);
@@ -387,7 +375,7 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
     if (!vashj || GetLadyVashjPhase(vashj) != 1)
         return false;
 
-    return !HasStaticCharge(bot);
+    return !HasVashjStaticCharge(bot);
 }
 
 bool LadyVashjClusterSlotsNeedHoldersTrigger::IsActiveInEncounter()
@@ -412,7 +400,7 @@ bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
 // own.
 bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsCaster(bot) || HasStaticCharge(bot))
+    if (!PlayerbotAI::IsCaster(bot) || HasVashjStaticCharge(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -437,8 +425,7 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 
 bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && ShouldAvoidVashjStaticCharge(bot, vashj);
+    return ShouldAvoidVashjStaticCharge(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
 }
 
 bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
@@ -476,11 +463,8 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* elite = AI_VALUE(Unit*, "current target");
-    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) ||
-        elite->GetVictim() != bot)
-    {
+    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) || elite->GetVictim() != bot)
         return false;
-    }
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 2;
@@ -551,7 +535,7 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
         return false;
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    return tainted && IsVashjTaintedElementalKiller(bot, tainted);
+    return tainted && IsTaintedElementalKiller(bot, tainted);
 }
 
 // From the looter's pick until the core is taken from the corpse.
@@ -564,7 +548,7 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
 
-    Creature* tainted = GetVashjTaintedElemental(bot);
+    Creature* tainted = GetAssignedTaintedElemental(bot);
 
     // TEMP LOG
     bool const hasCore = HasTaintedCore(bot);
@@ -608,8 +592,8 @@ bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 
     if (!chain->failed)
     {
-        Creature* next = GetVashjTaintedElemental(bot);
-        if (!next || next->IsAlive() || GetTaintedCoreLootSlot(next) < 0)
+        Creature* nextTainted = GetAssignedTaintedElemental(bot);
+        if (!nextTainted || nextTainted->IsAlive() || GetTaintedCoreLootSlot(nextTainted) < 0)
             return false;
     }
 
@@ -738,7 +722,7 @@ bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
         if (!member || !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)))
             continue;
 
-        if (phase == 1 && (member == vashjVictim || !HasStaticCharge(member)))
+        if (phase == 1 && (member == vashjVictim || !HasVashjStaticCharge(member)))
             continue;
 
         if (PlayerbotAI::IsMelee(member))
@@ -750,5 +734,5 @@ bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 
 bool LadyVashjRogueHasStaticChargeTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_ROGUE && HasStaticCharge(bot);
+    return bot->getClass() == CLASS_ROGUE && HasVashjStaticCharge(bot);
 }

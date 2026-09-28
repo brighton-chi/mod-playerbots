@@ -190,9 +190,6 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& positi
 // To mitigate the effect of Water Tomb
 bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event /*event*/)
 {
-    if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
-        return false;
-
     constexpr float safeDistance = 6.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), safeDistance);
@@ -587,8 +584,8 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     // MoveTo rejects any destination over water (no map height), so the destination has to be dry
     // land. The Ambushers sometimes chill at the edge of their islets so we issue the move to stop
     // right on top of them. When returning to Lurker, target the move at the walkway instead.
-    bool const isAmbusher = target->GetEntry() == Id(SscNpcs::NPC_COILFANG_AMBUSHER);
-    float const targetDistance = isAmbusher ? 0.0f : LURKER_SPOUT_RUN_RADIUS_MAX;
+    float const targetDistance = target->GetEntry() == Id(SscNpcs::NPC_COILFANG_AMBUSHER) ?
+        0.0f : LURKER_SPOUT_RUN_RADIUS_MAX;
     float const angle = target->GetAngle(bot);
     float const destX = target->GetPositionX() + std::cos(angle) * targetDistance;
     float const destY = target->GetPositionY() + std::sin(angle) * targetDistance;
@@ -1000,13 +997,8 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 }
 
 // Fathom-Lord Karathress
-// Note: 4 tanks are required for the full strategy, and having at least 2
-// is crucial to separate Caribdis from the others
+// Note: The strategy uses 4 tanks, and having at least 2 is crucial to separate Caribdis.
 
-// Karathress is tanked by the main tank near his starting position
-// Caribdis is pulled far to the West in the corner by the first assist tank
-// Sharkkis is pulled North to the other side of the ramp by the second assist tank
-// Tidalvess is pulled Northwest near the pillar by the third assist tank
 bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
@@ -1014,21 +1006,25 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
 
     if (PlayerbotAI::IsMainTank(bot))
     {
+        // Karathress is tanked by the main tank near his starting position.
         target = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
         position = KARATHRESS_TANK_POSITION;
     }
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
+        // Caribdis is pulled far to the West in the corner by the first assist tank.
         target = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
         position = CARIBDIS_TANK_POSITION;
     }
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
+        // Sharkkis is pulled North to the other side of the ramp by the second assist tank.
         target = GetSharkkisTankTarget(botAI);
         position = SHARKKIS_TANK_POSITION;
     }
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 2, false))
     {
+        // Tidalvess is pulled Northwest near the pillar by the third assist tank.
         target = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         position = TIDALVESS_TANK_POSITION;
     }
@@ -1060,8 +1056,7 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Caribdis's tank spot is far away so a dedicated healer is needed
-// Use the assistant flag to select the healer
+// Caribdis's tank spot is far away so a dedicated healer is needed.
 // Her tank stands on her, so seeing her is seeing the tank. Out of sight the walk goes on until
 // she is in sight, as it does for ranged; in sight it closes only to the healing distance.
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
@@ -1087,7 +1082,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank
+// Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank.
 bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -1150,8 +1145,8 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", enemy) && botAI->CastSpell("steady shot", enemy);
 }
 
-// Kill order is non-standard because bots handle Cyclones poorly and need more time
-// to get her down than real players (standard is ranged DPS help with Sharkkis first)
+// Priority: (1) Spitfire Totem, (2) Tidalvess, (3) Caribdis (ranged only), (4) Sharkkis,
+// (5) Sharkkis pet, (6) Karathress.
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
@@ -1223,17 +1218,14 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             return true;
 
         // Flee is held for the whole fight, so ranged keep out of Tidal Surge themselves
-        if (bot->GetExactDist(caribdis) < CARIBDIS_RANGED_MIN_DISTANCE)
-            return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
+        if (bot->GetExactDist(caribdis) >= CARIBDIS_RANGED_MIN_DISTANCE)
+            return false;
+
+        return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
     }
     // While a totem stands, skull stays on it: ranged out of its reach are on something else, and
     // marking that would flip the skull against the bots on the totem
-    else if ((!totem || target == totem) && MarkTargetWithSkull(bot, target))
-    {
-        return true;
-    }
-
-    return false;
+    return (!totem || target == totem) && MarkTargetWithSkull(bot, target);
 }
 
 bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdis)
@@ -1598,13 +1590,13 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
     // The looter stays on the elemental until the core is looted
     if (GetDesignatedCoreLooter(bot) == bot)
     {
-        Creature* elemental = GetVashjTaintedElemental(bot);
-        if (elemental && IsTaintedCoreStillToLoot(elemental))
+        Creature* assignedTainted = GetAssignedTaintedElemental(bot);
+        if (assignedTainted && IsTaintedCoreStillToLoot(assignedTainted))
             return false;
     }
 
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && IsVashjTaintedElementalKiller(bot, tainted))
+    if (tainted && IsTaintedElementalKiller(bot, tainted))
         return false;
 
     // Stepped in to a Strider; back once it dies or is dragged away
@@ -1708,8 +1700,7 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
         return MoveTo(mainTank, distFromTank, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    return botAI->CanCastSpell("grounding totem", bot) &&
-           botAI->CastSpell("grounding totem", bot);
+    return botAI->CanCastSpell("grounding totem", bot) && botAI->CastSpell("grounding totem", bot);
 }
 
 bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
@@ -1732,7 +1723,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     bool tooClose = false;
 
     // If any other bot has Static Charge, it should move away from other group members
-    if (HasStaticCharge(bot))
+    if (HasVashjStaticCharge(bot))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -1749,7 +1740,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
         }
     }
     // If Vashj's target has Static Charge, other group members should move away.
-    else if (vashjVictim && HasStaticCharge(vashjVictim))
+    else if (vashjVictim && HasVashjStaticCharge(vashjVictim))
     {
         avoid.push_back(vashjVictim);
         tooClose = bot->GetExactDist2d(vashjVictim) < safeDistance;
@@ -1823,11 +1814,12 @@ bool IsVashjTargetAllowed(
         {
             uint32 const entry = tier.target == VashjTarget::CoilfangStrider ?
                 Id(SscNpcs::NPC_COILFANG_STRIDER) : Id(SscNpcs::NPC_COILFANG_ELITE);
+
             if (unit->GetEntry() != entry)
                 return false;
 
             if (facts.waitForTank)
-                return IsTankedByTank(unit);
+                return IsVashjAddHeldByTank(unit);
 
             if (!facts.oneTankEach)
                 return true;
@@ -1910,10 +1902,16 @@ Unit* GetBestVashjTarget(
 // A tank keeps the Elite or Strider it has rather than switching to a free one
 bool IsOwnVashjAdd(Player* bot, Unit* target)
 {
-    return target && target->IsAlive() &&
-        (target->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
-         target->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
-        GetVashjAddOwningTank(bot, target) == bot;
+    if (!target || !target->IsAlive())
+        return false;
+
+    if (target->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) &&
+        target->GetEntry() != Id(SscNpcs::NPC_COILFANG_STRIDER))
+    {
+        return false;
+    }
+
+    return GetVashjAddOwningTank(bot, target) == bot;
 }
 
 } // end anonymous namespace (Vashj targeting)
@@ -1939,10 +1937,11 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     facts.holdsClusterSlot = facts.phase == 2 && PlayerbotAI::IsRangedDps(bot);
     facts.waitForTank = facts.phase == 2 && !isTank;
     facts.oneTankEach = facts.phase == 2 && isTank;
+
     if (facts.holdsClusterSlot)
     {
         Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        if (tainted && IsVashjTaintedElementalKiller(bot, tainted))
+        if (tainted && IsTaintedElementalKiller(bot, tainted))
             facts.tainted = tainted;
     }
 
@@ -1993,6 +1992,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         bot->CastStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetSelection(ObjectGuid());
+
     return false;
 }
 
@@ -2152,11 +2152,61 @@ bool LadyVashjTankAttackAndPositionStriderAction::MoveStriderAwayFromVashj(Unit*
     return MoveAway(vashj, safeDistance - currentDistance, true);
 }
 
-// Keeps the cluster slots filled: holders never move, and a spare takes the slot of one who dies.
-// The table is per instance, so a new tracker picks up where a dead one left off.
+// Mechanic tracker only. Fills the holder table in group order the first time (ranged dps in turn
+// across the clusters, three each; the first four healers one each), then puts the first living
+// spare of the right role into each vacated slot. Holders never move.
 bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
 {
-    return UpdateVashjClusterHolders(bot);
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
+    auto holdsSlot = [&holders](ObjectGuid guid)
+    {
+        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
+        {
+            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
+        });
+    };
+
+    std::vector<Player*> rangedSpares;
+    std::vector<Player*> healerSpares;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
+        {
+            continue;
+        }
+
+        if (PlayerbotAI::IsRangedDps(member))
+            rangedSpares.push_back(member);
+        else if (PlayerbotAI::IsHeal(member))
+            healerSpares.push_back(member);
+    }
+
+    bool changed = false;
+    size_t nextRanged = 0;
+    size_t nextHealer = 0;
+    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
+    {
+        ObjectGuid& holder = holders[slot.cluster][slot.slot];
+        if (IsLiveVashjClusterHolder(bot, holder))
+            continue;
+
+        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
+        std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
+        size_t& next = isHealerSlot ? nextHealer : nextRanged;
+        if (next >= spares.size())
+            continue;
+
+        holder = spares[next++]->GetGUID();
+        changed = true;
+    }
+
+    return changed;
 }
 
 // Chosen once per elemental, from where everyone stands when it spawns. Choosing again as bots
@@ -2215,7 +2265,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && IsVashjTaintedElementalKiller(member, tainted))
+            if (member && member->IsAlive() && IsTaintedElementalKiller(member, tainted))
             {
                 killers += std::string(member->GetName()) + " " +
                     std::to_string(static_cast<int>(member->GetExactDist(tainted))) + " yd; ";
@@ -2299,26 +2349,26 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
 // which would hold back the first throw.
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 {
-    Creature* elemental = GetVashjTaintedElemental(bot);
-    if (!elemental)
+    Creature* tainted = GetAssignedTaintedElemental(bot);
+    if (!tainted)
         return false;
 
     // TEMP LOG
-    if (!elemental->IsAlive() && TaintedLogFirstTime(bot, "dead"))
+    if (!tainted->IsAlive() && TaintedLogFirstTime(bot, "dead"))
     {
         LOG_INFO("playerbots",
             "[SSC tainted] +{}ms dead, looter {} at {:.1f} yd, looter at {:.1f} {:.1f} {:.1f}, "
             "corpse at {:.1f} {:.1f} {:.1f}",
-            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(elemental),
+            TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(tainted),
             bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-            elemental->GetPositionX(), elemental->GetPositionY(), elemental->GetPositionZ());
+            tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ());
     }
 
     // Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
     // measures it, so the height gap needs no check of its own.
     constexpr float maxLootRange = INTERACTION_DISTANCE - 2.0f;
 
-    if (bot->GetDistance(elemental) > maxLootRange)
+    if (bot->GetDistance(tainted) > maxLootRange)
     {
         // TEMP LOG
         if (TaintedLogThrottle(bot, "tocorpse"))
@@ -2327,19 +2377,20 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
                 "[SSC tainted] +{}ms looter {} walking to {} at {:.1f} yd, height gap {:.1f}, "
                 "looter at {:.1f} {:.1f} {:.1f}",
                 TaintedLogElapsedMs(bot), bot->GetName(),
-                elemental->IsAlive() ? "elemental" : "corpse", bot->GetDistance(elemental),
-                std::abs(elemental->GetPositionZ() - bot->GetPositionZ()), bot->GetPositionX(),
+                tainted->IsAlive() ? "living elemental" : "elemental corpse",
+                bot->GetDistance(tainted),
+                std::abs(tainted->GetPositionZ() - bot->GetPositionZ()), bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ());
         }
 
         // Steps stop just inside loot range, centre to centre
         constexpr float rangeMargin = 0.5f;
         float const stopDistance =
-            maxLootRange + bot->GetCombatReach() + elemental->GetCombatReach() - rangeMargin;
+            maxLootRange + bot->GetCombatReach() + tainted->GetCombatReach() - rangeMargin;
 
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, elemental, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, tainted, stopDistance, stepX, stepY))
             return false;
 
         return MoveTo(
@@ -2347,7 +2398,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (elemental->IsAlive())
+    if (tainted->IsAlive())
         return false;
 
     Group* group = bot->GetGroup();
@@ -2361,12 +2412,12 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             return false;
     }
 
-    int8 const coreSlot = GetTaintedCoreLootSlot(elemental);
+    int8 const coreSlot = GetTaintedCoreLootSlot(tainted);
     if (coreSlot < 0)
         return false;
 
     // As LootObject::IsLootPossible() checks a corpse, less its height limit
-    if (!bot->isAllowedToLoot(elemental))
+    if (!bot->isAllowedToLoot(tainted))
     {
         // TEMP LOG
         if (TaintedLogThrottle(bot, "notpossible"))
@@ -2381,7 +2432,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     // Open, take the core, close, as a player's client does. Handled in this order on the bot's
     // next session update. Closing clears the corpse's lootable flag once it is empty.
     WorldPacket* openPacket = new WorldPacket(CMSG_LOOT, 8);
-    *openPacket << elemental->GetGUID();
+    *openPacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(openPacket);
 
     WorldPacket* storePacket = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
@@ -2389,7 +2440,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     bot->GetSession()->QueuePacket(storePacket);
 
     WorldPacket* releasePacket = new WorldPacket(CMSG_LOOT_RELEASE, 8);
-    *releasePacket << elemental->GetGUID();
+    *releasePacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(releasePacket);
 
     // TEMP LOG
@@ -2427,12 +2478,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     VashjCoreChain* chain = GetVashjCoreChain(bot);
     if (!chain || chain->failed)
         return false;
-
-    // Not gated behind CheatMask because the auto application of Fear Ward is necessary
-    // to address an issue with bot movement, which is that bots cannot be rooted and
-    // therefore will move when feared while holding the Tainted Core
-    // if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
-    //     bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
     Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
@@ -2661,7 +2706,7 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     CharmInfo* charmInfo = pet->GetCharmInfo();
     Unit* target = GetVashjPetTarget(botAI, pet, vashj);
 
-    // Nothing worth attacking in phase 2 but an immune Vashj, so come back
+    // If there is nothing to attack but Vashj, return to the master.
     if (!target)
     {
         pet->AttackStop();
@@ -2700,9 +2745,6 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     return true;
 }
 
-// The standard "avoid aoe" strategy does work for Toxic Spores, but this method
-// provides more buffer distance and limits the area in which bots can move
-// so that they do not go down the stairs
 bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -2914,7 +2956,7 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
                 anyToxic = member;
         }
 
-        if (HasStaticCharge(member))
+        if (HasVashjStaticCharge(member))
         {
             if (PlayerbotAI::IsMainTank(member))
                 mainTankStatic = member;

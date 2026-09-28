@@ -27,10 +27,11 @@
 #include "SSCActions.h"
 #include "SSCHelpers.h"
 #include "ShamanActions.h"
-#include "Timer.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
+#include <unordered_map>
+#include <vector>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -867,7 +868,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Acti
 {
     // Only melee need holding back from a charged tank. Everyone else still has to reach targets to
     // heal or cast, and ReachPartyMemberToHealAction is a ReachTargetAction.
-    if (!PlayerbotAI::IsMelee(bot) && !HasStaticCharge(bot))
+    if (!PlayerbotAI::IsMelee(bot) && !HasVashjStaticCharge(bot))
         return 1.0f;
 
     if (!dynamic_cast<ReachTargetAction*>(action) &&
@@ -934,8 +935,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(A
 
     if (isStart)
     {
-        Creature* elemental = GetVashjTaintedElemental(bot);
-        if (elemental && IsTaintedCoreStillToLoot(elemental))
+        Creature* tainted = GetAssignedTaintedElemental(bot);
+        if (tainted && IsTaintedCoreStillToLoot(tainted))
             return 0.0f;
     }
 
@@ -1002,7 +1003,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
             return 1.0f;
 
         Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        return tainted && IsVashjTaintedElementalKiller(bot, tainted) ? 1.0f : 0.0f;
+        return tainted && IsTaintedElementalKiller(bot, tainted) ? 1.0f : 0.0f;
     }
 
     // Cluster healers heal from their slots too. Other healers still reach to heal, but never walk

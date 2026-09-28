@@ -12,9 +12,9 @@
 #include "Position.h"
 #include <array>
 #include <limits>
-#include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 class Creature;
@@ -734,7 +734,7 @@ bool FindVashjDaisStepAwayFromUnits(
 // that stays on the dais, counting yards walked through a pool several times over.
 bool FindVashjTankBreakoutSpot(
     Player* bot, std::vector<Position> const& spores, Position& spot);
-bool HasStaticCharge(Player* player);
+bool HasVashjStaticCharge(Player* player);
 // Melee dps who dodge pools around their target in phase 3. Tanks and Static Charge holders have
 // their own movement, and while her target holds it, melee step away from it like everyone else.
 bool IsVashjRingMelee(Player* bot, Unit* vashj);
@@ -760,8 +760,7 @@ bool GetStepOutOfNearestSpore(
 // straight walk to where it would be in range passes within TOXIC_SPORES_AVOID_RADIUS of a pool.
 // Stock reach would walk them into the pool and the spore action straight back out, over and
 // over. target and range are set to the reach's either way.
-bool GetVashjReachBlockedBySpores(
-    PlayerbotAI* botAI, Player* bot, Unit*& target, float& range);
+bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target, float& range);
 // A step toward the point, 2y inside cast range of target, that is cheapest to reach in a straight
 // line: the distance plus several times the yards of the line within TOXIC_SPORES_AVOID_RADIUS of
 // a pool. The point is on the dais and clear of pools itself.
@@ -773,12 +772,12 @@ bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 // The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the
 // tank's subgroup. Grounding Totem Effect is a party aura, so no Shaman outside it can cover it.
 Player* GetVashjGroundingShaman(Player* bot);
+// Each cluster's first ranged slot, then each one's second and third, then the healers, the
+// clusters in VASHJ_CLUSTER_FILL_ORDER each time
+std::vector<VashjClusterSlot> GetVashjClusterFillOrder();
 // True if there is no holder table yet, or a holder is dead or gone from the instance.
+bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid);
 bool HasVashjClusterVacancy(Player* bot);
-// Mechanic tracker only. Fills the holder table in group order the first time (ranged dps in turn
-// across the clusters, three each; the first four healers one each), then puts the first living
-// spare of the right role into each vacated slot. Holders never move. True if anything changed.
-bool UpdateVashjClusterHolders(Player* bot);
 // From the holder table; cluster -1 if the bot holds no slot.
 VashjClusterSlot GetVashjClusterSlot(Player* bot);
 Position const& GetVashjClusterPosition(VashjClusterSlot const& slot);
@@ -792,20 +791,20 @@ int8 GetNearestVashjCluster(Unit* unit);
 // non-tank bot.
 Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster);
 // The Tainted Elemental the current looter was chosen for, alive or a corpse.
-Creature* GetVashjTaintedElemental(Player* bot);
+Creature* GetAssignedTaintedElemental(Player* bot);
 // The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
 // the core is taken. The corpse stays flagged lootable until its looter releases the loot.
-int8 GetTaintedCoreLootSlot(Creature* elemental);
+int8 GetTaintedCoreLootSlot(Creature* tainted);
 // From the elemental's spawn until its core is taken from the corpse.
-bool IsTaintedCoreStillToLoot(Creature* elemental);
+bool IsTaintedCoreStillToLoot(Creature* tainted);
 // True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter.
-bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted);
+bool IsTaintedElementalKiller(Player* bot, Unit* tainted);
 Player* GetDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
 // True if a tank is the unit's victim.
-bool IsTankedByTank(Unit* unit);
+bool IsVashjAddHeldByTank(Unit* unit);
 // The bot's class taunt on target. False if it has none, or can't cast it now.
 bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
 // The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
@@ -816,8 +815,7 @@ Player* GetVashjAddOwningTank(Player* bot, Unit* add);
 bool IsNearestFreeVashjTank(Player* bot, Unit* add);
 // The bot's target tiers for the phase, best first. killsTainted: one of the cluster sent after a
 // Tainted Elemental.
-std::vector<VashjTargetTier> const& GetVashjTargetTiers(
-    Player* bot, int8 phase, bool killsTainted);
+std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
 // A step for a tank that brings the mob it is tanking onto spot. The mob trails its tank by about
 // its combat reach, so the tank walks on past the spot until the mob itself stands on it. False
 // once the mob is within arrivalDistance of the spot.

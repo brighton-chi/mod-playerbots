@@ -10,8 +10,8 @@
 
 using namespace SscHelpers;
 
-// A bot can't step out of Toxic Spores until a cast bar finishes, and no action can cancel one, so
-// a new pool cancels the cast of every bot it lands on.
+// Interrupt a pending cast when a Toxic Spore pool spawns under the bot. Toxic Sporebats cast Toxic
+// Spores (38574), which spawns a Spore Drop Trigger npc that spawns the Toxic Spore pool (38575).
 class LadyVashjToxicSporesSpellListenerScript : public AllSpellScript
 {
 public:
@@ -24,7 +24,6 @@ public:
         if (!caster || spellInfo->Id != Id(SscSpells::SPELL_TOXIC_SPORES))
             return;
 
-        // The caster is the Spore Drop Trigger, which stands at the center of the pool it lays
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
