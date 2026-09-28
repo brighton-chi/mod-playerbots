@@ -396,8 +396,8 @@ struct VashjAddGuids
     GuidVector sporebats;
 };
 
-// A kind of target, for LadyVashjAssignPhase2AndPhase3DpsPriorityAction.
-enum class VashjTargetKind : uint8
+// A target, for LadyVashjAssignPhase2AndPhase3DpsPriorityAction.
+enum class VashjTarget : uint8
 {
     TaintedElemental,
     CoilfangStrider,
@@ -409,9 +409,32 @@ enum class VashjTargetKind : uint8
 
 struct VashjTargetTier
 {
-    VashjTargetKind kind;
+    VashjTarget target;
     // Enchanted Elementals only: the farthest from Vashj this tier takes one
     float maxDistanceFromVashj = std::numeric_limits<float>::max();
+};
+
+// What LadyVashjAssignPhase2AndPhase3DpsPriorityAction checks targets against, gathered each tick.
+struct VashjTargetFacts
+{
+    Unit* vashj = nullptr;
+    // Only for one of the cluster sent after it
+    Unit* tainted = nullptr;
+    int8 phase = -1;
+    // From the bot, and in phase 2 from the centre too; they keep bots from going down the stairs
+    float maxPursueRange = 0.0f;
+    float maxSearchRange = 0.0f;
+    float spellRange = 0.0f;
+    // Phase 2 ranged dps hold cluster slots and shoot only what is in range of them, other than
+    // the cluster sent after a Tainted Elemental
+    bool holdsClusterSlot = false;
+    // Phase 2: everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody
+    // pulls one onto a cluster
+    bool waitForTank = false;
+    // Phase 2: one tank per Elite or Strider, so the others stay free for the next ones. A new one
+    // goes to the nearest free tank, which is the one on the side it comes from while they wait
+    // in the middle.
+    bool oneTankEach = false;
 };
 
 // Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, numbered 1 to 4 in this order.
@@ -511,6 +534,77 @@ inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
 inline constexpr float VASHJ_ENCHANTED_NEAR_HER_DISTANCE = 20.0f;
 // Tanks with nothing to tank in phase 2 wait within this of Vashj, to reach adds on any side.
 inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
+
+// Target tiers by phase and role, best first (GetVashjTargetTiers)
+// Striders need several ranged on them at once
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_CLUSTER_RANGED_TIERS = {
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_TAINTED_KILLER_TIERS = {
+    VashjTargetTier{ VashjTarget::TaintedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+};
+// Melee stay near her and the Elites: Enchanted about to reach her, then Elites
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_MELEE_TIERS = {
+    VashjTargetTier{ VashjTarget::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+};
+// Tanks stay in the middle for the next Elite or Strider, wherever it comes from
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_TANK_TIERS = {
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_OTHER_TIERS = {
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MAIN_TANK_TIERS = {
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_FIRST_ASSIST_TANK_TIERS = {
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_OTHER_TANK_TIERS = {
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+// Hunters are assigned to kill Sporebats in phase 3
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_HUNTER_TIERS = {
+    VashjTargetTier{ VashjTarget::ToxicSporebat },
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_RANGED_TIERS = {
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+// Melee stay on her in the dps race, but for Enchanted about to reach her and Elites
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MELEE_TIERS = {
+    VashjTargetTier{ VashjTarget::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_OTHER_TIERS = {
+    VashjTargetTier{ VashjTarget::EnchantedElemental },
+    VashjTargetTier{ VashjTarget::CoilfangElite },
+    VashjTargetTier{ VashjTarget::CoilfangStrider },
+    VashjTargetTier{ VashjTarget::LadyVashj },
+};
 
 // The Tainted Elemental a looter was chosen for, per instance
 struct TaintedCoreLooter
@@ -709,6 +803,10 @@ Player* GetVashjAddOwningTank(Player* bot, Unit* add);
 // True if no other living bot tank is nearer the add among those not holding an Elite or Strider
 // of their own.
 bool IsNearestFreeVashjTank(Player* bot, Unit* add);
+// The bot's target tiers for the phase, best first. killsTainted: one of the cluster sent after a
+// Tainted Elemental.
+std::vector<VashjTargetTier> const& GetVashjTargetTiers(
+    Player* bot, int8 phase, bool killsTainted);
 // A step for a tank that brings the mob it is tanking onto spot. The mob trails its tank by about
 // its combat reach, so the tank walks on past the spot until the mob itself stands on it. False
 // once the mob is within arrivalDistance of the spot.

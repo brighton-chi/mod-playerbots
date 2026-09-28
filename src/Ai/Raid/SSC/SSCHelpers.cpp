@@ -1649,6 +1649,44 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add)
     return true;
 }
 
+std::vector<VashjTargetTier> const& GetVashjTargetTiers(
+    Player* bot, int8 phase, bool killsTainted)
+{
+    bool const isTank = PlayerbotAI::IsTank(bot);
+    bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
+
+    if (phase == 2)
+    {
+        if (PlayerbotAI::IsRangedDps(bot))
+        {
+            return killsTainted ?
+                VASHJ_PHASE_2_TAINTED_KILLER_TIERS : VASHJ_PHASE_2_CLUSTER_RANGED_TIERS;
+        }
+
+        if (isMeleeDps)
+            return VASHJ_PHASE_2_MELEE_TIERS;
+
+        return isTank ? VASHJ_PHASE_2_TANK_TIERS : VASHJ_PHASE_2_OTHER_TIERS;
+    }
+
+    if (isTank)
+    {
+        if (PlayerbotAI::IsMainTank(bot))
+            return VASHJ_PHASE_3_MAIN_TANK_TIERS;
+
+        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ?
+            VASHJ_PHASE_3_FIRST_ASSIST_TANK_TIERS : VASHJ_PHASE_3_OTHER_TANK_TIERS;
+    }
+
+    if (PlayerbotAI::IsRanged(bot))
+    {
+        return bot->getClass() == CLASS_HUNTER ?
+            VASHJ_PHASE_3_HUNTER_TIERS : VASHJ_PHASE_3_RANGED_TIERS;
+    }
+
+    return isMeleeDps ? VASHJ_PHASE_3_MELEE_TIERS : VASHJ_PHASE_3_OTHER_TIERS;
+}
+
 bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards)

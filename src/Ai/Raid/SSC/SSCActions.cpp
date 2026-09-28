@@ -1773,284 +1773,192 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+namespace
+{
+
+// Whether unit is a target the tier allows the bot
+bool IsVashjTargetAllowed(
+    Player* bot, VashjTargetFacts const& facts, VashjTargetTier const& tier, Unit* unit)
+{
+    if (!unit || !unit->IsAlive())
+        return false;
+
+    if (tier.target == VashjTarget::TaintedElemental)
+        return unit == facts.tainted;
+
+    // With no move back any more, a bot far out keeps her and stock reach brings it in
+    if (tier.target == VashjTarget::LadyVashj)
+        return unit == facts.vashj;
+
+    if (bot->GetExactDist2d(unit) > facts.maxPursueRange)
+        return false;
+
+    Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
+    if (facts.phase == 2 && unit->GetExactDist2d(center) > facts.maxSearchRange)
+        return false;
+
+    // A tanked Strider a little out of range is stepped in to; anything else must be in range
+    if (facts.holdsClusterSlot && !bot->IsWithinCombatRange(unit, facts.spellRange) &&
+        !IsVashjStriderToStepInTo(bot, unit))
+    {
+        return false;
+    }
+
+    switch (tier.target)
+    {
+        case VashjTarget::EnchantedElemental:
+            return unit->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) &&
+                facts.vashj->GetExactDist2d(unit) <= tier.maxDistanceFromVashj;
+
+        case VashjTarget::CoilfangStrider:
+        case VashjTarget::CoilfangElite:
+        {
+            uint32 const entry = tier.target == VashjTarget::CoilfangStrider ?
+                Id(SscNpcs::NPC_COILFANG_STRIDER) : Id(SscNpcs::NPC_COILFANG_ELITE);
+            if (unit->GetEntry() != entry)
+                return false;
+
+            if (facts.waitForTank)
+                return IsTankedByTank(unit);
+
+            if (!facts.oneTankEach)
+                return true;
+
+            Player* owner = GetVashjAddOwningTank(bot, unit);
+            return owner ? owner == bot : IsNearestFreeVashjTank(bot, unit);
+        }
+
+        case VashjTarget::ToxicSporebat:
+        {
+            // Chasing a bat any higher, or off the dais, walks bots up into the air
+            constexpr float maxSporebatHeight = 40.0f;
+            return unit->GetEntry() == Id(SscNpcs::NPC_TOXIC_SPOREBAT) &&
+                unit->GetPositionZ() - center.GetPositionZ() <= maxSporebatHeight &&
+                IsOnVashjDais(unit->GetPositionX(), unit->GetPositionY(), 0.0f);
+        }
+
+        default:
+            return false;
+    }
+}
+
+// Enchanted nearest her, Elites and Striders lowest in health, Sporebats nearest the bot
+bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, Unit* b)
+{
+    switch (target)
+    {
+        case VashjTarget::EnchantedElemental:
+            return vashj->GetExactDist2d(a) < vashj->GetExactDist2d(b);
+        case VashjTarget::CoilfangStrider:
+        case VashjTarget::CoilfangElite:
+            return a->GetHealthPct() < b->GetHealthPct();
+        case VashjTarget::ToxicSporebat:
+            return bot->GetDistance(a) < bot->GetDistance(b);
+        default:
+            return false;
+    }
+}
+
+// The tier's best allowed target, or nullptr
+Unit* GetBestVashjTarget(
+    PlayerbotAI* botAI, Player* bot, VashjTargetFacts const& facts, VashjAddGuids const& adds,
+    VashjTargetTier const& tier)
+{
+    GuidVector const* guids = nullptr;
+    switch (tier.target)
+    {
+        case VashjTarget::TaintedElemental:
+            return IsVashjTargetAllowed(bot, facts, tier, facts.tainted) ? facts.tainted : nullptr;
+        case VashjTarget::LadyVashj:
+            return IsVashjTargetAllowed(bot, facts, tier, facts.vashj) ? facts.vashj : nullptr;
+        case VashjTarget::EnchantedElemental:
+            guids = &adds.enchanted;
+            break;
+        case VashjTarget::CoilfangElite:
+            guids = &adds.elites;
+            break;
+        case VashjTarget::CoilfangStrider:
+            guids = &adds.striders;
+            break;
+        case VashjTarget::ToxicSporebat:
+            guids = &adds.sporebats;
+            break;
+    }
+
+    Unit* best = nullptr;
+    for (ObjectGuid const& guid : *guids)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (IsVashjTargetAllowed(bot, facts, tier, unit) &&
+            (!best || IsBetterVashjTarget(bot, facts.vashj, tier.target, unit, best)))
+        {
+            best = unit;
+        }
+    }
+
+    return best;
+}
+
+// A tank keeps the Elite or Strider it has rather than switching to a free one
+bool IsOwnVashjAdd(Player* bot, Unit* target)
+{
+    return target && target->IsAlive() &&
+        (target->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
+         target->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
+        GetVashjAddOwningTank(bot, target) == bot;
+}
+
+} // end anonymous namespace (Vashj targeting)
+
 // Each bot's targets come in tiers, best first. A bot keeps its current target until a higher
 // tier has one, so it doesn't flip between two of a kind as they move, and drops a target no tier
 // allows. A target out of sight, which Attack() refuses, gives way to the next tier.
 bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 {
-    using Kind = VashjTargetKind;
-    Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    VashjTargetFacts facts;
+    facts.vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!facts.vashj)
         return false;
 
-    int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase != 2 && phase != 3)
+    facts.phase = GetLadyVashjPhase(facts.vashj);
+    if (facts.phase != 2 && facts.phase != 3)
         return false;
 
-    // Search and attack radius are intended to keep bots from going down the stairs
-    float const maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
-    float const maxPursueRange = maxSearchRange - 5.0f;
     bool const isTank = PlayerbotAI::IsTank(bot);
-    bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
-
-    // In phase 2 ranged dps hold cluster slots and shoot only what is in range of them, other than
-    // the cluster sent after a Tainted Elemental
-    bool const holdsClusterSlot = phase == 2 && PlayerbotAI::IsRangedDps(bot);
-    float const spellRange = botAI->GetRange("spell");
-    Unit* tainted = nullptr;
-    if (holdsClusterSlot)
+    facts.maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
+    facts.maxPursueRange = facts.maxSearchRange - 5.0f;
+    facts.spellRange = botAI->GetRange("spell");
+    facts.holdsClusterSlot = facts.phase == 2 && PlayerbotAI::IsRangedDps(bot);
+    facts.waitForTank = facts.phase == 2 && !isTank;
+    facts.oneTankEach = facts.phase == 2 && isTank;
+    if (facts.holdsClusterSlot)
     {
-        tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        if (tainted && !IsVashjTaintedElementalKiller(bot, tainted))
-            tainted = nullptr;
+        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+        if (tainted && IsVashjTaintedElementalKiller(bot, tainted))
+            facts.tainted = tainted;
     }
 
-    // Everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody pulls one
-    // onto a cluster
-    bool const waitForTank = phase == 2 && !isTank;
-    // One tank per Elite or Strider, so the others stay free for the next ones. A new one goes to
-    // the nearest free tank, which is the one on the side it comes from while they wait in the
-    // middle.
-    bool const oneTankEach = phase == 2 && isTank;
-    auto const isForAnotherTank = [this](Unit* add)
-    {
-        Player* owner = GetVashjAddOwningTank(bot, add);
-        return owner ? owner != bot : !IsNearestFreeVashjTank(bot, add);
-    };
-
-    std::vector<VashjTargetTier> tiers;
-    if (tainted)
-        tiers.push_back({ Kind::TaintedElemental });
-
-    if (phase == 2)
-    {
-        // Striders need several ranged on them at once
-        if (holdsClusterSlot)
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::CoilfangStrider },
-                { Kind::EnchantedElemental },
-                { Kind::CoilfangElite },
-            });
-        }
-        // Melee stay near her and the Elites: Enchanted about to reach her, then Elites
-        else if (isMeleeDps)
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
-                { Kind::CoilfangElite },
-            });
-        }
-        // Tanks stay in the middle for the next Elite or Strider, wherever it comes from
-        else if (isTank)
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::CoilfangStrider },
-                { Kind::CoilfangElite },
-                { Kind::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
-            });
-        }
-        else
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::EnchantedElemental },
-                { Kind::CoilfangElite },
-                { Kind::CoilfangStrider },
-            });
-        }
-    }
-    else if (isTank)
-    {
-        if (PlayerbotAI::IsMainTank(bot))
-            tiers.push_back({ Kind::LadyVashj });
-        else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::CoilfangStrider },
-                { Kind::CoilfangElite },
-                { Kind::EnchantedElemental },
-                { Kind::LadyVashj },
-            });
-        }
-        else
-        {
-            tiers.insert(tiers.end(), {
-                { Kind::CoilfangElite },
-                { Kind::CoilfangStrider },
-                { Kind::EnchantedElemental },
-                { Kind::LadyVashj },
-            });
-        }
-    }
-    else if (PlayerbotAI::IsRanged(bot))
-    {
-        // Hunters are assigned to kill Sporebats in phase 3
-        if (bot->getClass() == CLASS_HUNTER)
-            tiers.push_back({ Kind::ToxicSporebat });
-
-        tiers.insert(tiers.end(), {
-            { Kind::EnchantedElemental },
-            { Kind::CoilfangStrider },
-            { Kind::CoilfangElite },
-            { Kind::LadyVashj },
-        });
-    }
-    // Melee stay on her in the dps race, but for Enchanted about to reach her and Elites
-    else if (isMeleeDps)
-    {
-        tiers.insert(tiers.end(), {
-            { Kind::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
-            { Kind::CoilfangElite },
-            { Kind::LadyVashj },
-        });
-    }
-    else
-    {
-        tiers.insert(tiers.end(), {
-            { Kind::EnchantedElemental },
-            { Kind::CoilfangElite },
-            { Kind::CoilfangStrider },
-            { Kind::LadyVashj },
-        });
-    }
-
-    auto const matches = [&](VashjTargetTier const& tier, Unit* unit) -> bool
-    {
-        if (!unit || !unit->IsAlive())
-            return false;
-
-        if (tier.kind == Kind::TaintedElemental)
-            return unit == tainted;
-
-        // With no move back any more, a bot far out keeps her and stock reach brings it in
-        if (tier.kind == Kind::LadyVashj)
-            return unit == vashj;
-
-        if (bot->GetExactDist2d(unit) > maxPursueRange)
-            return false;
-
-        if (phase == 2 && unit->GetExactDist2d(center) > maxSearchRange)
-            return false;
-
-        // A tanked Strider a little out of range is stepped in to; anything else must be in range
-        if (holdsClusterSlot && !bot->IsWithinCombatRange(unit, spellRange) &&
-            !IsVashjStriderToStepInTo(bot, unit))
-        {
-            return false;
-        }
-
-        switch (tier.kind)
-        {
-            case Kind::EnchantedElemental:
-                return unit->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) &&
-                    vashj->GetExactDist2d(unit) <= tier.maxDistanceFromVashj;
-
-            case Kind::CoilfangStrider:
-            case Kind::CoilfangElite:
-            {
-                uint32 const entry = tier.kind == Kind::CoilfangStrider ?
-                    Id(SscNpcs::NPC_COILFANG_STRIDER) : Id(SscNpcs::NPC_COILFANG_ELITE);
-                if (unit->GetEntry() != entry)
-                    return false;
-
-                if (waitForTank)
-                    return IsTankedByTank(unit);
-
-                return !oneTankEach || !isForAnotherTank(unit);
-            }
-
-            case Kind::ToxicSporebat:
-            {
-                // Chasing a bat any higher, or off the dais, walks bots up into the air
-                constexpr float maxSporebatHeight = 40.0f;
-                return unit->GetEntry() == Id(SscNpcs::NPC_TOXIC_SPOREBAT) &&
-                    unit->GetPositionZ() - center.GetPositionZ() <= maxSporebatHeight &&
-                    IsOnVashjDais(unit->GetPositionX(), unit->GetPositionY(), 0.0f);
-            }
-
-            default:
-                return false;
-        }
-    };
-
-    // Enchanted nearest her, Elites and Striders lowest in health, Sporebats nearest the bot
-    auto const isBetter = [this, vashj](Kind kind, Unit* a, Unit* b)
-    {
-        switch (kind)
-        {
-            case Kind::EnchantedElemental:
-                return vashj->GetExactDist2d(a) < vashj->GetExactDist2d(b);
-            case Kind::CoilfangStrider:
-            case Kind::CoilfangElite:
-                return a->GetHealthPct() < b->GetHealthPct();
-            case Kind::ToxicSporebat:
-                return bot->GetDistance(a) < bot->GetDistance(b);
-            default:
-                return false;
-        }
-    };
-
-    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
-    auto const bestOf = [&](VashjTargetTier const& tier) -> Unit*
-    {
-        GuidVector const* guids = nullptr;
-        switch (tier.kind)
-        {
-            case Kind::TaintedElemental:
-                return matches(tier, tainted) ? tainted : nullptr;
-            case Kind::LadyVashj:
-                return matches(tier, vashj) ? vashj : nullptr;
-            case Kind::EnchantedElemental:
-                guids = &adds.enchanted;
-                break;
-            case Kind::CoilfangElite:
-                guids = &adds.elites;
-                break;
-            case Kind::CoilfangStrider:
-                guids = &adds.striders;
-                break;
-            case Kind::ToxicSporebat:
-                guids = &adds.sporebats;
-                break;
-        }
-
-        Unit* best = nullptr;
-        for (ObjectGuid const& guid : *guids)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (matches(tier, unit) && (!best || isBetter(tier.kind, unit, best)))
-                best = unit;
-        }
-
-        return best;
-    };
+    std::vector<VashjTargetTier> const& tiers =
+        GetVashjTargetTiers(bot, facts.phase, facts.tainted != nullptr);
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-
-    // A tank keeps the Elite or Strider it has rather than switching to a free one
-    if (oneTankEach && currentTarget && currentTarget->IsAlive() &&
-        (currentTarget->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
-         currentTarget->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
-        GetVashjAddOwningTank(bot, currentTarget) == bot)
-    {
+    if (facts.oneTankEach && IsOwnVashjAdd(bot, currentTarget))
         return false;
-    }
 
     size_t currentTier = tiers.size();
     for (size_t i = 0; currentTarget && i < tiers.size(); ++i)
     {
-        if (matches(tiers[i], currentTarget))
+        if (IsVashjTargetAllowed(bot, facts, tiers[i], currentTarget))
         {
             currentTier = i;
             break;
         }
     }
 
+    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     for (size_t i = 0; i < currentTier; ++i)
     {
-        Unit* candidate = bestOf(tiers[i]);
+        Unit* candidate = GetBestVashjTarget(botAI, bot, facts, adds, tiers[i]);
         if (candidate && candidate != currentTarget && Attack(candidate))
             return true;
     }
