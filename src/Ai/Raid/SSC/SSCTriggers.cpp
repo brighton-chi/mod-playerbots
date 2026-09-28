@@ -450,8 +450,9 @@ bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
     return vashj && vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
-// Healers only in phase 3, so healer dps has a target there and never picks a Sporebat, which
-// walks them up into the air. In phase 2 they hold their cluster slots.
+// Healers too. Healer dps and a priest's wand get a target the tiers allow, never a Sporebat,
+// which walks them up into the air, and in phase 2 the target keeps them in their combat engine.
+// The phase 2 multiplier keeps them from walking to it.
 bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -459,9 +460,6 @@ bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
         return false;
 
     int8 const phase = GetLadyVashjPhase(vashj);
-    if (PlayerbotAI::IsHeal(bot))
-        return phase == 3;
-
     return phase == 2 || phase == 3;
 }
 
@@ -559,7 +557,7 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 // From the looter's pick until the core is taken from the corpse.
 bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(botAI, bot) != bot)
+    if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(bot) != bot)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -569,7 +567,7 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
     Creature* tainted = GetVashjTaintedElemental(bot);
 
     // TEMP LOG
-    bool const hasCore = bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false);
+    bool const hasCore = HasTaintedCore(bot);
     if (hasCore && TaintedLogFirstTime(bot, "core"))
     {
         LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} has the core",
@@ -581,7 +579,7 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
             TaintedLogElapsedMs(bot), TaintedLogSeen(bot, "core") ? "yes" : "NO");
     }
 
-    return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
+    return tainted && IsTaintedCoreStillToLoot(tainted);
 }
 
 // A core with nowhere to go: in phase 3, with no generator left; from a chain that found no way; or

@@ -18,6 +18,7 @@
 #include <vector>
 
 class Creature;
+class GameObject;
 class Map;
 class Player;
 class PlayerbotAI;
@@ -346,14 +347,6 @@ Position GetTidewalkerStackPoint(Unit* tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 
-struct GeneratorInfo
-{
-    ObjectGuid guid;
-    float x;
-    float y;
-    float z;
-};
-
 inline constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
 
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
@@ -523,9 +516,6 @@ inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
 struct TaintedCoreLooter
 {
     ObjectGuid tainted;
-    // It never moves, and its corpse despawns 15s after it spawns, so the core is passed toward
-    // the generator nearest where it stood
-    Position taintedPosition;
     ObjectGuid looter;
     // The cluster nearest the elemental, whose ranged dps kill it
     int8 cluster = -1;
@@ -593,12 +583,13 @@ struct VashjCoreChain
     std::vector<VashjCoreCatcher> catchers;
     // Left out after its throws failed, when this plan replaced one
     ObjectGuid excluded;
-    // The start and catchers of the chain this one replaced: one may still hold its core
+    // Members of earlier chains who still held a core when this one was planned
     std::vector<ObjectGuid> earlier;
     // The highest catcher index that has held the core; those before it are done
     int8 reached = -1;
     // No way to a generator was found; the holder destroys the core
     bool failed = false;
+    uint8 replans = 0;
     // The last throw, kept through a new plan so the next still waits its turn
     ObjectGuid throwTarget;
     uint32 throwTime = 0;
@@ -700,9 +691,11 @@ Creature* GetVashjTaintedElemental(Player* bot);
 // The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
 // the core is taken. The corpse stays flagged lootable until its looter releases the loot.
 int8 GetTaintedCoreLootSlot(Creature* elemental);
+// From the elemental's spawn until its core is taken from the corpse.
+bool IsTaintedCoreStillToLoot(Creature* elemental);
 // True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter.
 bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted);
-Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
+Player* GetDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
@@ -755,15 +748,15 @@ int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);
 bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain);
 // True while the catcher should be walking to or standing on its spot.
 bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
-std::vector<uint32> const SHIELD_GENERATOR_DB_GUIDS =
-{
-    47482, // NW
-    47483, // NE
-    47484, // SE
-    47485  // SW
+// The Shield Generators' spawn ids
+inline constexpr std::array SHIELD_GENERATOR_DB_GUIDS = {
+    uint32{ 47482 }, // NW
+    uint32{ 47483 }, // NE
+    uint32{ 47484 }, // SE
+    uint32{ 47485 }, // SW
 };
-std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-    Map* map, std::vector<uint32> const& generatorDbGuids);
+// The generators not yet used.
+std::vector<GameObject*> GetUsableVashjGenerators(Map* map);
 
 }
 

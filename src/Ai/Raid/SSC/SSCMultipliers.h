@@ -345,11 +345,21 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjDisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
+class LadyVashjPhase2DisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjDisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj disable auto target and move") {}
+    LadyVashjPhase2DisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj phase 2 disable auto target and move") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class LadyVashjPhase3DisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
+{
+public:
+    LadyVashjPhase3DisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj phase 3 disable auto target and move") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

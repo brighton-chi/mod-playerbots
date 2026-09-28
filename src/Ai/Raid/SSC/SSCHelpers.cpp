@@ -1545,6 +1545,11 @@ int8 GetTaintedCoreLootSlot(Creature* elemental)
     return -1;
 }
 
+bool IsTaintedCoreStillToLoot(Creature* elemental)
+{
+    return elemental->IsAlive() || GetTaintedCoreLootSlot(elemental) >= 0;
+}
+
 bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted)
 {
     if (!PlayerbotAI::IsRangedDps(bot))
@@ -1563,7 +1568,7 @@ bool IsVashjTaintedElementalKiller(Player* bot, Unit* tainted)
 
 // Chosen once per Tainted Elemental by the mechanic tracker bot
 // (LadyVashjAssignTaintedCoreLooterAction).
-Player* GetDesignatedCoreLooter(PlayerbotAI* /*botAI*/, Player* bot)
+Player* GetDesignatedCoreLooter(Player* bot)
 {
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
     if (it == vashjTaintedCoreLooter.end())
@@ -1782,8 +1787,7 @@ void TaintedLogThrow(Player* bot, Player* receiver, int catcher)
 
 void TaintedLogGenerators(Player* bot)
 {
-    size_t const usable =
-        GetAllGeneratorInfosByDbGuids(bot->GetMap(), SHIELD_GENERATOR_DB_GUIDS).size();
+    size_t const usable = GetUsableVashjGenerators(bot->GetMap()).size();
     {
         std::lock_guard<std::mutex> lock(taintedLogMutex);
         auto [it, inserted] = taintedLogGenerators.try_emplace(bot->GetInstanceId(), usable);
@@ -2034,13 +2038,10 @@ GameObject* GetNearestUsableVashjGenerator(Map* map, Position const& from)
 {
     GameObject* nearest = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
-    for (GeneratorInfo const& info : GetAllGeneratorInfosByDbGuids(map, SHIELD_GENERATOR_DB_GUIDS))
+    for (GameObject* generator : GetUsableVashjGenerators(map))
     {
-        float const distance = from.GetExactDist2d(info.x, info.y);
-        if (distance >= nearestDistance)
-            continue;
-
-        if (GameObject* generator = map->GetGameObject(info.guid))
+        float const distance = from.GetExactDist2d(generator);
+        if (distance < nearestDistance)
         {
             nearest = generator;
             nearestDistance = distance;
@@ -2145,11 +2146,23 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter)
     VashjCoreChain chain;
     chain.tainted = tainted->GetGUID();
     chain.start = looter->GetGUID();
+    // Older chains' holders too: only a core ready to loot sets off the destroy, so one stuck two
+    // chains back is still held if the elemental between was never killed
     if (VashjCoreChain const* previous = GetVashjCoreChain(bot))
     {
-        chain.earlier.push_back(previous->start);
+        auto keepIfHolding = [&](ObjectGuid guid)
+        {
+            Player* player = ObjectAccessor::GetPlayer(*bot, guid);
+            if (player && HasTaintedCore(player))
+                chain.earlier.push_back(guid);
+        };
+
+        for (ObjectGuid const guid : previous->earlier)
+            keepIfHolding(guid);
+
+        keepIfHolding(previous->start);
         for (VashjCoreCatcher const& catcher : previous->catchers)
-            chain.earlier.push_back(catcher.bot);
+            keepIfHolding(catcher.bot);
     }
 
     Position const origin = tainted->GetPosition();
@@ -2171,6 +2184,15 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter)
 
 bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded)
 {
+    // Rooted in the same place, the holder tends to get the same spots back
+    constexpr uint8 maxReplans = 3;
+    if (++chain.replans > maxReplans)
+    {
+        chain.failed = true;
+        TaintedLogChain(holder, chain, "given up"); // TEMP LOG
+        return false;
+    }
+
     Map* map = holder->GetMap();
     GameObject* generator = map->GetGameObject(chain.generator);
     if (!generator || generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
@@ -2260,11 +2282,9 @@ bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
     if (chain.throwTime && getMSTimeDiff(chain.throwTime, getMSTime()) < throwGraceMs)
         return true;
 
-    if (Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted))
-    {
-        if (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0)
-            return true;
-    }
+    Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
+    if (tainted && IsTaintedCoreStillToLoot(tainted))
+        return true;
 
     // Only the last holder, or the catcher it last threw to, can have it
     ObjectGuid const holder = chain.reached >= 0 ? chain.catchers[chain.reached].bot : chain.start;
@@ -2297,31 +2317,22 @@ bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 ind
     return IsVashjCoreChainLive(bot, chain);
 }
 
-// Get the positions of all active Shield Generators by their database GUIDs
-std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(
-    Map* map, std::vector<uint32> const& generatorDbGuids)
+std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
 {
-    std::vector<GeneratorInfo> generators;
+    std::vector<GameObject*> generators;
     if (!map)
         return generators;
 
-    for (uint32 dbGuid : generatorDbGuids)
+    for (uint32 const spawnId : SHIELD_GENERATOR_DB_GUIDS)
     {
-        auto bounds = map->GetGameObjectBySpawnIdStore().equal_range(dbGuid);
+        auto const bounds = map->GetGameObjectBySpawnIdStore().equal_range(spawnId);
         if (bounds.first == bounds.second)
             continue;
 
-        GameObject* go = bounds.first->second;
+        GameObject* generator = bounds.first->second;
         // A used generator stays GO_STATE_READY; it is marked by setting this flag on itself
-        if (!go || go->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
-            continue;
-
-        GeneratorInfo info;
-        info.guid = go->GetGUID();
-        info.x = go->GetPositionX();
-        info.y = go->GetPositionY();
-        info.z = go->GetPositionZ();
-        generators.push_back(info);
+        if (generator && !generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
+            generators.push_back(generator);
     }
 
     return generators;

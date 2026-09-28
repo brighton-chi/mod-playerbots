@@ -1596,10 +1596,10 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
     Position const& clusterPosition = GetVashjClusterPosition(slot);
 
     // The looter stays on the elemental until the core is looted
-    if (GetDesignatedCoreLooter(botAI, bot) == bot)
+    if (GetDesignatedCoreLooter(bot) == bot)
     {
         Creature* elemental = GetVashjTaintedElemental(bot);
-        if (elemental && (elemental->IsAlive() || GetTaintedCoreLootSlot(elemental) >= 0))
+        if (elemental && IsTaintedCoreStillToLoot(elemental))
             return false;
     }
 
@@ -2059,10 +2059,12 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     // Nothing allowed to attack, so drop what it has: Vashj while she is immune, an Elite or
-    // Strider no tank has yet, another tank's, an Enchanted out past a leash, or a Sporebat
+    // Strider no tank has yet, another tank's, an Enchanted out past a leash, or a Sporebat. A
+    // healer's cast is left alone: it is almost always a heal.
     bot->AttackStop();
     bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
+    if (!PlayerbotAI::IsHeal(bot))
+        bot->CastStop();
     context->GetValue<Unit*>("current target")->Set(nullptr);
     bot->SetSelection(ObjectGuid());
     return false;
@@ -2250,8 +2252,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
         previous->second.tainted == tainted->GetGUID();
 
     vashjTaintedCoreLooter.insert_or_assign(bot->GetInstanceId(),
-        TaintedCoreLooter{ tainted->GetGUID(), tainted->GetPosition(), looter->GetGUID(),
-            cluster });
+        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), cluster });
 
     // TEMP LOG
     if (!repick)
@@ -2317,11 +2318,10 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
             TaintedLogElapsedMs(bot), bot->GetName(), bot->GetExactDist(tainted));
     }
 
+    // Killers are ranged dps
     constexpr float stopDistance = 3.0f;
-    bool const inRange = PlayerbotAI::IsRanged(bot) ?
-        bot->IsWithinCombatRange(tainted, botAI->GetRange("spell")) :
-        bot->IsWithinMeleeRange(tainted);
-    if (!inRange || !bot->IsWithinLOSInMap(tainted))
+    if (!bot->IsWithinCombatRange(tainted, botAI->GetRange("spell")) ||
+        !bot->IsWithinLOSInMap(tainted))
     {
         float stepX;
         float stepY;
@@ -2431,7 +2431,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false))
+        if (member && HasTaintedCore(member))
             return false;
     }
 
@@ -2479,7 +2479,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 // As a player would delete it from their bags. Removing it takes off its Paralyze.
 bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 {
-    if (!bot->HasItemCount(Id(SscItems::ITEM_TAINTED_CORE), 1, false))
+    if (!HasTaintedCore(bot))
         return false;
 
     bot->DestroyItemCount(Id(SscItems::ITEM_TAINTED_CORE), -1, true);
