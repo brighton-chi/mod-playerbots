@@ -1843,7 +1843,7 @@ void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what)
         catchers += Acore::StringFormat("{} at {:.1f} {:.1f} {:.1f}{}; ",
             player ? player->GetName() : "nobody yet", catcher.spot.GetPositionX(),
             catcher.spot.GetPositionY(), catcher.spot.GetPositionZ(),
-            catcher.prepositions ? "" : " after the kill");
+            player && !catcher.prepositions ? " after the kill" : "");
     }
 
     GameObject* generator = bot->GetMap()->GetGameObject(chain.generator);
@@ -1918,15 +1918,15 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
 }
 
 // Line of sight between two players standing at from and to, as IsWithinLOSInMap measures it:
-// from a player's collision height, about 2y, with every model counted, generators included.
+// from each one's collision height, with every model counted, generators included. The thrower's
+// height is given; the catcher, not yet picked, is taken as the shortest race.
 bool IsVashjCoreThrowInSight(
-    Map* map, uint32 phaseMask, Position const& from, Position const& to)
+    Map* map, uint32 phaseMask, Position const& from, float fromEyeHeight, Position const& to)
 {
-    constexpr float eyeHeight = 2.0f;
     return map->isInLineOfSight(
-        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
-        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight, phaseMask,
-        LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
+        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + fromEyeHeight,
+        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + VASHJ_CORE_PLAN_EYE_HEIGHT,
+        phaseMask, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
 }
 
 // The farthest point from the generator's centre, along angle, still within its interaction
@@ -1961,10 +1961,11 @@ bool FindVashjCoreUseSpot(GameObject* generator, uint32 phaseMask, float angle, 
 }
 
 // Catcher spots from origin to one of the generator's use spots, fewest throws first; the last is
-// the use spot. firstLeg is the first throw's length. Empty if more than VASHJ_CORE_MAX_CATCHERS
-// would be needed.
+// the use spot. firstLeg is the first throw's length, and originEyeHeight the first thrower's
+// collision height. Empty if more than VASHJ_CORE_MAX_CATCHERS would be needed.
 std::vector<Position> PlanVashjCoreSpots(
-    Player* bot, GameObject* generator, Position const& origin, float firstLeg)
+    Player* bot, GameObject* generator, Position const& origin, float firstLeg,
+    float originEyeHeight)
 {
     Map* map = bot->GetMap();
     uint32 const phaseMask = bot->GetPhaseMask();
@@ -1995,12 +1996,13 @@ std::vector<Position> PlanVashjCoreSpots(
     std::vector<Position> spots;
     Position from = origin;
     float leg = firstLeg;
+    float fromEyeHeight = originEyeHeight;
     while (spots.size() < VASHJ_CORE_MAX_CATCHERS)
     {
         for (Position const& useSpot : useSpots)
         {
             if (from.GetExactDist(useSpot) <= leg &&
-                IsVashjCoreThrowInSight(map, phaseMask, from, useSpot))
+                IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, useSpot))
             {
                 spots.push_back(useSpot);
                 return spots;
@@ -2044,7 +2046,7 @@ std::vector<Position> PlanVashjCoreSpots(
 
                     Position const candidate(x, y, z);
                     if (from.GetExactDist(candidate) > leg ||
-                        !IsVashjCoreThrowInSight(map, phaseMask, from, candidate))
+                        !IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, candidate))
                     {
                         continue;
                     }
@@ -2062,6 +2064,7 @@ std::vector<Position> PlanVashjCoreSpots(
         spots.push_back(best);
         from = best;
         leg = VASHJ_CORE_THROW_PLAN_DISTANCE;
+        fromEyeHeight = VASHJ_CORE_PLAN_EYE_HEIGHT;
     }
 
     return {};
@@ -2202,8 +2205,11 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter)
     if (GameObject* generator = GetNearestUsableVashjGenerator(bot->GetMap(), origin))
     {
         chain.generator = generator->GetGUID();
+        // The looter is somewhere near the corpse, so the first thrower is taken as the shortest
+        // race too
         for (Position const& spot : PlanVashjCoreSpots(bot, generator, origin,
-                 VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET))
+                 VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET,
+                 VASHJ_CORE_PLAN_EYE_HEIGHT))
         {
             chain.catchers.push_back(VashjCoreCatcher{ spot });
         }
@@ -2237,8 +2243,9 @@ bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excl
     if (generator)
     {
         chain.generator = generator->GetGUID();
-        for (Position const& spot : PlanVashjCoreSpots(
-                 holder, generator, holder->GetPosition(), VASHJ_CORE_THROW_PLAN_DISTANCE))
+        // From the holder rooted where it stands, at its own height
+        for (Position const& spot : PlanVashjCoreSpots(holder, generator, holder->GetPosition(),
+                 VASHJ_CORE_THROW_PLAN_DISTANCE, holder->GetCollisionHeight()))
         {
             chain.catchers.push_back(VashjCoreCatcher{ spot });
         }

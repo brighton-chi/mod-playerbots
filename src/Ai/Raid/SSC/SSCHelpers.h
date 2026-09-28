@@ -648,6 +648,10 @@ inline std::array const VASHJ_SHIELD_GENERATOR_POSITIONS = {
 inline constexpr float VASHJ_CORE_THROW_PLAN_DISTANCE = 40.0f;
 // The looter stands up to about 6y from the corpse, and the first throw is planned from the corpse.
 inline constexpr float VASHJ_CORE_LOOTER_OFFSET = 6.0f;
+// Line of sight is measured from each player's collision height, which the DBC puts between 1.21
+// (gnome) and 2.64 (tauren female). Spots are planned from the lowest, so any race sees along
+// them; with 2.0 an undead's throw from the stairs ran into the rim of the dais.
+inline constexpr float VASHJ_CORE_PLAN_EYE_HEIGHT = 1.2f;
 // Elites and Striders attack anyone within 20y of them.
 inline constexpr float VASHJ_CORE_SPOT_SPAWN_CLEARANCE = 22.0f;
 // Other catchers stand this far from every generator's centre, off its base.
