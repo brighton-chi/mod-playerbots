@@ -1960,6 +1960,99 @@ bool FindVashjCoreUseSpot(GameObject* generator, uint32 phaseMask, float angle, 
     return false;
 }
 
+// Depth-first from `from`: a use spot in reach and in sight ends the route; otherwise each of the
+// few best next spots in turn, until one leads on to a use spot. spots holds the route so far.
+bool PlanVashjCoreLegs(
+    Map* map, uint32 phaseMask, std::vector<Position> const& useSpots, Position const& from,
+    float leg, float fromEyeHeight, std::vector<Position>& spots)
+{
+    for (Position const& useSpot : useSpots)
+    {
+        if (from.GetExactDist(useSpot) <= leg &&
+            IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, useSpot))
+        {
+            spots.push_back(useSpot);
+            return true;
+        }
+    }
+
+    // Room for a catcher here and a later one to use the core
+    if (spots.size() + 2 > VASHJ_CORE_MAX_CATCHERS)
+        return false;
+
+    // Spots in reach that gain enough on the aim, the use spot facing the origin, nearest it first.
+    // Reaches down to 4y: on the stairs the climb eats into a throw, and a spot several yards
+    // down them sees only a few yards past the rim of the dais, so the way on is often a short hop
+    // to the rim.
+    constexpr float minGain = 5.0f;
+    constexpr int reaches = 13;
+    constexpr float reachStep = 3.0f;
+    constexpr float minReach = 4.0f;
+    constexpr int angles = 6;
+    constexpr float angleStep = static_cast<float>(M_PI) / 18.0f;
+    Position const& aim = useSpots.front();
+    float const toAim = from.GetAngle(&aim);
+    float const maxDistance = from.GetExactDist2d(aim) - minGain;
+    std::vector<std::pair<float, Position>> candidates;
+    for (int r = 0; r < reaches; ++r)
+    {
+        float const reach = leg - r * reachStep;
+        if (reach < minReach)
+            break;
+
+        for (int i = 0; i <= angles; ++i)
+        {
+            for (int sign : { 1, -1 })
+            {
+                if (i == 0 && sign < 0)
+                    continue;
+
+                float const angle = toAim + sign * i * angleStep;
+                float const x = from.GetPositionX() + std::cos(angle) * reach;
+                float const y = from.GetPositionY() + std::sin(angle) * reach;
+                float const distance = aim.GetExactDist2d(x, y);
+                if (distance >= maxDistance || !IsVashjCoreSpotClear(x, y, false))
+                    continue;
+
+                float const z = GetVashjGroundZ(map, phaseMask, x, y);
+                if (z <= INVALID_HEIGHT)
+                    continue;
+
+                Position const candidate(x, y, z);
+                if (from.GetExactDist(candidate) <= leg)
+                    candidates.emplace_back(distance, candidate);
+            }
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end(),
+        [](auto const& a, auto const& b) { return a.first < b.first; });
+
+    // Only the best few in sight are followed on. The farthest spot can be a dead end: one well
+    // down the stairs sees nothing past the rim of the dais.
+    constexpr size_t branches = 3;
+    size_t followed = 0;
+    for (auto const& entry : candidates)
+    {
+        Position const& candidate = entry.second;
+        if (!IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, candidate))
+            continue;
+
+        spots.push_back(candidate);
+        if (PlanVashjCoreLegs(map, phaseMask, useSpots, candidate, VASHJ_CORE_THROW_PLAN_DISTANCE,
+                VASHJ_CORE_PLAN_EYE_HEIGHT, spots))
+        {
+            return true;
+        }
+
+        spots.pop_back();
+        if (++followed == branches)
+            break;
+    }
+
+    return false;
+}
+
 // Catcher spots from origin to one of the generator's use spots, fewest throws first; the last is
 // the use spot. firstLeg is the first throw's length, and originEyeHeight the first thrower's
 // collision height. Empty if more than VASHJ_CORE_MAX_CATCHERS would be needed.
@@ -1967,7 +2060,6 @@ std::vector<Position> PlanVashjCoreSpots(
     Player* bot, GameObject* generator, Position const& origin, float firstLeg,
     float originEyeHeight)
 {
-    Map* map = bot->GetMap();
     uint32 const phaseMask = bot->GetPhaseMask();
 
     // Use spots on the origin's side of the generator, the one facing it first
@@ -1989,102 +2081,40 @@ std::vector<Position> PlanVashjCoreSpots(
         }
     }
 
-    if (useSpots.empty())
-        return {};
-
-    Position const aim = useSpots.front();
     std::vector<Position> spots;
-    Position from = origin;
-    float leg = firstLeg;
-    float fromEyeHeight = originEyeHeight;
-    while (spots.size() < VASHJ_CORE_MAX_CATCHERS)
+    if (useSpots.empty() || !PlanVashjCoreLegs(bot->GetMap(), phaseMask, useSpots, origin,
+            firstLeg, originEyeHeight, spots))
     {
-        for (Position const& useSpot : useSpots)
-        {
-            if (from.GetExactDist(useSpot) <= leg &&
-                IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, useSpot))
-            {
-                spots.push_back(useSpot);
-                return spots;
-            }
-        }
-
-        if (spots.size() + 1 == VASHJ_CORE_MAX_CATCHERS)
-            break;
-
-        // Otherwise the spot in reach nearest the aim, if it gains enough on it. Shorter reaches
-        // are tried too: on the stairs the climb eats into a throw.
-        constexpr float minGain = 5.0f;
-        constexpr int reaches = 7;
-        constexpr float reachStep = 3.0f;
-        constexpr int angles = 6;
-        constexpr float angleStep = static_cast<float>(M_PI) / 18.0f;
-        float const toAim = from.GetAngle(&aim);
-        float bestDistance = from.GetExactDist2d(aim) - minGain;
-        Position best;
-        bool found = false;
-        for (int r = 0; r < reaches; ++r)
-        {
-            float const reach = leg - r * reachStep;
-            for (int i = 0; i <= angles; ++i)
-            {
-                for (int sign : { 1, -1 })
-                {
-                    if (i == 0 && sign < 0)
-                        continue;
-
-                    float const angle = toAim + sign * i * angleStep;
-                    float const x = from.GetPositionX() + std::cos(angle) * reach;
-                    float const y = from.GetPositionY() + std::sin(angle) * reach;
-                    float const distance = aim.GetExactDist2d(x, y);
-                    if (distance >= bestDistance || !IsVashjCoreSpotClear(x, y, false))
-                        continue;
-
-                    float const z = GetVashjGroundZ(map, phaseMask, x, y);
-                    if (z <= INVALID_HEIGHT)
-                        continue;
-
-                    Position const candidate(x, y, z);
-                    if (from.GetExactDist(candidate) > leg ||
-                        !IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, candidate))
-                    {
-                        continue;
-                    }
-
-                    best = candidate;
-                    bestDistance = distance;
-                    found = true;
-                }
-            }
-        }
-
-        if (!found)
-            break;
-
-        spots.push_back(best);
-        from = best;
-        leg = VASHJ_CORE_THROW_PLAN_DISTANCE;
-        fromEyeHeight = VASHJ_CORE_PLAN_EYE_HEIGHT;
+        return {};
     }
 
-    return {};
+    return spots;
 }
 
-GameObject* GetNearestUsableVashjGenerator(Map* map, Position const& from)
+// The route's spots to the preferred generator if still usable, else the nearest usable one a
+// route reaches. Nullptr if none does.
+GameObject* PlanVashjCoreRoute(
+    Player* bot, Position const& origin, float firstLeg, float originEyeHeight,
+    ObjectGuid preferred, std::vector<Position>& spots)
 {
-    GameObject* nearest = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-    for (GameObject* generator : GetUsableVashjGenerators(map))
+    std::vector<GameObject*> generators = GetUsableVashjGenerators(bot->GetMap());
+    std::sort(generators.begin(), generators.end(), [&](GameObject* a, GameObject* b)
     {
-        float const distance = from.GetExactDist2d(generator);
-        if (distance < nearestDistance)
-        {
-            nearest = generator;
-            nearestDistance = distance;
-        }
+        bool const aPreferred = a->GetGUID() == preferred;
+        if (aPreferred != (b->GetGUID() == preferred))
+            return aPreferred;
+
+        return origin.GetExactDist2d(a) < origin.GetExactDist2d(b);
+    });
+
+    for (GameObject* generator : generators)
+    {
+        spots = PlanVashjCoreSpots(bot, generator, origin, firstLeg, originEyeHeight);
+        if (!spots.empty())
+            return generator;
     }
 
-    return nearest;
+    return nullptr;
 }
 
 // One of the ranged dps sent to kill the elemental, while it lives
@@ -2201,21 +2231,19 @@ void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter)
             keepIfHolding(catcher.bot);
     }
 
-    Position const origin = tainted->GetPosition();
-    if (GameObject* generator = GetNearestUsableVashjGenerator(bot->GetMap(), origin))
+    // The looter is somewhere near the corpse, so the first thrower is taken as the shortest race
+    // too. With no way found from the corpse, the looter still loots, and plans again from where it
+    // stands once it holds the core.
+    std::vector<Position> spots;
+    if (GameObject* generator = PlanVashjCoreRoute(bot, tainted->GetPosition(),
+            VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET, VASHJ_CORE_PLAN_EYE_HEIGHT,
+            ObjectGuid::Empty, spots))
     {
         chain.generator = generator->GetGUID();
-        // The looter is somewhere near the corpse, so the first thrower is taken as the shortest
-        // race too
-        for (Position const& spot : PlanVashjCoreSpots(bot, generator, origin,
-                 VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET,
-                 VASHJ_CORE_PLAN_EYE_HEIGHT))
-        {
+        for (Position const& spot : spots)
             chain.catchers.push_back(VashjCoreCatcher{ spot });
-        }
     }
 
-    chain.failed = chain.catchers.empty();
     AssignVashjCoreCatchers(bot, chain);
     TaintedLogChain(bot, chain, "planned"); // TEMP LOG
     vashjCoreChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
@@ -2232,23 +2260,18 @@ bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excl
         return false;
     }
 
-    Map* map = holder->GetMap();
-    GameObject* generator = map->GetGameObject(chain.generator);
-    if (!generator || generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
-        generator = GetNearestUsableVashjGenerator(map, holder->GetPosition());
-
     chain.start = holder->GetGUID();
     chain.catchers.clear();
     ResetVashjCoreThrows(chain);
-    if (generator)
+
+    // From the holder rooted where it stands, at its own height
+    std::vector<Position> spots;
+    if (GameObject* generator = PlanVashjCoreRoute(holder, holder->GetPosition(),
+            VASHJ_CORE_THROW_PLAN_DISTANCE, holder->GetCollisionHeight(), chain.generator, spots))
     {
         chain.generator = generator->GetGUID();
-        // From the holder rooted where it stands, at its own height
-        for (Position const& spot : PlanVashjCoreSpots(holder, generator, holder->GetPosition(),
-                 VASHJ_CORE_THROW_PLAN_DISTANCE, holder->GetCollisionHeight()))
-        {
+        for (Position const& spot : spots)
             chain.catchers.push_back(VashjCoreCatcher{ spot });
-        }
     }
 
     chain.failed = chain.catchers.empty();

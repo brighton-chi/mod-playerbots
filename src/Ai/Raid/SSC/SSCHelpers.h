@@ -656,7 +656,9 @@ inline constexpr float VASHJ_CORE_PLAN_EYE_HEIGHT = 1.2f;
 inline constexpr float VASHJ_CORE_SPOT_SPAWN_CLEARANCE = 22.0f;
 // Other catchers stand this far from every generator's centre, off its base.
 inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
-inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 4;
+// Five covers every spawn and generator pair in an offline model of the dais; four missed the
+// farthest generator from two spawns.
+inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 5;
 
 struct VashjCoreCatcher
 {
@@ -837,11 +839,13 @@ void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what)
 // Logs when the number of usable generators changes.
 void TaintedLogGenerators(Player* bot);
 bool HasTaintedCore(Player* player);
-// A new chain for the elemental, from where it stands to the usable generator nearest it, with
-// looter as its start.
+// A new chain for the elemental, from where it stands to the nearest usable generator a route
+// reaches, with looter as its start. With no route yet, the looter plans again once it holds the
+// core.
 void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter);
-// Plans the chain again from the holder, rooted where it stands, to the same generator if still
-// usable. excluded gets no spot. Marks the chain failed if there is no way.
+// Plans the chain again from the holder, rooted where it stands, to the same generator if a route
+// still reaches it, else the nearest usable one that does. excluded gets no spot. Marks the chain
+// failed if there is no way, or after a few tries.
 bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded);
 // Gives a catcher's spot to the nearest other bot that can take it.
 bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);

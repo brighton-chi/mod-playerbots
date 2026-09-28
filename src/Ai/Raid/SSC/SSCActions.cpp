@@ -2408,6 +2408,14 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
     if (!HasTaintedCore(bot))
         return false;
 
+    // TEMP LOG
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    LOG_INFO("playerbots", "[SSC tainted] +{}ms {} destroys the core ({})",
+        TaintedLogElapsedMs(bot), bot->GetName(),
+        GetLadyVashjPhase(vashj) == 3 ? "phase 3" :
+        chain && chain->failed ? "chain failed" : "next core ready");
+
     bot->DestroyItemCount(Id(SscItems::ITEM_TAINTED_CORE), -1, true);
     return true;
 }
