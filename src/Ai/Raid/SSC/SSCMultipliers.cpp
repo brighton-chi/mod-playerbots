@@ -30,7 +30,6 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
-#include <unordered_map>
 #include <vector>
 
 using namespace SscHelpers;
@@ -195,10 +194,9 @@ float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounte
     if (!hydross)
         return 1.0f;
 
-    if (IsHydrossInFrostPhase(hydross) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-        return 0.0f;
-
-    return IsHydrossInNaturePhase(hydross) && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+    bool const offPhaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
+    return offPhaseTank ? 0.0f : 1.0f;
 }
 
 float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Action* action)
@@ -234,34 +232,12 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (!hydross)
         return 1.0f;
 
-    bool const frostPhase = IsHydrossInFrostPhase(hydross);
-    if (PlayerbotAI::IsTank(bot) &&
-        (frostPhase ?
-            PlayerbotAI::IsMainTank(bot) : PlayerbotAI::IsAssistTankOfIndex(bot, 0, true)))
-    {
+    bool const currentPhaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossFrostTank(bot) : IsHydrossNatureTank(bot);
+    if (currentPhaseTank)
         return 1.0f;
-    }
 
-    std::unordered_map<uint32, uint32> const& phaseStartTimer =
-        frostPhase ? hydrossFrostDpsWaitTimer : hydrossNatureDpsWaitTimer;
-    std::unordered_map<uint32, uint32> const& handOverTimer =
-        frostPhase ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
-
-    uint32 const instanceId = hydross->GetInstanceId();
-    uint32 const now = getMSTime();
-    constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
-    constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
-
-    auto itStart = phaseStartTimer.find(instanceId);
-    bool const justChanged =
-        itStart == phaseStartTimer.end() || getMSTimeDiff(itStart->second, now) < phaseStartWaitMs;
-
-    auto itHandOver = handOverTimer.find(instanceId);
-    bool const aboutToChange =
-        itHandOver != handOverTimer.end() &&
-        getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs;
-
-    return justChanged || aboutToChange ? 0.0f : 1.0f;
+    return GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None ? 0.0f : 1.0f;
 }
 
 // The Lurker Below

@@ -192,10 +192,19 @@ std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+bool IsHydrossFrostTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
+}
+
+bool IsHydrossNatureTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+}
+
 bool IsHydrossPhaseTank(Player* bot)
 {
-    return PlayerbotAI::IsTank(bot) &&
-        (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true));
+    return IsHydrossFrostTank(bot) || IsHydrossNatureTank(bot);
 }
 
 bool IsHydrossAddTank(Player* bot)
@@ -211,6 +220,40 @@ bool IsHydrossInFrostPhase(Unit* hydross)
 bool IsHydrossInNaturePhase(Unit* hydross)
 {
     return hydross && hydross->HasAura(Id(SscSpells::SPELL_HYDROSS_CORRUPTION));
+}
+
+HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
+{
+    if (!hydross)
+        return HydrossDpsHoldWindow::None;
+
+    bool const frostPhase = IsHydrossInFrostPhase(hydross);
+    std::unordered_map<uint32, uint32> const& phaseStartTimer =
+        frostPhase ? hydrossFrostDpsWaitTimer : hydrossNatureDpsWaitTimer;
+    std::unordered_map<uint32, uint32> const& handOverTimer =
+        frostPhase ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
+
+    uint32 const instanceId = hydross->GetInstanceId();
+    uint32 const now = getMSTime();
+    constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
+    constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
+
+    auto itHandOver = handOverTimer.find(instanceId);
+    if (itHandOver != handOverTimer.end() &&
+        getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs)
+    {
+        return HydrossDpsHoldWindow::BeforePhaseChange;
+    }
+
+    // No start time yet means the phase has only just begun and the tracker bot hasn't seen it.
+    auto itStart = phaseStartTimer.find(instanceId);
+    if (itStart == phaseStartTimer.end() ||
+        getMSTimeDiff(itStart->second, now) < phaseStartWaitMs)
+    {
+        return HydrossDpsHoldWindow::AfterPhaseChange;
+    }
+
+    return HydrossDpsHoldWindow::None;
 }
 
 bool HasMarkOfHydrossAt100Percent(Player* bot)

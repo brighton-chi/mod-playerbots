@@ -186,12 +186,25 @@ extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
 extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
 
+// Phase changes reset threat, so DPS is held on either side of one.
+enum class HydrossDpsHoldWindow : uint8
+{
+    None,
+    // From 1s after the phase's Mark hits 100% until the phase changes
+    BeforePhaseChange,
+    // The first 5s of a phase
+    AfterPhaseChange,
+};
+
 // The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
 // tank is an add tank and picks up the Elementals that spawn upon phase changes.
+bool IsHydrossFrostTank(Player* bot);
+bool IsHydrossNatureTank(Player* bot);
 bool IsHydrossPhaseTank(Player* bot);
 bool IsHydrossAddTank(Player* bot);
 bool IsHydrossInFrostPhase(Unit* hydross);
 bool IsHydrossInNaturePhase(Unit* hydross);
+HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross);
 bool HasMarkOfHydrossAt100Percent(Player* bot);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* bot);

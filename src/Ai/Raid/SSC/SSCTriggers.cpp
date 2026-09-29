@@ -41,13 +41,12 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 
 bool HydrossTheUnstableShouldBeTankedByFrostTankTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return IsHydrossFrostTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-        AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return IsHydrossNatureTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
 bool HydrossTheUnstableRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -64,7 +63,15 @@ bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActiveInEncounter
 
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    HydrossDpsHoldWindow const window =
+        GetHydrossDpsHoldWindow(AI_VALUE2(Unit*, "find target", "hydross the unstable"));
+
+    // Hunters keep going after the change to misdirect Hydross to the new tank.
+    return window == HydrossDpsHoldWindow::BeforePhaseChange ||
+        (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()

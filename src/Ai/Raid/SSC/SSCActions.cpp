@@ -221,53 +221,6 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
 
 bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 {
-    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross)
-        return false;
-
-    uint32 const instanceId = hydross->GetInstanceId();
-    uint32 const now = getMSTime();
-    constexpr uint32 phaseStartStopMs = 5 * IN_MILLISECONDS;
-    constexpr uint32 phaseEndStopMs = 1 * IN_MILLISECONDS;
-    bool const isHunter = bot->getClass() == CLASS_HUNTER;
-
-    bool shouldStopDps = false;
-
-    // 1 second after 100% Mark of Hydross, stop dps.
-    auto itNature = hydrossChangeToNaturePhaseTimer.find(instanceId);
-    if (itNature != hydrossChangeToNaturePhaseTimer.end() &&
-        getMSTimeDiff(itNature->second, now) >= phaseEndStopMs)
-    {
-        shouldStopDps = true;
-    }
-
-    // Keep dps stopped for 5 seconds after transitioning into nature phase.
-    auto itNatureDps = hydrossNatureDpsWaitTimer.find(instanceId);
-    if (itNatureDps != hydrossNatureDpsWaitTimer.end() &&
-        getMSTimeDiff(itNatureDps->second, now) < phaseStartStopMs)
-    {
-        shouldStopDps = !isHunter;
-    }
-
-    // 1 second after 100% Mark of Corruption, stop dps.
-    auto itFrost = hydrossChangeToFrostPhaseTimer.find(instanceId);
-    if (itFrost != hydrossChangeToFrostPhaseTimer.end() &&
-        getMSTimeDiff(itFrost->second, now) >= phaseEndStopMs)
-    {
-        shouldStopDps = true;
-    }
-
-    // Keep dps stopped for 5 seconds after transitioning into frost phase.
-    auto itFrostDps = hydrossFrostDpsWaitTimer.find(instanceId);
-    if (itFrostDps != hydrossFrostDpsWaitTimer.end() &&
-        getMSTimeDiff(itFrostDps->second, now) < phaseStartStopMs)
-    {
-        shouldStopDps = !isHunter;
-    }
-
-    if (!shouldStopDps)
-        return false;
-
     bot->AttackStop();
     bot->InterruptSpell(CURRENT_MELEE_SPELL);
     bot->CastStop();
