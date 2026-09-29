@@ -153,11 +153,11 @@ private:
     bool _hasRangedPosition = false;
 };
 
-class TheLurkerBelowTanksPickUpAddsAction : public AttackAction
+class TheLurkerBelowTanksPickUpGuardiansAction : public AttackAction
 {
 public:
-    TheLurkerBelowTanksPickUpAddsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "the lurker below tanks pick up adds") {}
+    TheLurkerBelowTanksPickUpGuardiansAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "the lurker below tanks pick up guardians") {}
     bool Execute(Event event) override;
 
 private:

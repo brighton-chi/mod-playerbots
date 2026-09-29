@@ -55,8 +55,8 @@ public:
         creators["the lurker below ranged should spread"] =
             &RaidSscTriggerContext::the_lurker_below_ranged_should_spread;
 
-        creators["the lurker below is submerged"] =
-            &RaidSscTriggerContext::the_lurker_below_is_submerged;
+        creators["the lurker below guardians should be tanked"] =
+            &RaidSscTriggerContext::the_lurker_below_guardians_should_be_tanked;
 
         creators["the lurker below melee cannot reach target"] =
             &RaidSscTriggerContext::the_lurker_below_melee_cannot_reach_target;
@@ -241,8 +241,8 @@ private:
     static Trigger* the_lurker_below_ranged_should_spread(PlayerbotAI* botAI) {
         return new TheLurkerBelowRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* the_lurker_below_is_submerged(PlayerbotAI* botAI) {
-        return new TheLurkerBelowIsSubmergedTrigger(botAI);
+    static Trigger* the_lurker_below_guardians_should_be_tanked(PlayerbotAI* botAI) {
+        return new TheLurkerBelowGuardiansShouldBeTankedTrigger(botAI);
     }
     static Trigger* the_lurker_below_melee_cannot_reach_target(PlayerbotAI* botAI) {
         return new TheLurkerBelowMeleeCannotReachTargetTrigger(botAI);

@@ -30,7 +30,6 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
-#include <vector>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -306,13 +305,13 @@ float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Ac
     if (instanceIt == lurkerGuardianTankAssignments.end())
         return 1.0f;
 
-    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
-    auto const myIt = std::find(tanks.begin(), tanks.end(), bot);
-    if (myIt == tanks.end())
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
         return 1.0f;
 
-    Unit* guardian = botAI->GetUnit(instanceIt->second[std::distance(tanks.begin(), myIt)]);
-    return guardian && guardian->IsAlive() ? 0.0f : 1.0f;
+    auto const& assignments = instanceIt->second;
+    return std::find(assignments.begin(), assignments.end(), target->GetGUID()) !=
+        assignments.end() ? 0.0f : 1.0f;
 }
 
 // Leotheras the Blind

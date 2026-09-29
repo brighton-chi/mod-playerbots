@@ -96,8 +96,9 @@ bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 
 bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) &&
-        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
+    return PlayerbotAI::IsTank(bot) &&
+        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below")) &&
+        PlayerbotAI::IsMainTank(bot);
 }
 
 bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -106,7 +107,7 @@ bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
         IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
 }
 
-bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
+bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -120,7 +121,7 @@ bool TheLurkerBelowIsSubmergedTrigger::IsActiveInEncounter()
 }
 
 // Bots are unable to move across the water via ReachMeleeAction. Only bots with charge moves can
-// cross onto the isles to attack Ambushers during the submerge phase. They are then stuck there
+// cross onto the islets to attack Ambushers during the submerge phase. They are then stuck there
 // until their charge comes off of cooldown. To resolve, issue a direct move to a land position.
 bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 {
@@ -341,7 +342,8 @@ bool MorogrimTidewalkerPullingBossTrigger::IsActiveInEncounter()
 
 bool MorogrimTidewalkerShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "morogrim tidewalker") &&
+        PlayerbotAI::IsMainTank(bot);
 }
 
 bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
@@ -369,7 +371,7 @@ bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 
 bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -377,7 +379,7 @@ bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     int8 const phase = GetLadyVashjPhase(vashj);
-    return phase == 1 || phase == 3;
+    return (phase == 1 || phase == 3) && PlayerbotAI::IsMainTank(bot);
 }
 
 bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()

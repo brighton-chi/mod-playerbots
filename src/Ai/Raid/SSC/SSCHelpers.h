@@ -106,7 +106,7 @@ enum class SscNpcs : uint32
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
 
     // The Lurker Below
-    NPC_COILFANG_AMBUSHER        = 21865,
+    NPC_THE_LURKER_BELOW         = 21217,
     NPC_COILFANG_GUARDIAN        = 21873,
 
     // Leotheras the Blind
@@ -214,13 +214,16 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
 inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
+// Melee returning to Lurker from an islet stop this far from him, on the walkway.
+inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
 
 // Spout avoidance mechanics:
-// Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look more
+// Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look less
 // artificial, and the intent is to keep the radius close to Lurker while keeping the circle on dry
 // land as much as possible (water is not completely avoidable due to a couple of spillways).
-// Within the 19-21y band that is within a 60° cone behind Lurker, a bot is considered safe. Any
-// bot in that safe zone will wait during the Spout windup until the spin direction is determined.
+// Within the 19-21y band, a bot in the 120° cone behind Lurker (60° to either side) is considered
+// safe. Any bot in that safe zone will wait during the Spout windup until the spin direction is
+// determined.
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
@@ -231,7 +234,8 @@ inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_PI) / 6.0f;
 
 // Submerge: A Coilfang Guardian is assigned to each of the main tank and first two assist tanks.
-// Assignment is by summon GUID (so spawn order) and persists after a Guardian is killed.
+// When its action first runs, each tank claims the lowest-GUID Guardian that no other tank holds,
+// and claims another the same way if its own dies.
 inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
@@ -256,7 +260,7 @@ bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, i
 bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
-// The Guardian tanks in index order; empty if there are fewer than 3 bot tanks.
+// The Guardian tanks in index order; empty if there are fewer than 3 living tanks, humans included.
 std::vector<Player*> GetLurkerGuardianTanks(Player* bot);
 
 // Leotheras the Blind

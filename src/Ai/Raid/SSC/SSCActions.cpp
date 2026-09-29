@@ -280,6 +280,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     if (!lurker)
         return false;
 
+    constexpr float pi = static_cast<float>(M_PI);
+
     // Randomize the radius for each bot so the running looks a bit more natural.
     uint32 const seed = bot->GetGUID().GetCounter();
     float const runRadius = LURKER_SPOUT_RUN_RADIUS_MIN +
@@ -289,8 +291,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const botAngle = std::atan2(
         bot->GetPositionY() - lurker->GetPositionY(), bot->GetPositionX() - lurker->GetPositionX());
     float const relative = Position::NormalizeOrientation(botAngle - lurker->GetOrientation());
-    bool const inArc =
-        std::fabs(relative - static_cast<float>(M_PI)) <= LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
+    bool const inArc = std::fabs(relative - pi) <= LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
 
     float const lurkerX = lurker->GetPositionX();
     float const lurkerY = lurker->GetPositionY();
@@ -300,9 +301,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     // past directly behind the boss as Sprinting/Spirit Walking can otherwise lap the spin.
     if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
-        float const aheadOfBeam = spin > 0 ? relative : 2.0f * static_cast<float>(M_PI) - relative;
-        float const room =
-            static_cast<float>(M_PI) + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
+        float const aheadOfBeam = spin > 0 ? relative : 2.0f * pi - relative;
+        float const room = pi + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
         float const stepAngle = std::min(LURKER_SPOUT_RUN_STEP / runRadius, room);
         constexpr float minStep = 2.0f;
         if (stepAngle * runRadius < minStep)
@@ -336,9 +336,9 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     // Lurker is winding-up, bot is in front of the boss: One far move to the nearer arc edge so the
     // bot is not in front of the boss when the Spout starts, whatever direction it goes. This has
     // to be a lower movement priority than the run during the spin phase.
-    int8 const direction = relative < M_PI ? 1 : -1;
-    float const edgeAngle = lurker->GetOrientation() + static_cast<float>(M_PI) -
-        direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
+    int8 const direction = relative < pi ? 1 : -1;
+    float const edgeAngle =
+        lurker->GetOrientation() + pi - direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
     float const edgeX = lurkerX + runRadius * std::cos(edgeAngle);
     float const edgeY = lurkerY + runRadius * std::sin(edgeAngle);
 
@@ -423,20 +423,22 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         if (rangedMembers.empty())
             return false;
 
-        size_t count = rangedMembers.size();
-        auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t botIndex = (findIt != rangedMembers.end()) ?
+        size_t const count = rangedMembers.size();
+        auto const findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+        size_t const botIndex = (findIt != rangedMembers.end()) ?
             std::distance(rangedMembers.begin(), findIt) : 0;
 
         constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 2.262f; // measured in game to be across from the main tank
+        constexpr float arcCenter = 5.592f; // measured in game to be across from the main tank
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
-        float angle = (count == 1) ? arcCenter :
+        float const angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
 
-        float targetX = lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::sin(angle);
-        float targetY = lurker->GetPositionY() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
+        float const targetX =
+            lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
+        float const targetY =
+            lurker->GetPositionY() + LURKER_RANGED_SAFE_DISTANCE * std::sin(angle);
 
         _rangedPosition = Position(targetX, targetY, lurker->GetPositionZ());
         _hasRangedPosition = true;
@@ -468,9 +470,9 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 }
 
 // During the submerge phase, the main tank and the first two assist tanks each grab one Coilfang
-// Guardian. This runs only if there are at least three bot tanks. Otherwise, normal tank assist is
-// relied on to pick up the Guardians.
-bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
+// Guardian. This runs only if there are at least three living tanks, humans included (a human's
+// Guardian is left to them). Otherwise, normal tank assist is relied on to pick up the Guardians.
+bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> const guardians = GetLurkerGuardians(botAI);
     if (guardians.empty())
@@ -496,7 +498,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
     return CastTankTaunt(botAI, bot, guardian);
 }
 
-ObjectGuid TheLurkerBelowTanksPickUpAddsAction::ClaimGuardianForTank(
+ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
     std::vector<Unit*> const& guardians, size_t myIndex)
 {
     auto& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
@@ -543,10 +545,11 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
         return false;
 
     // MoveTo rejects any destination over water (no map height), so the destination has to be dry
-    // land. The Ambushers sometimes chill at the edge of their islets so we issue the move to stop
-    // right on top of them. When returning to Lurker, target the move at the walkway instead.
-    float const targetDistance = target->GetEntry() == Id(SscNpcs::NPC_COILFANG_AMBUSHER) ?
-        0.0f : LURKER_SPOUT_RUN_RADIUS_MAX;
+    // land. The Ambushers sometimes chill at the edge of their islets and the Guardians are on
+    // land, so we issue the move to stop right on top of them. When returning to Lurker, target the
+    // move at the walkway instead.
+    float const targetDistance = target->GetEntry() == Id(SscNpcs::NPC_THE_LURKER_BELOW) ?
+        LURKER_WALKWAY_RADIUS : 0.0f;
     float const angle = target->GetAngle(bot);
     float const destX = target->GetPositionX() + std::cos(angle) * targetDistance;
     float const destY = target->GetPositionY() + std::sin(angle) * targetDistance;

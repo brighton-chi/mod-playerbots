@@ -55,8 +55,8 @@ public:
         creators["the lurker below spread ranged in arc"] =
             &RaidSscActionContext::the_lurker_below_spread_ranged_in_arc;
 
-        creators["the lurker below tanks pick up adds"] =
-            &RaidSscActionContext::the_lurker_below_tanks_pick_up_adds;
+        creators["the lurker below tanks pick up guardians"] =
+            &RaidSscActionContext::the_lurker_below_tanks_pick_up_guardians;
 
         creators["the lurker below melee move directly to target"] =
             &RaidSscActionContext::the_lurker_below_melee_move_directly_to_target;
@@ -247,8 +247,8 @@ private:
     static Action* the_lurker_below_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new TheLurkerBelowSpreadRangedInArcAction(botAI);
     }
-    static Action* the_lurker_below_tanks_pick_up_adds(PlayerbotAI* botAI) {
-        return new TheLurkerBelowTanksPickUpAddsAction(botAI);
+    static Action* the_lurker_below_tanks_pick_up_guardians(PlayerbotAI* botAI) {
+        return new TheLurkerBelowTanksPickUpGuardiansAction(botAI);
     }
     static Action* the_lurker_below_melee_move_directly_to_target(PlayerbotAI* botAI) {
         return new TheLurkerBelowMeleeMoveDirectlyToTargetAction(botAI);

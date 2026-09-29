@@ -152,11 +152,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class TheLurkerBelowIsSubmergedTrigger : public SscEncounterTrigger
+class TheLurkerBelowGuardiansShouldBeTankedTrigger : public SscEncounterTrigger
 {
 public:
-    TheLurkerBelowIsSubmergedTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "the lurker below is submerged") {}
+    TheLurkerBelowGuardiansShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "the lurker below guardians should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;
