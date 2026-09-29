@@ -187,10 +187,10 @@ bool IsInToxicPool(PlayerbotAI* botAI)
 
 // Hydross the Unstable <Duke of Currents>
 
-std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
-std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
-std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
-std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
+std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
+std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
+std::unordered_map<uint32, uint32> hydrossNatureMarkMaxedTime;
+std::unordered_map<uint32, uint32> hydrossFrostMarkMaxedTime;
 
 bool IsHydrossFrostTank(Player* bot)
 {
@@ -228,26 +228,26 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
         return HydrossDpsHoldWindow::None;
 
     bool const frostPhase = IsHydrossInFrostPhase(hydross);
-    std::unordered_map<uint32, uint32> const& phaseStartTimer =
-        frostPhase ? hydrossFrostDpsWaitTimer : hydrossNatureDpsWaitTimer;
-    std::unordered_map<uint32, uint32> const& handOverTimer =
-        frostPhase ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
+    std::unordered_map<uint32, uint32> const& phaseStartTimes =
+        frostPhase ? hydrossFrostPhaseStartTime : hydrossNaturePhaseStartTime;
+    std::unordered_map<uint32, uint32> const& markMaxedTimes =
+        frostPhase ? hydrossFrostMarkMaxedTime : hydrossNatureMarkMaxedTime;
 
     uint32 const instanceId = hydross->GetInstanceId();
     uint32 const now = getMSTime();
     constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
     constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
 
-    auto itHandOver = handOverTimer.find(instanceId);
-    if (itHandOver != handOverTimer.end() &&
-        getMSTimeDiff(itHandOver->second, now) >= handOverWaitMs)
+    auto itMarkMaxed = markMaxedTimes.find(instanceId);
+    if (itMarkMaxed != markMaxedTimes.end() &&
+        getMSTimeDiff(itMarkMaxed->second, now) >= handOverWaitMs)
     {
         return HydrossDpsHoldWindow::BeforePhaseChange;
     }
 
     // No start time yet means the phase has only just begun and the tracker bot hasn't seen it.
-    auto itStart = phaseStartTimer.find(instanceId);
-    if (itStart == phaseStartTimer.end() ||
+    auto itStart = phaseStartTimes.find(instanceId);
+    if (itStart == phaseStartTimes.end() ||
         getMSTimeDiff(itStart->second, now) < phaseStartWaitMs)
     {
         return HydrossDpsHoldWindow::AfterPhaseChange;

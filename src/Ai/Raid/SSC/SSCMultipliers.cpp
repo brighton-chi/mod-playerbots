@@ -225,19 +225,27 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
         return 1.0f;
 
-    if (IsHydrossAddTank(bot))
-        return 1.0f;
-
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
-    if (!hydross)
+    if (!hydross || GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
         return 1.0f;
 
-    bool const currentPhaseTank =
-        IsHydrossInFrostPhase(hydross) ? IsHydrossFrostTank(bot) : IsHydrossNatureTank(bot);
-    if (currentPhaseTank)
+    // The tank waiting for its phase is held; the phase tank and add tanks carry on.
+    if (PlayerbotAI::IsTank(bot) &&
+        !(IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot)))
+    {
         return 1.0f;
+    }
 
-    return GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None ? 0.0f : 1.0f;
+    // Spells cast on the raid don't touch Hydross. Totems are the exception, as some attack.
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
+        return 0.0f;
+
+    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+    return castOnRaid ? 1.0f : 0.0f;
 }
 
 // The Lurker Below
@@ -384,7 +392,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     // Don't waste time moving. Just kill the Inner Demon asap.
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindMeleeRunAwayFromChaosBlastAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindMeleeRunFromChaosBlastAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindPositionRangedAction*>(action) &&
         !dynamic_cast<MeleeAction*>(action))
     {

@@ -33,8 +33,8 @@ public:
         creators["hydross the unstable position nature tank"] =
             &RaidSscActionContext::hydross_the_unstable_position_nature_tank;
 
-        creators["hydross the unstable frost phase spread out"] =
-            &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_out;
+        creators["hydross the unstable frost phase spread ranged"] =
+            &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_ranged;
 
         creators["hydross the unstable misdirect boss to tank"] =
             &RaidSscActionContext::hydross_the_unstable_misdirect_boss_to_tank;
@@ -74,8 +74,8 @@ public:
         creators["leotheras the blind run away from whirlwind"] =
             &RaidSscActionContext::leotheras_the_blind_run_away_from_whirlwind;
 
-        creators["leotheras the blind melee run away from chaos blast"] =
-            &RaidSscActionContext::leotheras_the_blind_melee_run_away_from_chaos_blast;
+        creators["leotheras the blind melee run from chaos blast"] =
+            &RaidSscActionContext::leotheras_the_blind_melee_run_from_chaos_blast;
 
         creators["leotheras the blind destroy inner demon"] =
             &RaidSscActionContext::leotheras_the_blind_destroy_inner_demon;
@@ -224,8 +224,8 @@ private:
         return new HydrossTheUnstablePositionAndSwapTanksAction(
             botAI, "hydross the unstable position nature tank", false);
     }
-    static Action* hydross_the_unstable_frost_phase_spread_out(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableFrostPhaseSpreadOutAction(botAI);
+    static Action* hydross_the_unstable_frost_phase_spread_ranged(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableFrostPhaseSpreadRangedAction(botAI);
     }
     static Action* hydross_the_unstable_misdirect_boss_to_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstableMisdirectBossToTankAction(botAI);
@@ -267,8 +267,8 @@ private:
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI);
     }
-    static Action* leotheras_the_blind_melee_run_away_from_chaos_blast(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMeleeRunAwayFromChaosBlastAction(botAI);
+    static Action* leotheras_the_blind_melee_run_from_chaos_blast(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMeleeRunFromChaosBlastAction(botAI);
     }
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);

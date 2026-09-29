@@ -83,11 +83,11 @@ private:
     bool const _frostTank;
 };
 
-class HydrossTheUnstableFrostPhaseSpreadOutAction : public MovementAction
+class HydrossTheUnstableFrostPhaseSpreadRangedAction : public MovementAction
 {
 public:
-    HydrossTheUnstableFrostPhaseSpreadOutAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "hydross the unstable frost phase spread out") {}
+    HydrossTheUnstableFrostPhaseSpreadRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "hydross the unstable frost phase spread ranged") {}
     bool Execute(Event event) override;
 };
 
@@ -206,11 +206,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMeleeRunAwayFromChaosBlastAction : public MovementAction
+class LeotherasTheBlindMeleeRunFromChaosBlastAction : public MovementAction
 {
 public:
-    LeotherasTheBlindMeleeRunAwayFromChaosBlastAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "leotheras the blind melee run away from chaos blast") {}
+    LeotherasTheBlindMeleeRunFromChaosBlastAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "leotheras the blind melee run from chaos blast") {}
     bool Execute(Event event) override;
 };
 

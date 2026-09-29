@@ -62,10 +62,10 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
     reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
-    reset |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
-    reset |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
-    reset |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
-    reset |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
+    reset |= hydrossFrostMarkMaxedTime.erase(instanceId) > 0;
+    reset |= hydrossNatureMarkMaxedTime.erase(instanceId) > 0;
+    reset |= hydrossNaturePhaseStartTime.erase(instanceId) > 0;
+    reset |= hydrossFrostPhaseStartTime.erase(instanceId) > 0;
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
@@ -136,18 +136,14 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
 
     bool const myPhase = _frostTank ?
         IsHydrossInFrostPhase(hydross) : IsHydrossInNaturePhase(hydross);
-    bool const markMaxed =
-        _frostTank ? HasMarkOfHydrossAt100Percent(bot) : HasMarkOfCorruptionAt100Percent(bot);
-
     Position const& myPosition = _frostTank ?
         HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
-    Position const& otherPosition = _frostTank ?
-        HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
-    std::unordered_map<uint32, uint32> const& handOverTimer =
-        _frostTank ? hydrossChangeToNaturePhaseTimer : hydrossChangeToFrostPhaseTimer;
 
     if (!myPhase)
         return StepTo(myPosition, hydross);
+
+    bool const markMaxed =
+        _frostTank ? HasMarkOfHydrossAt100Percent(bot) : HasMarkOfCorruptionAt100Percent(bot);
 
     if (!markMaxed)
     {
@@ -163,9 +159,14 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
     if (hydross->GetVictim() != bot || !bot->IsWithinMeleeRange(hydross))
         return false;
 
+    Position const& otherPosition = _frostTank ?
+        HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
+    std::unordered_map<uint32, uint32> const& markMaxedTimes =
+        _frostTank ? hydrossFrostMarkMaxedTime : hydrossNatureMarkMaxedTime;
+
     constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
-    auto it = handOverTimer.find(hydross->GetInstanceId());
-    if (it != handOverTimer.end() && getMSTimeDiff(it->second, getMSTime()) >= phaseChangeDelayMs)
+    auto it = markMaxedTimes.find(hydross->GetInstanceId());
+    if (it != markMaxedTimes.end() && getMSTimeDiff(it->second, getMSTime()) >= phaseChangeDelayMs)
         return StepTo(otherPosition, hydross);
 
     bot->AttackStop();
@@ -188,7 +189,7 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& positi
 }
 
 // To mitigate the effect of Water Tomb
-bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event /*event*/)
+bool HydrossTheUnstableFrostPhaseSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 6.0f;
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
@@ -201,12 +202,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    Player* tank = nullptr;
-    if (HasNoMarkOfHydross(bot) && IsHydrossInFrostPhase(hydross))
-        tank = GetGroupMainTank(bot);
-    else if (HasNoMarkOfCorruption(bot) && IsHydrossInNaturePhase(hydross))
-        tank = GetGroupAssistTank(bot, 0);
-
+    Player* tank =
+        IsHydrossInFrostPhase(hydross) ? GetGroupMainTank(bot) : GetGroupAssistTank(bot, 0);
     if (!tank || !tank->IsAlive())
         return false;
 
@@ -239,25 +236,36 @@ bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
     uint32 const instanceId = hydross->GetInstanceId();
     uint32 const now = getMSTime();
 
+    // The tank holding Hydross always has the Mark. The tracker may not, if it was dead when the
+    // Mark landed.
+    Unit* victim = hydross->GetVictim();
+    Player* marked = victim && victim->IsPlayer() ? victim->ToPlayer() : bot;
+
     bool updated = false;
 
     if (IsHydrossInFrostPhase(hydross))
     {
-        updated |= hydrossFrostDpsWaitTimer.try_emplace(instanceId, now).second;
-        updated |= hydrossNatureDpsWaitTimer.erase(instanceId) > 0;
-        updated |= hydrossChangeToFrostPhaseTimer.erase(instanceId) > 0;
+        updated |= hydrossFrostPhaseStartTime.try_emplace(instanceId, now).second;
+        updated |= hydrossNaturePhaseStartTime.erase(instanceId) > 0;
+        updated |= hydrossNatureMarkMaxedTime.erase(instanceId) > 0;
 
-        if (HasMarkOfHydrossAt100Percent(bot))
-            updated |= hydrossChangeToNaturePhaseTimer.try_emplace(instanceId, now).second;
+        if (!hydrossFrostMarkMaxedTime.contains(instanceId) &&
+            HasMarkOfHydrossAt100Percent(marked))
+        {
+            updated |= hydrossFrostMarkMaxedTime.try_emplace(instanceId, now).second;
+        }
     }
     else // Nature phase
     {
-        updated |= hydrossNatureDpsWaitTimer.try_emplace(instanceId, now).second;
-        updated |= hydrossFrostDpsWaitTimer.erase(instanceId) > 0;
-        updated |= hydrossChangeToNaturePhaseTimer.erase(instanceId) > 0;
+        updated |= hydrossNaturePhaseStartTime.try_emplace(instanceId, now).second;
+        updated |= hydrossFrostPhaseStartTime.erase(instanceId) > 0;
+        updated |= hydrossFrostMarkMaxedTime.erase(instanceId) > 0;
 
-        if (HasMarkOfCorruptionAt100Percent(bot))
-            updated |= hydrossChangeToFrostPhaseTimer.try_emplace(instanceId, now).second;
+        if (!hydrossNatureMarkMaxedTime.contains(instanceId) &&
+            HasMarkOfCorruptionAt100Percent(marked))
+        {
+            updated |= hydrossNatureMarkMaxedTime.try_emplace(instanceId, now).second;
+        }
     }
 
     return updated;
@@ -635,7 +643,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 
 // This method is likely unnecessary unless the player does not use a Warlock tank.
 // But if a melee tank is used, other melee needs to run away after too many Chaos Blast stacks.
-bool LeotherasTheBlindMeleeRunAwayFromChaosBlastAction::Execute(Event /*event*/)
+bool LeotherasTheBlindMeleeRunFromChaosBlastAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_ROGUE &&
         botAI->CanCastSpell(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&

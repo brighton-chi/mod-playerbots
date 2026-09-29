@@ -33,11 +33,11 @@ public:
         creators["hydross the unstable should be tanked by nature tank"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_be_tanked_by_nature_tank;
 
-        creators["hydross the unstable ranged should spread"] =
-            &RaidSscTriggerContext::hydross_the_unstable_ranged_should_spread;
+        creators["hydross the unstable ranged should spread in frost phase"] =
+            &RaidSscTriggerContext::hydross_the_unstable_ranged_should_spread_in_frost_phase;
 
-        creators["hydross the unstable tank needs aggro upon phase change"] =
-            &RaidSscTriggerContext::hydross_the_unstable_tank_needs_aggro_upon_phase_change;
+        creators["hydross the unstable should misdirect upon phase change"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_misdirect_upon_phase_change;
 
         creators["hydross the unstable aggro resets upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
@@ -218,11 +218,11 @@ private:
     static Trigger* hydross_the_unstable_should_be_tanked_by_nature_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstableShouldBeTankedByNatureTankTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_ranged_should_spread(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableRangedShouldSpreadTrigger(botAI);
+    static Trigger* hydross_the_unstable_ranged_should_spread_in_frost_phase(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_tank_needs_aggro_upon_phase_change(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(botAI);
+    static Trigger* hydross_the_unstable_should_misdirect_upon_phase_change(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI) {
         return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);

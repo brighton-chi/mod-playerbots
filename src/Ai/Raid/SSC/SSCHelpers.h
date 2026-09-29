@@ -181,10 +181,10 @@ bool IsInToxicPool(PlayerbotAI* botAI);
 inline Position const HYDROSS_FROST_TANK_POSITION =  { -236.669f, -358.352f, -0.828f };
 inline Position const HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
 
-extern std::unordered_map<uint32, uint32> hydrossFrostDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> hydrossNatureDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> hydrossChangeToFrostPhaseTimer;
-extern std::unordered_map<uint32, uint32> hydrossChangeToNaturePhaseTimer;
+extern std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
+extern std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
+extern std::unordered_map<uint32, uint32> hydrossNatureMarkMaxedTime;
+extern std::unordered_map<uint32, uint32> hydrossFrostMarkMaxedTime;
 
 // Phase changes reset threat, so DPS is held on either side of one.
 enum class HydrossDpsHoldWindow : uint8

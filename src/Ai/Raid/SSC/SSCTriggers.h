@@ -80,21 +80,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableRangedShouldSpreadTrigger : public SscEncounterTrigger
+class HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger : public SscEncounterTrigger
 {
 public:
-    HydrossTheUnstableRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable ranged should spread") {}
+    HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable ranged should spread in frost phase") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger : public SscEncounterTrigger
+class HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger : public SscEncounterTrigger
 {
 public:
-    HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable tank needs aggro upon phase change") {}
+    HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable should misdirect upon phase change") {}
 
 protected:
     bool IsActiveInEncounter() override;

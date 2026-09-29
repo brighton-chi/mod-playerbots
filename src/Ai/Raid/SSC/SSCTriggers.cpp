@@ -49,16 +49,23 @@ bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
     return IsHydrossNatureTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
 }
 
-bool HydrossTheUnstableRangedShouldSpreadTrigger::IsActiveInEncounter()
+bool HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsRanged(bot) &&
         IsHydrossInFrostPhase(AI_VALUE2(Unit*, "find target", "hydross the unstable"));
 }
 
-bool HydrossTheUnstableTankNeedsAggroUponPhaseChangeTrigger::IsActiveInEncounter()
+bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_HUNTER &&
-        AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    // No Mark of the current phase yet means the phase began less than 15s ago.
+    return IsHydrossInFrostPhase(hydross) ? HasNoMarkOfHydross(bot) : HasNoMarkOfCorruption(bot);
 }
 
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
