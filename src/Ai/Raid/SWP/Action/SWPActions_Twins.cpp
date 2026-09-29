@@ -143,8 +143,8 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (!boss || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank);
 
     if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
         return false;

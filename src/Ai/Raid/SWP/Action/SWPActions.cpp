@@ -198,8 +198,8 @@ bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!mainTank || !mainTank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), mainTank))
+        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), mainTank);
 
     if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
         return false;
