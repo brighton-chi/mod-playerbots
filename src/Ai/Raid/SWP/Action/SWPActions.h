@@ -396,11 +396,11 @@ public:
 
 // M'uru
 
-class MuruMisdirectEnemiesToTanksAction : public Action
+class MuruMisdirectEnemyToTankAction : public Action
 {
 public:
-    MuruMisdirectEnemiesToTanksAction(PlayerbotAI* botAI)
-        : Action(botAI, "m'uru misdirect enemies to tanks") {}
+    MuruMisdirectEnemyToTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru misdirect enemy to tank") {}
     bool Execute(Event event) override;
 };
 

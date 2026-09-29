@@ -145,8 +145,8 @@ public:
             &RaidSwpActionContext::eredar_twins_move_away_from_sacrolash_victim;
 
         // M'uru
-        creators["m'uru misdirect enemies to tanks"] =
-            &RaidSwpActionContext::muru_misdirect_enemies_to_tanks;
+        creators["m'uru misdirect enemy to tank"] =
+            &RaidSwpActionContext::muru_misdirect_enemy_to_tank;
 
         creators["m'uru main tank pick up entropius"] =
             &RaidSwpActionContext::muru_main_tank_pick_up_entropius;
@@ -370,8 +370,8 @@ private:
     }
 
     // M'uru
-    static Action* muru_misdirect_enemies_to_tanks(PlayerbotAI* botAI) {
-        return new MuruMisdirectEnemiesToTanksAction(botAI);
+    static Action* muru_misdirect_enemy_to_tank(PlayerbotAI* botAI) {
+        return new MuruMisdirectEnemyToTankAction(botAI);
     }
     static Action* muru_main_tank_pick_up_entropius(PlayerbotAI* botAI) {
         return new MuruMainTankPickUpEntropiusAction(botAI);

@@ -145,8 +145,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("eredar twins move away from sacrolash victim", ACTION_EMERGENCY + 10) }));
 
     // M'uru
-    triggers.push_back(new TriggerNode("m'uru void sentinel or entropius has appeared",
-        { NextAction("m'uru misdirect enemies to tanks", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("m'uru hunter should misdirect new enemy",
+        { NextAction("m'uru misdirect enemy to tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("m'uru transformed into entropius",
         { NextAction("m'uru main tank pick up entropius", ACTION_RAID + 2) }));
@@ -154,7 +154,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru ranged should stack or spread",
         { NextAction("m'uru position ranged by phase", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("m'uru void sentinel pulses shadow",
+    triggers.push_back(new TriggerNode("m'uru void sentinel should be tanked",
         { NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("m'uru adds spawn at entrance",
@@ -169,13 +169,13 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru darkness is coming",
         { NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("m'uru berserker is buffed with flurry",
+    triggers.push_back(new TriggerNode("m'uru berserker has flurry",
         { NextAction("m'uru cast stun on berserker", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("m'uru fury mage casting fel fireball",
         { NextAction("m'uru interrupt fel fireball", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("m'uru fury mage is buffed with spell fury",
+    triggers.push_back(new TriggerNode("m'uru fury mage has spell fury",
         { NextAction("m'uru cast spellsteal on spell fury", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("m'uru void spawn available for enslave",
@@ -184,7 +184,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn",
         { NextAction("m'uru void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius darkness pools spawn dark fiends",
+    triggers.push_back(new TriggerNode("m'uru entropius summons void zones",
         { NextAction("m'uru keep distance from dark fiends", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near",

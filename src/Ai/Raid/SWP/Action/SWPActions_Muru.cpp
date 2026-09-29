@@ -20,7 +20,7 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-bool MuruMisdirectEnemiesToTanksAction::Execute(Event /*event*/)
+bool MuruMisdirectEnemyToTankAction::Execute(Event /*event*/)
 {
     Unit* enemy = nullptr;
     Unit* tank = nullptr;

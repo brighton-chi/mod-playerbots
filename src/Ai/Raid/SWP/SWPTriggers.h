@@ -450,11 +450,11 @@ protected:
 
 // M'uru
 
-class MuruVoidSentinelOrEntropiusHasAppearedTrigger : public SunwellEncounterTrigger
+class MuruHunterShouldMisdirectNewEnemyTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruVoidSentinelOrEntropiusHasAppearedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru void sentinel or entropius has appeared") {}
+    MuruHunterShouldMisdirectNewEnemyTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru hunter should misdirect new enemy") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -490,10 +490,10 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruVoidSentinelPulsesShadowTrigger : public SunwellEncounterTrigger
+class MuruVoidSentinelShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruVoidSentinelPulsesShadowTrigger(PlayerbotAI* botAI)
+    MuruVoidSentinelShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "m'uru void sentinel pulses shadow") {}
 
 protected:
@@ -530,11 +530,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruBerserkerIsBuffedWithFlurryTrigger : public SunwellEncounterTrigger
+class MuruBerserkerHasFlurryTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruBerserkerIsBuffedWithFlurryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru berserker is buffed with flurry") {}
+    MuruBerserkerHasFlurryTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru berserker has flurry") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -550,11 +550,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruFuryMageIsBuffedWithSpellFuryTrigger : public SunwellEncounterTrigger
+class MuruFuryMageHasSpellFuryTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruFuryMageIsBuffedWithSpellFuryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru fury mage is buffed with spell fury") {}
+    MuruFuryMageHasSpellFuryTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "m'uru fury mage has spell fury") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -580,12 +580,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger : public SunwellEncounterTrigger
+class MuruEntropiusSummonsVoidZonesTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(PlayerbotAI* botAI)
+    MuruEntropiusSummonsVoidZonesTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru entropius darkness pools spawn dark fiends") {}
+            botAI, "m'uru entropius summons void zones") {}
 
 protected:
     bool IsActiveInEncounter() override;

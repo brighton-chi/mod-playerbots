@@ -140,8 +140,8 @@ public:
             &RaidSwpTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
 
         // M'uru
-        creators["m'uru void sentinel or entropius has appeared"] =
-            &RaidSwpTriggerContext::muru_void_sentinel_or_entropius_has_appeared;
+        creators["m'uru hunter should misdirect new enemy"] =
+            &RaidSwpTriggerContext::muru_hunter_should_misdirect_new_enemy;
 
         creators["m'uru transformed into entropius"] =
             &RaidSwpTriggerContext::muru_transformed_into_entropius;
@@ -152,8 +152,8 @@ public:
         creators["m'uru should assign dps priority"] =
             &RaidSwpTriggerContext::muru_should_assign_dps_priority;
 
-        creators["m'uru void sentinel pulses shadow"] =
-            &RaidSwpTriggerContext::muru_void_sentinel_pulses_shadow;
+        creators["m'uru m'uru void sentinel should be tanked"] =
+            &RaidSwpTriggerContext::muru_void_sentinel_should_be_tanked;
 
         creators["m'uru adds spawn at entrance"] =
             &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
@@ -162,14 +162,14 @@ public:
 
         creators["m'uru darkness is coming"] = &RaidSwpTriggerContext::muru_darkness_is_coming;
 
-        creators["m'uru berserker is buffed with flurry"] =
-            &RaidSwpTriggerContext::muru_berserker_is_buffed_with_flurry;
+        creators["m'uru berserker has flurry"] =
+            &RaidSwpTriggerContext::muru_berserker_has_flurry;
 
         creators["m'uru fury mage casting fel fireball"] =
             &RaidSwpTriggerContext::muru_fury_mage_casting_fel_fireball;
 
-        creators["m'uru fury mage is buffed with spell fury"] =
-            &RaidSwpTriggerContext::muru_fury_mage_is_buffed_with_spell_fury;
+        creators["m'uru fury mage has spell fury"] =
+            &RaidSwpTriggerContext::muru_fury_mage_has_spell_fury;
 
         creators["m'uru void spawn available for enslave"] =
             &RaidSwpTriggerContext::muru_void_spawn_available_for_enslave;
@@ -177,8 +177,8 @@ public:
         creators["m'uru warlock has enslaved void spawn"] =
             &RaidSwpTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
-        creators["m'uru entropius darkness pools spawn dark fiends"] =
-            &RaidSwpTriggerContext::muru_entropius_darkness_pools_spawn_dark_fiends;
+        creators["m'uru entropius summons void zones"] =
+            &RaidSwpTriggerContext::muru_entropius_summons_void_zones;
 
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
@@ -352,8 +352,8 @@ private:
     }
 
     // M'uru
-    static Trigger* muru_void_sentinel_or_entropius_has_appeared(PlayerbotAI* botAI) {
-        return new MuruVoidSentinelOrEntropiusHasAppearedTrigger(botAI);
+    static Trigger* muru_hunter_should_misdirect_new_enemy(PlayerbotAI* botAI) {
+        return new MuruHunterShouldMisdirectNewEnemyTrigger(botAI);
     }
     static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI) {
         return new MuruTransformedIntoEntropiusTrigger(botAI);
@@ -364,8 +364,8 @@ private:
     static Trigger* muru_should_assign_dps_priority(PlayerbotAI* botAI) {
         return new MuruShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* muru_void_sentinel_pulses_shadow(PlayerbotAI* botAI) {
-        return new MuruVoidSentinelPulsesShadowTrigger(botAI);
+    static Trigger* muru_void_sentinel_should_be_tanked(PlayerbotAI* botAI) {
+        return new MuruVoidSentinelShouldBeTankedTrigger(botAI);
     }
     static Trigger* muru_adds_spawn_at_entrance(PlayerbotAI* botAI) {
         return new MuruAddsSpawnAtEntranceTrigger(botAI);
@@ -376,14 +376,14 @@ private:
     static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI) {
         return new MuruDarknessIsComingTrigger(botAI);
     }
-    static Trigger* muru_berserker_is_buffed_with_flurry(PlayerbotAI* botAI) {
-        return new MuruBerserkerIsBuffedWithFlurryTrigger(botAI);
+    static Trigger* muru_berserker_has_flurry(PlayerbotAI* botAI) {
+        return new MuruBerserkerHasFlurryTrigger(botAI);
     }
     static Trigger* muru_fury_mage_casting_fel_fireball(PlayerbotAI* botAI) {
         return new MuruFuryMageCastingFelFireballTrigger(botAI);
     }
-    static Trigger* muru_fury_mage_is_buffed_with_spell_fury(PlayerbotAI* botAI) {
-        return new MuruFuryMageIsBuffedWithSpellFuryTrigger(botAI);
+    static Trigger* muru_fury_mage_has_spell_fury(PlayerbotAI* botAI) {
+        return new MuruFuryMageHasSpellFuryTrigger(botAI);
     }
     static Trigger* muru_void_spawn_available_for_enslave(PlayerbotAI* botAI) {
         return new MuruVoidSpawnAvailableForEnslaveTrigger(botAI);
@@ -391,8 +391,8 @@ private:
     static Trigger* muru_warlock_has_enslaved_void_spawn(PlayerbotAI* botAI) {
         return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI);
     }
-    static Trigger* muru_entropius_darkness_pools_spawn_dark_fiends(PlayerbotAI* botAI) {
-        return new MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger(botAI);
+    static Trigger* muru_entropius_summons_void_zones(PlayerbotAI* botAI) {
+        return new MuruEntropiusSummonsVoidZonesTrigger(botAI);
     }
     static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI) {
         return new MuruTheSingularityIsNearTrigger(botAI);

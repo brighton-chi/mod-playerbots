@@ -609,7 +609,7 @@ bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
 
 // M'uru
 
-bool MuruVoidSentinelOrEntropiusHasAppearedTrigger::IsActiveInEncounter()
+bool MuruHunterShouldMisdirectNewEnemyTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -637,7 +637,7 @@ bool MuruShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "m'uru");
 }
 
-bool MuruVoidSentinelPulsesShadowTrigger::IsActiveInEncounter()
+bool MuruVoidSentinelShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -692,7 +692,7 @@ bool MuruDarknessIsComingTrigger::IsActiveInEncounter()
     return TryGetMuruDarknessActiveState(bot, muru);
 }
 
-bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActiveInEncounter()
+bool MuruBerserkerHasFlurryTrigger::IsActiveInEncounter()
 {
     // No stuns and can't be a Tauren. Too bad.
     if (bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
@@ -719,7 +719,7 @@ bool MuruFuryMageCastingFelFireballTrigger::IsActiveInEncounter()
     return FindMuruFuryMageToInterrupt(botAI);
 }
 
-bool MuruFuryMageIsBuffedWithSpellFuryTrigger::IsActiveInEncounter()
+bool MuruFuryMageHasSpellFuryTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_MAGE)
         return false;
@@ -756,7 +756,7 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActiveInEncounter()
     return charm && charm->IsAlive() && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN);
 }
 
-bool MuruEntropiusDarknessPoolsSpawnDarkFiendsTrigger::IsActiveInEncounter()
+bool MuruEntropiusSummonsVoidZonesTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "entropius"))
         return false;
