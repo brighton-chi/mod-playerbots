@@ -1048,7 +1048,7 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     return 0.0f;
 }
 
-float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action *action)
+float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

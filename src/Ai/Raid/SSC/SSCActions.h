@@ -376,6 +376,7 @@ public:
     LadyVashjPhase1SpreadRangedInArcAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj phase 1 spread ranged in arc") {}
     bool Execute(Event event) override;
+    bool HasReachedRangedPosition() const { return _reachedRangedPosition; }
     bool ResetRangedPosition()
     {
         if (!_hasRangedPosition)
@@ -413,6 +414,14 @@ class LadyVashjPhase3PositionRangedAction : public MovementAction
 public:
     LadyVashjPhase3PositionRangedAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "lady vashj phase 3 position ranged") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjAssignGroundingShamanAction : public Action
+{
+public:
+    LadyVashjAssignGroundingShamanAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj assign grounding shaman") {}
     bool Execute(Event event) override;
 };
 

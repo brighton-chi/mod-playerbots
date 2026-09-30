@@ -20,7 +20,6 @@
 #include <cmath>
 #include <iterator>
 #include <limits>
-#include <list>
 #include <unordered_map>
 #include <utility>
 
@@ -56,6 +55,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= vashjClusterHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
     reset |= vashjCoreChains.erase(instanceId) > 0;
+    reset |= vashjGroundingShaman.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
     reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
@@ -453,12 +453,12 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
     // Incremental movement does not work if the bot is in the water (there is no walkable height
     // and MoveTo returns false). Therefore, this block calls a MoveTo directly to the position.
-    if (!IsDryGround(bot, moveX, moveY))
+    /* if (!IsDryGround(bot, moveX, moveY))
     {
         return MoveTo(
             SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    } */
 
     return MoveTo(
         SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
@@ -1386,37 +1386,42 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
 bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit* vashj)
 {
     constexpr float searchRadius = 25.0f;
-    std::list<Creature*> creatures;
-    vashj->GetCreatureListWithEntryInGrid(
-        creatures, Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL), searchRadius);
+    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
 
-    // Surge lands at about 4.4y from her center, so this leaves about 2s of their walk
+    // Surge lands at about 5.5y from her center, so this leaves about 2s of their walk
     constexpr float safeDistance = 10.0f;
     std::vector<Unit*> units;
     bool tooClose = false;
-    for (Creature* creature : creatures)
+    for (ObjectGuid const& guid : adds.enchanted)
     {
-        if (!creature->IsAlive())
+        Unit* enchanted = botAI->GetUnit(guid);
+        if (!enchanted || !enchanted->IsAlive())
             continue;
 
-        units.push_back(creature);
-        if (vashj->GetExactDist2d(creature) < safeDistance)
+        float const distance = vashj->GetExactDist2d(enchanted);
+        if (distance > searchRadius)
+            continue;
+
+        units.push_back(enchanted);
+        if (distance < safeDistance)
             tooClose = true;
     }
 
     // Panic fears within 11y, so this keeps it off the melee on her far side. One on her tank
     // follows it anyway.
     constexpr float striderSafeDistance = 18.0f;
-    std::list<Creature*> striders;
-    vashj->GetCreatureListWithEntryInGrid(
-        striders, Id(SscNpcs::NPC_COILFANG_STRIDER), searchRadius);
-    for (Creature* strider : striders)
+    for (ObjectGuid const& guid : adds.striders)
     {
-        if (!strider->IsAlive() || strider->GetVictim() == bot)
+        Unit* strider = botAI->GetUnit(guid);
+        if (!strider || !strider->IsAlive() || strider->GetVictim() == bot)
+            continue;
+
+        float const distance = vashj->GetExactDist2d(strider);
+        if (distance > searchRadius)
             continue;
 
         units.push_back(strider);
-        if (vashj->GetExactDist2d(strider) < striderSafeDistance)
+        if (distance < striderSafeDistance)
             tooClose = true;
     }
 
@@ -1443,9 +1448,6 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
 // Semicircle around center of the room (to allow escape paths by Static Charged bots)
 bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 {
-    if (_reachedRangedPosition)
-        return false;
-
     if (!_hasRangedPosition)
     {
         Group* group = bot->GetGroup();
@@ -1618,7 +1620,18 @@ bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// For absorbing Shock Burst
+// Mechanic tracker only. The pick is kept until that Shaman dies or leaves the instance.
+bool LadyVashjAssignGroundingShamanAction::Execute(Event /*event*/)
+{
+    Player* shaman = FindVashjGroundingShaman(bot);
+    if (!shaman)
+        return false;
+
+    vashjGroundingShaman[bot->GetInstanceId()] = shaman->GetGUID();
+    return true;
+}
+
+// For absorbing Shock Blast
 bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(bot);
@@ -1645,21 +1658,14 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
 bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    if (!IsInVashjStaticChargeReach(bot, vashj))
         return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    // The pulse reaches 10y from the holder's center
-    constexpr float safeDistance = 11.0f;
-    Player* vashjVictim = vashj->GetVictim() ? vashj->GetVictim()->ToPlayer() : nullptr;
-    if (bot == vashjVictim)
-        return false;
-
     std::vector<Unit*> avoid;
-    bool tooClose = false;
 
     // If any other bot has Static Charge, it should move away from other group members
     if (HasVashjStaticCharge(bot))
@@ -1667,26 +1673,18 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || member == bot || !member->IsAlive() ||
-                member->GetMapId() != SSC_MAP_ID)
+            if (member && member != bot && member->IsAlive() &&
+                member->GetMapId() == SSC_MAP_ID)
             {
-                continue;
+                avoid.push_back(member);
             }
-
-            avoid.push_back(member);
-            if (bot->GetExactDist2d(member) < safeDistance)
-                tooClose = true;
         }
     }
     // If Vashj's target has Static Charge, other group members should move away.
-    else if (vashjVictim && HasVashjStaticCharge(vashjVictim))
+    else
     {
-        avoid.push_back(vashjVictim);
-        tooClose = bot->GetExactDist2d(vashjVictim) < safeDistance;
+        avoid.push_back(vashj->GetVictim());
     }
-
-    if (!tooClose)
-        return false;
 
     float stepX;
     float stepY;
@@ -2849,73 +2847,10 @@ bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
 
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
 {
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    // Her target never moves for Static Charge, and phase 1 has no spores to leave
-    Unit* const skip = GetLadyVashjPhase(vashj) == 1 ? vashj->GetVictim() : nullptr;
-
-    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-
-    Player* mainTankToxic = nullptr;
-    Player* anyToxic = nullptr;
-    Player* mainTankStatic = nullptr;
-    Player* anyStatic = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == skip || !member->IsAlive() ||
-            !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)) || !PlayerbotAI::IsMelee(member))
-        {
-            continue;
-        }
-
-        bool nearToxicSpore = false;
-        for (Position const& spore : spores)
-        {
-            if (member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS)
-            {
-                nearToxicSpore = true;
-                break;
-            }
-        }
-
-        if (nearToxicSpore)
-        {
-            if (PlayerbotAI::IsMainTank(member))
-                mainTankToxic = member;
-
-            if (!anyToxic)
-                anyToxic = member;
-        }
-
-        if (HasVashjStaticCharge(member))
-        {
-            if (PlayerbotAI::IsMainTank(member))
-                mainTankStatic = member;
-
-            if (!anyStatic)
-                anyStatic = member;
-        }
-    }
-
-    // Priority 1: Entangled in Toxic Spores (prefer main tank)
-    Player* toxicTarget = mainTankToxic ? mainTankToxic : anyToxic;
-    if (toxicTarget && botAI->CanCastSpell("hand of freedom", toxicTarget))
-        return botAI->CastSpell("hand of freedom", toxicTarget);
-
-    // Priority 2: Entangled with Static Charge (prefer main tank)
-    Player* staticTarget = mainTankStatic ? mainTankStatic : anyStatic;
-    if (staticTarget && botAI->CanCastSpell("hand of freedom", staticTarget))
-        return botAI->CastSpell("hand of freedom", staticTarget);
-
-    return false;
+    Player* target =
+        GetVashjHandOfFreedomTarget(botAI, AI_VALUE2(Unit*, "find target", "lady vashj"));
+    return target && botAI->CanCastSpell("hand of freedom", target) &&
+        botAI->CastSpell("hand of freedom", target);
 }
 
 // Cloak of Shadows strips Static Charge (the 35729 handler in SpellEffects.cpp)

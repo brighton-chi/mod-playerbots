@@ -451,6 +451,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjMainTankNeedsGroundingShamanTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjMainTankNeedsGroundingShamanTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj main tank needs grounding shaman") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjShamanShouldGroundShockBlastTrigger : public SscEncounterTrigger
 {
 public:
@@ -631,11 +641,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjRogueHasStaticChargeTrigger : public SscEncounterTrigger
+class LadyVashjStaticChargeOnRogueTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjRogueHasStaticChargeTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj rogue has static charge") {}
+    LadyVashjStaticChargeOnRogueTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj static charge on rogue") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -146,6 +146,9 @@ public:
         creators["lady vashj ranged should position in phase 3"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
 
+        creators["lady vashj main tank needs grounding shaman"] =
+            &RaidSscTriggerContext::lady_vashj_main_tank_needs_grounding_shaman;
+
         creators["lady vashj shaman should ground shock blast"] =
             &RaidSscTriggerContext::lady_vashj_shaman_should_ground_shock_blast;
 
@@ -199,8 +202,8 @@ public:
         creators["lady vashj entangle on melee"] =
             &RaidSscTriggerContext::lady_vashj_entangle_on_melee;
 
-        creators["lady vashj rogue has static charge"] =
-            &RaidSscTriggerContext::lady_vashj_rogue_has_static_charge;
+        creators["lady vashj static charge on rogue"] =
+            &RaidSscTriggerContext::lady_vashj_static_charge_on_rogue;
     }
 
 private:
@@ -342,6 +345,9 @@ private:
     static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
     }
+    static Trigger* lady_vashj_main_tank_needs_grounding_shaman(PlayerbotAI* botAI) {
+        return new LadyVashjMainTankNeedsGroundingShamanTrigger(botAI);
+    }
     static Trigger* lady_vashj_shaman_should_ground_shock_blast(PlayerbotAI* botAI) {
         return new LadyVashjShamanShouldGroundShockBlastTrigger(botAI);
     }
@@ -396,8 +402,8 @@ private:
     static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);
     }
-    static Trigger* lady_vashj_rogue_has_static_charge(PlayerbotAI* botAI) {
-        return new LadyVashjRogueHasStaticChargeTrigger(botAI);
+    static Trigger* lady_vashj_static_charge_on_rogue(PlayerbotAI* botAI) {
+        return new LadyVashjStaticChargeOnRogueTrigger(botAI);
     }
 };
 

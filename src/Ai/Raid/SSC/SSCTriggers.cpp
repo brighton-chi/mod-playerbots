@@ -458,14 +458,19 @@ bool LadyVashjShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot) || HasVashjStaticCharge(bot))
         return false;
+
+    // Once at its slot, the bot is never pulled back to it in phase 1
+    Action* spreadAction = context->GetAction("lady vashj phase 1 spread ranged in arc");
+    if (!spreadAction || static_cast<LadyVashjPhase1SpreadRangedInArcAction*>(
+            spreadAction)->HasReachedRangedPosition())
+    {
+        return false;
+    }
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || GetLadyVashjPhase(vashj) != 1)
-        return false;
-
-    return !HasVashjStaticCharge(bot);
+    return vashj && GetLadyVashjPhase(vashj) == 1;
 }
 
 bool LadyVashjClusterSlotsNeedHoldersTrigger::IsActiveInEncounter()
@@ -497,6 +502,19 @@ bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 3;
 }
 
+bool LadyVashjMainTankNeedsGroundingShamanTrigger::IsActiveInEncounter()
+{
+    if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    int8 const phase = GetLadyVashjPhase(vashj);
+    return (phase == 1 || phase == 3) && !GetVashjGroundingShaman(bot);
+}
+
 bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -515,7 +533,7 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 
 bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
 {
-    return ShouldAvoidVashjStaticCharge(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
+    return IsInVashjStaticChargeReach(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
 }
 
 bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
@@ -788,41 +806,11 @@ bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_PALADIN)
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
-    int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase != 1 && phase != 3)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    // In phase 1 only a melee holding Static Charge needs freeing, and never her target, who
-    // doesn't move for it. The stock Hand of Freedom takes the nearest rooted member otherwise.
-    Unit* vashjVictim = vashj->GetVictim();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)))
-            continue;
-
-        if (phase == 1 && (member == vashjVictim || !HasVashjStaticCharge(member)))
-            continue;
-
-        if (PlayerbotAI::IsMelee(member))
-            return true;
-    }
-
-    return false;
+    return bot->getClass() == CLASS_PALADIN &&
+        GetVashjHandOfFreedomTarget(botAI, AI_VALUE2(Unit*, "find target", "lady vashj"));
 }
 
-bool LadyVashjRogueHasStaticChargeTrigger::IsActiveInEncounter()
+bool LadyVashjStaticChargeOnRogueTrigger::IsActiveInEncounter()
 {
     return bot->getClass() == CLASS_ROGUE && HasVashjStaticCharge(bot);
 }

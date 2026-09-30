@@ -994,6 +994,7 @@ bool SegmentCrossesPolygon(
 std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
 std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
+std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
 
 int8 GetLadyVashjPhase(Unit* vashj)
 {
@@ -1485,7 +1486,76 @@ bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj)
     return HasVashjStaticCharge(bot) || (vashjVictim && HasVashjStaticCharge(vashjVictim));
 }
 
+bool IsInVashjStaticChargeReach(Player* bot, Unit* vashj)
+{
+    if (!ShouldAvoidVashjStaticCharge(bot, vashj))
+        return false;
+
+    if (HasVashjStaticCharge(bot))
+        return GetNearestPlayerInRadius(bot, VASHJ_STATIC_CHARGE_SAFE_DISTANCE) != nullptr;
+
+    return bot->GetExactDist2d(vashj->GetVictim()) < VASHJ_STATIC_CHARGE_SAFE_DISTANCE;
+}
+
+Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
+{
+    if (!vashj)
+        return nullptr;
+
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase != 1 && phase != 3)
+        return nullptr;
+
+    Player* bot = botAI->GetBot();
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    // In phase 1 only a melee holding Static Charge needs freeing, and never her target, who
+    // doesn't move for it. Phase 1 has no spores to leave. The stock Hand of Freedom takes the
+    // nearest rooted member otherwise.
+    Unit* const skip = phase == 1 ? vashj->GetVictim() : nullptr;
+    std::vector<Position> const& spores = GetToxicSporePositions(botAI);
+    Player* const mainTank = GetGroupMainTank(bot);
+
+    Player* inSpores = nullptr;
+    Player* withStaticCharge = nullptr;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == skip || !member->IsAlive() ||
+            !member->HasAura(Id(SscSpells::SPELL_ENTANGLE)) || !PlayerbotAI::IsMelee(member))
+        {
+            continue;
+        }
+
+        bool const nearSpore = std::any_of(spores.begin(), spores.end(),
+            [member](Position const& spore)
+            {
+                return member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
+            });
+
+        if (nearSpore && (!inSpores || member == mainTank))
+            inSpores = member;
+
+        if (HasVashjStaticCharge(member) && (!withStaticCharge || member == mainTank))
+            withStaticCharge = member;
+    }
+
+    return inSpores ? inSpores : withStaticCharge;
+}
+
 Player* GetVashjGroundingShaman(Player* bot)
+{
+    auto const it = vashjGroundingShaman.find(bot->GetInstanceId());
+    if (it == vashjGroundingShaman.end())
+        return nullptr;
+
+    Player* shaman = ObjectAccessor::GetPlayer(*bot, it->second);
+    return shaman && shaman->IsAlive() ? shaman : nullptr;
+}
+
+Player* FindVashjGroundingShaman(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)

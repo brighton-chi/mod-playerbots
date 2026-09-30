@@ -146,6 +146,9 @@ public:
         creators["lady vashj phase 3 position ranged"] =
             &RaidSscActionContext::lady_vashj_phase_3_position_ranged;
 
+        creators["lady vashj assign grounding shaman"] =
+            &RaidSscActionContext::lady_vashj_assign_grounding_shaman;
+
         creators["lady vashj set grounding totem in main tank group"] =
             &RaidSscActionContext::lady_vashj_set_grounding_totem_in_main_tank_group;
 
@@ -345,6 +348,9 @@ private:
     }
     static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI) {
         return new LadyVashjPhase3PositionRangedAction(botAI);
+    }
+    static Action* lady_vashj_assign_grounding_shaman(PlayerbotAI* botAI) {
+        return new LadyVashjAssignGroundingShamanAction(botAI);
     }
     static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) {
         return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI);

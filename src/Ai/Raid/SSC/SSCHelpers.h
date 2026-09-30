@@ -446,6 +446,9 @@ inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 // can't walk them back through a pool on the way to their target.
 inline constexpr float TOXIC_SPORES_MELEE_CONTROL_RADIUS = 10.0f;
 
+// Static Charge pulses reach 10y from the holder's center.
+inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = 11.0f;
+
 // For the "ssc vashj adds" value. Only which adds exist is cached, not what is read from them
 // (positions, health, victims).
 inline constexpr uint32 VASHJ_ADDS_CACHE_INTERVAL_MS = 200;
@@ -772,6 +775,7 @@ struct VashjCoreChain
 extern std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 extern std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
+extern std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
 
 int8 GetLadyVashjPhase(Unit* vashj);
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
@@ -832,9 +836,18 @@ bool GetStepToCastRangeAroundSpores(
     float& stepY, float& stepZ);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
-// The one Shaman bot that keeps Grounding Totem up for the main tank: the first alive in the
-// tank's subgroup. Grounding Totem Effect is a party aura, so no Shaman outside it can cover it.
+// True if the bot should step away from a Static Charge pulse: a holder other than her target
+// with anyone in reach of it, or anyone in reach of her charged target.
+bool IsInVashjStaticChargeReach(Player* bot, Unit* vashj);
+// The Entangled melee a Paladin frees, or nullptr. In phase 3, one in a pool, else one holding
+// Static Charge, the main tank first each time. In phase 1, only a Static Charge holder.
+Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj);
+// The one Shaman bot that keeps Grounding Totem up for the main tank while alive and in the
+// instance, or nullptr. The mechanic tracker picks it with FindVashjGroundingShaman.
 Player* GetVashjGroundingShaman(Player* bot);
+// The first alive Shaman bot in the main tank's subgroup. Grounding Totem Effect is a party
+// aura, so no Shaman outside it can cover the tank.
+Player* FindVashjGroundingShaman(Player* bot);
 // Each cluster's first ranged slot, then each one's second and third, then the healers, the
 // clusters in VASHJ_CLUSTER_FILL_ORDER each time
 std::vector<VashjClusterSlot> GetVashjClusterFillOrder();

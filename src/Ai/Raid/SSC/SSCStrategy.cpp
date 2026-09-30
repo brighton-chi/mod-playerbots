@@ -146,6 +146,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3",
         { NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("lady vashj main tank needs grounding shaman",
+        { NextAction("lady vashj assign grounding shaman", ACTION_EMERGENCY + 14) }));
+
     triggers.push_back(new TriggerNode("lady vashj shaman should ground shock blast",
         { NextAction("lady vashj set grounding totem in main tank group", ACTION_EMERGENCY + 1) }));
 
@@ -200,7 +203,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj entangle on melee",
         { NextAction("lady vashj paladin use hand of freedom", ACTION_EMERGENCY + 8) }));
 
-    triggers.push_back(new TriggerNode("lady vashj rogue has static charge",
+    triggers.push_back(new TriggerNode("lady vashj static charge on rogue",
         { NextAction("lady vashj rogue use cloak of shadows", ACTION_EMERGENCY + 8) }));
 }
 
@@ -334,8 +337,11 @@ void AppendMorogrimTidewalkerMurlocExclusions(
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (bot->GetMapId() != SSC_MAP_ID)
+    if (bot->GetMapId() != SSC_MAP_ID ||
+        !EncounterHelpers::IsEncounterInProgress(bot, SSC_MAP_ID))
+    {
         return;
+    }
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);
