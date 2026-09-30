@@ -845,16 +845,16 @@ float LadyVashjSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
+    if (GetVashjGroundingShaman(bot) != bot)
+        return 1.0f;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return 1.0f;
 
     // Shock Blast is cast in phases 1 and 3 only
     int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase != 1 && phase != 3)
-        return 1.0f;
-
-    return GetVashjGroundingShaman(bot) == bot ? 0.0f : 1.0f;
+    return phase == 1 || phase == 3 ? 0.0f : 1.0f;
 }
 
 float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValueInEncounter(Action* action)

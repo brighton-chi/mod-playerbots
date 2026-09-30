@@ -1624,15 +1624,15 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     if (!IsInVashjStaticChargeReach(bot, vashj))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     std::vector<Unit*> avoid;
 
-    // If any other bot has Static Charge, it should move away from other group members
+    // If this bot has Static Charge, it should move away from other group members
     if (HasVashjStaticCharge(bot))
     {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -2358,7 +2358,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         return false;
 
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
-    Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
+    Item* core =
+        HasTaintedCore(bot) ? bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
     if (!core)
         return index >= 0 && MoveToCoreSpot(*chain, index);
 
@@ -2619,17 +2620,17 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     bool const tanking = vashj->GetVictim() == bot;
 
     // A breakout walk ends at the spot, after a while, or once a pool lands near the spot
-    if (hasBreakoutSpot)
+    if (_hasBreakoutSpot)
     {
         constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
-        hasBreakoutSpot = tanking &&
-            getMSTimeDiff(breakoutStartTime, getMSTime()) < maxBreakoutMs &&
+        _hasBreakoutSpot = tanking &&
+            getMSTimeDiff(_breakoutStartTime, getMSTime()) < maxBreakoutMs &&
             std::none_of(spores.begin(), spores.end(), [this](Position const& spore)
             {
-                return spore.GetExactDist2d(breakoutSpot) < TOXIC_SPORES_TANK_AVOID_RADIUS;
+                return spore.GetExactDist2d(_breakoutSpot) < TOXIC_SPORES_TANK_AVOID_RADIUS;
             });
 
-        if (hasBreakoutSpot && StepTowardBreakoutSpot(vashj))
+        if (_hasBreakoutSpot && StepTowardBreakoutSpot(vashj))
             return true;
     }
 
@@ -2661,10 +2662,10 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     }
 
     // Her tank pinned where no step gains on the pools crosses the edge of one if it has to
-    if (!found && tanking && FindVashjTankBreakoutSpot(bot, spores, breakoutSpot))
+    if (!found && tanking && FindVashjTankBreakoutSpot(bot, spores, _breakoutSpot))
     {
-        hasBreakoutSpot = true;
-        breakoutStartTime = getMSTime();
+        _hasBreakoutSpot = true;
+        _breakoutStartTime = getMSTime();
         return StepTowardBreakoutSpot(vashj);
     }
 
@@ -2682,18 +2683,18 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
 {
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const distance = bot->GetExactDist2d(breakoutSpot);
+    float const distance = bot->GetExactDist2d(_breakoutSpot);
 
     constexpr float arrivalDistance = 1.5f;
     if (distance <= arrivalDistance)
     {
-        hasBreakoutSpot = false;
+        _hasBreakoutSpot = false;
         return false;
     }
 
     // Backwards when the way leads away from her, as with the other tank steps
-    float const dirX = (breakoutSpot.GetPositionX() - botX) / distance;
-    float const dirY = (breakoutSpot.GetPositionY() - botY) / distance;
+    float const dirX = (_breakoutSpot.GetPositionX() - botX) / distance;
+    float const dirY = (_breakoutSpot.GetPositionY() - botY) / distance;
     bool const backwards = dirX * (vashj->GetPositionX() - botX) +
         dirY * (vashj->GetPositionY() - botY) < 0.0f;
     float const moveDist = backwards ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
@@ -2702,10 +2703,10 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
     float stepY;
     float stepZ;
     if (!CanTakeStepTowards(
-            bot, breakoutSpot.GetPositionX(), breakoutSpot.GetPositionY(), moveDist, stepX,
+            bot, _breakoutSpot.GetPositionX(), _breakoutSpot.GetPositionY(), moveDist, stepX,
             stepY, stepZ))
     {
-        hasBreakoutSpot = false;
+        _hasBreakoutSpot = false;
         return false;
     }
 

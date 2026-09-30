@@ -1023,25 +1023,17 @@ int8 GetLadyVashjPhase(Unit* vashj)
         return -1;
 
     float const healthPct = vashj->GetHealthPct();
-    constexpr uint32 magicBarrier = Id(SscSpells::SPELL_MAGIC_BARRIER);
-
-    // Transitioning from Phase 1 to Phase 2
-    if (healthPct <= 70.0f && healthPct > 50.0f && !vashj->HasAura(magicBarrier))
-        return 0;
 
     // Phase 1
     if (healthPct > 70.0f)
         return 1;
 
     // Phase 2
-    if (healthPct <= 70.0f && vashj->HasAura(magicBarrier))
+    if (vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
         return 2;
 
-    // Phase 3
-    if (healthPct <= 50.0f) // and no Magic Barrier
-        return 3;
-
-    return -1;
+    // Phase 3, else transitioning from Phase 1 to Phase 2
+    return healthPct <= 50.0f ? 3 : 0;
 }
 
 std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI)
@@ -1093,9 +1085,6 @@ bool FindVashjDaisStepAwayFromPositions(
     float& stepX, float& stepY, float& stepZ, bool& backwards,
     std::vector<Position> const* spores, float sporeRadius)
 {
-    // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
-    // for the notch the rock cuts and for pathing near the edge.
-    constexpr float daisMargin = 1.0f;
     constexpr uint8 directions = 24;
 
     auto closestPosition = [&positions](float x, float y)
@@ -1126,7 +1115,7 @@ bool FindVashjDaisStepAwayFromPositions(
         float const angle = 2.0f * static_cast<float>(M_PI) * i / directions;
         float const x = botX + std::cos(angle) * PATH_STEP_DISTANCE;
         float const y = botY + std::sin(angle) * PATH_STEP_DISTANCE;
-        if (IsOnVashjDais(x, y, daisMargin, rockClearance) && !nearSpore(x, y))
+        if (IsOnVashjDais(x, y, VASHJ_DAIS_MARGIN, rockClearance) && !nearSpore(x, y))
             candidates.emplace_back(angle, closestPosition(x, y));
     }
 
@@ -1183,7 +1172,6 @@ bool FindVashjTankBreakoutSpot(
     constexpr uint8 directions = 24;
     constexpr uint8 rings = 7;
     constexpr float ringSpacing = 5.0f;
-    constexpr float daisMargin = 1.0f;
     // A yard through a pool costs about 0.7s of 2775-3225 nature a second walking backwards
     constexpr float poolYardCost = 3.0f;
 
@@ -1201,7 +1189,8 @@ bool FindVashjTankBreakoutSpot(
                 from.GetPositionX() + std::cos(angle) * radius,
                 from.GetPositionY() + std::sin(angle) * radius, from.GetPositionZ());
 
-            if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(), daisMargin) ||
+            if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(),
+                    VASHJ_DAIS_MARGIN, VASHJ_NORTH_ROCK_CLEARANCE) ||
                 std::any_of(spores.begin(), spores.end(), [&candidate](Position const& spore)
                 {
                     return spore.GetExactDist2d(candidate) < TOXIC_SPORES_TANK_AVOID_RADIUS;
@@ -1211,7 +1200,7 @@ bool FindVashjTankBreakoutSpot(
             }
 
             // She trails her tank along the same line, so it keeps to the dais and off the rock
-            if (!IsVashjLineOnDais(from, candidate, daisMargin, VASHJ_NORTH_ROCK_CLEARANCE))
+            if (!IsVashjLineOnDais(from, candidate, VASHJ_DAIS_MARGIN, VASHJ_NORTH_ROCK_CLEARANCE))
                 continue;
 
             float inPools = 0.0f;
@@ -1290,7 +1279,6 @@ bool GetStepToCastRangeAroundSpores(
     float& stepY, float& stepZ)
 {
     constexpr uint8 samples = 72;
-    constexpr float daisMargin = 1.0f;
     // A clear way round beats a crossing up to about three times shorter
     constexpr float poolYardCost = 3.0f;
 
@@ -1308,7 +1296,7 @@ bool GetStepToCastRangeAroundSpores(
             target->GetPositionX() + std::cos(angle) * ringRadius,
             target->GetPositionY() + std::sin(angle) * ringRadius, from.GetPositionZ());
 
-        if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(), daisMargin,
+        if (!IsOnVashjDais(candidate.GetPositionX(), candidate.GetPositionY(), VASHJ_DAIS_MARGIN,
                 VASHJ_STANDING_ROCK_CLEARANCE) ||
             std::any_of(spores.begin(), spores.end(), [&candidate](Position const& spore)
             {
@@ -1318,7 +1306,7 @@ bool GetStepToCastRangeAroundSpores(
             continue;
         }
 
-        if (!IsVashjLineOnDais(from, candidate, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE))
+        if (!IsVashjLineOnDais(from, candidate, VASHJ_DAIS_MARGIN, VASHJ_STANDING_ROCK_CLEARANCE))
             continue;
 
         float const distance = from.GetExactDist2d(candidate);
@@ -1373,9 +1361,8 @@ bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)
 bool IsInMeleeRangeClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius)
 {
-    constexpr float daisMargin = 1.0f;
     return target && bot->IsWithinMeleeRange(target) &&
-        IsOnVashjDais(bot->GetPositionX(), bot->GetPositionY(), daisMargin,
+        IsOnVashjDais(bot->GetPositionX(), bot->GetPositionY(), VASHJ_DAIS_MARGIN,
             VASHJ_STANDING_ROCK_CLEARANCE) &&
         std::none_of(spores.begin(), spores.end(), [bot, radius](Position const& spore)
         {
@@ -1394,7 +1381,6 @@ bool GetMeleeRingStepClearOfSpores(
 
     // Slack so rounding and drift can't leave the bot just out of reach
     constexpr float meleeRangeInset = 1.0f;
-    constexpr float daisMargin = 1.0f;
     float const meleeRange = bot->GetMeleeRange(target);
     float const ringRadius = meleeRange - meleeRangeInset;
     float const targetX = target->GetPositionX();
@@ -1410,7 +1396,7 @@ bool GetMeleeRingStepClearOfSpores(
 
     auto isClear = [&nearby, radius](float x, float y)
     {
-        return IsOnVashjDais(x, y, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE) &&
+        return IsOnVashjDais(x, y, VASHJ_DAIS_MARGIN, VASHJ_STANDING_ROCK_CLEARANCE) &&
             std::none_of(nearby.begin(), nearby.end(), [x, y, radius](Position const& spore)
             {
                 return spore.GetExactDist2d(x, y) < radius;
@@ -1460,7 +1446,6 @@ bool GetStepOutOfNearestSpore(
     if (nearest == spores.end())
         return false;
 
-    constexpr float daisMargin = 1.0f;
     float const sporeX = nearest->GetPositionX();
     float const sporeY = nearest->GetPositionY();
     float const botAngle = bot->GetExactDist2d(sporeX, sporeY) > 0.1f ?
@@ -1480,7 +1465,7 @@ bool GetStepOutOfNearestSpore(
             float const angle = botAngle + side * sampleAngle * i;
             float const x = sporeX + std::cos(angle) * radius;
             float const y = sporeY + std::sin(angle) * radius;
-            if (IsOnVashjDais(x, y, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE) &&
+            if (IsOnVashjDais(x, y, VASHJ_DAIS_MARGIN, VASHJ_STANDING_ROCK_CLEARANCE) &&
                 CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
             {
                 return true;
@@ -1558,7 +1543,20 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
     // nearest rooted member otherwise.
     Unit* const skip = phase == 1 ? vashj->GetVictim() : nullptr;
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    Player* const mainTank = GetGroupMainTank(bot);
+
+    // The main tank only breaks a tie between two candidates, so it is looked up only then
+    Player* mainTank = nullptr;
+    bool mainTankKnown = false;
+    auto isMainTank = [&](Player* member)
+    {
+        if (!mainTankKnown)
+        {
+            mainTank = GetGroupMainTank(bot);
+            mainTankKnown = true;
+        }
+
+        return member == mainTank;
+    };
 
     Player* inSpores = nullptr;
     Player* withStaticCharge = nullptr;
@@ -1577,10 +1575,10 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
                 return member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
             });
 
-        if (nearSpore && (!inSpores || member == mainTank))
+        if (nearSpore && (!inSpores || isMainTank(member)))
             inSpores = member;
 
-        if (HasVashjStaticCharge(member) && (!withStaticCharge || member == mainTank))
+        if (HasVashjStaticCharge(member) && (!withStaticCharge || isMainTank(member)))
             withStaticCharge = member;
     }
 
@@ -2715,7 +2713,7 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
     if (!map)
         return generators;
 
-    for (uint32 const spawnId : SHIELD_GENERATOR_DB_GUIDS)
+    for (uint32 const spawnId : VASHJ_SHIELD_GENERATOR_SPAWN_IDS)
     {
         auto const bounds = map->GetGameObjectBySpawnIdStore().equal_range(spawnId);
         if (bounds.first == bounds.second)

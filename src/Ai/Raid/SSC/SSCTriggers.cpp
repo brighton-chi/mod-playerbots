@@ -520,7 +520,7 @@ bool LadyVashjMainTankNeedsGroundingShamanTrigger::IsActiveInEncounter()
 
 bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_SHAMAN)
+    if (bot->getClass() != CLASS_SHAMAN || GetVashjGroundingShaman(bot) != bot)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -528,10 +528,7 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
         return false;
 
     int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase != 1 && phase != 3)
-        return false;
-
-    return GetVashjGroundingShaman(bot) == bot;
+    return phase == 1 || phase == 3;
 }
 
 bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()

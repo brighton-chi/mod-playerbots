@@ -560,9 +560,9 @@ private:
     bool StepTowardBreakoutSpot(Unit* vashj);
 
     // Her tank, pinned by pools, walks to this spot and doesn't stop on the way
-    Position breakoutSpot;
-    bool hasBreakoutSpot = false;
-    uint32 breakoutStartTime = 0;
+    Position _breakoutSpot;
+    bool _hasBreakoutSpot = false;
+    uint32 _breakoutStartTime = 0;
 };
 
 class LadyVashjMeleeMoveAroundToxicSporesAction : public LadyVashjAvoidToxicSporesAction

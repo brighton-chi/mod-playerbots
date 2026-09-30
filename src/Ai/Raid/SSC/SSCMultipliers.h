@@ -307,7 +307,7 @@ class LadyVashjMaintainPhase1RangedSpreadMultiplier : public SscEncounterMultipl
 {
 public:
     LadyVashjMaintainPhase1RangedSpreadMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj maintain phase1 ranged spread") {}
+        : SscEncounterMultiplier(botAI, "lady vashj maintain phase 1 ranged spread") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

@@ -125,10 +125,7 @@ enum class SscNpcs : uint32
     NPC_FATHOM_SPOREBAT          = 22120,
 
     // Lady Vashj <Coilfang Matron>
-    NPC_WORLD_INVISIBLE_TRIGGER  = 12999,
-    NPC_LADY_VASHJ               = 21212,
     NPC_ENCHANTED_ELEMENTAL      = 21958,
-    NPC_TAINTED_ELEMENTAL        = 22009,
     NPC_COILFANG_ELITE           = 22055,
     NPC_COILFANG_STRIDER         = 22056,
     NPC_TOXIC_SPOREBAT           = 22140,
@@ -434,6 +431,10 @@ inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
 // path, not theirs, and in the notch west of the rock it rules out two thirds of the ring round
 // her.
 inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 2.0f;
+// Steps and spots keep this far inside the edge of the dais. Vashj trails her tank, so she
+// stays on the dais as long as it does. The margin is only slack for the notch the rock cuts
+// and for pathing near the edge.
+inline constexpr float VASHJ_DAIS_MARGIN = 1.0f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
@@ -706,6 +707,13 @@ inline std::array const VASHJ_SHIELD_GENERATOR_POSITIONS = {
     Position{  7.810f, -945.244f, 44.0f },
     Position{  7.417f, -901.109f, 44.0f },
 };
+// The Shield Generators' spawn ids
+inline constexpr std::array VASHJ_SHIELD_GENERATOR_SPAWN_IDS = {
+    uint32{ 47482 }, // NW
+    uint32{ 47483 }, // NE
+    uint32{ 47484 }, // SE
+    uint32{ 47485 }, // SW
+};
 
 // Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
 // measures it, so the height gap needs no check of its own.
@@ -785,8 +793,7 @@ std::vector<Position> const& GetToxicSporePositions(PlayerbotAI* botAI);
 VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI);
 // True if x/y is on the dais, at least margin inside its edge, and clear of the north rock by
 // rockClearance.
-bool IsOnVashjDais(
-    float x, float y, float margin, float rockClearance = VASHJ_NORTH_ROCK_CLEARANCE);
+bool IsOnVashjDais(float x, float y, float margin, float rockClearance);
 // A step that leads away from every position given while staying on the dais and rockClearance
 // off the north rock: VASHJ_NORTH_ROCK_CLEARANCE for her tank, VASHJ_STANDING_ROCK_CLEARANCE for
 // anyone else. facing is optional, for a tank: when the bot is its victim, a step leading away
@@ -862,8 +869,9 @@ Player* FindVashjGroundingShaman(Player* bot);
 // Each cluster's first ranged slot, then each one's second and third, then the healers, the
 // clusters in VASHJ_CLUSTER_FILL_ORDER each time
 std::vector<VashjClusterSlot> GetVashjClusterFillOrder();
-// True if there is no holder table yet, or a holder is dead or gone from the instance.
+// True if the holder is alive and in the instance.
 bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid);
+// True if there is no holder table yet, or a holder is dead or gone from the instance.
 bool HasVashjClusterVacancy(Player* bot);
 // From the holder table; cluster -1 if the bot holds no slot.
 VashjClusterSlot GetVashjClusterSlot(Player* bot);
@@ -961,13 +969,6 @@ bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain);
 // True while the catcher should be walking to or standing on its spot.
 bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
 float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index);
-// The Shield Generators' spawn ids
-inline constexpr std::array SHIELD_GENERATOR_DB_GUIDS = {
-    uint32{ 47482 }, // NW
-    uint32{ 47483 }, // NE
-    uint32{ 47484 }, // SE
-    uint32{ 47485 }, // SW
-};
 // The generators not yet used.
 std::vector<GameObject*> GetUsableVashjGenerators(Map* map);
 
