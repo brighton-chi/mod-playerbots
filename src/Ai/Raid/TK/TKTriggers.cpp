@@ -320,7 +320,7 @@ bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActiveInEncounter()
     if (phase < PHASE_WEAPONS || phase > PHASE_ALL_ADVISORS)
         return false;
 
-    return GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION)) != nullptr;
+    return GetLegendaryWeapon(botAI, Id(TkNpcs::NPC_DEVASTATION));
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadTrigger::IsActiveInEncounter()
