@@ -68,9 +68,21 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
 
         Position const& position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 2.0f;
-        return MoveInside(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), rangedGroupRadius, MovementPriority::MOVEMENT_COMBAT);
+        if (bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) <=
+            rangedGroupRadius)
+        {
+            return false;
+        }
+
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetStepToPosition(bot, position, rangedGroupRadius, nullptr, moveX, moveY, backwards))
+            return false;
+
+        return MoveTo(
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (TryGetMuruDarknessActiveState(bot, muru))
@@ -95,9 +107,15 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
             return false;
         }
 
-        return MoveInside(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-            position.GetPositionZ(), arrivalDistance, MovementPriority::MOVEMENT_COMBAT);
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetStepToPosition(bot, position, arrivalDistance, nullptr, moveX, moveY, backwards))
+            return false;
+
+        return MoveTo(
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     constexpr float safeDistFromPlayer = 4.0f;
@@ -434,14 +452,18 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
     if (!voidSentinel)
     {
-        Position const& waitPosition = MURU_STACK_POSITION;
         constexpr float arrivalDistance = 3.0f;
-        if (bot->GetExactDist2d(waitPosition) <= arrivalDistance)
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetStepToPosition(
+                bot, MURU_STACK_POSITION, arrivalDistance, nullptr, moveX, moveY, backwards))
+        {
             return false;
+        }
 
         return MoveTo(
-            SWP_MAP_ID, waitPosition.GetPositionX(), waitPosition.GetPositionY(),
-            waitPosition.GetPositionZ(), false, false, false, false,
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -472,13 +494,19 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
-    Position const& position = MURU_ENTRANCE_POSITION;
-    if (bot->GetExactDist2d(position) <= 1.0f)
+    constexpr float arrivalDist = 1.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, MURU_ENTRANCE_POSITION, arrivalDist, nullptr, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
@@ -510,10 +538,25 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
             Position const& holdingPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
                 entrancePosition : stackPosition;
             constexpr float arrivalDistance = 1.0f;
+            if (bot->GetDistance2d(
+                    holdingPosition.GetPositionX(), holdingPosition.GetPositionY()) <=
+                arrivalDistance)
+            {
+                return false;
+            }
 
-            return MoveInside(
-                SWP_MAP_ID, holdingPosition.GetPositionX(), holdingPosition.GetPositionY(),
-                holdingPosition.GetPositionZ(), arrivalDistance, MovementPriority::MOVEMENT_FORCED);
+            float moveX;
+            float moveY;
+            bool backwards;
+            if (!GetStepToPosition(
+                    bot, holdingPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+            {
+                return false;
+            }
+
+            return MoveTo(
+                SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
         constexpr uint32 minInterval = 0;
@@ -524,9 +567,24 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
     }
 
     constexpr float stackArrivalDistance = 3.0f;
-    return MoveInside(
-        SWP_MAP_ID, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
-        stackPosition.GetPositionZ(), stackArrivalDistance, MovementPriority::MOVEMENT_FORCED);
+    if (bot->GetDistance2d(stackPosition.GetPositionX(), stackPosition.GetPositionY()) <=
+        stackArrivalDistance)
+    {
+        return false;
+    }
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, stackPosition, stackArrivalDistance, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)

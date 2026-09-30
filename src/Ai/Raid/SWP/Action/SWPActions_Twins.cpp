@@ -28,9 +28,17 @@ bool EredarTwinsMeleeJumpFromBalconyAction::Execute(Event /*event*/)
 
     if (distanceToJumpPos > arrivalDistance)
     {
+        float moveX;
+        float moveY;
+        bool backwards;
+        if (!GetStepToPosition(
+                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+        {
+            return false;
+        }
+
         return MoveTo(
-            SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
-            jumpPosition.GetPositionZ(), false, false, false, false,
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -238,20 +246,26 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         Position const newPos = GetAlythessTankPosition(alythess, index);
 
         if (bot->GetExactDist2d(newPos) > maxDistance)
-        {
-            return MoveTo(
-                SWP_MAP_ID, newPos.GetPositionX(), newPos.GetPositionY(), newPos.GetPositionZ(),
-                false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+            return StepToPosition(alythess, newPos, maxDistance);
     }
     else if (distToPosition > maxDistance)
-    {
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+        return StepToPosition(alythess, position, maxDistance);
 
     return false;
+}
+
+bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
+    Unit* alythess, Position const& position, float arrivalDist)
+{
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
@@ -279,9 +293,17 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 
         if (distanceToJumpPos > arrivalDistance)
         {
+            float moveX;
+            float moveY;
+            bool backwards;
+            if (!GetStepToPosition(
+                    bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+            {
+                return false;
+            }
+
             return MoveTo(
-                SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
-                jumpPosition.GetPositionZ(), false, false, false, false,
+                SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                 MovementPriority::MOVEMENT_FORCED, true, false);
         }
 
@@ -303,12 +325,16 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2RangedPosition(alythess) :
         GetEredarTwinsP2MeleePosition(alythess);
 
-    if (bot->GetExactDist2d(position) <= 0.5f)
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)

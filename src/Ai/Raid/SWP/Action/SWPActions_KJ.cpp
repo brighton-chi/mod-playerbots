@@ -215,12 +215,16 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
     }
 
     Position const& position = KILJAEDEN_TANK_POSITION;
-    if (bot->GetExactDist2d(position) <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // When Reflections activate after 3s, they begin attack with SMART_ACTION_ATTACK_START, which sets
@@ -269,12 +273,16 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustMeleeForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position) <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Position& position) const
@@ -376,12 +384,16 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustRangedForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position) <= 2.0f)
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Position& position) const
@@ -439,12 +451,20 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         }
     }
 
-    if (bot->GetExactDist2d(destX, destY) <= 1.0f)
+    constexpr float arrivalDist = 1.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, Position(destX, destY, bot->GetPositionZ()), arrivalDist, nullptr, moveX, moveY,
+            backwards))
+    {
         return false;
+    }
 
     bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, destX, destY, bot->GetPositionZ(), false, false, false, false,
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 

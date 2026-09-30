@@ -178,6 +178,9 @@ public:
     BrutallusPositionRangedInTwoGroupsAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "brutallus position ranged in two groups") {}
     bool Execute(Event event) override;
+
+private:
+    bool StepToPosition(Position const& position, float arrivalDist);
 };
 
 class BrutallusIsolateBurnAction : public MovementAction
@@ -189,6 +192,7 @@ public:
 
 private:
     bool RemoveBurnWithCooldown();
+    bool StepToPosition(Position const& position, float arrivalDist);
 };
 
 // Felmyst
@@ -351,6 +355,8 @@ public:
     }
 
 private:
+    bool StepToPosition(Unit* alythess, Position const& position, float arrivalDist);
+
     uint8 _alythessTankStep = 0;
 };
 
