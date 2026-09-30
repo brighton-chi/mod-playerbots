@@ -6,7 +6,6 @@
 
 #include "SSCActions.h"
 #include "CharmInfo.h"
-#include "Corpse.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "MotionMaster.h"
@@ -19,9 +18,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
-#include <limits>
 #include <unordered_map>
-#include <utility>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -491,7 +488,7 @@ bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
     if (guardian->GetVictim() == bot)
         return false;
 
-    return CastTankTaunt(botAI, bot, guardian);
+    return CastTankTaunt(botAI, guardian);
 }
 
 ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
@@ -1768,9 +1765,10 @@ bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, 
 
 // The tier's best allowed target, or nullptr
 Unit* GetBestVashjTarget(
-    PlayerbotAI* botAI, Player* bot, VashjTargetFacts const& facts, VashjAddGuids const& adds,
+    PlayerbotAI* botAI, VashjTargetFacts const& facts, VashjAddGuids const& adds,
     VashjTargetTier const& tier)
 {
+    Player* bot = botAI->GetBot();
     GuidVector const* guids = nullptr;
     switch (tier.target)
     {
@@ -1880,7 +1878,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
 
     for (size_t i = 0; i < currentTier; ++i)
     {
-        Unit* candidate = GetBestVashjTarget(botAI, bot, facts, adds, tiers[i]);
+        Unit* candidate = GetBestVashjTarget(botAI, facts, adds, tiers[i]);
         if (candidate && Attack(candidate))
             return true;
     }
@@ -1945,7 +1943,7 @@ bool LadyVashjPositionCoilfangStriderAction::Execute(Event /*event*/)
     // A Strider stays on whoever it was on, including a main tank who held it into phase 3
     // and has gone back to Vashj, until it is taunted off
     if (strider->GetVictim() != bot)
-        return CastTankTaunt(botAI, bot, strider);
+        return CastTankTaunt(botAI, strider);
 
     if (phase == 2)
         return MoveStriderToHoldPosition(strider);
@@ -2735,13 +2733,13 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_AVOID_RADIUS))
+    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_AVOID_RADIUS))
         return false;
 
     if (LadyVashjAvoidToxicSporesAction::Execute(event))
         return true;
 
-    if (!IsNearToxicSpores(botAI, bot, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
+    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
             bot, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
     {
         return false;
@@ -2758,7 +2756,7 @@ bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
 {
     Unit* target;
     float range;
-    if (!GetVashjReachBlockedBySpores(botAI, bot, target, range))
+    if (!GetVashjReachBlockedBySpores(botAI, target, range))
         return false;
 
     float stepX;

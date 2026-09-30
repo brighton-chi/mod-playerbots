@@ -10,6 +10,9 @@
 #include "SSCHelpers.h"
 #include "SSCMultipliers.h"
 
+using namespace SscHelpers;
+using namespace EncounterHelpers;
+
 void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
@@ -267,16 +270,15 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 namespace
 {
 
-using namespace SscHelpers;
-
 // Tanks other than the designated Frost and Nature tanks must pick up adds only.
 void AppendHydrossAddTankExclusions(
     Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!IsHydrossAddTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return;
 
-    if (Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable"))
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (hydross && IsHydrossAddTank(bot))
         exclusions.insert(hydross->GetGUID());
 }
 
@@ -340,11 +342,8 @@ void AppendMorogrimTidewalkerMurlocExclusions(
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (bot->GetMapId() != SSC_MAP_ID ||
-        !EncounterHelpers::IsEncounterInProgress(bot, SSC_MAP_ID))
-    {
+    if (!IsEncounterInProgress(bot, SSC_MAP_ID))
         return;
-    }
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);

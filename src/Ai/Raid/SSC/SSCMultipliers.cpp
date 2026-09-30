@@ -6,7 +6,6 @@
 
 #include "SSCMultipliers.h"
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
 #include "DruidCatActions.h"
@@ -227,10 +226,10 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    if (!IsHydrossPhaseTank(bot))
+    if (!PlayerbotAI::IsTank(bot) || !AI_VALUE2(Unit*, "find target", "hydross the unstable"))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "hydross the unstable") ? 0.0f : 1.0f;
+    return IsHydrossPhaseTank(bot) ? 0.0f : 1.0f;
 }
 
 // Phase changes reset threat. Hold DPS from 1s after Marks hit 100% until 5s post-phase change.
@@ -1122,7 +1121,7 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj))
         return 1.0f;
 
-    return IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
+    return IsNearToxicSpores(botAI, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Stock reach-spell for ranged dps, and reach-to-heal for healers, only while its straight walk is
@@ -1145,5 +1144,5 @@ float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Acti
 
     Unit* target;
     float range;
-    return GetVashjReachBlockedBySpores(botAI, bot, target, range) ? 0.0f : 1.0f;
+    return GetVashjReachBlockedBySpores(botAI, target, range) ? 0.0f : 1.0f;
 }

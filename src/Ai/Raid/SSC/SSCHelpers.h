@@ -19,8 +19,6 @@
 #include <vector>
 
 class Creature;
-class GameObject;
-class Map;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -173,7 +171,6 @@ inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
-bool IsInToxicPool(PlayerbotAI* botAI);
 
 inline constexpr float WATER_ELEMENTAL_TOTEM_SEARCH_DISTANCE = 20.0f;
 inline constexpr uint32 WATER_ELEMENTAL_TOTEM_CACHE_INTERVAL_MS = 1000;
@@ -215,9 +212,9 @@ bool IsHydrossAddTank(Player* bot);
 bool IsHydrossInFrostPhase(Unit* hydross);
 bool IsHydrossInNaturePhase(Unit* hydross);
 HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross);
-bool HasMarkOfHydrossAt100Percent(Player* bot);
+bool HasMarkOfHydrossAt100Percent(Player* player);
 bool HasNoMarkOfHydross(Player* bot);
-bool HasMarkOfCorruptionAt100Percent(Player* bot);
+bool HasMarkOfCorruptionAt100Percent(Player* player);
 bool HasNoMarkOfCorruption(Player* bot);
 
 // The Lurker Below
@@ -380,7 +377,6 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 // A Fathom Sporebat before a Fathom Lurker; null once none is left.
 Unit* GetSharkkisPet(Player* bot);
-Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
 // For a tank to move to its designated position, it must not only acquire its own target but not
 // be holding any other tank's target.
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
@@ -818,7 +814,7 @@ bool HasVashjStaticCharge(Player* player);
 // their own movement, and while her target holds it, melee step away from it like everyone else.
 bool IsVashjRingMelee(Player* bot, Unit* vashj);
 // True if any pool is within radius of the bot.
-bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
+bool IsNearToxicSpores(PlayerbotAI* botAI, float radius);
 // True if the bot is in melee range of target, on the dais, and radius or more from every pool.
 bool IsInMeleeRangeClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius);
@@ -842,7 +838,7 @@ bool GetStepOutOfNearestSpore(
 // straight walk to where it would be in range passes within TOXIC_SPORES_AVOID_RADIUS of a pool.
 // Stock reach would walk them into the pool and the spore action straight back out, over and
 // over. target and range are set to the reach's either way.
-bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target, float& range);
+bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Unit*& target, float& range);
 // A step toward the point, 2y inside cast range of target, that is cheapest to reach in a straight
 // line: the distance plus several times the yards of the line within TOXIC_SPORES_AVOID_RADIUS of
 // a pool. The point is on the dais and clear of pools itself.
@@ -875,14 +871,9 @@ bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid);
 bool HasVashjClusterVacancy(Player* bot);
 // From the holder table; cluster -1 if the bot holds no slot.
 VashjClusterSlot GetVashjClusterSlot(Player* bot);
-Position const& GetVashjClusterPosition(VashjClusterSlot const& slot);
 // The cluster slot to walk back to, or nullptr: none held, already there, or away on purpose
 // (the looter before the core is looted, a killer, a ranged stepped in to a Strider).
 Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget);
-// The living ranged dps of a cluster, in slot order.
-std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster);
-// Nullptr if the cluster has no healer or it is dead.
-Player* GetVashjClusterHealer(Player* bot, int8 cluster);
 // Skips a cluster whose straight line to the unit crosses the north rock.
 int8 GetNearestVashjCluster(Unit* unit);
 // The cluster's healer; else the spare healer (no cluster slot) nearest the elemental, who rarely
@@ -907,7 +898,7 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
 // True if a tank is the unit's victim.
 bool IsVashjAddHeldByTank(Unit* unit);
 // The bot's class taunt on target. False if it has none, or can't cast it now.
-bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
+bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 // The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
 // is attacking, else the first in group order. Nullptr if no tank is attacking it.
 Player* GetVashjAddOwningTank(Player* bot, Unit* add);
@@ -963,14 +954,9 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
 VashjCoreChain* GetVashjCoreChain(Player* bot);
 // The bot's place among the chain's catchers, or -1.
 int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);
-// True while the chain is under way: its elemental stands or lies unlooted, the core's last holder
-// or the one it was last thrown to has it, or a throw has just been made.
-bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain);
 // True while the catcher should be walking to or standing on its spot.
 bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
 float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index);
-// The generators not yet used.
-std::vector<GameObject*> GetUsableVashjGenerators(Map* map);
 
 }
 

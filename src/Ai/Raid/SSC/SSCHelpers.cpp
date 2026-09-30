@@ -99,6 +99,9 @@ bool IsDryGround(Player* bot, float x, float y)
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
 {
+    if (!target)
+        return false;
+
     return GetPathStepTowardPoint(
         bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
 }
@@ -184,11 +187,6 @@ bool IsNearToxicPool(PlayerbotAI* botAI, float radius)
     Position toxicPool;
     return GetToxicPoolPosition(botAI, toxicPool) &&
         botAI->GetBot()->GetExactDist2d(toxicPool) < radius;
-}
-
-bool IsInToxicPool(PlayerbotAI* botAI)
-{
-    return IsNearToxicPool(botAI, TOXIC_POOL_HAZARD_RADIUS);
 }
 
 ObjectGuid FindWaterElementalTotemGuid(Player* bot)
@@ -288,11 +286,14 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
     return HydrossDpsHoldWindow::None;
 }
 
-bool HasMarkOfHydrossAt100Percent(Player* bot)
+bool HasMarkOfHydrossAt100Percent(Player* player)
 {
-    return bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_100)) ||
-        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_250)) ||
-        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_500));
+    if (!player)
+        return false;
+
+    return player->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_100)) ||
+        player->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_250)) ||
+        player->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_500));
 }
 
 bool HasNoMarkOfHydross(Player* bot)
@@ -305,11 +306,14 @@ bool HasNoMarkOfHydross(Player* bot)
         !bot->HasAura(Id(SscSpells::SPELL_MARK_OF_HYDROSS_500));
 }
 
-bool HasMarkOfCorruptionAt100Percent(Player* bot)
+bool HasMarkOfCorruptionAt100Percent(Player* player)
 {
-    return bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_100)) ||
-        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_250)) ||
-        bot->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_500));
+    if (!player)
+        return false;
+
+    return player->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_100)) ||
+        player->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_250)) ||
+        player->HasAura(Id(SscSpells::SPELL_MARK_OF_CORRUPTION_500));
 }
 
 bool HasNoMarkOfCorruption(Player* bot)
@@ -341,6 +345,9 @@ bool IsLurkerSurfacedAndCalm(Unit* lurker)
 
 bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction)
 {
+    if (!lurker)
+        return false;
+
     PathGenerator path(bot);
     if (!path.CalculatePath(x, y, z) || (path.GetPathType() & PATHFIND_NOPATH))
         return false;
@@ -372,6 +379,9 @@ bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance)
 
 int8 GetLurkerSpoutSpin(Unit* lurker)
 {
+    if (!lurker)
+        return 0;
+
     if (lurker->HasAura(Id(SscSpells::SPELL_SPOUT_COUNTERCLOCKWISE)))
         return 1;
 
@@ -624,6 +634,9 @@ Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI)
 
 bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 {
+    if (!leotheras)
+        return false;
+
     Player* bot = botAI->GetBot();
     uint32 const instanceId = leotheras->GetInstanceId();
     uint32 const now = getMSTime();
@@ -765,8 +778,6 @@ Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
     return nullptr;
 }
 
-} // end anonymous namespace (Karathress)
-
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 {
     Player* tank = botAI->GetBot();
@@ -782,6 +793,8 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 
     return nullptr;
 }
+
+} // end anonymous namespace (Karathress)
 
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 {
@@ -1163,7 +1176,7 @@ bool FindVashjDaisStepAwayFromUnits(
 
 bool HasVashjStaticCharge(Player* player)
 {
-    return player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
+    return player && player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
 }
 
 bool FindVashjTankBreakoutSpot(
@@ -1232,8 +1245,9 @@ float GetCastRingRadius(Player* bot, Unit* target, float castRange)
 
 } // end anonymous namespace (cast ring)
 
-bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target, float& range)
+bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Unit*& target, float& range)
 {
+    Player* bot = botAI->GetBot();
     target = nullptr;
     range = 0.0f;
 
@@ -1278,6 +1292,9 @@ bool GetStepToCastRangeAroundSpores(
     Player* bot, Unit* target, float castRange, std::vector<Position> const& spores, float& stepX,
     float& stepY, float& stepZ)
 {
+    if (!target)
+        return false;
+
     constexpr uint8 samples = 72;
     // A clear way round beats a crossing up to about three times shorter
     constexpr float poolYardCost = 3.0f;
@@ -1342,6 +1359,9 @@ bool CanWalkThroughToxicSpores(Player* bot)
 
 bool IsVashjRingMelee(Player* bot, Unit* vashj)
 {
+    if (!vashj)
+        return false;
+
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot) || HasVashjStaticCharge(bot))
         return false;
 
@@ -1349,8 +1369,9 @@ bool IsVashjRingMelee(Player* bot, Unit* vashj)
     return !vashjVictim || !HasVashjStaticCharge(vashjVictim);
 }
 
-bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)
+bool IsNearToxicSpores(PlayerbotAI* botAI, float radius)
 {
+    Player* bot = botAI->GetBot();
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     return std::any_of(spores.begin(), spores.end(), [bot, radius](Position const& spore)
     {
@@ -1376,7 +1397,7 @@ bool GetMeleeRingStepClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
     float& stepY, float& stepZ)
 {
-    if (IsInMeleeRangeClearOfSpores(bot, target, spores, radius))
+    if (!target || IsInMeleeRangeClearOfSpores(bot, target, spores, radius))
         return false;
 
     // Slack so rounding and drift can't leave the bot just out of reach
@@ -1682,11 +1703,16 @@ VashjClusterSlot GetVashjClusterSlot(Player* bot)
     return result;
 }
 
+namespace
+{
+
 Position const& GetVashjClusterPosition(VashjClusterSlot const& slot)
 {
     VashjCluster const& cluster = VASHJ_CLUSTERS[slot.cluster];
     return slot.slot == VASHJ_CLUSTER_HEALER_SLOT ? cluster.healer : cluster.ranged[slot.slot];
 }
+
+} // end anonymous namespace (cluster position)
 
 Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget)
 {
@@ -1712,6 +1738,10 @@ Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarg
     return &clusterPosition;
 }
 
+namespace
+{
+
+// The living ranged dps of a cluster, in slot order.
 std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
 {
     std::vector<Player*> ranged;
@@ -1729,6 +1759,7 @@ std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
     return ranged;
 }
 
+// Nullptr if the cluster has no healer or it is dead.
 Player* GetVashjClusterHealer(Player* bot, int8 cluster)
 {
     auto it = vashjClusterHolders.find(bot->GetInstanceId());
@@ -1739,6 +1770,8 @@ Player* GetVashjClusterHealer(Player* bot, int8 cluster)
         ObjectAccessor::GetPlayer(*bot, it->second[cluster][VASHJ_CLUSTER_HEALER_SLOT]);
     return holder && holder->IsAlive() ? holder : nullptr;
 }
+
+} // end anonymous namespace (cluster members)
 
 // From the Tainted spawn just east of the rock, cluster 4 is nearest but would have to walk round
 // it, so cluster 3 takes it. No other spawn changes.
@@ -1871,10 +1904,13 @@ bool IsVashjAddHeldByTank(Unit* unit)
     return victim && PlayerbotAI::IsTank(victim);
 }
 
-bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
+bool CastTankTaunt(PlayerbotAI* botAI, Unit* target)
 {
+    if (!target)
+        return false;
+
     char const* taunt = nullptr;
-    switch (bot->getClass())
+    switch (botAI->GetBot()->getClass())
     {
         case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
         case CLASS_DRUID:        taunt = "growl"; break;
@@ -1987,6 +2023,9 @@ bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards)
 {
+    if (!mob)
+        return false;
+
     float const mobDistance = mob->GetExactDist2d(spot);
     if (mobDistance <= arrivalDistance)
         return false;
@@ -2093,6 +2132,33 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 
     return phase == 3 ? vashj : nullptr;
 }
+
+namespace
+{
+
+// The generators not yet used.
+std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
+{
+    std::vector<GameObject*> generators;
+    if (!map)
+        return generators;
+
+    for (uint32 const spawnId : VASHJ_SHIELD_GENERATOR_SPAWN_IDS)
+    {
+        auto const bounds = map->GetGameObjectBySpawnIdStore().equal_range(spawnId);
+        if (bounds.first == bounds.second)
+            continue;
+
+        GameObject* generator = bounds.first->second;
+        // A used generator stays GO_STATE_READY; it is marked by setting this flag on itself
+        if (generator && !generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
+            generators.push_back(generator);
+    }
+
+    return generators;
+}
+
+} // end anonymous namespace (generators)
 
 // TEMP LOG (Tainted Elemental timing), remove after testing
 namespace
@@ -2540,7 +2606,7 @@ void ResetVashjCoreThrows(VashjCoreChain& chain)
 
 bool HasTaintedCore(Player* player)
 {
-    return player->HasAura(Id(SscSpells::SPELL_TAINTED_CORE_PARALYZE));
+    return player && player->HasAura(Id(SscSpells::SPELL_TAINTED_CORE_PARALYZE));
 }
 
 void PlanVashjCoreChain(Player* bot, Unit* tainted, Player* looter)
@@ -2655,6 +2721,11 @@ int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot)
     return -1;
 }
 
+namespace
+{
+
+// True while the chain is under way: its elemental stands or lies unlooted, the core's last holder
+// or the one it was last thrown to has it, or a throw has just been made.
 bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
 {
     if (chain.failed)
@@ -2682,6 +2753,8 @@ bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
     return false;
 }
 
+} // end anonymous namespace (core chain live)
+
 bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index)
 {
     if (index < chain.reached)
@@ -2705,27 +2778,6 @@ float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index)
 {
     return static_cast<size_t>(index) + 1 == chain.catchers.size() ?
         VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE : VASHJ_CORE_SPOT_ARRIVAL_DISTANCE;
-}
-
-std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
-{
-    std::vector<GameObject*> generators;
-    if (!map)
-        return generators;
-
-    for (uint32 const spawnId : VASHJ_SHIELD_GENERATOR_SPAWN_IDS)
-    {
-        auto const bounds = map->GetGameObjectBySpawnIdStore().equal_range(spawnId);
-        if (bounds.first == bounds.second)
-            continue;
-
-        GameObject* generator = bounds.first->second;
-        // A used generator stays GO_STATE_READY; it is marked by setting this flag on itself
-        if (generator && !generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
-            generators.push_back(generator);
-    }
-
-    return generators;
 }
 
 }

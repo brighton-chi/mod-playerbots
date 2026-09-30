@@ -29,7 +29,8 @@ bool SscNoEncounterInProgressTrigger::IsActive()
 
 bool UnderbogColossusInToxicPoolTrigger::IsActive()
 {
-    return !IsEncounterInProgress(bot, SSC_MAP_ID) && IsInToxicPool(botAI);
+    return !IsEncounterInProgress(bot, SSC_MAP_ID) &&
+        IsNearToxicPool(botAI, TOXIC_POOL_HAZARD_RADIUS);
 }
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
@@ -47,12 +48,14 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 
 bool HydrossTheUnstableShouldBeTankedByFrostTankTrigger::IsActiveInEncounter()
 {
-    return IsHydrossFrostTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
+        IsHydrossFrostTank(bot);
 }
 
 bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
 {
-    return IsHydrossNatureTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
+        IsHydrossNatureTank(bot);
 }
 
 bool HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger::IsActiveInEncounter()
@@ -799,7 +802,7 @@ bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
         return false;
 
     float const radius = tanking ? TOXIC_SPORES_TANK_AVOID_RADIUS : TOXIC_SPORES_AVOID_RADIUS;
-    return IsNearToxicSpores(botAI, bot, radius);
+    return IsNearToxicSpores(botAI, radius);
 }
 
 bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
@@ -809,7 +812,7 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj) ||
-        !IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS))
+        !IsNearToxicSpores(botAI, TOXIC_SPORES_MELEE_CONTROL_RADIUS))
     {
         return false;
     }
@@ -830,7 +833,7 @@ bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 
     Unit* target;
     float range;
-    return GetVashjReachBlockedBySpores(botAI, bot, target, range);
+    return GetVashjReachBlockedBySpores(botAI, target, range);
 }
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
