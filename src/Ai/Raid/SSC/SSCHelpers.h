@@ -60,7 +60,6 @@ enum class SscSpells : uint32
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED     = 37546,
     SPELL_WHIRLWIND              = 37640,
-    SPELL_WHIRLWIND_CHANNEL      = 37641,
     SPELL_METAMORPHOSIS          = 37673,
     SPELL_CHAOS_BLAST            = 37675,
     SPELL_INSIDIOUS_WHISPER      = 37676,
@@ -73,7 +72,7 @@ enum class SscSpells : uint32
     SPELL_MAGIC_BARRIER          = 38112,
     SPELL_STATIC_CHARGE          = 38280,
     SPELL_ENTANGLE               = 38316,
-    SPELL_TOXIC_SPORES           = 38575, // the pool a Spore Drop Trigger lays
+    SPELL_TOXIC_SPORES           = 38575,
 
     // Druid
     SPELL_FAERIE_FIRE_FERAL      = 16857,
@@ -81,7 +80,8 @@ enum class SscSpells : uint32
     SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
-    SPELL_MISDIRECTION           = 35079,
+    SPELL_MISDIRECTION_CAST      = 34477,
+    SPELL_MISDIRECTION           = 35079, // the aura on the hunter
 
     // Paladin
     SPELL_DIVINE_SHIELD          =   642,
@@ -270,12 +270,20 @@ inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_DEMON_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
+inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE = 25.0f;
+// Ranged keep this far from the humanoid form, outside Whirlwind's 10 yd.
+inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = 15.0f;
+// Chaos Blast deals splash damage within 8y of the target.
+inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE = 10.0f;
+// In the final phase, Leotheras's tank keeps him this far from the Shadow's target.
+inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
-extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasHumanoidPhaseStartTime;
 // When the current Whirlwind will end, determined by the aura's remaining duration.
 extern std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
-extern std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
+extern std::unordered_map<uint32, uint32> leotherasDemonPhaseStartTime;
+extern std::unordered_map<uint32, uint32> leotherasFinalPhaseStartTime;
 
 ObjectGuid FindLeotherasGuid(Player* bot);
 ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
@@ -283,14 +291,25 @@ Creature* GetLeotheras(PlayerbotAI* botAI);
 bool IsSpellbinderPhase(Unit* leotheras);
 Creature* GetActiveLeotherasHumanoid(PlayerbotAI* botAI);
 bool IsLeotherasHumanoidPhase(PlayerbotAI* botAI);
-Creature* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
+Creature* GetLeotherasDemon(PlayerbotAI* botAI);
 bool IsLeotherasDemonPhase(PlayerbotAI* botAI);
-Creature* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
+Creature* GetShadowOfLeotheras(PlayerbotAI* botAI);
 bool IsLeotherasFinalPhase(PlayerbotAI* botAI);
-Creature* GetActiveLeotherasDemon(PlayerbotAI* botAI);
+Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI);
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
+// The humanoid form, if the bot is not his target and is closer than the ranged safe distance.
+Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI);
+// The demon's target, if it isn't the bot and the bot is within Chaos Blast's splash of it.
+Unit* GetDemonTargetToAvoid(Player* bot, Unit* demon);
+// The demon form's target, or else the Warlock tank, if the bot is within Chaos Blast's splash.
+Unit* GetChaosBlastTargetToAvoid(PlayerbotAI* botAI);
+// The Shadow's target, if the bot is Leotheras's target and within the separation distance.
+Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI);
+// Threat resets at each phase change and on every Whirlwind tick, so damage is held at the
+// start of each phase and just after each Whirlwind.
+bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras);
 bool HasTooManyChaosBlastStacks(Player* bot);
 bool HasInnerDemon(Player* bot);
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);

@@ -65,11 +65,11 @@ public:
         creators["leotheras the blind warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
 
-        creators["leotheras the blind only warlock should tank demon form"] =
-            &RaidSscTriggerContext::leotheras_the_blind_only_warlock_should_tank_demon_form;
+        creators["leotheras the blind tanks should auto-attack demon form"] =
+            &RaidSscTriggerContext::leotheras_the_blind_tanks_should_auto_attack_demon_form;
 
-        creators["leotheras the blind ranged should spread"] =
-            &RaidSscTriggerContext::leotheras_the_blind_ranged_should_spread;
+        creators["leotheras the blind ranged should keep distance"] =
+            &RaidSscTriggerContext::leotheras_the_blind_ranged_should_keep_distance;
 
         creators["leotheras the blind channeling whirlwind"] =
             &RaidSscTriggerContext::leotheras_the_blind_channeling_whirlwind;
@@ -83,8 +83,14 @@ public:
         creators["leotheras the blind in final phase"] =
             &RaidSscTriggerContext::leotheras_the_blind_in_final_phase;
 
+        creators["leotheras the blind should separate boss from demon"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_separate_boss_from_demon;
+
         creators["leotheras the blind hunter should misdirect demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_hunter_should_misdirect_demon_form;
+
+        creators["leotheras the blind aggro resets"] =
+            &RaidSscTriggerContext::leotheras_the_blind_aggro_resets;
 
         creators["leotheras the blind should manage dps wait timers"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
@@ -252,11 +258,11 @@ private:
     static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_only_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(botAI);
+    static Trigger* leotheras_the_blind_tanks_should_auto_attack_demon_form(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_ranged_should_spread(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindRangedShouldSpreadTrigger(botAI);
+    static Trigger* leotheras_the_blind_ranged_should_keep_distance(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindRangedShouldKeepDistanceTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_channeling_whirlwind(PlayerbotAI* botAI) {
         return new LeotherasTheBlindChannelingWhirlwindTrigger(botAI);
@@ -270,8 +276,14 @@ private:
     static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI) {
         return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
     }
+    static Trigger* leotheras_the_blind_should_separate_boss_from_demon(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindShouldSeparateBossFromDemonTrigger(botAI);
+    }
     static Trigger* leotheras_the_blind_hunter_should_misdirect_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger(botAI);
+    }
+    static Trigger* leotheras_the_blind_aggro_resets(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindAggroResetsTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);

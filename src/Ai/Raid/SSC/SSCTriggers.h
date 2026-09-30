@@ -174,11 +174,11 @@ protected:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger
+class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind only warlock should tank demon form") {}
+    LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind tanks should auto-attack demon form") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -188,18 +188,17 @@ class LeotherasTheBlindWarlockShouldTankDemonFormTrigger : public SscEncounterTr
 {
 public:
     LeotherasTheBlindWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(
-            botAI, "leotheras the blind warlock should tank demon form") {}
+        : SscEncounterTrigger(botAI, "leotheras the blind warlock should tank demon form") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindRangedShouldSpreadTrigger : public SscEncounterTrigger
+class LeotherasTheBlindRangedShouldKeepDistanceTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind ranged should spread") {}
+    LeotherasTheBlindRangedShouldKeepDistanceTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind ranged should keep distance") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -245,11 +244,31 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LeotherasTheBlindShouldSeparateBossFromDemonTrigger : public SscEncounterTrigger
+{
+public:
+    LeotherasTheBlindShouldSeparateBossFromDemonTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind should separate boss from demon") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger : public SscEncounterTrigger
 {
 public:
     LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "leotheras the blind hunter should misdirect demon form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LeotherasTheBlindAggroResetsTrigger : public SscEncounterTrigger
+{
+public:
+    LeotherasTheBlindAggroResetsTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind aggro resets") {}
 
 protected:
     bool IsActiveInEncounter() override;

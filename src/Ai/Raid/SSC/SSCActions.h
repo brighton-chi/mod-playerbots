@@ -174,19 +174,19 @@ public:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindPositionRangedAction : public MovementAction
+class LeotherasTheBlindRangedKeepDistanceAction : public MovementAction
 {
 public:
-    LeotherasTheBlindPositionRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "leotheras the blind position ranged") {}
+    LeotherasTheBlindRangedKeepDistanceAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "leotheras the blind ranged keep distance") {}
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindWarlockTankAttackBossAction : public AttackAction
+class LeotherasTheBlindWarlockTankAttackDemonFormAction : public AttackAction
 {
 public:
-    LeotherasTheBlindWarlockTankAttackBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind warlock tank attack boss") {}
+    LeotherasTheBlindWarlockTankAttackDemonFormAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "leotheras the blind warlock tank attack demon form") {}
     bool Execute(Event event) override;
 };
 
@@ -243,11 +243,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMisdirectBossToWarlockTankAction : public Action
+class LeotherasTheBlindMisdirectDemonFormToTankAction : public Action
 {
 public:
-    LeotherasTheBlindMisdirectBossToWarlockTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind misdirect boss to warlock tank") {}
+    LeotherasTheBlindMisdirectDemonFormToTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind misdirect demon form to tank") {}
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindMeleeStopAttackingAction : public Action
+{
+public:
+    LeotherasTheBlindMeleeStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind melee stop attacking") {}
     bool Execute(Event event) override;
 };
 
@@ -257,6 +265,9 @@ public:
     LeotherasTheBlindManageDpsWaitTimersAction(PlayerbotAI* botAI)
         : Action(botAI, "leotheras the blind manage dps wait timers") {}
     bool Execute(Event event) override;
+
+private:
+    bool TrackWhirlwindEnd(Unit* leotheras, uint32 instanceId, uint32 now);
 };
 
 // Fathom-Lord Karathress

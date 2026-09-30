@@ -181,8 +181,7 @@ class LeotherasTheBlindDisableTankSoulshatterMultiplier : public SscEncounterMul
 {
 public:
     LeotherasTheBlindDisableTankSoulshatterMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(
-            botAI, "leotheras the blind disable tank soulshatter") {}
+        : SscEncounterMultiplier(botAI, "leotheras the blind disable tank soulshatter") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

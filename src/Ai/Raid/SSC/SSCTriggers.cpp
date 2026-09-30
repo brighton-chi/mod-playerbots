@@ -150,13 +150,13 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot) || !GetActiveLeotherasDemon(botAI))
+    if (HasInnerDemon(bot) || !GetLeotherasDemonOrShadow(botAI))
         return false;
 
     return IsLeotherasWarlockTank(bot);
 }
 
-bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -164,14 +164,14 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActiveInEncounter
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (HasInnerDemon(bot) || !GetPhase2LeotherasDemon(botAI))
+    if (HasInnerDemon(bot) || !GetLeotherasDemon(botAI))
         return false;
 
     // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
     return GetLeotherasWarlockTank(bot);
 }
 
-bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindRangedShouldKeepDistanceTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -180,7 +180,10 @@ bool LeotherasTheBlindRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!leotheras || IsSpellbinderPhase(leotheras))
         return false;
 
-    return !IsLeotherasChannelingWhirlwind(leotheras);
+    if (IsLeotherasChannelingWhirlwind(leotheras))
+        return false;
+
+    return GetLeotherasHumanoidToAvoid(botAI) || GetChaosBlastTargetToAvoid(botAI);
 }
 
 bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
@@ -188,10 +191,14 @@ bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!IsLeotherasChannelingWhirlwind(AI_VALUE2(Unit*, "find target", "leotheras the blind")))
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!IsLeotherasChannelingWhirlwind(leotheras))
         return false;
 
-    return !HasInnerDemon(bot);
+    if (HasInnerDemon(bot))
+        return false;
+
+    return bot->GetExactDist2d(leotheras) < LEOTHERAS_WHIRLWIND_SAFE_DISTANCE;
 }
 
 bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
@@ -199,14 +206,24 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
-        return false;
-
     if (!HasTooManyChaosBlastStacks(bot))
         return false;
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    return leotherasDemon && leotherasDemon->GetVictim() != bot;
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
+    if (!leotherasDemon || leotherasDemon->GetVictim() == bot)
+        return false;
+
+    // A rogue can Cloak off the stacks wherever it stands.
+    if (bot->getClass() == CLASS_ROGUE &&
+        !bot->HasSpellCooldown(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS)))
+    {
+        return true;
+    }
+
+    return GetDemonTargetToAvoid(bot, leotherasDemon);
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActiveInEncounter()
@@ -228,6 +245,20 @@ bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
     return !IsLeotherasWarlockTank(bot);
 }
 
+bool LeotherasTheBlindShouldSeparateBossFromDemonTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsHeal(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
+    if (HasInnerDemon(bot) || !GetShadowTargetToSeparateFrom(botAI))
+        return false;
+
+    return !IsLeotherasWarlockTank(bot);
+}
+
 bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -239,7 +270,23 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    return GetActiveLeotherasDemon(botAI);
+    // Misdirection is ready, or it is up and waiting for the Steady Shot that spends it.
+    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)) &&
+        bot->HasSpellCooldown(Id(SscSpells::SPELL_MISDIRECTION_CAST)))
+    {
+        return false;
+    }
+
+    return GetLeotherasDemonOrShadow(botAI);
+}
+
+bool LeotherasTheBlindAggroResetsTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot) || HasInnerDemon(bot))
+        return false;
+
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    return leotheras && IsLeotherasDpsHoldActive(botAI, leotheras);
 }
 
 bool LeotherasTheBlindShouldManageDpsWaitTimersTrigger::IsActiveInEncounter()

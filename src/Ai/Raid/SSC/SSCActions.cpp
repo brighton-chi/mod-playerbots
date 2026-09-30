@@ -57,10 +57,10 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
     reset |= vashjCoreChains.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
-    reset |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+    reset |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
     reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
-    reset |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
-    reset |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
+    reset |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
+    reset |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
     reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
     reset |= hydrossFrostMarkMaxedTime.erase(instanceId) > 0;
     reset |= hydrossNatureMarkMaxedTime.erase(instanceId) > 0;
@@ -117,8 +117,8 @@ bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
     if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
 
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;
@@ -207,8 +207,8 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
 
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;
@@ -562,9 +562,9 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
 // Leotheras the Blind
 
 // Warlock tank action: see GetLeotherasWarlockTank in SSCHelpers.cpp.
-bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
+bool LeotherasTheBlindWarlockTankAttackDemonFormAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -583,50 +583,31 @@ bool LeotherasTheBlindWarlockTankAttackBossAction::Execute(Event /*event*/)
 // them. Rage does not decay in combat, and white hits alone cannot outthreat Searing Pain.
 bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetPhase2LeotherasDemon(botAI);
+    Creature* leotherasDemon = GetLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
     return AI_VALUE(Unit*, "current target") != leotherasDemon && Attack(leotherasDemon);
 }
 
-// Intent is to keep enough distance from Leotheras and spread to prepare for Whirlwind
-// And stay away from the Warlock tank to avoid Chaos Blasts
-bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
+// Keep ranged out of Whirlwind's reach of Leotheras, and away from the demon form's target and
+// the Warlock tank to avoid Chaos Blast splash.
+bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistFromBoss = 15.0f;
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
-    if (leotherasHumanoid && !HasInnerDemon(bot) && leotherasHumanoid->GetVictim() != bot &&
-        bot->GetExactDist2d(leotherasHumanoid) < safeDistFromBoss)
+    constexpr uint32 minInterval = 0;
+
+    if (Creature* leotherasHumanoid = GetLeotherasHumanoidToAvoid(botAI))
     {
-        if (FleePosition(leotherasHumanoid->GetPosition(), safeDistFromBoss))
+        if (FleePosition(
+                leotherasHumanoid->GetPosition(), LEOTHERAS_RANGED_SAFE_DISTANCE, minInterval))
+        {
             return true;
+        }
     }
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
-    // Chaos Blast deals splash damage within 8y of the target.
-    constexpr float safeDistFromBlast = 10.0f;
-    Unit* demonVictim = leotherasDemon->GetVictim();
-    Unit* warlockTank = GetLeotherasWarlockTank(bot);
-
-    Unit* fleeFrom = nullptr;
-    if (demonVictim && demonVictim != bot && bot->GetExactDist2d(demonVictim) < safeDistFromBlast)
-    {
-        fleeFrom = demonVictim;
-    }
-    else if (warlockTank && warlockTank != bot &&
-        bot->GetExactDist2d(warlockTank) < safeDistFromBlast)
-    {
-        fleeFrom = warlockTank;
-    }
-
-    if (!fleeFrom)
-        return false;
-
-    return FleePosition(fleeFrom->GetPosition(), safeDistFromBlast, 0);
+    Unit* blastTarget = GetChaosBlastTargetToAvoid(botAI);
+    return blastTarget && FleePosition(
+        blastTarget->GetPosition(), LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE, minInterval);
 }
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -636,12 +617,11 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(leotherasHumanoid);
-    constexpr float safeDistance = 25.0f;
-    if (currentDistance >= safeDistance)
+    if (currentDistance >= LEOTHERAS_WHIRLWIND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(leotherasHumanoid, safeDistance - currentDistance);
+    return MoveAway(leotherasHumanoid, LEOTHERAS_WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
 // This method is likely unnecessary unless the player does not use a Warlock tank.
@@ -655,20 +635,12 @@ bool LeotherasTheBlindMeleeRunFromChaosBlastAction::Execute(Event /*event*/)
         return true;
     }
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
-    Unit* demonVictim = leotherasDemon->GetVictim();
-    if (!demonVictim || demonVictim == bot)
+    Unit* demonVictim = GetDemonTargetToAvoid(bot, GetLeotherasDemonOrShadow(botAI));
+    if (!demonVictim)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(demonVictim);
-    constexpr float safeDistance = 10.0f;
-    if (currentDistance >= safeDistance)
-        return false;
-
-    return MoveAway(demonVictim, safeDistance - currentDistance);
+    return MoveAway(demonVictim, LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE - currentDistance);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
@@ -856,29 +828,18 @@ bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
 // Leotheras's tank needs to keep him away from the Shadow's target (due to Chaos Blasts).
 bool LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction::Execute(Event /*event*/)
 {
-    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
-    if (!leotherasHumanoid || leotherasHumanoid->GetVictim() != bot)
+    Unit* shadowVictim = GetShadowTargetToSeparateFrom(botAI);
+    if (!shadowVictim)
         return false;
 
-    Creature* leotherasDemon = GetPhase3LeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
-    Unit* demonVictim = leotherasDemon->GetVictim();
-    if (!demonVictim || demonVictim == bot)
-        return false;
-
-    float const currentDistance = bot->GetExactDist2d(demonVictim);
-    constexpr float safeDistance = 20.0f;
-    if (currentDistance >= safeDistance)
-        return false;
-
-    return MoveAway(demonVictim, safeDistance - currentDistance, true);
+    float const currentDistance = bot->GetExactDist2d(shadowVictim);
+    return MoveAway(
+        shadowVictim, LEOTHERAS_SHADOW_SEPARATION_DISTANCE - currentDistance, true);
 }
 
-bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
+bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
 {
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
     if (!leotherasDemon)
         return false;
 
@@ -890,14 +851,26 @@ bool LeotherasTheBlindMisdirectBossToWarlockTankAction::Execute(Event /*event*/)
     if (!tank)
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
 
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;
 
     return botAI->CanCastSpell("steady shot", leotherasDemon) &&
         botAI->CastSpell("steady shot", leotherasDemon);
+}
+
+// The hold multiplier stops new attacks, but a swing already running carries on.
+bool LeotherasTheBlindMeleeStopAttackingAction::Execute(Event /*event*/)
+{
+    bot->AttackStop();
+    bot->InterruptSpell(CURRENT_MELEE_SPELL);
+    bot->CastStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    bot->SetSelection(ObjectGuid());
+
+    return true;
 }
 
 bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
@@ -913,51 +886,59 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 
     if (IsLeotherasHumanoidPhase(botAI))
     {
-        changed |= leotherasHumanoidPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
-
-        // Whirlwind resets threat on every tick. Hold dps for a moment after it ends. Do not hold
-        // dps while Whirlwind is active.
-        if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_WHIRLWIND)))
-        {
-            changed |= leotherasWhirlwindEndTime.try_emplace(
-                instanceId, now + whirlwind->GetDuration()).second;
-        }
-        else if (auto it = leotherasWhirlwindEndTime.find(instanceId);
-            it != leotherasWhirlwindEndTime.end())
-        {
-            // This addresses the situation in which Whirlwind ends early due to the transition into
-            // the final phase being triggered.
-            if (now < it->second)
-            {
-                it->second = now;
-                changed = true;
-            }
-            else if (now - it->second >= LEOTHERAS_HUMANOID_DPS_WAIT_MS)
-            {
-                leotherasWhirlwindEndTime.erase(it);
-                changed = true;
-            }
-        }
-
-        changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
-        changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasHumanoidPhaseStartTime.try_emplace(instanceId, now).second;
+        changed |= TrackWhirlwindEnd(leotheras, instanceId, now);
+        changed |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
+        changed |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
     }
     else if (IsLeotherasDemonPhase(botAI))
     {
-        changed |= leotherasDemonPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasDemonPhaseStartTime.try_emplace(instanceId, now).second;
+        changed |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
         changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
-        changed |= leotherasFinalPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
     }
     else if (IsLeotherasFinalPhase(botAI))
     {
-        changed |= leotherasFinalPhaseDpsWaitTimer.try_emplace(instanceId, now).second;
-        changed |= leotherasHumanoidPhaseDpsWaitTimer.erase(instanceId) > 0;
-        changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
-        changed |= leotherasDemonPhaseDpsWaitTimer.erase(instanceId) > 0;
+        changed |= leotherasFinalPhaseStartTime.try_emplace(instanceId, now).second;
+        changed |= TrackWhirlwindEnd(leotheras, instanceId, now);
+        changed |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
+        changed |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
     }
 
     return changed;
+}
+
+// Whirlwind resets threat on every tick. Hold dps for a moment after it ends. Do not hold
+// dps while Whirlwind is active.
+bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
+    Unit* leotheras, uint32 instanceId, uint32 now)
+{
+    if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_WHIRLWIND)))
+    {
+        return leotherasWhirlwindEndTime.try_emplace(
+            instanceId, now + whirlwind->GetDuration()).second;
+    }
+
+    auto it = leotherasWhirlwindEndTime.find(instanceId);
+    if (it == leotherasWhirlwindEndTime.end())
+        return false;
+
+    // This addresses the situation in which Whirlwind ends early due to the transition into
+    // the final phase being triggered.
+    if (now < it->second)
+    {
+        it->second = now;
+        return true;
+    }
+
+    if (now - it->second >= LEOTHERAS_WHIRLWIND_DPS_WAIT_MS)
+    {
+        leotherasWhirlwindEndTime.erase(it);
+        return true;
+    }
+
+    return false;
 }
 
 // Fathom-Lord Karathress
@@ -1100,8 +1081,8 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (!enemy || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
 
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
         return false;

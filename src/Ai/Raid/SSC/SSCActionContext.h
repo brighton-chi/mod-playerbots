@@ -62,14 +62,14 @@ public:
             &RaidSscActionContext::the_lurker_below_melee_move_directly_to_target;
 
         // Leotheras the Blind
-        creators["leotheras the blind warlock tank attack boss"] =
-            &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_boss;
+        creators["leotheras the blind warlock tank attack demon form"] =
+            &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_demon_form;
 
         creators["leotheras the blind tanks build rage on demon form"] =
             &RaidSscActionContext::leotheras_the_blind_tanks_build_rage_on_demon_form;
 
-        creators["leotheras the blind position ranged"] =
-            &RaidSscActionContext::leotheras_the_blind_position_ranged;
+        creators["leotheras the blind ranged keep distance"] =
+            &RaidSscActionContext::leotheras_the_blind_ranged_keep_distance;
 
         creators["leotheras the blind run away from whirlwind"] =
             &RaidSscActionContext::leotheras_the_blind_run_away_from_whirlwind;
@@ -86,8 +86,11 @@ public:
         creators["leotheras the blind final phase separate boss from demon"] =
             &RaidSscActionContext::leotheras_the_blind_final_phase_separate_boss_from_demon;
 
-        creators["leotheras the blind misdirect boss to warlock tank"] =
-            &RaidSscActionContext::leotheras_the_blind_misdirect_boss_to_warlock_tank;
+        creators["leotheras the blind misdirect demon form to tank"] =
+            &RaidSscActionContext::leotheras_the_blind_misdirect_demon_form_to_tank;
+
+        creators["leotheras the blind melee stop attacking"] =
+            &RaidSscActionContext::leotheras_the_blind_melee_stop_attacking;
 
         creators["leotheras the blind manage dps wait timers"] =
             &RaidSscActionContext::leotheras_the_blind_manage_dps_wait_timers;
@@ -255,14 +258,14 @@ private:
     }
 
     // Leotheras the Blind
-    static Action* leotheras_the_blind_warlock_tank_attack_boss(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindWarlockTankAttackBossAction(botAI);
+    static Action* leotheras_the_blind_warlock_tank_attack_demon_form(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindWarlockTankAttackDemonFormAction(botAI);
     }
     static Action* leotheras_the_blind_tanks_build_rage_on_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindTanksBuildRageOnDemonFormAction(botAI);
     }
-    static Action* leotheras_the_blind_position_ranged(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindPositionRangedAction(botAI);
+    static Action* leotheras_the_blind_ranged_keep_distance(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindRangedKeepDistanceAction(botAI);
     }
     static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) {
         return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI);
@@ -273,14 +276,17 @@ private:
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_misdirect_boss_to_warlock_tank(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMisdirectBossToWarlockTankAction(botAI);
+    static Action* leotheras_the_blind_misdirect_demon_form_to_tank(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMisdirectDemonFormToTankAction(botAI);
     }
     static Action* leotheras_the_blind_final_phase_attack_boss(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseAttackBossAction(botAI);
     }
     static Action* leotheras_the_blind_final_phase_separate_boss_from_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(botAI);
+    }
+    static Action* leotheras_the_blind_melee_stop_attacking(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMeleeStopAttackingAction(botAI);
     }
     static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);

@@ -396,10 +396,10 @@ std::vector<Player*> GetLurkerGuardianTanks(Player* bot)
 
 // Leotheras the Blind
 
-std::unordered_map<uint32, uint32> leotherasHumanoidPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasHumanoidPhaseStartTime;
 std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
-std::unordered_map<uint32, uint32> leotherasDemonPhaseDpsWaitTimer;
-std::unordered_map<uint32, uint32> leotherasFinalPhaseDpsWaitTimer;
+std::unordered_map<uint32, uint32> leotherasDemonPhaseStartTime;
+std::unordered_map<uint32, uint32> leotherasFinalPhaseStartTime;
 
 ObjectGuid FindLeotherasGuid(Player* bot)
 {
@@ -439,10 +439,10 @@ Creature* GetActiveLeotherasHumanoid(PlayerbotAI* botAI)
 
 bool IsLeotherasHumanoidPhase(PlayerbotAI* botAI)
 {
-    return GetActiveLeotherasHumanoid(botAI) && !GetPhase3LeotherasDemon(botAI);
+    return GetActiveLeotherasHumanoid(botAI) && !GetShadowOfLeotheras(botAI);
 }
 
-Creature* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
+Creature* GetLeotherasDemon(PlayerbotAI* botAI)
 {
     Creature* leotheras = GetLeotheras(botAI);
     if (leotheras && leotheras->HasAura(Id(SscSpells::SPELL_METAMORPHOSIS)))
@@ -453,26 +453,26 @@ Creature* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
 
 bool IsLeotherasDemonPhase(PlayerbotAI* botAI)
 {
-    return GetPhase2LeotherasDemon(botAI);
+    return GetLeotherasDemon(botAI);
 }
 
-Creature* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
+Creature* GetShadowOfLeotheras(PlayerbotAI* botAI)
 {
     return GetCachedCreature(botAI, "ssc shadow of leotheras");
 }
 
 bool IsLeotherasFinalPhase(PlayerbotAI* botAI)
 {
-    return GetPhase3LeotherasDemon(botAI);
+    return GetShadowOfLeotheras(botAI);
 }
 
-Creature* GetActiveLeotherasDemon(PlayerbotAI* botAI)
+Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI)
 {
-    if (Creature* phase2Demon = GetPhase2LeotherasDemon(botAI))
-        return phase2Demon;
+    if (Creature* demon = GetLeotherasDemon(botAI))
+        return demon;
 
-    if (Creature* phase3Demon = GetPhase3LeotherasDemon(botAI))
-        return phase3Demon;
+    if (Creature* shadow = GetShadowOfLeotheras(botAI))
+        return shadow;
 
     return nullptr;
 }
@@ -515,9 +515,142 @@ bool IsLeotherasWarlockTank(Player* bot)
 
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
 {
-    return leotheras &&
-        (leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND)) ||
-         leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND_CHANNEL)));
+    return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND));
+}
+
+Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (HasInnerDemon(bot))
+        return nullptr;
+
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
+    if (!leotherasHumanoid || leotherasHumanoid->GetVictim() == bot ||
+        bot->GetExactDist2d(leotherasHumanoid) >= LEOTHERAS_RANGED_SAFE_DISTANCE)
+    {
+        return nullptr;
+    }
+
+    return leotherasHumanoid;
+}
+
+Unit* GetDemonTargetToAvoid(Player* bot, Unit* demon)
+{
+    if (!demon)
+        return nullptr;
+
+    Unit* demonVictim = demon->GetVictim();
+    if (!demonVictim || demonVictim == bot ||
+        bot->GetExactDist2d(demonVictim) >= LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE)
+    {
+        return nullptr;
+    }
+
+    return demonVictim;
+}
+
+Unit* GetChaosBlastTargetToAvoid(PlayerbotAI* botAI)
+{
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
+    if (!leotherasDemon)
+        return nullptr;
+
+    Player* bot = botAI->GetBot();
+    if (Unit* demonVictim = GetDemonTargetToAvoid(bot, leotherasDemon))
+        return demonVictim;
+
+    Player* warlockTank = GetLeotherasWarlockTank(bot);
+    if (warlockTank && warlockTank != bot &&
+        bot->GetExactDist2d(warlockTank) < LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE)
+    {
+        return warlockTank;
+    }
+
+    return nullptr;
+}
+
+Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
+    if (!leotherasHumanoid || leotherasHumanoid->GetVictim() != bot)
+        return nullptr;
+
+    Creature* shadow = GetShadowOfLeotheras(botAI);
+    if (!shadow)
+        return nullptr;
+
+    Unit* shadowVictim = shadow->GetVictim();
+    if (!shadowVictim || shadowVictim == bot ||
+        bot->GetExactDist2d(shadowVictim) >= LEOTHERAS_SHADOW_SEPARATION_DISTANCE)
+    {
+        return nullptr;
+    }
+
+    return shadowVictim;
+}
+
+bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
+{
+    Player* bot = botAI->GetBot();
+    uint32 const instanceId = leotheras->GetInstanceId();
+    uint32 const now = getMSTime();
+
+    auto const isJustAfterWhirlwind = [instanceId, now]()
+    {
+        auto whirlwind = leotherasWhirlwindEndTime.find(instanceId);
+        if (whirlwind == leotherasWhirlwindEndTime.end() || now < whirlwind->second)
+            return false;
+
+        return now - whirlwind->second < LEOTHERAS_WHIRLWIND_DPS_WAIT_MS;
+    };
+
+    if (IsLeotherasHumanoidPhase(botAI))
+    {
+        if (PlayerbotAI::IsTank(bot))
+            return false;
+
+        auto it = leotherasHumanoidPhaseStartTime.find(instanceId);
+        if (it == leotherasHumanoidPhaseStartTime.end() ||
+            getMSTimeDiff(it->second, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
+        {
+            return true;
+        }
+
+        return isJustAfterWhirlwind();
+    }
+
+    if (IsLeotherasDemonPhase(botAI))
+    {
+        if (IsLeotherasWarlockTank(bot))
+            return false;
+
+        if (PlayerbotAI::IsTank(bot) && !GetLeotherasWarlockTank(bot))
+            return false;
+
+        auto it = leotherasDemonPhaseStartTime.find(instanceId);
+        if (it == leotherasDemonPhaseStartTime.end())
+            return true;
+
+        return getMSTimeDiff(it->second, now) < LEOTHERAS_DEMON_DPS_WAIT_MS;
+    }
+
+    if (IsLeotherasFinalPhase(botAI))
+    {
+        if (PlayerbotAI::IsTank(bot) || IsLeotherasWarlockTank(bot))
+            return false;
+
+        auto it = leotherasFinalPhaseStartTime.find(instanceId);
+        if (it == leotherasFinalPhaseStartTime.end() ||
+            getMSTimeDiff(it->second, now) < LEOTHERAS_FINAL_DPS_WAIT_MS)
+        {
+            return true;
+        }
+
+        return isJustAfterWhirlwind();
+    }
+
+    return false;
 }
 
 bool HasTooManyChaosBlastStacks(Player* bot)
@@ -535,10 +668,10 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
     ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
     AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& innerDemons = AI_VALUE(GuidVector, "possible targets no los");
+    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
 
     Creature* innerDemon = nullptr;
-    for (auto creatureGuid : innerDemons)
+    for (auto creatureGuid : targets)
     {
         Creature* creature = botAI->GetCreature(creatureGuid);
         if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&

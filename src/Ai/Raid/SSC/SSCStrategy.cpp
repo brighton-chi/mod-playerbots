@@ -62,13 +62,13 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Leotheras the Blind
     triggers.push_back(new TriggerNode("leotheras the blind warlock should tank demon form",
-        { NextAction("leotheras the blind warlock tank attack boss", ACTION_RAID) }));
+        { NextAction("leotheras the blind warlock tank attack demon form", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form",
+    triggers.push_back(new TriggerNode("leotheras the blind tanks should auto-attack demon form",
         { NextAction("leotheras the blind tanks build rage on demon form", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind ranged should spread",
-        { NextAction("leotheras the blind position ranged", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("leotheras the blind ranged should keep distance",
+        { NextAction("leotheras the blind ranged keep distance", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind channeling whirlwind",
         { NextAction("leotheras the blind run away from whirlwind", ACTION_EMERGENCY + 1) }));
@@ -80,11 +80,17 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind in final phase",
-        { NextAction("leotheras the blind final phase separate boss from demon", ACTION_RAID + 2),
-          NextAction("leotheras the blind final phase attack boss", ACTION_RAID + 1) }));
+        { NextAction("leotheras the blind final phase attack boss", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("leotheras the blind should separate boss from demon",
+        { NextAction(
+            "leotheras the blind final phase separate boss from demon", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind hunter should misdirect demon form",
-        { NextAction("leotheras the blind misdirect boss to warlock tank", ACTION_RAID + 2) }));
+        { NextAction("leotheras the blind misdirect demon form to tank", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("leotheras the blind aggro resets",
+        { NextAction("leotheras the blind melee stop attacking", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers",
         { NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
@@ -312,7 +318,7 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);
-    AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, exclusions);
+    // AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
 }

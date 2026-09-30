@@ -119,7 +119,7 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         if (IsLeotherasChannelingWhirlwind(leotheras))
             return 0.0f;
 
-        if (GetActiveLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
+        if (GetLeotherasDemonOrShadow(botAI) && GetLeotherasWarlockTank(bot))
             return 0.0f;
     }
 
@@ -350,17 +350,24 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
 
     // Auto-attack only while the Warlock has him: abilities would spend the rage being banked for
     // an Inner Demon, and the target choosers would take the tanks off him
-    if (GetPhase2LeotherasDemon(botAI) &&
-        (dynamic_cast<TankAssistAction*>(action) ||
-         (dynamic_cast<CastSpellAction*>(action) &&
-          !dynamic_cast<CastDireBearFormAction*>(action) &&
-          !dynamic_cast<CastBearFormAction*>(action))))
+    if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
     {
-        return 0.0f;
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        if (bot->getClass() == CLASS_DRUID &&
+            (dynamic_cast<CastDireBearFormAction*>(action) ||
+             dynamic_cast<CastBearFormAction*>(action)))
+        {
+            return 1.0f;
+        }
+
+        if (dynamic_cast<CastSpellAction*>(action))
+            return 0.0f;
     }
 
     if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action) &&
-        GetActiveLeotherasDemon(botAI))
+        GetLeotherasDemonOrShadow(botAI))
     {
         Player* warlockTank = GetLeotherasWarlockTank(bot);
         if (warlockTank && action->GetTarget() == warlockTank)
@@ -368,11 +375,8 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     }
 
     // Keep Berserk until Phase 3 in case the bear gets Inner Demon.
-    if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action) &&
-        !GetPhase3LeotherasDemon(botAI))
-    {
-        return 0.0f;
-    }
+    if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action))
+        return GetShadowOfLeotheras(botAI) ? 1.0f : 0.0f;
 
     return 1.0f;
 }
@@ -392,7 +396,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action) &&
         !dynamic_cast<LeotherasTheBlindMeleeRunFromChaosBlastAction*>(action) &&
-        !dynamic_cast<LeotherasTheBlindPositionRangedAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindRangedKeepDistanceAction*>(action) &&
         !dynamic_cast<MeleeAction*>(action))
     {
         return 0.0f;
@@ -510,7 +514,7 @@ float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Actio
     if (!HasTooManyChaosBlastStacks(bot))
         return 1.0f;
 
-    Creature* leotherasDemon = GetActiveLeotherasDemon(botAI);
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
     return leotherasDemon && leotherasDemon->GetVictim() != bot ? 0.0f : 1.0f;
 }
 
@@ -522,69 +526,28 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (!leotheras)
-        return 1.0f;
-
     if (HasInnerDemon(bot))
         return 1.0f;
 
-    uint32 const instanceId = leotheras->GetInstanceId();
-    uint32 const now = getMSTime();
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras || !IsLeotherasDpsHoldActive(botAI, leotheras))
+        return 1.0f;
 
-    if (IsLeotherasHumanoidPhase(botAI))
-    {
-        if (PlayerbotAI::IsTank(bot))
-            return 1.0f;
+    // Spells cast on the raid don't touch Leotheras. Totems are the exception, as some attack.
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
+        return 0.0f;
 
-        auto it = leotherasHumanoidPhaseDpsWaitTimer.find(instanceId);
-        if (it == leotherasHumanoidPhaseDpsWaitTimer.end() ||
-            getMSTimeDiff(it->second, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
-        {
-            return 0.0f;
-        }
-
-        auto whirlwind = leotherasWhirlwindEndTime.find(instanceId);
-        if (whirlwind == leotherasWhirlwindEndTime.end() || now < whirlwind->second)
-            return 1.0f;
-
-        return now - whirlwind->second < LEOTHERAS_HUMANOID_DPS_WAIT_MS ? 0.0f : 1.0f;
-    }
-
-    if (IsLeotherasDemonPhase(botAI))
-    {
-        if (IsLeotherasWarlockTank(bot))
-            return 1.0f;
-
-        if (PlayerbotAI::IsTank(bot) && !GetLeotherasWarlockTank(bot))
-            return 1.0f;
-
-        auto it = leotherasDemonPhaseDpsWaitTimer.find(instanceId);
-        if (it == leotherasDemonPhaseDpsWaitTimer.end())
-            return 0.0f;
-
-        return getMSTimeDiff(it->second, now) < LEOTHERAS_DEMON_DPS_WAIT_MS ? 0.0f : 1.0f;
-    }
-
-    if (IsLeotherasFinalPhase(botAI))
-    {
-        if (PlayerbotAI::IsTank(bot) || IsLeotherasWarlockTank(bot))
-            return 1.0f;
-
-        auto it = leotherasFinalPhaseDpsWaitTimer.find(instanceId);
-        if (it == leotherasFinalPhaseDpsWaitTimer.end())
-            return 0.0f;
-
-        return getMSTimeDiff(it->second, now) < LEOTHERAS_FINAL_DPS_WAIT_MS ? 0.0f : 1.0f;
-    }
-
-    return 1.0f;
+    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+    return castOnRaid ? 1.0f : 0.0f;
 }
 
 // Soulshatter is eligible to be cast when there are at least two attackers, which is the case in
 // the final phase. So this is needed to keep the Warlock tank from dropping threat on the Shadow.
-float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
-    Action* action)
+float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -598,7 +561,7 @@ float LeotherasTheBlindDisableTankSoulshatterMultiplier::GetValueInEncounter(
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    return GetActiveLeotherasDemon(botAI) && IsLeotherasWarlockTank(bot) ? 0.0f : 1.0f;
+    return GetLeotherasDemonOrShadow(botAI) && IsLeotherasWarlockTank(bot) ? 0.0f : 1.0f;
 }
 
 // Fathom-Lord Karathress
