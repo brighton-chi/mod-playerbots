@@ -1522,38 +1522,16 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 // in. Bots go back to their slot after being sent after an elemental.
 bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
 {
-    VashjClusterSlot const slot = GetVashjClusterSlot(bot);
-    if (slot.cluster < 0)
-        return false;
-
-    Position const& clusterPosition = GetVashjClusterPosition(slot);
-
-    // The looter stays on the elemental until the core is looted
-    if (GetDesignatedCoreLooter(bot) == bot)
-    {
-        Creature* assignedTainted = GetAssignedTaintedElemental(bot);
-        if (assignedTainted && IsTaintedCoreStillToLoot(assignedTainted))
-            return false;
-    }
-
-    if (GetTaintedElementalToKill(bot))
-        return false;
-
-    // Stepped in to a Strider; back once it dies or is dragged away
-    if (PlayerbotAI::IsRangedDps(bot) &&
-        IsTankedStriderInStepInReach(bot, AI_VALUE(Unit*, "current target")))
-    {
-        return false;
-    }
-
-    constexpr float arrivalDistance = 2.0f;
-    if (bot->GetExactDist2d(clusterPosition) <= arrivalDistance)
+    Position const* clusterPosition =
+        GetVashjClusterPositionToReturnTo(bot, AI_VALUE(Unit*, "current target"));
+    if (!clusterPosition)
         return false;
 
     float stepX;
     float stepY;
     if (!GetPathStepTowardPoint(
-            bot, clusterPosition, arrivalDistance, PATH_STEP_DISTANCE, stepX, stepY))
+            bot, *clusterPosition, VASHJ_CLUSTER_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE,
+            stepX, stepY))
     {
         return false;
     }
@@ -1748,7 +1726,8 @@ bool IsVashjTargetAllowed(
                 return true;
 
             Player* owner = GetVashjAddOwningTank(bot, *unit);
-            return owner ? owner == bot : IsNearestFreeVashjTank(bot, *unit);
+            return owner ? owner == bot :
+                IsNearestFreeVashjTank(bot, *unit, *facts.vashj, facts.phase);
         }
 
         case VashjTarget::ToxicSporebat:
@@ -1862,7 +1841,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     facts.spellRange = botAI->GetRange("spell");
     facts.holdsClusterSlot = facts.phase == 2 && PlayerbotAI::IsRangedDps(bot);
     facts.waitForTank = facts.phase == 2 && !isTank;
-    facts.oneTankEach = facts.phase == 2 && isTank;
+    facts.oneTankEach = isTank;
 
     if (facts.holdsClusterSlot)
         facts.tainted = GetTaintedElementalToKill(bot);
@@ -1881,8 +1860,10 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     std::vector<VashjTargetTier> const& tiers =
         GetVashjTargetTiers(bot, facts.phase, facts.tainted != nullptr);
 
+    // In phase 2 a tank keeps its own Elite even over a Strider, which the next free tank takes.
+    // In phase 3 a Strider comes first.
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (facts.oneTankEach && IsOwnVashjAdd(bot, currentTarget))
+    if (facts.phase == 2 && facts.oneTankEach && IsOwnVashjAdd(bot, currentTarget))
         return false;
 
     size_t currentTier = tiers.size();
@@ -1938,70 +1919,47 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
     return true;
 }
 
-bool LadyVashjTankAttackAndPositionStriderAction::Execute(Event /*event*/)
+// Automatically apply Fear Ward to tanks to make Strider tankable. This simulates the real-life
+// strategy where the Strider can be meleed by players wearing an Ogre Suit (due to the
+// extended combat reach).
+bool LadyVashjTankApplyFearWardAction::Execute(Event /*event*/)
 {
-    // Automatically apply Fear Ward to tanks to make Strider tankable. This simulates the real-life
-    // strategy where the Strider can be meleed by players wearing an Ogre Suit (due to the
-    // extended combat reach).
-    if (!bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
-        bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
+    return bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot) != nullptr;
+}
 
-    Unit* strider = AI_VALUE2(Unit*, "find target", "coilfang strider");
-    if (!strider)
-        return false;
-
+// Each tank works on the Strider it is targeting, which the target priority action gave it, so
+// any number can be up at once.
+bool LadyVashjPositionCoilfangStriderAction::Execute(Event /*event*/)
+{
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
 
-    // In phase 3 only the first assist tank affirmatively picks up Striders, unless another tank
-    // has it. In phase 2 the nearest free tank does, through the target priority action.
     int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase == 3 && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
-    {
-        Player* owner = GetVashjAddOwningTank(bot, *strider);
-        if (owner && owner != bot)
-            return false;
-
-        if (AI_VALUE(Unit*, "current target") != strider)
-            return Attack(strider);
-
-        // A Strider stays on whoever it was on, including a main tank who held it into phase 3
-        // and has gone back to Vashj, until it is taunted off
-        if (strider->GetVictim() != bot)
-            return CastTankTaunt(botAI, bot, strider);
-    }
-
-    if (strider->GetVictim() != bot)
+    Unit* strider = AI_VALUE(Unit*, "current target");
+    if (!ShouldTankVashjStrider(bot, strider, *vashj, phase))
         return false;
+
+    // A Strider stays on whoever it was on, including a main tank who held it into phase 3
+    // and has gone back to Vashj, until it is taunted off
+    if (strider->GetVictim() != bot)
+        return CastTankTaunt(botAI, bot, strider);
 
     if (phase == 2)
         return MoveStriderToHoldPosition(strider);
 
-    // But all tanks move away from Vashj if they are holding a Strider, except the Main Tank in
-    // phase 3, who is holding Vashj.
-    if (phase == 3 && PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    return MoveStriderAwayFromVashj(vashj);
+    return MoveStriderAwayFromVashj(strider, vashj);
 }
 
 // Phase 2: the hold point nearest the Strider.
-bool LadyVashjTankAttackAndPositionStriderAction::MoveStriderToHoldPosition(Unit* strider)
+bool LadyVashjPositionCoilfangStriderAction::MoveStriderToHoldPosition(Unit* strider)
 {
-    Position const& hold = *std::min_element(
-        VASHJ_STRIDER_HOLD_POSITIONS.begin(), VASHJ_STRIDER_HOLD_POSITIONS.end(),
-        [strider](Position const& a, Position const& b)
-        {
-            return strider->GetExactDist2d(a) < strider->GetExactDist2d(b);
-        });
-
-    constexpr float arrivalDistance = 3.0f;
     float stepX;
     float stepY;
     bool backwards;
     if (!GetStepToBringTankedUnitTo(
-            bot, strider, hold, arrivalDistance, stepX, stepY, backwards))
+            bot, strider, GetVashjStriderHoldPosition(*strider),
+            VASHJ_ADD_TANK_ARRIVAL_DISTANCE, stepX, stepY, backwards))
     {
         return false;
     }
@@ -2040,19 +1998,12 @@ bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
         return false;
     }
 
-    Position const& spot = *std::min_element(
-        VASHJ_ELITE_TANK_POSITIONS.begin(), VASHJ_ELITE_TANK_POSITIONS.end(),
-        [elite](Position const& a, Position const& b)
-        {
-            return elite->GetExactDist2d(a) < elite->GetExactDist2d(b);
-        });
-
-    constexpr float arrivalDistance = 3.0f;
     float stepX;
     float stepY;
     bool backwards;
     if (!GetStepToBringTankedUnitTo(
-            bot, elite, spot, arrivalDistance, stepX, stepY, backwards))
+            bot, elite, GetVashjEliteTankPosition(*elite), VASHJ_ADD_TANK_ARRIVAL_DISTANCE,
+            stepX, stepY, backwards))
     {
         return false;
     }
@@ -2064,14 +2015,23 @@ bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
 
 // Phase 3: keep the Strider away from Vashj, where bots tend to congregate to take down
 // elementals.
-bool LadyVashjTankAttackAndPositionStriderAction::MoveStriderAwayFromVashj(Unit* vashj)
+bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
+    Unit* strider, Unit* vashj)
 {
-    float const currentDistance = bot->GetExactDist2d(vashj);
-    constexpr float safeDistance = 28.0f;
-    if (currentDistance >= safeDistance)
+    float stepX;
+    float stepY;
+    float stepZ;
+    bool backwards;
+    if (!FindVashjDaisStepAwayFromUnits(
+            bot, { vashj }, strider, VASHJ_STANDING_ROCK_CLEARANCE, stepX, stepY, stepZ,
+            backwards, &GetToxicSporePositions(botAI)))
+    {
         return false;
+    }
 
-    return MoveAway(vashj, safeDistance - currentDistance, true);
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Mechanic tracker only. Fills the holder table in group order the first time (ranged dps in turn

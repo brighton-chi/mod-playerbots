@@ -457,16 +457,24 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjTankAttackAndPositionStriderAction : public AttackAction
+class LadyVashjTankApplyFearWardAction : public Action
 {
 public:
-    LadyVashjTankAttackAndPositionStriderAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "lady vashj tank attack and position strider") {}
+    LadyVashjTankApplyFearWardAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj tank apply fear ward") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjPositionCoilfangStriderAction : public MovementAction
+{
+public:
+    LadyVashjPositionCoilfangStriderAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj position coilfang strider") {}
     bool Execute(Event event) override;
 
 private:
     bool MoveStriderToHoldPosition(Unit* strider);
-    bool MoveStriderAwayFromVashj(Unit* vashj);
+    bool MoveStriderAwayFromVashj(Unit* strider, Unit* vashj);
 };
 
 class LadyVashjPositionCoilfangEliteAction : public MovementAction

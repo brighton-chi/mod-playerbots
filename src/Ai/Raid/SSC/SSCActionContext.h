@@ -161,8 +161,11 @@ public:
         creators["lady vashj assign target priority"] =
             &RaidSscActionContext::lady_vashj_assign_target_priority;
 
-        creators["lady vashj tank attack and position strider"] =
-            &RaidSscActionContext::lady_vashj_tank_attack_and_position_strider;
+        creators["lady vashj tank apply fear ward"] =
+            &RaidSscActionContext::lady_vashj_tank_apply_fear_ward;
+
+        creators["lady vashj position coilfang strider"] =
+            &RaidSscActionContext::lady_vashj_position_coilfang_strider;
 
         creators["lady vashj position coilfang elite"] =
             &RaidSscActionContext::lady_vashj_position_coilfang_elite;
@@ -365,8 +368,11 @@ private:
     static Action* lady_vashj_assign_target_priority(PlayerbotAI* botAI) {
         return new LadyVashjAssignTargetPriorityAction(botAI);
     }
-    static Action* lady_vashj_tank_attack_and_position_strider(PlayerbotAI* botAI) {
-        return new LadyVashjTankAttackAndPositionStriderAction(botAI);
+    static Action* lady_vashj_tank_apply_fear_ward(PlayerbotAI* botAI) {
+        return new LadyVashjTankApplyFearWardAction(botAI);
+    }
+    static Action* lady_vashj_position_coilfang_strider(PlayerbotAI* botAI) {
+        return new LadyVashjPositionCoilfangStriderAction(botAI);
     }
     static Action* lady_vashj_position_coilfang_elite(PlayerbotAI* botAI) {
         return new LadyVashjPositionCoilfangEliteAction(botAI);

@@ -160,8 +160,11 @@ public:
         creators["lady vashj should assign target priority"] =
             &RaidSscTriggerContext::lady_vashj_should_assign_target_priority;
 
-        creators["lady vashj coilfang strider is approaching"] =
-            &RaidSscTriggerContext::lady_vashj_coilfang_strider_is_approaching;
+        creators["lady vashj tank needs fear ward"] =
+            &RaidSscTriggerContext::lady_vashj_tank_needs_fear_ward;
+
+        creators["lady vashj coilfang strider should be tanked"] =
+            &RaidSscTriggerContext::lady_vashj_coilfang_strider_should_be_tanked;
 
         creators["lady vashj coilfang elite should be tanked"] =
             &RaidSscTriggerContext::lady_vashj_coilfang_elite_should_be_tanked;
@@ -360,8 +363,11 @@ private:
     static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI) {
         return new LadyVashjShouldAssignTargetPriorityTrigger(botAI);
     }
-    static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) {
-        return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI);
+    static Trigger* lady_vashj_tank_needs_fear_ward(PlayerbotAI* botAI) {
+        return new LadyVashjTankNeedsFearWardTrigger(botAI);
+    }
+    static Trigger* lady_vashj_coilfang_strider_should_be_tanked(PlayerbotAI* botAI) {
+        return new LadyVashjCoilfangStriderShouldBeTankedTrigger(botAI);
     }
     static Trigger* lady_vashj_coilfang_elite_should_be_tanked(PlayerbotAI* botAI) {
         return new LadyVashjCoilfangEliteShouldBeTankedTrigger(botAI);

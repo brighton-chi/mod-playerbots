@@ -499,19 +499,18 @@ struct VashjTargetFacts
     // Phase 2: everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody
     // pulls one onto a cluster
     bool waitForTank = false;
-    // Phase 2: one tank per Elite or Strider, so the others stay free for the next ones. A new one
-    // goes to the nearest free tank, which is the one on the side it comes from while they wait
-    // in the middle.
+    // Tanks: one per Elite or Strider, so the others stay free for the next ones. A new one goes
+    // to the nearest free tank, which in phase 2 is the one on the side it comes from while they
+    // wait in the middle.
     bool oneTankEach = false;
     // Melee dps: the living Striders, whose Panic their targets must be clear of
     std::vector<Unit*> panicStriders;
 };
 
-// Phase 2 clusters of 3 ranged dps 52y out and a healer 40y out, numbered 1 to 4 in this order.
-// Every slot is 22y+ off the Elite and Strider spawns and the line they walk in on, since both
-// attack anyone within 20y of them, and 5y+ off the north rock.
 inline constexpr size_t VASHJ_CLUSTER_RANGED_SLOTS = 3;
 inline constexpr int8 VASHJ_CLUSTER_HEALER_SLOT = 3;
+// A holder within this of its slot, 2D, is there.
+inline constexpr float VASHJ_CLUSTER_ARRIVAL_DISTANCE = 2.0f;
 
 struct VashjCluster
 {
@@ -607,6 +606,10 @@ inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
 inline constexpr float VASHJ_ENCHANTED_NEAR_HER_DISTANCE = 20.0f;
 // Tanks with nothing to tank in phase 2 wait within this of Vashj, to reach adds on any side.
 inline constexpr float VASHJ_IDLE_TANK_DISTANCE = 10.0f;
+// An Elite or Strider within this of its tank position, centre to spot, is there.
+inline constexpr float VASHJ_ADD_TANK_ARRIVAL_DISTANCE = 3.0f;
+// Phase 3: a tank takes its Strider this far from Vashj, where bots gather to kill elementals.
+inline constexpr float VASHJ_PHASE_3_STRIDER_DISTANCE_FROM_VASHJ = 28.0f;
 
 // Target tiers by phase and role, best first (GetVashjTargetTiers)
 // Striders need several ranged on them at once
@@ -640,15 +643,10 @@ inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_HEALER_TIERS = {
 inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MAIN_TANK_TIERS = {
     VashjTargetTier{ VashjTarget::LadyVashj },
 };
-inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_FIRST_ASSIST_TANK_TIERS = {
+// Every tank but hers, one Elite or Strider each as in phase 2
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_TANK_TIERS = {
     VashjTargetTier{ VashjTarget::CoilfangStrider },
     VashjTargetTier{ VashjTarget::CoilfangElite },
-    VashjTargetTier{ VashjTarget::EnchantedElemental },
-    VashjTargetTier{ VashjTarget::LadyVashj },
-};
-inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_OTHER_TANK_TIERS = {
-    VashjTargetTier{ VashjTarget::CoilfangElite },
-    VashjTargetTier{ VashjTarget::CoilfangStrider },
     VashjTargetTier{ VashjTarget::EnchantedElemental },
     VashjTargetTier{ VashjTarget::LadyVashj },
 };
@@ -861,6 +859,9 @@ bool HasVashjClusterVacancy(Player* bot);
 // From the holder table; cluster -1 if the bot holds no slot.
 VashjClusterSlot GetVashjClusterSlot(Player* bot);
 Position const& GetVashjClusterPosition(VashjClusterSlot const& slot);
+// The cluster slot to walk back to, or nullptr: none held, already there, or away on purpose
+// (the looter before the core is looted, a killer, a ranged stepped in to a Strider).
+Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget);
 // The living ranged dps of a cluster, in slot order.
 std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster);
 // Nullptr if the cluster has no healer or it is dead.
@@ -895,9 +896,10 @@ bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
 // The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
 // is attacking, else the first in group order. Nullptr if no tank is attacking it.
 Player* GetVashjAddOwningTank(Player* bot, Unit const& add);
-// True if no other living bot tank is nearer the add among those not holding an Elite or Strider
-// of their own.
-bool IsNearestFreeVashjTank(Player* bot, Unit const& add);
+// True if no other living bot tank is nearer the add among those free to take it: not holding
+// an Elite or Strider of their own, and in phase 3 not Vashj's tank. In phase 3 a tank holding
+// only an Elite is free for a Strider.
+bool IsNearestFreeVashjTank(Player* bot, Unit const& add, Unit const& vashj, int8 phase);
 // The bot's target tiers for the phase, best first. killsTainted: one of the cluster sent after a
 // Tainted Elemental.
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
@@ -907,6 +909,13 @@ std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase,
 bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* mob, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards);
+// The Strider hold and Elite tank position nearest the add.
+Position const& GetVashjStriderHoldPosition(Unit const& strider);
+Position const& GetVashjEliteTankPosition(Unit const& elite);
+// True if strider, the tank's current target, is a Strider it has work on: in phase 2, one on
+// it not yet at its hold; in phase 3, one to taunt off whoever has it, or one on it that is too
+// close to Vashj. Never for her tank in phase 3, who is on her.
+bool ShouldTankVashjStrider(Player* bot, Unit* strider, Unit const& vashj, int8 phase);
 // True for a tanked Strider within VASHJ_STRIDER_STEP_IN_DISTANCE of the bot.
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
 // TEMP LOG (Tainted Elemental timing), remove after testing. Elapsed is from the looter pick.

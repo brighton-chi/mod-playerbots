@@ -487,6 +487,9 @@ bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRangedDps(bot) && !PlayerbotAI::IsHeal(bot))
         return false;
 
+    if (!GetVashjClusterPositionToReturnTo(bot, AI_VALUE(Unit*, "current target")))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
@@ -558,11 +561,23 @@ bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
     return phase == 2 || phase == 3;
 }
 
-// Strider actions are predicated on the fact that you will have only one Strider up at once.
-// If you have more than one up at a time, you likely do not have the DPS to complete the fight.
-bool LadyVashjCoilfangStriderIsApproachingTrigger::IsActiveInEncounter()
+bool LadyVashjTankNeedsFearWardTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "coilfang strider");
+    return PlayerbotAI::IsTank(bot) && !bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)) &&
+        AI_VALUE2(Unit*, "find target", "coilfang strider");
+}
+
+bool LadyVashjCoilfangStriderShouldBeTankedTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* strider = AI_VALUE(Unit*, "current target");
+    if (!strider || strider->GetEntry() != Id(SscNpcs::NPC_COILFANG_STRIDER))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && ShouldTankVashjStrider(bot, strider, *vashj, GetLadyVashjPhase(vashj));
 }
 
 bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
@@ -571,8 +586,13 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* elite = AI_VALUE(Unit*, "current target");
-    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) || elite->GetVictim() != bot)
+    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) ||
+        elite->GetVictim() != bot ||
+        elite->GetExactDist2d(GetVashjEliteTankPosition(*elite)) <=
+            VASHJ_ADD_TANK_ARRIVAL_DISTANCE)
+    {
         return false;
+    }
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 2;

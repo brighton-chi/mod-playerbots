@@ -176,8 +176,11 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj should assign target priority",
         { NextAction("lady vashj assign target priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
-        { NextAction("lady vashj tank attack and position strider", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("lady vashj tank needs fear ward",
+        { NextAction("lady vashj tank apply fear ward", ACTION_EMERGENCY + 2) }));
+
+    triggers.push_back(new TriggerNode("lady vashj coilfang strider should be tanked",
+        { NextAction("lady vashj position coilfang strider", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj coilfang elite should be tanked",
         { NextAction("lady vashj position coilfang elite", ACTION_EMERGENCY + 1) }));

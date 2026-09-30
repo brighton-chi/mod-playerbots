@@ -1690,6 +1690,33 @@ Position const& GetVashjClusterPosition(VashjClusterSlot const& slot)
     return slot.slot == VASHJ_CLUSTER_HEALER_SLOT ? cluster.healer : cluster.ranged[slot.slot];
 }
 
+Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget)
+{
+    VashjClusterSlot const slot = GetVashjClusterSlot(bot);
+    if (slot.cluster < 0)
+        return nullptr;
+
+    Position const& clusterPosition = GetVashjClusterPosition(slot);
+    if (bot->GetExactDist2d(clusterPosition) <= VASHJ_CLUSTER_ARRIVAL_DISTANCE)
+        return nullptr;
+
+    // The looter stays on the elemental until the core is looted
+    if (GetDesignatedCoreLooter(bot) == bot &&
+        IsTaintedCoreStillToLoot(GetAssignedTaintedElemental(bot)))
+    {
+        return nullptr;
+    }
+
+    if (GetTaintedElementalToKill(bot))
+        return nullptr;
+
+    // Stepped in to a Strider; back once it dies or is dragged away
+    if (PlayerbotAI::IsRangedDps(bot) && IsTankedStriderInStepInReach(bot, currentTarget))
+        return nullptr;
+
+    return &clusterPosition;
+}
+
 std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
 {
     std::vector<Player*> ranged;
@@ -1892,28 +1919,35 @@ Player* GetVashjAddOwningTank(Player* bot, Unit const& add)
     return nullptr;
 }
 
-bool IsNearestFreeVashjTank(Player* bot, Unit const& add)
+bool IsNearestFreeVashjTank(Player* bot, Unit const& add, Unit const& vashj, int8 phase)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return true;
 
+    bool const eliteHolderIsFree =
+        phase == 3 && add.GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER);
+    Unit const* herTank = phase == 3 ? vashj.GetVictim() : nullptr;
     float const botDistance = bot->GetExactDist2d(add);
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || !member->IsInMap(bot) ||
-            !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsTank(member))
+        if (!member || member == bot || member == herTank || !member->IsAlive() ||
+            !member->IsInMap(bot) || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsTank(member) || member->GetExactDist2d(add) >= botDistance)
         {
             continue;
         }
 
         Unit* victim = member->GetVictim();
-        bool const busy = victim &&
-            (victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
-             victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
+        if (!victim)
+            return false;
+
+        uint32 const entry = victim->GetEntry();
+        bool const holdsAdd = (entry == Id(SscNpcs::NPC_COILFANG_STRIDER) ||
+            (entry == Id(SscNpcs::NPC_COILFANG_ELITE) && !eliteHolderIsFree)) &&
             GetVashjAddOwningTank(bot, *victim) == member;
-        if (!busy && member->GetExactDist2d(add) < botDistance)
+        if (!holdsAdd)
             return false;
     }
 
@@ -1940,11 +1974,8 @@ std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase,
 
     if (isTank)
     {
-        if (PlayerbotAI::IsMainTank(bot))
-            return VASHJ_PHASE_3_MAIN_TANK_TIERS;
-
-        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ?
-            VASHJ_PHASE_3_FIRST_ASSIST_TANK_TIERS : VASHJ_PHASE_3_OTHER_TANK_TIERS;
+        return PlayerbotAI::IsMainTank(bot) ?
+            VASHJ_PHASE_3_MAIN_TANK_TIERS : VASHJ_PHASE_3_TANK_TIERS;
     }
 
     if (PlayerbotAI::IsRanged(bot))
@@ -1972,6 +2003,48 @@ bool GetStepToBringTankedUnitTo(
         spot.GetPositionZ());
 
     return GetStepToPosition(bot, destination, arrivalDistance, mob, stepX, stepY, backwards);
+}
+
+Position const& GetVashjStriderHoldPosition(Unit const& strider)
+{
+    return *std::min_element(
+        VASHJ_STRIDER_HOLD_POSITIONS.begin(), VASHJ_STRIDER_HOLD_POSITIONS.end(),
+        [&strider](Position const& a, Position const& b)
+        {
+            return strider.GetExactDist2d(a) < strider.GetExactDist2d(b);
+        });
+}
+
+Position const& GetVashjEliteTankPosition(Unit const& elite)
+{
+    return *std::min_element(
+        VASHJ_ELITE_TANK_POSITIONS.begin(), VASHJ_ELITE_TANK_POSITIONS.end(),
+        [&elite](Position const& a, Position const& b)
+        {
+            return elite.GetExactDist2d(a) < elite.GetExactDist2d(b);
+        });
+}
+
+bool ShouldTankVashjStrider(Player* bot, Unit* strider, Unit const& vashj, int8 phase)
+{
+    if (!strider || !strider->IsAlive() ||
+        strider->GetEntry() != Id(SscNpcs::NPC_COILFANG_STRIDER))
+    {
+        return false;
+    }
+
+    if (phase == 2)
+    {
+        return strider->GetVictim() == bot &&
+            strider->GetExactDist2d(GetVashjStriderHoldPosition(*strider)) >
+                VASHJ_ADD_TANK_ARRIVAL_DISTANCE;
+    }
+
+    if (phase != 3 || PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    return strider->GetVictim() != bot ||
+        bot->GetExactDist2d(vashj) < VASHJ_PHASE_3_STRIDER_DISTANCE_FROM_VASHJ;
 }
 
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit)

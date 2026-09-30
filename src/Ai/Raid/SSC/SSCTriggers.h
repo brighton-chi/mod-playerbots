@@ -425,7 +425,7 @@ class LadyVashjClusterSlotsNeedHoldersTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjClusterSlotsNeedHoldersTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj cluster slots need holders") {}
+        : SscEncounterTrigger(botAI, "lady vashj cluster slots need holders", 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -455,7 +455,7 @@ class LadyVashjMainTankNeedsGroundingShamanTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjMainTankNeedsGroundingShamanTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj main tank needs grounding shaman") {}
+        : SscEncounterTrigger(botAI, "lady vashj main tank needs grounding shaman", 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -501,11 +501,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjCoilfangStriderIsApproachingTrigger : public SscEncounterTrigger
+class LadyVashjTankNeedsFearWardTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjCoilfangStriderIsApproachingTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj coilfang strider is approaching") {}
+    LadyVashjTankNeedsFearWardTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj tank needs fear ward") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LadyVashjCoilfangStriderShouldBeTankedTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjCoilfangStriderShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj coilfang strider should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;
