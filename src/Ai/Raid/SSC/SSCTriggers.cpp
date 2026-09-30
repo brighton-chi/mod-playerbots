@@ -499,7 +499,7 @@ bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3;
+    return vashj && GetLadyVashjPhase(vashj) == 3 && IsVashjPhase3RangedTooClose(bot, vashj);
 }
 
 bool LadyVashjMainTankNeedsGroundingShamanTrigger::IsActiveInEncounter()
@@ -547,8 +547,8 @@ bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
 
 // Healers too. Healer dps and a priest's wand get a target the tiers allow, never a Sporebat,
 // which walks them up into the air, and in phase 2 the target keeps them in their combat engine.
-// The phase 2 multiplier keeps them from walking to it.
-bool LadyVashjAddsSpawnInPhase2AndPhase3Trigger::IsActiveInEncounter()
+// The phase 2 and phase 3 multipliers keep them from walking to it.
+bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -635,15 +635,11 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
 // the loot action).
 bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot))
+    if (!GetTaintedElementalToKill(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj || GetLadyVashjPhase(vashj) != 2)
-        return false;
-
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    return tainted && IsAssignedToAttackTaintedElemental(bot, tainted);
+    return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
 // From the looter's pick until the core is taken from the corpse.
@@ -745,7 +741,7 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (phase != 2 && phase != 3)
         return false;
 
-    if (Unit* target = GetVashjPetTarget(botAI, pet, vashj))
+    if (Unit* target = GetVashjPetTarget(botAI, *pet, vashj))
         return pet->GetVictim() != target;
 
     // Nothing worth attacking, so only a pet still on an immune Vashj needs calling back
@@ -789,12 +785,22 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3 && IsVashjRingMelee(bot, vashj) &&
-        IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS);
+    if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj) ||
+        !IsNearToxicSpores(botAI, bot, TOXIC_SPORES_MELEE_CONTROL_RADIUS))
+    {
+        return false;
+    }
+
+    // Already clear in melee range, the action has nothing to do
+    return !IsInMeleeRangeClearOfSpores(bot, AI_VALUE(Unit*, "current target"),
+        GetToxicSporePositions(botAI), TOXIC_SPORES_AVOID_RADIUS);
 }
 
 bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 {
+    if (!PlayerbotAI::IsCaster(bot))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;

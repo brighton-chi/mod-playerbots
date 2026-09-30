@@ -949,6 +949,27 @@ float SegmentLengthInCircle(
     return leave > enter ? (leave - enter) * std::sqrt(qa) : 0.0f;
 }
 
+// True if the straight line from a to b stays on the dais, sampled every 2y.
+bool IsVashjLineOnDais(
+    Position const& a, Position const& b, float margin, float rockClearance)
+{
+    constexpr float sampleSpacing = 2.0f;
+    uint8 const samples = static_cast<uint8>(a.GetExactDist2d(b) / sampleSpacing);
+    for (uint8 s = 1; s < samples; ++s)
+    {
+        float const t = static_cast<float>(s) / samples;
+        if (!IsOnVashjDais(
+                a.GetPositionX() + (b.GetPositionX() - a.GetPositionX()) * t,
+                a.GetPositionY() + (b.GetPositionY() - a.GetPositionY()) * t, margin,
+                rockClearance))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Distance from the dais centre to x, y, measured perpendicular to the nearest edge of the
 // dodecagon. The edges face 15, 45, 75... degrees, so fold the angle into one 30 degree sector and
 // measure off the middle of it.
@@ -1068,8 +1089,9 @@ bool IsOnVashjDais(float x, float y, float margin, float rockClearance)
 }
 
 bool FindVashjDaisStepAwayFromPositions(
-    Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores, float sporeRadius)
+    Player* bot, std::vector<Position> const& positions, Unit* facing, float rockClearance,
+    float& stepX, float& stepY, float& stepZ, bool& backwards,
+    std::vector<Position> const* spores, float sporeRadius)
 {
     // Vashj trails her tank, so she stays on the dais as long as it does. The margin is only slack
     // for the notch the rock cuts and for pathing near the edge.
@@ -1104,7 +1126,7 @@ bool FindVashjDaisStepAwayFromPositions(
         float const angle = 2.0f * static_cast<float>(M_PI) * i / directions;
         float const x = botX + std::cos(angle) * PATH_STEP_DISTANCE;
         float const y = botY + std::sin(angle) * PATH_STEP_DISTANCE;
-        if (IsOnVashjDais(x, y, daisMargin) && !nearSpore(x, y))
+        if (IsOnVashjDais(x, y, daisMargin, rockClearance) && !nearSpore(x, y))
             candidates.emplace_back(angle, closestPosition(x, y));
     }
 
@@ -1136,8 +1158,9 @@ bool FindVashjDaisStepAwayFromPositions(
 }
 
 bool FindVashjDaisStepAwayFromUnits(
-    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores, float sporeRadius)
+    Player* bot, std::vector<Unit*> const& units, Unit* facing, float rockClearance,
+    float& stepX, float& stepY, float& stepZ, bool& backwards,
+    std::vector<Position> const* spores, float sporeRadius)
 {
     std::vector<Position> positions;
     positions.reserve(units.size());
@@ -1145,7 +1168,8 @@ bool FindVashjDaisStepAwayFromUnits(
         positions.push_back(unit->GetPosition());
 
     return FindVashjDaisStepAwayFromPositions(
-        bot, positions, facing, stepX, stepY, stepZ, backwards, spores, sporeRadius);
+        bot, positions, facing, rockClearance, stepX, stepY, stepZ, backwards, spores,
+        sporeRadius);
 }
 
 bool HasVashjStaticCharge(Player* player)
@@ -1160,7 +1184,6 @@ bool FindVashjTankBreakoutSpot(
     constexpr uint8 rings = 7;
     constexpr float ringSpacing = 5.0f;
     constexpr float daisMargin = 1.0f;
-    constexpr float pathSampleSpacing = 2.0f;
     // A yard through a pool costs about 0.7s of 2775-3225 nature a second walking backwards
     constexpr float poolYardCost = 3.0f;
 
@@ -1188,18 +1211,7 @@ bool FindVashjTankBreakoutSpot(
             }
 
             // She trails her tank along the same line, so it keeps to the dais and off the rock
-            uint8 const samples = static_cast<uint8>(radius / pathSampleSpacing);
-            bool onDais = true;
-            for (uint8 s = 1; s < samples && onDais; ++s)
-            {
-                float const t = static_cast<float>(s) / samples;
-                onDais = IsOnVashjDais(
-                    from.GetPositionX() + (candidate.GetPositionX() - from.GetPositionX()) * t,
-                    from.GetPositionY() + (candidate.GetPositionY() - from.GetPositionY()) * t,
-                    daisMargin);
-            }
-
-            if (!onDais)
+            if (!IsVashjLineOnDais(from, candidate, daisMargin, VASHJ_NORTH_ROCK_CLEARANCE))
                 continue;
 
             float inPools = 0.0f;
@@ -1240,6 +1252,11 @@ bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target
     if (!PlayerbotAI::IsCaster(bot) || HasVashjStaticCharge(bot) || CanWalkThroughToxicSpores(bot))
         return false;
 
+    // Stock reach doesn't move a bot mid-channel either, so Evocation or Tranquility isn't cut
+    // short
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
     bool const isHealer = PlayerbotAI::IsHeal(bot);
 
     AiObjectContext* context = botAI->GetAiObjectContext();
@@ -1274,7 +1291,6 @@ bool GetStepToCastRangeAroundSpores(
 {
     constexpr uint8 samples = 72;
     constexpr float daisMargin = 1.0f;
-    constexpr float pathSampleSpacing = 2.0f;
     // A clear way round beats a crossing up to about three times shorter
     constexpr float poolYardCost = 3.0f;
 
@@ -1302,21 +1318,10 @@ bool GetStepToCastRangeAroundSpores(
             continue;
         }
 
-        float const distance = from.GetExactDist2d(candidate);
-        uint8 const pathSamples = static_cast<uint8>(distance / pathSampleSpacing);
-        bool onDais = true;
-        for (uint8 s = 1; s < pathSamples && onDais; ++s)
-        {
-            float const t = static_cast<float>(s) / pathSamples;
-            onDais = IsOnVashjDais(
-                from.GetPositionX() + (candidate.GetPositionX() - from.GetPositionX()) * t,
-                from.GetPositionY() + (candidate.GetPositionY() - from.GetPositionY()) * t,
-                daisMargin, VASHJ_STANDING_ROCK_CLEARANCE);
-        }
-
-        if (!onDais)
+        if (!IsVashjLineOnDais(from, candidate, daisMargin, VASHJ_STANDING_ROCK_CLEARANCE))
             continue;
 
+        float const distance = from.GetExactDist2d(candidate);
         float inPools = 0.0f;
         for (Position const& spore : spores)
             inPools += SegmentLengthInCircle(from, candidate, spore, TOXIC_SPORES_AVOID_RADIUS);
@@ -1365,12 +1370,28 @@ bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius)
     });
 }
 
+bool IsInMeleeRangeClearOfSpores(
+    Player* bot, Unit* target, std::vector<Position> const& spores, float radius)
+{
+    constexpr float daisMargin = 1.0f;
+    return target && bot->IsWithinMeleeRange(target) &&
+        IsOnVashjDais(bot->GetPositionX(), bot->GetPositionY(), daisMargin,
+            VASHJ_STANDING_ROCK_CLEARANCE) &&
+        std::none_of(spores.begin(), spores.end(), [bot, radius](Position const& spore)
+        {
+            return bot->GetExactDist2d(spore) < radius;
+        });
+}
+
 // Like Azgalor's Rain of Fire maneuver, but sampled every 5 degrees so each point can be checked
 // against the dais and the rock too.
 bool GetMeleeRingStepClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
     float& stepY, float& stepZ)
 {
+    if (IsInMeleeRangeClearOfSpores(bot, target, spores, radius))
+        return false;
+
     // Slack so rounding and drift can't leave the bot just out of reach
     constexpr float meleeRangeInset = 1.0f;
     constexpr float daisMargin = 1.0f;
@@ -1396,19 +1417,15 @@ bool GetMeleeRingStepClearOfSpores(
             });
     };
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    if (bot->IsWithinMeleeRange(target) && isClear(botX, botY))
-        return false;
-
-    float const botAngle = std::atan2(botY - targetY, botX - targetX);
+    float const botAngle = std::atan2(
+        bot->GetPositionY() - targetY, bot->GetPositionX() - targetX);
     constexpr uint8 samplesPerSide = 36;
     constexpr float sampleAngle = static_cast<float>(M_PI) / samplesPerSide;
     for (uint8 i = 0; i <= samplesPerSide; ++i)
     {
         for (int8 side = 1; side >= -1; side -= 2)
         {
-            if (i == 0 && side < 0)
+            if ((i == 0 || i == samplesPerSide) && side < 0)
                 continue;
 
             float const angle = botAngle + side * sampleAngle * i;
@@ -1457,7 +1474,7 @@ bool GetStepOutOfNearestSpore(
     {
         for (int8 side = 1; side >= -1; side -= 2)
         {
-            if (i == 0 && side < 0)
+            if ((i == 0 || i == samplesPerSide) && side < 0)
                 continue;
 
             float const angle = botAngle + side * sampleAngle * i;
@@ -1468,6 +1485,31 @@ bool GetStepOutOfNearestSpore(
             {
                 return true;
             }
+        }
+    }
+
+    return false;
+}
+
+bool IsVashjPhase3RangedTooClose(Player* bot, Unit* vashj)
+{
+    if (!vashj)
+        return false;
+
+    if (bot->GetExactDist2d(vashj) < VASHJ_PHASE_3_RANGED_DISTANCE)
+        return true;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member != bot && member->IsAlive() && member->GetMapId() == SSC_MAP_ID &&
+            bot->GetExactDist2d(member) < VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE)
+        {
+            return true;
         }
     }
 
@@ -1787,6 +1829,16 @@ bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted)
     return slot.cluster >= 0 && slot.cluster == it->second.cluster;
 }
 
+Creature* GetTaintedElementalToKill(Player* bot)
+{
+    if (!PlayerbotAI::IsRangedDps(bot))
+        return nullptr;
+
+    Creature* tainted = GetAssignedTaintedElemental(bot);
+    return tainted && tainted->IsAlive() && IsAssignedToAttackTaintedElemental(bot, tainted) ?
+        tainted : nullptr;
+}
+
 Player* GetDesignatedCoreLooter(Player* bot)
 {
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
@@ -1796,9 +1848,9 @@ Player* GetDesignatedCoreLooter(Player* bot)
     return ObjectAccessor::GetPlayer(*bot, it->second.looter);
 }
 
-bool IsVashjAddHeldByTank(Unit* unit)
+bool IsVashjAddHeldByTank(Unit const& unit)
 {
-    Player* victim = unit->GetVictim() ? unit->GetVictim()->ToPlayer() : nullptr;
+    Player* victim = unit.GetVictim() ? unit.GetVictim()->ToPlayer() : nullptr;
     return victim && PlayerbotAI::IsTank(victim);
 }
 
@@ -1817,10 +1869,10 @@ bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
     return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);
 }
 
-Player* GetVashjAddOwningTank(Player* bot, Unit* add)
+Player* GetVashjAddOwningTank(Player* bot, Unit const& add)
 {
-    Player* victim = add->GetVictim() ? add->GetVictim()->ToPlayer() : nullptr;
-    if (victim && victim->IsAlive() && victim->GetVictim() == add && PlayerbotAI::IsTank(victim))
+    Player* victim = add.GetVictim() ? add.GetVictim()->ToPlayer() : nullptr;
+    if (victim && victim->IsAlive() && victim->GetVictim() == &add && PlayerbotAI::IsTank(victim))
         return victim;
 
     Group* group = bot->GetGroup();
@@ -1830,7 +1882,7 @@ Player* GetVashjAddOwningTank(Player* bot, Unit* add)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetVictim() == add &&
+        if (member && member->IsAlive() && member->GetVictim() == &add &&
             PlayerbotAI::IsTank(member))
         {
             return member;
@@ -1840,7 +1892,7 @@ Player* GetVashjAddOwningTank(Player* bot, Unit* add)
     return nullptr;
 }
 
-bool IsNearestFreeVashjTank(Player* bot, Unit* add)
+bool IsNearestFreeVashjTank(Player* bot, Unit const& add)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1860,7 +1912,7 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add)
         bool const busy = victim &&
             (victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ||
              victim->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER)) &&
-            GetVashjAddOwningTank(bot, victim) == member;
+            GetVashjAddOwningTank(bot, *victim) == member;
         if (!busy && member->GetExactDist2d(add) < botDistance)
             return false;
     }
@@ -1871,7 +1923,6 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add)
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted)
 {
     bool const isTank = PlayerbotAI::IsTank(bot);
-    bool const isMeleeDps = PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot);
 
     if (phase == 2)
     {
@@ -1881,10 +1932,10 @@ std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase,
                 VASHJ_PHASE_2_TAINTED_KILLER_TIERS : VASHJ_PHASE_2_CLUSTER_RANGED_TIERS;
         }
 
-        if (isMeleeDps)
+        if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
             return VASHJ_PHASE_2_MELEE_TIERS;
 
-        return isTank ? VASHJ_PHASE_2_TANK_TIERS : VASHJ_PHASE_2_OTHER_TIERS;
+        return isTank ? VASHJ_PHASE_2_TANK_TIERS : VASHJ_PHASE_2_HEALER_TIERS;
     }
 
     if (isTank)
@@ -1902,7 +1953,7 @@ std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase,
             VASHJ_PHASE_3_HUNTER_TIERS : VASHJ_PHASE_3_RANGED_TIERS;
     }
 
-    return isMeleeDps ? VASHJ_PHASE_3_MELEE_TIERS : VASHJ_PHASE_3_OTHER_TIERS;
+    return VASHJ_PHASE_3_MELEE_TIERS;
 }
 
 bool GetStepToBringTankedUnitTo(
@@ -1926,16 +1977,19 @@ bool GetStepToBringTankedUnitTo(
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit)
 {
     return unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER) &&
-        bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(unit);
+        bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(*unit);
 }
 
 // Useless means Vashj while the barrier makes her immune; a Strider, whose Panic fears any pet
 // that closes to melee (the Imp and Water Elemental cast from range); and a Sporebat, which a pet
 // can't reach.
-Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
+Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature const& pet, Unit* vashj)
 {
+    if (!vashj)
+        return nullptr;
+
     int8 const phase = GetLadyVashjPhase(vashj);
-    uint32 const petEntry = pet->GetEntry();
+    uint32 const petEntry = pet.GetEntry();
     bool const petStaysAtRange = petEntry == Id(SscNpcs::NPC_IMP) ||
         petEntry == Id(SscNpcs::NPC_WATER_ELEMENTAL) ||
         petEntry == Id(SscNpcs::NPC_WATER_ELEMENTAL_PERM);
@@ -1954,10 +2008,11 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 
     // Next in every ranged list after a Strider or Sporebat
     Unit* enchanted = nullptr;
-    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    for (ObjectGuid const& guid : adds.enchanted)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) &&
+        if (unit && unit->IsAlive() &&
             (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted)))
         {
             enchanted = unit;

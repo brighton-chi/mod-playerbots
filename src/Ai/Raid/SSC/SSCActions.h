@@ -441,11 +441,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjAssignPhase2AndPhase3DpsPriorityAction : public AttackAction
+class LadyVashjAssignTargetPriorityAction : public AttackAction
 {
 public:
-    LadyVashjAssignPhase2AndPhase3DpsPriorityAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "lady vashj assign phase 2 and phase 3 dps priority") {}
+    LadyVashjAssignTargetPriorityAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "lady vashj assign target priority") {}
     bool Execute(Event event) override;
 };
 

@@ -173,8 +173,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj bot should destroy tainted core",
         { NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 11) }));
 
-    triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3",
-        { NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("lady vashj should assign target priority",
+        { NextAction("lady vashj assign target priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("lady vashj coilfang strider is approaching",
         { NextAction("lady vashj tank attack and position strider", ACTION_EMERGENCY + 1) }));

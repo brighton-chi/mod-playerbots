@@ -157,8 +157,8 @@ public:
 
         creators["lady vashj pulling boss"] = &RaidSscTriggerContext::lady_vashj_pulling_boss;
 
-        creators["lady vashj adds spawn in phase 2 and phase 3"] =
-            &RaidSscTriggerContext::lady_vashj_adds_spawn_in_phase_2_and_phase_3;
+        creators["lady vashj should assign target priority"] =
+            &RaidSscTriggerContext::lady_vashj_should_assign_target_priority;
 
         creators["lady vashj coilfang strider is approaching"] =
             &RaidSscTriggerContext::lady_vashj_coilfang_strider_is_approaching;
@@ -357,8 +357,8 @@ private:
     static Trigger* lady_vashj_pulling_boss(PlayerbotAI* botAI) {
         return new LadyVashjPullingBossTrigger(botAI);
     }
-    static Trigger* lady_vashj_adds_spawn_in_phase_2_and_phase_3(PlayerbotAI* botAI) {
-        return new LadyVashjAddsSpawnInPhase2AndPhase3Trigger(botAI);
+    static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI) {
+        return new LadyVashjShouldAssignTargetPriorityTrigger(botAI);
     }
     static Trigger* lady_vashj_coilfang_strider_is_approaching(PlayerbotAI* botAI) {
         return new LadyVashjCoilfangStriderIsApproachingTrigger(botAI);

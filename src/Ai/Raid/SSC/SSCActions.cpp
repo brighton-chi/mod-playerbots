@@ -1434,7 +1434,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
     bool backwards;
     // Her tank's spore trigger fires at the tank radius, so steps have to stay that far out too
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, units, vashj, stepX, stepY, stepZ, backwards,
+            bot, units, vashj, VASHJ_NORTH_ROCK_CLEARANCE, stepX, stepY, stepZ, backwards,
             &GetToxicSporePositions(botAI), TOXIC_SPORES_TANK_AVOID_RADIUS))
     {
         return false;
@@ -1536,8 +1536,7 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
             return false;
     }
 
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-    if (tainted && IsAssignedToAttackTaintedElemental(bot, tainted))
+    if (GetTaintedElementalToKill(bot))
         return false;
 
     // Stepped in to a Strider; back once it dies or is dragged away
@@ -1569,48 +1568,34 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
 bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
+    if (!IsVashjPhase3RangedTooClose(bot, vashj))
         return false;
 
-    constexpr float vashjDistance = 15.0f;
-    constexpr float spreadDistance = 4.0f;
-
     std::vector<Unit*> avoid;
-    if (bot->GetExactDist2d(vashj) < vashjDistance)
+    if (bot->GetExactDist2d(vashj) < VASHJ_PHASE_3_RANGED_DISTANCE)
     {
         avoid.push_back(vashj);
     }
     else if (Group* group = bot->GetGroup())
     {
-        bool tooClose = false;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || member == bot || !member->IsAlive() ||
-                member->GetMapId() != SSC_MAP_ID)
+            if (member && member != bot && member->IsAlive() &&
+                member->GetMapId() == SSC_MAP_ID)
             {
-                continue;
+                avoid.push_back(member);
             }
-
-            avoid.push_back(member);
-            if (bot->GetExactDist2d(member) < spreadDistance)
-                tooClose = true;
         }
-
-        if (!tooClose)
-            return false;
     }
-
-    if (avoid.empty())
-        return false;
 
     float stepX;
     float stepY;
     float stepZ;
     bool backwards;
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, avoid, nullptr, stepX, stepY, stepZ, backwards,
-            &GetToxicSporePositions(botAI)))
+            bot, avoid, nullptr, VASHJ_STANDING_ROCK_CLEARANCE, stepX, stepY, stepZ,
+            backwards, &GetToxicSporePositions(botAI)))
     {
         return false;
     }
@@ -1691,7 +1676,8 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     float stepZ;
     bool backwards;
     if (!FindVashjDaisStepAwayFromUnits(
-            bot, avoid, nullptr, stepX, stepY, stepZ, backwards, &GetToxicSporePositions(botAI)))
+            bot, avoid, nullptr, VASHJ_STANDING_ROCK_CLEARANCE, stepX, stepY, stepZ,
+            backwards, &GetToxicSporePositions(botAI)))
     {
         return false;
     }
@@ -1756,13 +1742,13 @@ bool IsVashjTargetAllowed(
                 return false;
 
             if (facts.waitForTank)
-                return IsVashjAddHeldByTank(unit);
+                return IsVashjAddHeldByTank(*unit);
 
             if (!facts.oneTankEach)
                 return true;
 
-            Player* owner = GetVashjAddOwningTank(bot, unit);
-            return owner ? owner == bot : IsNearestFreeVashjTank(bot, unit);
+            Player* owner = GetVashjAddOwningTank(bot, *unit);
+            return owner ? owner == bot : IsNearestFreeVashjTank(bot, *unit);
         }
 
         case VashjTarget::ToxicSporebat:
@@ -1771,7 +1757,9 @@ bool IsVashjTargetAllowed(
             constexpr float maxSporebatHeight = 40.0f;
             return unit->GetEntry() == Id(SscNpcs::NPC_TOXIC_SPOREBAT) &&
                 unit->GetPositionZ() - center.GetPositionZ() <= maxSporebatHeight &&
-                IsOnVashjDais(unit->GetPositionX(), unit->GetPositionY(), 0.0f);
+                IsOnVashjDais(
+                    unit->GetPositionX(), unit->GetPositionY(), 0.0f,
+                    VASHJ_STANDING_ROCK_CLEARANCE);
         }
 
         default:
@@ -1780,17 +1768,18 @@ bool IsVashjTargetAllowed(
 }
 
 // Enchanted nearest her, Elites and Striders lowest in health, Sporebats nearest the bot
-bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, Unit* b)
+bool IsBetterVashjTarget(
+    Player* bot, Unit const& vashj, VashjTarget target, Unit const& a, Unit const& b)
 {
     switch (target)
     {
         case VashjTarget::EnchantedElemental:
-            return vashj->GetExactDist2d(a) < vashj->GetExactDist2d(b);
+            return vashj.GetExactDist2d(a) < vashj.GetExactDist2d(b);
         case VashjTarget::CoilfangStrider:
         case VashjTarget::CoilfangElite:
-            return a->GetHealthPct() < b->GetHealthPct();
+            return a.GetHealthPct() < b.GetHealthPct();
         case VashjTarget::ToxicSporebat:
-            return bot->GetDistance(a) < bot->GetDistance(b);
+            return bot->GetDistance(&a) < bot->GetDistance(&b);
         default:
             return false;
     }
@@ -1827,7 +1816,7 @@ Unit* GetBestVashjTarget(
     {
         Unit* unit = botAI->GetUnit(guid);
         if (IsVashjTargetAllowed(bot, facts, tier, unit) &&
-            (!best || IsBetterVashjTarget(bot, facts.vashj, tier.target, unit, best)))
+            (!best || IsBetterVashjTarget(bot, *facts.vashj, tier.target, *unit, *best)))
         {
             best = unit;
         }
@@ -1848,7 +1837,7 @@ bool IsOwnVashjAdd(Player* bot, Unit* target)
         return false;
     }
 
-    return GetVashjAddOwningTank(bot, target) == bot;
+    return GetVashjAddOwningTank(bot, *target) == bot;
 }
 
 } // end anonymous namespace (Vashj targeting)
@@ -1856,7 +1845,7 @@ bool IsOwnVashjAdd(Player* bot, Unit* target)
 // Each bot's targets come in tiers, best first. A bot keeps its current target until a higher
 // tier has one, so it doesn't flip between two of a kind as they move, and drops a target no tier
 // allows. A target out of sight, which Attack() refuses, gives way to the next tier.
-bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
+bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
 {
     VashjTargetFacts facts;
     facts.vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -1876,11 +1865,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     facts.oneTankEach = facts.phase == 2 && isTank;
 
     if (facts.holdsClusterSlot)
-    {
-        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        if (tainted && IsAssignedToAttackTaintedElemental(bot, tainted))
-            facts.tainted = tainted;
-    }
+        facts.tainted = GetTaintedElementalToKill(bot);
 
     VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
@@ -1913,7 +1898,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
     for (size_t i = 0; i < currentTier; ++i)
     {
         Unit* candidate = GetBestVashjTarget(botAI, bot, facts, adds, tiers[i]);
-        if (candidate && candidate != currentTarget && Attack(candidate))
+        if (candidate && Attack(candidate))
             return true;
     }
 
@@ -1970,11 +1955,11 @@ bool LadyVashjTankAttackAndPositionStriderAction::Execute(Event /*event*/)
         return false;
 
     // In phase 3 only the first assist tank affirmatively picks up Striders, unless another tank
-    // has it. In phase 2 the nearest free tank does, through the dps priority action.
+    // has it. In phase 2 the nearest free tank does, through the target priority action.
     int8 const phase = GetLadyVashjPhase(vashj);
     if (phase == 3 && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
     {
-        Player* owner = GetVashjAddOwningTank(bot, strider);
+        Player* owner = GetVashjAddOwningTank(bot, *strider);
         if (owner && owner != bot)
             return false;
 
@@ -2220,7 +2205,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
 // out of sight. Ranged stop at spell range, which keeps hunters out of their dead zone.
 bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
 {
-    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    Unit* tainted = GetTaintedElementalToKill(bot);
     if (!tainted)
         return false;
 
@@ -2641,7 +2626,7 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
         return false;
 
     CharmInfo* charmInfo = pet->GetCharmInfo();
-    Unit* target = GetVashjPetTarget(botAI, pet, vashj);
+    Unit* target = GetVashjPetTarget(botAI, *pet, vashj);
 
     // If there is nothing to attack but Vashj, return to the master.
     if (!target)
@@ -2710,8 +2695,10 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     float stepY;
     float stepZ;
     bool backwards;
+    float const rockClearance =
+        tanking ? VASHJ_NORTH_ROCK_CLEARANCE : VASHJ_STANDING_ROCK_CLEARANCE;
     bool found = FindVashjDaisStepAwayFromPositions(
-        bot, spores, vashj, stepX, stepY, stepZ, backwards);
+        bot, spores, vashj, rockClearance, stepX, stepY, stepZ, backwards);
 
     // When no step gains on every pool, still step away from the closest one if it is close enough
     // to hurt, even toward another.
@@ -2727,7 +2714,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         {
             std::vector<Position> const nearest = { *closest };
             found = FindVashjDaisStepAwayFromPositions(
-                bot, nearest, vashj, stepX, stepY, stepZ, backwards);
+                bot, nearest, vashj, rockClearance, stepX, stepY, stepZ, backwards);
         }
     }
 

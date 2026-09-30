@@ -69,6 +69,24 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
         (bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action));
 }
 
+// An Elite or Strider that isn't on a tank
+bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
+{
+    VashjAddGuids const& adds =
+        botAI->GetAiObjectContext()->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    for (GuidVector const* guids : { &adds.elites, &adds.striders })
+    {
+        for (ObjectGuid const& guid : *guids)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(*unit))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 } // end anonymous namespace
 
 // Trash
@@ -973,8 +991,16 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (isHealSpell)
         return PlayerbotAI::IsHeal(bot) ? 1.0f : 0.0f;
 
+    // A dot goes on the attacker in range with the most health that lacks it, whatever the bot is
+    // attacking, so non-tanks hold dots while an Elite or Strider could be pulled off its way to a
+    // tank
     if (isDebuffOnAttacker)
-        return IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 0.0f : 1.0f;
+    {
+        if (IsEnchantedElemental(AI_VALUE(Unit*, "current target")))
+            return 0.0f;
+
+        return PlayerbotAI::IsTank(bot) || !IsAnyVashjAddUntanked(botAI) ? 1.0f : 0.0f;
+    }
 
     // Only getting behind the target goes through, and not behind an Enchanted Elemental, where it
     // gains nothing. The rest would pull bots off their posts, and tank facing doesn't work where a
@@ -992,8 +1018,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         if (isReachAction && IsTankedStriderInStepInReach(bot, AI_VALUE(Unit*, "current target")))
             return 1.0f;
 
-        Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        return tainted && IsAssignedToAttackTaintedElemental(bot, tainted) ? 1.0f : 0.0f;
+        return GetTaintedElementalToKill(bot) ? 1.0f : 0.0f;
     }
 
     // Cluster healers heal from their slots too. Other healers still reach to heal, but never walk
@@ -1016,8 +1041,11 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     bool const isAssist =
         dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action);
     bool const isDebuffOnAttacker = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+    bool const isHealerSpellReach =
+        dynamic_cast<ReachSpellAction*>(action) && PlayerbotAI::IsHeal(bot);
 
-    if (!isAssist && !isDebuffOnAttacker && !dynamic_cast<AvoidAoeAction*>(action) &&
+    if (!isAssist && !isDebuffOnAttacker && !isHealerSpellReach &&
+        !dynamic_cast<AvoidAoeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
     {
@@ -1028,8 +1056,15 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 
+    // In either engine, as in phase 2. In the non-combat engine assist would undo the priority
+    // action's drop of a target in a Strider's Panic.
     if (isAssist)
-        return botAI->GetState() == BOT_STATE_COMBAT ? 0.0f : 1.0f;
+        return 0.0f;
+
+    // Healers still reach to heal, but never walk to a target, which healer dps or a priest's
+    // wand would
+    if (isHealerSpellReach)
+        return 0.0f;
 
     if (isDebuffOnAttacker)
         return IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 0.0f : 1.0f;
@@ -1073,15 +1108,15 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
+    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
     if (dynamic_cast<LadyVashjMeleeMoveAroundToxicSporesAction*>(action) ||
-        dynamic_cast<LadyVashjAssignPhase2AndPhase3DpsPriorityAction*>(action) ||
+        dynamic_cast<LadyVashjAssignTargetPriorityAction*>(action) ||
         dynamic_cast<LadyVashjSetGroundingTotemInMainTankGroupAction*>(action))
     {
         return 1.0f;
     }
-
-    if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
-        return 1.0f;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || !IsVashjRingMelee(bot, vashj))
@@ -1101,9 +1136,12 @@ float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Acti
     if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isSpellReach)
         return 1.0f;
 
+    if (!PlayerbotAI::IsCaster(bot))
+        return 1.0f;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
-        return false;
+        return 1.0f;
 
     Unit* target;
     float range;

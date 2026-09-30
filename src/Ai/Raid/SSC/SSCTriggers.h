@@ -491,11 +491,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjAddsSpawnInPhase2AndPhase3Trigger : public SscEncounterTrigger
+class LadyVashjShouldAssignTargetPriorityTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjAddsSpawnInPhase2AndPhase3Trigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj adds spawn in phase 2 and phase 3") {}
+    LadyVashjShouldAssignTargetPriorityTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should assign target priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

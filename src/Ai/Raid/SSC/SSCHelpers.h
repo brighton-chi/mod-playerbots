@@ -410,8 +410,6 @@ Position GetTidewalkerStackPoint(Unit const& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 
-inline constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
-
 inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
 // The dais is a regular dodecagon on the platform center, corners every 30 degrees from due
@@ -431,7 +429,7 @@ inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
 // Where bots other than her tank stand or walk to dodge pools. The larger clearance is for her
 // path, not theirs, and in the notch west of the rock it rules out two thirds of the ring round
 // her.
-inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 1.0f;
+inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 2.0f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;
@@ -445,6 +443,10 @@ inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
 // Melee dps within this of a pool are moved only by the melee spore action, so stock reach-melee
 // can't walk them back through a pool on the way to their target.
 inline constexpr float TOXIC_SPORES_MELEE_CONTROL_RADIUS = 10.0f;
+
+// Phase 3 ranged stand out of Entangle's reach of her, and this far apart.
+inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
+inline constexpr float VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE = 4.0f;
 
 // Static Charge pulses reach 10y from the holder's center.
 inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = 11.0f;
@@ -462,7 +464,7 @@ struct VashjAddGuids
     GuidVector sporebats;
 };
 
-// A target, for LadyVashjAssignPhase2AndPhase3DpsPriorityAction.
+// A target, for LadyVashjAssignTargetPriorityAction.
 enum class VashjTarget : uint8
 {
     TaintedElemental,
@@ -480,7 +482,7 @@ struct VashjTargetTier
     float maxDistanceFromVashj = std::numeric_limits<float>::max();
 };
 
-// What LadyVashjAssignPhase2AndPhase3DpsPriorityAction checks targets against, gathered each tick.
+// What LadyVashjAssignTargetPriorityAction checks targets against, gathered each tick.
 struct VashjTargetFacts
 {
     Unit* vashj = nullptr;
@@ -630,7 +632,7 @@ inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_TANK_TIERS = {
     VashjTargetTier{ VashjTarget::CoilfangElite },
     VashjTargetTier{ VashjTarget::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
 };
-inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_OTHER_TIERS = {
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_HEALER_TIERS = {
     VashjTargetTier{ VashjTarget::EnchantedElemental },
     VashjTargetTier{ VashjTarget::CoilfangElite },
     VashjTargetTier{ VashjTarget::CoilfangStrider },
@@ -668,12 +670,6 @@ inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_RANGED_TIERS = {
 inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MELEE_TIERS = {
     VashjTargetTier{ VashjTarget::EnchantedElemental, VASHJ_ENCHANTED_NEAR_HER_DISTANCE },
     VashjTargetTier{ VashjTarget::CoilfangElite },
-    VashjTargetTier{ VashjTarget::LadyVashj },
-};
-inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_OTHER_TIERS = {
-    VashjTargetTier{ VashjTarget::EnchantedElemental },
-    VashjTargetTier{ VashjTarget::CoilfangElite },
-    VashjTargetTier{ VashjTarget::CoilfangStrider },
     VashjTargetTier{ VashjTarget::LadyVashj },
 };
 
@@ -784,18 +780,20 @@ VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI);
 // rockClearance.
 bool IsOnVashjDais(
     float x, float y, float margin, float rockClearance = VASHJ_NORTH_ROCK_CLEARANCE);
-// A step that leads away from every position given while staying on the dais. facing is optional,
-// for a tank: when the bot is its victim, a step leading away from it is walked backwards. spores
-// is optional too: when given, no step ends within sporeRadius of one.
+// A step that leads away from every position given while staying on the dais and rockClearance
+// off the north rock: VASHJ_NORTH_ROCK_CLEARANCE for her tank, VASHJ_STANDING_ROCK_CLEARANCE for
+// anyone else. facing is optional, for a tank: when the bot is its victim, a step leading away
+// from it is walked backwards. spores is optional too: when given, no step ends within
+// sporeRadius of one.
 bool FindVashjDaisStepAwayFromPositions(
-    Player* bot, std::vector<Position> const& positions, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
-    float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
+    Player* bot, std::vector<Position> const& positions, Unit* facing, float rockClearance,
+    float& stepX, float& stepY, float& stepZ, bool& backwards,
+    std::vector<Position> const* spores = nullptr, float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
 // The same, away from where each unit given stands now.
 bool FindVashjDaisStepAwayFromUnits(
-    Player* bot, std::vector<Unit*> const& units, Unit* facing, float& stepX, float& stepY,
-    float& stepZ, bool& backwards, std::vector<Position> const* spores = nullptr,
-    float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
+    Player* bot, std::vector<Unit*> const& units, Unit* facing, float rockClearance,
+    float& stepX, float& stepY, float& stepZ, bool& backwards,
+    std::vector<Position> const* spores = nullptr, float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
 // For her tank pinned by pools, where no single step gains on them: the spot up to 35y away,
 // TOXIC_SPORES_TANK_AVOID_RADIUS or more from every pool, cheapest to reach in a straight line
 // that stays on the dais, counting yards walked through a pool several times over.
@@ -807,6 +805,9 @@ bool HasVashjStaticCharge(Player* player);
 bool IsVashjRingMelee(Player* bot, Unit* vashj);
 // True if any pool is within radius of the bot.
 bool IsNearToxicSpores(PlayerbotAI* botAI, Player* bot, float radius);
+// True if the bot is in melee range of target, on the dais, and radius or more from every pool.
+bool IsInMeleeRangeClearOfSpores(
+    Player* bot, Unit* target, std::vector<Position> const& spores, float radius);
 // A Paladin under Divine Shield or a Priest under Dispersion, who may walk straight through pools
 // on the way somewhere, though not stop in one.
 bool CanWalkThroughToxicSpores(Player* bot);
@@ -834,6 +835,9 @@ bool GetVashjReachBlockedBySpores(PlayerbotAI* botAI, Player* bot, Unit*& target
 bool GetStepToCastRangeAroundSpores(
     Player* bot, Unit* target, float castRange, std::vector<Position> const& spores, float& stepX,
     float& stepY, float& stepZ);
+// True if a phase 3 ranged bot is within VASHJ_PHASE_3_RANGED_DISTANCE of her, or within
+// VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE of another member.
+bool IsVashjPhase3RangedTooClose(Player* bot, Unit* vashj);
 // True for any bot but Vashj's target that holds Static Charge, or while her target holds it.
 bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 // True if the bot should step away from a Static Charge pulse: a holder other than her target
@@ -876,22 +880,24 @@ bool IsTaintedCoreStillToLoot(Creature* tainted);
 // True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter
 // (only matters when no cluster has a healer left and the looter is picked from the rest).
 bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted);
+// The living Tainted Elemental the bot is assigned to attack, else nullptr.
+Creature* GetTaintedElementalToKill(Player* bot);
 // Chosen once per Tainted Elemental by the mechanic tracker bot via
 // LadyVashjAssignTaintedCoreLooterAction.
 Player* GetDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
-Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
+Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature const& pet, Unit* vashj);
 // True if a tank is the unit's victim.
-bool IsVashjAddHeldByTank(Unit* unit);
+bool IsVashjAddHeldByTank(Unit const& unit);
 // The bot's class taunt on target. False if it has none, or can't cast it now.
 bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
 // The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
 // is attacking, else the first in group order. Nullptr if no tank is attacking it.
-Player* GetVashjAddOwningTank(Player* bot, Unit* add);
+Player* GetVashjAddOwningTank(Player* bot, Unit const& add);
 // True if no other living bot tank is nearer the add among those not holding an Elite or Strider
 // of their own.
-bool IsNearestFreeVashjTank(Player* bot, Unit* add);
+bool IsNearestFreeVashjTank(Player* bot, Unit const& add);
 // The bot's target tiers for the phase, best first. killsTainted: one of the cluster sent after a
 // Tainted Elemental.
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
