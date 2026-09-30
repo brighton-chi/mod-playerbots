@@ -178,6 +178,9 @@ bool IsInToxicPool(PlayerbotAI* botAI);
 
 // Hydross the Unstable <Duke of Currents>
 
+// Ranged spread this far apart in frost phase, to mitigate Water Tomb.
+inline constexpr float HYDROSS_FROST_RANGED_SPREAD_DISTANCE = 6.0f;
+
 inline Position const HYDROSS_FROST_TANK_POSITION =  { -236.669f, -358.352f, -0.828f };
 inline Position const HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
 
@@ -322,7 +325,7 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 // Tidal Surge's range is 10 yards.
-inline constexpr float CARIBDIS_RANGED_MIN_DISTANCE = 12.0f;
+inline constexpr float CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE = 12.0f;
 // Out of sight, range means nothing: a bot within spell range behind the pillar still cannot shoot,
 // so the walk goes on until she is in sight. This only stops it running into her.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
@@ -351,14 +354,29 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
+struct KarathressCouncilAssignment
+{
+    char const* name;
+    int8 assistTankIndex; // -1 for the main tank
+};
+
+inline constexpr std::array KARATHRESS_COUNCIL = {
+    KarathressCouncilAssignment{ "fathom-lord karathress", -1 },
+    KarathressCouncilAssignment{ "fathom-guard caribdis", 0 },
+    KarathressCouncilAssignment{ "fathom-guard sharkkis", 1 },
+    KarathressCouncilAssignment{ "fathom-guard tidalvess", 2 },
+};
+
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
+// A Fathom Sporebat before a Fathom Lurker; null once none is left.
+Unit* GetSharkkisPet(Player* bot);
 Unit* GetAssignedCouncilMember(PlayerbotAI* botAI);
 // For a tank to move to its designated position, it must not only acquire its own target but not
 // be holding any other tank's target.
-bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI);
+bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 
 // Morogrim Tidewalker

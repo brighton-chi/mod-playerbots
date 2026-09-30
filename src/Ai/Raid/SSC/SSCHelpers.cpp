@@ -710,19 +710,6 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
 namespace // Karathress
 {
 
-struct CouncilAssignment
-{
-    char const* name;
-    int8 assistTankIndex; // -1 for the main tank
-};
-
-constexpr std::array<CouncilAssignment, 4> KARATHRESS_COUNCIL = {{
-    { "fathom-lord karathress", -1 },
-    { "fathom-guard caribdis", 0 },
-    { "fathom-guard sharkkis", 1 },
-    { "fathom-guard tidalvess", 2 },
-}};
-
 // GetGroupAssistTank does not allow dead tanks to be indexed, so this helper serves that purpose.
 Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
 {
@@ -752,7 +739,7 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 {
     Player* tank = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
-    for (CouncilAssignment const& assignment : KARATHRESS_COUNCIL)
+    for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         bool const assigned = assignment.assistTankIndex < 0 ?
             PlayerbotAI::IsMainTank(tank) :
@@ -764,14 +751,14 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
     return nullptr;
 }
 
-bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI)
+bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 {
     Player* bot = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
-    for (CouncilAssignment const& assignment : KARATHRESS_COUNCIL)
+    for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
-        if (!member || member->GetVictim() != bot)
+        if (!member || member == ownTarget || member->GetVictim() != bot)
             continue;
 
         Player* tank = GetCouncilTank(bot, assignment.assistTankIndex);
@@ -787,7 +774,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     Player* bot = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownMember = GetAssignedCouncilMember(botAI);
-    for (CouncilAssignment const& assignment : KARATHRESS_COUNCIL)
+    for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
         Unit* member = AI_VALUE2(Unit*, "find target", assignment.name);
         if (member && member != ownMember && bot->GetDistance(member) < range)
@@ -828,6 +815,26 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
         return sharkkis;
 
     return heldPet;
+}
+
+Unit* GetSharkkisPet(Player* bot)
+{
+    Unit* lurker = nullptr;
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Unit* pet = ref->GetOwner();
+        if (!pet || !pet->IsAlive())
+            continue;
+
+        uint32 const entry = pet->GetEntry();
+        if (entry == Id(SscNpcs::NPC_FATHOM_SPOREBAT))
+            return pet;
+
+        if (entry == Id(SscNpcs::NPC_FATHOM_LURKER))
+            lurker = pet;
+    }
+
+    return lurker;
 }
 
 // Morogrim Tidewalker

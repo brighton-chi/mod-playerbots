@@ -51,8 +51,13 @@ bool HydrossTheUnstableShouldBeTankedByNatureTankTrigger::IsActiveInEncounter()
 
 bool HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) &&
-        IsHydrossInFrostPhase(AI_VALUE2(Unit*, "find target", "hydross the unstable"));
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (!IsHydrossInFrostPhase(AI_VALUE2(Unit*, "find target", "hydross the unstable")))
+        return false;
+
+    return GetNearestPlayerInRadius(bot, HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
 }
 
 bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounter()
@@ -305,8 +310,13 @@ bool FathomLordKarathressTargetsShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldHealCaribdisTankTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
-        AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+    if (!PlayerbotAI::IsHeal(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
+        return false;
+
+    return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
 }
 
 bool FathomLordKarathressPullingBossesTrigger::IsActiveInEncounter()
@@ -343,6 +353,10 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
+    // Stamped once, at engage
+    if (karathressDpsWaitTimer.find(bot->GetInstanceId()) != karathressDpsWaitTimer.end())
+        return false;
+
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
 }
@@ -353,7 +367,10 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-    return caribdis && bot->GetDistance(caribdis) < CARIBDIS_CYCLONE_SUMMON_RANGE;
+    if (!caribdis || bot->GetDistance(caribdis) >= CARIBDIS_CYCLONE_SUMMON_RANGE)
+        return false;
+
+    return GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
 // A bot left hanging still has the knockback's generator in its controlled slot once the tosses

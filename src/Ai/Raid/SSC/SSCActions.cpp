@@ -191,9 +191,9 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& positi
 // To mitigate the effect of Water Tomb
 bool HydrossTheUnstableFrostPhaseSpreadRangedAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 6.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), safeDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
 }
 
 bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
@@ -983,7 +983,7 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
     if (target->GetVictim() != bot || !bot->IsWithinMeleeRange(target))
         return false;
 
-    if (IsHoldingAnotherTanksCouncilMember(botAI))
+    if (IsHoldingAnotherTanksCouncilMember(botAI, target))
         return false;
 
     constexpr float arrivalDist = 4.0f;
@@ -1118,13 +1118,9 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         target = sharkkis;
     }
-    else if (Unit* fathomSporebat = AI_VALUE2(Unit*, "find target", "fathom sporebat"))
+    else if (Unit* pet = GetSharkkisPet(bot))
     {
-        target = fathomSporebat;
-    }
-    else if (Unit* fathomLurker = AI_VALUE2(Unit*, "find target", "fathom lurker"))
-    {
-        target = fathomLurker;
+        target = pet;
     }
     else if (Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
@@ -1163,10 +1159,12 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             return true;
 
         // Flee is held for the whole fight, so ranged keep out of Tidal Surge themselves
-        if (bot->GetExactDist(caribdis) >= CARIBDIS_RANGED_MIN_DISTANCE)
+        if (bot->GetExactDist(caribdis) >= CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE)
             return false;
 
-        return FleePosition(caribdis->GetPosition(), CARIBDIS_RANGED_MIN_DISTANCE);
+        constexpr uint32 minInterval = 0;
+        return FleePosition(
+            caribdis->GetPosition(), CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE, minInterval);
     }
     // While a totem stands, skull stays on it: ranged out of its reach are on something else, and
     // marking that would flip the skull against the bots on the totem

@@ -221,6 +221,11 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
+    // A healer's attack only picks a target and switches on its combat engine, where its heals
+    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
+    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
     if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
         return 1.0f;
 
@@ -526,6 +531,11 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
+    // A healer's attack only picks a target and switches on its combat engine, where its heals
+    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
+    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
     if (HasInnerDemon(bot))
         return 1.0f;
 
@@ -574,21 +584,25 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
+    bool const isStockMove =
+        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
+    if (!isStockMove && !IsAoeThreatAction(bot, action) && !IsAoeTauntAction(bot, action))
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
+    if (isStockMove)
         return 0.0f;
 
     // Hold AoE threat and taunts only when another tank's target is close enough to be hit.
-    if (!IsAoeThreatAction(bot, action) && !IsAoeTauntAction(bot, action))
-        return 1.0f;
-
     return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
 }
 
 float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
 {
+    // Left on in the non-combat engine, where healers re-acquire a target and so get back to
+    // their heals. The melee Blessing hold is kept by a target exclusion instead.
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
@@ -615,26 +629,51 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
 
 float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsDps(bot))
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
+    // A healer's attack only picks a target and switches on its combat engine, where its heals
+    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
+    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
+    // Tanks pick up the council at once.
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
         return 1.0f;
 
+    // Held until the timer is stamped, then for its length
     auto it = karathressDpsWaitTimer.find(karathress->GetInstanceId());
-    if (it == karathressDpsWaitTimer.end())
+    if (it != karathressDpsWaitTimer.end() &&
+        getMSTimeDiff(it->second, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
+    {
+        return 1.0f;
+    }
+
+    // Spells cast on the raid don't touch the council. Totems are the exception, as some attack.
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
         return 0.0f;
 
-    return getMSTimeDiff(it->second, getMSTime()) < KARATHRESS_DPS_WAIT_MS ? 0.0f : 1.0f;
+    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+    return castOnRaid ? 1.0f : 0.0f;
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
@@ -643,17 +682,19 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
-        return 1.0f;
-
-    if (!dynamic_cast<MovementAction*>(action) ||
-        dynamic_cast<FathomLordKarathressPositionCaribdisTankHealerAction*>(action) ||
+    if (dynamic_cast<FathomLordKarathressPositionCaribdisTankHealerAction*>(action) ||
         dynamic_cast<FathomLordKarathressDropFromCycloneAction*>(action))
     {
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
+    if (!PlayerbotAI::IsHeal(bot))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
+        return 1.0f;
+
+    return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ? 0.0f : 1.0f;
 }
 
 // Hold casts through the Cyclone and the drop after it. Point moves stall mid-cast, so a cast on
@@ -663,14 +704,14 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
-        return 1.0f;
-
     if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
         return 0.0f;
 
     // Only a bot that is moving can be partway down, so the height is looked up for no one else
     if (bot->movespline->Finalized())
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
         return 1.0f;
 
     float const floorZ = bot->GetMapHeight(
@@ -718,7 +759,7 @@ float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounte
     if (!target)
         return 1.0f;
 
-    if (target == GetSpitfireTotem(botAI))
+    if (target->IsAlive() && target->GetEntry() == Id(SscNpcs::NPC_SPITFIRE_TOTEM))
         return 0.0f;
 
     return target == AI_VALUE2(Unit*, "find target", "fathom-guard caribdis") ? 0.0f : 1.0f;
