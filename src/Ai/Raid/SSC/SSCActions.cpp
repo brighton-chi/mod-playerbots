@@ -76,6 +76,10 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position pool;
     if (!GetToxicPoolPosition(botAI, pool))
         return false;
@@ -88,8 +92,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
@@ -341,22 +344,22 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const edgeX = lurkerX + runRadius * std::cos(edgeAngle);
     float const edgeY = lurkerY + runRadius * std::sin(edgeAngle);
 
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
         return false;
 
     bot->CastStop();
     if (DoesPathRoundLurker(bot, lurker, edgeX, edgeY, lurkerZ, direction))
     {
         return MoveTo(
-            SSC_MAP_ID, edgeX, edgeY, lurkerZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SSC_MAP_ID, edgeX, edgeY, lurkerZ, false, false, false, false, priority, true, false);
     }
 
     float const stepAngle = botAngle + direction * LURKER_SPOUT_RUN_STEP / runRadius;
     return MoveTo(
         SSC_MAP_ID, lurkerX + runRadius * std::cos(stepAngle),
         lurkerY + runRadius * std::sin(stepAngle), lurkerZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Position the main tank in front of a pillar.
@@ -377,7 +380,8 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
 
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_COMBAT))
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
         return false;
 
     constexpr float pathTolerance = 3.0f;
@@ -390,7 +394,7 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        false, false, false, false, priority, true, false);
 }
 
 // Assign ranged positions within a 120-degree arc behind Lurker.
@@ -948,6 +952,10 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
 // she is in sight, as it does for ranged; in sight it closes only to the healing distance.
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     if (!caribdis)
         return false;
@@ -966,7 +974,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank.
@@ -1236,6 +1244,10 @@ bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* ti
 // No corresponding method for melee since they will do so anyway
 bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
         return false;
@@ -1254,13 +1266,17 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Brings back a non-tank that ended up far out, such as one carried off by Watery Grave. Inside
 // the distance, everybody moves as they normally would.
 bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
         return false;
@@ -1272,7 +1288,7 @@ bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Lady Vashj <Coilfang Matron>
@@ -1410,6 +1426,10 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         return false;
     }
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     float stepX;
     float stepY;
     if (!GetPathStepTowardPoint(
@@ -1420,7 +1440,7 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Ranged dps and healers hold cluster slots around the edge of the dais: the cluster nearest a
@@ -1428,6 +1448,10 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 // in. Bots go back to their slot after being sent after an elemental.
 bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position const* clusterPosition =
         GetVashjClusterPositionToReturnTo(bot, AI_VALUE(Unit*, "current target"));
     if (!clusterPosition)
@@ -1444,13 +1468,17 @@ bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // Nothing else puts ranged at range in phase 3. Out of Entangle first, then a little apart, so one
 // spore catches fewer of them.
 bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!IsVashjPhase3RangedTooClose(bot, vashj))
         return false;
@@ -1473,8 +1501,7 @@ bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
 // Mechanic tracker only. The pick is kept until that Shaman dies or leaves the instance.
@@ -1515,6 +1542,10 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
 
 bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!IsInVashjStaticChargeReach(bot, vashj))
         return false;
@@ -1544,8 +1575,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
 namespace
@@ -1858,6 +1888,10 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderToHoldPosition(Unit* str
 // Walks a path, which goes round the generators.
 bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
         return false;
@@ -1869,7 +1903,7 @@ bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        priority, true, false);
 }
 
 // The tank takes the Elite to the nearer of the two Elite tank positions, where a cluster's ranged
@@ -2605,6 +2639,13 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
 // pool walks straight out of the nearest one.
 bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+
+    // Every move here is a combat one, except Vashj's own target's, which the avoid action forces
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if ((!vashj || vashj->GetVictim() != bot) && IsWaitingForLastMove(priority))
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
 
@@ -2615,8 +2656,7 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
             bot, target, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
     {
         return MoveTo(
-            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-            MovementPriority::MOVEMENT_COMBAT, true, false);
+            SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
     }
 
     if (!IsNearToxicSpores(botAI, TOXIC_SPORES_AVOID_RADIUS))
@@ -2632,14 +2672,17 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
 // Recomputed every tick; walking a clear line keeps the same point best, and once the straight
 // line to cast range is clear, stock reach-spell takes over again.
 bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* target;
     float range;
     if (!GetVashjReachBlockedBySpores(botAI, target, range))
@@ -2655,8 +2698,7 @@ bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
 bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
