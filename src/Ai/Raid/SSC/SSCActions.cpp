@@ -98,10 +98,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 20.0f;
-    Creature* totem =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM), searchRadius);
-    return totem && MarkTargetWithSkull(bot, totem);
+    return MarkTargetWithSkull(bot, GetWaterElementalTotem(botAI));
 }
 
 // Shared Bosses
@@ -112,8 +109,7 @@ bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    Player* tank = _assistTankIndex == MAIN_TANK ?
-        GetGroupMainTank(bot) : GetGroupAssistTank(bot, _assistTankIndex);
+    Player* tank = GetGroupMainTank(bot);
     if (!tank || !tank->IsAlive())
         return false;
 
@@ -1313,7 +1309,7 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 
     // The point moves with him as the tank takes him to the corner, so ranged trail him there and
     // are never between him and the tank
-    Position const behind = GetTidewalkerStackPoint(tidewalker);
+    Position const behind = GetTidewalkerStackPoint(*tidewalker);
 
     float stepX;
     float stepY;

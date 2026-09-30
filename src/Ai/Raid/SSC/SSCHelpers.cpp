@@ -9,6 +9,7 @@
 #include "Map.h"
 #include "PathGenerator.h"
 #include "Random.h"
+#include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCValueContext.h"
@@ -169,7 +170,12 @@ bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)
     if (positions.empty())
         return false;
 
-    toxicPool = positions.front();
+    Player* bot = botAI->GetBot();
+    toxicPool = *std::min_element(positions.begin(), positions.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2d(a) < bot->GetExactDist2d(b);
+        });
     return true;
 }
 
@@ -183,6 +189,32 @@ bool IsNearToxicPool(PlayerbotAI* botAI, float radius)
 bool IsInToxicPool(PlayerbotAI* botAI)
 {
     return IsNearToxicPool(botAI, TOXIC_POOL_HAZARD_RADIUS);
+}
+
+ObjectGuid FindWaterElementalTotemGuid(Player* bot)
+{
+    Creature* totem = bot->FindNearestCreature(
+        Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM), WATER_ELEMENTAL_TOTEM_SEARCH_DISTANCE);
+    return totem ? totem->GetGUID() : ObjectGuid::Empty;
+}
+
+Creature* GetWaterElementalTotem(PlayerbotAI* botAI)
+{
+    return GetCachedCreature(botAI, "ssc water elemental totem");
+}
+
+bool IsSkullOnWaterElementalTotem(PlayerbotAI* botAI)
+{
+    Group* group = botAI->GetBot()->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const skull = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    if (skull.GetEntry() != Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM))
+        return false;
+
+    Unit* totem = botAI->GetUnit(skull);
+    return totem && totem->IsAlive();
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -839,16 +871,16 @@ Unit* GetSharkkisPet(Player* bot)
 
 // Morogrim Tidewalker
 
-Position GetTidewalkerStackPoint(Unit* tidewalker)
+Position GetTidewalkerStackPoint(Unit const& tidewalker)
 {
-    Unit* victim = tidewalker->GetVictim();
-    float const behindAngle = (victim ? tidewalker->GetAngle(victim) :
-        tidewalker->GetOrientation()) + static_cast<float>(M_PI);
+    Unit* victim = tidewalker.GetVictim();
+    float const behindAngle = (victim ? tidewalker.GetAngle(victim) :
+        tidewalker.GetOrientation()) + static_cast<float>(M_PI);
 
     return Position(
-        tidewalker->GetPositionX() + std::cos(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
-        tidewalker->GetPositionY() + std::sin(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
-        tidewalker->GetPositionZ());
+        tidewalker.GetPositionX() + std::cos(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
+        tidewalker.GetPositionY() + std::sin(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
+        tidewalker.GetPositionZ());
 }
 
 // Lady Vashj <Coilfang Matron>

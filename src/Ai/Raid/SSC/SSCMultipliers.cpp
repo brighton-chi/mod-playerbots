@@ -73,7 +73,7 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
 
 // Trash
 
-float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
+float UnderbogColossusHoldNearToxicPoolMultiplier::GetValue(Action* action)
 {
     if (bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
@@ -89,6 +89,9 @@ float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+        return 1.0f;
+
+    if (IsEncounterInProgress(bot, SSC_MAP_ID))
         return 1.0f;
 
     return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
@@ -803,7 +806,7 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
         return 1.0f;
 
-    return bot->GetExactDist(GetTidewalkerStackPoint(tidewalker)) <=
+    return bot->GetExactDist(GetTidewalkerStackPoint(*tidewalker)) <=
         TIDEWALKER_RANGED_STACK_RADIUS ? 0.0f : 1.0f;
 }
 

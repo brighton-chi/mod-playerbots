@@ -176,6 +176,14 @@ bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool);
 bool IsNearToxicPool(PlayerbotAI* botAI, float radius);
 bool IsInToxicPool(PlayerbotAI* botAI);
 
+inline constexpr float WATER_ELEMENTAL_TOTEM_SEARCH_DISTANCE = 20.0f;
+inline constexpr uint32 WATER_ELEMENTAL_TOTEM_CACHE_INTERVAL_MS = 1000;
+
+ObjectGuid FindWaterElementalTotemGuid(Player* bot);
+Creature* GetWaterElementalTotem(PlayerbotAI* botAI);
+// True while skull is on a living Water Elemental Totem, so a second totem doesn't take it.
+bool IsSkullOnWaterElementalTotem(PlayerbotAI* botAI);
+
 // Hydross the Unstable <Duke of Currents>
 
 // Ranged spread this far apart in frost phase, to mitigate Water Tomb.
@@ -395,9 +403,10 @@ inline constexpr float TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE = 50.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-// The stack point is measured not based on Tidewalker but instead is computed by drawing a line
-// between the main tank and Tidewalker. This approach is cleaner during the phase transition.
-Position GetTidewalkerStackPoint(Unit* tidewalker);
+// 5 yd behind him, on the line from his victim through him (his facing if he has none).
+// Following the victim rather than his facing keeps the point steady while the tank walks him
+// to the corner.
+Position GetTidewalkerStackPoint(Unit const& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 

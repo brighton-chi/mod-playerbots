@@ -30,11 +30,11 @@ protected:
 
 // Trash
 
-class UnderbogColossusEscapeToxicPoolMultiplier : public Multiplier
+class UnderbogColossusHoldNearToxicPoolMultiplier : public Multiplier
 {
 public:
-    UnderbogColossusEscapeToxicPoolMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "underbog colossus escape toxic pool") {}
+    UnderbogColossusHoldNearToxicPoolMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "underbog colossus hold near toxic pool") {}
     float GetValue(Action* action) override;
 };
 

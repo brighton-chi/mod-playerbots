@@ -34,6 +34,18 @@ private:
     float const _searchRadius;
 };
 
+class SscWaterElementalTotemValue : public CalculatedValue<ObjectGuid>
+{
+public:
+    SscWaterElementalTotemValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(
+              botAI, "ssc water elemental totem",
+              SscHelpers::WATER_ELEMENTAL_TOTEM_CACHE_INTERVAL_MS) {}
+
+protected:
+    ObjectGuid Calculate() override { return SscHelpers::FindWaterElementalTotemGuid(bot); }
+};
+
 class SscLurkerGuardiansValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -98,6 +110,8 @@ public:
     RaidSscValueContext()
     {
         creators["ssc toxic pool"] = &RaidSscValueContext::ssc_toxic_pool;
+        creators["ssc water elemental totem"] =
+            &RaidSscValueContext::ssc_water_elemental_totem;
         creators["ssc lurker guardians"] = &RaidSscValueContext::ssc_lurker_guardians;
         creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
@@ -111,6 +125,9 @@ private:
         return new SscHazardPositionsValue(
             botAI, "ssc toxic pool", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_POOL),
             SscHelpers::TOXIC_POOL_SEARCH_RADIUS);
+    }
+    static UntypedValue* ssc_water_elemental_totem(PlayerbotAI* botAI) {
+        return new SscWaterElementalTotemValue(botAI);
     }
     static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI) {
         return new SscLurkerGuardiansValue(botAI);

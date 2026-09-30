@@ -207,7 +207,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // Trash Mobs
-    multipliers.push_back(new UnderbogColossusEscapeToxicPoolMultiplier(botAI));
+    multipliers.push_back(new UnderbogColossusHoldNearToxicPoolMultiplier(botAI));
 
     // Shared Bosses
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
@@ -318,14 +318,14 @@ void AppendMorogrimTidewalkerMurlocExclusions(
     if (!tidewalker)
         return;
 
-    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
+        if (guid.GetEntry() != Id(SscNpcs::NPC_TIDEWALKER_LURKER))
+            continue;
+
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->GetEntry() == Id(SscNpcs::NPC_TIDEWALKER_LURKER) &&
-            unit->GetExactDist2d(tidewalker) > TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE)
-        {
+        if (unit && unit->GetExactDist2d(tidewalker) > TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE)
             exclusions.insert(guid);
-        }
     }
 }
 

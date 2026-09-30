@@ -29,12 +29,18 @@ bool SscNoEncounterInProgressTrigger::IsActive()
 
 bool UnderbogColossusInToxicPoolTrigger::IsActive()
 {
-    return IsInToxicPool(botAI);
+    return !IsEncounterInProgress(bot, SSC_MAP_ID) && IsInToxicPool(botAI);
 }
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && AI_VALUE2(Unit*, "find target", "greyheart tidecaller");
+    if (!PlayerbotAI::IsDps(bot) || IsEncounterInProgress(bot, SSC_MAP_ID))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "greyheart tidecaller"))
+        return false;
+
+    return GetWaterElementalTotem(botAI) && !IsSkullOnWaterElementalTotem(botAI);
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -416,7 +422,11 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
         return false;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT;
+    if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
+        return false;
+
+    return bot->GetExactDist(GetTidewalkerStackPoint(*tidewalker)) >
+        TIDEWALKER_RANGED_STACK_RADIUS;
 }
 
 // Phase 1 only. To keep bots from chasing murlocs across the room, which is particularly prone to

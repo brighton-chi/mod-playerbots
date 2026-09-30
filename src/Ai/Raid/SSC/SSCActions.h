@@ -47,22 +47,17 @@ public:
 
 // Shared Bosses
 
-// Misdirect to the main tank, or to an assist tank at assistTankIndex. Used for
-// Morogrim Tidewalker, Lady Vashj, and Coilfang Striders.
+// Misdirect to the main tank. Used for Morogrim Tidewalker and Lady Vashj.
 class SscMisdirectTargetToTankAction : public Action
 {
 public:
-    static constexpr int8 MAIN_TANK = -1;
-
     SscMisdirectTargetToTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& targetName,
-        int8 assistTankIndex = MAIN_TANK)
-        : Action(botAI, name), _targetName(targetName), _assistTankIndex(assistTankIndex) {}
+        PlayerbotAI* botAI, std::string const& name, std::string const& targetName)
+        : Action(botAI, name), _targetName(targetName) {}
     bool Execute(Event event) override;
 
 protected:
     std::string const _targetName;
-    int8 const _assistTankIndex;
 };
 
 // Hydross the Unstable <Duke of Currents>
