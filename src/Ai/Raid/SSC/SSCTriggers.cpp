@@ -651,8 +651,8 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     return !looter || !looter->IsAlive();
 }
 
-// The ranged dps of the cluster nearest the elemental. Its looter waits beside it instead (see
-// the loot action).
+// The ranged dps of the cluster nearest the elemental, a ranged dps looter included. A healer
+// looter waits beside it instead (see the loot action).
 bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
     if (!GetTaintedElementalToKill(bot))
@@ -665,7 +665,7 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 // From the looter's pick until the core is taken from the corpse.
 bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot) || GetDesignatedCoreLooter(bot) != bot)
+    if (!IsDesignatedCoreLooter(bot))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -687,7 +687,11 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
             TaintedLogElapsedMs(bot), TaintedLogSeen(bot, "core") ? "yes" : "NO");
     }
 
-    return tainted && IsTaintedCoreStillToLoot(tainted);
+    if (!IsTaintedCoreStillToLoot(tainted))
+        return false;
+
+    // Nothing to do while the looter waits beside the living elemental
+    return !tainted->IsAlive() || bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE;
 }
 
 // A core with nowhere to go: in phase 3, with no generator left; from a chain that found no way; or
@@ -717,7 +721,7 @@ bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     if (!chain->failed)
     {
         Creature* nextTainted = GetAssignedTaintedElemental(bot);
-        if (!nextTainted || nextTainted->IsAlive() || GetTaintedCoreLootSlot(nextTainted) < 0)
+        if (!nextTainted || nextTainted->IsAlive() || GetTaintedCoreLootSlot(*nextTainted) < 0)
             return false;
     }
 

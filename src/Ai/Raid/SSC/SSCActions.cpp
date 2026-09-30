@@ -2091,16 +2091,15 @@ bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
     return changed;
 }
 
-// Chosen once per elemental, from where everyone stands when it spawns. Choosing again as bots
-// move would hand the job back and forth, since the killers walk toward it too.
+// Chosen when the elemental spawns, and again if the looter dies before it does.
 bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
 {
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (!tainted)
         return false;
 
-    int8 const cluster = GetNearestVashjCluster(tainted);
-    Player* looter = FindTaintedCoreLooter(bot, tainted, cluster);
+    int8 const cluster = GetNearestVashjCluster(*tainted);
+    Player* looter = FindTaintedCoreLooter(bot, *tainted, cluster);
     if (!looter)
         return false;
 
@@ -2147,7 +2146,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && IsAssignedToAttackTaintedElemental(member, tainted))
+            if (member && member->IsAlive() && GetTaintedElementalToKill(member))
             {
                 killers += std::string(member->GetName()) + " " +
                     std::to_string(static_cast<int>(member->GetExactDist(tainted))) + " yd; ";
@@ -2246,11 +2245,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             tainted->GetPositionX(), tainted->GetPositionY(), tainted->GetPositionZ());
     }
 
-    // Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
-    // measures it, so the height gap needs no check of its own.
-    constexpr float maxLootRange = INTERACTION_DISTANCE - 2.0f;
-
-    if (bot->GetDistance(tainted) > maxLootRange)
+    if (bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE)
     {
         // TEMP LOG
         if (TaintedLogThrottle(bot, "tocorpse"))
@@ -2268,7 +2263,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
         // Steps stop just inside loot range, centre to centre
         constexpr float rangeMargin = 0.5f;
         float const stopDistance =
-            maxLootRange + bot->GetCombatReach() + tainted->GetCombatReach() - rangeMargin;
+            VASHJ_CORE_LOOT_RANGE + bot->GetCombatReach() + tainted->GetCombatReach() - rangeMargin;
 
         float stepX;
         float stepY;
@@ -2294,7 +2289,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             return false;
     }
 
-    int8 const coreSlot = GetTaintedCoreLootSlot(tainted);
+    int8 const coreSlot = GetTaintedCoreLootSlot(*tainted);
     if (coreSlot < 0)
         return false;
 

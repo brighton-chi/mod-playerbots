@@ -1701,11 +1701,8 @@ Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarg
         return nullptr;
 
     // The looter stays on the elemental until the core is looted
-    if (GetDesignatedCoreLooter(bot) == bot &&
-        IsTaintedCoreStillToLoot(GetAssignedTaintedElemental(bot)))
-    {
+    if (IsDesignatedCoreLooter(bot) && IsTaintedCoreStillToLoot(GetAssignedTaintedElemental(bot)))
         return nullptr;
-    }
 
     if (GetTaintedElementalToKill(bot))
         return nullptr;
@@ -1747,16 +1744,16 @@ Player* GetVashjClusterHealer(Player* bot, int8 cluster)
 
 // From the Tainted spawn just east of the rock, cluster 4 is nearest but would have to walk round
 // it, so cluster 3 takes it. No other spawn changes.
-int8 GetNearestVashjCluster(Unit* unit)
+int8 GetNearestVashjCluster(Unit const& unit)
 {
     int8 nearest = 0;
     float nearestDistance = std::numeric_limits<float>::max();
     for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
     {
         Position const& slot = VASHJ_CLUSTERS[i].ranged[0];
-        float const distance = unit->GetExactDist2d(slot);
+        float const distance = unit.GetExactDist2d(slot);
         if (distance < nearestDistance &&
-            !SegmentCrossesPolygon(slot, unit->GetPosition(), VASHJ_NORTH_ROCK))
+            !SegmentCrossesPolygon(slot, unit.GetPosition(), VASHJ_NORTH_ROCK))
         {
             nearestDistance = distance;
             nearest = static_cast<int8>(i);
@@ -1766,40 +1763,39 @@ int8 GetNearestVashjCluster(Unit* unit)
     return nearest;
 }
 
-Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
+Player* FindTaintedCoreLooter(Player* bot, Unit const& tainted, int8 cluster)
 {
     if (Player* healer = GetVashjClusterHealer(bot, cluster))
         return healer;
 
     Player* looter = nullptr;
     float looterDistance = std::numeric_limits<float>::max();
-    for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
+    if (Group* group = bot->GetGroup())
     {
-        Player* healer = GetVashjClusterHealer(bot, static_cast<int8>(i));
-        float const distance = tainted->GetExactDist2d(VASHJ_CLUSTERS[i].healer);
-        if (healer && distance < looterDistance)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            looterDistance = distance;
-            looter = healer;
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !member->IsInMap(bot) ||
+                !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member) ||
+                GetVashjClusterSlot(member).cluster >= 0)
+            {
+                continue;
+            }
+
+            float const distance = member->GetExactDist(tainted);
+            if (distance < looterDistance)
+            {
+                looterDistance = distance;
+                looter = member;
+            }
         }
     }
 
     if (looter)
         return looter;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    for (Player* member : GetVashjClusterRanged(bot, cluster))
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || PlayerbotAI::IsTank(member))
-        {
-            continue;
-        }
-
         float const distance = member->GetExactDist(tainted);
         if (distance < looterDistance)
         {
@@ -1820,9 +1816,9 @@ Creature* GetAssignedTaintedElemental(Player* bot)
     return ObjectAccessor::GetCreature(*bot, it->second.tainted);
 }
 
-int8 GetTaintedCoreLootSlot(Creature* tainted)
+int8 GetTaintedCoreLootSlot(Creature const& tainted)
 {
-    std::vector<LootItem> const& items = tainted->loot.items;
+    std::vector<LootItem> const& items = tainted.loot.items;
     for (size_t i = 0; i < items.size(); ++i)
     {
         if (items[i].itemid == Id(SscItems::ITEM_TAINTED_CORE) && !items[i].is_looted)
@@ -1834,26 +1830,7 @@ int8 GetTaintedCoreLootSlot(Creature* tainted)
 
 bool IsTaintedCoreStillToLoot(Creature* tainted)
 {
-    return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(tainted) >= 0);
-}
-
-bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted)
-{
-    if (!tainted)
-        return false;
-
-    if (!PlayerbotAI::IsRangedDps(bot))
-        return false;
-
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end() || it->second.tainted != tainted->GetGUID() ||
-        it->second.looter == bot->GetGUID())
-    {
-        return false;
-    }
-
-    VashjClusterSlot const slot = GetVashjClusterSlot(bot);
-    return slot.cluster >= 0 && slot.cluster == it->second.cluster;
+    return tainted && (tainted->IsAlive() || GetTaintedCoreLootSlot(*tainted) >= 0);
 }
 
 Creature* GetTaintedElementalToKill(Player* bot)
@@ -1861,18 +1838,21 @@ Creature* GetTaintedElementalToKill(Player* bot)
     if (!PlayerbotAI::IsRangedDps(bot))
         return nullptr;
 
-    Creature* tainted = GetAssignedTaintedElemental(bot);
-    return tainted && tainted->IsAlive() && IsAssignedToAttackTaintedElemental(bot, tainted) ?
-        tainted : nullptr;
+    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
+    if (it == vashjTaintedCoreLooter.end() ||
+        GetVashjClusterSlot(bot).cluster != it->second.cluster)
+    {
+        return nullptr;
+    }
+
+    Creature* tainted = ObjectAccessor::GetCreature(*bot, it->second.tainted);
+    return tainted && tainted->IsAlive() ? tainted : nullptr;
 }
 
-Player* GetDesignatedCoreLooter(Player* bot)
+bool IsDesignatedCoreLooter(Player* bot)
 {
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end())
-        return nullptr;
-
-    return ObjectAccessor::GetPlayer(*bot, it->second.looter);
+    return it != vashjTaintedCoreLooter.end() && it->second.looter == bot->GetGUID();
 }
 
 bool IsVashjAddHeldByTank(Unit const& unit)
@@ -2468,13 +2448,6 @@ GameObject* PlanVashjCoreRoute(
     return nullptr;
 }
 
-// One of the ranged dps sent to kill the elemental, while it lives
-bool IsBusyAttackingTaintedElemental(Player* bot, VashjCoreChain const& chain, Player* player)
-{
-    Creature* tainted = ObjectAccessor::GetCreature(*bot, chain.tainted);
-    return tainted && tainted->IsAlive() && IsAssignedToAttackTaintedElemental(player, tainted);
-}
-
 // The living bot nearest the spot that can catch: not a tank, not the chain's start, not already
 // a catcher, not holding a core. attackersOnly limits it to the elemental's killers.
 Player* FindVashjCoreCatcher(
@@ -2500,8 +2473,7 @@ Player* FindVashjCoreCatcher(
 
         float const distance = member->GetExactDist2d(spot);
         if (distance >= nearestDistance ||
-            (attackersOnly && !IsBusyAttackingTaintedElemental(bot, chain, member)) ||
-            HasTaintedCore(member))
+            (attackersOnly && !GetTaintedElementalToKill(member)) || HasTaintedCore(member))
         {
             continue;
         }
@@ -2515,11 +2487,10 @@ Player* FindVashjCoreCatcher(
 
 // Gives a spot to player: a killer walks there once the elemental is dead, anyone else as soon as
 // the spot is released and it has reacted. The spot's release stays as it was.
-void SetVashjCoreCatcher(
-    Player* bot, VashjCoreChain const& chain, VashjCoreCatcher& catcher, Player* player)
+void SetVashjCoreCatcher(VashjCoreCatcher& catcher, Player* player)
 {
     catcher.bot = player ? player->GetGUID() : ObjectGuid::Empty;
-    catcher.prepositions = !player || !IsBusyAttackingTaintedElemental(bot, chain, player);
+    catcher.prepositions = !player || !GetTaintedElementalToKill(player);
     catcher.readyDelay = urand(1000, 2000);
     catcher.arrived = false;
 }
@@ -2536,7 +2507,7 @@ void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain)
     if (!player)
         player = FindVashjCoreCatcher(bot, chain, first.spot, false, ObjectGuid::Empty);
 
-    SetVashjCoreCatcher(bot, chain, first, player);
+    SetVashjCoreCatcher(first, player);
     first.released = true;
     first.releaseTime = getMSTime();
 }
@@ -2642,7 +2613,7 @@ bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
     if (!player)
         return false;
 
-    SetVashjCoreCatcher(bot, chain, catcher, player);
+    SetVashjCoreCatcher(catcher, player);
 
     // TEMP LOG
     LOG_INFO("playerbots", "[SSC tainted] +{}ms catcher {} reassigned to {}",
@@ -2658,7 +2629,7 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
         return;
 
     Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, ObjectGuid::Empty);
-    SetVashjCoreCatcher(bot, chain, catcher, player);
+    SetVashjCoreCatcher(catcher, player);
     catcher.released = true;
     catcher.releaseTime = getMSTime();
 

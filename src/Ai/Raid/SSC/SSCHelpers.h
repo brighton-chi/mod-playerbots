@@ -8,6 +8,7 @@
 #define PLAYERBOTS_SSCHELPERS_H
 
 #include "Common.h"
+#include "ObjectDefines.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
@@ -703,6 +704,9 @@ inline std::array const VASHJ_SHIELD_GENERATOR_POSITIONS = {
     Position{  7.417f, -901.109f, 44.0f },
 };
 
+// Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
+// measures it, so the height gap needs no check of its own.
+inline constexpr float VASHJ_CORE_LOOT_RANGE = INTERACTION_DISTANCE - 2.0f;
 // Throw Key reaches 40y edge to edge, about 43y centre to centre. Spots are planned this far
 // apart centre to centre, in 3D.
 inline constexpr float VASHJ_CORE_THROW_PLAN_DISTANCE = 40.0f;
@@ -867,25 +871,23 @@ std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster);
 // Nullptr if the cluster has no healer or it is dead.
 Player* GetVashjClusterHealer(Player* bot, int8 cluster);
 // Skips a cluster whose straight line to the unit crosses the north rock.
-int8 GetNearestVashjCluster(Unit* unit);
-// The cluster's healer; else the healer of the nearest cluster that has one; else the closest
-// non-tank bot.
-Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster);
+int8 GetNearestVashjCluster(Unit const& unit);
+// The cluster's healer; else the spare healer (no cluster slot) nearest the elemental, who rarely
+// gets there in time, so that core is given up; else the cluster's ranged dps nearest it.
+Player* FindTaintedCoreLooter(Player* bot, Unit const& tainted, int8 cluster);
 // The Tainted Elemental the current looter was chosen for, alive or a corpse.
 Creature* GetAssignedTaintedElemental(Player* bot);
 // The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
 // the core is taken. The corpse stays flagged lootable until its looter releases the loot.
-int8 GetTaintedCoreLootSlot(Creature* tainted);
+int8 GetTaintedCoreLootSlot(Creature const& tainted);
 // From the elemental's spawn until its core is taken from the corpse.
 bool IsTaintedCoreStillToLoot(Creature* tainted);
-// True for the ranged dps of the cluster nearest the Tainted Elemental, other than its looter
-// (only matters when no cluster has a healer left and the looter is picked from the rest).
-bool IsAssignedToAttackTaintedElemental(Player* bot, Unit* tainted);
-// The living Tainted Elemental the bot is assigned to attack, else nullptr.
+// The living Tainted Elemental the bot is assigned to attack, else nullptr: the ranged dps of
+// the cluster nearest it, its looter included.
 Creature* GetTaintedElementalToKill(Player* bot);
-// Chosen once per Tainted Elemental by the mechanic tracker bot via
+// The looter the mechanic tracker bot chose for the current Tainted Elemental, via
 // LadyVashjAssignTaintedCoreLooterAction.
-Player* GetDesignatedCoreLooter(Player* bot);
+bool IsDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature const& pet, Unit* vashj);
