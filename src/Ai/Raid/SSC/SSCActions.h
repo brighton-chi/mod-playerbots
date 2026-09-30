@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "Position.h"
+#include "SSCHelpers.h"
 #include <string>
 #include <vector>
 
@@ -533,9 +534,10 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToCoreSpot(int8 index);
-    bool ThrowCore(size_t next, Item* core, GameObject* generator);
-    bool UseCoreOnGenerator(GameObject* generator);
+    bool MoveToCoreSpot(SscHelpers::VashjCoreChain& chain, int8 index);
+    bool ThrowCore(
+        SscHelpers::VashjCoreChain& chain, size_t next, Item* core, GameObject* generator);
+    bool UseCoreOnGenerator(Item* core, GameObject* generator);
 };
 
 class LadyVashjCommandPetTargetAction : public Action

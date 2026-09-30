@@ -71,6 +71,7 @@ enum class SscSpells : uint32
     // Lady Vashj <Coilfang Matron>
     SPELL_FEAR_WARD              =  6346,
     SPELL_MAGIC_BARRIER          = 38112,
+    SPELL_TAINTED_CORE_PARALYZE  = 38132,
     SPELL_STATIC_CHARGE          = 38280,
     SPELL_ENTANGLE               = 38316,
     SPELL_TOXIC_SPORES           = 38575,
@@ -416,6 +417,8 @@ inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.
 // The dais is a regular dodecagon on the platform center, corners every 30 degrees from due
 // north. This is the distance from the center to the middle of each edge.
 inline constexpr float VASHJ_DAIS_APOTHEM = 57.05f;
+// The foot of the stairs, measured the same way.
+inline constexpr float VASHJ_STAIR_BASE_DISTANCE = 90.19f;
 // The rock over the north edge of the dais, from the stair base up across the dais and back down.
 inline std::array const VASHJ_NORTH_ROCK = {
     Position{ 119.256f, -910.155f, 22.314f },
@@ -723,6 +726,10 @@ inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
 // Five covers every spawn and generator pair in an offline model of the dais; four missed the
 // farthest generator from two spawns.
 inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 5;
+// A catcher within this of its spot, 2D, is on it. The last one closer in, so it is sure to be
+// within use range of the generator.
+inline constexpr float VASHJ_CORE_SPOT_ARRIVAL_DISTANCE = 1.0f;
+inline constexpr float VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE = 0.5f;
 
 struct VashjCoreCatcher
 {
@@ -750,10 +757,8 @@ struct VashjCoreChain
     // In throw order; the last one uses the core on the generator. The first spot's bot is picked
     // with the plan, every later one's when the spot is released.
     std::vector<VashjCoreCatcher> catchers;
-    // Left out after its throws failed, when this plan replaced one
+    // Left out of every later plan of this chain once its throws failed
     ObjectGuid excluded;
-    // Members of earlier chains who still held a core when this one was planned
-    std::vector<ObjectGuid> earlier;
     // The highest catcher index that has held the core; those before it are done
     int8 reached = -1;
     // No way to a generator was found; the holder destroys the core
@@ -871,15 +876,15 @@ std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster);
 // Nullptr if the cluster has no healer or it is dead.
 Player* GetVashjClusterHealer(Player* bot, int8 cluster);
 // Skips a cluster whose straight line to the unit crosses the north rock.
-int8 GetNearestVashjCluster(Unit const& unit);
+int8 GetNearestVashjCluster(Unit* unit);
 // The cluster's healer; else the spare healer (no cluster slot) nearest the elemental, who rarely
 // gets there in time, so that core is given up; else the cluster's ranged dps nearest it.
-Player* FindTaintedCoreLooter(Player* bot, Unit const& tainted, int8 cluster);
+Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster);
 // The Tainted Elemental the current looter was chosen for, alive or a corpse.
 Creature* GetAssignedTaintedElemental(Player* bot);
 // The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
 // the core is taken. The corpse stays flagged lootable until its looter releases the loot.
-int8 GetTaintedCoreLootSlot(Creature const& tainted);
+int8 GetTaintedCoreLootSlot(Creature* tainted);
 // From the elemental's spawn until its core is taken from the corpse.
 bool IsTaintedCoreStillToLoot(Creature* tainted);
 // The living Tainted Elemental the bot is assigned to attack, else nullptr: the ranged dps of
@@ -890,18 +895,18 @@ Creature* GetTaintedElementalToKill(Player* bot);
 bool IsDesignatedCoreLooter(Player* bot);
 // The master's current target, unless a pet would be useless on it; then the Enchanted Elemental
 // nearest Vashj, or Vashj herself in phase 3. Nullptr when there is nothing worth attacking.
-Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature const& pet, Unit* vashj);
+Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
 // True if a tank is the unit's victim.
-bool IsVashjAddHeldByTank(Unit const& unit);
+bool IsVashjAddHeldByTank(Unit* unit);
 // The bot's class taunt on target. False if it has none, or can't cast it now.
 bool CastTankTaunt(PlayerbotAI* botAI, Player* bot, Unit* target);
 // The tank an add belongs to, so each has only one: of the living tanks attacking it, the one it
 // is attacking, else the first in group order. Nullptr if no tank is attacking it.
-Player* GetVashjAddOwningTank(Player* bot, Unit const& add);
+Player* GetVashjAddOwningTank(Player* bot, Unit* add);
 // True if no other living bot tank is nearer the add among those free to take it: not holding
 // an Elite or Strider of their own, and in phase 3 not Vashj's tank. In phase 3 a tank holding
 // only an Elite is free for a Strider.
-bool IsNearestFreeVashjTank(Player* bot, Unit const& add, Unit const& vashj, int8 phase);
+bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase);
 // The bot's target tiers for the phase, best first. killsTainted: one of the cluster sent after a
 // Tainted Elemental.
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
@@ -917,7 +922,7 @@ Position const& GetVashjEliteTankPosition(Unit const& elite);
 // True if strider, the tank's current target, is a Strider it has work on: in phase 2, one on
 // it not yet at its hold; in phase 3, one to taunt off whoever has it, or one on it that is too
 // close to Vashj. Never for her tank in phase 3, who is on her.
-bool ShouldTankVashjStrider(Player* bot, Unit* strider, Unit const& vashj, int8 phase);
+bool ShouldTankVashjStrider(Player* bot, Unit* strider, Unit* vashj, int8 phase);
 // True for a tanked Strider within VASHJ_STRIDER_STEP_IN_DISTANCE of the bot.
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
 // TEMP LOG (Tainted Elemental timing), remove after testing. Elapsed is from the looter pick.
@@ -932,14 +937,16 @@ void TaintedLogThrow(Player* bot, Player* receiver, int catcher);
 void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what);
 // Logs when the number of usable generators changes.
 void TaintedLogGenerators(Player* bot);
+// By the core's Paralyze, which comes and goes with the core in the bags. Nothing else takes it
+// off: no dispel type or mechanic, it pierces immunities, and it can't be cancelled.
 bool HasTaintedCore(Player* player);
 // A new chain for the elemental, from where it stands to the nearest usable generator a route
 // reaches, with looter as its start. With no route yet, the looter plans again once it holds the
 // core.
-void PlanVashjCoreChain(Player* bot, Creature* tainted, Player* looter);
+void PlanVashjCoreChain(Player* bot, Unit* tainted, Player* looter);
 // Plans the chain again from the holder, rooted where it stands, to the same generator if a route
-// still reaches it, else the nearest usable one that does. excluded gets no spot. Marks the chain
-// failed if there is no way, or after a few tries.
+// still reaches it, else the nearest usable one that does. excluded, when given, gets no spot in
+// this plan or any later one. Marks the chain failed if there is no way, or after a few tries.
 bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded);
 // Gives a catcher's spot to the nearest other bot that can take it.
 bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
@@ -953,6 +960,7 @@ int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);
 bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain);
 // True while the catcher should be walking to or standing on its spot.
 bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
+float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index);
 // The Shield Generators' spawn ids
 inline constexpr std::array SHIELD_GENERATOR_DB_GUIDS = {
     uint32{ 47482 }, // NW

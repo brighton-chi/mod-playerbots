@@ -79,7 +79,7 @@ bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
         for (ObjectGuid const& guid : *guids)
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(*unit))
+            if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(unit))
                 return true;
         }
     }
@@ -908,7 +908,7 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValueInEncounter(Action* ac
 // them is held, movement actions and spells that carry the caster (charges, Disengage, Blink,
 // Killing Spree), so they still heal, cast and attack what is in reach. An AttackAction is a
 // MovementAction but only faces its target, so it goes through.
-float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValueInEncounter(Action* action)
+float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(Action* action)
 {
     VashjCoreChain const* chain = GetVashjCoreChain(bot);
     if (!chain)

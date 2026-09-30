@@ -1720,14 +1720,14 @@ bool IsVashjTargetAllowed(
                 return false;
 
             if (facts.waitForTank)
-                return IsVashjAddHeldByTank(*unit);
+                return IsVashjAddHeldByTank(unit);
 
             if (!facts.oneTankEach)
                 return true;
 
-            Player* owner = GetVashjAddOwningTank(bot, *unit);
+            Player* owner = GetVashjAddOwningTank(bot, unit);
             return owner ? owner == bot :
-                IsNearestFreeVashjTank(bot, *unit, *facts.vashj, facts.phase);
+                IsNearestFreeVashjTank(bot, unit, facts.vashj, facts.phase);
         }
 
         case VashjTarget::ToxicSporebat:
@@ -1747,18 +1747,20 @@ bool IsVashjTargetAllowed(
 }
 
 // Enchanted nearest her, Elites and Striders lowest in health, Sporebats nearest the bot
-bool IsBetterVashjTarget(
-    Player* bot, Unit const& vashj, VashjTarget target, Unit const& a, Unit const& b)
+bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, Unit* b)
 {
+    if (!vashj || !a || !b)
+        return false;
+
     switch (target)
     {
         case VashjTarget::EnchantedElemental:
-            return vashj.GetExactDist2d(a) < vashj.GetExactDist2d(b);
+            return vashj->GetExactDist2d(a) < vashj->GetExactDist2d(b);
         case VashjTarget::CoilfangStrider:
         case VashjTarget::CoilfangElite:
-            return a.GetHealthPct() < b.GetHealthPct();
+            return a->GetHealthPct() < b->GetHealthPct();
         case VashjTarget::ToxicSporebat:
-            return bot->GetDistance(&a) < bot->GetDistance(&b);
+            return bot->GetDistance(a) < bot->GetDistance(b);
         default:
             return false;
     }
@@ -1795,7 +1797,7 @@ Unit* GetBestVashjTarget(
     {
         Unit* unit = botAI->GetUnit(guid);
         if (IsVashjTargetAllowed(bot, facts, tier, unit) &&
-            (!best || IsBetterVashjTarget(bot, *facts.vashj, tier.target, *unit, *best)))
+            (!best || IsBetterVashjTarget(bot, facts.vashj, tier.target, unit, best)))
         {
             best = unit;
         }
@@ -1816,7 +1818,7 @@ bool IsOwnVashjAdd(Player* bot, Unit* target)
         return false;
     }
 
-    return GetVashjAddOwningTank(bot, *target) == bot;
+    return GetVashjAddOwningTank(bot, target) == bot;
 }
 
 } // end anonymous namespace (Vashj targeting)
@@ -1858,7 +1860,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     }
 
     std::vector<VashjTargetTier> const& tiers =
-        GetVashjTargetTiers(bot, facts.phase, facts.tainted != nullptr);
+        GetVashjTargetTiers(bot, facts.phase, facts.tainted);
 
     // In phase 2 a tank keeps its own Elite even over a Strider, which the next free tank takes.
     // In phase 3 a Strider comes first.
@@ -1924,7 +1926,7 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
 // extended combat reach).
 bool LadyVashjTankApplyFearWardAction::Execute(Event /*event*/)
 {
-    return bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot) != nullptr;
+    return bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 }
 
 // Each tank works on the Strider it is targeting, which the target priority action gave it, so
@@ -1937,7 +1939,7 @@ bool LadyVashjPositionCoilfangStriderAction::Execute(Event /*event*/)
 
     int8 const phase = GetLadyVashjPhase(vashj);
     Unit* strider = AI_VALUE(Unit*, "current target");
-    if (!ShouldTankVashjStrider(bot, strider, *vashj, phase))
+    if (!ShouldTankVashjStrider(bot, strider, vashj, phase))
         return false;
 
     // A Strider stays on whoever it was on, including a main tank who held it into phase 3
@@ -2098,8 +2100,8 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     if (!tainted)
         return false;
 
-    int8 const cluster = GetNearestVashjCluster(*tainted);
-    Player* looter = FindTaintedCoreLooter(bot, *tainted, cluster);
+    int8 const cluster = GetNearestVashjCluster(tainted);
+    Player* looter = FindTaintedCoreLooter(bot, tainted, cluster);
     if (!looter)
         return false;
 
@@ -2120,8 +2122,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     VashjCoreChain* chain = GetVashjCoreChain(bot);
     if (!chain || chain->tainted != tainted->GetGUID())
     {
-        if (Creature* creature = tainted->ToCreature())
-            PlanVashjCoreChain(bot, creature, looter);
+        PlanVashjCoreChain(bot, tainted, looter);
     }
     else
     {
@@ -2289,7 +2290,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
             return false;
     }
 
-    int8 const coreSlot = GetTaintedCoreLootSlot(*tainted);
+    int8 const coreSlot = GetTaintedCoreLootSlot(tainted);
     if (coreSlot < 0)
         return false;
 
@@ -2359,7 +2360,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
     Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
     if (!core)
-        return index >= 0 && MoveToCoreSpot(index);
+        return index >= 0 && MoveToCoreSpot(*chain, index);
 
     GameObject* generator = botAI->GetGameObject(chain->generator);
 
@@ -2381,7 +2382,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     }
 
     if (generator->IsAtInteractDistance(*bot, generator->GetInteractionDistance()))
-        return UseCoreOnGenerator(generator);
+        return UseCoreOnGenerator(core, generator);
 
     // The last catcher, rooted out of reach of the generator
     size_t const next = static_cast<size_t>(index + 1);
@@ -2391,7 +2392,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         return true;
     }
 
-    if (ThrowCore(next, core, generator))
+    if (ThrowCore(*chain, next, core, generator))
         return true;
 
     // TEMP LOG
@@ -2408,22 +2409,15 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 }
 
 // False once there, so the catcher can fight or heal from its spot while it waits.
-bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
+bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCoreChain& chain, int8 index)
 {
-    VashjCoreChain* chain = GetVashjCoreChain(bot);
-    if (!chain)
-        return false;
-
-    // The last catcher closer in, so it is sure to be within use range of the generator
-    constexpr float arrivalDistance = 1.0f;
-    constexpr float lastArrivalDistance = 0.5f;
     size_t const next = static_cast<size_t>(index + 1);
-    bool const last = next == chain->catchers.size();
-    float const arrival = last ? lastArrivalDistance : arrivalDistance;
-    VashjCoreCatcher& catcher = chain->catchers[index];
+    bool const last = next == chain.catchers.size();
+    float const arrival = GetVashjCoreSpotArrivalDistance(chain, index);
+    VashjCoreCatcher& catcher = chain.catchers[index];
     // The second catcher is picked and sets out with the first
     if (index == 0 && !last)
-        ReleaseVashjCoreCatcher(bot, *chain, next);
+        ReleaseVashjCoreCatcher(bot, chain, next);
 
     if (bot->GetExactDist2d(catcher.spot) <= arrival)
     {
@@ -2432,7 +2426,7 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
         {
             catcher.arrived = true;
             if (!last)
-                ReleaseVashjCoreCatcher(bot, *chain, next);
+                ReleaseVashjCoreCatcher(bot, chain, next);
         }
 
         return false;
@@ -2455,29 +2449,26 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(int8 index)
 // throw that doesn't land is tried once more, then the chain is planned again from here without
 // that catcher. A catcher that never arrives is replaced; one standing out of reach means a new
 // plan.
-bool LadyVashjPassTheTaintedCoreAction::ThrowCore(size_t next, Item* core, GameObject* generator)
+bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
+    VashjCoreChain& chain, size_t next, Item* core, GameObject* generator)
 {
-    VashjCoreChain* chain = GetVashjCoreChain(bot);
-    if (!chain)
-        return false;
-
     uint32 const now = getMSTime();
-    VashjCoreCatcher const& catcher = chain->catchers[next];
+    VashjCoreCatcher const& catcher = chain.catchers[next];
     Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
     if (!player || !player->IsAlive() || !player->IsInMap(bot))
     {
-        ReassignVashjCoreCatcher(bot, *chain, next);
+        ReassignVashjCoreCatcher(bot, chain, next);
         return false;
     }
 
-    if (chain->waitTarget != player->GetGUID())
+    if (chain.waitTarget != player->GetGUID())
     {
-        chain->waitTarget = player->GetGUID();
-        chain->waitStart = now;
-        chain->blockedStart = 0;
+        chain.waitTarget = player->GetGUID();
+        chain.waitStart = now;
+        chain.blockedStart = 0;
     }
 
-    bool const last = next + 1 == chain->catchers.size();
+    bool const last = next + 1 == chain.catchers.size();
     constexpr float onSpotDistance = 1.5f;
     bool const onSpot = last ?
         generator->IsAtInteractDistance(*player, generator->GetInteractionDistance()) :
@@ -2485,8 +2476,8 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(size_t next, Item* core, GameO
     if (!onSpot)
     {
         constexpr uint32 lateMs = 10 * IN_MILLISECONDS;
-        if (getMSTimeDiff(chain->waitStart, now) > lateMs)
-            ReassignVashjCoreCatcher(bot, *chain, next);
+        if (getMSTimeDiff(chain.waitStart, now) > lateMs)
+            ReassignVashjCoreCatcher(bot, chain, next);
 
         return false;
     }
@@ -2496,51 +2487,47 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(size_t next, Item* core, GameO
     if (bot->GetDistance(player) > throwKeyRange || !bot->IsWithinLOSInMap(player))
     {
         constexpr uint32 blockedMs = 3 * IN_MILLISECONDS;
-        if (!chain->blockedStart)
-            chain->blockedStart = now;
-        else if (getMSTimeDiff(chain->blockedStart, now) > blockedMs)
+        if (!chain.blockedStart)
+            chain.blockedStart = now;
+        else if (getMSTimeDiff(chain.blockedStart, now) > blockedMs)
         {
-            ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+            ReplanVashjCoreChain(bot, chain, ObjectGuid::Empty);
             return true;
         }
 
         return false;
     }
 
-    chain->blockedStart = 0;
+    chain.blockedStart = 0;
 
     // At least this long between any two throws of the chain, as lastVashjCoreImbueAttempt did:
     // passes one right after another look rushed, and a bot could throw twice in a row. It is also
     // the wait before a throw that didn't land is tried again.
     constexpr uint32 throwIntervalMs = 2 * IN_MILLISECONDS;
-    if (chain->throwTime && getMSTimeDiff(chain->throwTime, now) < throwIntervalMs)
+    if (chain.throwTime && getMSTimeDiff(chain.throwTime, now) < throwIntervalMs)
         return false;
 
     constexpr uint8 maxThrows = 2;
-    if (chain->throwTarget == player->GetGUID())
+    if (chain.throwTarget == player->GetGUID())
     {
-        if (++chain->failedThrows >= maxThrows)
+        if (++chain.failedThrows >= maxThrows)
         {
-            ReplanVashjCoreChain(bot, *chain, player->GetGUID());
+            ReplanVashjCoreChain(bot, chain, player->GetGUID());
             return true;
         }
     }
     else
-        chain->failedThrows = 0;
+        chain.failedThrows = 0;
 
-    chain->throwTarget = player->GetGUID();
-    chain->throwTime = now;
+    chain.throwTarget = player->GetGUID();
+    chain.throwTime = now;
     botAI->ImbueItem(core, player);
     TaintedLogThrow(bot, player, static_cast<int>(next)); // TEMP LOG
     return true;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(GameObject* generator)
+bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(Item* core, GameObject* generator)
 {
-    Item* core = bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE));
-    if (!core)
-        return false;
-
     if (InventoryResult const canUse = bot->CanUseItem(core); canUse != EQUIP_ERR_OK)
     {
         // TEMP LOG
@@ -2581,7 +2568,7 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
         return false;
 
     CharmInfo* charmInfo = pet->GetCharmInfo();
-    Unit* target = GetVashjPetTarget(botAI, *pet, vashj);
+    Unit* target = GetVashjPetTarget(botAI, pet, vashj);
 
     // If there is nothing to attack but Vashj, return to the master.
     if (!target)

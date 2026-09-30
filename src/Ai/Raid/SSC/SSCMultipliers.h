@@ -333,11 +333,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjCorePassersPrioritizePositioningMultiplier : public SscEncounterMultiplier
+class LadyVashjCoreHandlersPrioritizePositioningMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjCorePassersPrioritizePositioningMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj core passers prioritize positioning") {}
+    LadyVashjCoreHandlersPrioritizePositioningMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj core handlers prioritize positioning") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

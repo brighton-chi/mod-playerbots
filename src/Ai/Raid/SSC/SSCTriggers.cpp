@@ -577,7 +577,7 @@ bool LadyVashjCoilfangStriderShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && ShouldTankVashjStrider(bot, strider, *vashj, GetLadyVashjPhase(vashj));
+    return vashj && ShouldTankVashjStrider(bot, strider, vashj, GetLadyVashjPhase(vashj));
 }
 
 bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
@@ -699,33 +699,23 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 // bags.
 bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 {
+    if (!HasTaintedCore(bot))
+        return false;
+
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     int8 const phase = GetLadyVashjPhase(vashj);
     if (phase == 3)
-        return HasTaintedCore(bot);
+        return true;
 
     if (phase != 2)
         return false;
 
-    // In phase 2 only a member of this chain or the one it replaced can hold a core
     VashjCoreChain const* chain = GetVashjCoreChain(bot);
-    if (!chain)
-        return false;
+    if (chain && chain->failed)
+        return true;
 
-    ObjectGuid const guid = bot->GetGUID();
-    bool const member = chain->start == guid || GetVashjCoreCatcherIndex(*chain, bot) >= 0 ||
-        std::find(chain->earlier.begin(), chain->earlier.end(), guid) != chain->earlier.end();
-    if (!member)
-        return false;
-
-    if (!chain->failed)
-    {
-        Creature* nextTainted = GetAssignedTaintedElemental(bot);
-        if (!nextTainted || nextTainted->IsAlive() || GetTaintedCoreLootSlot(*nextTainted) < 0)
-            return false;
-    }
-
-    return HasTaintedCore(bot);
+    Creature* nextTainted = GetAssignedTaintedElemental(bot);
+    return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
 // The chain's start or one of its catchers, while it holds the core or is due at its spot.
@@ -748,7 +738,19 @@ bool LadyVashjBotIsInTaintedCoreChainTrigger::IsActiveInEncounter()
     if (HasTaintedCore(bot))
         return true;
 
-    return index >= 0 && IsVashjCoreCatcherActive(bot, *chain, index);
+    if (index < 0)
+        return false;
+
+    // Nothing to do on its spot once there. The action marks the arrival, which releases the next
+    // catcher, so it still runs on that tick.
+    VashjCoreCatcher const& catcher = chain->catchers[index];
+    if (catcher.arrived &&
+        bot->GetExactDist2d(catcher.spot) <= GetVashjCoreSpotArrivalDistance(*chain, index))
+    {
+        return false;
+    }
+
+    return IsVashjCoreCatcherActive(bot, *chain, index);
 }
 
 bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
@@ -765,7 +767,7 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (phase != 2 && phase != 3)
         return false;
 
-    if (Unit* target = GetVashjPetTarget(botAI, *pet, vashj))
+    if (Unit* target = GetVashjPetTarget(botAI, pet, vashj))
         return pet->GetVictim() != target;
 
     // Nothing worth attacking, so only a pet still on an immune Vashj needs calling back
