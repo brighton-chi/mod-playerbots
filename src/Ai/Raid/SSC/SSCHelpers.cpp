@@ -477,6 +477,7 @@ GuidVector FindLurkerGuardianTankGuids(Player* bot)
 {
     std::array const tanks = {
         GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
+    static_assert(std::tuple_size_v<decltype(tanks)> == LURKER_GUARDIAN_TANK_COUNT);
 
     GuidVector guids;
     for (Player* tank : tanks)

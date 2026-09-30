@@ -72,7 +72,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
-// Trash Mobs
+// Trash
 
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
@@ -119,17 +119,17 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 
 } // end anonymous namespace (misdirect)
 
-bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
+bool SscMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE2(Unit*, "find target", _targetName);
-    if (!target)
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
         return false;
 
     Player* tank = GetGroupMainTank(bot);
     if (!tank || !tank->IsAlive())
         return false;
 
-    return MisdirectTargetToTank(botAI, target, tank);
+    return MisdirectTargetToTank(botAI, boss, tank);
 }
 
 // The hold multiplier stops new attacks, but a swing already running carries on.
@@ -455,8 +455,7 @@ bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
     if (myIndex < 0)
         return false;
 
-    Unit* guardian =
-        botAI->GetUnit(ClaimGuardianForTank(guardians, static_cast<size_t>(myIndex)));
+    Unit* guardian = botAI->GetUnit(ClaimGuardianForTank(guardians, myIndex));
     if (!guardian || !guardian->IsAlive())
         return false;
 
@@ -470,7 +469,7 @@ bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
 }
 
 ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
-    std::vector<Unit*> const& guardians, size_t myIndex)
+    std::vector<Unit*> const& guardians, int8 myIndex)
 {
     auto& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
     ObjectGuid& assignedGuid = assignments[myIndex];
@@ -481,22 +480,13 @@ ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
         return assignedGuid;
     }
 
-    auto const heldByAnotherTank = [&assignments, myIndex](ObjectGuid guid)
-    {
-        for (size_t i = 0; i < assignments.size(); ++i)
-        {
-            if (i != myIndex && assignments[i] == guid)
-                return true;
-        }
-
-        return false;
-    };
-
+    // With this tank's slot cleared, a Guardian found in the table is another tank's
     assignedGuid = ObjectGuid::Empty;
 
     for (Unit* guardian : guardians)
     {
-        if (!heldByAnotherTank(guardian->GetGUID()))
+        if (std::find(assignments.begin(), assignments.end(), guardian->GetGUID()) ==
+            assignments.end())
         {
             assignedGuid = guardian->GetGUID();
             break;
@@ -1508,7 +1498,8 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (mainTank->HasAura(Id(SscSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
         return false;
 
-    constexpr float distFromTank = 25.0f;
+    // Grounding Totem Effect reaches 30y from the totem, which lands 3y from the Shaman
+    constexpr float distFromTank = 27.0f;
     if (bot->GetDistance(mainTank) > distFromTank)
     {
         // Don't walk back in while Static Charge is keeping this bot clear of somebody

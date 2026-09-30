@@ -49,16 +49,16 @@ public:
 // Shared Bosses
 
 // Misdirect to the main tank. Used for Morogrim Tidewalker and Lady Vashj.
-class SscMisdirectTargetToTankAction : public Action
+class SscMisdirectBossToMainTankAction : public Action
 {
 public:
-    SscMisdirectTargetToTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& targetName)
-        : Action(botAI, name), _targetName(targetName) {}
+    SscMisdirectBossToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
 
-protected:
-    std::string const _targetName;
+private:
+    std::string const _bossName;
 };
 
 // The stop block. Used for Hydross the Unstable and Leotheras the Blind.
@@ -163,7 +163,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    ObjectGuid ClaimGuardianForTank(std::vector<Unit*> const& guardians, size_t myIndex);
+    ObjectGuid ClaimGuardianForTank(std::vector<Unit*> const& guardians, int8 myIndex);
 };
 
 class TheLurkerBelowMeleeMoveDirectlyToTargetAction : public MovementAction

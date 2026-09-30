@@ -382,6 +382,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (!PlayerbotAI::IsTank(bot) || HasInnerDemon(bot))
         return 1.0f;
 
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
@@ -389,18 +392,9 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     // an Inner Demon, and the target choosers would take the tanks off him
     if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
     {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-
-        if (bot->getClass() == CLASS_DRUID &&
+        return bot->getClass() == CLASS_DRUID &&
             (dynamic_cast<CastDireBearFormAction*>(action) ||
-             dynamic_cast<CastBearFormAction*>(action)))
-        {
-            return 1.0f;
-        }
-
-        if (dynamic_cast<CastSpellAction*>(action))
-            return 0.0f;
+             dynamic_cast<CastBearFormAction*>(action)) ? 1.0f : 0.0f;
     }
 
     if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action) &&

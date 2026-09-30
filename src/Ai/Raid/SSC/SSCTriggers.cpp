@@ -23,18 +23,7 @@ bool SscNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, SSC_MAP_ID);
 }
 
-// Shared Bosses
-
-bool SscPullingBossTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
-    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
-}
-
-// Trash Mobs
+// Trash
 
 bool UnderbogColossusInToxicPoolTrigger::IsActive()
 {
@@ -51,6 +40,17 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
         return false;
 
     return GetWaterElementalTotem(botAI) && !IsSkullOnWaterElementalTotem(botAI);
+}
+
+// Shared Bosses
+
+bool SscPullingBossTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 // Hydross the Unstable <Duke of Currents>

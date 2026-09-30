@@ -34,7 +34,7 @@ constexpr uint32 Id(T value)
 
 enum class SscSpells : uint32
 {
-    // Trash Mobs
+    // Trash
     SPELL_TOXIC_POOL             = 38718,
 
     // Hydross the Unstable <Duke of Currents>
@@ -102,7 +102,7 @@ enum class SscSpells : uint32
 
 enum class SscNpcs : uint32
 {
-    // Trash Mobs
+    // Trash
     NPC_WATER_ELEMENTAL_TOTEM    = 22236,
 
     // The Lurker Below

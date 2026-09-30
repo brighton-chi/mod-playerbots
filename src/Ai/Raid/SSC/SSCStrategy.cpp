@@ -19,7 +19,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("ssc no encounter in progress",
         { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    // Trash Mobs
+    // Trash
     triggers.push_back(new TriggerNode("underbog colossus in toxic pool",
         { NextAction("underbog colossus escape toxic pool", ACTION_EMERGENCY + 11) }));
 
@@ -215,7 +215,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Trash Mobs
+    // Trash
     multipliers.push_back(new UnderbogColossusHoldNearToxicPoolMultiplier(botAI));
 
     // Shared Bosses

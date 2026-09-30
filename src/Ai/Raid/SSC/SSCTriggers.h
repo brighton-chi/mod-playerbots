@@ -40,24 +40,6 @@ public:
     bool IsActive() override;
 };
 
-// Shared Bosses
-
-// A Hunter while the named mob is untouched, so Misdirection goes out on the pull. Used for
-// Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
-class SscPullingBossTrigger : public SscEncounterTrigger
-{
-public:
-    SscPullingBossTrigger(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : SscEncounterTrigger(botAI, name), _bossName(bossName) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-
-private:
-    std::string const _bossName;
-};
-
 // Trash
 
 class UnderbogColossusInToxicPoolTrigger : public Trigger
@@ -74,6 +56,24 @@ public:
     GreyheartTidecallerWaterElementalTotemSpawnedTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "greyheart tidecaller water elemental totem spawned") {}
     bool IsActive() override;
+};
+
+// Shared Bosses
+
+// A Hunter while the named mob is untouched, so Misdirection goes out on the pull. Used for
+// Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
+class SscPullingBossTrigger : public SscEncounterTrigger
+{
+public:
+    SscPullingBossTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : SscEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
 };
 
 // Hydross the Unstable <Duke of Currents>
