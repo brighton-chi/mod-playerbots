@@ -17,7 +17,6 @@
 #include "TemporarySummon.h"
 #include <algorithm>
 #include <cmath>
-#include <iterator>
 #include <unordered_map>
 
 using namespace SscHelpers;
@@ -452,14 +451,12 @@ bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
     if (guardians.empty())
         return false;
 
-    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
-    auto const myIt = std::find(tanks.begin(), tanks.end(), bot);
-    if (myIt == tanks.end())
+    int8 const myIndex = GetLurkerGuardianTankIndex(botAI);
+    if (myIndex < 0)
         return false;
 
-    size_t const myIndex = static_cast<size_t>(std::distance(tanks.begin(), myIt));
-
-    Unit* guardian = botAI->GetUnit(ClaimGuardianForTank(guardians, myIndex));
+    Unit* guardian =
+        botAI->GetUnit(ClaimGuardianForTank(guardians, static_cast<size_t>(myIndex)));
     if (!guardian || !guardian->IsAlive())
         return false;
 

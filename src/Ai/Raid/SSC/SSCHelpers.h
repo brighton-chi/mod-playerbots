@@ -250,6 +250,7 @@ inline constexpr float LURKER_SPOUT_RUN_OVERTAKE_MARGIN = static_cast<float>(M_P
 // and claims another the same way if its own dies.
 inline constexpr size_t LURKER_GUARDIAN_TANK_COUNT = 3;
 inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 LURKER_GUARDIAN_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
@@ -273,7 +274,10 @@ bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
 // The Guardian tanks in index order; empty if there are fewer than 3 living tanks, humans included.
-std::vector<Player*> GetLurkerGuardianTanks(Player* bot);
+GuidVector FindLurkerGuardianTankGuids(Player* bot);
+// The bot's index among the Guardian tanks, from the "ssc lurker guardian tanks" value; -1 if it
+// isn't one.
+int8 GetLurkerGuardianTankIndex(PlayerbotAI* botAI);
 
 // Leotheras the Blind
 

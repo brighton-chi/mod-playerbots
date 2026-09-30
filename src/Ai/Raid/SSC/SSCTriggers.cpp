@@ -12,8 +12,6 @@
 #include "SSCActions.h"
 #include "SSCHelpers.h"
 #include "TemporarySummon.h"
-#include <algorithm>
-#include <vector>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -141,8 +139,7 @@ bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
     if (!lurker || lurker->getStandState() != UNIT_STAND_STATE_SUBMERGED)
         return false;
 
-    std::vector<Player*> const tanks = GetLurkerGuardianTanks(bot);
-    return std::find(tanks.begin(), tanks.end(), bot) != tanks.end();
+    return GetLurkerGuardianTankIndex(botAI) >= 0;
 }
 
 // Bots are unable to move across the water via ReachMeleeAction. Only bots with charge moves can

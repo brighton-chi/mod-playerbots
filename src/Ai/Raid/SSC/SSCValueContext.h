@@ -57,6 +57,18 @@ protected:
     GuidVector Calculate() override { return SscHelpers::FindLurkerGuardianGuids(bot); }
 };
 
+class SscLurkerGuardianTanksValue : public CalculatedValue<GuidVector>
+{
+public:
+    SscLurkerGuardianTanksValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "ssc lurker guardian tanks",
+              SscHelpers::LURKER_GUARDIAN_TANK_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SscHelpers::FindLurkerGuardianTankGuids(bot); }
+};
+
 class SscLeotherasValue : public CalculatedValue<ObjectGuid>
 {
 public:
@@ -113,6 +125,8 @@ public:
         creators["ssc water elemental totem"] =
             &RaidSscValueContext::ssc_water_elemental_totem;
         creators["ssc lurker guardians"] = &RaidSscValueContext::ssc_lurker_guardians;
+        creators["ssc lurker guardian tanks"] =
+            &RaidSscValueContext::ssc_lurker_guardian_tanks;
         creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
         creators["ssc spitfire totem"] = &RaidSscValueContext::ssc_spitfire_totem;
@@ -131,6 +145,9 @@ private:
     }
     static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI) {
         return new SscLurkerGuardiansValue(botAI);
+    }
+    static UntypedValue* ssc_lurker_guardian_tanks(PlayerbotAI* botAI) {
+        return new SscLurkerGuardianTanksValue(botAI);
     }
     static UntypedValue* ssc_leotheras(PlayerbotAI* botAI) {
         return new SscLeotherasValue(botAI);

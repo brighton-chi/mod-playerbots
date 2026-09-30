@@ -473,15 +473,35 @@ std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI)
     return guardians;
 }
 
-std::vector<Player*> GetLurkerGuardianTanks(Player* bot)
+GuidVector FindLurkerGuardianTankGuids(Player* bot)
 {
-    std::vector<Player*> tanks = {
+    std::array const tanks = {
         GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
 
-    if (std::any_of(tanks.begin(), tanks.end(), [](Player* tank) { return !tank; }))
-        return {};
+    GuidVector guids;
+    for (Player* tank : tanks)
+    {
+        if (!tank)
+            return {};
 
-    return tanks;
+        guids.push_back(tank->GetGUID());
+    }
+
+    return guids;
+}
+
+int8 GetLurkerGuardianTankIndex(PlayerbotAI* botAI)
+{
+    GuidVector const& tanks = botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("ssc lurker guardian tanks")->RefGet();
+    ObjectGuid const guid = botAI->GetBot()->GetGUID();
+    for (size_t i = 0; i < tanks.size(); ++i)
+    {
+        if (tanks[i] == guid)
+            return static_cast<int8>(i);
+    }
+
+    return -1;
 }
 
 // Leotheras the Blind
