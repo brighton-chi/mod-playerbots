@@ -25,6 +25,17 @@ bool SscNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, SSC_MAP_ID);
 }
 
+// Shared Bosses
+
+bool SscPullingBossTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
+}
+
 // Trash Mobs
 
 bool UnderbogColossusInToxicPoolTrigger::IsActive()
@@ -328,15 +339,6 @@ bool FathomLordKarathressShouldHealCaribdisTankTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
 }
 
-bool FathomLordKarathressPullingBossesTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-    return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
-}
-
 bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsHeal(bot))
@@ -403,15 +405,6 @@ bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
 }
 
 // Morogrim Tidewalker
-
-bool MorogrimTidewalkerPullingBossTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    return tidewalker && tidewalker->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
-}
 
 bool MorogrimTidewalkerShouldBeTankedTrigger::IsActiveInEncounter()
 {
@@ -537,15 +530,6 @@ bool LadyVashjShamanShouldGroundShockBlastTrigger::IsActiveInEncounter()
 bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
 {
     return IsInVashjStaticChargeReach(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
-}
-
-bool LadyVashjPullingBossTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && vashj->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 // Healers too. Healer dps and a priest's wand get a target the tiers allow, never a Sporebat,
@@ -785,7 +769,7 @@ bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
     // Search down from the dais, not from the bot, so a bot on the pipes still reads as high
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
-    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > 1.5f;
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > VASHJ_ABOVE_GROUND_HEIGHT;
 }
 
 // Melee dps have their own trigger, below.

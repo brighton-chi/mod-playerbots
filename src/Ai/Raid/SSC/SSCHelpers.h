@@ -161,6 +161,11 @@ bool GetPathStepTowardPoint(
     float& stepX, float& stepY);
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
+// The bot's angle on an arc arcSpan wide around arcCenter, with the group's ranged bots in the
+// instance spaced evenly along it in group order. False if there are none.
+bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle);
+// Every other living group member in the instance.
+std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
 // Trash
 
@@ -431,6 +436,8 @@ inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 2.0f;
 // stays on the dais as long as it does. The margin is only slack for the notch the rock cuts
 // and for pathing near the edge.
 inline constexpr float VASHJ_DAIS_MARGIN = 1.0f;
+// A bot this far over the floor in phase 3, after a Sporebat or up on the pipes, is put back down.
+inline constexpr float VASHJ_ABOVE_GROUND_HEIGHT = 1.5f;
 
 // A pool hits anyone within 5 yd plus their own reach, about 6.5 yd for a player.
 inline constexpr float TOXIC_SPORES_HIT_RADIUS = 6.5f;

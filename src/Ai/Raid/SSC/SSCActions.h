@@ -61,6 +61,28 @@ protected:
     std::string const _targetName;
 };
 
+// The stop block. Used for Hydross the Unstable and Leotheras the Blind.
+class SscStopAttackingAction : public Action
+{
+public:
+    SscStopAttackingAction(PlayerbotAI* botAI, std::string const& name)
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+// A step away from the nearest player within distance. Used for Hydross the Unstable and
+// Fathom-Lord Karathress.
+class SscSpreadRangedAction : public MovementAction
+{
+public:
+    SscSpreadRangedAction(PlayerbotAI* botAI, std::string const& name, float distance)
+        : MovementAction(botAI, name), _distance(distance) {}
+    bool Execute(Event event) override;
+
+private:
+    float const _distance;
+};
+
 // Hydross the Unstable <Duke of Currents>
 
 // One action for the frost and nature tanks. Each tank has a phase, a mark, a position, and a
@@ -79,27 +101,11 @@ private:
     bool const _frostTank;
 };
 
-class HydrossTheUnstableFrostPhaseSpreadRangedAction : public MovementAction
-{
-public:
-    HydrossTheUnstableFrostPhaseSpreadRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "hydross the unstable frost phase spread ranged") {}
-    bool Execute(Event event) override;
-};
-
 class HydrossTheUnstableMisdirectBossToTankAction : public Action
 {
 public:
     HydrossTheUnstableMisdirectBossToTankAction(PlayerbotAI* botAI)
         : Action(botAI, "hydross the unstable misdirect boss to tank") {}
-    bool Execute(Event event) override;
-};
-
-class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action
-{
-public:
-    HydrossTheUnstableStopDpsUponPhaseChangeAction(PlayerbotAI* botAI)
-        : Action(botAI, "hydross the unstable stop dps upon phase change") {}
     bool Execute(Event event) override;
 };
 
@@ -247,14 +253,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class LeotherasTheBlindMeleeStopAttackingAction : public Action
-{
-public:
-    LeotherasTheBlindMeleeStopAttackingAction(PlayerbotAI* botAI)
-        : Action(botAI, "leotheras the blind melee stop attacking") {}
-    bool Execute(Event event) override;
-};
-
 class LeotherasTheBlindManageDpsWaitTimersAction : public Action
 {
 public:
@@ -308,14 +306,6 @@ class FathomLordKarathressManageDpsTimerAction : public Action
 public:
     FathomLordKarathressManageDpsTimerAction(PlayerbotAI* botAI)
         : Action(botAI, "fathom-lord karathress manage dps timer") {}
-    bool Execute(Event event) override;
-};
-
-class FathomLordKarathressSpreadRangedAction : public MovementAction
-{
-public:
-    FathomLordKarathressSpreadRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "fathom-lord karathress spread ranged") {}
     bool Execute(Event event) override;
 };
 

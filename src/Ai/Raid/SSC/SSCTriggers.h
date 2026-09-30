@@ -40,6 +40,24 @@ public:
     bool IsActive() override;
 };
 
+// Shared Bosses
+
+// A Hunter while the named mob is untouched, so Misdirection goes out on the pull. Used for
+// Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
+class SscPullingBossTrigger : public SscEncounterTrigger
+{
+public:
+    SscPullingBossTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : SscEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
+};
+
 // Trash
 
 class UnderbogColossusInToxicPoolTrigger : public Trigger
@@ -307,16 +325,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressPullingBossesTrigger : public SscEncounterTrigger
-{
-public:
-    FathomLordKarathressPullingBossesTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress pulling bosses") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class FathomLordKarathressShouldAssignDpsPriorityTrigger : public SscEncounterTrigger
 {
 public:
@@ -358,16 +366,6 @@ protected:
 };
 
 // Morogrim Tidewalker
-
-class MorogrimTidewalkerPullingBossTrigger : public SscEncounterTrigger
-{
-public:
-    MorogrimTidewalkerPullingBossTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "morogrim tidewalker pulling boss") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
 
 class MorogrimTidewalkerShouldBeTankedTrigger : public SscEncounterTrigger
 {
@@ -476,16 +474,6 @@ class LadyVashjStaticChargeOnGroupMemberTrigger : public SscEncounterTrigger
 public:
     LadyVashjStaticChargeOnGroupMemberTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "lady vashj static charge on group member") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class LadyVashjPullingBossTrigger : public SscEncounterTrigger
-{
-public:
-    LadyVashjPullingBossTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj pulling boss") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -164,6 +164,54 @@ bool GetPathStepTowardPoint(
     return remaining < stepDistance;
 }
 
+bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    size_t count = 0;
+    size_t botIndex = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsRanged(member))
+        {
+            continue;
+        }
+
+        if (member == bot)
+            botIndex = count;
+
+        ++count;
+    }
+
+    if (count == 0)
+        return false;
+
+    angle = count == 1 ? arcCenter : arcCenter - arcSpan / 2.0f +
+        arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1);
+    return true;
+}
+
+std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot)
+{
+    std::vector<Unit*> members;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return members;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member != bot && member->IsAlive() && member->GetMapId() == SSC_MAP_ID)
+            members.push_back(member);
+    }
+
+    return members;
+}
+
 // Trash
 
 bool GetToxicPoolPosition(PlayerbotAI* botAI, Position& toxicPool)

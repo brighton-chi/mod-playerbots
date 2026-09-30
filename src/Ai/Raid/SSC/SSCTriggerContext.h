@@ -303,7 +303,8 @@ private:
         return new FathomLordKarathressShouldHealCaribdisTankTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_pulling_bosses(PlayerbotAI* botAI) {
-        return new FathomLordKarathressPullingBossesTrigger(botAI);
+        return new SscPullingBossTrigger(
+            botAI, "fathom-lord karathress pulling bosses", "fathom-guard tidalvess");
     }
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
@@ -323,7 +324,8 @@ private:
         return new MorogrimTidewalkerShouldBeTankedTrigger(botAI);
     }
     static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) {
-        return new MorogrimTidewalkerPullingBossTrigger(botAI);
+        return new SscPullingBossTrigger(
+            botAI, "morogrim tidewalker pulling boss", "morogrim tidewalker");
     }
     static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
@@ -358,7 +360,7 @@ private:
         return new LadyVashjStaticChargeOnGroupMemberTrigger(botAI);
     }
     static Trigger* lady_vashj_pulling_boss(PlayerbotAI* botAI) {
-        return new LadyVashjPullingBossTrigger(botAI);
+        return new SscPullingBossTrigger(botAI, "lady vashj pulling boss", "lady vashj");
     }
     static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI) {
         return new LadyVashjShouldAssignTargetPriorityTrigger(botAI);

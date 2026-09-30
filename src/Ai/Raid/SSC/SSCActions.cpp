@@ -100,6 +100,26 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 
 // Shared Bosses
 
+namespace
+{
+
+// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
+{
+    if (!target || !tank)
+        return false;
+
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
+
+    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
+        return false;
+
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+}
+
+} // end anonymous namespace (misdirect)
+
 bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", _targetName);
@@ -110,13 +130,25 @@ bool SscMisdirectTargetToTankAction::Execute(Event /*event*/)
     if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
+    return MisdirectTargetToTank(botAI, target, tank);
+}
 
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
+// The hold multiplier stops new attacks, but a swing already running carries on.
+bool SscStopAttackingAction::Execute(Event /*event*/)
+{
+    bot->AttackStop();
+    bot->InterruptSpell(CURRENT_MELEE_SPELL);
+    bot->CastStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    bot->SetSelection(ObjectGuid());
 
-    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+    return true;
+}
+
+bool SscSpreadRangedAction::Execute(Event /*event*/)
+{
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
+    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _distance);
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -181,14 +213,6 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& positi
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// To mitigate the effect of Water Tomb
-bool HydrossTheUnstableFrostPhaseSpreadRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
-    return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
-}
-
 bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
@@ -200,24 +224,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
     if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", hydross) && botAI->CastSpell("steady shot", hydross);
-}
-
-bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
-{
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
-    return true;
+    return MisdirectTargetToTank(botAI, hydross, tank);
 }
 
 bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
@@ -396,37 +403,11 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
     if (!_hasRangedPosition)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        std::vector<Player*> rangedMembers;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
-                !PlayerbotAI::IsRanged(member))
-            {
-                continue;
-            }
-
-            rangedMembers.push_back(member);
-        }
-
-        if (rangedMembers.empty())
-            return false;
-
-        size_t const count = rangedMembers.size();
-        auto const findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
-        size_t const botIndex = (findIt != rangedMembers.end()) ?
-            std::distance(rangedMembers.begin(), findIt) : 0;
-
         constexpr float arcSpan = 2.0f * M_PI / 3.0f;
         constexpr float arcCenter = 5.592f; // measured in game to be across from the main tank
-        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-        float const angle = (count == 1) ? arcCenter :
-            (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
+        float angle;
+        if (!GetRangedArcAngle(bot, arcCenter, arcSpan, angle))
+            return false;
 
         float const targetX =
             lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
@@ -844,26 +825,7 @@ bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
     if (!tank)
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", leotherasDemon) &&
-        botAI->CastSpell("steady shot", leotherasDemon);
-}
-
-// The hold multiplier stops new attacks, but a swing already running carries on.
-bool LeotherasTheBlindMeleeStopAttackingAction::Execute(Event /*event*/)
-{
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
-    return true;
+    return MisdirectTargetToTank(botAI, leotherasDemon, tank);
 }
 
 bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
@@ -1074,13 +1036,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (!enemy || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", enemy) && botAI->CastSpell("steady shot", enemy);
+    return MisdirectTargetToTank(botAI, enemy, tank);
 }
 
 // Priority: (1) Spitfire Totem, (2) Tidalvess, (3) Caribdis (ranged only), (4) Sharkkis,
@@ -1183,13 +1139,6 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     return karathressDpsWaitTimer.try_emplace(karathress->GetInstanceId(), getMSTime()).second;
-}
-
-bool FathomLordKarathressSpreadRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
-    return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
 // A Cyclone tosses every second and the arc takes longer than that, so from the second toss on
@@ -1447,38 +1396,11 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 {
     if (!_hasRangedPosition)
     {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        std::vector<Player*> spreadMembers;
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->GetMapId() == SSC_MAP_ID && GET_PLAYERBOT_AI(member) &&
-                PlayerbotAI::IsRanged(member))
-            {
-                spreadMembers.push_back(member);
-            }
-        }
-
-        size_t count = spreadMembers.size();
-        if (count == 0)
-            return false;
-
-        auto it = std::find(spreadMembers.begin(), spreadMembers.end(), bot);
-        size_t botIndex =
-            (it != spreadMembers.end()) ? std::distance(spreadMembers.begin(), it) : 0;
-
         constexpr float arcCenter = M_PI / 2.0f; // West
         constexpr float arcSpan = M_PI; // 180°
-        constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
         float angle;
-        if (count == 1)
-            angle = arcCenter;
-        else
-            angle = arcStart + (static_cast<float>(botIndex) / (count - 1)) * arcSpan;
+        if (!GetRangedArcAngle(bot, arcCenter, arcSpan, angle))
+            return false;
 
         Position const& center = VASHJ_PLATFORM_CENTER_POSITION;
         constexpr float radius = 25.0f;
@@ -1548,21 +1470,9 @@ bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
 
     std::vector<Unit*> avoid;
     if (bot->GetExactDist2d(vashj) < VASHJ_PHASE_3_RANGED_DISTANCE)
-    {
         avoid.push_back(vashj);
-    }
-    else if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member != bot && member->IsAlive() &&
-                member->GetMapId() == SSC_MAP_ID)
-            {
-                avoid.push_back(member);
-            }
-        }
-    }
+    else
+        avoid = GetOtherLivingGroupMembers(bot);
 
     float stepX;
     float stepY;
@@ -1626,19 +1536,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
     // If this bot has Static Charge, it should move away from other group members
     if (HasVashjStaticCharge(bot))
     {
-        Group* group = bot->GetGroup();
-        if (!group)
-            return false;
-
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member != bot && member->IsAlive() &&
-                member->GetMapId() == SSC_MAP_ID)
-            {
-                avoid.push_back(member);
-            }
-        }
+        avoid = GetOtherLivingGroupMembers(bot);
     }
     // If Vashj's target has Static Charge, other group members should move away.
     else

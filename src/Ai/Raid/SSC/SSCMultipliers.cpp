@@ -86,6 +86,35 @@ bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
     return false;
 }
 
+// Damage and threat a hold can stop: spells and attacks, less heals and a healer's attack.
+bool IsDpsHoldCandidate(Player* bot, Action* action)
+{
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return false;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return false;
+
+    // A healer's attack only picks a target and switches on its combat engine, where its heals
+    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
+    return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
+}
+
+// Inside a hold. Spells cast on the raid don't touch the boss. Totems are the exception, as some
+// attack.
+float GetDpsHoldValue(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
+        return 0.0f;
+
+    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+    return castOnRaid ? 1.0f : 0.0f;
+}
+
 } // end anonymous namespace
 
 // Trash
@@ -235,15 +264,7 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
 // Phase changes reset threat. Hold DPS from 1s after Marks hit 100% until 5s post-phase change.
 float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    // A healer's attack only picks a target and switches on its combat engine, where its heals
-    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
-    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
@@ -260,16 +281,7 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
         return 1.0f;
     }
 
-    // Spells cast on the raid don't touch Hydross. Totems are the exception, as some attack.
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-    return castOnRaid ? 1.0f : 0.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 // The Lurker Below
@@ -545,15 +557,7 @@ float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Actio
 
 float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    // A healer's attack only picks a target and switches on its combat engine, where its heals
-    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
-    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     if (HasInnerDemon(bot))
@@ -563,16 +567,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!leotheras || !IsLeotherasDpsHoldActive(botAI, leotheras))
         return 1.0f;
 
-    // Spells cast on the raid don't touch Leotheras. Totems are the exception, as some attack.
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-    return castOnRaid ? 1.0f : 0.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 // Soulshatter is eligible to be cast when there are at least two attackers, which is the case in
@@ -649,15 +644,7 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
 
 float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    // A healer's attack only picks a target and switches on its combat engine, where its heals
-    // live. Its damage (Smite, wand) is all CastSpellAction and stays held.
-    if (dynamic_cast<AttackAction*>(action) && PlayerbotAI::IsHeal(bot))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     // Tanks pick up the council at once.
@@ -676,16 +663,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
         return 1.0f;
     }
 
-    // Spells cast on the raid don't touch the council. Totems are the exception, as some attack.
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaid = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-    return castOnRaid ? 1.0f : 0.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)

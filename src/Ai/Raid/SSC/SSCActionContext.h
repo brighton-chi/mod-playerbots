@@ -234,13 +234,16 @@ private:
             botAI, "hydross the unstable position nature tank", false);
     }
     static Action* hydross_the_unstable_frost_phase_spread_ranged(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableFrostPhaseSpreadRangedAction(botAI);
+        return new SscSpreadRangedAction(
+            botAI, "hydross the unstable frost phase spread ranged",
+            SscHelpers::HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
     }
     static Action* hydross_the_unstable_misdirect_boss_to_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstableMisdirectBossToTankAction(botAI);
     }
     static Action* hydross_the_unstable_stop_dps_upon_phase_change(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableStopDpsUponPhaseChangeAction(botAI);
+        return new SscStopAttackingAction(
+            botAI, "hydross the unstable stop dps upon phase change");
     }
     static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI) {
         return new HydrossTheUnstableManagePhaseTimersAction(botAI);
@@ -292,7 +295,7 @@ private:
         return new LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(botAI);
     }
     static Action* leotheras_the_blind_melee_stop_attacking(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMeleeStopAttackingAction(botAI);
+        return new SscStopAttackingAction(botAI, "leotheras the blind melee stop attacking");
     }
     static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI) {
         return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);
@@ -315,7 +318,9 @@ private:
         return new FathomLordKarathressManageDpsTimerAction(botAI);
     }
     static Action* fathom_lord_karathress_spread_ranged(PlayerbotAI* botAI) {
-        return new FathomLordKarathressSpreadRangedAction(botAI);
+        return new SscSpreadRangedAction(
+            botAI, "fathom-lord karathress spread ranged",
+            SscHelpers::CARIBDIS_RANGED_SPREAD_DISTANCE);
     }
     static Action* fathom_lord_karathress_drop_from_cyclone(PlayerbotAI* botAI) {
         return new FathomLordKarathressDropFromCycloneAction(botAI);
