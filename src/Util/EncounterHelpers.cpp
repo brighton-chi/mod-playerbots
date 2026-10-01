@@ -32,13 +32,9 @@ namespace EncounterHelpers
 
 // Calling InstanceScript::IsEncounterInProgress is a very cheap check to use as an initial gate
 // for triggers and multipliers that should run only during a boss fight. This will not work for
-// every single encounter, as some bosses are not scripted to report IN_PROGRESS (but at least in
-// TBC raids, that is rare: only Terestian Illhoof and Illidari Council do not). It's also possible
-// for a boss script to set IN_PROGRESS upon an event other than the pull; that's at least the case
-// with Kil'jaeden, who is set to IN_PROGRESS only after 1 of the 3 Hands of the Deceiver is killed
-// in phase 1. To avoid spamming this check across each trigger and multiplier, you can create a
-// derived class of Trigger or Multiplier to call this helper and then derive your triggers and
-// multipliers from the intermediate class.
+// every single encounter, as some bosses are not scripted to report IN_PROGRESS (though all TBC
+// raid bosses now do). It's also possible for a boss script to set IN_PROGRESS upon an event other
+// than the pull (e.g., Leotheras is set to IN_PROGRESS only after the Spellbinders are killed).
 bool IsEncounterInProgress(Player* bot, uint32 mapId)
 {
     if (bot->GetMapId() != mapId)
@@ -74,14 +70,11 @@ bool CanTakeStepTowards(
     if (candidateZ <= INVALID_HEIGHT)
         candidateZ = botZ;
 
-    // The 9th parameter of CanReachPositionAndGetValidCoords(), failOnSlopes, returns false for a
-    // non-walkable slope, but in my experience, walking downhill is always possible, and thus the
-    // check needlessly rejects descents. This variable gets around that problem.
     bool const failOnSlopes = candidateZ > botZ;
 
     // This helper will return false on collision rather than clamping to the contact point so that
     // the caller can try a different path. Clamping is useless for avoidance since the bot will die
-    // just the same if it is in the middle of a hazard vs. halfway out and returning true.
+    // just the same if it is in the middle of a hazard vs. halfway out and stuck returning true.
     float const requestedX = candidateX;
     float const requestedY = candidateY;
 
@@ -320,21 +313,6 @@ Player* GetGroupAssistTank(Player* bot, uint8 index)
     uint8 nonAssistantIndex = index - assistantCount;
     if (nonAssistantIndex < nonAssistantTanks.size())
         return nonAssistantTanks[nonAssistantIndex];
-
-    return nullptr;
-}
-
-// DO NOT USE. TO BE REMOVED HERE ONCE ALL CALL SITES ARE MODIFIED.
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
-{
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (auto const& unitGuid : units)
-    {
-        Unit* unit = botAI->GetUnit(unitGuid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-            return unit;
-    }
 
     return nullptr;
 }
