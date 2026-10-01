@@ -1414,10 +1414,10 @@ GameObject* PlanVashjCoreRoute(
     return nullptr;
 }
 
-// The living bot nearest the spot that can catch: not a tank, not the chain's start, not already
-// a catcher, not holding a core. attackersOnly limits it to the elemental's killers.
+// The living bot nearest the spot that can catch: not a tank, not the chain's origin bot, not
+// already a catcher, not holding a core. attackersOnly limits it to the elemental's killers.
 Player* FindVashjCoreCatcher(
-    Player* bot, VashjCoreChain const& chain, Position const& spot, bool attackersOnly,
+    Player* bot, VashjCorePassingChain const& chain, Position const& spot, bool attackersOnly,
     ObjectGuid excluded)
 {
     Group* group = bot->GetGroup();
@@ -1430,7 +1430,7 @@ Player* FindVashjCoreCatcher(
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !member->IsInMap(bot) || !GET_PLAYERBOT_AI(member) ||
-            PlayerbotAI::IsTank(member) || member->GetGUID() == chain.start ||
+            PlayerbotAI::IsTank(member) || member->GetGUID() == chain.originBot ||
             member->GetGUID() == excluded || member->GetGUID() == chain.excluded ||
             GetVashjCoreCatcherIndex(chain, member) >= 0)
         {
@@ -1465,7 +1465,7 @@ void SetVashjCoreCatcher(VashjCoreCatcher& catcher, Player* player)
 
 // Only the first spot is filled with the plan, by the killer nearest it if any is left. The pass
 // action releases and fills every later spot as the chain moves up (ReleaseVashjCoreCatcher).
-void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain)
+void AssignVashjCoreCatchers(Player* bot, VashjCorePassingChain& chain)
 {
     if (chain.catchers.empty())
         return;
@@ -1479,7 +1479,7 @@ void AssignVashjCoreCatchers(Player* bot, VashjCoreChain& chain)
     first.released = true;
 }
 
-void ResetVashjCoreThrows(VashjCoreChain& chain)
+void ResetVashjCoreThrows(VashjCorePassingChain& chain)
 {
     chain.reached = -1;
     chain.throwTarget.Clear();
@@ -1491,7 +1491,7 @@ void ResetVashjCoreThrows(VashjCoreChain& chain)
 
 // True while the chain is under way: its elemental stands or lies unlooted, the core's last holder
 // or the one it was last thrown to has it, or a throw has just been made.
-bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
+bool IsVashjCorePassingChainLive(Player* bot, VashjCorePassingChain const& chain)
 {
     if (chain.failed)
         return false;
@@ -1507,7 +1507,8 @@ bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
         return true;
 
     // Only the last holder, or the catcher it last threw to, can have it
-    ObjectGuid const holder = chain.reached >= 0 ? chain.catchers[chain.reached].bot : chain.start;
+    ObjectGuid const holder =
+        chain.reached >= 0 ? chain.catchers[chain.reached].bot : chain.originBot;
     for (ObjectGuid const guid : { holder, chain.throwTarget })
     {
         Player* player = ObjectAccessor::GetPlayer(*bot, guid);
@@ -1521,7 +1522,7 @@ bool IsVashjCoreChainLive(Player* bot, VashjCoreChain const& chain)
 } // end anonymous namespace (Vashj)
 
 std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
+std::unordered_map<uint32, VashjCorePassingChain> vashjCorePassingChains;
 std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
 
@@ -2657,7 +2658,7 @@ void TaintedLogGenerators(Player* bot)
         TaintedLogElapsedMs(bot), usable);
 }
 
-void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what)
+void TaintedLogChain(Player* bot, VashjCorePassingChain const& chain, char const* what)
 {
     std::string catchers;
     for (VashjCoreCatcher const& catcher : chain.catchers)
@@ -2682,14 +2683,14 @@ bool HasTaintedCore(Player* player)
     return player && player->HasAura(Id(SscSpells::SPELL_TAINTED_CORE_PARALYZE));
 }
 
-void PlanVashjCoreChain(Player* bot, Unit* tainted, Player* looter)
+void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
 {
     if (!tainted || !looter)
         return;
 
-    VashjCoreChain chain;
+    VashjCorePassingChain chain;
     chain.tainted = tainted->GetGUID();
-    chain.start = looter->GetGUID();
+    chain.originBot = looter->GetGUID();
 
     // The looter is somewhere near the corpse, so the first thrower is taken as the shortest race
     // too. With no way found from the corpse, the looter still loots, and plans again from where it
@@ -2706,10 +2707,10 @@ void PlanVashjCoreChain(Player* bot, Unit* tainted, Player* looter)
 
     AssignVashjCoreCatchers(bot, chain);
     TaintedLogChain(bot, chain, "planned"); // TEMP LOG
-    vashjCoreChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
+    vashjCorePassingChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
 }
 
-bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded)
+bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, ObjectGuid excluded)
 {
     // Rooted in the same place, the holder tends to get the same spots back
     constexpr uint8 maxReplans = 3;
@@ -2720,7 +2721,7 @@ bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excl
         return false;
     }
 
-    chain.start = holder->GetGUID();
+    chain.originBot = holder->GetGUID();
     chain.catchers.clear();
     ResetVashjCoreThrows(chain);
 
@@ -2742,7 +2743,7 @@ bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excl
     return !chain.failed;
 }
 
-bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
+bool ReassignVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index)
 {
     VashjCoreCatcher& catcher = chain.catchers[index];
     Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, catcher.bot);
@@ -2761,7 +2762,7 @@ bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
     return true;
 }
 
-void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
+void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index)
 {
     VashjCoreCatcher& catcher = chain.catchers[index];
     if (catcher.released)
@@ -2777,13 +2778,13 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index)
         player ? player->GetExactDist2d(catcher.spot) : 0.0f);
 }
 
-VashjCoreChain* GetVashjCoreChain(Player* bot)
+VashjCorePassingChain* GetVashjCorePassingChain(Player* bot)
 {
-    auto it = vashjCoreChains.find(bot->GetInstanceId());
-    return it != vashjCoreChains.end() ? &it->second : nullptr;
+    auto it = vashjCorePassingChains.find(bot->GetInstanceId());
+    return it != vashjCorePassingChains.end() ? &it->second : nullptr;
 }
 
-int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot)
+int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot)
 {
     for (size_t i = 0; i < chain.catchers.size(); ++i)
     {
@@ -2794,7 +2795,7 @@ int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot)
     return -1;
 }
 
-bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index)
+bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, int8 index)
 {
     if (index < chain.reached)
         return false;
@@ -2810,10 +2811,10 @@ bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 ind
             return false;
     }
 
-    return IsVashjCoreChainLive(bot, chain);
+    return IsVashjCorePassingChainLive(bot, chain);
 }
 
-float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index)
+float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index)
 {
     return static_cast<size_t>(index) + 1 == chain.catchers.size() ?
         VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE : VASHJ_CORE_SPOT_ARRIVAL_DISTANCE;

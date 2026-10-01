@@ -524,9 +524,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToCoreSpot(SscHelpers::VashjCoreChain& chain, int8 index);
+    bool MoveToCoreSpot(SscHelpers::VashjCorePassingChain& chain, int8 index);
     bool ThrowCore(
-        SscHelpers::VashjCoreChain& chain, size_t next, Item* core, GameObject* generator);
+        SscHelpers::VashjCorePassingChain& chain, size_t next, Item* core, GameObject* generator);
     bool UseCoreOnGenerator(Item* core, GameObject* generator);
 };
 

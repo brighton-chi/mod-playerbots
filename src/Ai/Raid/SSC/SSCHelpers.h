@@ -763,12 +763,12 @@ struct VashjCoreCatcher
 
 // One core's way to a generator, per instance. Planned by the mechanic tracker bot when the looter
 // is picked; the holder plans it again from where it is rooted if the next throw can't be made.
-struct VashjCoreChain
+struct VashjCorePassingChain
 {
     ObjectGuid tainted;
     ObjectGuid generator;
     // Who throws to the first catcher: the looter, or the holder a new plan started from
-    ObjectGuid start;
+    ObjectGuid originBot;
     // In throw order; the last one uses the core on the generator. The first spot's bot is picked
     // with the plan, every later one's when the spot is released.
     std::vector<VashjCoreCatcher> catchers;
@@ -792,7 +792,7 @@ struct VashjCoreChain
 
 extern std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
 extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-extern std::unordered_map<uint32, VashjCoreChain> vashjCoreChains;
+extern std::unordered_map<uint32, VashjCorePassingChain> vashjCorePassingChains;
 extern std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
 
 int8 GetLadyVashjPhase(Unit* vashj);
@@ -944,30 +944,30 @@ bool TaintedLogSeen(Player* bot, char const* key);
 // At most once a second per bot and key.
 bool TaintedLogThrottle(Player* bot, char const* key);
 void TaintedLogThrow(Player* bot, Player* receiver, int catcher);
-void TaintedLogChain(Player* bot, VashjCoreChain const& chain, char const* what);
+void TaintedLogChain(Player* bot, VashjCorePassingChain const& chain, char const* what);
 // Logs when the number of usable generators changes.
 void TaintedLogGenerators(Player* bot);
 // By the core's Paralyze, which comes and goes with the core in the bags. Nothing else takes it
 // off: no dispel type or mechanic, it pierces immunities, and it can't be cancelled.
 bool HasTaintedCore(Player* player);
 // A new chain for the elemental, from where it stands to the nearest usable generator a route
-// reaches, with looter as its start. With no route yet, the looter plans again once it holds the
-// core.
-void PlanVashjCoreChain(Player* bot, Unit* tainted, Player* looter);
+// reaches, with looter as its origin bot. With no route yet, the looter plans again once it
+// holds the core.
+void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter);
 // Plans the chain again from the holder, rooted where it stands, to the same generator if a route
 // still reaches it, else the nearest usable one that does. excluded, when given, gets no spot in
 // this plan or any later one. Marks the chain failed if there is no way, or after a few tries.
-bool ReplanVashjCoreChain(Player* holder, VashjCoreChain& chain, ObjectGuid excluded);
+bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, ObjectGuid excluded);
 // Gives a catcher's spot to the nearest other bot that can take it.
-bool ReassignVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
+bool ReassignVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index);
 // Picks the nearest bot for a catcher's spot, from where the raid stands now, and lets it set out.
-void ReleaseVashjCoreCatcher(Player* bot, VashjCoreChain& chain, size_t index);
-VashjCoreChain* GetVashjCoreChain(Player* bot);
+void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index);
+VashjCorePassingChain* GetVashjCorePassingChain(Player* bot);
 // The bot's place among the chain's catchers, or -1.
-int8 GetVashjCoreCatcherIndex(VashjCoreChain const& chain, Player* bot);
+int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot);
 // True while the catcher should be walking to or standing on its spot.
-bool IsVashjCoreCatcherActive(Player* bot, VashjCoreChain const& chain, int8 index);
-float GetVashjCoreSpotArrivalDistance(VashjCoreChain const& chain, int8 index);
+bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, int8 index);
+float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index);
 
 }
 

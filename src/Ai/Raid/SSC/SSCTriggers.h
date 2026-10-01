@@ -539,41 +539,41 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotShouldAttackTaintedElementalTrigger : public SscEncounterTrigger
+class LadyVashjShouldAttackTaintedElementalTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotShouldAttackTaintedElementalTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot should attack tainted elemental") {}
+    LadyVashjShouldAttackTaintedElementalTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should attack tainted elemental") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotIsTaintedCoreLooterTrigger : public SscEncounterTrigger
+class LadyVashjTaintedCoreLooterTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotIsTaintedCoreLooterTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot is tainted core looter") {}
+    LadyVashjTaintedCoreLooterTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj tainted core looter") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
+class LadyVashjShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot should destroy tainted core") {}
+    LadyVashjShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should destroy tainted core") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotIsInTaintedCoreChainTrigger : public SscEncounterTrigger
+class LadyVashjCorePassingChainMemberTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotIsInTaintedCoreChainTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot is in tainted core chain") {}
+    LadyVashjCorePassingChainMemberTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj core passing chain member") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -589,21 +589,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotIsAboveTheGroundTrigger : public SscEncounterTrigger
+class LadyVashjBotAboveTheGroundTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotIsAboveTheGroundTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot is above the ground") {}
+    LadyVashjBotAboveTheGroundTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot above the ground") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjBotIsInToxicSporesTrigger : public SscEncounterTrigger
+class LadyVashjBotInToxicSporesTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjBotIsInToxicSporesTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj bot is in toxic spores") {}
+    LadyVashjBotInToxicSporesTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj bot in toxic spores") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -176,26 +176,26 @@ public:
         creators["lady vashj tainted elemental needs looter"] =
             &RaidSscTriggerContext::lady_vashj_tainted_elemental_needs_looter;
 
-        creators["lady vashj bot should attack tainted elemental"] =
-            &RaidSscTriggerContext::lady_vashj_bot_should_attack_tainted_elemental;
+        creators["lady vashj should attack tainted elemental"] =
+            &RaidSscTriggerContext::lady_vashj_should_attack_tainted_elemental;
 
-        creators["lady vashj bot is tainted core looter"] =
-            &RaidSscTriggerContext::lady_vashj_bot_is_tainted_core_looter;
+        creators["lady vashj tainted core looter"] =
+            &RaidSscTriggerContext::lady_vashj_tainted_core_looter;
 
-        creators["lady vashj bot is in tainted core chain"] =
-            &RaidSscTriggerContext::lady_vashj_bot_is_in_tainted_core_chain;
+        creators["lady vashj core passing chain member"] =
+            &RaidSscTriggerContext::lady_vashj_core_passing_chain_member;
 
-        creators["lady vashj bot should destroy tainted core"] =
-            &RaidSscTriggerContext::lady_vashj_bot_should_destroy_tainted_core;
+        creators["lady vashj should destroy tainted core"] =
+            &RaidSscTriggerContext::lady_vashj_should_destroy_tainted_core;
 
         creators["lady vashj pet should switch target"] =
             &RaidSscTriggerContext::lady_vashj_pet_should_switch_target;
 
-        creators["lady vashj bot is above the ground"] =
-            &RaidSscTriggerContext::lady_vashj_bot_is_above_the_ground;
+        creators["lady vashj bot above the ground"] =
+            &RaidSscTriggerContext::lady_vashj_bot_above_the_ground;
 
-        creators["lady vashj bot is in toxic spores"] =
-            &RaidSscTriggerContext::lady_vashj_bot_is_in_toxic_spores;
+        creators["lady vashj bot in toxic spores"] =
+            &RaidSscTriggerContext::lady_vashj_bot_in_toxic_spores;
 
         creators["lady vashj melee near toxic spores"] =
             &RaidSscTriggerContext::lady_vashj_melee_near_toxic_spores;
@@ -382,26 +382,26 @@ private:
     static Trigger* lady_vashj_tainted_elemental_needs_looter(PlayerbotAI* botAI) {
         return new LadyVashjTaintedElementalNeedsLooterTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_should_attack_tainted_elemental(PlayerbotAI* botAI) {
-        return new LadyVashjBotShouldAttackTaintedElementalTrigger(botAI);
+    static Trigger* lady_vashj_should_attack_tainted_elemental(PlayerbotAI* botAI) {
+        return new LadyVashjShouldAttackTaintedElementalTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_is_tainted_core_looter(PlayerbotAI* botAI) {
-        return new LadyVashjBotIsTaintedCoreLooterTrigger(botAI);
+    static Trigger* lady_vashj_tainted_core_looter(PlayerbotAI* botAI) {
+        return new LadyVashjTaintedCoreLooterTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_is_in_tainted_core_chain(PlayerbotAI* botAI) {
-        return new LadyVashjBotIsInTaintedCoreChainTrigger(botAI);
+    static Trigger* lady_vashj_core_passing_chain_member(PlayerbotAI* botAI) {
+        return new LadyVashjCorePassingChainMemberTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_should_destroy_tainted_core(PlayerbotAI* botAI) {
-        return new LadyVashjBotShouldDestroyTaintedCoreTrigger(botAI);
+    static Trigger* lady_vashj_should_destroy_tainted_core(PlayerbotAI* botAI) {
+        return new LadyVashjShouldDestroyTaintedCoreTrigger(botAI);
     }
     static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI) {
         return new LadyVashjPetShouldSwitchTargetTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_is_above_the_ground(PlayerbotAI* botAI) {
-        return new LadyVashjBotIsAboveTheGroundTrigger(botAI);
+    static Trigger* lady_vashj_bot_above_the_ground(PlayerbotAI* botAI) {
+        return new LadyVashjBotAboveTheGroundTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_is_in_toxic_spores(PlayerbotAI* botAI) {
-        return new LadyVashjBotIsInToxicSporesTrigger(botAI);
+    static Trigger* lady_vashj_bot_in_toxic_spores(PlayerbotAI* botAI) {
+        return new LadyVashjBotInToxicSporesTrigger(botAI);
     }
     static Trigger* lady_vashj_melee_near_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjMeleeNearToxicSporesTrigger(botAI);

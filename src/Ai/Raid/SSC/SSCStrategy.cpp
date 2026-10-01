@@ -164,16 +164,16 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj tainted elemental needs looter",
         { NextAction("lady vashj assign tainted core looter", ACTION_EMERGENCY + 13) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot should attack tainted elemental",
+    triggers.push_back(new TriggerNode("lady vashj should attack tainted elemental",
         { NextAction("lady vashj attack tainted elemental", ACTION_EMERGENCY + 12) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot is tainted core looter",
+    triggers.push_back(new TriggerNode("lady vashj tainted core looter",
         { NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 11) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot is in tainted core chain",
+    triggers.push_back(new TriggerNode("lady vashj core passing chain member",
         { NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot should destroy tainted core",
+    triggers.push_back(new TriggerNode("lady vashj should destroy tainted core",
         { NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("lady vashj should assign target priority",
@@ -194,10 +194,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj pet should switch target",
         { NextAction("lady vashj command pet target", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot is above the ground",
+    triggers.push_back(new TriggerNode("lady vashj bot above the ground",
         { NextAction("lady vashj return to the ground", ACTION_EMERGENCY + 9) }));
 
-    triggers.push_back(new TriggerNode("lady vashj bot is in toxic spores",
+    triggers.push_back(new TriggerNode("lady vashj bot in toxic spores",
         { NextAction("lady vashj avoid toxic spores", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("lady vashj melee near toxic spores",

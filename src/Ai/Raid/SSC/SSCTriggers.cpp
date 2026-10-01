@@ -634,7 +634,7 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
 
 // The ranged dps of the cluster nearest the elemental, a ranged dps looter included. A healer
 // looter waits beside it instead (see the loot action).
-bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
+bool LadyVashjShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
     if (!GetTaintedElementalToKill(bot))
         return false;
@@ -644,7 +644,7 @@ bool LadyVashjBotShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 }
 
 // From the looter's pick until the core is taken from the corpse.
-bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
+bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
     if (!IsDesignatedCoreLooter(bot))
         return false;
@@ -678,7 +678,7 @@ bool LadyVashjBotIsTaintedCoreLooterTrigger::IsActiveInEncounter()
 // A core with nowhere to go: in phase 3, with no generator left; from a chain that found no way; or
 // still held when the next core is ready to loot. Its Paralyze roots the holder until it leaves the
 // bags.
-bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
+bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 {
     if (!HasTaintedCore(bot))
         return false;
@@ -691,7 +691,7 @@ bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     if (phase != 2)
         return false;
 
-    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
     if (chain && chain->failed)
         return true;
 
@@ -699,15 +699,15 @@ bool LadyVashjBotShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
-// The chain's start or one of its catchers, while it holds the core or is due at its spot.
-bool LadyVashjBotIsInTaintedCoreChainTrigger::IsActiveInEncounter()
+// The chain's origin bot or one of its catchers, while it holds the core or is due at its spot.
+bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
 {
-    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
     if (!chain || chain->failed)
         return false;
 
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
-    if (index < 0 && chain->start != bot->GetGUID())
+    if (index < 0 && chain->originBot != bot->GetGUID())
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -757,7 +757,7 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 
 // Bots going after Sporebats sometimes walk up into the air, or end up on the pipes above the
 // dais. A bot never falls on its own, so it stays up there.
-bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
+bool LadyVashjBotAboveTheGroundTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
@@ -770,7 +770,7 @@ bool LadyVashjBotIsAboveTheGroundTrigger::IsActiveInEncounter()
 }
 
 // Melee dps have their own trigger, below.
-bool LadyVashjBotIsInToxicSporesTrigger::IsActiveInEncounter()
+bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3 || IsVashjRingMelee(bot, vashj))

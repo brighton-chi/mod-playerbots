@@ -50,7 +50,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     reset |= vashjClusterHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
-    reset |= vashjCoreChains.erase(instanceId) > 0;
+    reset |= vashjCorePassingChains.erase(instanceId) > 0;
     reset |= vashjGroundingShaman.erase(instanceId) > 0;
     reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
     reset |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
@@ -2035,16 +2035,16 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     if (!repick)
         StartTaintedLog(bot);
 
-    // A new elemental gets a new chain. A re-picked looter takes over the start of the old one, and
-    // gives up any catcher's spot it had.
-    VashjCoreChain* chain = GetVashjCoreChain(bot);
+    // A new elemental gets a new chain. A re-picked looter becomes the old one's origin bot,
+    // and gives up any catcher's spot it had.
+    VashjCorePassingChain* chain = GetVashjCorePassingChain(bot);
     if (!chain || chain->tainted != tainted->GetGUID())
     {
-        PlanVashjCoreChain(bot, tainted, looter);
+        PlanVashjCorePassingChain(bot, tainted, looter);
     }
     else
     {
-        chain->start = looter->GetGUID();
+        chain->originBot = looter->GetGUID();
         if (int8 const index = GetVashjCoreCatcherIndex(*chain, looter); index >= 0)
             ReassignVashjCoreCatcher(bot, *chain, static_cast<size_t>(index));
     }
@@ -2257,7 +2257,7 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 
     // TEMP LOG
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    VashjCoreChain const* chain = GetVashjCoreChain(bot);
+    VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
     LOG_INFO("playerbots", "[SSC tainted] +{}ms {} destroys the core ({})",
         TaintedLogElapsedMs(bot), bot->GetName(),
         GetLadyVashjPhase(vashj) == 3 ? "phase 3" :
@@ -2271,7 +2271,7 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 // throws it on or, in reach of the generator, uses it.
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 {
-    VashjCoreChain* chain = GetVashjCoreChain(bot);
+    VashjCorePassingChain* chain = GetVashjCorePassingChain(bot);
     if (!chain || chain->failed)
         return false;
 
@@ -2296,7 +2296,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 
     if (!generator || generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
     {
-        ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+        ReplanVashjCorePassingChain(bot, *chain, ObjectGuid::Empty);
         return true;
     }
 
@@ -2307,7 +2307,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     size_t const next = static_cast<size_t>(index + 1);
     if (next >= chain->catchers.size())
     {
-        ReplanVashjCoreChain(bot, *chain, ObjectGuid::Empty);
+        ReplanVashjCorePassingChain(bot, *chain, ObjectGuid::Empty);
         return true;
     }
 
@@ -2328,7 +2328,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 }
 
 // False once there, so the catcher can fight or heal from its spot while it waits.
-bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCoreChain& chain, int8 index)
+bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& chain, int8 index)
 {
     size_t const next = static_cast<size_t>(index + 1);
     bool const last = next == chain.catchers.size();
@@ -2369,7 +2369,7 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCoreChain& chain, in
 // that catcher. A catcher that never arrives is replaced; one standing out of reach means a new
 // plan.
 bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
-    VashjCoreChain& chain, size_t next, Item* core, GameObject* generator)
+    VashjCorePassingChain& chain, size_t next, Item* core, GameObject* generator)
 {
     uint32 const now = getMSTime();
     VashjCoreCatcher const& catcher = chain.catchers[next];
@@ -2410,7 +2410,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
             chain.blockedStart = now;
         else if (getMSTimeDiff(chain.blockedStart, now) > blockedMs)
         {
-            ReplanVashjCoreChain(bot, chain, ObjectGuid::Empty);
+            ReplanVashjCorePassingChain(bot, chain, ObjectGuid::Empty);
             return true;
         }
 
@@ -2431,7 +2431,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     {
         if (++chain.failedThrows >= maxThrows)
         {
-            ReplanVashjCoreChain(bot, chain, player->GetGUID());
+            ReplanVashjCorePassingChain(bot, chain, player->GetGUID());
             return true;
         }
     }
