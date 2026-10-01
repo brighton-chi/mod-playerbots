@@ -13,7 +13,6 @@
 #include <array>
 #include <cmath>
 #include <iterator>
-#include <list>
 #include <utility>
 #include <vector>
 
@@ -395,9 +394,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
     Creature* darkFiendNearMuru = nullptr;
     constexpr float massDispelRange = 15.0f;
-    std::list<Creature*> darkFiends;
-    bot->GetCreatureListWithEntryInGrid(
-        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
+    std::vector<Creature*> const darkFiends = GetMuruDarkFiends(botAI);
 
     if (isMuruPhase)
     {
@@ -760,8 +757,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
         return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
     }
 
-    Creature* darkFiend =
-        bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_AVOID_SEARCH_RADIUS);
+    Creature* darkFiend = GetNearestMuruDarkFiend(botAI, DARK_FIEND_AVOID_SEARCH_RADIUS);
     if (!darkFiend)
         return false;
 

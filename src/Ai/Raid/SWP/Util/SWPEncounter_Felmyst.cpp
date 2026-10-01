@@ -24,6 +24,23 @@ std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 namespace
 {
 
+FelmystDemonicVaporGuids const& GetCachedDemonicVapors(Player* bot)
+{
+    static FelmystDemonicVaporGuids const none;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    if (!botAI)
+        return none;
+
+    return botAI->GetAiObjectContext()
+        ->GetValue<FelmystDemonicVaporGuids>("felmyst demonic vapors")->RefGet();
+}
+
+Creature* GetLivingCreature(Player* bot, ObjectGuid const& guid)
+{
+    Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
+    return creature && creature->IsAlive() ? creature : nullptr;
+}
+
 void ResetDemonicVaporFlightState(uint32 instanceId)
 {
     auto const stateItr = felmystEncounterStates.find(instanceId);
@@ -530,32 +547,46 @@ Position ClosestPointOnSegment(Position const& p, Position const& segA, Position
 
 } // end anonymous namespace
 
-std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
+FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot)
 {
-    std::vector<Creature*> hazards;
-    constexpr float searchRadius = 100.0f;
+    FelmystDemonicVaporGuids guids;
 
-    auto const addHazards = [&](uint32 entry)
+    auto const addGuids = [bot](uint32 entry, GuidVector& out)
     {
         std::list<Creature*> creatures;
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, DEMONIC_VAPOR_SEARCH_RADIUS);
         for (Creature* creature : creatures)
         {
-            if (!creature || !creature->IsAlive())
-                continue;
-
-            if (entry == Id(SwpNpcs::NPC_DEMONIC_VAPOR) &&
-                creature->GetSummonerGUID() == bot->GetGUID())
-            {
-                continue;
-            }
-
-            hazards.push_back(creature);
+            if (creature && creature->IsAlive())
+                out.push_back(creature->GetGUID());
         }
     };
 
-    addHazards(Id(SwpNpcs::NPC_DEMONIC_VAPOR));
-    addHazards(Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL));
+    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR), guids.heads);
+    addGuids(Id(SwpNpcs::NPC_DEMONIC_VAPOR_TRAIL), guids.trails);
+    return guids;
+}
+
+std::vector<Creature*> GetDemonicVaporHazards(Player* bot)
+{
+    FelmystDemonicVaporGuids const& guids = GetCachedDemonicVapors(bot);
+
+    std::vector<Creature*> hazards;
+    hazards.reserve(guids.heads.size() + guids.trails.size());
+
+    for (ObjectGuid const& guid : guids.heads)
+    {
+        Creature* head = GetLivingCreature(bot, guid);
+        if (head && head->GetSummonerGUID() != bot->GetGUID())
+            hazards.push_back(head);
+    }
+
+    for (ObjectGuid const& guid : guids.trails)
+    {
+        if (Creature* trail = GetLivingCreature(bot, guid))
+            hazards.push_back(trail);
+    }
+
     return hazards;
 }
 
@@ -832,18 +863,18 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
 }
 
-Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot)
+Creature* GetFelmystDemonicVaporSummonedBy(Player* bot, Player* summoner)
 {
-    std::list<Creature*> vapors;
-    constexpr float searchRadius = 50.0f;
-    bot->GetCreatureListWithEntryInGrid(vapors, Id(SwpNpcs::NPC_DEMONIC_VAPOR), searchRadius);
+    if (!summoner)
+        return nullptr;
 
-    for (Creature* creature : vapors)
+    for (ObjectGuid const& guid : GetCachedDemonicVapors(bot).heads)
     {
-        if (creature && creature->IsAlive() &&
-            creature->GetSummonerGUID() == bot->GetGUID())
+        Creature* head = GetLivingCreature(bot, guid);
+        if (head && head->GetSummonerGUID() == summoner->GetGUID() &&
+            summoner->GetDistance2d(head) <= DEMONIC_VAPOR_SUMMONER_RADIUS)
         {
-            return creature;
+            return head;
         }
     }
 
@@ -853,7 +884,7 @@ Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot)
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot)
 {
     constexpr float kiteDistanceThreshold = 15.0f;
-    Creature* vapor = GetFelmystDemonicVaporSummonedByBot(bot);
+    Creature* vapor = GetFelmystDemonicVaporSummonedBy(bot, bot);
     return vapor && bot->GetExactDist2d(vapor) <= kiteDistanceThreshold;
 }
 
@@ -1331,10 +1362,10 @@ Player* GetFelmystFlightLeader(Player* player)
 
     FelmystEncounterState& state = felmystEncounterStates[player->GetInstanceId()];
 
-    auto const isEligible = [](Player* member) -> bool
+    auto const isEligible = [player](Player* member) -> bool
     {
         return member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
-            !GetFelmystDemonicVaporSummonedByBot(member);
+            !GetFelmystDemonicVaporSummonedBy(player, member);
     };
 
     // Keep the then-current flight leader if still eligible to maintain consistency. Notably, if

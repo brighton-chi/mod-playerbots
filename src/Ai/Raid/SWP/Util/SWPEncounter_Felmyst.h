@@ -112,6 +112,20 @@ struct FelmystEncounterState
 
 extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
+// What the "felmyst demonic vapors" value stores. Only which vapors exist is cached, not where
+// they are.
+struct FelmystDemonicVaporGuids
+{
+    GuidVector heads; // Each chases the player who summoned it
+    GuidVector trails;
+};
+
+// For the "felmyst demonic vapors" value.
+inline constexpr uint32 DEMONIC_VAPOR_CACHE_INTERVAL_MS = 200;
+inline constexpr float DEMONIC_VAPOR_SEARCH_RADIUS = 100.0f;
+// A head is taken as its summoner's only within this of them, edge to edge.
+inline constexpr float DEMONIC_VAPOR_SUMMONER_RADIUS = 50.0f;
+
 // How far ranged bots position from the center of each ranged group.
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
 // Bots wait 300ms to react to Encapsulate (to make the action look less artificial).
@@ -221,7 +235,9 @@ bool TryGetFelmystGroundStackPosition(
 FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit* unit);
 float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
-Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
+FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot);
+// The head summoned by summoner, from bot's "felmyst demonic vapors" value.
+Creature* GetFelmystDemonicVaporSummonedBy(Player* bot, Player* summoner);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);

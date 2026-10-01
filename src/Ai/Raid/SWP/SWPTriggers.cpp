@@ -395,7 +395,7 @@ bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActiveInEncounter()
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    if (GetFelmystDemonicVaporSummonedByBot(bot))
+    if (GetFelmystDemonicVaporSummonedBy(bot, bot))
         return false;
 
     FogOfCorruptionState fogState;
@@ -677,7 +677,7 @@ bool MuruDarkFiendsSpawnedTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "m'uru"))
         return false;
 
-    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
+    return GetNearestMuruDarkFiend(botAI, DARK_FIEND_DISPEL_SEARCH_RADIUS);
 }
 
 bool MuruDarknessIsComingTrigger::IsActiveInEncounter()
@@ -764,7 +764,7 @@ bool MuruEntropiusSummonsVoidZonesTrigger::IsActiveInEncounter()
     if (FindMuruVoidZoneToAvoid(botAI))
         return true;
 
-    return bot->FindNearestCreature(Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_AVOID_SEARCH_RADIUS);
+    return GetNearestMuruDarkFiend(botAI, DARK_FIEND_AVOID_SEARCH_RADIUS);
 }
 
 bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
