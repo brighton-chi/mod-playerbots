@@ -49,7 +49,7 @@ class HighWarlordNajentusDisperseRangedAction : public MovementAction
 {
 public:
     HighWarlordNajentusDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "naj'entus disperse ranged") {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus disperse ranged") {}
     bool Execute(Event event) override;
 };
 
@@ -424,7 +424,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToShadowTrap(GameObject* trap);
+    bool MoveToShadowTrap(Unit* illidan, GameObject* trap);
     Position FindSafestNearbyPosition(
         std::vector<Unit*> const& flameCrashes, float maxRadius, float hazardRadius);
     bool IsPathSafeFromFlameCrashes(Position const& start,
@@ -439,8 +439,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool InfectedBotMoveFromGroup(Unit* illidan, Position const& targetPos);
-    bool FreezeTrapShadowfiend(Player* bot, Unit* illidan, Position const& targetPos);
+    bool InfectedBotMoveFromGroup(Position const& targetPos);
+    bool FreezeTrapShadowfiend(Position const& targetPos);
 };
 
 class IllidanStormrageSetEarthbindTotemAction : public Action
@@ -459,7 +459,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RepositionToAvoidEyeBlast(Unit* illidan, BlackTempleHelpers::EyeBlastDangerArea const& dangerArea);
+    bool RepositionToAvoidEyeBlast(BlackTempleHelpers::EyeBlastDangerArea const& dangerArea);
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 };
 

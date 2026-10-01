@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -23,6 +24,12 @@ class Unit;
 
 namespace BlackTempleHelpers
 {
+
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+constexpr uint32 Id(T value)
+{
+    return static_cast<uint32>(value);
+}
 
 enum class BlackTempleSpells : uint32
 {
@@ -85,7 +92,7 @@ enum class BlackTempleSpells : uint32
     SPELL_MISDIRECTION              = 35079,
 
     // Shaman
-    SPELL_EARTHBIND_TOTEM           = 2484,
+    SPELL_EARTHBIND_TOTEM           =  2484,
 };
 
 enum class BlackTempleNpcs : uint32
@@ -132,44 +139,64 @@ enum class TankPositionState : uint8
     Unknown            = 255,
 };
 
-constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
+inline constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
 // High Warlord Naj'entus
-extern const Position NAJENTUS_TANK_POSITION;
+
+inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
 // Supremus
+
 extern std::unordered_map<uint32, uint32> supremusPhaseTimer;
-bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
+bool HasSupremusVolcanoNearby(Player* bot);
 
 // Shade of Akama
-extern const Position AKAMA_CHANNELER_POSITION;
+
+inline Position const AKAMA_CHANNELER_POSITION = { 467.851f, 401.622f, 118.538f };
+
 extern std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
 
 // Teron Gorefiend
-extern const Position GOREFIEND_TANK_POSITION;
-extern const Position GOREFIEND_DIE_POSITION;
+
+inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
+inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
 
 // Gurtogg Bloodboil
-extern const Position GURTOGG_TANK_POSITION;
-extern const Position GURTOGG_RANGED_POSITION;
-extern const Position GURTOGG_SOAKER_POSITION;
+
+inline Position const GURTOGG_TANK_POSITION   = { 735.987f, 272.451f, 63.554f };
+inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
+inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
+
 extern std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
 int GetGurtoggActiveRotationGroup(Unit* gurtogg);
 
 // Mother Shahraz
-extern const Position SHAHRAZ_TANK_POSITION;
-extern const Position SHAHRAZ_TRANSITION_POSITION;
-extern const Position SHAHRAZ_RANGED_POSITION;
+
+inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
+inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
+inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
+
 extern std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 TankPositionState GetShahrazTankPositionState(Player* bot);
 
 // Illidari Council
-constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
-extern const std::array<Position, 4> GATHIOS_TANK_POSITIONS;
-extern const Position MALANDE_TANK_POSITION;
-extern const Position ZEREVOR_TANK_POSITION;
-extern const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS;
+
+inline constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
+
+inline std::array const GATHIOS_TANK_POSITIONS = {
+    Position{ 662.977f, 296.246f, 271.688f },
+    Position{ 636.238f, 283.719f, 271.629f },
+    Position{ 655.571f, 261.377f, 271.687f },
+    Position{ 673.789f, 274.139f, 271.689f },
+};
+inline Position const MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
+inline Position const ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
+inline std::array const ZEREVOR_HEALER_POSITIONS = {
+    Position{ 661.385f, 351.219f, 271.690f },
+    Position{ 667.003f, 363.768f, 271.690f },
+};
+
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
@@ -177,15 +204,39 @@ Player* GetZerevorMageTank(Player* bot);
 bool HasDangerousCouncilAura(Unit* unit);
 
 // Illidan Stormrage <The Betrayer>
-extern const Position ILLIDAN_LANDING_POSITION;
-extern const Position ILLIDAN_N_GRATE_POSITION;
-extern const Position ILLIDAN_E_GRATE_POSITION;
-extern const Position ILLIDAN_W_GRATE_POSITION;
-extern const std::array<Position, 3> GRATE_POSITIONS;
-extern const Position ILLIDAN_E_GLAIVE_WAITING_POSITION;
-extern const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS;
-extern const Position ILLIDAN_W_GLAIVE_WAITING_POSITION;
-extern const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS;
+
+inline Position const ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
+inline Position const ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
+inline Position const ILLIDAN_E_GRATE_POSITION = { 673.500f, 298.500f, 353.192f };
+inline Position const ILLIDAN_W_GRATE_POSITION = { 672.400f, 312.500f, 353.192f };
+inline std::array const GRATE_POSITIONS = {
+    ILLIDAN_N_GRATE_POSITION,
+    ILLIDAN_E_GRATE_POSITION,
+    ILLIDAN_W_GRATE_POSITION,
+};
+
+inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
+inline std::array const E_GLAIVE_TANK_POSITIONS = {
+    Position{ 683.000f, 295.000f, 354.000f },
+    Position{ 696.969f, 300.982f, 354.302f },
+    Position{ 691.112f, 287.461f, 354.363f },
+    Position{ 676.674f, 280.797f, 354.268f },
+    Position{ 664.414f, 284.834f, 354.271f },
+    Position{ 656.826f, 295.113f, 354.165f },
+    Position{ 665.000f, 304.000f, 354.000f },
+};
+
+inline Position const ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
+inline std::array const W_GLAIVE_TANK_POSITIONS = {
+    Position{ 697.208f, 313.475f, 354.234f },
+    Position{ 681.000f, 318.000f, 354.000f },
+    Position{ 664.000f, 307.000f, 354.000f },
+    Position{ 656.161f, 314.132f, 354.092f },
+    Position{ 665.080f, 326.905f, 354.128f },
+    Position{ 678.809f, 329.968f, 354.387f },
+    Position{ 690.889f, 324.277f, 354.204f },
+};
+
 extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
 extern std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
 extern std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
@@ -198,7 +249,7 @@ int GetIllidanPhase(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 Player* GetIllidanWarlockTank(Player* bot);
-bool HasParasiticShadowfiend(Player* member);
+bool HasParasiticShadowfiend(Player* player);
 Player* GetIllidanTrapperHunter(Player* bot);
 Player* GetBotWithParasiticShadowfiend(Player* bot);
 struct EyeBlastDangerArea
@@ -209,7 +260,7 @@ struct EyeBlastDangerArea
 };
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
-GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot);
+GameObject* FindNearestTrap(PlayerbotAI* botAI);
 
 }
 

@@ -7,9 +7,28 @@
 #ifndef PLAYERBOTS_BTTRIGGERS_H
 #define PLAYERBOTS_BTTRIGGERS_H
 
+#include "BTHelpers.h"
+#include "EncounterHelpers.h"
 #include "Trigger.h"
+#include <string>
 
 // General
+
+class BlackTempleEncounterTrigger : public Trigger
+{
+public:
+    BlackTempleEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval) {}
+
+    bool IsActive() final
+    {
+        return EncounterHelpers::IsEncounterInProgress(bot, BlackTempleHelpers::BLACK_TEMPLE_MAP_ID) &&
+            IsActiveInEncounter();
+    }
+
+protected:
+    virtual bool IsActiveInEncounter() = 0;
+};
 
 class BlackTempleNoEncounterInProgressTrigger : public Trigger
 {
@@ -21,501 +40,605 @@ public:
     bool IsActive() override;
 };
 
+// Shared Bosses
+
+// A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
+// High Warlord Naj'entus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on Gathios).
+class BlackTemplePullingBossTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    BlackTemplePullingBossTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : BlackTempleEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
+};
+
 // High Warlord Naj'entus
 
-class HighWarlordNajentusPullingBossTrigger : public Trigger
+class HighWarlordNajentusShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus pulling boss") {}
-    bool IsActive() override;
+    HighWarlordNajentusShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HighWarlordNajentusShouldBeTankedTrigger : public Trigger
+class HighWarlordNajentusCastsNeedleSpinesTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusShouldBeTankedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus should be tanked") {}
-    bool IsActive() override;
+    HighWarlordNajentusCastsNeedleSpinesTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus casts needle spines") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HighWarlordNajentusCastsNeedleSpinesTrigger : public Trigger
+class HighWarlordNajentusPlayerIsImpaledTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusCastsNeedleSpinesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus casts needle spines") {}
-    bool IsActive() override;
+    HighWarlordNajentusPlayerIsImpaledTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus player is impaled") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class HighWarlordNajentusPlayerIsImpaledTrigger : public Trigger
+class HighWarlordNajentusHasTidalShieldTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusPlayerIsImpaledTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus player is impaled") {}
-    bool IsActive() override;
-};
+    HighWarlordNajentusHasTidalShieldTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus has tidal shield") {}
 
-class HighWarlordNajentusBossHasTidalShieldTrigger : public Trigger
-{
-public:
-    HighWarlordNajentusBossHasTidalShieldTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high warlord naj'entus boss has tidal shield") {}
-    bool IsActive() override;
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Supremus
 
-class SupremusPullingBossOrChangingPhaseTrigger : public Trigger
+class SupremusPullingBossOrChangingPhaseTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusPullingBossOrChangingPhaseTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus pulling boss or changing phase") {}
-    bool IsActive() override;
+    SupremusPullingBossOrChangingPhaseTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus pulling boss or changing phase") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class SupremusBossEngagedByRangedTrigger : public Trigger
+class SupremusRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusBossEngagedByRangedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss engaged by ranged") {}
-    bool IsActive() override;
+    SupremusRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class SupremusBossIsFixatedOnBotTrigger : public Trigger
+class SupremusFixatesOnBotTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusBossIsFixatedOnBotTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus boss is fixated on bot") {}
-    bool IsActive() override;
+    SupremusFixatesOnBotTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus fixates on bot") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class SupremusVolcanoIsNearbyTrigger : public Trigger
+class SupremusNearVolcanoTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusVolcanoIsNearbyTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus volcano is nearby") {}
-    bool IsActive() override;
+    SupremusNearVolcanoTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus near volcano") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class SupremusNeedToManagePhaseTimerTrigger : public Trigger
+class SupremusShouldManagePhaseTimerTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusNeedToManagePhaseTimerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "supremus need to manage phase timer") {}
-    bool IsActive() override;
+    SupremusShouldManagePhaseTimerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus should manage phase timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Shade of Akama
 
-class ShadeOfAkamaKillingChannelersStartsPhase2Trigger : public Trigger
+class ShadeOfAkamaKillingChannelersStartsPhase2Trigger : public BlackTempleEncounterTrigger
 {
 public:
-    ShadeOfAkamaKillingChannelersStartsPhase2Trigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "shade of akama killing channelers starts phase 2") {}
-    bool IsActive() override;
+    ShadeOfAkamaKillingChannelersStartsPhase2Trigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "shade of akama killing channelers starts phase 2") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Teron Gorefiend
-class TeronGorefiendPullingBossTrigger : public Trigger
+
+class TeronGorefiendShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend pulling boss") {}
-    bool IsActive() override;
+    TeronGorefiendShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "teron gorefiend should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TeronGorefiendShouldBeTankedTrigger : public Trigger
+class TeronGorefiendRangedShouldPositionOnBalconyTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendShouldBeTankedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend should be tanked") {}
-    bool IsActive() override;
+    TeronGorefiendRangedShouldPositionOnBalconyTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "teron gorefiend ranged should position on balcony") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TeronGorefiendBossEngagedByRangedTrigger : public Trigger
+class TeronGorefiendCastsShadowOfDeathTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendBossEngagedByRangedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss engaged by ranged") {}
-    bool IsActive() override;
+    TeronGorefiendCastsShadowOfDeathTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "teron gorefiend casts shadow of death") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TeronGorefiendBossIsCastingShadowOfDeathTrigger : public Trigger
+class TeronGorefiendShadowOfDeathTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendBossIsCastingShadowOfDeathTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend boss is casting shadow of death") {}
-    bool IsActive() override;
+    TeronGorefiendShadowOfDeathTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "teron gorefiend shadow of death") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class TeronGorefiendBotHasShadowOfDeathTrigger : public Trigger
+class TeronGorefiendTransformedIntoVengefulSpiritTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendBotHasShadowOfDeathTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend bot has shadow of death") {}
-    bool IsActive() override;
-};
+    TeronGorefiendTransformedIntoVengefulSpiritTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "teron gorefiend transformed into vengeful spirit") {}
 
-class TeronGorefiendBotTransformedIntoVengefulSpiritTrigger : public Trigger
-{
-public:
-    TeronGorefiendBotTransformedIntoVengefulSpiritTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "teron gorefiend bot transformed into vengeful spirit") {}
-    bool IsActive() override;
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilPullingBossTrigger : public Trigger
+class GurtoggBloodboilPullingBossTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil pulling boss") {}
-    bool IsActive() override;
+    GurtoggBloodboilPullingBossTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil pulling boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilShouldBeTankedTrigger : public Trigger
+class GurtoggBloodboilShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilShouldBeTankedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil should be tanked") {}
-    bool IsActive() override;
+    GurtoggBloodboilShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilBossCastsBloodboilTrigger : public Trigger
+class GurtoggBloodboilCastsBloodboilTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilBossCastsBloodboilTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil boss casts bloodboil") {}
-    bool IsActive() override;
+    GurtoggBloodboilCastsBloodboilTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil casts bloodboil") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilBotHasFelRageTrigger : public Trigger
+class GurtoggBloodboilFelRageOnGroupMemberTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilBotHasFelRageTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil bot has fel rage") {}
-    bool IsActive() override;
+    GurtoggBloodboilFelRageOnGroupMemberTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil fel rage on group member") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilNeedToManagePhaseTimerTrigger : public Trigger
+class GurtoggBloodboilShouldManagePhaseTimerTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilNeedToManagePhaseTimerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "gurtogg bloodboil need to manage phase timer") {}
-    bool IsActive() override;
+    GurtoggBloodboilShouldManagePhaseTimerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should manage phase timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Reliquary of Souls
 
-class ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger : public Trigger
+class ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls aggro resets upon phase change") {}
-    bool IsActive() override;
+    ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls aggro resets upon phase change") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger : public Trigger
+class ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of suffering fixates on closest target") {}
-    bool IsActive() override;
+    ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "reliquary of souls essence of suffering fixates on closest target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger : public Trigger
+class ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of suffering disables healing") {}
-    bool IsActive() override;
+    ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "reliquary of souls essence of suffering disables healing") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger : public Trigger
+class ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of desire has rune shield") {}
-    bool IsActive() override;
+    ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls essence of desire has rune shield") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger : public Trigger
+class ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "reliquary of souls essence of desire casting deaden") {}
-    bool IsActive() override;
+    ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls essence of desire casts deaden") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Mother Shahraz
 
-class MotherShahrazPullingBossTrigger : public Trigger
+class MotherShahrazShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazPullingBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz pulling boss") {}
-    bool IsActive() override;
+    MotherShahrazShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "mother shahraz should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MotherShahrazShouldBeTankedTrigger : public Trigger
+class MotherShahrazTanksArePositioningBossTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazShouldBeTankedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz should be tanked") {}
-    bool IsActive() override;
+    MotherShahrazTanksArePositioningBossTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "mother shahraz tanks are positioning boss") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MotherShahrazTanksArePositioningBossTrigger : public Trigger
+class MotherShahrazRangedShouldPositionUnderPillarTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazTanksArePositioningBossTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz tanks are positioning boss") {}
-    bool IsActive() override;
+    MotherShahrazRangedShouldPositionUnderPillarTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "mother shahraz ranged should position under pillar") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class MotherShahrazSinisterBeamKnocksBackPlayersTrigger : public Trigger
+class MotherShahrazFatalAttractionTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazSinisterBeamKnocksBackPlayersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz sinister beam knocks back players") {}
-    bool IsActive() override;
-};
+    MotherShahrazFatalAttractionTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "mother shahraz fatal attraction") {}
 
-class MotherShahrazBotsAreLinkedByFatalAttractionTrigger : public Trigger
-{
-public:
-    MotherShahrazBotsAreLinkedByFatalAttractionTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "mother shahraz bots are linked by fatal attraction") {}
-    bool IsActive() override;
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Illidari Council
 
-class IllidariCouncilPullingBossesTrigger : public Trigger
+class IllidariCouncilGathiosShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilPullingBossesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council pulling bosses") {}
-    bool IsActive() override;
+    IllidariCouncilGathiosShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council gathios should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilGathiosEngagedByMainTankTrigger : public Trigger
+class IllidariCouncilGathiosCastsJudgementOfCommandTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilGathiosEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council gathios engaged by main tank") {}
-    bool IsActive() override;
+    IllidariCouncilGathiosCastsJudgementOfCommandTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council gathios casts judgement of command") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilGathiosCastingJudgementOfCommandTrigger : public Trigger
+class IllidariCouncilMalandeShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilGathiosCastingJudgementOfCommandTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council gathios casting judgement of command") {}
-    bool IsActive() override;
+    IllidariCouncilMalandeShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council malande should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilMalandeEngagedByFirstAssistTankTrigger : public Trigger
+class IllidariCouncilDarkshadowShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilMalandeEngagedByFirstAssistTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council malande engaged by first assist tank") {}
-    bool IsActive() override;
+    IllidariCouncilDarkshadowShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council darkshadow should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger : public Trigger
+class IllidariCouncilZerevorShouldBeTankedByMageTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilDarkshadowEngagedBySecondAssistTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council darkshadow engaged by second assist tank") {}
-    bool IsActive() override;
+    IllidariCouncilZerevorShouldBeTankedByMageTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council zerevor should be tanked by mage") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilZerevorEngagedByMageTankTrigger : public Trigger
+class IllidariCouncilMageTankNeedsDedicatedHealerTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilZerevorEngagedByMageTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council zerevor engaged by mage tank") {}
-    bool IsActive() override;
+    IllidariCouncilMageTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council mage tank needs dedicated healer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilMageTankNeedsDedicatedHealerTrigger : public Trigger
+class IllidariCouncilRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilMageTankNeedsDedicatedHealerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council mage tank needs dedicated healer") {}
-    bool IsActive() override;
+    IllidariCouncilRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilZerevorCastsDangerousAoesTrigger : public Trigger
+class IllidariCouncilPetsScrewUpThePullTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilZerevorCastsDangerousAoesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council zerevor casts dangerous aoes") {}
-    bool IsActive() override;
+    IllidariCouncilPetsScrewUpThePullTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council pets screw up the pull") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilPetsScrewUpThePullTrigger : public Trigger
+class IllidariCouncilShouldManageDpsTimerTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilPetsScrewUpThePullTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council pets screw up the pull") {}
-    bool IsActive() override;
+    IllidariCouncilShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council should manage dps timer") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilNeedToManageDpsTimerTrigger : public Trigger
+class IllidariCouncilShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilNeedToManageDpsTimerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council need to manage dps timer") {}
-    bool IsActive() override;
-};
+    IllidariCouncilShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council should assign dps priority") {}
 
-class IllidariCouncilDeterminingDpsAssignmentsTrigger : public Trigger
-{
-public:
-    IllidariCouncilDeterminingDpsAssignmentsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidari council determining dps assignments") {}
-    bool IsActive() override;
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageTankNeedsAggroTrigger : public Trigger
+class IllidanStormrageTankNeedsAggroTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageTankNeedsAggroTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage tank needs aggro") {}
-    bool IsActive() override;
+    IllidanStormrageTankNeedsAggroTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage tank needs aggro") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger : public Trigger
+class IllidanStormrageCastsFlameCrashTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossCastsFlameCrashInFrontOfMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss casts flame crash in front of main tank") {}
-    bool IsActive() override;
+    IllidanStormrageCastsFlameCrashTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage casts flame crash") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBotHasParasiticShadowfiendTrigger : public Trigger
+class IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBotHasParasiticShadowfiendTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage bot has parasitic shadowfiend") {}
-    bool IsActive() override;
+    IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage parasitic shadowfiend on group member") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageParasiticShadowfiendsRunWildTrigger : public Trigger
+class IllidanStormrageParasiticShadowfiendsRunWildTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageParasiticShadowfiendsRunWildTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage parasitic shadowfiends run wild") {}
-    bool IsActive() override;
+    IllidanStormrageParasiticShadowfiendsRunWildTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage parasitic shadowfiends run wild") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossSummonedFlamesOfAzzinothTrigger : public Trigger
+class IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossSummonedFlamesOfAzzinothTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss summoned flames of azzinoth") {}
-    bool IsActive() override;
+    IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage flames of azzinoth should be tanked") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormragePetsDieToFireTrigger : public Trigger
+class IllidanStormragePetsDieToFireTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormragePetsDieToFireTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage pets die to fire") {}
-    bool IsActive() override;
+    IllidanStormragePetsDieToFireTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage pets die to fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageGrateIsSafeFromFlamesTrigger : public Trigger
+class IllidanStormrageGrateIsSafeFromFlamesTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageGrateIsSafeFromFlamesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage grate is safe from flames") {}
-    bool IsActive() override;
+    IllidanStormrageGrateIsSafeFromFlamesTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage grate is safe from flames") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBotStruckByDarkBarrageTrigger : public Trigger
+class IllidanStormrageDarkBarrageOnImmunityClassTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBotStruckByDarkBarrageTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage bot struck by dark barrage") {}
-    bool IsActive() override;
+    IllidanStormrageDarkBarrageOnImmunityClassTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage dark barrage on immunity class") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossIsPreparingToLandTrigger : public Trigger
+class IllidanStormragePreparesToLandTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossIsPreparingToLandTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss is preparing to land") {}
-    bool IsActive() override;
+    IllidanStormragePreparesToLandTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage prepares to land") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossDealsSplashDamageTrigger : public Trigger
+class IllidanStormrageRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossDealsSplashDamageTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss deals splash damage") {}
-    bool IsActive() override;
+    IllidanStormrageRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage ranged should spread") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageThisExpansionHatesMeleeTrigger : public Trigger
+class IllidanStormrageThisExpansionHatesMeleeTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageThisExpansionHatesMeleeTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage this expansion hates melee") {}
-    bool IsActive() override;
+    IllidanStormrageThisExpansionHatesMeleeTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage this expansion hates melee") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossTransformsIntoDemonTrigger : public Trigger
+class IllidanStormrageWarlockShouldTankDemonFormTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossTransformsIntoDemonTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss transforms into demon") {}
-    bool IsActive() override;
+    IllidanStormrageWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage warlock should tank demon form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageBossSpawnsAddsTrigger : public Trigger
+class IllidanStormrageShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageBossSpawnsAddsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage boss spawns adds") {}
-    bool IsActive() override;
+    IllidanStormrageShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should assign dps priority") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageMaievPlacedShadowTrapTrigger : public Trigger
+class IllidanStormrageMaievPlacedShadowTrapTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageMaievPlacedShadowTrapTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage maiev placed shadow trap") {}
-    bool IsActive() override;
+    IllidanStormrageMaievPlacedShadowTrapTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage maiev placed shadow trap") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageNeedToManageDpsTimerAndRtiTrigger : public Trigger
+class IllidanStormrageShouldManageDpsTimerAndRtiTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageNeedToManageDpsTimerAndRtiTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to manage dps timer and rti") {}
-    bool IsActive() override;
+    IllidanStormrageShouldManageDpsTimerAndRtiTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should manage dps timer and rti") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger : public Trigger
+class IllidanStormrageShouldClearHazardsBetweenPhasesTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage need to clear hazards between phases") {}
-    bool IsActive() override;
+    IllidanStormrageShouldClearHazardsBetweenPhasesTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage should clear hazards between phases") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageCheatTrigger : public Trigger
+class IllidanStormrageCheatTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageCheatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "illidan stormrage cheat") {}
-    bool IsActive() override;
+    IllidanStormrageCheatTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage cheat") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 #endif

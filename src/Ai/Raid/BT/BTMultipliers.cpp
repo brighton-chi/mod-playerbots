@@ -27,17 +27,18 @@ using namespace EncounterHelpers;
 // General
 
 // Illidan is handled separately
-float BlackTempleDelayDpsCooldownsMultiplier::GetValue(Action* action)
+float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    static constexpr std::array BlackTempleBosses = {
+    static constexpr std::array blackTempleBosses = {
         "gathios the shatterer", "mother shahraz", "essence of suffering", "gurtogg bloodboil",
-        "teron gorefiend", "supremus", "high warlord naj'entus" };
+        "teron gorefiend", "supremus", "high warlord naj'entus",
+    };
 
     Unit* boss = nullptr;
-    for (char const* name : BlackTempleBosses)
+    for (char const* name : blackTempleBosses)
     {
         if (Unit* candidate = AI_VALUE2(Unit*, "find target", name))
         {
@@ -46,7 +47,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValue(Action* action)
         }
     }
 
-    if (boss && boss->GetHealthPct() > 95.0f)
+    if (boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
 
     return 1.0f;
@@ -54,7 +55,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValue(Action* action)
 
 // High Warlord Naj'entus
 
-float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* action)
+float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
         return 1.0f;
@@ -70,11 +71,11 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValue(Action* 
 
 // Supremus
 
-float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
+float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValueInEncounter(Action* action)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus || supremus->GetVictim() != bot ||
-        !supremus->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SNARE_SELF)))
+        !supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF)))
     {
         return 1.0f;
     }
@@ -89,13 +90,10 @@ float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
+float SupremusHitboxIsBuggedMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->getClass() != CLASS_ROGUE ||
-        !AI_VALUE2(Unit*, "find target", "supremus"))
-    {
+    if (bot->getClass() != CLASS_ROGUE || !AI_VALUE2(Unit*, "find target", "supremus"))
         return 1.0f;
-    }
 
     if (dynamic_cast<CastKillingSpreeAction*>(action))
         return 0.0f;
@@ -105,7 +103,7 @@ float SupremusHitboxIsBuggedMultiplier::GetValue(Action* action)
 
 // Teron Gorefiend
 
-float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
+float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
@@ -124,16 +122,15 @@ float TeronGorefiendControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
+    if (PlayerbotAI::IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
 
     return 1.0f;
 }
 
-float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
+float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
 {
-    Aura* aura = bot->GetAura(
-        static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
+    Aura* aura = bot->GetAura(Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
     if (!aura || aura->GetDuration() >= 15000)
         return 1.0f;
 
@@ -145,9 +142,9 @@ float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Action* action)
+float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)) ||
+    if (!bot->HasAura(Id(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)) ||
         dynamic_cast<WipeAction*>(action))
     {
         return 1.0f;
@@ -159,33 +156,27 @@ float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValue(Actio
     return 1.0f;
 }
 
-float TeronGorefiendDisableAttackingConstructsMultiplier::GetValue(Action* action)
+float TeronGorefiendDisableAttackingConstructsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
         return 1.0f;
 
-    if (bot->GetVictim() != nullptr &&
-        dynamic_cast<TankAssistAction*>(action))
-    {
+    if (bot->GetVictim() && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
-    }
 
-    if (!botAI->IsRangedDps(bot))
+    if (!PlayerbotAI::IsRangedDps(bot))
         return 1.0f;
 
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (castSpellAction &&
-        castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-    {
+    CastSpellAction* castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    if (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
 // Gurtogg Bloodboil
 
-float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
+float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
         return 1.0f;
@@ -204,9 +195,8 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
-        (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<AttackAction*>(action)))
+    if (bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
+        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action))
     {
         return 0.0f;
     }
@@ -216,7 +206,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValue(Action* action)
 
 // Reliquary of Souls
 
-float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
+float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "essence of suffering"))
         return 1.0f;
@@ -240,7 +230,7 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValue(Action* action)
 
 // Mother Shahraz
 
-float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
+float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
         return 1.0f;
@@ -262,10 +252,10 @@ float MotherShahrazControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action* action)
+float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "mother shahraz") ||
-        !bot->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+        !bot->HasAura(Id(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
     {
         return 1.0f;
     }
@@ -281,7 +271,7 @@ float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValue(Action
 
 // Illidari Council
 
-float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
+float IllidariCouncilDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -301,7 +291,7 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
+float IllidariCouncilControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
         return 1.0f;
@@ -321,24 +311,21 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (botAI->IsAssistHealOfIndex(bot, 0, true) &&
-        (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action)))
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action) &&
+        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
     {
         return 0.0f;
     }
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, false) &&
-        dynamic_cast<TankFaceAction*>(action))
-    {
+    if (dynamic_cast<TankFaceAction*>(action) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
         return 0.0f;
-    }
 
-    if ((botAI->IsMainTank(bot) ||
-         botAI->IsAssistTankOfIndex(bot, 0, false) ||
-         botAI->IsAssistTankOfIndex(bot, 1, false) ||
-         GetZerevorMageTank(bot) == bot) &&
-        dynamic_cast<AvoidAoeAction*>(action))
+    if (dynamic_cast<AvoidAoeAction*>(action) &&
+        ((PlayerbotAI::IsTank(bot) &&
+            (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+                PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))) ||
+            (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot)))
     {
         return 0.0f;
     }
@@ -346,7 +333,7 @@ float IllidariCouncilControlMovementMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
+float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_HUNTER ||
         !AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
@@ -354,13 +341,13 @@ float IllidariCouncilControlMisdirectionMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-         return 0.0f;
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
 
-float IllidariCouncilDisableIceBlockMultiplier::GetValue(Action* action)
+float IllidariCouncilDisableIceBlockMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_MAGE ||
         !AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
@@ -377,7 +364,7 @@ float IllidariCouncilDisableIceBlockMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* action)
+float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValueInEncounter(Action* action)
 {
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (!zerevor)
@@ -393,16 +380,8 @@ float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValue(Action* acti
     return 1.0f;
 }
 
-float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
+float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->IsMainTank(bot) ||
-        botAI->IsAssistTankOfIndex(bot, 0, false) ||
-        botAI->IsAssistTankOfIndex(bot, 1, false) ||
-        GetZerevorMageTank(bot) == bot)
-    {
-        return 1.0f;
-    }
-
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     if (!gathios)
         return 1.0f;
@@ -410,27 +389,33 @@ float IllidariCouncilWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<IllidariCouncilMisdirectBossesToTanksAction*>(action))
         return 1.0f;
 
-    const uint32 now = getMSTime();
+    if (!dynamic_cast<AttackAction*>(action) &&
+        (!dynamic_cast<CastSpellAction*>(action) || dynamic_cast<CastHealingSpellAction*>(action)))
+    {
+        return 1.0f;
+    }
+
+    uint32 const now = getMSTime();
     constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
 
     auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
-    if (it == councilDpsWaitTimer.end() ||
-        getMSTimeDiff(it->second, now) >= dpsWaitMs)
+    if (it == councilDpsWaitTimer.end() || getMSTimeDiff(it->second, now) >= dpsWaitMs)
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action) ||
-        (dynamic_cast<CastSpellAction*>(action) &&
-         !dynamic_cast<CastHealingSpellAction*>(action)))
+    if ((PlayerbotAI::IsTank(bot) &&
+            (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+                PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))) ||
+        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    return 1.0f;
+    return 0.0f;
 }
 
 // Illidan Stormrage <The Betrayer>
 
-float IllidanStormrageDelayDpsCooldownsMultiplier::GetValue(Action* action)
+float IllidanStormrageDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
@@ -443,21 +428,20 @@ float IllidanStormrageDelayDpsCooldownsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastHeroismAction*>(action) ||
-         dynamic_cast<CastBloodlustAction*>(action)))
+        (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action)))
     {
         return 0.0f;
     }
 
-    if (illidan->GetHealthPct() > 95.0f)
+    if (illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 1.0f;
 
     return 0.0f;
 }
 
-float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
+float IllidanStormrageControlTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -470,7 +454,7 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
     if (GetIllidanPhase(illidan) != 2)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action))
@@ -484,8 +468,8 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
             return 0.0f;
         }
     }
-    else if (botAI->IsAssistTankOfIndex(bot, 0, false) ||
-             botAI->IsAssistTankOfIndex(bot, 1, false))
+    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action))
@@ -495,13 +479,15 @@ float IllidanStormrageControlTankActionsMultiplier::GetValue(Action* action)
 
         if (dynamic_cast<TankFaceAction*>(action) ||
             dynamic_cast<CastHealingSpellAction*>(action))
+        {
             return 0.0f;
+        }
     }
 
     return 1.0f;
 }
 
-float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action)
+float IllidanStormrageDisableDefaultTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -513,12 +499,12 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     if (dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
-    int phase = GetIllidanPhase(illidan);
+    int const phase = GetIllidanPhase(illidan);
 
     if (phase == 4 && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;
 
-    if (botAI->IsRangedDps(bot))
+    if (PlayerbotAI::IsRangedDps(bot))
     {
         if (phase != 2)
             context->GetValue<bool>("neglect threat")->Set(true);
@@ -527,15 +513,16 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
             return 0.0f;
     }
 
-    constexpr float searchRadius = 40.0f;
-    Unit* shadowDemon = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius);
-    Unit* shadowfiend = bot->FindNearestCreature(
-        static_cast<uint32>(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
+    if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+        return 1.0f;
 
-    if (((shadowDemon && bot->GetTarget() == shadowDemon->GetGUID()) ||
-         (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID())) &&
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    constexpr float searchRadius = 40.0f;
+    Unit* shadowDemon = bot->FindNearestCreature(Id(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius);
+    Unit* shadowfiend = bot->FindNearestCreature(
+        Id(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
+
+    if ((shadowDemon && bot->GetTarget() == shadowDemon->GetGUID()) ||
+        (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID()))
     {
         return 0.0f;
     }
@@ -543,9 +530,9 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValue(Action* action
     return 1.0f;
 }
 
-float IllidanStormrageControlNonTankMovementMultiplier::GetValue(Action* action)
+float IllidanStormrageControlNonTankMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -566,28 +553,25 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    int phase = GetIllidanPhase(illidan);
+    int const phase = GetIllidanPhase(illidan);
 
     if (phase == 2 &&
         (dynamic_cast<SetBehindTargetAction*>(action) ||
-         dynamic_cast<CastKillingSpreeAction*>(action) ||
-         dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<CastReachTargetSpellAction*>(action) ||
-         dynamic_cast<AvoidAoeAction*>(action)))
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action) ||
+            dynamic_cast<CastReachTargetSpellAction*>(action) ||
+            dynamic_cast<AvoidAoeAction*>(action)))
     {
         return 0.0f;
     }
 
-    if (phase == 4 && botAI->IsHeal(bot) &&
-        dynamic_cast<ReachTargetAction*>(action))
-    {
+    if (phase == 4 && PlayerbotAI::IsHeal(bot) && dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
-    }
 
     return 1.0f;
 }
 
-float IllidanStormrageUseEarthbindTotemMultiplier::GetValue(Action* action)
+float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
@@ -607,7 +591,7 @@ float IllidanStormrageUseEarthbindTotemMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
+float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -616,22 +600,24 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     if (dynamic_cast<IllidanStormrageMisdirectToTankAction*>(action))
         return 1.0f;
 
-    const uint32 now = getMSTime();
-    const uint32 instanceId = illidan->GetMap()->GetInstanceId();
+    if (!dynamic_cast<AttackAction*>(action) &&
+        (!dynamic_cast<CastSpellAction*>(action) || dynamic_cast<CastHealingSpellAction*>(action)))
+    {
+        return 1.0f;
+    }
 
-    int phase = GetIllidanPhase(illidan);
+    uint32 const now = getMSTime();
+    uint32 const instanceId = illidan->GetMap()->GetInstanceId();
+
+    int const phase = GetIllidanPhase(illidan);
 
     if ((phase == 1 || phase == 3 || phase == 5) &&
-        !botAI->IsMainTank(bot))
+        (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot)))
     {
         constexpr uint32 humanoidPhaseDpsWaitMs = 3 * IN_MILLISECONDS;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
-
-        if ((it == illidanBossDpsWaitTimer.end() ||
-             getMSTimeDiff(it->second, now) < humanoidPhaseDpsWaitMs) &&
-              (dynamic_cast<AttackAction*>(action) ||
-               (dynamic_cast<CastSpellAction*>(action) &&
-                !dynamic_cast<CastHealingSpellAction*>(action))))
+        if (it == illidanBossDpsWaitTimer.end() ||
+            getMSTimeDiff(it->second, now) < humanoidPhaseDpsWaitMs)
         {
             return 0.0f;
         }
@@ -641,29 +627,21 @@ float IllidanStormrageWaitForDpsMultiplier::GetValue(Action* action)
     {
         constexpr uint32 demonPhaseDpsWaitMs = 8 * IN_MILLISECONDS;
         auto it = illidanBossDpsWaitTimer.find(instanceId);
-
-        if ((it == illidanBossDpsWaitTimer.end() ||
-             getMSTimeDiff(it->second, now) < demonPhaseDpsWaitMs) &&
-              (dynamic_cast<AttackAction*>(action) ||
-               (dynamic_cast<CastSpellAction*>(action) &&
-                !dynamic_cast<CastHealingSpellAction*>(action))))
+        if (it == illidanBossDpsWaitTimer.end() ||
+            getMSTimeDiff(it->second, now) < demonPhaseDpsWaitMs)
         {
             return 0.0f;
         }
     }
 
     if (AI_VALUE2(Unit*, "find target", "flame of azzinoth") &&
-        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
+        !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
+        !PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
         constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
         auto it = illidanFlameDpsWaitTimer.find(instanceId);
-
-        if ((it == illidanFlameDpsWaitTimer.end() ||
-             getMSTimeDiff(it->second, now) < flamePhaseDpsWaitMs) &&
-              (dynamic_cast<AttackAction*>(action) ||
-               (dynamic_cast<CastSpellAction*>(action) &&
-                !dynamic_cast<CastHealingSpellAction*>(action))))
+        if (it == illidanFlameDpsWaitTimer.end() ||
+            getMSTimeDiff(it->second, now) < flamePhaseDpsWaitMs)
         {
             return 0.0f;
         }

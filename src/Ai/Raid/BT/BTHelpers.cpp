@@ -14,19 +14,16 @@ using namespace EncounterHelpers;
 namespace BlackTempleHelpers
 {
 
-// High Warlord Naj'entus
-const Position NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
-
 // Supremus
+
 std::unordered_map<uint32, uint32> supremusPhaseTimer;
 
-bool HasSupremusVolcanoNearby(PlayerbotAI*, Player* bot)
+bool HasSupremusVolcanoNearby(Player* bot)
 {
     constexpr float searchRadius = 20.0f;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(
-            BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
+        creatureList, Id(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -38,18 +35,10 @@ bool HasSupremusVolcanoNearby(PlayerbotAI*, Player* bot)
 }
 
 // Shade of Akama
-const Position AKAMA_CHANNELER_POSITION = { 467.851f, 401.622f, 118.538f };
 
 std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
 
-// Teron Gorefiend
-const Position GOREFIEND_TANK_POSITION  = { 597.653f, 402.284f, 187.090f };
-const Position GOREFIEND_DIE_POSITION   = { 525.709f, 377.177f, 193.203f };
-
 // Gurtogg Bloodboil
-const Position GURTOGG_TANK_POSITION    = { 735.987f, 272.451f, 063.554f };
-const Position GURTOGG_RANGED_POSITION  = { 762.265f, 277.183f, 063.781f };
-const Position GURTOGG_SOAKER_POSITION  = { 769.348f, 280.116f, 063.780f };
 
 std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
 
@@ -65,11 +54,10 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive())
+        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+            GET_PLAYERBOT_AI(member) && PlayerbotAI::IsRanged(member))
         {
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsRanged(member))
-                rangedMembers.push_back(member);
+            rangedMembers.push_back(member);
         }
     }
 
@@ -94,16 +82,14 @@ int GetGurtoggActiveRotationGroup(Unit* gurtogg)
 
     constexpr uint32 groupSwapIntervalMs = 10 * IN_MILLISECONDS;
     constexpr uint32 rotationCycleMs = 3 * groupSwapIntervalMs;
-    const uint32 elapsed = GetMSTimeDiffToNow(it->second);
-    const int groupIndex = (elapsed % rotationCycleMs) / groupSwapIntervalMs;
+    uint32 const elapsed = GetMSTimeDiffToNow(it->second);
+    int const groupIndex = (elapsed % rotationCycleMs) / groupSwapIntervalMs;
 
     return groupIndex;
 }
 
 // Mother Shahraz
-const Position SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
-const Position SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
-const Position SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
+
 std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
 
 TankPositionState GetShahrazTankPositionState(Player* bot)
@@ -120,18 +106,6 @@ TankPositionState GetShahrazTankPositionState(Player* bot)
 }
 
 // Illidari Council
-const std::array<Position, 4> GATHIOS_TANK_POSITIONS = {{
-    { 662.977f, 296.246f, 271.688f },
-    { 636.238f, 283.719f, 271.629f },
-    { 655.571f, 261.377f, 271.687f },
-    { 673.789f, 274.139f, 271.689f }
-}};
-const Position ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
-const std::array<Position, 2> ZEREVOR_HEALER_POSITIONS = {{
-    { 661.385f, 351.219f, 271.690f },
-    { 667.003f, 363.768f, 271.690f }
-}};
-const Position MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
 
 std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
@@ -150,8 +124,11 @@ Player* GetZerevorMageTank(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_MAGE)
+        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !member->IsAlive() ||
+            member->getClass() != CLASS_MAGE)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member;
@@ -165,11 +142,13 @@ Player* GetZerevorMageTank(Player* bot)
 
 bool HasDangerousCouncilAura(Unit* unit)
 {
-    static const std::array<uint32, 3> dangerousAuras =
-    {
-        static_cast<uint32>(BlackTempleSpells::SPELL_CONSECRATION),
-        static_cast<uint32>(BlackTempleSpells::SPELL_BLIZZARD),
-        static_cast<uint32>(BlackTempleSpells::SPELL_FLAMESTRIKE)
+    if (!unit)
+        return false;
+
+    static constexpr std::array dangerousAuras = {
+        Id(BlackTempleSpells::SPELL_CONSECRATION),
+        Id(BlackTempleSpells::SPELL_BLIZZARD),
+        Id(BlackTempleSpells::SPELL_FLAMESTRIKE),
     };
 
     for (uint32 aura : dangerousAuras)
@@ -182,37 +161,6 @@ bool HasDangerousCouncilAura(Unit* unit)
 }
 
 // Illidan Stormrage <The Betrayer>
-const Position ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
-const Position ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
-const Position ILLIDAN_E_GRATE_POSITION = { 673.500f, 298.500f, 353.192f };
-const Position ILLIDAN_W_GRATE_POSITION = { 672.400f, 312.500f, 353.192f };
-const std::array<Position, 3> GRATE_POSITIONS = {{
-    ILLIDAN_N_GRATE_POSITION,
-    ILLIDAN_E_GRATE_POSITION,
-    ILLIDAN_W_GRATE_POSITION
-}};
-
-const Position ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
-const std::array<Position, 7> E_GLAIVE_TANK_POSITIONS = {{
-    { 683.000f, 295.000f, 354.000f },
-    { 696.969f, 300.982f, 354.302f },
-    { 691.112f, 287.461f, 354.363f },
-    { 676.674f, 280.797f, 354.268f },
-    { 664.414f, 284.834f, 354.271f },
-    { 656.826f, 295.113f, 354.165f },
-    { 665.000f, 304.000f, 354.000f }
-}};
-
-const Position ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
-const std::array<Position, 7> W_GLAIVE_TANK_POSITIONS = {{
-    { 697.208f, 313.475f, 354.234f },
-    { 681.000f, 318.000f, 354.000f },
-    { 664.000f, 307.000f, 354.000f },
-    { 656.161f, 314.132f, 354.092f },
-    { 665.080f, 326.905f, 354.128f },
-    { 678.809f, 329.968f, 354.387f },
-    { 690.889f, 324.277f, 354.204f }
-}};
 
 std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
 std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
@@ -225,8 +173,8 @@ std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
 int GetIllidanPhase(Unit* illidan)
 {
-    if (!illidan || illidan->GetHealth() == 1 || illidan->HasAura(
-            static_cast<uint32>(BlackTempleSpells::SPELL_SHADOW_PRISON)))
+    if (!illidan || illidan->GetHealth() == 1 ||
+        illidan->HasAura(Id(BlackTempleSpells::SPELL_SHADOW_PRISON)))
     {
         return -1;
     }
@@ -234,10 +182,10 @@ int GetIllidanPhase(Unit* illidan)
     // Transitioning from Phase 2 to Phase 3
     float x, y, z;
     illidan->GetMotionMaster()->GetDestination(x, y, z);
-    Position dest(x, y, z);
+    Position const dest(x, y, z);
     if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
-            illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
-            illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+         illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
+        illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
     {
         return 0;
     }
@@ -251,11 +199,11 @@ int GetIllidanPhase(Unit* illidan)
         return 1;
 
     // Phase 4: Demon Form
-    if (!illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_CAGED)) &&
-        (illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_FORM)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
-            illidan->HasAura(static_cast<uint32>(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3))))
+    if (!illidan->HasAura(Id(BlackTempleSpells::SPELL_CAGED)) &&
+        (illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_FORM)) ||
+         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
+         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
+         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3))))
     {
         return 4;
     }
@@ -277,7 +225,7 @@ std::vector<Unit*> GetAllFlameCrashes(Player* bot)
     std::list<Creature*> creatureList;
     constexpr float searchRadius = 30.0f;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_FLAME_CRASH), searchRadius);
+        creatureList, Id(BlackTempleNpcs::NPC_FLAME_CRASH), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -293,7 +241,7 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     Unit* eastFlame = nullptr;
     Unit* westFlame = nullptr;
 
-    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    uint32 const instanceId = bot->GetMap()->GetInstanceId();
 
     if (eastFlameGuid.find(instanceId) != eastFlameGuid.end())
     {
@@ -329,8 +277,11 @@ Player* GetIllidanWarlockTank(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !member->IsAlive() ||
+            member->getClass() != CLASS_WARLOCK)
+        {
             continue;
+        }
 
         if (group->IsAssistant(member->GetGUID()))
             return member;
@@ -342,17 +293,13 @@ Player* GetIllidanWarlockTank(Player* bot)
     return fallbackWarlock;
 }
 
-bool HasParasiticShadowfiend(Player* member)
+bool HasParasiticShadowfiend(Player* player)
 {
-    if (!member)
+    if (!player)
         return false;
 
-    constexpr uint32 shadowfiendAura1 =
-        static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1);
-    constexpr uint32 shadowfiendAura2 =
-        static_cast<uint32>(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2);
-
-    return member->HasAura(shadowfiendAura1) || member->HasAura(shadowfiendAura2);
+    return player->HasAura(Id(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
+        player->HasAura(Id(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 }
 
 // Get the first bot hunter that doesn't have Parasitic Shadowfiend
@@ -360,19 +307,20 @@ Player* GetIllidanTrapperHunter(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-            return nullptr;
+        return nullptr;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            GET_PLAYERBOT_AI(member) && !HasParasiticShadowfiend(member))
+        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member) &&
+            !HasParasiticShadowfiend(member))
         {
             return member;
         }
     }
 
-        return nullptr;
+    return nullptr;
 }
 
 Player* GetBotWithParasiticShadowfiend(Player* bot)
@@ -399,7 +347,7 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     constexpr float searchRadius = 100.0f;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, static_cast<uint32>(BlackTempleNpcs::NPC_ILLIDAN_DB_TARGET), searchRadius);
+        creatureList, Id(BlackTempleNpcs::NPC_ILLIDAN_DB_TARGET), searchRadius);
 
     Creature* eyeBlastTrigger = nullptr;
     for (Creature* creature : creatureList)
@@ -414,12 +362,12 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     if (!eyeBlastTrigger)
         return {};
 
-    Position startPos = Position(eyeBlastTrigger->GetPositionX(), eyeBlastTrigger->GetPositionY(),
-                                    eyeBlastTrigger->GetPositionZ());
+    Position const startPos = Position(eyeBlastTrigger->GetPositionX(),
+        eyeBlastTrigger->GetPositionY(), eyeBlastTrigger->GetPositionZ());
 
     float destX, destY, destZ;
     eyeBlastTrigger->GetMotionMaster()->GetDestination(destX, destY, destZ);
-    Position endPos(destX, destY, destZ);
+    Position const endPos(destX, destY, destZ);
 
     if (startPos.GetExactDist2d(endPos) < 0.1f)
         return {};
@@ -430,28 +378,27 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
 
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area)
 {
-    const float dx = area.end.GetPositionX() - area.start.GetPositionX();
-    const float dy = area.end.GetPositionY() - area.start.GetPositionY();
-    const float length = area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
+    float const dx = area.end.GetPositionX() - area.start.GetPositionX();
+    float const dy = area.end.GetPositionY() - area.start.GetPositionY();
+    float const length = area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
 
     if (length < 0.1f)
         return false;
 
-    const float projectionFactor = (
-        (pos.GetPositionX() - area.start.GetPositionX()) * dx + (
-            pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
+    float const projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
+        (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
 
-    const float clampedProjectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
+    float const clampedProjectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
 
-    const float closestX = area.start.GetPositionX() + clampedProjectionFactor * dx;
-    const float closestY = area.start.GetPositionY() + clampedProjectionFactor * dy;
+    float const closestX = area.start.GetPositionX() + clampedProjectionFactor * dx;
+    float const closestY = area.start.GetPositionY() + clampedProjectionFactor * dy;
 
-    const float distToLine = pos.GetExactDist2d(closestX, closestY);
+    float const distToLine = pos.GetExactDist2d(closestX, closestY);
 
     return distToLine < area.width;
 }
 
-GameObject* FindNearestTrap(PlayerbotAI* botAI, Player*)
+GameObject* FindNearestTrap(PlayerbotAI* botAI)
 {
     GuidVector const& gos =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
@@ -460,8 +407,7 @@ GameObject* FindNearestTrap(PlayerbotAI* botAI, Player*)
     for (ObjectGuid const& guid : gos)
     {
         GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() &&
-            go->GetEntry() == static_cast<uint32>(BlackTempleObjects::GO_SHADOW_TRAP))
+        if (go && go->isSpawned() && go->GetEntry() == Id(BlackTempleObjects::GO_SHADOW_TRAP))
         {
             nearestTrap = go;
             break;
