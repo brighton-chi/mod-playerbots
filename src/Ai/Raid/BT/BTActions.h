@@ -403,11 +403,11 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageMisdirectToTankAction : public AttackAction
+class IllidanStormrageMisdirectToTanksAction : public AttackAction
 {
 public:
-    IllidanStormrageMisdirectToTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage misdirect to tank") {}
+    IllidanStormrageMisdirectToTanksAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage misdirect to tanks") {}
     bool Execute(Event event) override;
 
 private:

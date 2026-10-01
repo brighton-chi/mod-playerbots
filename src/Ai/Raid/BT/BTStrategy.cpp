@@ -157,7 +157,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Illidan Stormrage <The Betrayer>
     triggers.push_back(new TriggerNode("illidan stormrage hunter should misdirect",
-        { NextAction("illidan stormrage misdirect to tank", ACTION_RAID + 3) }));
+        { NextAction("illidan stormrage misdirect to tanks", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage casts flame crash",
         { NextAction("illidan stormrage main tank reposition boss", ACTION_EMERGENCY + 1) }));

@@ -597,7 +597,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!illidan)
         return 1.0f;
 
-    if (dynamic_cast<IllidanStormrageMisdirectToTankAction*>(action))
+    if (dynamic_cast<IllidanStormrageMisdirectToTanksAction*>(action))
         return 1.0f;
 
     if (!dynamic_cast<AttackAction*>(action) &&

@@ -157,8 +157,8 @@ public:
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-        creators["illidan stormrage misdirect to tank"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tank;
+        creators["illidan stormrage misdirect to tanks"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tanks;
 
         creators["illidan stormrage main tank reposition boss"] =
             &RaidBlackTempleActionContext::illidan_stormrage_main_tank_reposition_boss;
@@ -361,8 +361,8 @@ private:
     }
 
     // Illidan Stormrage <The Betrayer>
-    static Action* illidan_stormrage_misdirect_to_tank(PlayerbotAI* botAI) {
-        return new IllidanStormrageMisdirectToTankAction(botAI);
+    static Action* illidan_stormrage_misdirect_to_tanks(PlayerbotAI* botAI) {
+        return new IllidanStormrageMisdirectToTanksAction(botAI);
     }
     static Action* illidan_stormrage_main_tank_reposition_boss(PlayerbotAI* botAI) {
         return new IllidanStormrageMainTankRepositionBossAction(botAI);
