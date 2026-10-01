@@ -68,6 +68,24 @@ public:
     bool IsActive() override;
 };
 
+// Shared Bosses
+
+// A Hunter while the named boss is above BOSS_ENGAGED_HEALTH_PCT, so Misdirection goes out on the
+// pull. Used for Kalecgos, Brutallus and the Eredar Twins (on Alythess).
+class SunwellHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
+{
+public:
+    SunwellHunterShouldMisdirectTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : SunwellEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
+};
+
 // Kalecgos
 
 class KalecgosShouldCommunicateBossHealthTrigger : public SunwellEncounterTrigger
@@ -75,16 +93,6 @@ class KalecgosShouldCommunicateBossHealthTrigger : public SunwellEncounterTrigge
 public:
     KalecgosShouldCommunicateBossHealthTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "kalecgos should communicate boss health") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class KalecgosPullingBossTrigger : public SunwellEncounterTrigger
-{
-public:
-    KalecgosPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos pulling boss") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -152,16 +160,6 @@ protected:
 
 // Brutallus
 
-class BrutallusPullingBossTrigger : public SunwellEncounterTrigger
-{
-public:
-    BrutallusPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus pulling boss") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class BrutallusRequiresTwoTanksTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -204,11 +202,11 @@ protected:
 
 // Felmyst
 
-class FelmystPullingBossTrigger : public SunwellEncounterTrigger
+class FelmystHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
-    FelmystPullingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst pulling boss") {}
+    FelmystHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -352,16 +350,6 @@ class EredarTwinsShouldAnnounceAlythessTankTrigger : public SunwellEncounterTrig
 public:
     EredarTwinsShouldAnnounceAlythessTankTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(botAI, "eredar twins should announce alythess tank") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class EredarTwinsPullingBossesTrigger : public SunwellEncounterTrigger
-{
-public:
-    EredarTwinsPullingBossesTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins pulling bosses") {}
 
 protected:
     bool IsActiveInEncounter() override;

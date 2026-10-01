@@ -93,7 +93,7 @@ bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
     return botAI->SayToRaid(text);
 }
 
-bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
+bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -151,13 +151,7 @@ bool EredarTwinsMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (!boss || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
+    return MisdirectTargetToTank(botAI, boss, tank);
 }
 
 bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
@@ -235,7 +229,8 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     if (alythess->GetVictim() != bot)
         return false;
 
-    if (distToPosition <= maxDistance && ShouldAdvanceAlythessTankPosition(alythess, bot))
+    if (distToPosition <= maxDistance &&
+        ShouldAdvanceAlythessTankPosition(alythess, bot, _lastBlazeGuid))
     {
         uint8 safeIndex = index;
         if (!findSafeAlythessTankIndex(index, false, safeIndex))

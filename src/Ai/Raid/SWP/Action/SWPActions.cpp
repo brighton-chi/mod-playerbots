@@ -53,11 +53,9 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Eredar Twins
-    reset |= alythessTankLastBlazeGuid.erase(guid) > 0;
-
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
     if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(twinsAction)
-            ->ResetAlythessTankStep())
+            ->ResetAlythessTankState())
     {
         reset = true;
     }
@@ -188,7 +186,7 @@ bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
     return spellId && botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
-bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool SunwellMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)
@@ -198,11 +196,5 @@ bool SunwellMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!mainTank || !mainTank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), mainTank))
-        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), mainTank);
-
-    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", boss) && botAI->CastSpell("steady shot", boss);
+    return MisdirectTargetToTank(botAI, boss, mainTank);
 }

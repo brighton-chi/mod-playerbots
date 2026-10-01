@@ -75,6 +75,17 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
     return AI_VALUE2(Unit*, "find target", "apocalypse guard");
 }
 
+// Shared Bosses
+
+bool SunwellHunterShouldMisdirectTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
+}
+
 // Kalecgos
 
 bool KalecgosShouldCommunicateBossHealthTrigger::IsActiveInEncounter()
@@ -110,15 +121,6 @@ bool KalecgosShouldCommunicateBossHealthTrigger::IsActiveInEncounter()
     }
 
     return bot == spectralBot || bot == surfaceBot;
-}
-
-bool KalecgosPullingBossTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    return kalecgos && kalecgos->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool KalecgosRequiresTankRotationTrigger::IsActiveInEncounter()
@@ -196,15 +198,6 @@ bool KalecgosBotsDontObserveGravityTrigger::IsActiveInEncounter()
 
 // Brutallus
 
-bool BrutallusPullingBossTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
-    return brutallus && brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
-}
-
 bool BrutallusRequiresTwoTanksTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -250,7 +243,7 @@ bool BrutallusBurnOnNonTankTrigger::IsActiveInEncounter()
 
 // Felmyst
 
-bool FelmystPullingBossTrigger::IsActiveInEncounter()
+bool FelmystHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -485,15 +478,6 @@ bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
 
     return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
         AI_VALUE2(Unit*, "find target", "lady sacrolash");
-}
-
-bool EredarTwinsPullingBossesTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    return alythess && alythess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool EredarTwinsSacrolashRequiresTwoTanksTrigger::IsActiveInEncounter()

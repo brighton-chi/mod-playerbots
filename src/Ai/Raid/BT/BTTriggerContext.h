@@ -20,8 +20,8 @@ public:
             &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
         // High Warlord Naj'entus
-        creators["high warlord naj'entus pulling boss"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_pulling_boss;
+        creators["high warlord naj'entus hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_hunter_should_misdirect;
 
         creators["high warlord naj'entus should be tanked"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_should_be_tanked;
@@ -36,8 +36,8 @@ public:
             &RaidBlackTempleTriggerContext::high_warlord_najentus_has_tidal_shield;
 
         // Supremus
-        creators["supremus pulling boss or changing phase"] =
-            &RaidBlackTempleTriggerContext::supremus_pulling_boss_or_changing_phase;
+        creators["supremus hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::supremus_hunter_should_misdirect;
 
         creators["supremus ranged should spread"] =
             &RaidBlackTempleTriggerContext::supremus_ranged_should_spread;
@@ -56,8 +56,8 @@ public:
             &RaidBlackTempleTriggerContext::shade_of_akama_killing_channelers_starts_phase_2;
 
         // Teron Gorefiend
-        creators["teron gorefiend pulling boss"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_pulling_boss;
+        creators["teron gorefiend hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_hunter_should_misdirect;
 
         creators["teron gorefiend should be tanked"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_should_be_tanked;
@@ -75,8 +75,8 @@ public:
             &RaidBlackTempleTriggerContext::teron_gorefiend_transformed_into_vengeful_spirit;
 
         // Gurtogg Bloodboil
-        creators["gurtogg bloodboil pulling boss"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_pulling_boss;
+        creators["gurtogg bloodboil hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_hunter_should_misdirect;
 
         creators["gurtogg bloodboil should be tanked"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_be_tanked;
@@ -91,8 +91,8 @@ public:
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_manage_phase_timer;
 
         // Reliquary of Souls
-        creators["reliquary of souls aggro resets upon phase change"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_aggro_resets_upon_phase_change;
+        creators["reliquary of souls hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_hunter_should_misdirect;
 
         creators["reliquary of souls essence of suffering fixates on closest target"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_fixates_on_closest_target;
@@ -107,8 +107,8 @@ public:
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casts_deaden;
 
         // Mother Shahraz
-        creators["mother shahraz pulling boss"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_pulling_boss;
+        creators["mother shahraz hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_hunter_should_misdirect;
 
         creators["mother shahraz should be tanked"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_should_be_tanked;
@@ -123,8 +123,8 @@ public:
             &RaidBlackTempleTriggerContext::mother_shahraz_fatal_attraction;
 
         // Illidari Council
-        creators["illidari council pulling bosses"] =
-            &RaidBlackTempleTriggerContext::illidari_council_pulling_bosses;
+        creators["illidari council hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::illidari_council_hunter_should_misdirect;
 
         creators["illidari council gathios should be tanked"] =
             &RaidBlackTempleTriggerContext::illidari_council_gathios_should_be_tanked;
@@ -157,8 +157,8 @@ public:
             &RaidBlackTempleTriggerContext::illidari_council_should_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-        creators["illidan stormrage tank needs aggro"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_tank_needs_aggro;
+        creators["illidan stormrage hunter should misdirect"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_hunter_should_misdirect;
 
         creators["illidan stormrage casts flame crash"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_casts_flame_crash;
@@ -216,9 +216,9 @@ private:
     }
 
     // High Warlord Naj'entus
-    static Trigger* high_warlord_najentus_pulling_boss(PlayerbotAI* botAI) {
-        return new BlackTemplePullingBossTrigger(
-            botAI, "high warlord naj'entus pulling boss", "high warlord naj'entus");
+    static Trigger* high_warlord_najentus_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "high warlord naj'entus hunter should misdirect", "high warlord naj'entus");
     }
     static Trigger* high_warlord_najentus_should_be_tanked(PlayerbotAI* botAI) {
         return new HighWarlordNajentusShouldBeTankedTrigger(botAI);
@@ -234,8 +234,8 @@ private:
     }
 
     // Supremus
-    static Trigger* supremus_pulling_boss_or_changing_phase(PlayerbotAI* botAI) {
-        return new SupremusPullingBossOrChangingPhaseTrigger(botAI);
+    static Trigger* supremus_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SupremusHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* supremus_ranged_should_spread(PlayerbotAI* botAI) {
         return new SupremusRangedShouldSpreadTrigger(botAI);
@@ -256,9 +256,9 @@ private:
     }
 
     // Teron Gorefiend
-    static Trigger* teron_gorefiend_pulling_boss(PlayerbotAI* botAI) {
-        return new BlackTemplePullingBossTrigger(
-            botAI, "teron gorefiend pulling boss", "teron gorefiend");
+    static Trigger* teron_gorefiend_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "teron gorefiend hunter should misdirect", "teron gorefiend");
     }
     static Trigger* teron_gorefiend_should_be_tanked(PlayerbotAI* botAI) {
         return new TeronGorefiendShouldBeTankedTrigger(botAI);
@@ -277,8 +277,8 @@ private:
     }
 
     // Gurtogg Bloodboil
-    static Trigger* gurtogg_bloodboil_pulling_boss(PlayerbotAI* botAI) {
-        return new GurtoggBloodboilPullingBossTrigger(botAI);
+    static Trigger* gurtogg_bloodboil_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new GurtoggBloodboilHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* gurtogg_bloodboil_should_be_tanked(PlayerbotAI* botAI) {
         return new GurtoggBloodboilShouldBeTankedTrigger(botAI);
@@ -294,8 +294,8 @@ private:
     }
 
     // Reliquary of Souls
-    static Trigger* reliquary_of_souls_aggro_resets_upon_phase_change(PlayerbotAI* botAI) {
-        return new ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(botAI);
+    static Trigger* reliquary_of_souls_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new ReliquaryOfSoulsHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* reliquary_of_souls_essence_of_suffering_fixates_on_closest_target(PlayerbotAI* botAI) {
         return new ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(botAI);
@@ -311,9 +311,9 @@ private:
     }
 
     // Mother Shahraz
-    static Trigger* mother_shahraz_pulling_boss(PlayerbotAI* botAI) {
-        return new BlackTemplePullingBossTrigger(
-            botAI, "mother shahraz pulling boss", "mother shahraz");
+    static Trigger* mother_shahraz_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "mother shahraz hunter should misdirect", "mother shahraz");
     }
     static Trigger* mother_shahraz_should_be_tanked(PlayerbotAI* botAI) {
         return new MotherShahrazShouldBeTankedTrigger(botAI);
@@ -329,9 +329,9 @@ private:
     }
 
     // Illidari Council
-    static Trigger* illidari_council_pulling_bosses(PlayerbotAI* botAI) {
-        return new BlackTemplePullingBossTrigger(
-            botAI, "illidari council pulling bosses", "gathios the shatterer");
+    static Trigger* illidari_council_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "illidari council hunter should misdirect", "gathios the shatterer");
     }
     static Trigger* illidari_council_gathios_should_be_tanked(PlayerbotAI* botAI) {
         return new IllidariCouncilGathiosShouldBeTankedTrigger(botAI);
@@ -365,8 +365,8 @@ private:
     }
 
     // Illidan Stormrage <The Betrayer>
-    static Trigger* illidan_stormrage_tank_needs_aggro(PlayerbotAI* botAI) {
-        return new IllidanStormrageTankNeedsAggroTrigger(botAI);
+    static Trigger* illidan_stormrage_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new IllidanStormrageHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* illidan_stormrage_casts_flame_crash(PlayerbotAI* botAI) {
         return new IllidanStormrageCastsFlameCrashTrigger(botAI);

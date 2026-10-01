@@ -126,8 +126,8 @@ inline constexpr float DEMONIC_VAPOR_SEARCH_RADIUS = 100.0f;
 // A head is taken as its summoner's only within this of them, edge to edge.
 inline constexpr float DEMONIC_VAPOR_SUMMONER_RADIUS = 50.0f;
 
-// How far ranged bots position from the center of each ranged group.
-inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 0.5f;
+// How close to the center of a ground stack a bot stops, center to center.
+inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 2.0f;
 // Bots wait 300ms to react to Encapsulate (to make the action look less artificial).
 inline constexpr uint32 ENCAPSULATE_DELAY_MS = 300;
 // How close ranged have to be to a player charmed by Fog to attack.

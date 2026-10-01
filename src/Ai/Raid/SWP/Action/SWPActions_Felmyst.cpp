@@ -67,12 +67,6 @@ bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
     if (!TryGetFelmystRangedPosition(bot, felmyst, position))
         return false;
 
-    if (bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) <=
-        FELMYST_RANGED_GROUP_RADIUS)
-    {
-        return false;
-    }
-
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
@@ -150,12 +144,6 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
         Position position;
         if (!TryGetFelmystGroundStackPosition(bot, felmyst, stack, position))
             return false;
-
-        if (bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) <=
-            FELMYST_RANGED_GROUP_RADIUS)
-        {
-            return false;
-        }
 
         constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
         if (IsWaitingForLastMove(priority))

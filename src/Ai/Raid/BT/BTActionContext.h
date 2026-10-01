@@ -20,8 +20,8 @@ public:
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
         // High Warlord Naj'entus
-        creators["high warlord naj'entus misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_boss_to_main_tank;
+        creators["high warlord naj'entus misdirect to main tank"] =
+            &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_to_main_tank;
 
         creators["high warlord naj'entus tanks position boss"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_tanks_position_boss;
@@ -36,8 +36,8 @@ public:
             &RaidBlackTempleActionContext::high_warlord_najentus_throw_impaling_spine;
 
         // Supremus
-        creators["supremus misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::supremus_misdirect_boss_to_main_tank;
+        creators["supremus misdirect to tanks"] =
+            &RaidBlackTempleActionContext::supremus_misdirect_to_tanks;
 
         creators["supremus disperse ranged"] =
             &RaidBlackTempleActionContext::supremus_disperse_ranged;
@@ -56,8 +56,8 @@ public:
             &RaidBlackTempleActionContext::shade_of_akama_melee_dps_prioritize_channelers;
 
         // Teron Gorefiend
-        creators["teron gorefiend misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::teron_gorefiend_misdirect_boss_to_main_tank;
+        creators["teron gorefiend misdirect to main tank"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_misdirect_to_main_tank;
 
         creators["teron gorefiend tanks position boss"] =
             &RaidBlackTempleActionContext::teron_gorefiend_tanks_position_boss;
@@ -75,8 +75,8 @@ public:
             &RaidBlackTempleActionContext::teron_gorefiend_control_and_destroy_shadowy_constructs;
 
         // Gurtogg Bloodboil
-        creators["gurtogg bloodboil misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_misdirect_boss_to_main_tank;
+        creators["gurtogg bloodboil misdirect to main tank"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_misdirect_to_main_tank;
 
         creators["gurtogg bloodboil tanks position boss"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_tanks_position_boss;
@@ -91,8 +91,8 @@ public:
             &RaidBlackTempleActionContext::gurtogg_bloodboil_manage_phase_timer;
 
         // Reliquary of Souls
-        creators["reliquary of souls misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_boss_to_main_tank;
+        creators["reliquary of souls misdirect to main tank"] =
+            &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_to_main_tank;
 
         creators["reliquary of souls adjust distance from suffering"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_adjust_distance_from_suffering;
@@ -107,8 +107,8 @@ public:
             &RaidBlackTempleActionContext::reliquary_of_souls_spell_reflect_deaden;
 
         // Mother Shahraz
-        creators["mother shahraz misdirect boss to main tank"] =
-            &RaidBlackTempleActionContext::mother_shahraz_misdirect_boss_to_main_tank;
+        creators["mother shahraz misdirect to main tank"] =
+            &RaidBlackTempleActionContext::mother_shahraz_misdirect_to_main_tank;
 
         creators["mother shahraz tanks position boss under pillar"] =
             &RaidBlackTempleActionContext::mother_shahraz_tanks_position_boss_under_pillar;
@@ -123,8 +123,8 @@ public:
             &RaidBlackTempleActionContext::mother_shahraz_run_away_to_break_fatal_attraction;
 
         // Illidari Council
-        creators["illidari council misdirect bosses to tanks"] =
-            &RaidBlackTempleActionContext::illidari_council_misdirect_bosses_to_tanks;
+        creators["illidari council misdirect to tanks"] =
+            &RaidBlackTempleActionContext::illidari_council_misdirect_to_tanks;
 
         creators["illidari council main tank position gathios"] =
             &RaidBlackTempleActionContext::illidari_council_main_tank_position_gathios;
@@ -216,8 +216,8 @@ private:
     }
 
     // High Warlord Naj'entus
-    static Action* high_warlord_najentus_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new HighWarlordNajentusMisdirectBossToMainTankAction(botAI);
+    static Action* high_warlord_najentus_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new HighWarlordNajentusMisdirectToMainTankAction(botAI);
     }
     static Action* high_warlord_najentus_tanks_position_boss(PlayerbotAI* botAI) {
         return new HighWarlordNajentusTanksPositionBossAction(botAI);
@@ -233,8 +233,8 @@ private:
     }
 
     // Supremus
-    static Action* supremus_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SupremusMisdirectBossToMainTankAction(botAI);
+    static Action* supremus_misdirect_to_tanks(PlayerbotAI* botAI) {
+        return new SupremusMisdirectToTanksAction(botAI);
     }
     static Action* supremus_disperse_ranged(PlayerbotAI* botAI) {
         return new SupremusDisperseRangedAction(botAI);
@@ -255,8 +255,8 @@ private:
     }
 
     // Teron Gorefiend
-    static Action* teron_gorefiend_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new TeronGorefiendMisdirectBossToMainTankAction(botAI);
+    static Action* teron_gorefiend_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new TeronGorefiendMisdirectToMainTankAction(botAI);
     }
     static Action* teron_gorefiend_tanks_position_boss(PlayerbotAI* botAI) {
         return new TeronGorefiendTanksPositionBossAction(botAI);
@@ -275,8 +275,8 @@ private:
     }
 
     // Gurtogg Bloodboil
-    static Action* gurtogg_bloodboil_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new GurtoggBloodboilMisdirectBossToMainTankAction(botAI);
+    static Action* gurtogg_bloodboil_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new GurtoggBloodboilMisdirectToMainTankAction(botAI);
     }
     static Action* gurtogg_bloodboil_tanks_position_boss(PlayerbotAI* botAI) {
         return new GurtoggBloodboilTanksPositionBossAction(botAI);
@@ -292,8 +292,8 @@ private:
     }
 
     // Reliquary of Souls
-    static Action* reliquary_of_souls_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new ReliquaryOfSoulsMisdirectBossToMainTankAction(botAI);
+    static Action* reliquary_of_souls_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new ReliquaryOfSoulsMisdirectToMainTankAction(botAI);
     }
     static Action* reliquary_of_souls_adjust_distance_from_suffering(PlayerbotAI* botAI) {
         return new ReliquaryOfSoulsAdjustDistanceFromSufferingAction(botAI);
@@ -309,8 +309,8 @@ private:
     }
 
     // Mother Shahraz
-    static Action* mother_shahraz_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new MotherShahrazMisdirectBossToMainTankAction(botAI);
+    static Action* mother_shahraz_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new MotherShahrazMisdirectToMainTankAction(botAI);
     }
     static Action* mother_shahraz_tanks_position_boss_under_pillar(PlayerbotAI* botAI) {
         return new MotherShahrazTanksPositionBossUnderPillarAction(botAI);
@@ -326,8 +326,8 @@ private:
     }
 
     // Illidari Council
-    static Action* illidari_council_misdirect_bosses_to_tanks(PlayerbotAI* botAI) {
-        return new IllidariCouncilMisdirectBossesToTanksAction(botAI);
+    static Action* illidari_council_misdirect_to_tanks(PlayerbotAI* botAI) {
+        return new IllidariCouncilMisdirectToTanksAction(botAI);
     }
     static Action* illidari_council_main_tank_position_gathios(PlayerbotAI* botAI) {
         return new IllidariCouncilMainTankPositionGathiosAction(botAI);

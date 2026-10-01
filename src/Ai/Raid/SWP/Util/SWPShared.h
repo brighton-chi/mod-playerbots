@@ -13,6 +13,7 @@
 #include <type_traits>
 
 class Player;
+class PlayerbotAI;
 class Unit;
 
 namespace SwpHelpers
@@ -191,6 +192,8 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
 uint32 GetManualCastCooldown(uint32 spellId);
 // Same as above, except for enforcing a GCD for abilities with no cooldowns.
 uint32 GetManualCastGlobalCooldown(uint32 spellId);
+// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 // One step along the bot's path to a point, stopping short of it by stopDistance. The step
 // follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
 // around an obstacle between it and the point.

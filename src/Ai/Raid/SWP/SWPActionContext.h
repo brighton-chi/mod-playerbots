@@ -33,8 +33,8 @@ public:
         creators["kalecgos announce boss health"] =
             &RaidSwpActionContext::kalecgos_announce_boss_health;
 
-        creators["kalecgos misdirect boss to main tank"] =
-            &RaidSwpActionContext::kalecgos_misdirect_boss_to_main_tank;
+        creators["kalecgos misdirect to main tank"] =
+            &RaidSwpActionContext::kalecgos_misdirect_to_main_tank;
 
         creators["kalecgos surface tank position dragon"] =
             &RaidSwpActionContext::kalecgos_surface_tank_position_dragon;
@@ -55,8 +55,8 @@ public:
             &RaidSwpActionContext::kalecgos_return_to_spectral_realm_ground;
 
         // Brutallus
-        creators["brutallus misdirect boss to main tank"] =
-            &RaidSwpActionContext::brutallus_misdirect_boss_to_main_tank;
+        creators["brutallus misdirect to main tank"] =
+            &RaidSwpActionContext::brutallus_misdirect_to_main_tank;
 
         creators["brutallus tanks position and swap"] =
             &RaidSwpActionContext::brutallus_tanks_position_and_swap;
@@ -71,8 +71,8 @@ public:
             &RaidSwpActionContext::brutallus_isolate_burn;
 
         // Felmyst
-        creators["felmyst misdirect boss to main tank"] =
-            &RaidSwpActionContext::felmyst_misdirect_boss_to_main_tank;
+        creators["felmyst misdirect to main tank"] =
+            &RaidSwpActionContext::felmyst_misdirect_to_main_tank;
 
         creators["felmyst main tank position boss on ground"] =
             &RaidSwpActionContext::felmyst_main_tank_position_boss_on_ground;
@@ -117,8 +117,8 @@ public:
         creators["eredar twins announce alythess tank"] =
             &RaidSwpActionContext::eredar_twins_announce_alythess_tank;
 
-        creators["eredar twins misdirect bosses to tanks"] =
-            &RaidSwpActionContext::eredar_twins_misdirect_bosses_to_tanks;
+        creators["eredar twins misdirect to tanks"] =
+            &RaidSwpActionContext::eredar_twins_misdirect_to_tanks;
 
         creators["eredar twins position sacrolash tanks"] =
             &RaidSwpActionContext::eredar_twins_position_sacrolash_tanks;
@@ -246,9 +246,9 @@ private:
     }
 
     // Kalecgos
-    static Action* kalecgos_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellMisdirectBossToMainTankAction(
-            botAI, "kalecgos misdirect boss to main tank", "kalecgos");
+    static Action* kalecgos_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SunwellMisdirectToMainTankAction(
+            botAI, "kalecgos misdirect to main tank", "kalecgos");
     }
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI) {
         return new KalecgosAnnounceBossHealthAction(botAI);
@@ -274,9 +274,9 @@ private:
     }
 
     // Brutallus
-    static Action* brutallus_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellMisdirectBossToMainTankAction(
-            botAI, "brutallus misdirect boss to main tank", "brutallus");
+    static Action* brutallus_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SunwellMisdirectToMainTankAction(
+            botAI, "brutallus misdirect to main tank", "brutallus");
     }
     static Action* brutallus_tanks_position_and_swap(PlayerbotAI* botAI) {
         return new BrutallusTanksPositionAndSwapAction(botAI);
@@ -292,9 +292,9 @@ private:
     }
 
     // Felmyst
-    static Action* felmyst_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SunwellMisdirectBossToMainTankAction(
-            botAI, "felmyst misdirect boss to main tank", "felmyst");
+    static Action* felmyst_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SunwellMisdirectToMainTankAction(
+            botAI, "felmyst misdirect to main tank", "felmyst");
     }
     static Action* felmyst_main_tank_position_boss_on_ground(PlayerbotAI* botAI) {
         return new FelmystMainTankPositionBossOnGroundAction(botAI);
@@ -340,8 +340,8 @@ private:
     static Action* eredar_twins_announce_alythess_tank(PlayerbotAI* botAI) {
         return new EredarTwinsAnnounceAlythessTankAction(botAI);
     }
-    static Action* eredar_twins_misdirect_bosses_to_tanks(PlayerbotAI* botAI) {
-        return new EredarTwinsMisdirectBossesToTanksAction(botAI);
+    static Action* eredar_twins_misdirect_to_tanks(PlayerbotAI* botAI) {
+        return new EredarTwinsMisdirectToTanksAction(botAI);
     }
     static Action* eredar_twins_position_sacrolash_tanks(PlayerbotAI* botAI) {
         return new EredarTwinsPositionSacrolashTanksAction(botAI);

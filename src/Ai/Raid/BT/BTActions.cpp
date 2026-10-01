@@ -57,7 +57,7 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 
 // High Warlord Naj'entus
 
-bool HighWarlordNajentusMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool HighWarlordNajentusMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus)
@@ -232,7 +232,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
 // Supremus
 
-bool SupremusMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool SupremusMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
@@ -483,7 +483,7 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 
 // Teron Gorefiend
 
-bool TeronGorefiendMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool TeronGorefiendMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
@@ -739,7 +739,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool GurtoggBloodboilMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -874,7 +874,7 @@ bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event /*event*/)
 
 // Reliquary of Souls
 
-bool ReliquaryOfSoulsMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
@@ -1072,7 +1072,7 @@ bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event /*event*/)
 
 // Mother Shahraz
 
-bool MotherShahrazMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool MotherShahrazMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
     if (!shahraz)
@@ -1256,7 +1256,7 @@ std::vector<Player*> MotherShahrazRunAwayToBreakFatalAttractionAction::GetAttrac
 
 // Illidari Council
 
-bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
+bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)

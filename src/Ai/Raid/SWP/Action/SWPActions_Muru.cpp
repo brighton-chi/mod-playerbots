@@ -22,7 +22,7 @@ using namespace EncounterHelpers;
 bool MuruMisdirectEnemyToTankAction::Execute(Event /*event*/)
 {
     Unit* enemy = nullptr;
-    Unit* tank = nullptr;
+    Player* tank = nullptr;
 
     if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
         voidSentinel && voidSentinel->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
@@ -40,13 +40,7 @@ bool MuruMisdirectEnemyToTankAction::Execute(Event /*event*/)
     if (!enemy || !tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!bot->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", enemy) && botAI->CastSpell("steady shot", enemy);
+    return MisdirectTargetToTank(botAI, enemy, tank);
 }
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
@@ -66,13 +60,7 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
         _entropiusRangedPositionReached = false;
 
         Position const& position = MURU_STACK_POSITION;
-        constexpr float rangedGroupRadius = 2.0f;
-        if (bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) <=
-            rangedGroupRadius)
-        {
-            return false;
-        }
-
+        constexpr float rangedGroupRadius = 3.5f;
         float moveX;
         float moveY;
         bool backwards;
@@ -534,14 +522,7 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         {
             Position const& holdingPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
                 entrancePosition : stackPosition;
-            constexpr float arrivalDistance = 1.0f;
-            if (bot->GetDistance2d(
-                    holdingPosition.GetPositionX(), holdingPosition.GetPositionY()) <=
-                arrivalDistance)
-            {
-                return false;
-            }
-
+            constexpr float arrivalDistance = 2.5f;
             float moveX;
             float moveY;
             bool backwards;
@@ -563,13 +544,7 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         return FleePosition(muru->GetPosition(), MURU_DARKNESS_SAFE_DISTANCE, minInterval);
     }
 
-    constexpr float stackArrivalDistance = 3.0f;
-    if (bot->GetDistance2d(stackPosition.GetPositionX(), stackPosition.GetPositionY()) <=
-        stackArrivalDistance)
-    {
-        return false;
-    }
-
+    constexpr float stackArrivalDistance = 4.5f;
     float moveX;
     float moveY;
     bool backwards;

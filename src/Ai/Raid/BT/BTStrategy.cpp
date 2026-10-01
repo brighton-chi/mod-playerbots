@@ -14,8 +14,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 11) }));
 
     // High Warlord Naj'entus
-    triggers.push_back(new TriggerNode("high warlord naj'entus pulling boss",
-        { NextAction("high warlord naj'entus misdirect boss to main tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("high warlord naj'entus hunter should misdirect",
+        { NextAction("high warlord naj'entus misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus should be tanked",
         { NextAction("high warlord naj'entus tanks position boss", ACTION_RAID + 1) }));
@@ -30,8 +30,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("high warlord naj'entus throw impaling spine", ACTION_RAID + 2) }));
 
     // Supremus
-    triggers.push_back(new TriggerNode("supremus pulling boss or changing phase",
-        { NextAction("supremus misdirect boss to main tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("supremus hunter should misdirect",
+        { NextAction("supremus misdirect to tanks", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("supremus ranged should spread",
         { NextAction("supremus disperse ranged", ACTION_RAID + 1) }));
@@ -50,8 +50,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("shade of akama melee dps prioritize channelers", ACTION_RAID + 1) }));
 
     // Teron Gorefiend
-    triggers.push_back(new TriggerNode("teron gorefiend pulling boss",
-        { NextAction("teron gorefiend misdirect boss to main tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("teron gorefiend hunter should misdirect",
+        { NextAction("teron gorefiend misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend should be tanked",
         { NextAction("teron gorefiend tanks position boss", ACTION_RAID + 1) }));
@@ -70,8 +70,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "teron gorefiend control and destroy shadowy constructs", ACTION_EMERGENCY + 10) }));
 
     // Gurtogg Bloodboil
-    triggers.push_back(new TriggerNode("gurtogg bloodboil pulling boss",
-        { NextAction("gurtogg bloodboil misdirect boss to main tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil hunter should misdirect",
+        { NextAction("gurtogg bloodboil misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("gurtogg bloodboil should be tanked",
         { NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1) }));
@@ -86,8 +86,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("gurtogg bloodboil manage phase timer", ACTION_EMERGENCY + 10) }));
 
     // Reliquary of Souls
-    triggers.push_back(new TriggerNode("reliquary of souls aggro resets upon phase change",
-        { NextAction("reliquary of souls misdirect boss to main tank", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("reliquary of souls hunter should misdirect",
+        { NextAction("reliquary of souls misdirect to main tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode(
         "reliquary of souls essence of suffering fixates on closest target",
@@ -103,8 +103,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 6) }));
 
     // Mother Shahraz
-    triggers.push_back(new TriggerNode("mother shahraz pulling boss",
-        { NextAction("mother shahraz misdirect boss to main tank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("mother shahraz hunter should misdirect",
+        { NextAction("mother shahraz misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("mother shahraz should be tanked",
         { NextAction("mother shahraz tanks position boss under pillar", ACTION_RAID + 1) }));
@@ -120,8 +120,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "mother shahraz run away to break fatal attraction", ACTION_EMERGENCY + 10) }));
 
     // Illidari Council
-    triggers.push_back(new TriggerNode("illidari council pulling bosses",
-        { NextAction("illidari council misdirect bosses to tanks", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("illidari council hunter should misdirect",
+        { NextAction("illidari council misdirect to tanks", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("illidari council gathios should be tanked",
         { NextAction("illidari council main tank position gathios", ACTION_RAID + 1) }));
@@ -156,7 +156,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidari council manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Illidan Stormrage <The Betrayer>
-    triggers.push_back(new TriggerNode("illidan stormrage tank needs aggro",
+    triggers.push_back(new TriggerNode("illidan stormrage hunter should misdirect",
         { NextAction("illidan stormrage misdirect to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage casts flame crash",

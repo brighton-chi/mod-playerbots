@@ -32,7 +32,8 @@ public:
         creators["kalecgos should communicate boss health"] =
             &RaidSwpTriggerContext::kalecgos_should_communicate_boss_health;
 
-        creators["kalecgos pulling boss"] = &RaidSwpTriggerContext::kalecgos_pulling_boss;
+        creators["kalecgos hunter should misdirect"] =
+            &RaidSwpTriggerContext::kalecgos_hunter_should_misdirect;
 
         creators["kalecgos requires tank rotation"] =
             &RaidSwpTriggerContext::kalecgos_requires_tank_rotation;
@@ -53,7 +54,8 @@ public:
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
         // Brutallus
-        creators["brutallus pulling boss"] = &RaidSwpTriggerContext::brutallus_pulling_boss;
+        creators["brutallus hunter should misdirect"] =
+            &RaidSwpTriggerContext::brutallus_hunter_should_misdirect;
 
         creators["brutallus requires two tanks"] =
             &RaidSwpTriggerContext::brutallus_requires_two_tanks;
@@ -67,7 +69,8 @@ public:
         creators["brutallus burn on non-tank"] = &RaidSwpTriggerContext::brutallus_burn_on_non_tank;
 
         // Felmyst
-        creators["felmyst pulling boss"] = &RaidSwpTriggerContext::felmyst_pulling_boss;
+        creators["felmyst hunter should misdirect"] =
+            &RaidSwpTriggerContext::felmyst_hunter_should_misdirect;
 
         creators["felmyst ground phase should be tanked"] =
             &RaidSwpTriggerContext::felmyst_ground_phase_should_be_tanked;
@@ -112,8 +115,8 @@ public:
         creators["eredar twins should announce alythess tank"] =
             &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
 
-        creators["eredar twins pulling bosses"] =
-            &RaidSwpTriggerContext::eredar_twins_pulling_bosses;
+        creators["eredar twins hunter should misdirect"] =
+            &RaidSwpTriggerContext::eredar_twins_hunter_should_misdirect;
 
         creators["eredar twins sacrolash requires two tanks"] =
             &RaidSwpTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
@@ -233,8 +236,9 @@ private:
     }
 
     // Kalecgos
-    static Trigger* kalecgos_pulling_boss(PlayerbotAI* botAI) {
-        return new KalecgosPullingBossTrigger(botAI);
+    static Trigger* kalecgos_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "kalecgos hunter should misdirect", "kalecgos");
     }
     static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI) {
         return new KalecgosShouldCommunicateBossHealthTrigger(botAI);
@@ -259,8 +263,9 @@ private:
     }
 
     // Brutallus
-    static Trigger* brutallus_pulling_boss(PlayerbotAI* botAI) {
-        return new BrutallusPullingBossTrigger(botAI);
+    static Trigger* brutallus_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "brutallus hunter should misdirect", "brutallus");
     }
     static Trigger* brutallus_requires_two_tanks(PlayerbotAI* botAI) {
         return new BrutallusRequiresTwoTanksTrigger(botAI);
@@ -276,8 +281,8 @@ private:
     }
 
     // Felmyst
-    static Trigger* felmyst_pulling_boss(PlayerbotAI* botAI) {
-        return new FelmystPullingBossTrigger(botAI);
+    static Trigger* felmyst_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new FelmystHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* felmyst_ground_phase_should_be_tanked(PlayerbotAI* botAI) {
         return new FelmystGroundPhaseShouldBeTankedTrigger(botAI);
@@ -323,8 +328,9 @@ private:
     static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI) {
         return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
     }
-    static Trigger* eredar_twins_pulling_bosses(PlayerbotAI* botAI) {
-        return new EredarTwinsPullingBossesTrigger(botAI);
+    static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SunwellHunterShouldMisdirectTrigger(
+            botAI, "eredar twins hunter should misdirect", "grand warlock alythess");
     }
     static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI) {
         return new EredarTwinsSacrolashRequiresTwoTanksTrigger(botAI);

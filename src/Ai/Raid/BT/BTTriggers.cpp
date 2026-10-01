@@ -24,7 +24,7 @@ bool BlackTempleNoEncounterInProgressTrigger::IsActive()
 
 // Shared Bosses
 
-bool BlackTemplePullingBossTrigger::IsActiveInEncounter()
+bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -109,7 +109,7 @@ bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
 
 // Supremus
 
-bool SupremusPullingBossOrChangingPhaseTrigger::IsActiveInEncounter()
+bool SupremusHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -236,7 +236,7 @@ bool TeronGorefiendTransformedIntoVengefulSpiritTrigger::IsActiveInEncounter()
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilPullingBossTrigger::IsActiveInEncounter()
+bool GurtoggBloodboilHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -301,7 +301,7 @@ bool GurtoggBloodboilShouldManagePhaseTimerTrigger::IsActiveInEncounter()
 
 // Reliquary of Souls
 
-bool ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
+bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     return bot->getClass() == CLASS_HUNTER && AI_VALUE2(Unit*, "find target", "reliquary of the lost");
 }
@@ -505,7 +505,7 @@ bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 // Illidan Stormrage <The Betrayer>
 
-bool IllidanStormrageTankNeedsAggroTrigger::IsActiveInEncounter()
+bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;

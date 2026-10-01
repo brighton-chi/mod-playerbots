@@ -386,7 +386,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!gathios)
         return 1.0f;
 
-    if (dynamic_cast<IllidariCouncilMisdirectBossesToTanksAction*>(action))
+    if (dynamic_cast<IllidariCouncilMisdirectToTanksAction*>(action))
         return 1.0f;
 
     if (!dynamic_cast<AttackAction*>(action) &&

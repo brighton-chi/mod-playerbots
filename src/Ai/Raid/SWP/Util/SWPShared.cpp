@@ -79,6 +79,20 @@ uint32 GetManualCastGlobalCooldown(uint32 spellId)
     return spellInfo->RecoveryTime || spellInfo->CategoryRecoveryTime ? 0 : minGlobalCooldown;
 }
 
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
+{
+    if (!target || !tank)
+        return false;
+
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SwpSpells::SPELL_MISDIRECTION_CAST), tank);
+
+    if (!botAI->GetBot()->HasAura(Id(SwpSpells::SPELL_MISDIRECTION)))
+        return false;
+
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+}
+
 bool GetPathStepTowardPoint(
     Player* bot, Position const& destination, float stopDistance, float stepDistance,
     float& stepX, float& stepY)

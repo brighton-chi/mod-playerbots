@@ -44,10 +44,10 @@ public:
 
 // A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
 // High Warlord Naj'entus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on Gathios).
-class BlackTemplePullingBossTrigger : public BlackTempleEncounterTrigger
+class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    BlackTemplePullingBossTrigger(
+    BlackTempleHunterShouldMisdirectTrigger(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : BlackTempleEncounterTrigger(botAI, name), _bossName(bossName) {}
 
@@ -102,11 +102,11 @@ protected:
 
 // Supremus
 
-class SupremusPullingBossOrChangingPhaseTrigger : public BlackTempleEncounterTrigger
+class SupremusHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusPullingBossOrChangingPhaseTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "supremus pulling boss or changing phase") {}
+    SupremusHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -218,11 +218,11 @@ protected:
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilPullingBossTrigger : public BlackTempleEncounterTrigger
+class GurtoggBloodboilHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilPullingBossTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil pulling boss") {}
+    GurtoggBloodboilHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -270,11 +270,11 @@ protected:
 
 // Reliquary of Souls
 
-class ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger : public BlackTempleEncounterTrigger
+class ReliquaryOfSoulsHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "reliquary of souls aggro resets upon phase change") {}
+    ReliquaryOfSoulsHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -468,11 +468,11 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageTankNeedsAggroTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageTankNeedsAggroTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage tank needs aggro") {}
+    IllidanStormrageHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage hunter should misdirect") {}
 
 protected:
     bool IsActiveInEncounter() override;
