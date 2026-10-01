@@ -122,7 +122,7 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 
 } // end anonymous namespace (misdirect)
 
-bool SscMisdirectBossToMainTankAction::Execute(Event /*event*/)
+bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     if (!boss)
@@ -215,7 +215,7 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& positi
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
+bool HydrossTheUnstableMisdirectToTankAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -978,7 +978,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event
 }
 
 // Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank.
-bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
+bool FathomLordKarathressMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)

@@ -49,10 +49,10 @@ public:
 // Shared Bosses
 
 // Misdirect to the main tank. Used for Morogrim Tidewalker and Lady Vashj.
-class SscMisdirectBossToMainTankAction : public Action
+class SscMisdirectToMainTankAction : public Action
 {
 public:
-    SscMisdirectBossToMainTankAction(
+    SscMisdirectToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
         : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
@@ -101,11 +101,11 @@ private:
     bool const _frostTank;
 };
 
-class HydrossTheUnstableMisdirectBossToTankAction : public Action
+class HydrossTheUnstableMisdirectToTankAction : public Action
 {
 public:
-    HydrossTheUnstableMisdirectBossToTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "hydross the unstable misdirect boss to tank") {}
+    HydrossTheUnstableMisdirectToTankAction(PlayerbotAI* botAI)
+        : Action(botAI, "hydross the unstable misdirect to tank") {}
     bool Execute(Event event) override;
 };
 
@@ -282,11 +282,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressMisdirectBossesToTanksAction : public Action
+class FathomLordKarathressMisdirectToTanksAction : public Action
 {
 public:
-    FathomLordKarathressMisdirectBossesToTanksAction(PlayerbotAI* botAI)
-        : Action(botAI, "fathom-lord karathress misdirect bosses to tanks") {}
+    FathomLordKarathressMisdirectToTanksAction(PlayerbotAI* botAI)
+        : Action(botAI, "fathom-lord karathress misdirect to tanks") {}
     bool Execute(Event event) override;
 };
 

@@ -37,7 +37,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hydross the unstable frost phase spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should misdirect upon phase change",
-        { NextAction("hydross the unstable misdirect boss to tank", ACTION_RAID + 3) }));
+        { NextAction("hydross the unstable misdirect to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change",
         { NextAction("hydross the unstable stop dps upon phase change", ACTION_RAID + 2) }));
@@ -105,8 +105,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should heal caribdis tank",
         { NextAction("fathom-lord karathress position caribdis tank healer", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress pulling bosses",
-        { NextAction("fathom-lord karathress misdirect bosses to tanks", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("fathom-lord karathress hunter should misdirect",
+        { NextAction("fathom-lord karathress misdirect to tanks", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
@@ -130,8 +130,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("morogrim tidewalker too far from boss",
         { NextAction("morogrim tidewalker return to boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("morogrim tidewalker pulling boss",
-        { NextAction("morogrim tidewalker misdirect boss to main tank", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("morogrim tidewalker hunter should misdirect",
+        { NextAction("morogrim tidewalker misdirect to main tank", ACTION_RAID) }));
 
     // Lady Vashj <Coilfang Matron>
     triggers.push_back(new TriggerNode("lady vashj should be tanked",
@@ -158,8 +158,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj static charge on group member",
         { NextAction("lady vashj static charge move away from group", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("lady vashj pulling boss",
-        { NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("lady vashj hunter should misdirect",
+        { NextAction("lady vashj misdirect to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted elemental needs looter",
         { NextAction("lady vashj assign tainted core looter", ACTION_EMERGENCY + 13) }));

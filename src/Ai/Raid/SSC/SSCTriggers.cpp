@@ -44,7 +44,7 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 
 // Shared Bosses
 
-bool SscPullingBossTrigger::IsActiveInEncounter()
+bool SscHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;

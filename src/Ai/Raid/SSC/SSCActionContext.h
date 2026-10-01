@@ -36,8 +36,8 @@ public:
         creators["hydross the unstable frost phase spread ranged"] =
             &RaidSscActionContext::hydross_the_unstable_frost_phase_spread_ranged;
 
-        creators["hydross the unstable misdirect boss to tank"] =
-            &RaidSscActionContext::hydross_the_unstable_misdirect_boss_to_tank;
+        creators["hydross the unstable misdirect to tank"] =
+            &RaidSscActionContext::hydross_the_unstable_misdirect_to_tank;
 
         creators["hydross the unstable stop dps upon phase change"] =
             &RaidSscActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
@@ -102,8 +102,8 @@ public:
         creators["fathom-lord karathress position caribdis tank healer"] =
             &RaidSscActionContext::fathom_lord_karathress_position_caribdis_tank_healer;
 
-        creators["fathom-lord karathress misdirect bosses to tanks"] =
-            &RaidSscActionContext::fathom_lord_karathress_misdirect_bosses_to_tanks;
+        creators["fathom-lord karathress misdirect to tanks"] =
+            &RaidSscActionContext::fathom_lord_karathress_misdirect_to_tanks;
 
         creators["fathom-lord karathress assign dps priority"] =
             &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
@@ -118,8 +118,8 @@ public:
             &RaidSscActionContext::fathom_lord_karathress_drop_from_cyclone;
 
         // Morogrim Tidewalker
-        creators["morogrim tidewalker misdirect boss to main tank"] =
-            &RaidSscActionContext::morogrim_tidewalker_misdirect_boss_to_main_tank;
+        creators["morogrim tidewalker misdirect to main tank"] =
+            &RaidSscActionContext::morogrim_tidewalker_misdirect_to_main_tank;
 
         creators["morogrim tidewalker position main tank"] =
             &RaidSscActionContext::morogrim_tidewalker_position_main_tank;
@@ -155,8 +155,8 @@ public:
         creators["lady vashj static charge move away from group"] =
             &RaidSscActionContext::lady_vashj_static_charge_move_away_from_group;
 
-        creators["lady vashj misdirect boss to main tank"] =
-            &RaidSscActionContext::lady_vashj_misdirect_boss_to_main_tank;
+        creators["lady vashj misdirect to main tank"] =
+            &RaidSscActionContext::lady_vashj_misdirect_to_main_tank;
 
         creators["lady vashj assign target priority"] =
             &RaidSscActionContext::lady_vashj_assign_target_priority;
@@ -238,8 +238,8 @@ private:
             botAI, "hydross the unstable frost phase spread ranged",
             SscHelpers::HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
     }
-    static Action* hydross_the_unstable_misdirect_boss_to_tank(PlayerbotAI* botAI) {
-        return new HydrossTheUnstableMisdirectBossToTankAction(botAI);
+    static Action* hydross_the_unstable_misdirect_to_tank(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableMisdirectToTankAction(botAI);
     }
     static Action* hydross_the_unstable_stop_dps_upon_phase_change(PlayerbotAI* botAI) {
         return new SscStopAttackingAction(
@@ -308,8 +308,8 @@ private:
     static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) {
         return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI);
     }
-    static Action* fathom_lord_karathress_misdirect_bosses_to_tanks(PlayerbotAI* botAI) {
-        return new FathomLordKarathressMisdirectBossesToTanksAction(botAI);
+    static Action* fathom_lord_karathress_misdirect_to_tanks(PlayerbotAI* botAI) {
+        return new FathomLordKarathressMisdirectToTanksAction(botAI);
     }
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
@@ -327,9 +327,9 @@ private:
     }
 
     // Morogrim Tidewalker
-    static Action* morogrim_tidewalker_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectBossToMainTankAction(
-            botAI, "morogrim tidewalker misdirect boss to main tank", "morogrim tidewalker");
+    static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SscMisdirectToMainTankAction(
+            botAI, "morogrim tidewalker misdirect to main tank", "morogrim tidewalker");
     }
     static Action* morogrim_tidewalker_position_main_tank(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerPositionMainTankAction(botAI);
@@ -366,9 +366,9 @@ private:
     static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) {
         return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI);
     }
-    static Action* lady_vashj_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectBossToMainTankAction(
-            botAI, "lady vashj misdirect boss to main tank", "lady vashj");
+    static Action* lady_vashj_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SscMisdirectToMainTankAction(
+            botAI, "lady vashj misdirect to main tank", "lady vashj");
     }
     static Action* lady_vashj_assign_target_priority(PlayerbotAI* botAI) {
         return new LadyVashjAssignTargetPriorityAction(botAI);

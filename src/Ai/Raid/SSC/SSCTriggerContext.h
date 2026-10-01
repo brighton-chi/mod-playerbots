@@ -102,8 +102,8 @@ public:
         creators["fathom-lord karathress should heal caribdis tank"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_heal_caribdis_tank;
 
-        creators["fathom-lord karathress pulling bosses"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_pulling_bosses;
+        creators["fathom-lord karathress hunter should misdirect"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_hunter_should_misdirect;
 
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
@@ -121,8 +121,8 @@ public:
         creators["morogrim tidewalker should be tanked"] =
             &RaidSscTriggerContext::morogrim_tidewalker_should_be_tanked;
 
-        creators["morogrim tidewalker pulling boss"] =
-            &RaidSscTriggerContext::morogrim_tidewalker_pulling_boss;
+        creators["morogrim tidewalker hunter should misdirect"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_hunter_should_misdirect;
 
         creators["morogrim tidewalker ranged should stack"] =
             &RaidSscTriggerContext::morogrim_tidewalker_ranged_should_stack;
@@ -155,7 +155,8 @@ public:
         creators["lady vashj static charge on group member"] =
             &RaidSscTriggerContext::lady_vashj_static_charge_on_group_member;
 
-        creators["lady vashj pulling boss"] = &RaidSscTriggerContext::lady_vashj_pulling_boss;
+        creators["lady vashj hunter should misdirect"] =
+            &RaidSscTriggerContext::lady_vashj_hunter_should_misdirect;
 
         creators["lady vashj should assign target priority"] =
             &RaidSscTriggerContext::lady_vashj_should_assign_target_priority;
@@ -302,9 +303,9 @@ private:
     static Trigger* fathom_lord_karathress_should_heal_caribdis_tank(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldHealCaribdisTankTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_pulling_bosses(PlayerbotAI* botAI) {
-        return new SscPullingBossTrigger(
-            botAI, "fathom-lord karathress pulling bosses", "fathom-guard tidalvess");
+    static Trigger* fathom_lord_karathress_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SscHunterShouldMisdirectTrigger(
+            botAI, "fathom-lord karathress hunter should misdirect", "fathom-guard tidalvess");
     }
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI) {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
@@ -323,9 +324,9 @@ private:
     static Trigger* morogrim_tidewalker_should_be_tanked(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerShouldBeTankedTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_pulling_boss(PlayerbotAI* botAI) {
-        return new SscPullingBossTrigger(
-            botAI, "morogrim tidewalker pulling boss", "morogrim tidewalker");
+    static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SscHunterShouldMisdirectTrigger(
+            botAI, "morogrim tidewalker hunter should misdirect", "morogrim tidewalker");
     }
     static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
@@ -359,8 +360,9 @@ private:
     static Trigger* lady_vashj_static_charge_on_group_member(PlayerbotAI* botAI) {
         return new LadyVashjStaticChargeOnGroupMemberTrigger(botAI);
     }
-    static Trigger* lady_vashj_pulling_boss(PlayerbotAI* botAI) {
-        return new SscPullingBossTrigger(botAI, "lady vashj pulling boss", "lady vashj");
+    static Trigger* lady_vashj_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SscHunterShouldMisdirectTrigger(
+            botAI, "lady vashj hunter should misdirect", "lady vashj");
     }
     static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI) {
         return new LadyVashjShouldAssignTargetPriorityTrigger(botAI);
