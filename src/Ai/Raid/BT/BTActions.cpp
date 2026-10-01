@@ -308,7 +308,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
 
 bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> const volcanos = GetAllSupremusVolcanos();
+    std::vector<Unit*> const volcanos = GetSupremusVolcanoes(botAI);
     if (volcanos.empty())
         return false;
 
@@ -419,24 +419,6 @@ bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(Position const& 
     }
 
     return true;
-}
-
-std::vector<Unit*> SupremusMoveAwayFromVolcanosAction::GetAllSupremusVolcanos()
-{
-    std::vector<Unit*> volcanos;
-    constexpr float searchRadius = 40.0f;
-
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            volcanos.push_back(creature);
-    }
-
-    return volcanos;
 }
 
 bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
@@ -1311,7 +1293,7 @@ bool IllidariCouncilMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         councilTarget = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-        tankTarget = GetZerevorMageTank(bot);
+        tankTarget = GetZerevorMageTank(botAI);
     }
     else if (hunterIndex == 1)
     {
@@ -1502,7 +1484,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
 bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 {
-    Player* mageTank = GetZerevorMageTank(bot);
+    Player* mageTank = GetZerevorMageTank(botAI);
     if (!mageTank)
         return false;
 
@@ -1744,7 +1726,7 @@ bool IllidanStormrageMisdirectToTankAction::TryMisdirectToWarlockTank(Unit* illi
     if (!illidan)
         return false;
 
-    Player* warlockTank = GetIllidanWarlockTank(bot);
+    Player* warlockTank = GetIllidanWarlockTank(botAI);
     if (!warlockTank)
         return false;
 
@@ -2020,7 +2002,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(Positio
     if (bot->HasSpellCooldown(Id(BlackTempleSpells::SPELL_FROST_TRAP)))
         return false;
 
-    Player* infected = GetBotWithParasiticShadowfiend(bot);
+    Player* infected = GetBotWithParasiticShadowfiend(botAI);
     if (!infected)
         return false;
 
@@ -2387,9 +2369,9 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     {
         return SpreadInCircleInDemonPhase(illidan, group);
     }
-    else if (GetBotWithParasiticShadowfiend(bot) == bot ||
+    else if (GetBotWithParasiticShadowfiend(botAI) == bot ||
              (GetIllidanTrapperHunter(bot) == bot &&
-              GetBotWithParasiticShadowfiend(bot)))
+              GetBotWithParasiticShadowfiend(botAI)))
     {
         return false;
     }
@@ -2472,7 +2454,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
     if (!illidan)
         return false;
 
-    Player* warlockTank = GetIllidanWarlockTank(bot);
+    Player* warlockTank = GetIllidanWarlockTank(botAI);
     if (!warlockTank)
     {
         constexpr float safeDistFromBoss = 24.0f;
@@ -2589,7 +2571,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     if (currentDistFromBoss < safeDistFromBoss)
         MoveAway(illidan, safeDistFromBoss - currentDistFromBoss);
 
-    if (Player* warlockTank = GetIllidanWarlockTank(bot))
+    if (Player* warlockTank = GetIllidanWarlockTank(botAI))
     {
         constexpr float safeDistFromTank = 25.0f;
         float const currentDistFromTank = bot->GetExactDist2d(warlockTank);
@@ -2647,7 +2629,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         Unit* shadowDemon = bot->FindNearestCreature(
             Id(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius, true);
 
-        if (GetIllidanWarlockTank(bot) == bot)
+        if (GetIllidanWarlockTank(botAI) == bot)
         {
             targets = { shadowDemon, illidan };
         }

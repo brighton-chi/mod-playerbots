@@ -14,20 +14,63 @@ using namespace EncounterHelpers;
 namespace BlackTempleHelpers
 {
 
+namespace
+{
+
+Player* GetCachedPlayer(PlayerbotAI* botAI, char const* value)
+{
+    Unit* unit = botAI->GetUnit(botAI->GetAiObjectContext()->GetValue<ObjectGuid>(value)->Get());
+    Player* player = unit ? unit->ToPlayer() : nullptr;
+    return player && player->IsAlive() ? player : nullptr;
+}
+
+std::vector<Unit*> GetCachedUnits(PlayerbotAI* botAI, char const* value)
+{
+    std::vector<Unit*> units;
+    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>(value)->RefGet())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive())
+            units.push_back(unit);
+    }
+
+    return units;
+}
+
+}
+
 // Supremus
 
 std::unordered_map<uint32, uint32> supremusPhaseTimer;
 
-bool HasSupremusVolcanoNearby(Player* bot)
+GuidVector FindSupremusVolcanoGuids(Player* bot)
 {
-    constexpr float searchRadius = 20.0f;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), searchRadius);
+        creatureList, Id(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), SUPREMUS_VOLCANO_SEARCH_RADIUS);
 
+    GuidVector volcanoes;
     for (Creature* creature : creatureList)
     {
         if (creature && creature->IsAlive())
+            volcanoes.push_back(creature->GetGUID());
+    }
+
+    return volcanoes;
+}
+
+std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI)
+{
+    return GetCachedUnits(botAI, "supremus volcanoes");
+}
+
+bool HasSupremusVolcanoNearby(PlayerbotAI* botAI)
+{
+    constexpr float searchRadius = 20.0f;
+    Player* bot = botAI->GetBot();
+    for (Unit* volcano : GetSupremusVolcanoes(botAI))
+    {
+        if (bot->GetDistance(volcano) <= searchRadius)
             return true;
     }
 
@@ -113,11 +156,11 @@ std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
 // (1) First priority is an assistant Mage (real player or bot)
 // (2) If no assistant Mage, then look for any Mage bot
-Player* GetZerevorMageTank(Player* bot)
+ObjectGuid FindZerevorMageTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     Player* fallbackMage = nullptr;
 
@@ -131,13 +174,18 @@ Player* GetZerevorMageTank(Player* bot)
         }
 
         if (group->IsAssistant(member->GetGUID()))
-            return member;
+            return member->GetGUID();
 
         if (!fallbackMage && GET_PLAYERBOT_AI(member))
             fallbackMage = member;
     }
 
-    return fallbackMage;
+    return fallbackMage ? fallbackMage->GetGUID() : ObjectGuid::Empty;
+}
+
+Player* GetZerevorMageTank(PlayerbotAI* botAI)
+{
+    return GetCachedPlayer(botAI, "illidari council zerevor mage tank");
 }
 
 bool HasDangerousCouncilAura(Unit* unit)
@@ -266,11 +314,11 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
 
 // (1) First priority is an assistant Warlock (real player or bot)
 // (2) If no assistant Warlock, then look for any Warlock bot
-Player* GetIllidanWarlockTank(Player* bot)
+ObjectGuid FindIllidanWarlockTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     Player* fallbackWarlock = nullptr;
 
@@ -284,13 +332,18 @@ Player* GetIllidanWarlockTank(Player* bot)
         }
 
         if (group->IsAssistant(member->GetGUID()))
-            return member;
+            return member->GetGUID();
 
         if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
             fallbackWarlock = member;
     }
 
-    return fallbackWarlock;
+    return fallbackWarlock ? fallbackWarlock->GetGUID() : ObjectGuid::Empty;
+}
+
+Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
+{
+    return GetCachedPlayer(botAI, "illidan stormrage warlock tank");
 }
 
 bool HasParasiticShadowfiend(Player* player)
@@ -323,11 +376,11 @@ Player* GetIllidanTrapperHunter(Player* bot)
     return nullptr;
 }
 
-Player* GetBotWithParasiticShadowfiend(Player* bot)
+ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -335,11 +388,16 @@ Player* GetBotWithParasiticShadowfiend(Player* bot)
         if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
             HasParasiticShadowfiend(member))
         {
-            return member;
+            return member->GetGUID();
         }
     }
 
-    return nullptr;
+    return ObjectGuid::Empty;
+}
+
+Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI)
+{
+    return GetCachedPlayer(botAI, "illidan stormrage bot with parasitic shadowfiend");
 }
 
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)

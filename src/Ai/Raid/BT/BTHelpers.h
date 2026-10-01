@@ -147,8 +147,13 @@ inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
 // Supremus
 
+inline constexpr float SUPREMUS_VOLCANO_SEARCH_RADIUS = 40.0f;
+inline constexpr uint32 SUPREMUS_VOLCANO_CACHE_INTERVAL_MS = 200;
+
 extern std::unordered_map<uint32, uint32> supremusPhaseTimer;
-bool HasSupremusVolcanoNearby(Player* bot);
+GuidVector FindSupremusVolcanoGuids(Player* bot);
+std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
+bool HasSupremusVolcanoNearby(PlayerbotAI* botAI);
 
 // Shade of Akama
 
@@ -200,7 +205,10 @@ inline std::array const ZEREVOR_HEALER_POSITIONS = {
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
-Player* GetZerevorMageTank(Player* bot);
+inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
+
+ObjectGuid FindZerevorMageTankGuid(Player* bot);
+Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Unit* unit);
 
 // Illidan Stormrage <The Betrayer>
@@ -245,13 +253,19 @@ extern std::unordered_map<uint32, uint32> illidanBossDpsWaitTimer;
 extern std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
 extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
+
+inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
+inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
+
 int GetIllidanPhase(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
-Player* GetIllidanWarlockTank(Player* bot);
+ObjectGuid FindIllidanWarlockTankGuid(Player* bot);
+Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool HasParasiticShadowfiend(Player* player);
 Player* GetIllidanTrapperHunter(Player* bot);
-Player* GetBotWithParasiticShadowfiend(Player* bot);
+ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot);
+Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI);
 struct EyeBlastDangerArea
 {
     Position start;

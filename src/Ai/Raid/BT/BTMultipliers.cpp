@@ -325,7 +325,7 @@ float IllidariCouncilControlMovementMultiplier::GetValueInEncounter(Action* acti
         ((PlayerbotAI::IsTank(bot) &&
             (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
                 PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))) ||
-            (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot)))
+            (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot)))
     {
         return 0.0f;
     }
@@ -355,7 +355,7 @@ float IllidariCouncilDisableIceBlockMultiplier::GetValueInEncounter(Action* acti
         return 1.0f;
     }
 
-    if (GetZerevorMageTank(bot) != bot)
+    if (GetZerevorMageTank(botAI) != bot)
         return 1.0f;
 
     if (dynamic_cast<CastIceBlockAction*>(action))
@@ -405,7 +405,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if ((PlayerbotAI::IsTank(bot) &&
             (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
                 PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))) ||
-        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot))
+        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot))
     {
         return 1.0f;
     }
@@ -623,7 +623,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         }
     }
 
-    if (phase == 4 && GetIllidanWarlockTank(bot) != bot)
+    if (phase == 4 && GetIllidanWarlockTank(botAI) != bot)
     {
         constexpr uint32 demonPhaseDpsWaitMs = 8 * IN_MILLISECONDS;
         auto it = illidanBossDpsWaitTimer.find(instanceId);

@@ -149,7 +149,7 @@ bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
 
 bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "supremus") && HasSupremusVolcanoNearby(bot);
+    return AI_VALUE2(Unit*, "find target", "supremus") && HasSupremusVolcanoNearby(botAI);
 }
 
 bool SupremusShouldManagePhaseTimerTrigger::IsActiveInEncounter()
@@ -440,7 +440,7 @@ bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
         return false;
 
     return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
-        GetZerevorMageTank(bot) == bot;
+        GetZerevorMageTank(botAI) == bot;
 }
 
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActiveInEncounter()
@@ -482,7 +482,7 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
     bool const isTank = PlayerbotAI::IsTank(bot);
     if ((isTank && (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))) ||
-        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(bot) == bot))
+        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot))
     {
         return false;
     }
@@ -543,7 +543,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == 5 && FindNearestTrap(botAI))
         return false;
 
-    Player* infected = GetBotWithParasiticShadowfiend(bot);
+    Player* infected = GetBotWithParasiticShadowfiend(botAI);
     if (!infected)
         return false;
 
@@ -647,7 +647,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
 
     int const phase = GetIllidanPhase(illidan);
 
-    if (phase == 4 && GetIllidanWarlockTank(bot) == bot)
+    if (phase == 4 && GetIllidanWarlockTank(botAI) == bot)
         return false;
 
     return phase == 3 || phase == 4 || phase == 5;
@@ -671,7 +671,7 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != 4)
         return false;
 
-    return GetIllidanWarlockTank(bot) == bot;
+    return GetIllidanWarlockTank(botAI) == bot;
 }
 
 bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()

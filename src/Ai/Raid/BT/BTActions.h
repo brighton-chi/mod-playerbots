@@ -107,7 +107,6 @@ private:
         std::vector<Unit*> const& volcanos, float maxRadius, float hazardRadius);
     bool IsPathSafeFromVolcanos(Position const& start,
         Position const& end, std::vector<Unit*> const& volcanos, float hazardRadius);
-    std::vector<Unit*> GetAllSupremusVolcanos();
 };
 
 class SupremusManagePhaseTimerAction : public Action
