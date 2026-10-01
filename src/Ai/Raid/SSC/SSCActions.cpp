@@ -26,9 +26,6 @@ using namespace EncounterHelpers;
 
 bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 {
-    uint32 const instanceId = bot->GetInstanceId();
-    ObjectGuid const guid = bot->GetGUID();
-
     bool reset = false;
 
     Action* vashjSpreadAction = context->GetAction("lady vashj phase 1 spread ranged in arc");
@@ -47,6 +44,8 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return reset;
+
+    uint32 const instanceId = bot->GetInstanceId();
 
     reset |= vashjClusterHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
@@ -589,8 +588,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
     return MoveAway(leotherasHumanoid, LEOTHERAS_WHIRLWIND_SAFE_DISTANCE - currentDistance);
 }
 
-// This method is likely unnecessary unless the player does not use a Warlock tank.
-// But if a melee tank is used, other melee needs to run away after too many Chaos Blast stacks.
+// This method is unlikely to come into play if a Warlock tank is used.
 bool LeotherasTheBlindMeleeRunFromChaosBlastAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_ROGUE &&
@@ -808,7 +806,6 @@ bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
     if (!leotherasDemon)
         return false;
 
-    // If there is no Warlock tank, then misdirect to the main tank.
     Player* tank = GetLeotherasWarlockTank(bot);
     if (!tank)
         tank = GetGroupMainTank(bot);

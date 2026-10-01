@@ -141,7 +141,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     return MoveAway(volatileFiend, VOLATILE_FIEND_SAFE_DISTANCE - currentDistance);
 }
 
-// At low health, Infernal Defense is cast, granting immunity to all damage but holy
+// At low health, Infernal Defense is cast, granting immunity to all damage but holy.
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
