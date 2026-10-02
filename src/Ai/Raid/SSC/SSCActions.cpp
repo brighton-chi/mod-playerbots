@@ -146,7 +146,13 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
         HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
 
     if (!myPhase)
+    {
+        // Once the other tank starts walking him over, meet him short of the field's edge
+        if (GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::BeforePhaseChange)
+            return StepTo(GetHydrossHandoffPosition(_frostTank), hydross);
+
         return StepTo(myPosition, hydross);
+    }
 
     bool const markMaxed =
         _frostTank ? HasMarkOfHydrossAt100Percent(bot) : HasMarkOfCorruptionAt100Percent(bot);
@@ -413,12 +419,12 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 
     // Incremental movement does not work if the bot is in the water (there is no walkable height
     // and MoveTo returns false). Therefore, this block calls a MoveTo directly to the position.
-    /* if (!IsDryGround(bot, moveX, moveY))
+    if (!IsDryGround(bot, moveX, moveY))
     {
         return MoveTo(
             SSC_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-    } */
+    }
 
     return MoveTo(
         SSC_MAP_ID, moveX, moveY, lurker->GetPositionZ(), false, false, false, false,
@@ -505,7 +511,6 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
 
 // Leotheras the Blind
 
-// Warlock tank action: see GetLeotherasWarlockTank in SSCHelpers.cpp.
 bool LeotherasTheBlindWarlockTankAttackDemonFormAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
@@ -612,8 +617,6 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bears have trouble killing their Inner Demons when damage is nerfed with IP, so this rotation
-// tries to maximize single-target damage over 30s.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* innerDemon)
 {
     constexpr uint32 faerieFire = Id(SscSpells::SPELL_FAERIE_FIRE_FERAL);
@@ -658,9 +661,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleFeralTankStrategy(Unit* inn
 }
 
 // Hunters can have a bit of trouble since they need to take down their Inner Demons in melee.
-// This action ensures they have Hawk up and use Explosive Trap, which is the main source of
-// damage against the Inner Demon in melee. Immolation Trap is used if Readiness is cast so the
-// trap cooldown resets (since a second Explosive Trap will not stack its DoT).
+// Traps are their main source of damage in this situation.
 bool LeotherasTheBlindDestroyInnerDemonAction::HandleHunterStrategy(Unit* innerDemon)
 {
     if (!botAI->HasAura("aspect of the dragonhawk", bot) &&
@@ -762,7 +763,6 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
     }
 }
 
-// Everybody except the Warlock tank should focus on Leotheras in Phase 3.
 bool LeotherasTheBlindFinalPhaseAttackBossAction::Execute(Event /*event*/)
 {
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);

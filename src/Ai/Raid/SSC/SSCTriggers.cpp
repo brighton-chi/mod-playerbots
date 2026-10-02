@@ -72,10 +72,12 @@ bool HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger::IsActiveInEncounte
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!IsHydrossInFrostPhase(AI_VALUE2(Unit*, "find target", "hydross the unstable")))
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross || !IsHydrossInFrostPhase(hydross))
         return false;
 
-    return GetNearestPlayerInRadius(bot, HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer && !PlayerbotAI::IsTank(nearestPlayer);
 }
 
 bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounter()
@@ -96,9 +98,11 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsDps(bot))
         return false;
 
-    HydrossDpsHoldWindow const window =
-        GetHydrossDpsHoldWindow(AI_VALUE2(Unit*, "find target", "hydross the unstable"));
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
 
+    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
     // Hunters keep going after the change to misdirect Hydross to the new tank.
     return window == HydrossDpsHoldWindow::BeforePhaseChange ||
         (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);

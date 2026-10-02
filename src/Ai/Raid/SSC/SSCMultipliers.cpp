@@ -11,6 +11,7 @@
 #include "DruidCatActions.h"
 #include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
+#include "FishingAction.h"
 #include "FollowActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
@@ -73,7 +74,7 @@ bool IsDpsHoldCandidate(Player* bot, Action* action)
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return false;
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
         return false;
 
     // AttackAction for healers is used only to keep them in their combat engines. Their damage,
@@ -219,15 +220,28 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float SscNoFishingDuringEncounterMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_COMBAT)
+        return 1.0f;
+
+    return dynamic_cast<MoveNearWaterAction*>(action) || dynamic_cast<FishingAction*>(action) ?
+        0.0f : 1.0f;
+}
+
 // Hydross the Unstable <Duke of Currents>
 
+// The off-phase tank stays where its positioning action puts it. Every other move is held,
+// attacks included (AttackAction is a MovementAction), so nothing walks it off its spot.
 float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<ReachTargetAction*>(action) && !IsTauntAction(bot, action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+    if (dynamic_cast<HydrossTheUnstablePositionAndSwapTanksAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) && !IsTauntAction(bot, action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
@@ -350,6 +364,21 @@ float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Ac
     auto const& assignments = instanceIt->second;
     return std::find(assignments.begin(), assignments.end(), target->GetGUID()) !=
         assignments.end() ? 0.0f : 1.0f;
+}
+
+// Killing Spree puts bots right at the center of Lurker, and then they don't move back.
+float TheLurkerBelowDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_ROGUE)
+        return 1.0f;
+
+    if (!dynamic_cast<CastKillingSpreeAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
 
 // Leotheras the Blind

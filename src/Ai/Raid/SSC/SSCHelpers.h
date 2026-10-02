@@ -200,10 +200,17 @@ enum class HydrossDpsHoldWindow : uint8
 };
 
 // Ranged spread this far apart in frost phase, to mitigate Water Tomb.
-inline constexpr float HYDROSS_FROST_RANGED_SPREAD_DISTANCE = 6.0f;
+inline constexpr float HYDROSS_FROST_RANGED_SPREAD_DISTANCE = 5.0f;
+// Cleansing Field (37935) is a 20 yd area aura from the field helper (21934), checked every
+// 0.5 s with both combat reaches added (3 for the helper, 5 for Hydross): he flips crossing
+// 28 yd from the helper, centre to centre.
+inline constexpr float HYDROSS_CLEANSING_FIELD_RADIUS = 28.0f;
+// The incoming tank waits this far short of the field's edge, on its own side.
+inline constexpr float HYDROSS_HANDOFF_SHORT_DISTANCE = 8.0f;
 
-inline Position const HYDROSS_FROST_TANK_POSITION =  { -236.669f, -358.352f, -0.828f };
-inline Position const HYDROSS_NATURE_TANK_POSITION = { -225.471f, -327.790f, -3.682f };
+inline Position const HYDROSS_FROST_TANK_POSITION =  { -235.653f, -354.823f, -0.828f };
+inline Position const HYDROSS_NATURE_TANK_POSITION = { -224.721f, -324.755f, -3.682f };
+inline Position const HYDROSS_CLEANSING_FIELD_CENTER = { -239.715f, -366.440f, -0.745f };
 
 extern std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
 extern std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
@@ -219,6 +226,10 @@ bool IsHydrossAddTank(Player* bot);
 bool IsHydrossInFrostPhase(Unit* hydross);
 bool IsHydrossInNaturePhase(Unit* hydross);
 HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross);
+// Where the incoming tank meets Hydross at a handoff: on the line between the two tank
+// positions, HYDROSS_HANDOFF_SHORT_DISTANCE short of the field's edge on its own side. Its
+// own position if the line doesn't cross the edge between them.
+Position GetHydrossHandoffPosition(bool frostTank);
 bool HasMarkOfHydrossAt100Percent(Player* player);
 bool HasNoMarkOfHydross(Player* bot);
 bool HasMarkOfCorruptionAt100Percent(Player* player);

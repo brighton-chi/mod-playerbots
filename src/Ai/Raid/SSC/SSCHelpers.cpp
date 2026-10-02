@@ -375,6 +375,42 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
     return HydrossDpsHoldWindow::None;
 }
 
+Position GetHydrossHandoffPosition(bool frostTank)
+{
+    Position const& own = frostTank ? HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
+    Position const& other =
+        frostTank ? HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
+
+    float const dx = other.GetPositionX() - own.GetPositionX();
+    float const dy = other.GetPositionY() - own.GetPositionY();
+    float const length = std::sqrt(dx * dx + dy * dy);
+    if (length <= 0.0f)
+        return own;
+
+    // Solve |own - center + t * dir| = radius for t, the distance along the line from own
+    float const dirX = dx / length;
+    float const dirY = dy / length;
+    float const offX = own.GetPositionX() - HYDROSS_CLEANSING_FIELD_CENTER.GetPositionX();
+    float const offY = own.GetPositionY() - HYDROSS_CLEANSING_FIELD_CENTER.GetPositionY();
+    float const b = offX * dirX + offY * dirY;
+    float const c = offX * offX + offY * offY -
+        HYDROSS_CLEANSING_FIELD_RADIUS * HYDROSS_CLEANSING_FIELD_RADIUS;
+    float const discriminant = b * b - c;
+    if (discriminant < 0.0f)
+        return own;
+
+    // From inside the field the line leaves it at the far root; from outside it enters at the
+    // near one
+    float const root = std::sqrt(discriminant);
+    float const toEdge = c < 0.0f ? -b + root : -b - root;
+    float const distance = toEdge - HYDROSS_HANDOFF_SHORT_DISTANCE;
+    if (distance <= 0.0f || toEdge > length)
+        return own;
+
+    return Position(own.GetPositionX() + dirX * distance, own.GetPositionY() + dirY * distance,
+        own.GetPositionZ());
+}
+
 bool HasMarkOfHydrossAt100Percent(Player* player)
 {
     if (!player)

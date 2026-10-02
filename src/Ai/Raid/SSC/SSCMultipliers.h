@@ -61,6 +61,16 @@ public:
     float GetValue(Action* action) override;
 };
 
+class SscNoFishingDuringEncounterMultiplier : public SscEncounterMultiplier
+{
+public:
+    SscNoFishingDuringEncounterMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "ssc no fishing during encounter") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Hydross the Unstable <Duke of Currents>
 
 class HydrossTheUnstableDisableOffPhaseTankActionsMultiplier : public SscEncounterMultiplier
@@ -120,6 +130,16 @@ class TheLurkerBelowTanksFocusAssignedGuardianMultiplier : public SscEncounterMu
 public:
     TheLurkerBelowTanksFocusAssignedGuardianMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(botAI, "the lurker below tanks focus assigned guardian") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class TheLurkerBelowDisableKillingSpreeMultiplier : public SscEncounterMultiplier
+{
+public:
+    TheLurkerBelowDisableKillingSpreeMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "the lurker below disable killing spree") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

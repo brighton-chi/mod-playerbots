@@ -224,6 +224,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Shared Bosses
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new SscDelayDpsCooldownsMultiplier(botAI));
+    multipliers.push_back(new SscNoFishingDuringEncounterMultiplier(botAI));
 
     // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(botAI));
@@ -234,6 +235,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowMaintainRangedSpreadMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowTanksFocusAssignedGuardianMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowDisableKillingSpreeMultiplier(botAI));
 
     // Leotheras the Blind
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
