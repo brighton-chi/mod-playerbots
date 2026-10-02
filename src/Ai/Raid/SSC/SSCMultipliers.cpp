@@ -302,7 +302,10 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
 
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action) &&
+    bool const castTotem =
+        bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action);
+
+    if (!castTotem && !dynamic_cast<MovementAction*>(action) &&
         !IsMeleeReachSpell(bot, action) && !IsRepositionAction(bot, action))
     {
         return 1.0f;
@@ -342,7 +345,6 @@ float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Ac
         return 1.0f;
 
     if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
         return 1.0f;
