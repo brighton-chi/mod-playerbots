@@ -104,6 +104,25 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
         (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
 }
 
+// Nothing else drops Hydross for a tank other than the phase tank: one sent in on the pull
+// (attack my target), or the old phase tank walking back to its spot after a swap.
+bool HydrossTheUnstableNonPhaseTankAttackingTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    bool const phaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossFrostTank(bot) : IsHydrossNatureTank(bot);
+    if (phaseTank)
+        return false;
+
+    return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
+}
+
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&

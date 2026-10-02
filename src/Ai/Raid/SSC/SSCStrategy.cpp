@@ -40,7 +40,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hydross the unstable misdirect to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change",
-        { NextAction("hydross the unstable stop dps upon phase change", ACTION_RAID + 2) }));
+        { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("hydross the unstable non-phase tank attacking",
+        { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers",
         { NextAction("hydross the unstable manage phase timers", ACTION_EMERGENCY + 10) }));

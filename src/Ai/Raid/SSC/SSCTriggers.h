@@ -128,6 +128,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class HydrossTheUnstableNonPhaseTankAttackingTrigger : public SscEncounterTrigger
+{
+public:
+    HydrossTheUnstableNonPhaseTankAttackingTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable non-phase tank attacking") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class HydrossTheUnstableShouldManagePhaseTimersTrigger : public SscEncounterTrigger
 {
 public:

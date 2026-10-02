@@ -39,8 +39,8 @@ public:
         creators["hydross the unstable misdirect to tank"] =
             &RaidSscActionContext::hydross_the_unstable_misdirect_to_tank;
 
-        creators["hydross the unstable stop dps upon phase change"] =
-            &RaidSscActionContext::hydross_the_unstable_stop_dps_upon_phase_change;
+        creators["hydross the unstable stop attacking upon phase change"] =
+            &RaidSscActionContext::hydross_the_unstable_stop_attacking_upon_phase_change;
 
         creators["hydross the unstable manage phase timers"] =
             &RaidSscActionContext::hydross_the_unstable_manage_phase_timers;
@@ -241,9 +241,9 @@ private:
     static Action* hydross_the_unstable_misdirect_to_tank(PlayerbotAI* botAI) {
         return new HydrossTheUnstableMisdirectToTankAction(botAI);
     }
-    static Action* hydross_the_unstable_stop_dps_upon_phase_change(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_stop_attacking_upon_phase_change(PlayerbotAI* botAI) {
         return new SscStopAttackingAction(
-            botAI, "hydross the unstable stop dps upon phase change");
+            botAI, "hydross the unstable stop attacking upon phase change");
     }
     static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI) {
         return new HydrossTheUnstableManagePhaseTimersAction(botAI);

@@ -42,6 +42,9 @@ public:
         creators["hydross the unstable aggro resets upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
 
+        creators["hydross the unstable non-phase tank attacking"] =
+            &RaidSscTriggerContext::hydross_the_unstable_non_phase_tank_attacking;
+
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
 
@@ -239,6 +242,9 @@ private:
     }
     static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI) {
         return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
+    }
+    static Trigger* hydross_the_unstable_non_phase_tank_attacking(PlayerbotAI* botAI) {
+        return new HydrossTheUnstableNonPhaseTankAttackingTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI) {
         return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
