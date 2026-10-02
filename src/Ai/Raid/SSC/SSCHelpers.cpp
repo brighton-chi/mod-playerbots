@@ -45,6 +45,20 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, std::s
 
 // General
 
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
+{
+    if (!target || !tank)
+        return false;
+
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
+
+    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
+        return false;
+
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+}
+
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ)
 {
@@ -2350,11 +2364,20 @@ bool CastTankTaunt(PlayerbotAI* botAI, Unit* target)
     char const* taunt = nullptr;
     switch (botAI->GetBot()->getClass())
     {
-        case CLASS_DEATH_KNIGHT: taunt = "dark command"; break;
-        case CLASS_DRUID:        taunt = "growl"; break;
-        case CLASS_PALADIN:      taunt = "hand of reckoning"; break;
-        case CLASS_WARRIOR:      taunt = "taunt"; break;
-        default:                 return false;
+        case CLASS_DEATH_KNIGHT:
+            taunt = "dark command";
+            break;
+        case CLASS_DRUID:
+            taunt = "growl";
+            break;
+        case CLASS_PALADIN:
+            taunt = "hand of reckoning";
+            break;
+        case CLASS_WARRIOR:
+            taunt = "taunt";
+            break;
+        default:
+            return false;
     }
 
     return botAI->CanCastSpell(taunt, target) && botAI->CastSpell(taunt, target);

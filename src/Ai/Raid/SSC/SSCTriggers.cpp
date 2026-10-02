@@ -114,20 +114,29 @@ bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
 
 bool TheLurkerBelowSpoutIsActiveTrigger::IsActiveInEncounter()
 {
-    return IsLurkerSpouting(AI_VALUE2(Unit*, "find target", "the lurker below"));
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    return lurker && IsLurkerSpouting(lurker);
 }
 
 bool TheLurkerBelowShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) &&
-        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below")) &&
-        PlayerbotAI::IsMainTank(bot);
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker || !IsLurkerSurfacedAndCalm(lurker))
+        return false;
+
+    return PlayerbotAI::IsMainTank(bot);
 }
 
 bool TheLurkerBelowRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) &&
-        IsLurkerSurfacedAndCalm(AI_VALUE2(Unit*, "find target", "the lurker below"));
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    return lurker && IsLurkerSurfacedAndCalm(lurker);
 }
 
 bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
@@ -142,9 +151,8 @@ bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
     return GetLurkerGuardianTankIndex(botAI) >= 0;
 }
 
-// Bots are unable to move across the water via ReachMeleeAction. Only bots with charge moves can
-// cross onto the islets to attack Ambushers during the submerge phase. They are then stuck there
-// until their charge comes off of cooldown. To resolve, issue a direct move to a land position.
+// Bots are unable to move across the water via ReachMeleeAction and thus cannot attack Ambushers
+// or return afterward (absent a charge spell). To resolve, issue a direct move to a land position.
 bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -238,7 +246,6 @@ bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()
     if (!leotherasDemon || leotherasDemon->GetVictim() == bot)
         return false;
 
-    // A rogue can Cloak off the stacks wherever it stands.
     if (bot->getClass() == CLASS_ROGUE &&
         !bot->HasSpellCooldown(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS)))
     {
@@ -292,7 +299,6 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     if (HasInnerDemon(bot))
         return false;
 
-    // Misdirection is ready, or it is up and waiting for the Steady Shot that spends it.
     if (!bot->HasAura(Id(SscSpells::SPELL_MISDIRECTION)) &&
         bot->HasSpellCooldown(Id(SscSpells::SPELL_MISDIRECTION_CAST)))
     {
@@ -361,7 +367,6 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    // Stamped once, at engage
     if (karathressDpsWaitTimer.find(bot->GetInstanceId()) != karathressDpsWaitTimer.end())
         return false;
 
@@ -395,7 +400,7 @@ bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
     // pets (a flat shove topping out under half a yard), is left to run its course.
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
-    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
+    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CARIBDIS_CYCLONE_DROP_HEIGHT)
         return false;
 
     return AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
@@ -422,7 +427,7 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
         TIDEWALKER_RANGED_STACK_RADIUS;
 }
 
-// Phase 1 only. To keep bots from chasing murlocs across the room, which is particularly prone to
+// This is to keep bots from chasing murlocs across the room, which is particularly prone to
 // happening with bots that leave Watery Graves right as murlocs spawn.
 bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 {
@@ -454,7 +459,6 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot) || HasVashjStaticCharge(bot))
         return false;
 
-    // Once at its slot, the bot is never pulled back to it in phase 1
     Action* spreadAction = context->GetAction("lady vashj phase 1 spread ranged in arc");
     if (!spreadAction || static_cast<LadyVashjPhase1SpreadRangedInArcAction*>(
             spreadAction)->HasReachedRangedPosition())
@@ -568,8 +572,7 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
 
     Unit* elite = AI_VALUE(Unit*, "current target");
     if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) ||
-        elite->GetVictim() != bot ||
-        elite->GetExactDist2d(GetVashjEliteTankPosition(*elite)) <=
+        elite->GetVictim() != bot || elite->GetExactDist2d(GetVashjEliteTankPosition(*elite)) <=
             VASHJ_ADD_TANK_ARRIVAL_DISTANCE)
     {
         return false;

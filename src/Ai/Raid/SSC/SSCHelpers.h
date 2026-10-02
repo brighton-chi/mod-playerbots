@@ -148,6 +148,7 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 // A step out of a circular hazard.
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
@@ -164,7 +165,6 @@ bool GetPathStepTowardUnit(
 // The bot's angle on an arc arcSpan wide around arcCenter, with the group's ranged bots in the
 // instance spaced evenly along it in group order. False if there are none.
 bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle);
-// Every other living group member in the instance.
 std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
 // Trash
@@ -187,6 +187,16 @@ bool IsSkullOnWaterElementalTotem(PlayerbotAI* botAI);
 
 // Hydross the Unstable <Duke of Currents>
 
+// Phase changes reset threat, so DPS is held on either side of one.
+enum class HydrossDpsHoldWindow : uint8
+{
+    None,
+    // From 1s after the phase's Mark hits 100% until the phase changes
+    BeforePhaseChange,
+    // The first 5s of a phase
+    AfterPhaseChange,
+};
+
 // Ranged spread this far apart in frost phase, to mitigate Water Tomb.
 inline constexpr float HYDROSS_FROST_RANGED_SPREAD_DISTANCE = 6.0f;
 
@@ -197,16 +207,6 @@ extern std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
 extern std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
 extern std::unordered_map<uint32, uint32> hydrossNatureMarkMaxedTime;
 extern std::unordered_map<uint32, uint32> hydrossFrostMarkMaxedTime;
-
-// Phase changes reset threat, so DPS is held on either side of one.
-enum class HydrossDpsHoldWindow : uint8
-{
-    None,
-    // From 1s after the phase's Mark hits 100% until the phase changes
-    BeforePhaseChange,
-    // The first 5s of a phase
-    AfterPhaseChange,
-};
 
 // The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
 // tank is an add tank and picks up the Elementals that spawn upon phase changes.
@@ -332,6 +332,32 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
 
 // Fathom-Lord Karathress
 
+struct KarathressCouncilAssignment
+{
+    char const* name;
+    int8 assistTankIndex; // -1 for the main tank
+};
+
+inline constexpr std::array KARATHRESS_COUNCIL = {
+    KarathressCouncilAssignment{ "fathom-lord karathress", -1 },
+    KarathressCouncilAssignment{ "fathom-guard caribdis", 0 },
+    KarathressCouncilAssignment{ "fathom-guard sharkkis", 1 },
+    KarathressCouncilAssignment{ "fathom-guard tidalvess", 2 },
+};
+
+// Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
+// ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
+inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
+// The widest tank AoE is Death and Decay at 10 yd.
+inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
+inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
+
+inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
+// Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
+// Caribdis, which is the point, as ranged needs to maintain their spread due to Cyclones.
+inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
+inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
+
 // The healer keeps to Caribdis herself, so she is covered wherever any tank puts her, and her
 // victim is not used as the anchor because it jumps into the room whenever the tank loses her.
 // The tank stands on her, so 32 yd from her is about 35 yd from the tank against a 40 yd heal.
@@ -346,39 +372,15 @@ inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // within 4 yd of itself, so spread keeps its arrival to the one bot it was summoned on
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
 inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 4.0f;
-// Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
-// ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
-inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
-// The widest tank AoE is Death and Decay at 10 yd.
-inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
 // One toss leaves a bot about 1.5 yd up; navmesh Z sits well under 1 yd off the floor
-inline constexpr float CYCLONE_DROP_HEIGHT = 1.0f;
-inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
-// Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
-// Caribdis, which is the point, as ranged needs to maintain their spread due to Cyclones.
-inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
-inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
-inline constexpr uint32 KARATHRESS_DPS_WAIT_MS = 12 * IN_MILLISECONDS;
+inline constexpr float CARIBDIS_CYCLONE_DROP_HEIGHT = 1.0f;
 
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
-inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
-inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
 inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
+inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
+inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
 
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
-
-struct KarathressCouncilAssignment
-{
-    char const* name;
-    int8 assistTankIndex; // -1 for the main tank
-};
-
-inline constexpr std::array KARATHRESS_COUNCIL = {
-    KarathressCouncilAssignment{ "fathom-lord karathress", -1 },
-    KarathressCouncilAssignment{ "fathom-guard caribdis", 0 },
-    KarathressCouncilAssignment{ "fathom-guard sharkkis", 1 },
-    KarathressCouncilAssignment{ "fathom-guard tidalvess", 2 },
-};
 
 ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
@@ -413,8 +415,6 @@ inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, 
 Position GetTidewalkerStackPoint(Unit const& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
-
-inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
 // The dais is a regular dodecagon on the platform center, corners every 30 degrees from due
 // north. This is the distance from the center to the middle of each edge.
@@ -591,6 +591,7 @@ using VashjClusterHolders =
 // Panic (38258) fears every player within this of a Strider, centre to centre: an area spell
 // round an NPC caster adds neither reach.
 inline constexpr float VASHJ_STRIDER_PANIC_RADIUS = 11.0f;
+inline Position const VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 // Where Striders are tanked in phase 2, one in each gap between two clusters: 16y+ from every
 // cluster slot and healer post (Panic fears within 11y), 18y+ from the generators and 30y+ from
 // the centre. A Strider's combat reach is 9, so a 30y spell reaches it from about 40y; with the

@@ -436,11 +436,13 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     switch (bot->getClass())
     {
         case CLASS_DRUID:
+        {
             if (dynamic_cast<CastTreeFormAction*>(action))
                 return 0.0f;
             break;
-
+        }
         case CLASS_HUNTER:
+        {
             if (dynamic_cast<CastDeterrenceAction*>(action) ||
                 dynamic_cast<CastFeignDeathAction*>(action) ||
                 dynamic_cast<CastWingClipAction*>(action) ||
@@ -457,36 +459,42 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
                 return 0.0f;
             }
             break;
-
+        }
         case CLASS_MAGE:
+        {
             if (dynamic_cast<CastIceBlockAction*>(action) ||
                 dynamic_cast<CastInvisibilityAction*>(action))
             {
                 return 0.0f;
             }
             break;
-
+        }
         case CLASS_PALADIN:
+        {
             if (dynamic_cast<CastDivineShieldAction*>(action))
                 return 0.0f;
             break;
-
+        }
         case CLASS_PRIEST:
+        {
             if (dynamic_cast<CastFadeAction*>(action))
                 return 0.0f;
             break;
-
+        }
         case CLASS_ROGUE:
+        {
             if (dynamic_cast<CastFeintAction*>(action) || dynamic_cast<CastVanishAction*>(action))
                 return 0.0f;
             break;
-
+        }
         case CLASS_WARLOCK:
+        {
             if (dynamic_cast<CastCurseOfDoomAction*>(action))
                 return 0.0f;
             break;
-
+        }
         case CLASS_WARRIOR:
+        {
             if (dynamic_cast<CastThunderClapAction*>(action) ||
                 dynamic_cast<CastCleaveAction*>(action) ||
                 dynamic_cast<CastChallengingShoutAction*>(action) ||
@@ -501,7 +509,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
                 return 0.0f;
             }
             break;
-
+        }
         default:
             break;
     }
@@ -698,7 +706,7 @@ float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Ac
 
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
-    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CYCLONE_DROP_HEIGHT ?
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CARIBDIS_CYCLONE_DROP_HEIGHT ?
         0.0f : 1.0f;
 }
 

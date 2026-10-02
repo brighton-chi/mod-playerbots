@@ -101,26 +101,6 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 
 // Shared Bosses
 
-namespace
-{
-
-// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
-bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
-{
-    if (!target || !tank)
-        return false;
-
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
-
-    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
-        return false;
-
-    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
-}
-
-} // end anonymous namespace (misdirect)
-
 bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
@@ -710,6 +690,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
     switch (bot->getClass())
     {
         case CLASS_DRUID:
+        {
             if (bot->HasAura(Id(SscSpells::SPELL_TREE_OF_LIFE)))
             {
                 bot->RemoveOwnedAura(
@@ -721,8 +702,9 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 
             return botAI->CanCastSpell("wrath", innerDemon) &&
                 botAI->CastSpell("wrath", innerDemon);
-
+        }
         case CLASS_PALADIN:
+        {
             if (botAI->CanCastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot) &&
                 botAI->CastSpell(Id(SscSpells::SPELL_AVENGING_WRATH), bot))
             {
@@ -752,12 +734,14 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 
             return botAI->CanCastSpell("judgement of light", innerDemon) &&
                 botAI->CastSpell("judgement of light", innerDemon);
-
+        }
         case CLASS_PRIEST:
+        {
             return botAI->CanCastSpell("smite", innerDemon) &&
                 botAI->CastSpell("smite", innerDemon);
-
+        }
         case CLASS_SHAMAN:
+        {
             if (botAI->CanCastSpell("earth shock", innerDemon) &&
                 botAI->CastSpell("earth shock", innerDemon))
             {
@@ -772,7 +756,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 
             return botAI->CanCastSpell("lightning bolt", innerDemon) &&
                 botAI->CastSpell("lightning bolt", innerDemon);
-
+        }
         default:
             return false;
     }
@@ -1154,7 +1138,7 @@ bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
     float const y = bot->GetPositionY();
     float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
 
-    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CYCLONE_DROP_HEIGHT)
+    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CARIBDIS_CYCLONE_DROP_HEIGHT)
         return false;
 
     if (!bot->movespline->Finalized())
@@ -1617,9 +1601,10 @@ bool IsVashjTargetAllowed(
     switch (tier.target)
     {
         case VashjTarget::EnchantedElemental:
+        {
             return unit->GetEntry() == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) &&
                 facts.vashj->GetExactDist2d(unit) <= tier.maxDistanceFromVashj;
-
+        }
         case VashjTarget::CoilfangStrider:
         case VashjTarget::CoilfangElite:
         {
@@ -1639,7 +1624,6 @@ bool IsVashjTargetAllowed(
             return owner ? owner == bot :
                 IsNearestFreeVashjTank(bot, unit, facts.vashj, facts.phase);
         }
-
         case VashjTarget::ToxicSporebat:
         {
             // Chasing a bat any higher, or off the dais, walks bots up into the air
@@ -1650,7 +1634,6 @@ bool IsVashjTargetAllowed(
                     unit->GetPositionX(), unit->GetPositionY(), 0.0f,
                     VASHJ_STANDING_ROCK_CLEARANCE);
         }
-
         default:
             return false;
     }
@@ -2706,7 +2689,6 @@ bool LadyVashjPaladinUseHandOfFreedomAction::Execute(Event /*event*/)
         botAI->CastSpell("hand of freedom", target);
 }
 
-// Cloak of Shadows strips Static Charge (the 35729 handler in SpellEffects.cpp)
 bool LadyVashjRogueUseCloakOfShadowsAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell(Id(SscSpells::SPELL_CLOAK_OF_SHADOWS), bot) &&
