@@ -62,12 +62,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class SunwellDelayDpsCooldownsMultiplier : public Multiplier
+class SunwellDelayDpsCooldownsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     SunwellDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "sunwell delay dps cooldowns") {}
-    float GetValue(Action* action) override;
+        : SunwellEncounterMultiplier(botAI, "sunwell delay dps cooldowns") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+
+private:
+    uint32 _tempLogMs = 0; // TEMP LOG
 };
 
 // Kalecgos
@@ -302,12 +307,14 @@ protected:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenSingleTargetHandsMultiplier : public Multiplier
+class KiljaedenSingleTargetHandsMultiplier : public SunwellEncounterMultiplier
 {
 public:
     KiljaedenSingleTargetHandsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "kil'jaeden single target hands") {}
-    float GetValue(Action* action) override;
+        : SunwellEncounterMultiplier(botAI, "kil'jaeden single target hands") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 class KiljaedenControlMovementAndTargetingMultiplier : public SunwellEncounterMultiplier

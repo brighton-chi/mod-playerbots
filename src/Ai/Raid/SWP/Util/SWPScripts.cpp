@@ -195,15 +195,17 @@ public:
         switch (spellInfo->Id)
         {
             case Id(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
+            {
                 if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralBlastTarget(player, botAI);
                 break;
-
+            }
             case Id(SwpSpells::SPELL_TELEPORT_SPECTRAL):
+            {
                 if (FindFirstSunwellCombatBotInGroup(player))
                     RecordSpectralRealmEnter(player);
                 break;
-
+            }
             default:
                 break;
         }
@@ -279,13 +281,14 @@ public:
         switch (spellInfo->Id)
         {
             case Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR):
+            {
                 if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
                     botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
                 {
                     botAI->RequestSpellInterrupt();
                 }
                 break;
-
+            }
             default:
                 break;
         }
@@ -378,14 +381,16 @@ public:
         switch (creature->GetEntry())
         {
             case Id(SwpNpcs::NPC_FELMYST):
+            {
                 RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
                 RequestInterruptForBotsWithFelmystEncapsulate(creature);
                 break;
-
+            }
             case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+            {
                 RequestInterruptForEredarTwinsAlythessTargets(creature);
                 break;
-
+            }
             default:
                 break;
         }

@@ -65,9 +65,6 @@ bool KiljaedenMarkHandOfTheDeceiverAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    // The standard FindTargetValue doesn't work here because zone combat isn't set when the Hands
-    // are pulled so individual bots need to take action to get the Hands on their threat lists
-    // for FindTargetValue. This is particularly problematic if the MechanicTracker is a healer.
     std::vector<Unit*> const hands = GetKiljaedenHands(botAI);
     if (hands.empty())
         return false;
@@ -148,29 +145,29 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     switch (bot->getClass())
     {
         case CLASS_DRUID:
+        {
             return (botAI->HasStrategy("bear", BOT_STATE_COMBAT) && castSpell("bash")) ||
                 (botAI->HasStrategy("cat", BOT_STATE_COMBAT) &&
                  bot->GetComboPoints() >= 4 && castSpell("maim"));
-
+        }
         case CLASS_MAGE:
             return castSpell("deep freeze");
-
         case CLASS_PALADIN:
             return castSpell("hammer of justice");
-
         case CLASS_ROGUE:
             return bot->GetComboPoints() >= 4 && castSpell("kidney shot");
-
         case CLASS_WARLOCK:
             return castSpell("shadowfury");
-
         case CLASS_WARRIOR:
+        {
             return castSpell("concussion blow") ||
                 castSelfAoe("shockwave", SHOCKWAVE_RADIUS);
-
+        }
         default:
+        {
             return bot->getRace() == RACE_TAUREN &&
                 castSelfAoe("war stomp", SELF_AOE_RACIAL_RADIUS);
+        }
     }
 }
 
@@ -185,17 +182,15 @@ bool KiljaedenControlHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
     {
         case CLASS_HUNTER:
             return castSpell("silencing shot");
-
         case CLASS_PRIEST:
             return castSpell("silence");
-
         case CLASS_DEATH_KNIGHT:
             return castSpell("strangulate");
-
         default:
+        {
             return bot->getRace() == RACE_BLOODELF &&
-                bot->GetExactDist(hand) < SELF_AOE_RACIAL_RADIUS &&
-                castSpell("arcane torrent");
+                bot->GetExactDist(hand) < SELF_AOE_RACIAL_RADIUS && castSpell("arcane torrent");
+        }
     }
 }
 
@@ -244,21 +239,25 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
+        {
             return castSpell("death and decay", RANGED_ABILITY_REACH) ||
                 castSpell("icy touch", ICY_TOUCH_REACH);
-
+        }
         case CLASS_DRUID:
+        {
             return castSpell("feral charge - bear", CHARGE_REACH) ||
                 castSpell("challenging roar", TAUNT_SHOUT_RADIUS);
-
+        }
         case CLASS_PALADIN:
+        {
             return castSpell("avenger's shield", RANGED_ABILITY_REACH) ||
                 castSpell("consecration", CONSECRATION_RADIUS);
-
+        }
         case CLASS_WARRIOR:
+        {
             return castSpell("charge", CHARGE_REACH) ||
                 castSpell("challenging shout", TAUNT_SHOUT_RADIUS);
-
+        }
         default:
             return false;
     }

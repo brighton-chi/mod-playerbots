@@ -258,25 +258,26 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget, boo
             // Melee will stay on M'uru as long as Darkness is not acive.
             // Shadow Priests stay on M'uru through all of phase 1.
             case Id(SwpNpcs::NPC_MURU):
+            {
                 if (!isMuruPhase)
                     return false;
                 return isOtherRanged || isShadowPriest || !darknessActive;
-
+            }
             case Id(SwpNpcs::NPC_ENTROPIUS):
                 return true;
-
             case Id(SwpNpcs::NPC_VOID_SENTINEL):
+            {
                 if (isShadowPriest)
                     return !isMuruPhase && isVoidSentinelAllowed;
                 if (isOtherRanged)
                     return isVoidSentinelAllowed;
                 return false;
-
+            }
             case Id(SwpNpcs::NPC_VOID_SPAWN):
                 return isOtherRanged;
-
             case Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
             case Id(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
+            {
                 if (isMelee && IsMuruAddInVoidSentinelPulse(unit, targets.voidSentinels))
                     return false;
                 if (isShadowPriest)
@@ -284,7 +285,7 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget, boo
                 if (isOtherRanged)
                     return true;
                 return darknessActive || !isMuruPhase;
-
+            }
             default:
                 return false;
         }
@@ -574,19 +575,14 @@ bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)
     {
         case CLASS_DRUID:
             return castStun("bash") || castStun("maim");
-
         case CLASS_PALADIN:
             return castStun("hammer of justice");
-
         case CLASS_ROGUE:
             return castStun("kidney shot");
-
         case CLASS_WARLOCK:
             return castStun("shadowfury");
-
         case CLASS_WARRIOR:
             return castStun("concussion blow") || castStun("shockwave");
-
         default:
             return bot->getRace() == RACE_TAUREN && castStun("war stomp");
     }
@@ -607,31 +603,22 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     {
         case CLASS_DEATH_KNIGHT:
             return castInterrupt("mind freeze") || castInterrupt("strangulate");
-
         case CLASS_HUNTER:
             return castInterrupt("silencing shot");
-
         case CLASS_MAGE:
             return castInterrupt("counterspell");
-
         case CLASS_PALADIN:
             return castInterrupt("avenger's shield");
-
         case CLASS_PRIEST:
             return castInterrupt("silence");
-
         case CLASS_ROGUE:
             return castInterrupt("kick");
-
         case CLASS_SHAMAN:
             return castInterrupt("wind shear");
-
         case CLASS_WARLOCK:
             return castInterrupt("spell lock");
-
         case CLASS_WARRIOR:
             return castInterrupt("pummel") || castInterrupt("shield bash");
-
         default:
             return false;
     }

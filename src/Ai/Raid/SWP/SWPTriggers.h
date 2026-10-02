@@ -591,26 +591,24 @@ protected:
 
 // Kil'jaeden <The Deceiver>
 
-// Kil'jaeden is the one Sunwell encounter that does not report IN_PROGRESS on engage:
-// boss_kiljaeden does not chain BossAI::JustEngagedWith, and the controller sets the state only
-// once the first Hand of the Deceiver dies. The two triggers below are the ones that run before
-// that, so they cannot inherit from SunwellEncounterTrigger. Every trigger after them needs
-// Kil'jaeden himself so they can be subclassed.
-
-class KiljaedenShouldCoordinateOrbUseTrigger : public Trigger
+class KiljaedenShouldCoordinateOrbUseTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenShouldCoordinateOrbUseTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden should coordinate orb use") {}
-    bool IsActive() override;
+        : SunwellEncounterTrigger(botAI, "kil'jaeden should coordinate orb use") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
-class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
+class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenHandsOfTheDeceiverAreActiveTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
-    bool IsActive() override;
+        : SunwellEncounterTrigger(botAI, "kil'jaeden hands of the deceiver are active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
 };
 
 class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellEncounterTrigger

@@ -66,28 +66,32 @@ bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
     switch (source)
     {
         case AlythessTankSource::MainTankPaladin:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_main_tank_paladin",
                 "Alythess requires a Paladin tank. %bot is the main tank and a Paladin and is "
                 "assigned to tank Alythess.",
                 placeholders);
             break;
-
+        }
         case AlythessTankSource::PaladinTank:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_paladin_tank",
                 "Alythess requires a Paladin tank. The main tank is not a Paladin. %bot is the "
                 "best-geared Paladin tank and is assigned to tank Alythess.",
                 placeholders);
             break;
-
+        }
         default:
+        {
             text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "eredar_twins_alythess_tank_no_paladin",
                 "Alythess requires a Paladin tank. However, no Paladin tank is present. "
                 "Therefore, the main tank, %bot, is assigned to tank Alythess.",
                 placeholders);
             break;
+        }
     }
 
     return botAI->SayToRaid(text);

@@ -227,7 +227,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     // General
-    multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
+    // multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new VolatileFiendRestrictApproachMultiplier(botAI));
