@@ -70,8 +70,8 @@ public:
     bool Execute(Event event) override;
 };
 
-// A step away from the nearest player within distance. Used for Hydross the Unstable and
-// Fathom-Lord Karathress.
+// A step away from the nearest player within distance. Used for Hydross the Unstable, Leotheras,
+// and Fathom-Lord Karathress.
 class SscSpreadRangedAction : public MovementAction
 {
 public:
@@ -184,14 +184,6 @@ public:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindRangedKeepDistanceAction : public MovementAction
-{
-public:
-    LeotherasTheBlindRangedKeepDistanceAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "leotheras the blind ranged keep distance") {}
-    bool Execute(Event event) override;
-};
-
 class LeotherasTheBlindWarlockTankAttackDemonFormAction : public AttackAction
 {
 public:
@@ -205,6 +197,14 @@ class LeotherasTheBlindTanksBuildRageOnDemonFormAction : public AttackAction
 public:
     LeotherasTheBlindTanksBuildRageOnDemonFormAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "leotheras the blind tanks build rage on demon form") {}
+    bool Execute(Event event) override;
+};
+
+class LeotherasTheBlindRangedKeepDistanceAction : public MovementAction
+{
+public:
+    LeotherasTheBlindRangedKeepDistanceAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "leotheras the blind ranged keep distance") {}
     bool Execute(Event event) override;
 };
 

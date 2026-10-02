@@ -226,6 +226,18 @@ bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
 
 // Leotheras the Blind
 
+bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras || !IsSpellbinderPhase(leotheras))
+        return false;
+
+    return GetNearestPlayerInRadius(bot, LEOTHERAS_RANGED_SPREAD_DISTANCE);
+}
+
 bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)

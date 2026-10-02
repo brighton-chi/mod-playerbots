@@ -68,6 +68,9 @@ public:
             &RaidSscTriggerContext::the_lurker_below_melee_in_water;
 
         // Leotheras the Blind
+        creators["leotheras the blind ranged should spread upon pull"] =
+            &RaidSscTriggerContext::leotheras_the_blind_ranged_should_spread_upon_pull;
+
         creators["leotheras the blind warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
 
@@ -274,6 +277,9 @@ private:
     }
 
     // Leotheras the Blind
+    static Trigger* leotheras_the_blind_ranged_should_spread_upon_pull(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindRangedShouldSpreadUponPullTrigger(botAI);
+    }
     static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
     }

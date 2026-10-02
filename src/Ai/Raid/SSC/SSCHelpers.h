@@ -58,7 +58,7 @@ enum class SscSpells : uint32
 
     // Leotheras the Blind
     SPELL_LEOTHERAS_BANISHED     = 37546,
-    SPELL_WHIRLWIND              = 37640,
+    SPELL_LEOTHERAS_WHIRLWIND    = 37640,
     SPELL_METAMORPHOSIS          = 37673,
     SPELL_CHAOS_BLAST            = 37675,
     SPELL_INSIDIOUS_WHISPER      = 37676,
@@ -310,7 +310,8 @@ inline constexpr uint32 LEOTHERAS_FINAL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE = 25.0f;
 // Ranged keep this far from the humanoid form, outside Whirlwind's 10 yd.
-inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = 15.0f;
+inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = 20.0f;
+inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
 // Chaos Blast deals splash damage within 8y of the target.
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE = 10.0f;
 // In the final phase, Leotheras's tank keeps him this far from the Shadow's target.

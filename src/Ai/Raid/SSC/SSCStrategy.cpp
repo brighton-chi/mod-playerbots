@@ -70,6 +70,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("the lurker below melee get out of water", ACTION_EMERGENCY + 5) }));
 
     // Leotheras the Blind
+    triggers.push_back(new TriggerNode("leotheras the blind ranged should spread upon pull",
+        { NextAction("leotheras the blind spread ranged upon pull", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("leotheras the blind warlock should tank demon form",
         { NextAction("leotheras the blind warlock tank attack demon form", ACTION_RAID) }));
 

@@ -723,7 +723,7 @@ bool IsLeotherasWarlockTank(Player* bot)
 
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras)
 {
-    return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_WHIRLWIND));
+    return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_WHIRLWIND));
 }
 
 Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI)

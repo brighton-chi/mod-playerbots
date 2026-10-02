@@ -950,7 +950,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
     Unit* leotheras, uint32 instanceId, uint32 now)
 {
-    if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_WHIRLWIND)))
+    if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_LEOTHERAS_WHIRLWIND)))
     {
         return leotherasWhirlwindEndTime.try_emplace(
             instanceId, now + whirlwind->GetDuration()).second;

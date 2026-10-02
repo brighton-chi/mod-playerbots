@@ -65,6 +65,9 @@ public:
             &RaidSscActionContext::the_lurker_below_melee_get_out_of_water;
 
         // Leotheras the Blind
+        creators["leotheras the blind spread ranged upon pull"] =
+            &RaidSscActionContext::leotheras_the_blind_spread_ranged_upon_pull;
+
         creators["leotheras the blind warlock tank attack demon form"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_demon_form;
 
@@ -273,6 +276,11 @@ private:
     }
 
     // Leotheras the Blind
+    static Action* leotheras_the_blind_spread_ranged_upon_pull(PlayerbotAI* botAI) {
+        return new SscSpreadRangedAction(
+            botAI, "leotheras the blind spread ranged upon pull",
+            SscHelpers::LEOTHERAS_RANGED_SPREAD_DISTANCE);
+    }
     static Action* leotheras_the_blind_warlock_tank_attack_demon_form(PlayerbotAI* botAI) {
         return new LeotherasTheBlindWarlockTankAttackDemonFormAction(botAI);
     }

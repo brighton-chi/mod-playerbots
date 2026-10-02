@@ -212,11 +212,11 @@ protected:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger
+class LeotherasTheBlindRangedShouldSpreadUponPullTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind tanks should auto-attack demon form") {}
+    LeotherasTheBlindRangedShouldSpreadUponPullTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind ranged should spread upon pull") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -227,6 +227,16 @@ class LeotherasTheBlindWarlockShouldTankDemonFormTrigger : public SscEncounterTr
 public:
     LeotherasTheBlindWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "leotheras the blind warlock should tank demon form") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger
+{
+public:
+    LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind tanks should auto-attack demon form") {}
 
 protected:
     bool IsActiveInEncounter() override;
