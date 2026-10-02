@@ -1231,7 +1231,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 // keeps the bot's own height. Nothing brings the bot down once the Cyclone leaves, but any
 // ordinary move does, since its destination is on the ground: the bot is sent to the floor
 // beneath it once the last arc has finished.
-bool FathomLordKarathressDropFromCycloneAction::Execute(Event /*event*/)
+bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
 {
     // The knockback builds its spline from wherever the bot is, and mid-air that raycast fails:
     // the spline never finishes, so its generator is never popped off the controlled slot, and a
@@ -1344,7 +1344,7 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 
     // The point moves with him as the tank takes him to the corner, so ranged trail him there and
     // are never between him and the tank
-    Position const behind = GetTidewalkerStackPoint(*tidewalker);
+    Position const behind = GetTidewalkerStackPoint(*bot, *tidewalker);
 
     float stepX;
     float stepY;

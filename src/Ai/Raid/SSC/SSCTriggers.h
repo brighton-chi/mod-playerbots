@@ -385,11 +385,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressLiftedByCycloneTrigger : public SscEncounterTrigger
+class FathomLordKarathressStuckMidairAfterCycloneTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressLiftedByCycloneTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress lifted by cyclone") {}
+    FathomLordKarathressStuckMidairAfterCycloneTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress stuck midair after cyclone", 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -318,11 +318,11 @@ protected:
 
 // Morogrim Tidewalker
 
-class MorogrimTidewalkerDisableTankFaceMultiplier : public SscEncounterMultiplier
+class MorogrimTidewalkerControlMovementMultiplier : public SscEncounterMultiplier
 {
 public:
-    MorogrimTidewalkerDisableTankFaceMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "morogrim tidewalker disable tank face") {}
+    MorogrimTidewalkerControlMovementMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "morogrim tidewalker control movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

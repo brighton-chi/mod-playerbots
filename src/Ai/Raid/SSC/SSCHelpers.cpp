@@ -1050,15 +1050,17 @@ Unit* GetSharkkisPet(Player* bot)
 
 // Morogrim Tidewalker
 
-Position GetTidewalkerStackPoint(Unit const& tidewalker)
+Position GetTidewalkerStackPoint(Player const& bot, Unit const& tidewalker)
 {
     Unit* victim = tidewalker.GetVictim();
     float const behindAngle = (victim ? tidewalker.GetAngle(victim) :
         tidewalker.GetOrientation()) + static_cast<float>(M_PI);
+    float const behindDistance = bot.getClass() == CLASS_HUNTER ?
+        TIDEWALKER_HUNTER_BEHIND_DISTANCE : TIDEWALKER_RANGED_BEHIND_DISTANCE;
 
     return Position(
-        tidewalker.GetPositionX() + std::cos(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
-        tidewalker.GetPositionY() + std::sin(behindAngle) * TIDEWALKER_RANGED_BEHIND_DISTANCE,
+        tidewalker.GetPositionX() + std::cos(behindAngle) * behindDistance,
+        tidewalker.GetPositionY() + std::sin(behindAngle) * behindDistance,
         tidewalker.GetPositionZ());
 }
 

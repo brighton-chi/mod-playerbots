@@ -400,7 +400,7 @@ inline constexpr float CARIBDIS_CYCLONE_DROP_HEIGHT = 1.0f;
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
 inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
 inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
-inline Position const TIDALVESS_TANK_POSITION =  { 511.282f, -501.162f, -13.158f };
+inline Position const TIDALVESS_TANK_POSITION =  { 521.833f, -503.329f, -13.158f };
 
 extern std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
@@ -425,16 +425,19 @@ inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_H
 // takes a healer to within heal range of it, which stays inside this for every grave.
 inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 45.0f;
 inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
+// Hunters can't shoot inside his melee range (about 8.8 yd centre to centre), so they stack
+// far enough back that the near edge of their stack stays clear of it.
+inline constexpr float TIDEWALKER_HUNTER_BEHIND_DISTANCE = 13.0f;
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 // Murlocs farther than this distance from Tidewalker are excluded by AppendTargetExclusions.
 inline constexpr float TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE = 50.0f;
 
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
-// 5 yd behind him, on the line from his victim through him (his facing if he has none).
-// Following the victim rather than his facing keeps the point steady while the tank walks him
-// to the corner.
-Position GetTidewalkerStackPoint(Unit const& tidewalker);
+// 5 yd behind him (13 yd for hunters), on the line from his victim through him (his facing if
+// he has none). Following the victim rather than his facing keeps the point steady while the
+// tank walks him to the corner.
+Position GetTidewalkerStackPoint(Player const& bot, Unit const& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 

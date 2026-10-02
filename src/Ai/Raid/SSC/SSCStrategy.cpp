@@ -126,8 +126,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress ranged should spread",
         { NextAction("fathom-lord karathress spread ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress lifted by cyclone",
-        { NextAction("fathom-lord karathress drop from cyclone", ACTION_EMERGENCY + 9) }));
+    triggers.push_back(new TriggerNode("fathom-lord karathress stuck midair after cyclone",
+        { NextAction(
+            "fathom-lord karathress drop to ground after cyclone", ACTION_EMERGENCY + 9) }));
 
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode("morogrim tidewalker should be tanked",
@@ -264,7 +265,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDontDropOutOfSightTargetMultiplier(botAI));
 
     // Morogrim Tidewalker
-    multipliers.push_back(new MorogrimTidewalkerDisableTankFaceMultiplier(botAI));
+    multipliers.push_back(new MorogrimTidewalkerControlMovementMultiplier(botAI));
     multipliers.push_back(new MorogrimTidewalkerStayStackedMultiplier(botAI));
 
     // Lady Vashj <Coilfang Matron>

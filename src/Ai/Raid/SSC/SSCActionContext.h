@@ -120,8 +120,8 @@ public:
         creators["fathom-lord karathress spread ranged"] =
             &RaidSscActionContext::fathom_lord_karathress_spread_ranged;
 
-        creators["fathom-lord karathress drop from cyclone"] =
-            &RaidSscActionContext::fathom_lord_karathress_drop_from_cyclone;
+        creators["fathom-lord karathress drop to ground after cyclone"] =
+            &RaidSscActionContext::fathom_lord_karathress_drop_to_ground_after_cyclone;
 
         // Morogrim Tidewalker
         creators["morogrim tidewalker misdirect to main tank"] =
@@ -336,8 +336,8 @@ private:
             botAI, "fathom-lord karathress spread ranged",
             SscHelpers::CARIBDIS_RANGED_SPREAD_DISTANCE);
     }
-    static Action* fathom_lord_karathress_drop_from_cyclone(PlayerbotAI* botAI) {
-        return new FathomLordKarathressDropFromCycloneAction(botAI);
+    static Action* fathom_lord_karathress_drop_to_ground_after_cyclone(PlayerbotAI* botAI) {
+        return new FathomLordKarathressDropToGroundAfterCycloneAction(botAI);
     }
 
     // Morogrim Tidewalker

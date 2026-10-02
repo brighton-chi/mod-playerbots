@@ -742,7 +742,7 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
         return 0.0f;
 
     if (dynamic_cast<FathomLordKarathressPositionCaribdisTankHealerAction*>(action) ||
-        dynamic_cast<FathomLordKarathressDropFromCycloneAction*>(action))
+        dynamic_cast<FathomLordKarathressDropToGroundAfterCycloneAction*>(action))
     {
         return 1.0f;
     }
@@ -785,7 +785,7 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
 
     if (!dynamic_cast<MovementAction*>(action) ||
         dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action) ||
-        dynamic_cast<FathomLordKarathressDropFromCycloneAction*>(action))
+        dynamic_cast<FathomLordKarathressDropToGroundAfterCycloneAction*>(action))
     {
         return 1.0f;
     }
@@ -822,15 +822,18 @@ float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounte
 
 // Morogrim Tidewalker
 
-float MorogrimTidewalkerDisableTankFaceMultiplier::GetValueInEncounter(Action* action)
+float MorogrimTidewalkerControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsTank(bot))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !IsRepositionAction(bot, action))
+    {
         return 1.0f;
+    }
 
-    if (!dynamic_cast<TankFaceAction*>(action))
+    if (PlayerbotAI::IsMelee(bot) && dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "morogrim tidewalker") ? 0.0f : 1.0f;
@@ -844,7 +847,7 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!PlayerbotAI::IsRanged(bot))
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action))
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action))
@@ -857,7 +860,7 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
         return 1.0f;
 
-    return bot->GetExactDist(GetTidewalkerStackPoint(*tidewalker)) <=
+    return bot->GetExactDist(GetTidewalkerStackPoint(*bot, *tidewalker)) <=
         TIDEWALKER_RANGED_STACK_RADIUS ? 0.0f : 1.0f;
 }
 

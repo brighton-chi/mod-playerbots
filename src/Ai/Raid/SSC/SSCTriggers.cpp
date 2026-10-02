@@ -7,6 +7,7 @@
 #include "SSCTriggers.h"
 #include "EncounterHelpers.h"
 #include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "SSCActions.h"
@@ -452,24 +453,30 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
     return GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
-// A bot left hanging still has the knockback's generator in its controlled slot once the tosses
-// are over; while the aura is up, more tosses are coming and the arc is left to run
-bool FathomLordKarathressLiftedByCycloneTrigger::IsActiveInEncounter()
+// A bot left hanging once the tosses are over: either the knockback's spline never finished and
+// its generator still holds the controlled slot, or a toss from mid-air finished at the bot's own
+// height and left the slot empty. While the aura is up, more tosses are coming and the arc is
+// left to run.
+bool FathomLordKarathressStuckMidairAfterCycloneTrigger::IsActiveInEncounter()
 {
-    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) ||
-        bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != EFFECT_MOTION_TYPE)
+    if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
+        return false;
+
+    // A bot with a move under way, the drop itself included, is left to finish it
+    if (bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != EFFECT_MOTION_TYPE &&
+        !bot->movespline->Finalized())
     {
         return false;
     }
+
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+        return false;
 
     // Only a bot left well off the floor. Any other knockback, such as Knock Away from Sharkkis's
     // pets (a flat shove topping out under half a yard), is left to run its course.
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
-    if (floorZ <= INVALID_HEIGHT || bot->GetPositionZ() - floorZ <= CARIBDIS_CYCLONE_DROP_HEIGHT)
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CARIBDIS_CYCLONE_DROP_HEIGHT;
 }
 
 // Morogrim Tidewalker
@@ -489,7 +496,7 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
     if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
         return false;
 
-    return bot->GetExactDist(GetTidewalkerStackPoint(*tidewalker)) >
+    return bot->GetExactDist(GetTidewalkerStackPoint(*bot, *tidewalker)) >
         TIDEWALKER_RANGED_STACK_RADIUS;
 }
 
