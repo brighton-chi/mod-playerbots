@@ -64,6 +64,9 @@ public:
         creators["the lurker below melee cannot reach target"] =
             &RaidSscTriggerContext::the_lurker_below_melee_cannot_reach_target;
 
+        creators["the lurker below melee in water"] =
+            &RaidSscTriggerContext::the_lurker_below_melee_in_water;
+
         // Leotheras the Blind
         creators["leotheras the blind warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
@@ -265,6 +268,9 @@ private:
     }
     static Trigger* the_lurker_below_melee_cannot_reach_target(PlayerbotAI* botAI) {
         return new TheLurkerBelowMeleeCannotReachTargetTrigger(botAI);
+    }
+    static Trigger* the_lurker_below_melee_in_water(PlayerbotAI* botAI) {
+        return new TheLurkerBelowMeleeInWaterTrigger(botAI);
     }
 
     // Leotheras the Blind

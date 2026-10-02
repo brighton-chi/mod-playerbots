@@ -125,12 +125,6 @@ public:
     TheLurkerBelowRunAroundBehindBossAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "the lurker below run around behind boss") {}
     bool Execute(Event event) override;
-
-private:
-    // TEMP LOG (Lurker spin reversals), remove after testing
-    float _logAngle = 0.0f;
-    uint32 _logTime = 0;
-    bool _logOnSpinSteps = false;
 };
 
 class TheLurkerBelowPositionMainTankAction : public AttackAction
@@ -177,6 +171,18 @@ class TheLurkerBelowMeleeMoveDirectlyToTargetAction : public MovementAction
 public:
     TheLurkerBelowMeleeMoveDirectlyToTargetAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "the lurker below melee move directly to target") {}
+    bool Execute(Event event) override;
+
+private:
+    // TEMP LOG (Lurker melee water), remove after testing
+    uint32 _logTime = 0;
+};
+
+class TheLurkerBelowMeleeGetOutOfWaterAction : public MovementAction
+{
+public:
+    TheLurkerBelowMeleeGetOutOfWaterAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "the lurker below melee get out of water") {}
     bool Execute(Event event) override;
 };
 

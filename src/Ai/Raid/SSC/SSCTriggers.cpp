@@ -202,6 +202,28 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
         AI_VALUE(LastMovement&, "last movement").priority < MovementPriority::MOVEMENT_FORCED;
 }
 
+// In or over the deep water round the islets, not the shallows at the edge of Lurker's ring.
+// A path between islets can drop a bot in next to an islet with no shore to climb. Over the
+// water counts too, so the straight move out keeps the tick until the bot is on land.
+bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot))
+        return false;
+
+    if (bot->GetLiquidData().Status == LIQUID_MAP_NO_WATER)
+        return false;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker || IsLurkerSpouting(lurker))
+        return false;
+
+    if (IsDryGround(bot, bot->GetPositionX(), bot->GetPositionY()))
+        return false;
+
+    // His return to the tank spot crosses a spillway on purpose
+    return !PlayerbotAI::IsMainTank(bot);
+}
+
 // Leotheras the Blind
 
 bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()

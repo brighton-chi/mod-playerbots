@@ -590,6 +590,18 @@ int8 GetLurkerGuardianTankIndex(PlayerbotAI* botAI)
     return -1;
 }
 
+bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target)
+{
+    if (!lurker || !target)
+        return false;
+
+    if (target == lurker)
+        return true;
+
+    return target->GetEntry() == Id(SscNpcs::NPC_COILFANG_GUARDIAN) &&
+        bot->GetExactDist2d(lurker) > LURKER_ISLET_DISTANCE;
+}
+
 // Leotheras the Blind
 
 std::unordered_map<uint32, uint32> leotherasHumanoidPhaseStartTime;

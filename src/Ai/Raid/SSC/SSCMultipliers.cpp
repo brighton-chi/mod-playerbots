@@ -318,19 +318,17 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
     return lurker && IsLurkerSpouting(lurker) ? 0.0f : 1.0f;
 }
 
-float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValueInEncounter(Action* action)
+float TheLurkerBelowMaintainPositionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsRanged(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
+
+    // Moving behind a target is a formation move too; it has its own Lurker multiplier
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
@@ -383,11 +381,21 @@ float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* 
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    if (!PlayerbotAI::IsMelee(bot))
+        return 1.0f;
+
     if (!dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    if (!lurker || AI_VALUE(Unit*, "current target") != lurker)
+    if (!lurker)
+        return 1.0f;
+
+    // On an islet, behind an Ambusher at its edge is in the water, and an Ambusher is ranged
+    if (bot->GetExactDist2d(lurker) > LURKER_ISLET_DISTANCE)
+        return 0.0f;
+
+    if (AI_VALUE(Unit*, "current target") != lurker)
         return 1.0f;
 
     constexpr float tankSpotTolerance = 3.0f;

@@ -246,14 +246,14 @@ inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
 inline constexpr float LURKER_ISLET_DISTANCE = 40.0f;
 
 // Spout avoidance mechanics:
-// Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look less
-// artificial, and the intent is to keep the radius close to Lurker while keeping the circle on dry
-// land as much as possible (water is not completely avoidable due to a couple of spillways).
-// Within the 19-21y band, a bot in the 120° cone behind Lurker (60° to either side) is considered
-// safe. Any bot in that safe zone will wait during the Spout windup until the spin direction is
-// determined.
-inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
-inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
+// Each bot is assigned a radius from Lurker from 20-22y, the main tank 20y. The range is to make
+// things look less artificial, and the intent is to keep the radius close to Lurker while keeping
+// the circle on dry land as much as possible (water is not completely avoidable due to a couple
+// of spillways). Within the 20-22y band, a bot in the 120° cone behind Lurker (60° to either
+// side) is considered safe. Any bot in that safe zone will wait during the Spout windup until
+// the spin direction is determined.
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 20.0f;
+inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 22.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
 inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
 inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
@@ -295,6 +295,10 @@ GuidVector FindLurkerGuardianTankGuids(Player* bot);
 // The bot's index among the Guardian tanks, from the "ssc lurker guardian tanks" value; -1 if it
 // isn't one.
 int8 GetLurkerGuardianTankIndex(PlayerbotAI* botAI);
+// True if a melee bot heading for target should go to the walkway point by Lurker rather than
+// onto it: target is Lurker, or a Guardian seen from an islet, where a path onto it crosses
+// the deep water.
+bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target);
 
 // Leotheras the Blind
 

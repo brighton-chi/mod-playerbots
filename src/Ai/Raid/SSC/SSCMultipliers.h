@@ -115,11 +115,13 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class TheLurkerBelowMaintainRangedSpreadMultiplier : public SscEncounterMultiplier
+// No bot follows the master, or makes formation, flee or reposition moves, which can walk it
+// into the water; melee still move behind targets (TheLurkerBelowMeleeWaitToSetBehindMultiplier).
+class TheLurkerBelowMaintainPositionsMultiplier : public SscEncounterMultiplier
 {
 public:
-    TheLurkerBelowMaintainRangedSpreadMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "the lurker below maintain ranged spread") {}
+    TheLurkerBelowMaintainPositionsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "the lurker below maintain positions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -146,7 +148,8 @@ protected:
 };
 
 // Melee wait to move behind Lurker until his tank has him on the tank spot. Until then he may
-// still be turning, and behind him can be off the ring, in the water.
+// still be turning, and behind him can be off the ring, in the water. On an islet they don't
+// move behind anything.
 class TheLurkerBelowMeleeWaitToSetBehindMultiplier : public SscEncounterMultiplier
 {
 public:

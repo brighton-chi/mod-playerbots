@@ -11,6 +11,7 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
+#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
@@ -312,10 +313,12 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 
     constexpr float pi = static_cast<float>(M_PI);
 
-    // Randomize the radius for each bot so the running looks a bit more natural.
+    // The main tank runs the inner edge of the band. Everyone else gets a radius from their
+    // GUID, so the running looks a bit more natural.
     uint32 const seed = bot->GetGUID().GetCounter();
-    float const runRadius = LURKER_SPOUT_RUN_RADIUS_MIN +
-        (LURKER_SPOUT_RUN_RADIUS_MAX - LURKER_SPOUT_RUN_RADIUS_MIN) * (seed % 100) / 100.0f;
+    float const runRadius = PlayerbotAI::IsMainTank(bot) ? LURKER_SPOUT_RUN_RADIUS_MIN :
+        LURKER_SPOUT_RUN_RADIUS_MIN +
+            (LURKER_SPOUT_RUN_RADIUS_MAX - LURKER_SPOUT_RUN_RADIUS_MIN) * (seed % 100) / 100.0f;
 
     float const distance = bot->GetExactDist2d(lurker);
     float const botAngle = std::atan2(
@@ -334,91 +337,25 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         float const aheadOfBeam = spin > 0 ? relative : 2.0f * pi - relative;
         float const room = pi + LURKER_SPOUT_RUN_OVERTAKE_MARGIN - aheadOfBeam;
         float const stepAngle = std::min(LURKER_SPOUT_RUN_STEP / runRadius, room);
-
-        // TEMP LOG (Lurker spin reversals), remove after testing. Logs each tick on which the
-        // bot has moved back against the spin since the tick before.
-        uint32 const logNow = getMSTime();
-        bool logReversed = false;
-        if (_logTime && getMSTimeDiff(_logTime, logNow) < 1000)
-        {
-            float delta = Position::NormalizeOrientation(botAngle - _logAngle);
-            if (delta > pi)
-                delta -= 2.0f * pi;
-
-            logReversed = spin * delta < -0.02f;
-        }
-        _logAngle = botAngle;
-        _logTime = logNow;
-
-        // Only once the bot is on its spin steps; until its first one it may still be on a
-        // wind-up move heading the other way
-        auto const logSpin = [&](char const* outcome, float destX, float destY)
-        {
-            if (!logReversed || !_logOnSpinSteps)
-                return;
-
-            float splineX = 0.0f;
-            float splineY = 0.0f;
-            if (!bot->movespline->Finalized())
-            {
-                auto const splineEnd = bot->movespline->FinalDestination();
-                splineX = splineEnd.x;
-                splineY = splineEnd.y;
-            }
-
-            LastMovement const& last = AI_VALUE(LastMovement&, "last movement");
-            float ground = 0.0f;
-            float const waterOrGround = bot->GetMapWaterOrGroundLevel(
-                bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), &ground);
-            LOG_INFO("playerbots",
-                "[SSC lurker] {} reversed, {}: at {:.1f} {:.1f} {:.1f} "
-                "(water {:.1f} ground {:.1f}), "
-                "r {:.1f} of {:.1f}, ahead {:.2f} room {:.2f} step {:.2f}, dest {:.1f} {:.1f}, "
-                "liquid {} swim {} waterwalk {} falling {} moving {} motion {}, "
-                "spline to {:.1f} {:.1f}, last move {:.1f} {:.1f} pri {} {}ms ago of {:.0f}",
-                bot->GetName(), outcome, bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), waterOrGround, ground, distance, runRadius, aheadOfBeam, room,
-                stepAngle, destX, destY, static_cast<uint32>(bot->GetLiquidData().Status),
-                bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING),
-                bot->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING),
-                bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING), bot->isMoving(),
-                static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()),
-                splineX, splineY, last.lastMoveToX, last.lastMoveToY,
-                static_cast<uint32>(last.priority), getMSTimeDiff(last.msTime, logNow),
-                last.lastdelayTime);
-        };
-
         constexpr float minStep = 2.0f;
         if (stepAngle * runRadius < minStep)
-        {
-            logSpin("no room", 0.0f, 0.0f);
             return false;
-        }
 
         float const radialStep = std::clamp(
             runRadius - distance, -LURKER_SPOUT_RUN_STEP, LURKER_SPOUT_RUN_STEP);
         float const moveRadius = distance + radialStep;
         float const moveAngle = botAngle + spin * stepAngle;
 
-        // TEST: a straight step with no path, so a spillway can't send the path round the long
-        // way into the beam
         constexpr MovementPriority spinPriority = MovementPriority::MOVEMENT_FORCED;
         bot->CastStop();
         if (IsWaitingForLastMove(spinPriority))
-        {
-            logSpin("waiting", 0.0f, 0.0f);
             return false;
-        }
 
-        float const destX = lurkerX + moveRadius * std::cos(moveAngle);
-        float const destY = lurkerY + moveRadius * std::sin(moveAngle);
-        bool const stepped = MoveStraightTo(botAI, destX, destY, lurkerZ, spinPriority);
-        logSpin(stepped ? "stepped" : "step refused", destX, destY);
-        _logOnSpinSteps |= stepped;
-        return stepped;
+        // Straight, as a player would run over a spillway rather than path round it
+        return MoveStraightTo(
+            botAI, lurkerX + moveRadius * std::cos(moveAngle),
+            lurkerY + moveRadius * std::sin(moveAngle), lurkerZ, spinPriority);
     }
-
-    _logOnSpinSteps = false; // TEMP LOG
 
     // Lurker is winding-up, bot is behind the boss: Get to the right radius and wait for the
     // direction of the spin to be determined.
@@ -447,18 +384,6 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         return false;
 
     bot->CastStop();
-
-    // His tank goes straight through him to directly behind instead, since the walk round to
-    // the arc edge passes the spillways at his side. The spin starts before it gets there,
-    // but with it already past his centre, and the beam starts from the front.
-    if (lurker->GetVictim() == bot)
-    {
-        float const behindAngle = lurker->GetOrientation() + pi;
-        return MoveStraightTo(
-            botAI, lurkerX + runRadius * std::cos(behindAngle),
-            lurkerY + runRadius * std::sin(behindAngle), lurkerZ, priority);
-    }
-
     if (DoesPathRoundLurker(bot, lurker, edgeX, edgeY, lurkerZ, direction))
     {
         return MoveTo(
@@ -637,22 +562,110 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     // heading for a Guardian from an islet (a move straight onto it ends underwater), target the
     // move at the walkway instead; stock reach takes it on from there over land.
     uint32 const entry = target->GetEntry();
-    bool const toWalkway = entry == Id(SscNpcs::NPC_THE_LURKER_BELOW) ||
-        (entry == Id(SscNpcs::NPC_COILFANG_GUARDIAN) &&
-         bot->GetExactDist2d(lurker) > LURKER_ISLET_DISTANCE);
+    bool const toWalkway = ShouldGoToLurkerWalkway(bot, lurker, target);
+
+    // TEMP LOG (Lurker melee water), remove after testing. At most once a second per bot.
+    auto const logMove = [&](char const* outcome, float destX, float destY, float destZ)
+    {
+        uint32 const now = getMSTime();
+        if (_logTime && getMSTimeDiff(_logTime, now) < 1000)
+            return;
+
+        _logTime = now;
+        PathGenerator path(bot);
+        path.CalculatePath(destX, destY, destZ);
+        float lowestZ = bot->GetPositionZ();
+        for (G3D::Vector3 const& point : path.GetPath())
+            lowestZ = std::min(lowestZ, point.z);
+
+        float ground = 0.0f;
+        float const waterOrGround = bot->GetMapWaterOrGroundLevel(
+            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), &ground);
+        LOG_INFO("playerbots",
+            "[SSC lurker melee] {} {}: target {} at {:.1f} {:.1f} {:.1f}, bot at {:.1f} {:.1f} "
+            "{:.1f} (water {:.1f} ground {:.1f}, liquid {}), dest {:.1f} {:.1f} "
+            "{:.1f}, path type {} points {} lowest {:.1f}",
+            bot->GetName(), outcome, target->GetName(), target->GetPositionX(),
+            target->GetPositionY(), target->GetPositionZ(), bot->GetPositionX(),
+            bot->GetPositionY(), bot->GetPositionZ(), waterOrGround, ground,
+            static_cast<uint32>(bot->GetLiquidData().Status), destX, destY, destZ,
+            static_cast<uint32>(path.GetPathType()), path.GetPath().size(), lowestZ);
+    };
+
+    // An Ambusher sometimes steps off its islet into the water. A move onto it would take the
+    // bot down to the pool floor, so wait for it to come back.
+    if (!toWalkway && !IsDryGround(bot, target->GetPositionX(), target->GetPositionY()))
+    {
+        logMove("skipped, target in water", target->GetPositionX(), target->GetPositionY(),
+            target->GetPositionZ());
+        return false;
+    }
 
     Unit* anchor = toWalkway ? lurker : target;
     float const anchorDistance = toWalkway ? LURKER_WALKWAY_RADIUS : 0.0f;
     float const angle = anchor->GetAngle(bot);
     float const destX = anchor->GetPositionX() + std::cos(angle) * anchorDistance;
     float const destY = anchor->GetPositionY() + std::sin(angle) * anchorDistance;
+    float const destZ = anchor->GetPositionZ();
 
     // Forced toward Lurker, so it replaces a run still under way to an Ambusher or a Guardian
     MovementPriority const priority = entry == Id(SscNpcs::NPC_THE_LURKER_BELOW) ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
-    return MoveTo(
-        SSC_MAP_ID, destX, destY, anchor->GetPositionZ(), false, false, false, false, priority,
-        true, false);
+    bool const moved = MoveTo(
+        SSC_MAP_ID, destX, destY, destZ, false, false, false, false, priority, true, false);
+    logMove(moved ? "pathed" : "path refused", destX, destY, destZ);
+    return moved;
+}
+
+// Straight out, since a path from down here follows the water. Onto the bot's target if it
+// stands on dry ground, else back to the walkway. It keeps the tick while the move runs, so
+// nothing else (follow, for one) turns it round underwater.
+bool TheLurkerBelowMeleeGetOutOfWaterAction::Execute(Event /*event*/)
+{
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker)
+        return false;
+
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return true;
+
+    // As the direct move chooses, and to the walkway too with no target or one in the water
+    Unit* target = AI_VALUE(Unit*, "current target");
+    float destX;
+    float destY;
+    float destZ;
+    if (target && !ShouldGoToLurkerWalkway(bot, lurker, target) &&
+        IsDryGround(bot, target->GetPositionX(), target->GetPositionY()))
+    {
+        destX = target->GetPositionX();
+        destY = target->GetPositionY();
+        destZ = target->GetPositionZ();
+    }
+    else
+    {
+        float const angle = lurker->GetAngle(bot);
+        destX = lurker->GetPositionX() + std::cos(angle) * LURKER_WALKWAY_RADIUS;
+        destY = lurker->GetPositionY() + std::sin(angle) * LURKER_WALKWAY_RADIUS;
+        destZ = lurker->GetPositionZ();
+    }
+
+    bool const moved = MoveStraightTo(botAI, destX, destY, destZ, priority);
+
+    // TEMP LOG (Lurker melee water), remove after testing
+    float ground = 0.0f;
+    float const waterOrGround = bot->GetMapWaterOrGroundLevel(
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), &ground);
+    LOG_INFO("playerbots",
+        "[SSC lurker water] {} {}: at {:.1f} {:.1f} {:.1f} (water {:.1f} ground {:.1f}, "
+        "liquid {}), target {}, dest {:.1f} {:.1f} {:.1f}, state {} motion {}",
+        bot->GetName(), moved ? "out of water" : "out of water refused",
+        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), waterOrGround, ground,
+        static_cast<uint32>(bot->GetLiquidData().Status), target ? target->GetName() : "none",
+        destX, destY, destZ, static_cast<uint32>(botAI->GetState()),
+        static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()));
+
+    return moved;
 }
 
 // Leotheras the Blind

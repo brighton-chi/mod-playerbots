@@ -66,6 +66,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below melee cannot reach target",
         { NextAction("the lurker below melee move directly to target", ACTION_HIGH) }));
 
+    triggers.push_back(new TriggerNode("the lurker below melee in water",
+        { NextAction("the lurker below melee get out of water", ACTION_EMERGENCY + 5) }));
+
     // Leotheras the Blind
     triggers.push_back(new TriggerNode("leotheras the blind warlock should tank demon form",
         { NextAction("leotheras the blind warlock tank attack demon form", ACTION_RAID) }));
@@ -233,7 +236,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // The Lurker Below
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
-    multipliers.push_back(new TheLurkerBelowMaintainRangedSpreadMultiplier(botAI));
+    multipliers.push_back(new TheLurkerBelowMaintainPositionsMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowTanksFocusAssignedGuardianMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new TheLurkerBelowMeleeWaitToSetBehindMultiplier(botAI));

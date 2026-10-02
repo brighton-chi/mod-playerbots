@@ -200,6 +200,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class TheLurkerBelowMeleeInWaterTrigger : public SscEncounterTrigger
+{
+public:
+    TheLurkerBelowMeleeInWaterTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "the lurker below melee in water") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Leotheras the Blind
 
 class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger

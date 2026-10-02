@@ -61,6 +61,9 @@ public:
         creators["the lurker below melee move directly to target"] =
             &RaidSscActionContext::the_lurker_below_melee_move_directly_to_target;
 
+        creators["the lurker below melee get out of water"] =
+            &RaidSscActionContext::the_lurker_below_melee_get_out_of_water;
+
         // Leotheras the Blind
         creators["leotheras the blind warlock tank attack demon form"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_demon_form;
@@ -264,6 +267,9 @@ private:
     }
     static Action* the_lurker_below_melee_move_directly_to_target(PlayerbotAI* botAI) {
         return new TheLurkerBelowMeleeMoveDirectlyToTargetAction(botAI);
+    }
+    static Action* the_lurker_below_melee_get_out_of_water(PlayerbotAI* botAI) {
+        return new TheLurkerBelowMeleeGetOutOfWaterAction(botAI);
     }
 
     // Leotheras the Blind
