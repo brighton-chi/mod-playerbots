@@ -11,7 +11,6 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
@@ -564,42 +563,10 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     uint32 const entry = target->GetEntry();
     bool const toWalkway = ShouldGoToLurkerWalkway(bot, lurker, target);
 
-    // TEMP LOG (Lurker melee water), remove after testing. At most once a second per bot.
-    auto const logMove = [&](char const* outcome, float destX, float destY, float destZ)
-    {
-        uint32 const now = getMSTime();
-        if (_logTime && getMSTimeDiff(_logTime, now) < 1000)
-            return;
-
-        _logTime = now;
-        PathGenerator path(bot);
-        path.CalculatePath(destX, destY, destZ);
-        float lowestZ = bot->GetPositionZ();
-        for (G3D::Vector3 const& point : path.GetPath())
-            lowestZ = std::min(lowestZ, point.z);
-
-        float ground = 0.0f;
-        float const waterOrGround = bot->GetMapWaterOrGroundLevel(
-            bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), &ground);
-        LOG_INFO("playerbots",
-            "[SSC lurker melee] {} {}: target {} at {:.1f} {:.1f} {:.1f}, bot at {:.1f} {:.1f} "
-            "{:.1f} (water {:.1f} ground {:.1f}, liquid {}), dest {:.1f} {:.1f} "
-            "{:.1f}, path type {} points {} lowest {:.1f}",
-            bot->GetName(), outcome, target->GetName(), target->GetPositionX(),
-            target->GetPositionY(), target->GetPositionZ(), bot->GetPositionX(),
-            bot->GetPositionY(), bot->GetPositionZ(), waterOrGround, ground,
-            static_cast<uint32>(bot->GetLiquidData().Status), destX, destY, destZ,
-            static_cast<uint32>(path.GetPathType()), path.GetPath().size(), lowestZ);
-    };
-
     // An Ambusher sometimes steps off its islet into the water. A move onto it would take the
     // bot down to the pool floor, so wait for it to come back.
     if (!toWalkway && !IsDryGround(bot, target->GetPositionX(), target->GetPositionY()))
-    {
-        logMove("skipped, target in water", target->GetPositionX(), target->GetPositionY(),
-            target->GetPositionZ());
         return false;
-    }
 
     Unit* anchor = toWalkway ? lurker : target;
     float const anchorDistance = toWalkway ? LURKER_WALKWAY_RADIUS : 0.0f;
@@ -611,10 +578,8 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     // Forced toward Lurker, so it replaces a run still under way to an Ambusher or a Guardian
     MovementPriority const priority = entry == Id(SscNpcs::NPC_THE_LURKER_BELOW) ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
-    bool const moved = MoveTo(
+    return MoveTo(
         SSC_MAP_ID, destX, destY, destZ, false, false, false, false, priority, true, false);
-    logMove(moved ? "pathed" : "path refused", destX, destY, destZ);
-    return moved;
 }
 
 // Straight out, since a path from down here follows the water. Onto the bot's target if it
@@ -650,22 +615,7 @@ bool TheLurkerBelowMeleeGetOutOfWaterAction::Execute(Event /*event*/)
         destZ = lurker->GetPositionZ();
     }
 
-    bool const moved = MoveStraightTo(botAI, destX, destY, destZ, priority);
-
-    // TEMP LOG (Lurker melee water), remove after testing
-    float ground = 0.0f;
-    float const waterOrGround = bot->GetMapWaterOrGroundLevel(
-        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), &ground);
-    LOG_INFO("playerbots",
-        "[SSC lurker water] {} {}: at {:.1f} {:.1f} {:.1f} (water {:.1f} ground {:.1f}, "
-        "liquid {}), target {}, dest {:.1f} {:.1f} {:.1f}, state {} motion {}",
-        bot->GetName(), moved ? "out of water" : "out of water refused",
-        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), waterOrGround, ground,
-        static_cast<uint32>(bot->GetLiquidData().Status), target ? target->GetName() : "none",
-        destX, destY, destZ, static_cast<uint32>(botAI->GetState()),
-        static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()));
-
-    return moved;
+    return MoveStraightTo(botAI, destX, destY, destZ, priority);
 }
 
 // Leotheras the Blind

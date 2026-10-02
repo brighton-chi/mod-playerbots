@@ -172,10 +172,6 @@ public:
     TheLurkerBelowMeleeMoveDirectlyToTargetAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "the lurker below melee move directly to target") {}
     bool Execute(Event event) override;
-
-private:
-    // TEMP LOG (Lurker melee water), remove after testing
-    uint32 _logTime = 0;
 };
 
 class TheLurkerBelowMeleeGetOutOfWaterAction : public MovementAction
