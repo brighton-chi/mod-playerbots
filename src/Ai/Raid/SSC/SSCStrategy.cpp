@@ -292,14 +292,6 @@ void AppendHydrossAddTankExclusions(
         exclusions.insert(hydross->GetGUID());
 }
 
-// Leotheras is immune until the Greyheart Spellbinders are killed.
-void AppendLeotherasTheBlindSpellbinderPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Unit* leotheras = GetLeotheras(botAI);
-    if (leotheras && IsSpellbinderPhase(leotheras))
-        exclusions.insert(leotheras->GetGUID());
-}
-
 // Melee hold off Karathress while Caribdis lives, so he doesn't get her Blessing of the Tides at
 // 75%. The main tank keeps him, and healers keep him as a target so they stay in their heals.
 void AppendFathomLordKarathressBlessingHoldExclusions(
@@ -357,7 +349,6 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     AppendHydrossAddTankExclusions(bot, context, exclusions);
-    // AppendLeotherasTheBlindSpellbinderPhaseExclusions(botAI, exclusions);
     AppendFathomLordKarathressBlessingHoldExclusions(bot, context, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(context, exclusions);
