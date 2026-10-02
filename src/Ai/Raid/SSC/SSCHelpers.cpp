@@ -17,9 +17,7 @@
 #include <cmath>
 #include <limits>
 #include <list>
-#include <mutex>
 #include <string>
-#include <unordered_set>
 
 using namespace EncounterHelpers;
 
@@ -2697,7 +2695,6 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
     }
 
     AssignVashjCoreCatchers(bot, chain);
-    TaintedLogChain(bot, chain, "planned"); // TEMP LOG
     vashjCorePassingChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
 }
 
@@ -2708,7 +2705,6 @@ bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, O
     if (++chain.replans > maxReplans)
     {
         chain.failed = true;
-        TaintedLogChain(holder, chain, "given up"); // TEMP LOG
         return false;
     }
 
@@ -2730,7 +2726,6 @@ bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, O
     if (!excluded.IsEmpty())
         chain.excluded = excluded;
     AssignVashjCoreCatchers(holder, chain);
-    TaintedLogChain(holder, chain, "re-planned"); // TEMP LOG
     return !chain.failed;
 }
 
@@ -2745,11 +2740,6 @@ bool ReassignVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t 
         return false;
 
     SetVashjCoreCatcher(catcher, player);
-
-    // TEMP LOG
-    LOG_INFO("playerbots", "[SSC tainted] +{}ms catcher {} reassigned to {}",
-        TaintedLogElapsedMs(bot), index, player->GetName());
-
     return true;
 }
 
@@ -2762,11 +2752,6 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t i
     Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, ObjectGuid::Empty);
     SetVashjCoreCatcher(catcher, player);
     catcher.released = true;
-
-    // TEMP LOG
-    LOG_INFO("playerbots", "[SSC tainted] +{}ms catcher {} released to {}, {:.1f} yd from its spot",
-        TaintedLogElapsedMs(bot), index, player ? player->GetName() : "nobody",
-        player ? player->GetExactDist2d(catcher.spot) : 0.0f);
 }
 
 VashjCorePassingChain* GetVashjCorePassingChain(Player* bot)
@@ -2809,113 +2794,6 @@ float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 i
 {
     return static_cast<size_t>(index) + 1 == chain.catchers.size() ?
         VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE : VASHJ_CORE_SPOT_ARRIVAL_DISTANCE;
-}
-
-// TEMP LOG (Tainted Elemental timing), remove after testing
-namespace
-{
-
-std::mutex taintedLogMutex;
-std::unordered_map<uint32, uint32> taintedLogStart;
-std::unordered_set<std::string> taintedLogSeen;
-std::unordered_map<std::string, uint32> taintedLogLast;
-std::unordered_map<uint32, size_t> taintedLogGenerators;
-
-std::string TaintedLogKey(Player* bot, char const* key)
-{
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    return std::to_string(bot->GetGUID().GetRawValue()) + key +
-        (it != vashjTaintedCoreLooter.end() ?
-            std::to_string(it->second.tainted.GetRawValue()) : std::string());
-}
-
-} // end anonymous namespace (TEMP LOG)
-
-void StartTaintedLog(Player* bot)
-{
-    std::lock_guard<std::mutex> lock(taintedLogMutex);
-    taintedLogStart[bot->GetInstanceId()] = getMSTime();
-}
-
-uint32 TaintedLogElapsedMs(Player* bot)
-{
-    std::lock_guard<std::mutex> lock(taintedLogMutex);
-    auto it = taintedLogStart.find(bot->GetInstanceId());
-    return it != taintedLogStart.end() ? getMSTimeDiff(it->second, getMSTime()) : 0;
-}
-
-bool TaintedLogFirstTime(Player* bot, char const* key)
-{
-    std::string const fullKey = TaintedLogKey(bot, key);
-    std::lock_guard<std::mutex> lock(taintedLogMutex);
-    return taintedLogSeen.insert(fullKey).second;
-}
-
-bool TaintedLogSeen(Player* bot, char const* key)
-{
-    std::string const fullKey = TaintedLogKey(bot, key);
-    std::lock_guard<std::mutex> lock(taintedLogMutex);
-    return taintedLogSeen.count(fullKey) > 0;
-}
-
-bool TaintedLogThrottle(Player* bot, char const* key)
-{
-    std::string const fullKey = TaintedLogKey(bot, key);
-    uint32 const now = getMSTime();
-    std::lock_guard<std::mutex> lock(taintedLogMutex);
-    uint32& last = taintedLogLast[fullKey];
-    if (last && getMSTimeDiff(last, now) < IN_MILLISECONDS)
-        return false;
-
-    last = now;
-    return true;
-}
-
-void TaintedLogThrow(Player* bot, Player* receiver, int catcher)
-{
-    LOG_INFO("playerbots",
-        "[SSC tainted] +{}ms {} throws the core to {} (catcher {}) at {:.1f} yd, LoS {}, "
-        "from {:.1f} {:.1f} {:.1f} to {:.1f} {:.1f} {:.1f}",
-        TaintedLogElapsedMs(bot), bot->GetName(), receiver->GetName(), catcher,
-        bot->GetExactDist(receiver), bot->IsWithinLOSInMap(receiver) ? "yes" : "NO",
-        bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        receiver->GetPositionX(), receiver->GetPositionY(), receiver->GetPositionZ());
-}
-
-void TaintedLogChain(Player* bot, VashjCorePassingChain const& chain, char const* what)
-{
-    std::string catchers;
-    for (VashjCoreCatcher const& catcher : chain.catchers)
-    {
-        Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
-        catchers += Acore::StringFormat("{} at {:.1f} {:.1f} {:.1f}{}; ",
-            player ? player->GetName() : "nobody yet", catcher.spot.GetPositionX(),
-            catcher.spot.GetPositionY(), catcher.spot.GetPositionZ(),
-            player && !catcher.prepositions ? " after the kill" : "");
-    }
-
-    GameObject* generator = bot->GetMap()->GetGameObject(chain.generator);
-    LOG_INFO("playerbots", "[SSC tainted] +{}ms chain {} by {}, generator at {:.1f} {:.1f}: {}",
-        TaintedLogElapsedMs(bot), what, bot->GetName(),
-        generator ? generator->GetPositionX() : 0.0f,
-        generator ? generator->GetPositionY() : 0.0f,
-        catchers.empty() ? "no way found" : catchers);
-}
-
-void TaintedLogGenerators(Player* bot)
-{
-    size_t const usable = GetUsableVashjGenerators(bot->GetMap()).size();
-    {
-        std::lock_guard<std::mutex> lock(taintedLogMutex);
-        auto [it, inserted] = taintedLogGenerators.try_emplace(bot->GetInstanceId(), usable);
-        if (inserted || it->second == usable)
-            return;
-
-        it->second = usable;
-    }
-
-    LOG_INFO("playerbots", "[SSC tainted] +{}ms usable generators now {}",
-        TaintedLogElapsedMs(bot), usable);
 }
 
 }

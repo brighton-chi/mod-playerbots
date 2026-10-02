@@ -730,20 +730,6 @@ bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
         return false;
 
     Creature* tainted = GetAssignedTaintedElemental(bot);
-
-    // TEMP LOG
-    bool const hasCore = HasTaintedCore(bot);
-    if (hasCore && TaintedLogFirstTime(bot, "core"))
-    {
-        LOG_INFO("playerbots", "[SSC tainted] +{}ms looter {} has the core",
-            TaintedLogElapsedMs(bot), bot->GetName());
-    }
-    if (!tainted && TaintedLogFirstTime(bot, "gone"))
-    {
-        LOG_INFO("playerbots", "[SSC tainted] +{}ms elemental gone, core looted: {}",
-            TaintedLogElapsedMs(bot), TaintedLogSeen(bot, "core") ? "yes" : "NO");
-    }
-
     if (!IsTaintedCoreStillToLoot(tainted))
         return false;
 
@@ -789,8 +775,6 @@ bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return false;
-
-    TaintedLogGenerators(bot); // TEMP LOG
 
     if (HasTaintedCore(bot))
         return true;

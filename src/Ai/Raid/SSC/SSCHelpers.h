@@ -1005,19 +1005,6 @@ int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot);
 bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, int8 index);
 float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index);
 
-// TEMP LOG (Tainted Elemental timing), remove after testing. Elapsed is from the looter pick.
-void StartTaintedLog(Player* bot);
-uint32 TaintedLogElapsedMs(Player* bot);
-// Once per bot, key and elemental.
-bool TaintedLogFirstTime(Player* bot, char const* key);
-bool TaintedLogSeen(Player* bot, char const* key);
-// At most once a second per bot and key.
-bool TaintedLogThrottle(Player* bot, char const* key);
-void TaintedLogThrow(Player* bot, Player* receiver, int catcher);
-void TaintedLogChain(Player* bot, VashjCorePassingChain const& chain, char const* what);
-// Logs when the number of usable generators changes.
-void TaintedLogGenerators(Player* bot);
-
 }
 
 #endif
