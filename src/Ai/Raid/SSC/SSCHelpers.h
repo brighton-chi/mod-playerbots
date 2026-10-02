@@ -241,6 +241,9 @@ inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
 inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
 // Melee returning to Lurker from an islet stop this far from him, on the walkway.
 inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
+// A melee bot farther than this from Lurker is out on an islet. The Ambushers' islets are
+// 45-55 yd from him, and the Guardians spawn on land 25-30 yd from him (summon table).
+inline constexpr float LURKER_ISLET_DISTANCE = 40.0f;
 
 // Spout avoidance mechanics:
 // Each bot is assigned a radius from Lurker from 19-21y. The range is to make things look less
@@ -252,7 +255,7 @@ inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 19.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 21.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
-inline constexpr float LURKER_SPOUT_RUN_STEP = 7.0f;
+inline constexpr float LURKER_SPOUT_RUN_STEP = 3.5f;
 inline constexpr float LURKER_SPOUT_RUN_RADIAL_DEADZONE = 2.0f;
 // A bot may run this far past directly behind Lurker, in the spin direction, before it stops.
 // This is to prevent the very intelligent bots from lapping Lurker and getting blasted.
@@ -282,8 +285,9 @@ int8 GetLurkerSpoutSpin(Unit* lurker);
 // True if a navmesh path from the bot to x/y sets off around Lurker in the given angular
 // direction (+1 counter-clockwise, -1 clockwise).
 bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, int8 direction);
-// True if a navmesh path from the bot ends within tolerance of x/y.
-bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance);
+// The 2D length of a navmesh path from the bot that ends within tolerance of x/y, or -1 if
+// none does.
+float GetArrivingPathLength(Player* bot, float x, float y, float z, float tolerance);
 GuidVector FindLurkerGuardianGuids(Player* bot);
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI);
 // The Guardian tanks in index order; empty if there are fewer than 3 living tanks, humans included.

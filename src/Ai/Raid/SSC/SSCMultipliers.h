@@ -145,6 +145,30 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Melee wait to move behind Lurker until his tank has him on the tank spot. Until then he may
+// still be turning, and behind him can be off the ring, in the water.
+class TheLurkerBelowMeleeWaitToSetBehindMultiplier : public SscEncounterMultiplier
+{
+public:
+    TheLurkerBelowMeleeWaitToSetBehindMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "the lurker below melee wait to set behind") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// TEST: melee move only by the direct move in this fight, to see whether reach melee is what
+// walks them into the water.
+class TheLurkerBelowMeleeDisableReachMultiplier : public SscEncounterMultiplier
+{
+public:
+    TheLurkerBelowMeleeDisableReachMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "the lurker below melee disable reach") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Leotheras the Blind
 
 class LeotherasTheBlindAvoidWhirlwindMultiplier : public SscEncounterMultiplier

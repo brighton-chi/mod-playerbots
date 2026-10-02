@@ -492,14 +492,22 @@ bool DoesPathRoundLurker(Player* bot, Unit* lurker, float x, float y, float z, i
     return delta * direction > 0.0f;
 }
 
-bool DoesPathArrive(Player* bot, float x, float y, float z, float tolerance)
+float GetArrivingPathLength(Player* bot, float x, float y, float z, float tolerance)
 {
     PathGenerator path(bot);
     if (!path.CalculatePath(x, y, z) || (path.GetPathType() & PATHFIND_NOPATH))
-        return false;
+        return -1.0f;
 
     G3D::Vector3 const& end = path.GetActualEndPosition();
-    return std::hypot(end.x - x, end.y - y) <= tolerance;
+    if (std::hypot(end.x - x, end.y - y) > tolerance)
+        return -1.0f;
+
+    Movement::PointsArray const& points = path.GetPath();
+    float length = 0.0f;
+    for (size_t i = 1; i < points.size(); ++i)
+        length += std::hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+
+    return length;
 }
 
 int8 GetLurkerSpoutSpin(Unit* lurker)

@@ -302,9 +302,6 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action
 
 float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<MovementAction*>(action) &&
         !IsMeleeReachSpell(bot, action) && !IsRepositionAction(bot, action))
     {
@@ -381,6 +378,38 @@ float TheLurkerBelowDisableKillingSpreeMultiplier::GetValueInEncounter(Action* a
     return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
 }
 
+float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
+    if (!lurker || AI_VALUE(Unit*, "current target") != lurker)
+        return 1.0f;
+
+    constexpr float tankSpotTolerance = 3.0f;
+    Unit* victim = lurker->GetVictim();
+    return victim && victim->GetExactDist2d(LURKER_MAIN_TANK_POSITION) <= tankSpotTolerance ?
+        1.0f : 0.0f;
+}
+
+float TheLurkerBelowMeleeDisableReachMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsMelee(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<ReachMeleeAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "the lurker below") ? 0.0f : 1.0f;
+}
+
 // Leotheras the Blind
 
 float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
@@ -416,7 +445,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
         return 1.0f;
 
     // Disable all spells from tanks if there is a Warlock tank; instead, just auto-attack to build
-    // range in case the tank gets an Inner Demon.
+    // rage in case the tank gets an Inner Demon.
     if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
     {
         return bot->getClass() == CLASS_DRUID &&
@@ -1041,14 +1070,9 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 
-    // In either engine, as in phase 2. In the non-combat engine assist would undo the priority
-    // action's drop of a target in a Strider's Panic.
-    if (isAssistAction)
-        return 0.0f;
-
     // Healers still reach to heal, but never walk to a target, which healer dps or a priest's
     // wand would
-    if (isHealerSpellReach)
+    if (isAssistAction || isHealerSpellReach)
         return 0.0f;
 
     if (isDebuffOnAttacker)
@@ -1114,14 +1138,14 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
 // clear of pools; otherwise the ranged spore action goes round them.
 float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
 {
+    if (!PlayerbotAI::IsCaster(bot))
+        return 1.0f;
+
     bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
     bool const isSpellReach = dynamic_cast<ReachSpellAction*>(action);
 
     // The reach the helper below measures: a healer's reach-to-heal, anyone else's reach-spell
     if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isSpellReach)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsCaster(bot))
         return 1.0f;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");

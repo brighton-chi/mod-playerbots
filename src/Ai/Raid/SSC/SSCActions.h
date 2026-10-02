@@ -125,6 +125,12 @@ public:
     TheLurkerBelowRunAroundBehindBossAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "the lurker below run around behind boss") {}
     bool Execute(Event event) override;
+
+private:
+    // TEMP LOG (Lurker spin reversals), remove after testing
+    float _logAngle = 0.0f;
+    uint32 _logTime = 0;
+    bool _logOnSpinSteps = false;
 };
 
 class TheLurkerBelowPositionMainTankAction : public AttackAction

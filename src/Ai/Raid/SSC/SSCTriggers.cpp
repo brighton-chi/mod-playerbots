@@ -181,8 +181,7 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    // Consider the bot stuck if it is not moving or casting even with a target out of melee range.
-    if (bot->isMoving() || bot->IsNonMeleeSpellCast(false))
+    if (bot->IsNonMeleeSpellCast(false))
         return false;
 
     Unit* target = AI_VALUE(Unit*, "current target");
@@ -190,7 +189,17 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
         return false;
 
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
-    return lurker && !IsLurkerSpouting(lurker);
+    if (!lurker || IsLurkerSpouting(lurker))
+        return false;
+
+    // Consider the bot stuck if it is not moving even with a target out of melee range. A bot
+    // still running to an Ambusher or a Guardian when its target is already Lurker is sent back
+    // too: the move to Lurker is forced, so once it is under way this no longer fires.
+    if (!bot->isMoving())
+        return true;
+
+    return target == lurker &&
+        AI_VALUE(LastMovement&, "last movement").priority < MovementPriority::MOVEMENT_FORCED;
 }
 
 // Leotheras the Blind
