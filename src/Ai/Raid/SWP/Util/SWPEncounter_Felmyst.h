@@ -254,6 +254,8 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 3000);
 Player* GetFelmystEncapsulateTarget(Player* bot);
+bool ShouldMoveAwayFromFelmystEncapsulateTarget(
+    Player* bot, Unit* felmyst, Player* encapsulateTarget);
 bool DidEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);

@@ -1283,6 +1283,20 @@ Player* GetFelmystEncapsulateTarget(Player* bot)
     return closestTarget;
 }
 
+bool ShouldMoveAwayFromFelmystEncapsulateTarget(
+    Player* bot, Unit* felmyst, Player* encapsulateTarget)
+{
+    if (!felmyst || !encapsulateTarget || encapsulateTarget == bot ||
+        felmyst->GetVictim() == bot)
+    {
+        return false;
+    }
+
+    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(bot, felmyst, bot);
+    return botStack != FelmystGroundStack::None &&
+        botStack == GetClosestFelmystGroundStack(bot, felmyst, encapsulateTarget);
+}
+
 bool DidEncapsulateOccurThisGroundPhase(Player* bot)
 {
     auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());

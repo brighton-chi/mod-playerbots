@@ -329,13 +329,14 @@ bool FelmystMeleeShouldStayTogetherTrigger::IsActiveInEncounter()
 
 bool FelmystEncapsulateOnMageOrPaladinTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_PALADIN)
+    bool const isPaladin = bot->getClass() == CLASS_PALADIN;
+    if (!isPaladin && bot->getClass() != CLASS_MAGE)
         return false;
 
     if (!bot->HasAura(Id(SwpSpells::SPELL_ENCAPSULATE)))
         return false;
 
-    return !PlayerbotAI::IsMainTank(bot);
+    return isPaladin && !PlayerbotAI::IsMainTank(bot);
 }
 
 bool FelmystNearEncapsulatedPlayerTrigger::IsActiveInEncounter()
@@ -344,18 +345,8 @@ bool FelmystNearEncapsulatedPlayerTrigger::IsActiveInEncounter()
     if (!felmyst || felmyst->IsFlying())
         return false;
 
-    Player* encapsulateTarget = GetFelmystEncapsulateTarget(bot);
-    if (!encapsulateTarget || encapsulateTarget == bot)
-        return false;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
-    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(bot, felmyst, bot);
-    FelmystGroundStack const targetStack = GetClosestFelmystGroundStack(
-        bot, felmyst, encapsulateTarget);
-
-    return botStack != FelmystGroundStack::None && botStack == targetStack;
+    return ShouldMoveAwayFromFelmystEncapsulateTarget(
+        bot, felmyst, GetFelmystEncapsulateTarget(bot));
 }
 
 bool FelmystPlayerHasGasNovaTrigger::IsActiveInEncounter()

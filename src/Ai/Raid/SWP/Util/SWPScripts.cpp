@@ -53,6 +53,12 @@ PlayerbotAI* FindFirstSunwellCombatBotInGroup(Player* referencePlayer)
     return nullptr;
 }
 
+bool IsCastingOrChanneling(Player* player)
+{
+    return player && (player->GetCurrentSpell(CURRENT_GENERIC_SPELL) ||
+        player->GetCurrentSpell(CURRENT_CHANNELED_SPELL));
+}
+
 Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
 {
     if (!spell || !caster)
@@ -74,21 +80,16 @@ Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit, Player* groupReference)
+void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
 {
     if (!contextUnit)
         return;
 
-    Group* group = nullptr;
-    if (groupReference)
-        group = groupReference->GetGroup();
-
     Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
-
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || (group && player->GetGroup() != group))
+        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
@@ -120,31 +121,16 @@ void RequestInterruptForBotsWithFelmystEncapsulate(Creature* felmyst)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive())
+        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
         if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
 
-        if (!player->GetCurrentSpell(CURRENT_GENERIC_SPELL) &&
-            !player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-        {
-            continue;
-        }
-
         Player* encapsulateTarget = GetFelmystEncapsulateTarget(player);
-        if (!encapsulateTarget)
-            continue;
-
-        constexpr float safeDistance = 20.0f;
-        if (player != encapsulateTarget &&
-            player->GetExactDist2d(encapsulateTarget) > safeDistance)
-        {
-            continue;
-        }
-
-        botAI->RequestSpellInterrupt();
+        if (ShouldMoveAwayFromFelmystEncapsulateTarget(player, felmyst, encapsulateTarget))
+            botAI->RequestSpellInterrupt();
     }
 }
 
@@ -157,18 +143,12 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
-        if (!player || !player->IsAlive())
+        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
         if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
-
-        if (!player->GetCurrentSpell(CURRENT_GENERIC_SPELL) &&
-            !player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-        {
-            continue;
-        }
 
         if (GetEredarTwinsConflagrationTarget(player) == player ||
             (GetEredarTwinsBlazeTarget(player) == player && PlayerbotAI::IsRanged(player)))
@@ -234,64 +214,16 @@ public:
     void OnSpellCast(
         Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (spellInfo->Id == Id(SwpSpells::SPELL_FOG_OF_CORRUPTION) ||
-            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_TOP) ||
-            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_MIDDLE) ||
-            spellInfo->Id == Id(SwpSpells::SPELL_FELMYST_STRAFE_BOTTOM))
-        {
-            Player* targetPlayer = GetFirstPlayerSpellTarget(spell, caster);
-            Player* groupReference = targetPlayer;
-            if (Player* casterPlayer = caster->ToPlayer())
-                groupReference = casterPlayer;
-
-            if (groupReference)
-            {
-                if (!FindFirstSunwellCombatBotInGroup(groupReference))
-                    return;
-            }
-            else
-            {
-                bool hasSunwellStrategy = false;
-                Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-                for (Map::PlayerList::const_iterator it = players.begin();
-                     it != players.end(); ++it)
-                {
-                    Player* player = it->GetSource();
-                    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-                        botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                    {
-                        hasSunwellStrategy = true;
-                        break;
-                    }
-                }
-
-                if (!hasSunwellStrategy)
-                    return;
-            }
-
-            RequestInterruptForBotsNeedingFelmystFogMovement(caster, groupReference);
-
+        if (spellInfo->Id != Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR))
             return;
-        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
+        if (!IsCastingOrChanneling(target))
             return;
 
-        switch (spellInfo->Id)
-        {
-            case Id(SwpSpells::SPELL_SUMMON_DEMONIC_VAPOR):
-            {
-                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-                    botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                {
-                    botAI->RequestSpellInterrupt();
-                }
-                break;
-            }
-            default:
-                break;
-        }
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
+        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            botAI->RequestSpellInterrupt();
     }
 };
 
@@ -302,8 +234,11 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (caster->GetEntry() != Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS))
+        if (spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION) &&
+            spellInfo->Id != Id(SwpSpells::SPELL_BLAZE))
+        {
             return;
+        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target || !FindFirstSunwellCombatBotInGroup(target))
@@ -311,7 +246,7 @@ public:
 
         if (spellInfo->Id == Id(SwpSpells::SPELL_CONFLAGRATION))
             RecordIncomingEredarTwinsConflagrationTarget(target);
-        else if (spellInfo->Id == Id(SwpSpells::SPELL_BLAZE))
+        else
             RecordEredarTwinsBlazeTarget(target);
     }
 };
@@ -328,7 +263,7 @@ public:
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target)
+        if (!IsCastingOrChanneling(target))
             return;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
@@ -353,17 +288,15 @@ public:
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
-            if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
+            if (!player || !player->IsAlive() || !IsCastingOrChanneling(player) ||
+                HasKiljaedenDragonAura(player))
+            {
                 continue;
+            }
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                continue;
-
-            if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
-                continue;
-
-            botAI->RequestSpellInterrupt();
+            if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                botAI->RequestSpellInterrupt();
         }
     }
 };
@@ -382,7 +315,7 @@ public:
         {
             case Id(SwpNpcs::NPC_FELMYST):
             {
-                RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
+                RequestInterruptForBotsNeedingFelmystFogMovement(creature);
                 RequestInterruptForBotsWithFelmystEncapsulate(creature);
                 break;
             }
@@ -422,8 +355,11 @@ public:
             {
                 hasSunwellStrategy = true;
 
-                if (!player->IsAlive() || HasKiljaedenDragonAura(player))
+                if (!player->IsAlive() || !IsCastingOrChanneling(player) ||
+                    HasKiljaedenDragonAura(player))
+                {
                     continue;
+                }
 
                 if (creature->GetExactDist2d(player) > ARMAGEDDON_SAFE_DISTANCE)
                     continue;
