@@ -42,7 +42,7 @@ bool UnderbogColossusInToxicPoolTrigger::IsActive()
 
 bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsDps(bot) || IsEncounterInProgress(bot, SSC_MAP_ID))
+    if (IsEncounterInProgress(bot, SSC_MAP_ID) || !PlayerbotAI::IsDps(bot))
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "greyheart tidecaller"))
@@ -87,7 +87,6 @@ bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounte
     if (!hydross)
         return false;
 
-    // No Mark of the current phase yet means the phase began less than 15s ago.
     return IsHydrossInFrostPhase(hydross) ? HasNoMarkOfHydross(bot) : HasNoMarkOfCorruption(bot);
 }
 
@@ -101,13 +100,10 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
         return false;
 
     HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
-    // Hunters keep going after the change to misdirect Hydross to the new tank.
     return window == HydrossDpsHoldWindow::BeforePhaseChange ||
         (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
 }
 
-// Nothing else drops Hydross for a tank other than the phase tank: one sent in on the pull
-// (attack my target), or the old phase tank walking back to its spot after a swap.
 bool HydrossTheUnstableNonPhaseTankAttackingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -172,8 +168,7 @@ bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
     return GetLurkerGuardianTankIndex(botAI) >= 0;
 }
 
-// Reach melee can't take melee across the water to an Ambusher or back (absent a charge spell),
-// so a direct move to land does it.
+// ReachMeleeAction can't cross the water to an Ambusher or back, so use a direct move to land.
 bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -199,8 +194,7 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
         AI_VALUE(LastMovement&, "last movement").priority < MovementPriority::MOVEMENT_FORCED;
 }
 
-// In or over the deep water, not the shallows of Lurker's ring: a path between islets can drop
-// a bot in next to an islet with no shore to climb.
+// Bots can "fall" into the water when crossing between islets.
 bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -216,7 +210,6 @@ bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
     if (IsDryGround(bot, bot->GetPositionX(), bot->GetPositionY()))
         return false;
 
-    // His return to the tank spot crosses a spillway on purpose
     return !PlayerbotAI::IsMainTank(bot);
 }
 
@@ -448,14 +441,11 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
     return GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
-// Left hanging after the tosses: the spline never finished, or a toss from mid-air ended at the
-// bot's own height. While the aura is up, more tosses are coming.
 bool FathomLordKarathressStuckMidairAfterCycloneTrigger::IsActiveInEncounter()
 {
     if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
         return false;
 
-    // A bot with a move under way, the drop itself included, is left to finish it
     if (bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != EFFECT_MOTION_TYPE &&
         !bot->movespline->Finalized())
     {
@@ -465,8 +455,6 @@ bool FathomLordKarathressStuckMidairAfterCycloneTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
         return false;
 
-    // Only a bot left well off the floor. Any other knockback, such as Knock Away from Sharkkis's
-    // pets (a flat shove topping out under half a yard), is left to run its course.
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
     return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CARIBDIS_CYCLONE_DROP_HEIGHT;
@@ -493,8 +481,6 @@ bool MorogrimTidewalkerRangedShouldStackTrigger::IsActiveInEncounter()
         TIDEWALKER_RANGED_STACK_RADIUS;
 }
 
-// This is to keep bots from chasing murlocs across the room, which is particularly prone to
-// happening with bots that leave Watery Graves right as murlocs spawn.
 bool MorogrimTidewalkerTooFarFromBossTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot))
@@ -557,7 +543,6 @@ bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// Hunters go after Sporebats, and the Static Charge action moves a holder on its own.
 bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsCaster(bot) || HasVashjStaticCharge(bot))
@@ -598,8 +583,6 @@ bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
     return IsInVashjStaticChargeReach(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
 }
 
-// Healers too: their dps and a priest's wand get a tier target, never a Sporebat (which walks
-// them up into the air), and in phase 2 the target keeps them in their combat engine.
 bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -612,8 +595,10 @@ bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 
 bool LadyVashjTankNeedsFearWardTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && !bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)) &&
-        AI_VALUE2(Unit*, "find target", "coilfang strider");
+    if (!PlayerbotAI::IsTank(bot) || bot->HasAura(Id(SscSpells::SPELL_FEAR_WARD)))
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "coilfang strider");
 }
 
 bool LadyVashjCoilfangStriderShouldBeTankedTrigger::IsActiveInEncounter()
@@ -635,18 +620,17 @@ bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* elite = AI_VALUE(Unit*, "current target");
-    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) ||
-        elite->GetVictim() != bot || elite->GetExactDist2d(GetVashjEliteTankPosition(*elite)) <=
-            VASHJ_ADD_TANK_ARRIVAL_DISTANCE)
-    {
+    if (!elite || elite->GetEntry() != Id(SscNpcs::NPC_COILFANG_ELITE) || elite->GetVictim() != bot)
         return false;
-    }
+
+    if (elite->GetExactDist2d(GetVashjEliteTankPosition(*elite)) <= VASHJ_ADD_TANK_ARRIVAL_DISTANCE)
+        return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// Idle means not on an Elite, a Strider, or an Enchanted near her.
+// Idle means not on an Elite, a Strider, or an Enchanted Elemental near Vashj.
 bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -675,8 +659,6 @@ bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
     }
 }
 
-// Phase 2 only, as are the attack and loot triggers below: a core looted in phase 3 has no
-// generator left, and its Paralyze would root the looter.
 bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
@@ -698,7 +680,6 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     return !looter || !looter->IsAlive();
 }
 
-// A healer looter waits beside it instead (see the loot action).
 bool LadyVashjShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
     if (!GetTaintedElementalToKill(bot))
@@ -721,7 +702,6 @@ bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
     if (!IsTaintedCoreStillToLoot(tainted))
         return false;
 
-    // Nothing to do while the looter waits beside the living elemental
     return !tainted->IsAlive() || bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE;
 }
 
@@ -745,8 +725,6 @@ bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
     if (index < 0)
         return false;
 
-    // Nothing to do on its spot once there. The action marks the arrival, which releases the next
-    // catcher, so it still runs on that tick.
     VashjCoreCatcher const& catcher = chain->catchers[index];
     if (catcher.arrived &&
         bot->GetExactDist2d(catcher.spot) <= GetVashjCoreSpotArrivalDistance(*chain, index))
@@ -757,8 +735,6 @@ bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
     return IsVashjCoreCatcherActive(bot, *chain, index);
 }
 
-// In phase 3 with no generator left, from a chain that found no way, or still held when the next
-// core is ready to loot. Its Paralyze roots the holder until it leaves the bags.
 bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 {
     if (!HasTaintedCore(bot))
@@ -797,19 +773,16 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (Unit* target = GetVashjPetTarget(botAI, pet, vashj))
         return pet->GetVictim() != target;
 
-    // Nothing worth attacking, so only a pet still on an immune Vashj needs calling back
     return pet->GetVictim() == vashj;
 }
 
-// Bots going after Sporebats sometimes walk up into the air, or end up on the pipes above the
-// dais. A bot never falls on its own, so it stays up there.
+// Bots attacking Sporebats tend to walk up into the air, sometimes onto the ceiling pipes.
 bool LadyVashjBotAboveTheGroundTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return false;
 
-    // Search down from the dais, not from the bot, so a bot on the pipes still reads as high
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
     return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > VASHJ_ABOVE_GROUND_HEIGHT;
