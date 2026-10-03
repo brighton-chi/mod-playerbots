@@ -143,11 +143,11 @@ public:
         creators["lady vashj phase 1 spread ranged in arc"] =
             &RaidSscActionContext::lady_vashj_phase_1_spread_ranged_in_arc;
 
-        creators["lady vashj assign cluster slots"] =
-            &RaidSscActionContext::lady_vashj_assign_cluster_slots;
+        creators["lady vashj assign station slots"] =
+            &RaidSscActionContext::lady_vashj_assign_station_slots;
 
-        creators["lady vashj phase 2 position in cluster"] =
-            &RaidSscActionContext::lady_vashj_phase_2_position_in_cluster;
+        creators["lady vashj phase 2 position at station"] =
+            &RaidSscActionContext::lady_vashj_phase_2_position_at_station;
 
         creators["lady vashj phase 3 position ranged"] =
             &RaidSscActionContext::lady_vashj_phase_3_position_ranged;
@@ -362,11 +362,11 @@ private:
     static Action* lady_vashj_phase_1_spread_ranged_in_arc(PlayerbotAI* botAI) {
         return new LadyVashjPhase1SpreadRangedInArcAction(botAI);
     }
-    static Action* lady_vashj_assign_cluster_slots(PlayerbotAI* botAI) {
-        return new LadyVashjAssignClusterSlotsAction(botAI);
+    static Action* lady_vashj_assign_station_slots(PlayerbotAI* botAI) {
+        return new LadyVashjAssignStationSlotsAction(botAI);
     }
-    static Action* lady_vashj_phase_2_position_in_cluster(PlayerbotAI* botAI) {
-        return new LadyVashjPhase2PositionInClusterAction(botAI);
+    static Action* lady_vashj_phase_2_position_at_station(PlayerbotAI* botAI) {
+        return new LadyVashjPhase2PositionAtStationAction(botAI);
     }
     static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI) {
         return new LadyVashjPhase3PositionRangedAction(botAI);

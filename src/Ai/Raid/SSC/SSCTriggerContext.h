@@ -146,11 +146,11 @@ public:
         creators["lady vashj ranged should spread in phase 1"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_spread_in_phase_1;
 
-        creators["lady vashj cluster slots need holders"] =
-            &RaidSscTriggerContext::lady_vashj_cluster_slots_need_holders;
+        creators["lady vashj station slots need holders"] =
+            &RaidSscTriggerContext::lady_vashj_station_slots_need_holders;
 
-        creators["lady vashj should hold cluster in phase 2"] =
-            &RaidSscTriggerContext::lady_vashj_should_hold_cluster_in_phase_2;
+        creators["lady vashj should hold station in phase 2"] =
+            &RaidSscTriggerContext::lady_vashj_should_hold_station_in_phase_2;
 
         creators["lady vashj ranged should position in phase 3"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
@@ -360,11 +360,11 @@ private:
     static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldSpreadInPhase1Trigger(botAI);
     }
-    static Trigger* lady_vashj_cluster_slots_need_holders(PlayerbotAI* botAI) {
-        return new LadyVashjClusterSlotsNeedHoldersTrigger(botAI);
+    static Trigger* lady_vashj_station_slots_need_holders(PlayerbotAI* botAI) {
+        return new LadyVashjStationSlotsNeedHoldersTrigger(botAI);
     }
-    static Trigger* lady_vashj_should_hold_cluster_in_phase_2(PlayerbotAI* botAI) {
-        return new LadyVashjShouldHoldClusterInPhase2Trigger(botAI);
+    static Trigger* lady_vashj_should_hold_station_in_phase_2(PlayerbotAI* botAI) {
+        return new LadyVashjShouldHoldStationInPhase2Trigger(botAI);
     }
     static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI) {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);

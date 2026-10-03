@@ -444,21 +444,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjClusterSlotsNeedHoldersTrigger : public SscEncounterTrigger
+class LadyVashjStationSlotsNeedHoldersTrigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjClusterSlotsNeedHoldersTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj cluster slots need holders", 1000) {}
+    LadyVashjStationSlotsNeedHoldersTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj station slots need holders", 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjShouldHoldClusterInPhase2Trigger : public SscEncounterTrigger
+class LadyVashjShouldHoldStationInPhase2Trigger : public SscEncounterTrigger
 {
 public:
-    LadyVashjShouldHoldClusterInPhase2Trigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj should hold cluster in phase 2") {}
+    LadyVashjShouldHoldStationInPhase2Trigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should hold station in phase 2") {}
 
 protected:
     bool IsActiveInEncounter() override;

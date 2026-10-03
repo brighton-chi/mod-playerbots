@@ -148,11 +148,11 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj ranged should spread in phase 1",
         { NextAction("lady vashj phase 1 spread ranged in arc", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("lady vashj cluster slots need holders",
-        { NextAction("lady vashj assign cluster slots", ACTION_EMERGENCY + 14) }));
+    triggers.push_back(new TriggerNode("lady vashj station slots need holders",
+        { NextAction("lady vashj assign station slots", ACTION_EMERGENCY + 14) }));
 
-    triggers.push_back(new TriggerNode("lady vashj should hold cluster in phase 2",
-        { NextAction("lady vashj phase 2 position in cluster", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("lady vashj should hold station in phase 2",
+        { NextAction("lady vashj phase 2 position at station", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3",
         { NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));

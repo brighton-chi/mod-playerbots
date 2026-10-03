@@ -1033,7 +1033,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
             !IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 1.0f : 0.0f;
     }
 
-    // Cluster ranged shoot from their slots. Only those sent after a Tainted Elemental walk to it,
+    // Station ranged shoot from their slots. Only those sent after a Tainted Elemental walk to it,
     // and those stepping in to cast range of a Strider.
     if (PlayerbotAI::IsRangedDps(bot))
     {
@@ -1043,11 +1043,11 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return GetTaintedElementalToKill(bot) ? 1.0f : 0.0f;
     }
 
-    // Cluster healers heal from their slots too. Other healers still reach to heal, but never walk
+    // Station healers heal from their slots too. Other healers still reach to heal, but never walk
     // to a target, which healer dps or a priest's wand would.
     if (isReachAction && PlayerbotAI::IsHeal(bot))
     {
-        if (GetVashjClusterSlot(bot).cluster >= 0 ||
+        if (GetVashjStationSlot(bot).station >= 0 ||
             !dynamic_cast<ReachPartyMemberToHealAction*>(action))
         {
             return 0.0f;

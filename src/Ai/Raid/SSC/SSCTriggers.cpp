@@ -522,21 +522,21 @@ bool LadyVashjRangedShouldSpreadInPhase1Trigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 1;
 }
 
-bool LadyVashjClusterSlotsNeedHoldersTrigger::IsActiveInEncounter()
+bool LadyVashjStationSlotsNeedHoldersTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 2 && HasVashjClusterVacancy(bot);
+    return vashj && GetLadyVashjPhase(vashj) == 2 && HasVashjStationVacancy(bot);
 }
 
-bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
+bool LadyVashjShouldHoldStationInPhase2Trigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRangedDps(bot) && !PlayerbotAI::IsHeal(bot))
         return false;
 
-    if (!GetVashjClusterPositionToReturnTo(bot, AI_VALUE(Unit*, "current target")))
+    if (!GetVashjStationPositionToReturnTo(bot, AI_VALUE(Unit*, "current target")))
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -817,8 +817,9 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
         return false;
     }
 
-    return !IsInMeleeRangeClearOfSpores(bot, AI_VALUE(Unit*, "current target"),
-        GetToxicSporePositions(botAI), TOXIC_SPORES_AVOID_RADIUS);
+    return !IsInMeleeRangeClearOfSpores(
+        bot, AI_VALUE(Unit*, "current target"), GetToxicSporePositions(botAI),
+        TOXIC_SPORES_AVOID_RADIUS);
 }
 
 bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()

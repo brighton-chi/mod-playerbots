@@ -46,7 +46,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     uint32 const instanceId = bot->GetInstanceId();
 
-    reset |= vashjClusterHolders.erase(instanceId) > 0;
+    reset |= vashjStationHolders.erase(instanceId) > 0;
     reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
     reset |= vashjCorePassingChains.erase(instanceId) > 0;
     reset |= vashjGroundingShaman.erase(instanceId) > 0;
@@ -1509,18 +1509,18 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 
 // Mechanic tracker only. Fills the slots in group order the first time, then puts the first
 // living spare of the right role into each vacated slot. Holders never move.
-bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
+bool LadyVashjAssignStationSlotsAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
+    VashjStationHolders& holders = vashjStationHolders[bot->GetInstanceId()];
     auto holdsSlot = [&holders](ObjectGuid guid)
     {
-        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
+        return std::any_of(holders.begin(), holders.end(), [guid](auto const& station)
         {
-            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
+            return std::find(station.begin(), station.end(), guid) != station.end();
         });
     };
 
@@ -1544,13 +1544,13 @@ bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
     bool changed = false;
     size_t nextRanged = 0;
     size_t nextHealer = 0;
-    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
+    for (VashjStationSlot const& slot : GetVashjStationFillOrder())
     {
-        ObjectGuid& holder = holders[slot.cluster][slot.slot];
-        if (IsLiveVashjClusterHolder(bot, holder))
+        ObjectGuid& holder = holders[slot.station][slot.slot];
+        if (IsLiveVashjStationHolder(bot, holder))
             continue;
 
-        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
+        bool const isHealerSlot = slot.slot == VASHJ_STATION_HEALER_SLOT;
         std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
         size_t& next = isHealerSlot ? nextHealer : nextRanged;
         if (next >= spares.size())
@@ -1563,23 +1563,23 @@ bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
     return changed;
 }
 
-// The cluster nearest a Tainted Elemental kills it and its healer loots it, and Enchanted
+// The station nearest a Tainted Elemental kills it and its healer loots it, and Enchanted
 // Elementals are met on their way in.
-bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
+bool LadyVashjPhase2PositionAtStationAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
 
-    Position const* clusterPosition =
-        GetVashjClusterPositionToReturnTo(bot, AI_VALUE(Unit*, "current target"));
-    if (!clusterPosition)
+    Position const* stationPosition =
+        GetVashjStationPositionToReturnTo(bot, AI_VALUE(Unit*, "current target"));
+    if (!stationPosition)
         return false;
 
     float stepX;
     float stepY;
     if (!GetPathStepTowardPoint(
-            bot, *clusterPosition, VASHJ_CLUSTER_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE,
+            bot, *stationPosition, VASHJ_STATION_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE,
             stepX, stepY))
     {
         return false;
@@ -1727,7 +1727,7 @@ bool IsVashjTargetAllowed(
         return false;
 
     // A tanked Strider a little out of range is stepped in to; anything else must be in range
-    if (facts.holdsClusterSlot && !bot->IsWithinCombatRange(unit, facts.spellRange) &&
+    if (facts.holdsStationSlot && !bot->IsWithinCombatRange(unit, facts.spellRange) &&
         !IsTankedStriderInStepInReach(bot, unit))
     {
         return false;
@@ -1868,11 +1868,11 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     facts.maxSearchRange = PlayerbotAI::IsRanged(bot) ? 60.0f : 55.0f;
     facts.maxPursueRange = facts.maxSearchRange - 5.0f;
     facts.spellRange = botAI->GetRange("spell");
-    facts.holdsClusterSlot = facts.phase == 2 && PlayerbotAI::IsRangedDps(bot);
+    facts.holdsStationSlot = facts.phase == 2 && PlayerbotAI::IsRangedDps(bot);
     facts.waitForTank = facts.phase == 2 && !isTank;
     facts.oneTankEach = isTank;
 
-    if (facts.holdsClusterSlot)
+    if (facts.holdsStationSlot)
         facts.tainted = GetTaintedElementalToKill(bot);
 
     VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
@@ -2049,13 +2049,13 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     if (!tainted)
         return false;
 
-    int8 const cluster = GetNearestVashjCluster(tainted);
-    Player* looter = FindTaintedCoreLooter(bot, tainted, cluster);
+    int8 const station = GetNearestVashjStation(tainted);
+    Player* looter = FindTaintedCoreLooter(bot, tainted, station);
     if (!looter)
         return false;
 
     vashjTaintedCoreLooter.insert_or_assign(bot->GetInstanceId(),
-        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), cluster });
+        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), station });
 
     // A new elemental gets a new chain. A re-picked looter becomes the old one's origin bot,
     // and gives up any catcher's spot it had.
@@ -2074,7 +2074,7 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     return true;
 }
 
-// From a cluster the edge of the dais usually blocks the view down to it, and Attack() refuses a
+// From a station the edge of the dais usually blocks the view down to it, and Attack() refuses a
 // target out of sight. Spell range keeps hunters out of their dead zone.
 bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
 {

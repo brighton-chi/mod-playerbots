@@ -1186,22 +1186,22 @@ float GetCastRingRadius(Player* bot, Unit* target, float castRange)
     return castRange + bot->GetCombatReach() + target->GetCombatReach() - margin;
 }
 
-Position const& GetVashjClusterPosition(VashjClusterSlot const& slot)
+Position const& GetVashjStationPosition(VashjStationSlot const& slot)
 {
-    VashjCluster const& cluster = VASHJ_CLUSTERS[slot.cluster];
-    return slot.slot == VASHJ_CLUSTER_HEALER_SLOT ? cluster.healer : cluster.ranged[slot.slot];
+    VashjStation const& station = VASHJ_STATIONS[slot.station];
+    return slot.slot == VASHJ_STATION_HEALER_SLOT ? station.healer : station.ranged[slot.slot];
 }
 
-std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
+std::vector<Player*> GetVashjStationRanged(Player* bot, int8 station)
 {
     std::vector<Player*> ranged;
-    auto it = vashjClusterHolders.find(bot->GetInstanceId());
-    if (it == vashjClusterHolders.end() || cluster < 0)
+    auto it = vashjStationHolders.find(bot->GetInstanceId());
+    if (it == vashjStationHolders.end() || station < 0)
         return ranged;
 
-    for (size_t slot = 0; slot < VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
+    for (size_t slot = 0; slot < VASHJ_STATION_RANGED_SLOTS; ++slot)
     {
-        Player* holder = ObjectAccessor::GetPlayer(*bot, it->second[cluster][slot]);
+        Player* holder = ObjectAccessor::GetPlayer(*bot, it->second[station][slot]);
         if (holder && holder->IsAlive())
             ranged.push_back(holder);
     }
@@ -1209,14 +1209,14 @@ std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
     return ranged;
 }
 
-Player* GetVashjClusterHealer(Player* bot, int8 cluster)
+Player* GetVashjStationHealer(Player* bot, int8 station)
 {
-    auto it = vashjClusterHolders.find(bot->GetInstanceId());
-    if (it == vashjClusterHolders.end() || cluster < 0)
+    auto it = vashjStationHolders.find(bot->GetInstanceId());
+    if (it == vashjStationHolders.end() || station < 0)
         return nullptr;
 
     Player* holder =
-        ObjectAccessor::GetPlayer(*bot, it->second[cluster][VASHJ_CLUSTER_HEALER_SLOT]);
+        ObjectAccessor::GetPlayer(*bot, it->second[station][VASHJ_STATION_HEALER_SLOT]);
     return holder && holder->IsAlive() ? holder : nullptr;
 }
 
@@ -2158,42 +2158,42 @@ bool GetStepToCastRangeAroundSpores(
     return found && CanTakeStepTowards(bot, bestX, bestY, PATH_STEP_DISTANCE, stepX, stepY, stepZ);
 }
 
-// Vashj: Phase 2 Ranged Clusters
+// Vashj: Phase 2 Ranged Stations
 
-std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
+std::unordered_map<uint32, VashjStationHolders> vashjStationHolders;
 
-std::vector<VashjClusterSlot> GetVashjClusterFillOrder()
+std::vector<VashjStationSlot> GetVashjStationFillOrder()
 {
-    std::vector<VashjClusterSlot> order;
-    for (size_t slot = 0; slot < VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
+    std::vector<VashjStationSlot> order;
+    for (size_t slot = 0; slot < VASHJ_STATION_RANGED_SLOTS; ++slot)
     {
-        for (int8 cluster : VASHJ_CLUSTER_FILL_ORDER)
-            order.push_back({ cluster, static_cast<int8>(slot) });
+        for (int8 station : VASHJ_STATION_FILL_ORDER)
+            order.push_back({ station, static_cast<int8>(slot) });
     }
 
-    for (int8 cluster : VASHJ_CLUSTER_FILL_ORDER)
-        order.push_back({ cluster, VASHJ_CLUSTER_HEALER_SLOT });
+    for (int8 station : VASHJ_STATION_FILL_ORDER)
+        order.push_back({ station, VASHJ_STATION_HEALER_SLOT });
 
     return order;
 }
 
-bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid)
+bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid)
 {
     Player* holder = ObjectAccessor::GetPlayer(*bot, guid);
     return holder && holder->IsAlive();
 }
 
-bool HasVashjClusterVacancy(Player* bot)
+bool HasVashjStationVacancy(Player* bot)
 {
-    auto it = vashjClusterHolders.find(bot->GetInstanceId());
-    if (it == vashjClusterHolders.end())
+    auto it = vashjStationHolders.find(bot->GetInstanceId());
+    if (it == vashjStationHolders.end())
         return true;
 
-    for (auto const& cluster : it->second)
+    for (auto const& station : it->second)
     {
-        for (ObjectGuid const& guid : cluster)
+        for (ObjectGuid const& guid : station)
         {
-            if (!guid.IsEmpty() && !IsLiveVashjClusterHolder(bot, guid))
+            if (!guid.IsEmpty() && !IsLiveVashjStationHolder(bot, guid))
                 return true;
         }
     }
@@ -2201,21 +2201,21 @@ bool HasVashjClusterVacancy(Player* bot)
     return false;
 }
 
-VashjClusterSlot GetVashjClusterSlot(Player* bot)
+VashjStationSlot GetVashjStationSlot(Player* bot)
 {
-    VashjClusterSlot result;
-    auto it = vashjClusterHolders.find(bot->GetInstanceId());
-    if (it == vashjClusterHolders.end())
+    VashjStationSlot result;
+    auto it = vashjStationHolders.find(bot->GetInstanceId());
+    if (it == vashjStationHolders.end())
         return result;
 
     ObjectGuid const guid = bot->GetGUID();
-    for (size_t cluster = 0; cluster < VASHJ_CLUSTER_COUNT; ++cluster)
+    for (size_t station = 0; station < VASHJ_STATION_COUNT; ++station)
     {
-        for (size_t slot = 0; slot <= VASHJ_CLUSTER_RANGED_SLOTS; ++slot)
+        for (size_t slot = 0; slot <= VASHJ_STATION_RANGED_SLOTS; ++slot)
         {
-            if (it->second[cluster][slot] == guid)
+            if (it->second[station][slot] == guid)
             {
-                result.cluster = static_cast<int8>(cluster);
+                result.station = static_cast<int8>(station);
                 result.slot = static_cast<int8>(slot);
                 return result;
             }
@@ -2225,14 +2225,14 @@ VashjClusterSlot GetVashjClusterSlot(Player* bot)
     return result;
 }
 
-Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget)
+Position const* GetVashjStationPositionToReturnTo(Player* bot, Unit* currentTarget)
 {
-    VashjClusterSlot const slot = GetVashjClusterSlot(bot);
-    if (slot.cluster < 0)
+    VashjStationSlot const slot = GetVashjStationSlot(bot);
+    if (slot.station < 0)
         return nullptr;
 
-    Position const& clusterPosition = GetVashjClusterPosition(slot);
-    if (bot->GetExactDist2d(clusterPosition) <= VASHJ_CLUSTER_ARRIVAL_DISTANCE)
+    Position const& stationPosition = GetVashjStationPosition(slot);
+    if (bot->GetExactDist2d(stationPosition) <= VASHJ_STATION_ARRIVAL_DISTANCE)
         return nullptr;
 
     // The looter stays on the elemental until the core is looted
@@ -2246,19 +2246,19 @@ Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarg
     if (PlayerbotAI::IsRangedDps(bot) && IsTankedStriderInStepInReach(bot, currentTarget))
         return nullptr;
 
-    return &clusterPosition;
+    return &stationPosition;
 }
 
-int8 GetNearestVashjCluster(Unit* unit)
+int8 GetNearestVashjStation(Unit* unit)
 {
     if (!unit)
         return -1;
 
     int8 nearest = 0;
     float nearestDistance = std::numeric_limits<float>::max();
-    for (size_t i = 0; i < VASHJ_CLUSTERS.size(); ++i)
+    for (size_t i = 0; i < VASHJ_STATIONS.size(); ++i)
     {
-        Position const& slot = VASHJ_CLUSTERS[i].ranged[0];
+        Position const& slot = VASHJ_STATIONS[i].ranged[0];
         float const distance = unit->GetExactDist2d(slot);
         if (distance < nearestDistance &&
             !SegmentCrossesPolygon(slot, unit->GetPosition(), VASHJ_NORTH_ROCK))
@@ -2314,7 +2314,7 @@ std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase,
         if (PlayerbotAI::IsRangedDps(bot))
         {
             return killsTainted ?
-                VASHJ_PHASE_2_TAINTED_KILLER_TIERS : VASHJ_PHASE_2_CLUSTER_RANGED_TIERS;
+                VASHJ_PHASE_2_TAINTED_KILLER_TIERS : VASHJ_PHASE_2_STATION_RANGED_TIERS;
         }
 
         if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
@@ -2526,12 +2526,12 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 
 std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 
-Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
+Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
 {
     if (!tainted)
         return nullptr;
 
-    if (Player* healer = GetVashjClusterHealer(bot, cluster))
+    if (Player* healer = GetVashjStationHealer(bot, station))
         return healer;
 
     Player* looter = nullptr;
@@ -2543,7 +2543,7 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || !member->IsInMap(bot) ||
                 !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member) ||
-                GetVashjClusterSlot(member).cluster >= 0)
+                GetVashjStationSlot(member).station >= 0)
             {
                 continue;
             }
@@ -2560,7 +2560,7 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster)
     if (looter)
         return looter;
 
-    for (Player* member : GetVashjClusterRanged(bot, cluster))
+    for (Player* member : GetVashjStationRanged(bot, station))
     {
         float const distance = member->GetExactDist(tainted);
         if (distance < looterDistance)
@@ -2609,7 +2609,7 @@ Creature* GetTaintedElementalToKill(Player* bot)
 
     auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
     if (it == vashjTaintedCoreLooter.end() ||
-        GetVashjClusterSlot(bot).cluster != it->second.cluster)
+        GetVashjStationSlot(bot).station != it->second.station)
     {
         return nullptr;
     }

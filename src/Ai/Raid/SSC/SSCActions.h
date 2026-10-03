@@ -386,19 +386,19 @@ private:
     bool _reachedRangedPosition = false;
 };
 
-class LadyVashjAssignClusterSlotsAction : public Action
+class LadyVashjAssignStationSlotsAction : public Action
 {
 public:
-    LadyVashjAssignClusterSlotsAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj assign cluster slots") {}
+    LadyVashjAssignStationSlotsAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj assign station slots") {}
     bool Execute(Event event) override;
 };
 
-class LadyVashjPhase2PositionInClusterAction : public MovementAction
+class LadyVashjPhase2PositionAtStationAction : public MovementAction
 {
 public:
-    LadyVashjPhase2PositionInClusterAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "lady vashj phase 2 position in cluster") {}
+    LadyVashjPhase2PositionAtStationAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj phase 2 position at station") {}
     bool Execute(Event event) override;
 };
 

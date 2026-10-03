@@ -506,28 +506,28 @@ bool GetStepToCastRangeAroundSpores(
     Player* bot, Unit* target, float castRange, std::vector<Position> const& spores, float& stepX,
     float& stepY, float& stepZ);
 
-// Vashj: Phase 2 Ranged Clusters
+// Vashj: Phase 2 Ranged Stations
 
-inline constexpr size_t VASHJ_CLUSTER_RANGED_SLOTS = 3;
-inline constexpr int8 VASHJ_CLUSTER_HEALER_SLOT = 3;
-inline constexpr float VASHJ_CLUSTER_ARRIVAL_DISTANCE = 2.0f;
+inline constexpr size_t VASHJ_STATION_RANGED_SLOTS = 3;
+inline constexpr int8 VASHJ_STATION_HEALER_SLOT = 3;
+inline constexpr float VASHJ_STATION_ARRIVAL_DISTANCE = 2.0f;
 
-struct VashjCluster
+struct VashjStation
 {
-    std::array<Position, VASHJ_CLUSTER_RANGED_SLOTS> ranged;
+    std::array<Position, VASHJ_STATION_RANGED_SLOTS> ranged;
     Position healer;
 };
 
-// A bot's cluster and its slot there: 0-2 for ranged dps, VASHJ_CLUSTER_HEALER_SLOT for the healer.
-struct VashjClusterSlot
+// A bot's station and its slot there: 0-2 for ranged dps, VASHJ_STATION_HEALER_SLOT for the healer.
+struct VashjStationSlot
 {
-    int8 cluster = -1;
+    int8 station = -1;
     int8 slot = -1;
 };
 
-inline std::array const VASHJ_CLUSTERS = {
+inline std::array const VASHJ_STATIONS = {
     // Slots at -156, -178 and -134 degrees
-    VashjCluster{
+    VashjStation{
         {
             Position{ -17.87f, -944.69f, 41.30f },
             Position{ -22.33f, -925.36f, 41.30f },
@@ -536,7 +536,7 @@ inline std::array const VASHJ_CLUSTERS = {
         Position{ -6.91f, -939.81f, 41.65f },
     },
     // Slots at 116, 102 and 130 degrees
-    VashjCluster{
+    VashjStation{
         {
             Position{   6.84f, -876.80f, 41.30f },
             Position{  18.82f, -872.68f, 41.30f },
@@ -545,7 +545,7 @@ inline std::array const VASHJ_CLUSTERS = {
         Position{ 12.10f, -887.59f, 41.65f },
     },
     // Slots at -68, -80 and -56 degrees
-    VashjCluster{
+    VashjStation{
         {
             Position{  49.11f, -971.75f, 41.30f },
             Position{  38.66f, -974.75f, 41.30f },
@@ -554,7 +554,7 @@ inline std::array const VASHJ_CLUSTERS = {
         Position{ 44.62f, -960.63f, 41.65f },
     },
     // Slots at 43, 37 and 49 degrees
-    VashjCluster{
+    VashjStation{
         {
             Position{  67.66f, -888.08f, 41.30f },
             Position{  71.16f, -892.25f, 41.30f },
@@ -564,27 +564,27 @@ inline std::array const VASHJ_CLUSTERS = {
     },
 };
 
-inline constexpr size_t VASHJ_CLUSTER_COUNT = std::tuple_size_v<decltype(VASHJ_CLUSTERS)>;
-// The cluster that takes the Tainted spawn east of the rock, the farthest from any cluster,
+inline constexpr size_t VASHJ_STATION_COUNT = std::tuple_size_v<decltype(VASHJ_STATIONS)>;
+// The station that takes the Tainted spawn east of the rock, the farthest from any station,
 // fills first, so with too few ranged dps it is the one kept full.
-inline constexpr std::array VASHJ_CLUSTER_FILL_ORDER = {
+inline constexpr std::array VASHJ_STATION_FILL_ORDER = {
     int8{ 2 }, int8{ 0 }, int8{ 1 }, int8{ 3 },
 };
-static_assert(VASHJ_CLUSTER_FILL_ORDER.size() == VASHJ_CLUSTER_COUNT);
-// Per instance, the bot holding each cluster slot: [cluster][slot].
-using VashjClusterHolders =
-    std::array<std::array<ObjectGuid, VASHJ_CLUSTER_RANGED_SLOTS + 1>, VASHJ_CLUSTER_COUNT>;
+static_assert(VASHJ_STATION_FILL_ORDER.size() == VASHJ_STATION_COUNT);
+// Per instance, the bot holding each station slot: [station][slot].
+using VashjStationHolders =
+    std::array<std::array<ObjectGuid, VASHJ_STATION_RANGED_SLOTS + 1>, VASHJ_STATION_COUNT>;
 
-extern std::unordered_map<uint32, VashjClusterHolders> vashjClusterHolders;
+extern std::unordered_map<uint32, VashjStationHolders> vashjStationHolders;
 
-std::vector<VashjClusterSlot> GetVashjClusterFillOrder();
-bool IsLiveVashjClusterHolder(Player* bot, ObjectGuid guid);
-bool HasVashjClusterVacancy(Player* bot);
-VashjClusterSlot GetVashjClusterSlot(Player* bot);
-Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarget);
-// From the Tainted spawn just east of the rock, the nearest cluster would have to walk round it,
+std::vector<VashjStationSlot> GetVashjStationFillOrder();
+bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid);
+bool HasVashjStationVacancy(Player* bot);
+VashjStationSlot GetVashjStationSlot(Player* bot);
+Position const* GetVashjStationPositionToReturnTo(Player* bot, Unit* currentTarget);
+// From the Tainted spawn just east of the rock, the nearest station would have to walk round it,
 // so the next nearest takes it. No other spawn changes.
-int8 GetNearestVashjCluster(Unit* unit);
+int8 GetNearestVashjStation(Unit* unit);
 
 // Vashj: Adds and Target Priority
 
@@ -616,18 +616,18 @@ struct VashjTargetTier
 struct VashjTargetFacts
 {
     Unit* vashj = nullptr;
-    // Only for one of the cluster sent after it
+    // Only for the ranged of the station sent after it
     Unit* tainted = nullptr;
     int8 phase = -1;
     // From the bot, and in phase 2 from the centre too; they keep bots from going down the stairs
     float maxPursueRange = 0.0f;
     float maxSearchRange = 0.0f;
     float spellRange = 0.0f;
-    // Phase 2 ranged dps hold cluster slots and shoot only what is in range of them, other than
-    // the cluster sent after a Tainted Elemental
-    bool holdsClusterSlot = false;
+    // Phase 2 ranged dps hold station slots and shoot only what is in range of them, other than
+    // the station sent after a Tainted Elemental
+    bool holdsStationSlot = false;
     // Phase 2: everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody
-    // pulls one onto a cluster
+    // pulls one onto a station
     bool waitForTank = false;
     // Tanks: one per Elite or Strider, so the others stay free for the next ones. A new one goes
     // to the nearest free tank.
@@ -641,7 +641,7 @@ inline constexpr uint32 VASHJ_ADDS_CACHE_INTERVAL_MS = 200;
 // Panic (38258) fears every player within this of a Strider, centre to centre: an area spell
 // round an NPC caster adds neither reach.
 inline constexpr float VASHJ_STRIDER_PANIC_RADIUS = 11.0f;
-// Cluster ranged within this of a tanked Strider, centre to centre, step in to cast range of it.
+// Station ranged within this of a tanked Strider, centre to centre, step in to cast range of it.
 // They stop about 40y from it, well clear of Panic and of adds walking in.
 inline constexpr float VASHJ_STRIDER_STEP_IN_DISTANCE = 50.0f;
 // Melee take Enchanted Elementals within this of Vashj before other targets, and tanks not
@@ -655,7 +655,7 @@ inline constexpr float VASHJ_PHASE_3_STRIDER_DISTANCE_FROM_VASHJ = 28.0f;
 
 // Target tiers by phase and role, best first (GetVashjTargetTiers)
 // Striders need several ranged on them at once
-inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_CLUSTER_RANGED_TIERS = {
+inline std::vector<VashjTargetTier> const VASHJ_PHASE_2_STATION_RANGED_TIERS = {
     VashjTargetTier{ VashjTarget::CoilfangStrider },
     VashjTargetTier{ VashjTarget::EnchantedElemental },
     VashjTargetTier{ VashjTarget::CoilfangElite },
@@ -713,14 +713,14 @@ inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MELEE_TIERS = {
     VashjTargetTier{ VashjTarget::LadyVashj },
 };
 
-// One in each gap between two clusters: 16y+ from every cluster slot and healer post (Panic
-// fears within 11y), 18y+ from the generators, and in reach of both clusters' ranged.
+// One in each gap between two stations: 16y+ from every station slot and healer post (Panic
+// fears within 11y), 18y+ from the generators, and in reach of both stations' ranged.
 inline std::array const VASHJ_STRIDER_HOLD_POSITIONS = {
     Position{ -6.0f, -913.5f, 41.9f },
     Position{  9.5f, -963.5f, 41.5f },
     Position{ 33.5f, -889.5f, 41.9f },
 };
-// Each in range of all three ranged of one cluster, and 18y+ from every Strider hold so the
+// Each in range of all three ranged of one station, and 18y+ from every Strider hold so the
 // melee behind them are clear of Panic.
 inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
     Position{ 57.0f, -913.0f, 42.0f },
@@ -751,8 +751,8 @@ struct TaintedCoreLooter
 {
     ObjectGuid tainted;
     ObjectGuid looter;
-    // The cluster nearest the elemental, whose ranged dps kill it
-    int8 cluster = -1;
+    // The station nearest the elemental, whose ranged dps kill it
+    int8 station = -1;
 };
 
 // Within the server's INTERACTION_DISTANCE, with a margin. Edge to edge in 3D, as the server
@@ -761,7 +761,7 @@ inline constexpr float VASHJ_CORE_LOOT_RANGE = INTERACTION_DISTANCE - 2.0f;
 
 extern std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
 
-Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 cluster);
+Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station);
 Creature* GetAssignedTaintedElemental(Player* bot);
 // The core's slot in the elemental's loot; -1 while it is alive (loot is filled on death) and once
 // the core is taken. The corpse stays flagged lootable until its looter releases the loot.
