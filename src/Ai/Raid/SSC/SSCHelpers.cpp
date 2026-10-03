@@ -361,7 +361,6 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
         return HydrossDpsHoldWindow::BeforePhaseChange;
     }
 
-    // No start time yet means the phase has only just begun and the tracker bot hasn't seen it.
     auto itStart = phaseStartTimes.find(instanceId);
     if (itStart == phaseStartTimes.end() ||
         getMSTimeDiff(itStart->second, now) < phaseStartWaitMs)
@@ -384,7 +383,6 @@ Position GetHydrossHandoffPosition(bool frostTank)
     if (length <= 0.0f)
         return own;
 
-    // Solve |own - center + t * dir| = radius for t, the distance along the line from own
     float const dirX = dx / length;
     float const dirY = dy / length;
     float const offX = own.GetPositionX() - HYDROSS_CLEANSING_FIELD_CENTER.GetPositionX();
@@ -396,8 +394,6 @@ Position GetHydrossHandoffPosition(bool frostTank)
     if (discriminant < 0.0f)
         return own;
 
-    // From inside the field the line leaves it at the far root; from outside it enters at the
-    // near one
     float const root = std::sqrt(discriminant);
     float const toEdge = c < 0.0f ? -b + root : -b - root;
     float const distance = toEdge - HYDROSS_HANDOFF_SHORT_DISTANCE;
@@ -1107,7 +1103,7 @@ float SegmentLengthInCircle(
     float const fx = a.GetPositionX() - center.GetPositionX();
     float const fy = a.GetPositionY() - center.GetPositionY();
 
-    // |a + t(b - a) - center| = radius, for t along the segment
+    // |a + t(b - a) - center| = radius, for t along the segment.
     float const qa = dx * dx + dy * dy;
     float const qb = 2.0f * (fx * dx + fy * dy);
     float const qc = fx * fx + fy * fy - radius * radius;
@@ -1141,8 +1137,7 @@ bool IsVashjLineOnDais(
     return true;
 }
 
-// Perpendicular to the nearest edge of the dodecagon. The edges face 15, 45, 75... degrees, so
-// fold the angle into one 30 degree sector and measure off the middle of it.
+// Perpendicular to the nearest edge of the dais (which is a perfect dodecagon).
 float GetVashjEdgeNormalDistance(float x, float y)
 {
     float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
@@ -1158,7 +1153,7 @@ template <std::size_t N>
 bool SegmentCrossesPolygon(
     Position const& a, Position const& b, std::array<Position, N> const& polygon)
 {
-    // Positive when r is left of the line from p to q
+    // Positive when r is left of the line from p to q.
     auto side = [](Position const& p, Position const& q, Position const& r)
     {
         return (q.GetPositionX() - p.GetPositionX()) * (r.GetPositionY() - p.GetPositionY()) -
@@ -1179,7 +1174,6 @@ bool SegmentCrossesPolygon(
     return false;
 }
 
-// Centre to centre, 2y inside the range IsWithinCombatRange() allows
 float GetCastRingRadius(Player* bot, Unit* target, float castRange)
 {
     constexpr float margin = 2.0f;
@@ -1233,7 +1227,7 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
             continue;
 
         GameObject* generator = bounds.first->second;
-        // A used generator stays GO_STATE_READY; it is marked by setting this flag on itself
+        // A used generator retains GO_STATE_READY.
         if (generator && !generator->HasGameObjectFlag(GO_FLAG_NOT_SELECTABLE))
             generators.push_back(generator);
     }
@@ -1241,8 +1235,6 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
     return generators;
 }
 
-// Searched from just above the measured slope: the dais falls from 43.0 at the centre to 41.1 at
-// the rim, the stairs 18.9 over a 33.15y run down to their base, 90.19y out.
 float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
 {
     constexpr float centreZ = 43.0f;
@@ -1295,8 +1287,8 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
     return true;
 }
 
-// As IsWithinLOSInMap measures it: from each one's collision height, generators included. The
-// catcher, not yet picked, is taken as the shortest race.
+// Measured in the same way as IsWithinLOSInMap: from the thrower's collision height to the catcher.
+// The height for the catcher is assumed to be that of a Gnome.
 bool IsVashjCoreThrowInSight(
     Map* map, uint32 phaseMask, Position const& from, float fromEyeHeight, Position const& to)
 {
@@ -1306,7 +1298,7 @@ bool IsVashjCoreThrowInSight(
         phaseMask, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
 }
 
-// The farthest point from the generator's centre, along angle, still within its interaction
+// The farthest point from the generator's center, along angle, still within its interaction
 // distance (5y from its box, Opening's range too) less a margin for where the bot stops.
 bool FindVashjCoreUseSpot(GameObject* generator, uint32 phaseMask, float angle, Position& spot)
 {
@@ -2642,8 +2634,6 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
     chain.tainted = tainted->GetGUID();
     chain.originBot = looter->GetGUID();
 
-    // The first thrower is taken as the shortest race too. With no way found from the corpse, the
-    // looter still loots, and plans again once it holds the core.
     std::vector<Position> spots;
     if (GameObject* generator = PlanVashjCoreRoute(bot, tainted->GetPosition(),
             VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET, VASHJ_CORE_PLAN_EYE_HEIGHT,
@@ -2660,7 +2650,6 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
 
 bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, ObjectGuid excluded)
 {
-    // Rooted in the same place, the holder tends to get the same spots back
     constexpr uint8 maxReplans = 3;
     if (++chain.replans > maxReplans)
     {
@@ -2672,7 +2661,6 @@ bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, O
     chain.catchers.clear();
     ResetVashjCoreThrows(chain);
 
-    // From the holder rooted where it stands, at its own height
     std::vector<Position> spots;
     if (GameObject* generator = PlanVashjCoreRoute(holder, holder->GetPosition(),
             VASHJ_CORE_THROW_PLAN_DISTANCE, holder->GetCollisionHeight(), chain.generator, spots))
