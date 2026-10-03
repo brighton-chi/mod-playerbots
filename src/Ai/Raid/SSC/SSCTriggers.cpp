@@ -788,7 +788,7 @@ bool LadyVashjBotAboveTheGroundTrigger::IsActiveInEncounter()
     return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > VASHJ_ABOVE_GROUND_HEIGHT;
 }
 
-// Melee dps have their own trigger, below.
+// This trigger covers everybody in phase 3 except "ring melee" (see below).
 bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -797,7 +797,6 @@ bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
 
     bool const tanking = vashj->GetVictim() == bot;
 
-    // Shielded bots walk through on their way; her tank's radius is for the melee behind her
     if (!tanking && bot->isMoving() && CanWalkThroughToxicSpores(bot))
         return false;
 
@@ -805,6 +804,8 @@ bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
     return IsNearToxicSpores(botAI, radius);
 }
 
+// For "ring melee" (melee dps within 10y of a Toxic Spore pool, but only if not already in melee
+// range at a position that is >= 7.5y from every pool).
 bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))
@@ -838,8 +839,11 @@ bool LadyVashjRangedReachBlockedByToxicSporesTrigger::IsActiveInEncounter()
 
 bool LadyVashjEntangleOnMeleeTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_PALADIN &&
-        GetVashjHandOfFreedomTarget(botAI, AI_VALUE2(Unit*, "find target", "lady vashj"));
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetVashjHandOfFreedomTarget(botAI, vashj);
 }
 
 bool LadyVashjStaticChargeOnRogueTrigger::IsActiveInEncounter()

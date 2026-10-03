@@ -41,7 +41,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Not encounter gated: Leotheras is engaged only once something hostile touches him, which may
+// Not encounter gated: Leotheras is set to engaged only once something hostile hits him, which may
 // not happen until the Spellbinders are dead.
 class SscDelayDpsCooldownsMultiplier : public Multiplier
 {

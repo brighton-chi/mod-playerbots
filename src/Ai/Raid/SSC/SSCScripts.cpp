@@ -49,7 +49,7 @@ public:
 };
 
 // Interrupt a pending cast when a Toxic Spore pool spawns under the bot. Toxic Sporebats cast Toxic
-// Spores (38574), which spawns a Spore Drop Trigger npc that spawns the Toxic Spore pool (38575).
+// Spores (38574), which spawn a Spore Drop Trigger npc that spawns the Toxic Spore pool (38575).
 class LadyVashjToxicSporesSpellListenerScript : public AllSpellScript
 {
 public:

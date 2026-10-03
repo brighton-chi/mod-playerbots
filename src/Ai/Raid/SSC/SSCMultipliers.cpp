@@ -82,7 +82,7 @@ bool IsDpsHoldCandidate(Player* bot, Action* action)
     return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
 }
 
-// Healing, buffs etc. go through a dps hold. Totems don't, since some are offensive.
+// Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
 float GetDpsHoldValue(Player* bot, Action* action)
 {
     if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
@@ -93,6 +93,7 @@ float GetDpsHoldValue(Player* bot, Action* action)
         dynamic_cast<CurePartyMemberAction*>(action) ||
         dynamic_cast<ResurrectPartyMemberAction*>(action) ||
         dynamic_cast<CastProtectSpellAction*>(action);
+
     return castOnRaid ? 1.0f : 0.0f;
 }
 
@@ -180,7 +181,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 
     if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
     {
-        // Held until Tidalvess, the first council member in the kill order, is engaged.
+        // FLK: Hold until Tidalvess, the first council member in the kill order, is under 95%.
         Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
         return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
@@ -197,7 +198,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Practically, for Lurker. Bots can briefly get into their non-combat engines during avoidance,
+// Practically, just for Lurker. Bots can briefly transition to non-combat engines during avoidance,
 // and if they have +master fishing, they can drift to look for water to fish in.
 float SscNoFishingDuringEncounterMultiplier::GetValueInEncounter(Action* action)
 {
@@ -232,8 +233,6 @@ float UnderbogColossusHoldNearToxicPoolMultiplier::GetValue(Action* action)
 
 // Hydross the Unstable <Duke of Currents>
 
-// The off-phase tank stays where its positioning action puts it. Every other move is held,
-// attacks included (AttackAction is a MovementAction), so nothing walks it off its spot.
 float HydrossTheUnstableDisableOffPhaseTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -330,7 +329,6 @@ float TheLurkerBelowMaintainPositionsMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    // Moving behind a target is a formation move too; it has its own Lurker multiplier
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
@@ -394,7 +392,6 @@ float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* 
     if (!lurker)
         return 1.0f;
 
-    // On an islet, behind an Ambusher at its edge is in the water, and an Ambusher is ranged
     if (bot->GetExactDist2d(lurker) > LURKER_ISLET_DISTANCE)
         return 0.0f;
 
@@ -455,7 +452,7 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    // Disable all spells from tanks if there is a Warlock tank; instead, just auto-attack to build
+    // Disable all spells from tanks if there is a Warlock tank. Instead, just auto-attack to build
     // rage in case the tank gets an Inner Demon.
     if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
     {
@@ -756,7 +753,7 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ? 0.0f : 1.0f;
 }
 
-// Casts are blocked during the Cyclone and the fall, for accuracy and so the bot doesn't get
+// Casts are blocked during the Cyclone and the fall, both for accuracy and so the bot doesn't get
 // stuck in midair (point moves fail mid-cast).
 float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Action* action)
 {
@@ -804,7 +801,7 @@ float FathomLordKarathressApproachingCaribdisMultiplier::GetValueInEncounter(Act
 }
 
 // Runs to the totem and Caribdis can cause the bot to lose LoS, so assigned bots must be stopped
-// from dropping their targets or they will instead just attack a council member in LoS.
+// from dropping their targets or they will instead switch to a council member in LoS.
 float FathomLordKarathressDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))
@@ -978,18 +975,18 @@ float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(
     return index >= 0 && IsVashjCoreCatcherActive(bot, *chain, index) ? 0.0f : 1.0f;
 }
 
-// Phases 2 and 3 have their own movement and targeting, so stock targeting and the stock moves that
-// would undo it are held.
 float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isAlwaysBlocked =
         dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action);
+
     bool const isReachAction = dynamic_cast<ReachTargetAction*>(action);
     bool const isHealSpell = dynamic_cast<CastHealingSpellAction*>(action);
     bool const isDebuffOnAttacker = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
     bool const isCombatFormationAction = dynamic_cast<CombatFormationMoveAction*>(action);
     bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+
     if (!isAlwaysBlocked && !isReachAction && !isHealSpell && !isDebuffOnAttacker &&
         !isCombatFormationAction && !isDropTarget && !IsRepositionAction(bot, action))
     {
@@ -1000,23 +997,18 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return 1.0f;
 
-    // The priority action gives every bot its targets, and every bot has its own way back to its
-    // post. Assist would only add targets the tiers don't allow.
     if (isAlwaysBlocked)
         return 0.0f;
 
-    // Healers keep their combat engine, where their healing is, while they have no target:
-    // dropping a missing target would switch them to the non-combat engine
+    // Keep healers in their combat engines.
     if (isDropTarget)
         return PlayerbotAI::IsHeal(bot) ? 0.0f : 1.0f;
 
-    // Non-healers heal only as a non-combat action, and they sit in the non-combat engine while
-    // they wait for adds, at the start of phase 2 above all. It would only spend their mana.
+    // Don't waste tank and dps mana on healing in their non-combat engines.
     if (isHealSpell)
         return PlayerbotAI::IsHeal(bot) ? 1.0f : 0.0f;
 
-    // A dot goes on the attacker in range with the most health that lacks it, whatever the bot is
-    // attacking, so it could pull an Elite or Strider off its way to a tank
+    // Don't put secondary dots on the Enchanted Elementals or untanked Striders/Elites.
     if (isDebuffOnAttacker)
     {
         if (IsEnchantedElemental(AI_VALUE(Unit*, "current target")))
@@ -1025,16 +1017,15 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return PlayerbotAI::IsTank(bot) || !IsAnyVashjAddUntanked(botAI) ? 1.0f : 0.0f;
     }
 
-    // Only getting behind the target, not an Enchanted Elemental. Tank facing doesn't work where a
-    // tanking position is set, as for Elites and Striders here.
+    // Disable disperse and tank face and, if the target is an Enchanted Elemental, set behind.
     if (isCombatFormationAction)
     {
         return dynamic_cast<SetBehindTargetAction*>(action) &&
             !IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 1.0f : 0.0f;
     }
 
-    // Station ranged shoot from their slots. Only those sent after a Tainted Elemental walk to it,
-    // and those stepping in to cast range of a Strider.
+    // Ranged dps with a station slot attack from their assigned positions only, unless pursuing a
+    // Tainted Elemental or stepping in to cast range of a Strider.
     if (PlayerbotAI::IsRangedDps(bot))
     {
         if (isReachAction && IsTankedStriderInStepInReach(bot, AI_VALUE(Unit*, "current target")))
@@ -1043,8 +1034,8 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return GetTaintedElementalToKill(bot) ? 1.0f : 0.0f;
     }
 
-    // Station healers heal from their slots too. Other healers still reach to heal, but never walk
-    // to a target, which healer dps or a priest's wand would.
+    // Healers with a station slot don't move in range attack or heal. Unassigned healers move in
+    // range to heal but not to attack.
     if (isReachAction && PlayerbotAI::IsHeal(bot))
     {
         if (GetVashjStationSlot(bot).station >= 0 ||
@@ -1057,7 +1048,6 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     return 1.0f;
 }
 
-// The spore actions dodge pools, and bots move to their own targets.
 float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isAssistAction =
@@ -1078,8 +1068,7 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 
-    // Healers still reach to heal, but never walk to a target, which healer dps or a priest's
-    // wand would
+    // Healers move in range to heal but not to attack.
     if (isAssistAction || isHealerSpellReach)
         return 0.0f;
 
@@ -1091,8 +1080,8 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return IsEnchantedElemental(target) ? 0.0f : 1.0f;
 
-    // A tank turning an Elite away (Cleave) works in phase 3 only, where Elites lose their
-    // hardcoded tanking positions
+    // Allow tanks to turn a target away only if it is an Elite (Cleave). This is permitted in
+    // phase 3 because the fixed Elite tanking positions from phase 2 are lifted.
     if (dynamic_cast<TankFaceAction*>(action))
         return target && target->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ? 1.0f : 0.0f;
 
@@ -1114,8 +1103,7 @@ float LadyVashjSaveHandOfFreedomMultiplier::GetValueInEncounter(Action* action)
     return vashj && GetLadyVashjPhase(vashj) == 3 ? 0.0f : 1.0f;
 }
 
-// Near a pool, only the melee spore action moves melee dps. Stock reach-melee would take them
-// straight back through it.
+// Use only the custom melee reach action when near a Toxic Spore pool.
 float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
@@ -1141,8 +1129,8 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
     return IsNearToxicSpores(botAI, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-// Stock reach-spell for ranged dps, and reach-to-heal for healers, only while its straight walk is
-// clear of pools; otherwise the ranged spore action goes round them.
+// Use only the custom ranged dps and healer reach actions when a straight line to the target is
+// not entirely clear of Toxic Spore pools.
 float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsCaster(bot))
@@ -1151,7 +1139,6 @@ float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Acti
     bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
     bool const isSpellReach = dynamic_cast<ReachSpellAction*>(action);
 
-    // The reach the helper below measures: a healer's reach-to-heal, anyone else's reach-spell
     if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isSpellReach)
         return 1.0f;
 
