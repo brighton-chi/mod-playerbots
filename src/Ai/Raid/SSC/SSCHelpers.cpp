@@ -2194,7 +2194,7 @@ bool HasVashjClusterVacancy(Player* bot)
     {
         for (ObjectGuid const& guid : cluster)
         {
-            if (!IsLiveVashjClusterHolder(bot, guid))
+            if (!guid.IsEmpty() && !IsLiveVashjClusterHolder(bot, guid))
                 return true;
         }
     }
