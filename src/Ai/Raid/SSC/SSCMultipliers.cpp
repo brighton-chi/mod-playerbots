@@ -115,29 +115,7 @@ bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
 
 } // end anonymous namespace
 
-// Trash
-
-float UnderbogColossusHoldNearToxicPoolMultiplier::GetValue(Action* action)
-{
-    if (bot->GetMapId() != SSC_MAP_ID || IsEncounterInProgress(bot, SSC_MAP_ID))
-        return 1.0f;
-
-    if (dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action))
-        return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
-
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
-        return 1.0f;
-
-    return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
-}
-
-// Shared Bosses
+// Shared
 
 float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
@@ -181,19 +159,19 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
+    // Vashj: Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2.
     if (Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj"))
     {
         int8 const phase = GetLadyVashjPhase(vashj);
         if (phase == 3)
             return 1.0f;
 
-        // Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2.
         return !isBloodlust && phase == 2 ? 1.0f : 0.0f;
     }
 
+    // Tidewalker: Bloodlust/Heroism are phase 2 only, once the raid is stacked in the corner.
     if (Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
     {
-        // Bloodlust/Heroism are saved for the last phase, once the raid is stacked in the corner.
         if (isBloodlust)
             return tidewalker->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 1.0f : 0.0f;
 
@@ -219,6 +197,8 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Practically, for Lurker. Bots can briefly get into their non-combat engines during avoidance,
+// and if they have +master fishing, they can drift to look for water to fish in.
 float SscNoFishingDuringEncounterMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_COMBAT)
@@ -226,6 +206,28 @@ float SscNoFishingDuringEncounterMultiplier::GetValueInEncounter(Action* action)
 
     return dynamic_cast<MoveNearWaterAction*>(action) || dynamic_cast<FishingAction*>(action) ?
         0.0f : 1.0f;
+}
+
+// Trash
+
+float UnderbogColossusHoldNearToxicPoolMultiplier::GetValue(Action* action)
+{
+    if (bot->GetMapId() != SSC_MAP_ID || IsEncounterInProgress(bot, SSC_MAP_ID))
+        return 1.0f;
+
+    if (dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action))
+        return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+        return 1.0f;
+
+    return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 }
 
 // Hydross the Unstable <Duke of Currents>

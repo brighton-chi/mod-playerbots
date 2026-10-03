@@ -22,7 +22,7 @@
 using namespace SscHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 {
@@ -71,6 +71,36 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
+        return false;
+
+    Player* tank = GetGroupMainTank(bot);
+    if (!tank || !tank->IsAlive())
+        return false;
+
+    return MisdirectTargetToTank(botAI, boss, tank);
+}
+
+bool SscStopAttackingAction::Execute(Event /*event*/)
+{
+    bot->AttackStop();
+    bot->InterruptSpell(CURRENT_MELEE_SPELL);
+    bot->CastStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    bot->SetSelection(ObjectGuid());
+
+    return true;
+}
+
+bool SscSpreadRangedAction::Execute(Event /*event*/)
+{
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
+    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _distance);
+}
+
 // Trash
 
 bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
@@ -97,39 +127,6 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
     return MarkTargetWithSkull(bot, GetWaterElementalTotem(botAI));
-}
-
-// Shared Bosses
-
-bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
-    if (!boss)
-        return false;
-
-    Player* tank = GetGroupMainTank(bot);
-    if (!tank || !tank->IsAlive())
-        return false;
-
-    return MisdirectTargetToTank(botAI, boss, tank);
-}
-
-// The hold multiplier stops new attacks, but a swing already running carries on.
-bool SscStopAttackingAction::Execute(Event /*event*/)
-{
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
-    return true;
-}
-
-bool SscSpreadRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
-    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _distance);
 }
 
 // Hydross the Unstable <Duke of Currents>

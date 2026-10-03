@@ -18,7 +18,7 @@
 class GameObject;
 class Item;
 
-// General
+// Shared
 
 class SscResetEncounterStatesAction : public Action
 {
@@ -27,26 +27,6 @@ public:
         : Action(botAI, "ssc reset encounter states") {}
     bool Execute(Event event) override;
 };
-
-// Trash
-
-class UnderbogColossusEscapeToxicPoolAction : public MovementAction
-{
-public:
-    UnderbogColossusEscapeToxicPoolAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "underbog colossus escape toxic pool") {}
-    bool Execute(Event event) override;
-};
-
-class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
-{
-public:
-    GreyheartTidecallerMarkWaterElementalTotemAction(PlayerbotAI* botAI)
-        : Action(botAI, "greyheart tidecaller mark water elemental totem") {}
-    bool Execute(Event event) override;
-};
-
-// Shared Bosses
 
 // Used for Morogrim Tidewalker and Lady Vashj.
 class SscMisdirectToMainTankAction : public Action
@@ -70,7 +50,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Used for Hydross the Unstable, Leotheras the Blind and Fathom-Lord Karathress.
+// Used for Hydross the Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
 class SscSpreadRangedAction : public MovementAction
 {
 public:
@@ -82,9 +62,26 @@ private:
     float const _distance;
 };
 
+// Trash
+
+class UnderbogColossusEscapeToxicPoolAction : public MovementAction
+{
+public:
+    UnderbogColossusEscapeToxicPoolAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "underbog colossus escape toxic pool") {}
+    bool Execute(Event event) override;
+};
+
+class GreyheartTidecallerMarkWaterElementalTotemAction : public Action
+{
+public:
+    GreyheartTidecallerMarkWaterElementalTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "greyheart tidecaller mark water elemental totem") {}
+    bool Execute(Event event) override;
+};
+
 // Hydross the Unstable <Duke of Currents>
 
-// Shared by the frost and nature tanks, mirrored between them.
 class HydrossTheUnstablePositionAndSwapTanksAction : public AttackAction
 {
 public:
@@ -95,7 +92,6 @@ public:
 
 private:
     bool StepTo(Position const& position, Unit* hydross);
-
     bool const _frostTank;
 };
 

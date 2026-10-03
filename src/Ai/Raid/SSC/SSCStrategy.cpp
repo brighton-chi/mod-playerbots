@@ -293,8 +293,6 @@ void AppendHydrossAddTankExclusions(
         exclusions.insert(hydross->GetGUID());
 }
 
-// Melee hold off Karathress while Caribdis lives, so he doesn't get her Blessing of the Tides at
-// 75%. The main tank keeps him, and healers keep him as a target so they stay in their heals.
 void AppendFathomLordKarathressBlessingHoldExclusions(
     Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {

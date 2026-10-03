@@ -15,7 +15,7 @@ class RaidSscActionContext : public NamedObjectContext<Action>
 public:
     RaidSscActionContext()
     {
-        // General
+        // Shared
         creators["ssc reset encounter states"] =
             &RaidSscActionContext::ssc_reset_encounter_states;
 
@@ -217,7 +217,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* ssc_reset_encounter_states(PlayerbotAI* botAI) {
         return new SscResetEncounterStatesAction(botAI);
     }
