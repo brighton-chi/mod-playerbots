@@ -920,7 +920,9 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Acti
     return vashj && ShouldAvoidVashjStaticCharge(bot, vashj) ? 0.0f : 1.0f;
 }
 
-float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValueInEncounter(Action* action)
+// Bots won't pick up the Core regardless, but we don't want them to get distracted moving to the
+// Tainted Elemental's corpse.
+float LadyVashjNoUnauthorizedLootingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_COMBAT)
         return 1.0f;
@@ -928,8 +930,7 @@ float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValueInEncounter(Action* ac
     if (!dynamic_cast<LootAction*>(action) && !dynamic_cast<OpenLootAction*>(action))
         return 1.0f;
 
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 2 ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "lady vashj") ? 0.0f : 1.0f;
 }
 
 float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(Action* action)

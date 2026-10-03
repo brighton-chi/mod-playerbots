@@ -14,9 +14,9 @@
 #include "Playerbots.h"
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <list>
 #include <string>
+#include <utility>
 
 using namespace EncounterHelpers;
 

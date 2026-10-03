@@ -368,11 +368,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjDoNotLootTheTaintedCoreMultiplier : public SscEncounterMultiplier
+class LadyVashjNoUnauthorizedLootingMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjDoNotLootTheTaintedCoreMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj do not loot the tainted core") {}
+    LadyVashjNoUnauthorizedLootingMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj no unauthorized looting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

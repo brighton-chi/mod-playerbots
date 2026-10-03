@@ -2044,8 +2044,8 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     return false;
 }
 
-// The looter sends the loot packets itself because OpenLootAction delays the bot's next tick by
-// lootDelay (1s by default), which would hold back the first throw.
+// The looter sends the loot packets itself because the standard loot action would skip the Core
+// because bots deem it worthless (ITEM_USAGE_NONE).
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 {
     Creature* tainted = GetAssignedTaintedElemental(bot);
@@ -2054,7 +2054,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 
     if (bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE)
     {
-        // Steps stop just inside loot range, centre to centre
         constexpr float rangeMargin = 0.5f;
         float const stopDistance =
             VASHJ_CORE_LOOT_RANGE + bot->GetCombatReach() + tainted->GetCombatReach() - rangeMargin;
@@ -2087,12 +2086,9 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     if (coreSlot < 0)
         return false;
 
-    // As LootObject::IsLootPossible() checks a corpse, less its height limit
     if (!bot->isAllowedToLoot(tainted))
         return false;
 
-    // Open, take the core, close, as a player's client does. Handled in this order on the bot's
-    // next session update. Closing clears the corpse's lootable flag once it is empty.
     WorldPacket* openPacket = new WorldPacket(CMSG_LOOT, 8);
     *openPacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(openPacket);
@@ -2105,11 +2101,10 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     *releasePacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(releasePacket);
 
+    botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay); // 1s default; for realism before throw.
     return true;
 }
 
-// Every member of the chain runs this: catchers walk to their spots, and whoever holds the core
-// throws it on or, in reach of the generator, uses it.
 bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 {
     VashjCorePassingChain* chain = GetVashjCorePassingChain(bot);
@@ -2117,8 +2112,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         return false;
 
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
-    Item* core =
-        HasTaintedCore(bot) ? bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
+    Item* core = HasTaintedCore(bot) ?
+        bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
     if (!core)
         return index >= 0 && MoveToCoreSpot(*chain, index);
 
@@ -2136,7 +2131,6 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     if (generator->IsAtInteractDistance(*bot, generator->GetInteractionDistance()))
         return UseCoreOnGenerator(core, generator);
 
-    // The last catcher, rooted out of reach of the generator
     size_t const next = static_cast<size_t>(index + 1);
     if (next >= chain->catchers.size())
     {
@@ -2147,20 +2141,21 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     return ThrowCore(*chain, next, core, generator);
 }
 
-// False once there, so the catcher can fight or heal from its spot while it waits.
 bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& chain, int8 index)
 {
     size_t const next = static_cast<size_t>(index + 1);
     bool const last = next == chain.catchers.size();
     float const arrival = GetVashjCoreSpotArrivalDistance(chain, index);
     VashjCoreCatcher& catcher = chain.catchers[index];
-    // The second catcher is picked and sets out with the first
+
+    // The second catcher is picked and moves to position simultaneously with the first.
     if (index == 0 && !last)
         ReleaseVashjCoreCatcher(bot, chain, next);
 
     if (bot->GetExactDist2d(catcher.spot) <= arrival)
     {
-        // Each later one once the catcher before it stands on its spot
+        // Any third catcher (or later) does not move until the prior catcher is in position. This
+        // is just to try to preserve some realism.
         if (!catcher.arrived)
         {
             catcher.arrived = true;
@@ -2183,8 +2178,6 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& ch
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// For the last catcher, on its spot means in use range of the generator, since the core roots
-// it. A throw that doesn't land is tried once more, then replanned without that catcher.
 bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     VashjCorePassingChain& chain, size_t next, Item* core, GameObject* generator)
 {
@@ -2218,7 +2211,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
         return false;
     }
 
-    // Throw Key's range, edge to edge in 3D as the spell measures it
+    // Throw Key (38134) throws the Core when used and has a 40y range (3D edge-to-edge, as usual).
     constexpr float throwKeyRange = 40.0f;
     if (bot->GetDistance(player) > throwKeyRange || !bot->IsWithinLOSInMap(player))
     {
@@ -2236,8 +2229,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
 
     chain.blockedStart = 0;
 
-    // Passes one right after another look rushed, and a bot could throw twice in a row. Also the
-    // wait before a throw that didn't land is tried again.
+    // 2s delay between throws for realism.
     constexpr uint32 throwIntervalMs = 2 * IN_MILLISECONDS;
     if (chain.throwTime && getMSTimeDiff(chain.throwTime, now) < throwIntervalMs)
         return false;
@@ -2274,7 +2266,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(Item* core, GameObjec
     return true;
 }
 
-// As a player would delete it from their bags. Removing it takes off its Paralyze.
+// Stuck and paralyzed with a Core and nowhere to throw it? Well, destroy it!
 bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 {
     if (!HasTaintedCore(bot))
@@ -2285,7 +2277,7 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 }
 
 // Pets never leave a living target on their own (PetAI::OwnerAttacked), so they would stay on
-// Vashj through all of phase 2. This puts them on their master's target instead.
+// Vashj through phase 2 and be useless. This directs them to their master's target instead.
 bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -2339,8 +2331,6 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
 
-    // Search down from the dais, not from the bot, so the floor found is the dais or the
-    // stairs and never the pipes the bot may be standing on
     float const floorZ = bot->GetMapHeight(x, y, VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
     if (floorZ <= INVALID_HEIGHT)
         return false;
@@ -2363,7 +2353,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     bool const tanking = vashj->GetVictim() == bot;
 
-    // A breakout walk ends at the spot, after a while, or once a pool lands near the spot
+    // Breakout = the tank is pinned in and has to run through Toxic Spores to get to a safe spot.
     if (_hasBreakoutSpot)
     {
         constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
@@ -2387,8 +2377,6 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     bool found = FindVashjDaisStepAwayFromPositions(
         bot, spores, vashj, rockClearance, stepX, stepY, stepZ, backwards);
 
-    // When no step gains on every pool, still step away from the closest one if it is close enough
-    // to hurt, even toward another.
     if (!found)
     {
         auto const closest = std::min_element(spores.begin(), spores.end(),
@@ -2405,7 +2393,6 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         }
     }
 
-    // Her tank pinned where no step gains on the pools crosses the edge of one if it has to
     if (!found && tanking && FindVashjTankBreakoutSpot(bot, spores, _breakoutSpot))
     {
         _hasBreakoutSpot = true;
@@ -2436,7 +2423,6 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
         return false;
     }
 
-    // Backwards when the way leads away from her, as with the other tank steps
     float const dirX = (_breakoutSpot.GetPositionX() - botX) / distance;
     float const dirY = (_breakoutSpot.GetPositionY() - botY) / distance;
     bool const backwards = dirX * (vashj->GetPositionX() - botX) +
@@ -2459,13 +2445,12 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Melee stay in reach at the nearest angle no pool covers. With the whole ring covered they step
-// out as other bots do, and a boxed-in melee walks straight out of the nearest pool.
+// Melee dps stay in reach at the nearest angle that isn't covered by a pool. If all angles are
+// covered, stay back. If there is no safe path, walk straight out from the nearest pool.
 bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
 
-    // Every move here is a combat one, except Vashj's own target's, which the avoid action forces
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if ((!vashj || vashj->GetVictim() != bot) && IsWaitingForLastMove(priority))
         return false;
@@ -2499,8 +2484,8 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
-// Recomputed every tick; walking a clear line keeps the same point best, and once the straight
-// line to cast range is clear, stock reach-spell takes over again.
+// Ranged move around Toxic Spores until a clear path to the target opens up, at which point
+// ReachTargetAction takes over again.
 bool LadyVashjRangedReachAroundToxicSporesAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
