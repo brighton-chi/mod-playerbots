@@ -48,7 +48,7 @@ public:
 
 // Shared Bosses
 
-// Misdirect to the main tank. Used for Morogrim Tidewalker and Lady Vashj.
+// Used for Morogrim Tidewalker and Lady Vashj.
 class SscMisdirectToMainTankAction : public Action
 {
 public:
@@ -61,7 +61,7 @@ private:
     std::string const _bossName;
 };
 
-// The stop block. Used for Hydross the Unstable and Leotheras the Blind.
+// Used for Hydross the Unstable and Leotheras the Blind.
 class SscStopAttackingAction : public Action
 {
 public:
@@ -70,8 +70,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// A step away from the nearest player within distance. Used for Hydross the Unstable, Leotheras,
-// and Fathom-Lord Karathress.
+// Used for Hydross the Unstable, Leotheras the Blind and Fathom-Lord Karathress.
 class SscSpreadRangedAction : public MovementAction
 {
 public:
@@ -85,8 +84,7 @@ private:
 
 // Hydross the Unstable <Duke of Currents>
 
-// One action for the frost and nature tanks. Each tank has a phase, a mark, a position, and a
-// timer for swapping. The action itself is mirrored between the tanks.
+// Shared by the frost and nature tanks, mirrored between them.
 class HydrossTheUnstablePositionAndSwapTanksAction : public AttackAction
 {
 public:

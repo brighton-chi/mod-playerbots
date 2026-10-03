@@ -115,8 +115,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// No bot follows the master, or makes formation, flee or reposition moves, which can walk it
-// into the water; melee still move behind targets (TheLurkerBelowMeleeWaitToSetBehindMultiplier).
+// Formation, flee, reposition and follow moves can walk a bot into the water.
 class TheLurkerBelowMaintainPositionsMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -147,9 +146,8 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Melee wait to move behind Lurker until his tank has him on the tank spot. Until then he may
-// still be turning, and behind him can be off the ring, in the water. On an islet they don't
-// move behind anything.
+// Until his tank has him on the spot he may still be turning, and behind him can be in the
+// water. On an islet melee don't move behind anything.
 class TheLurkerBelowMeleeWaitToSetBehindMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -160,8 +158,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// TEST: melee move only by the direct move in this fight, to see whether reach melee is what
-// walks them into the water.
+// Reach melee's path walked melee off an islet into the water; the direct move does it instead.
 class TheLurkerBelowMeleeDisableReachMultiplier : public SscEncounterMultiplier
 {
 public:

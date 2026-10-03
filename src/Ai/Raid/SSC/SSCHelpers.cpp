@@ -683,8 +683,6 @@ Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI)
     return nullptr;
 }
 
-// (1) First priority is an assistant Warlock (real player or bot).
-// (2) If no assistant Warlock, then look for any Warlock bot.
 Player* GetLeotherasWarlockTank(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -993,8 +991,6 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     return false;
 }
 
-// Sharkkis's tank holds his pets too. Sharkkis on somebody else comes first, then a pet on
-// somebody else, then Sharkkis, then a pet that is already on the tank; null once none is left.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -1085,7 +1081,6 @@ bool IsInPolygon(float x, float y, std::array<Position, N> const& polygon)
     return inside;
 }
 
-// Distance in 2D to the nearest point on the polygon's outline.
 template <std::size_t N>
 float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& polygon)
 {
@@ -1105,7 +1100,6 @@ float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& 
     return closest;
 }
 
-// Length in 2D of the part of the segment from a to b inside the circle.
 float SegmentLengthInCircle(
     Position const& a, Position const& b, Position const& center, float radius)
 {
@@ -1128,7 +1122,6 @@ float SegmentLengthInCircle(
     return leave > enter ? (leave - enter) * std::sqrt(qa) : 0.0f;
 }
 
-// True if the straight line from a to b stays on the dais, sampled every 2y.
 bool IsVashjLineOnDais(
     Position const& a, Position const& b, float margin, float rockClearance)
 {
@@ -1149,9 +1142,8 @@ bool IsVashjLineOnDais(
     return true;
 }
 
-// Distance from the dais centre to x, y, measured perpendicular to the nearest edge of the
-// dodecagon. The edges face 15, 45, 75... degrees, so fold the angle into one 30 degree sector and
-// measure off the middle of it.
+// Perpendicular to the nearest edge of the dodecagon. The edges face 15, 45, 75... degrees, so
+// fold the angle into one 30 degree sector and measure off the middle of it.
 float GetVashjEdgeNormalDistance(float x, float y)
 {
     float const dx = x - VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
@@ -1163,7 +1155,6 @@ float GetVashjEdgeNormalDistance(float x, float y)
     return std::hypot(dx, dy) * std::cos(offset);
 }
 
-// True if the segment from a to b crosses the polygon's outline in 2D.
 template <std::size_t N>
 bool SegmentCrossesPolygon(
     Position const& a, Position const& b, std::array<Position, N> const& polygon)
@@ -1202,7 +1193,6 @@ Position const& GetVashjClusterPosition(VashjClusterSlot const& slot)
     return slot.slot == VASHJ_CLUSTER_HEALER_SLOT ? cluster.healer : cluster.ranged[slot.slot];
 }
 
-// The living ranged dps of a cluster, in slot order.
 std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
 {
     std::vector<Player*> ranged;
@@ -1220,7 +1210,6 @@ std::vector<Player*> GetVashjClusterRanged(Player* bot, int8 cluster)
     return ranged;
 }
 
-// Nullptr if the cluster has no healer or it is dead.
 Player* GetVashjClusterHealer(Player* bot, int8 cluster)
 {
     auto it = vashjClusterHolders.find(bot->GetInstanceId());
@@ -1232,7 +1221,6 @@ Player* GetVashjClusterHealer(Player* bot, int8 cluster)
     return holder && holder->IsAlive() ? holder : nullptr;
 }
 
-// The generators not yet used.
 std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
 {
     std::vector<GameObject*> generators;
@@ -1254,9 +1242,8 @@ std::vector<GameObject*> GetUsableVashjGenerators(Map* map)
     return generators;
 }
 
-// The ground at x, y on the dais or the stairs, or INVALID_HEIGHT. Searched from just above the
-// measured slope: the dais falls from 43.0 at the centre to 41.1 at the rim, the stairs 18.9 over a
-// 33.15y run down to their base, 90.19y out.
+// Searched from just above the measured slope: the dais falls from 43.0 at the centre to 41.1 at
+// the rim, the stairs 18.9 over a 33.15y run down to their base, 90.19y out.
 float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
 {
     constexpr float centreZ = 43.0f;
@@ -1277,8 +1264,6 @@ float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
     return map->GetHeight(phaseMask, x, y, slopeZ + searchAbove, true, maxSearch);
 }
 
-// On the dais or the stairs, clear of both rocks and the add spawns and, unless it is a use spot,
-// off every generator's base.
 bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
 {
     constexpr float stairBaseMargin = 2.0f;
@@ -1311,9 +1296,8 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
     return true;
 }
 
-// Line of sight between two players standing at from and to, as IsWithinLOSInMap measures it:
-// from each one's collision height, with every model counted, generators included. The thrower's
-// height is given; the catcher, not yet picked, is taken as the shortest race.
+// As IsWithinLOSInMap measures it: from each one's collision height, generators included. The
+// catcher, not yet picked, is taken as the shortest race.
 bool IsVashjCoreThrowInSight(
     Map* map, uint32 phaseMask, Position const& from, float fromEyeHeight, Position const& to)
 {
@@ -1374,10 +1358,8 @@ bool PlanVashjCoreLegs(
     if (spots.size() + 2 > VASHJ_CORE_MAX_CATCHERS)
         return false;
 
-    // Spots in reach that gain enough on the aim, the use spot facing the origin, nearest it first.
-    // Reaches down to 4y: on the stairs the climb eats into a throw, and a spot several yards
-    // down them sees only a few yards past the rim of the dais, so the way on is often a short hop
-    // to the rim.
+    // Down to 4y: on the stairs the climb eats into a throw, and a spot down them sees only a few
+    // yards past the rim of the dais, so the way on is often a short hop to the rim.
     constexpr float minGain = 5.0f;
     constexpr int reaches = 13;
     constexpr float reachStep = 3.0f;
@@ -1447,9 +1429,7 @@ bool PlanVashjCoreLegs(
     return false;
 }
 
-// Catcher spots from origin to one of the generator's use spots, fewest throws first; the last is
-// the use spot. firstLeg is the first throw's length, and originEyeHeight the first thrower's
-// collision height. Empty if more than VASHJ_CORE_MAX_CATCHERS would be needed.
+// Fewest throws first; the last spot is the use spot.
 std::vector<Position> PlanVashjCoreSpots(
     Player* bot, GameObject* generator, Position const& origin, float firstLeg,
     float originEyeHeight)
@@ -1485,8 +1465,6 @@ std::vector<Position> PlanVashjCoreSpots(
     return spots;
 }
 
-// The route's spots to the preferred generator if still usable, else the nearest usable one a
-// route reaches. Nullptr if none does.
 GameObject* PlanVashjCoreRoute(
     Player* bot, Position const& origin, float firstLeg, float originEyeHeight,
     ObjectGuid preferred, std::vector<Position>& spots)
@@ -1511,8 +1489,6 @@ GameObject* PlanVashjCoreRoute(
     return nullptr;
 }
 
-// The living bot nearest the spot that can catch: not a tank, not the chain's origin bot, not
-// already a catcher, not holding a core. attackersOnly limits it to the elemental's killers.
 Player* FindVashjCoreCatcher(
     Player* bot, VashjCorePassingChain const& chain, Position const& spot, bool attackersOnly,
     ObjectGuid excluded)
@@ -1548,9 +1524,6 @@ Player* FindVashjCoreCatcher(
     return nearest;
 }
 
-// Gives a spot to player: a killer walks there once the elemental is dead, anyone else as soon as
-// the spot is released and it has reacted. The reaction starts now, for a replacement too; whether
-// the spot is released stays as it was.
 void SetVashjCoreCatcher(VashjCoreCatcher& catcher, Player* player)
 {
     catcher.bot = player ? player->GetGUID() : ObjectGuid::Empty;
@@ -1586,8 +1559,6 @@ void ResetVashjCoreThrows(VashjCorePassingChain& chain)
     chain.blockedStart = 0;
 }
 
-// True while the chain is under way: its elemental stands or lies unlooted, the core's last holder
-// or the one it was last thrown to has it, or a throw has just been made.
 bool IsVashjCorePassingChainLive(Player* bot, VashjCorePassingChain const& chain)
 {
     if (chain.failed)
@@ -1717,9 +1688,8 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
     if (!group)
         return nullptr;
 
-    // In phase 1 only a melee holding Static Charge needs freeing, and never her target, who
-    // doesn't move for it. Phase 1 has no spores to leave. The stock Hand of Freedom takes the
-    // nearest rooted member otherwise.
+    // In phase 1 only a melee holding Static Charge needs freeing, never her target, who doesn't
+    // move for it. The stock Hand of Freedom takes the nearest rooted member otherwise.
     Unit* const skip = phase == 1 ? vashj->GetVictim() : nullptr;
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
 
@@ -1833,7 +1803,6 @@ bool FindVashjDaisStepAwayFromPositions(
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
 
-    // Angle and distance to the closest position for each step that stays on the dais
     std::vector<std::pair<float, float>> candidates;
     for (uint8 i = 0; i < directions; ++i)
     {
@@ -1987,8 +1956,6 @@ bool CanWalkThroughToxicSpores(Player* bot)
     }
 }
 
-// Like Azgalor's Rain of Fire maneuver, but sampled every 5 degrees so each point can be checked
-// against the dais and the rock too.
 bool GetMeleeRingStepClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
     float& stepY, float& stepZ)
@@ -2283,8 +2250,6 @@ Position const* GetVashjClusterPositionToReturnTo(Player* bot, Unit* currentTarg
     return &clusterPosition;
 }
 
-// From the Tainted spawn just east of the rock, cluster 4 is nearest but would have to walk round
-// it, so cluster 3 takes it. No other spawn changes.
 int8 GetNearestVashjCluster(Unit* unit)
 {
     if (!unit)
@@ -2516,9 +2481,6 @@ bool IsTankedStriderInStepInReach(Player* bot, Unit* unit)
         bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(unit);
 }
 
-// Useless means Vashj while the barrier makes her immune; a Strider, whose Panic fears any pet
-// that closes to melee (the Imp and Water Elemental cast from range); and a Sporebat, which a pet
-// can't reach.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 {
     if (!pet || !vashj)
@@ -2681,9 +2643,8 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
     chain.tainted = tainted->GetGUID();
     chain.originBot = looter->GetGUID();
 
-    // The looter is somewhere near the corpse, so the first thrower is taken as the shortest race
-    // too. With no way found from the corpse, the looter still loots, and plans again from where it
-    // stands once it holds the core.
+    // The first thrower is taken as the shortest race too. With no way found from the corpse, the
+    // looter still loots, and plans again once it holds the core.
     std::vector<Position> spots;
     if (GameObject* generator = PlanVashjCoreRoute(bot, tainted->GetPosition(),
             VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET, VASHJ_CORE_PLAN_EYE_HEIGHT,

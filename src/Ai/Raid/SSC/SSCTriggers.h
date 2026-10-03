@@ -33,8 +33,7 @@ protected:
 class SscNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    // Throttled to once per second. This trigger is true for all trash and downtime and, being
-    // for between-encounter clean-up, has no real urgency to it.
+    // Between-encounter clean-up, true through all trash and downtime, so no hurry
     SscNoEncounterInProgressTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "ssc no encounter in progress", 1000) {}
     bool IsActive() override;
@@ -60,8 +59,7 @@ public:
 
 // Shared Bosses
 
-// A Hunter while the named mob is untouched, so Misdirection goes out on the pull. Used for
-// Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
+// Used for Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
 class SscHunterShouldMisdirectTrigger : public SscEncounterTrigger
 {
 public:

@@ -175,8 +175,8 @@ bool TheLurkerBelowGuardiansShouldBeTankedTrigger::IsActiveInEncounter()
     return GetLurkerGuardianTankIndex(botAI) >= 0;
 }
 
-// Bots are unable to move across the water via ReachMeleeAction and thus cannot attack Ambushers
-// or return afterward (absent a charge spell). To resolve, issue a direct move to a land position.
+// Reach melee can't take melee across the water to an Ambusher or back (absent a charge spell),
+// so a direct move to land does it.
 bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -193,9 +193,8 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
     if (!lurker || IsLurkerSpouting(lurker))
         return false;
 
-    // Consider the bot stuck if it is not moving even with a target out of melee range. A bot
-    // still running to an Ambusher or a Guardian when its target is already Lurker is sent back
-    // too: the move to Lurker is forced, so once it is under way this no longer fires.
+    // Stuck: still, with its target out of melee range. Also a bot still running to an add once
+    // its target is Lurker; the move to him is forced, so once under way this stops firing.
     if (!bot->isMoving())
         return true;
 
@@ -203,9 +202,8 @@ bool TheLurkerBelowMeleeCannotReachTargetTrigger::IsActiveInEncounter()
         AI_VALUE(LastMovement&, "last movement").priority < MovementPriority::MOVEMENT_FORCED;
 }
 
-// In or over the deep water round the islets, not the shallows at the edge of Lurker's ring.
-// A path between islets can drop a bot in next to an islet with no shore to climb. Over the
-// water counts too, so the straight move out keeps the tick until the bot is on land.
+// In or over the deep water, not the shallows of Lurker's ring: a path between islets can drop
+// a bot in next to an islet with no shore to climb.
 bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -453,10 +451,8 @@ bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
     return GetNearestPlayerInRadius(bot, CARIBDIS_RANGED_SPREAD_DISTANCE);
 }
 
-// A bot left hanging once the tosses are over: either the knockback's spline never finished and
-// its generator still holds the controlled slot, or a toss from mid-air finished at the bot's own
-// height and left the slot empty. While the aura is up, more tosses are coming and the arc is
-// left to run.
+// Left hanging after the tosses: the spline never finished, or a toss from mid-air ended at the
+// bot's own height. While the aura is up, more tosses are coming.
 bool FathomLordKarathressStuckMidairAfterCycloneTrigger::IsActiveInEncounter()
 {
     if (bot->HasAura(Id(SscSpells::SPELL_CYCLONE)))
@@ -564,8 +560,7 @@ bool LadyVashjShouldHoldClusterInPhase2Trigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// Hunters are left free to go after Sporebats, and the Static Charge action moves a holder on its
-// own.
+// Hunters go after Sporebats, and the Static Charge action moves a holder on its own.
 bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsCaster(bot) || HasVashjStaticCharge(bot))
@@ -606,9 +601,8 @@ bool LadyVashjStaticChargeOnGroupMemberTrigger::IsActiveInEncounter()
     return IsInVashjStaticChargeReach(bot, AI_VALUE2(Unit*, "find target", "lady vashj"));
 }
 
-// Healers too. Healer dps and a priest's wand get a target the tiers allow, never a Sporebat,
-// which walks them up into the air, and in phase 2 the target keeps them in their combat engine.
-// The phase 2 and phase 3 multipliers keep them from walking to it.
+// Healers too: their dps and a priest's wand get a tier target, never a Sporebat (which walks
+// them up into the air), and in phase 2 the target keeps them in their combat engine.
 bool LadyVashjShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -684,7 +678,6 @@ bool LadyVashjTankIsIdleAwayFromTheMiddleTrigger::IsActiveInEncounter()
     }
 }
 
-// Only a new elemental, or a looter who died on the way, needs a looter chosen.
 // Phase 2 only, as are the attack and loot triggers below: a core looted in phase 3 has no
 // generator left, and its Paralyze would root the looter.
 bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
@@ -708,8 +701,7 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     return !looter || !looter->IsAlive();
 }
 
-// The ranged dps of the cluster nearest the elemental, a ranged dps looter included. A healer
-// looter waits beside it instead (see the loot action).
+// A healer looter waits beside it instead (see the loot action).
 bool LadyVashjShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
 {
     if (!GetTaintedElementalToKill(bot))
@@ -719,7 +711,6 @@ bool LadyVashjShouldAttackTaintedElementalTrigger::IsActiveInEncounter()
     return vashj && GetLadyVashjPhase(vashj) == 2;
 }
 
-// From the looter's pick until the core is taken from the corpse.
 bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
 {
     if (!IsDesignatedCoreLooter(bot))
@@ -737,9 +728,8 @@ bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
     return !tainted->IsAlive() || bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE;
 }
 
-// A core with nowhere to go: in phase 3, with no generator left; from a chain that found no way; or
-// still held when the next core is ready to loot. Its Paralyze roots the holder until it leaves the
-// bags.
+// In phase 3 with no generator left, from a chain that found no way, or still held when the next
+// core is ready to loot. Its Paralyze roots the holder until it leaves the bags.
 bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 {
     if (!HasTaintedCore(bot))
@@ -761,7 +751,6 @@ bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
-// The chain's origin bot or one of its catchers, while it holds the core or is due at its spot.
 bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
 {
     VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
@@ -858,7 +847,6 @@ bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
         return false;
     }
 
-    // Already clear in melee range, the action has nothing to do
     return !IsInMeleeRangeClearOfSpores(bot, AI_VALUE(Unit*, "current target"),
         GetToxicSporePositions(botAI), TOXIC_SPORES_AVOID_RADIUS);
 }

@@ -263,9 +263,8 @@ bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
 namespace
 {
 
-// A move straight to x/y/z with no pathfinding, recorded as the bot's last movement so
-// IsWaitingForLastMove covers it. Where the navmesh would go round a spillway the long way, or
-// along the bottom of the water, this walks the straight line at walkway height.
+// Recorded as the bot's last movement so IsWaitingForLastMove covers it. Walks a spillway or the
+// water at walkway height where the navmesh would go the long way round or along the bottom.
 bool MoveStraightTo(PlayerbotAI* botAI, float x, float y, float z, MovementPriority priority)
 {
     if (!botAI->CanMove())
@@ -276,9 +275,8 @@ bool MoveStraightTo(PlayerbotAI* botAI, float x, float y, float z, MovementPrior
     if (distance <= 0.01f)
         return false;
 
-    // MovePoint pathfinds whatever generatePath says (PointMovementGenerator hands the spline
-    // generatePath true), and so does an escort path of two points. A path of three is
-    // followed as given.
+    // MovePoint and a 2-point escort path both pathfind (PointMovementGenerator hands the spline
+    // generatePath true). A path of three points is followed as given.
     float const startX = bot->GetPositionX();
     float const startY = bot->GetPositionY();
     float const startZ = bot->GetPositionZ();
@@ -369,9 +367,8 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    // Lurker is winding-up, bot is in front of the boss: One far move to the nearer arc edge so the
-    // bot is not in front of the boss when the Spout starts, whatever direction it goes. This has
-    // to be a lower movement priority than the run during the spin phase.
+    // Lurker is winding-up, bot is in front of the boss: one far move to the nearer arc edge, at a
+    // lower movement priority than the run during the spin.
     int8 const direction = relative < pi ? 1 : -1;
     float const edgeAngle =
         lurker->GetOrientation() + pi - direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
@@ -422,9 +419,8 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
         bot, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         pathTolerance);
 
-    // A spillway breaks the walkway for the pathfinder: from one side the path stops at it, or
-    // goes all the way round the other way. Walk straight there instead; a move with no path
-    // keeps to walkway height over water.
+    // A spillway breaks the walkway for the pathfinder: the path stops at it, or goes all the way
+    // round. A straight move keeps to walkway height over water.
     constexpr float maxDetourFactor = 1.5f;
     float const distance = bot->GetExactDist2d(position);
     if (pathLength < 0.0f || pathLength > distance * maxDetourFactor)
@@ -439,7 +435,6 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
         false, false, false, false, priority, true, false);
 }
 
-// Assign ranged positions within a 120-degree arc behind Lurker.
 bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -488,9 +483,8 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// During the submerge phase, the main tank and the first two assist tanks each grab one Coilfang
-// Guardian. This runs only if there are at least three living tanks, humans included (a human's
-// Guardian is left to them). Otherwise, normal tank assist is relied on to pick up the Guardians.
+// Only with three living tanks, humans included (a human's Guardian is left to them). Otherwise
+// normal tank assist picks up the Guardians.
 bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> const guardians = GetLurkerGuardians(botAI);
@@ -555,11 +549,9 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     if (!lurker)
         return false;
 
-    // MoveTo rejects any destination over water (no map height), so the destination has to be dry
-    // land. The Ambushers sometimes chill at the edge of their islets and the Guardians are on
-    // land, so we issue the move to stop right on top of them. When returning to Lurker, or
-    // heading for a Guardian from an islet (a move straight onto it ends underwater), target the
-    // move at the walkway instead; stock reach takes it on from there over land.
+    // The Ambushers sometimes chill at the edge of their islets and the Guardians are on land, so
+    // the move stops right on top of them. Back to Lurker, or to a Guardian from an islet, it goes
+    // to the walkway instead; stock reach takes it on from there.
     uint32 const entry = target->GetEntry();
     bool const toWalkway = ShouldGoToLurkerWalkway(bot, lurker, target);
 
@@ -582,9 +574,8 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
         SSC_MAP_ID, destX, destY, destZ, false, false, false, false, priority, true, false);
 }
 
-// Straight out, since a path from down here follows the water. Onto the bot's target if it
-// stands on dry ground, else back to the walkway. It keeps the tick while the move runs, so
-// nothing else (follow, for one) turns it round underwater.
+// Straight out, since a path from down here follows the water. It keeps the tick while the move
+// runs, so nothing else (follow, for one) turns it round underwater.
 bool TheLurkerBelowMeleeGetOutOfWaterAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
@@ -636,9 +627,8 @@ bool LeotherasTheBlindWarlockTankAttackDemonFormAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", leotherasDemon);
 }
 
-// With a Warlock tanking the demon form, the melee tanks only auto-attack it: their abilities are
-// held by the multiplier, so the rage they bank is there in full when an Inner Demon lands on
-// them. Rage does not decay in combat, and white hits alone cannot outthreat Searing Pain.
+// The rage banked is there in full when an Inner Demon lands. Rage does not decay in combat, and
+// white hits alone cannot outthreat Searing Pain.
 bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 {
     Creature* leotherasDemon = GetLeotherasDemon(botAI);
@@ -648,8 +638,6 @@ bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
     return AI_VALUE(Unit*, "current target") != leotherasDemon && Attack(leotherasDemon);
 }
 
-// Keep ranged out of Whirlwind's reach of Leotheras, and away from the demon form's target and
-// the Warlock tank to avoid Chaos Blast splash.
 bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
 {
     constexpr uint32 minInterval = 0;
@@ -706,14 +694,12 @@ bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
     if (!innerDemon)
         return false;
 
-    // All classes and specs swap their autoattack to the Inner Demon.
     if (AI_VALUE(Unit*, "current target") != innerDemon)
     {
         bot->CastStop();
         return Attack(innerDemon);
     }
 
-    // Specific classes and specs have hardcoded methods to kill their Inner Demons.
     if (bot->getClass() == CLASS_DRUID && PlayerbotAI::IsTank(bot))
         return HandleFeralTankStrategy(innerDemon);
 
@@ -1037,9 +1023,8 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Caribdis's tank spot is far away so a dedicated healer is needed.
-// Her tank stands on her, so seeing her is seeing the tank. Out of sight the walk goes on until
-// she is in sight, as it does for ranged; in sight it closes only to the healing distance.
+// Caribdis's tank spot is far away so a dedicated healer is needed. Her tank stands on her, so
+// seeing her is seeing the tank.
 bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -1178,9 +1163,8 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    // Caribdis is tanked out of sight of the room. Attack refuses a target out of line of sight,
-    // and a bot that loses sight of her after acquiring her is still in range, so nothing else
-    // walks it back: she is approached along the path whenever she is out of sight.
+    // Caribdis is tanked out of sight of the room, and Attack refuses a target out of sight. A bot
+    // that loses sight of her is still in range, so nothing else walks it back.
     if (target == caribdis && !bot->IsWithinLOSInMap(caribdis))
         return ApproachCaribdis(caribdis);
 
@@ -1226,16 +1210,12 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
     return karathressDpsWaitTimer.try_emplace(karathress->GetInstanceId(), getMSTime()).second;
 }
 
-// A Cyclone tosses every second and the arc takes longer than that, so from the second toss on
-// the knockback handler is working from a mid-air position: its raycast fails and the destination
-// keeps the bot's own height. Nothing brings the bot down once the Cyclone leaves, but any
-// ordinary move does, since its destination is on the ground: the bot is sent to the floor
-// beneath it once the last arc has finished.
+// From the second toss on, each knockback starts mid-air: its spline never finishes, or ends at
+// the bot's own height. Nothing brings the bot down, so it's sent to the ground below.
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
 {
-    // The knockback builds its spline from wherever the bot is, and mid-air that raycast fails:
-    // the spline never finishes, so its generator is never popped off the controlled slot, and a
-    // bot with that slot taken refuses every move it is given. It is cleared by hand here.
+    // A spline that never finished still holds the controlled slot, and the bot refuses every
+    // move while it does, so it is cleared by hand.
     MotionMaster* mm = bot->GetMotionMaster();
     if (mm->GetMotionSlotType(MOTION_SLOT_CONTROLLED) == EFFECT_MOTION_TYPE)
     {
@@ -1359,8 +1339,6 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
         priority, true, false);
 }
 
-// Brings back a non-tank that ended up far out, such as one carried off by Watery Grave. Inside
-// the distance, everybody moves as they normally would.
 bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -1533,9 +1511,8 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         priority, true, false);
 }
 
-// Ranged dps and healers hold cluster slots around the edge of the dais: the cluster nearest a
-// Tainted Elemental kills it and its healer loots it, and Enchanted Elementals are met on their way
-// in. Bots go back to their slot after being sent after an elemental.
+// The cluster nearest a Tainted Elemental kills it and its healer loots it, and Enchanted
+// Elementals are met on their way in.
 bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -1642,12 +1619,10 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 
     std::vector<Unit*> avoid;
 
-    // If this bot has Static Charge, it should move away from other group members
     if (HasVashjStaticCharge(bot))
     {
         avoid = GetOtherLivingGroupMembers(bot);
     }
-    // If Vashj's target has Static Charge, other group members should move away.
     else
     {
         avoid.push_back(vashj->GetVictim());
@@ -1671,7 +1646,6 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 namespace
 {
 
-// Whether unit is a target the tier allows the bot
 bool IsVashjTargetAllowed(
     Player* bot, VashjTargetFacts const& facts, VashjTargetTier const& tier, Unit* unit)
 {
@@ -1768,7 +1742,6 @@ bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, 
     }
 }
 
-// The tier's best allowed target, or nullptr
 Unit* GetBestVashjTarget(
     PlayerbotAI* botAI, VashjTargetFacts const& facts, VashjAddGuids const& adds,
     VashjTargetTier const& tier)
@@ -1826,9 +1799,8 @@ bool IsOwnVashjAdd(Player* bot, Unit* target)
 
 } // end anonymous namespace (Vashj targeting)
 
-// Each bot's targets come in tiers, best first. A bot keeps its current target until a higher
-// tier has one, so it doesn't flip between two of a kind as they move, and drops a target no tier
-// allows. A target out of sight, which Attack() refuses, gives way to the next tier.
+// A bot keeps its target until a higher tier has one, so it doesn't flip between two of a kind
+// as they move. A target out of sight, which Attack() refuses, gives way to the next tier.
 bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
 {
     VashjTargetFacts facts;
@@ -1891,9 +1863,8 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     if (currentTier < tiers.size() || !currentTarget)
         return false;
 
-    // Nothing allowed to attack, so drop what it has: Vashj while she is immune, an Elite or
-    // Strider no tank has yet, another tank's, an Enchanted out past a leash, or a Sporebat. A
-    // healer's cast is left alone: it is almost always a heal.
+    // Nothing allowed to attack, so drop what it has. A healer's cast is left alone: it is almost
+    // always a heal.
     bot->AttackStop();
     bot->InterruptSpell(CURRENT_MELEE_SPELL);
     if (!PlayerbotAI::IsHeal(bot))
@@ -1924,16 +1895,14 @@ bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
     return true;
 }
 
-// Automatically apply Fear Ward to tanks to make Strider tankable. This simulates the real-life
-// strategy where the Strider can be meleed by players wearing an Ogre Suit (due to the
-// extended combat reach).
+// Fear Ward makes Striders tankable. This simulates the real-life strategy of meleeing a Strider
+// in an Ogre Suit (due to the extended combat reach).
 bool LadyVashjTankApplyFearWardAction::Execute(Event /*event*/)
 {
     return bot->AddAura(Id(SscSpells::SPELL_FEAR_WARD), bot);
 }
 
-// Each tank works on the Strider it is targeting, which the target priority action gave it, so
-// any number can be up at once.
+// Each tank works on the Strider it is targeting, so any number can be up at once.
 bool LadyVashjPositionCoilfangStriderAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
@@ -1995,9 +1964,7 @@ bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
         priority, true, false);
 }
 
-// The tank takes the Elite to the nearer of the two Elite tank positions, where a cluster's ranged
-// reach it. For a human tank: about 12y in front of the north rock's tip, or south-east of the
-// middle.
+// For a human tank: about 12y in front of the north rock's tip, or south-east of the middle.
 bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
 {
     Unit* elite = AI_VALUE(Unit*, "current target");
@@ -2043,9 +2010,8 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Mechanic tracker only. Fills the holder table in group order the first time (ranged dps in turn
-// across the clusters, three each; the first four healers one each), then puts the first living
-// spare of the right role into each vacated slot. Holders never move.
+// Mechanic tracker only. Fills the slots in group order the first time, then puts the first
+// living spare of the right role into each vacated slot. Holders never move.
 bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -2132,9 +2098,8 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     return true;
 }
 
-// The killers walk until they have the elemental in attack range and in sight, then attack. From
-// a cluster the edge of the dais usually blocks the view down to it, and Attack() refuses a target
-// out of sight. Ranged stop at spell range, which keeps hunters out of their dead zone.
+// From a cluster the edge of the dais usually blocks the view down to it, and Attack() refuses a
+// target out of sight. Spell range keeps hunters out of their dead zone.
 bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
 {
     Unit* tainted = GetTaintedElementalToKill(bot);
@@ -2165,9 +2130,8 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     return false;
 }
 
-// The looter waits beside the elemental, so it is on the corpse when it dies. It sends the loot
-// packets itself: OpenLootAction holds the bot's next tick back by lootDelay (1s by default),
-// which would hold back the first throw.
+// The looter sends the loot packets itself: OpenLootAction holds the bot's next tick back by
+// lootDelay (1s by default), which would hold back the first throw.
 bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
 {
     Creature* tainted = GetAssignedTaintedElemental(bot);
@@ -2315,11 +2279,8 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& ch
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// Throws once the next catcher stands on its spot with the throw in range and in sight. For the
-// last catcher, on its spot means within use range of the generator, since the core roots it. A
-// throw that doesn't land is tried once more, then the chain is planned again from here without
-// that catcher. A catcher that never arrives is replaced; one standing out of reach means a new
-// plan.
+// For the last catcher, on its spot means in use range of the generator, since the core roots
+// it. A throw that doesn't land is tried once more, then replanned without that catcher.
 bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     VashjCorePassingChain& chain, size_t next, Item* core, GameObject* generator)
 {
@@ -2371,9 +2332,8 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
 
     chain.blockedStart = 0;
 
-    // At least this long between any two throws of the chain, as lastVashjCoreImbueAttempt did:
-    // passes one right after another look rushed, and a bot could throw twice in a row. It is also
-    // the wait before a throw that didn't land is tried again.
+    // Passes one right after another look rushed, and a bot could throw twice in a row. Also the
+    // wait before a throw that didn't land is tried again.
     constexpr uint32 throwIntervalMs = 2 * IN_MILLISECONDS;
     if (chain.throwTime && getMSTimeDiff(chain.throwTime, now) < throwIntervalMs)
         return false;
@@ -2404,10 +2364,8 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(Item* core, GameObjec
     if (bot->IsNonMeleeSpellCast(false))
         return false;
 
-    // Casts Opening on the generator, as a player using the core on it. The generator reacts only
-    // to Opening hitting it, so GameObject::Use() does nothing. The packet is queued, but the queue
-    // is drained before the bot's next AI tick, which then skips while Opening is cast; a second
-    // use mid-cast would restart it.
+    // Opening on the generator, as a player using the core on it; GameObject::Use() does nothing.
+    // The bot's next tick skips while Opening is cast, and a second use would restart it.
     botAI->ImbueItem(core, TARGET_FLAG_GAMEOBJECT, generator->GetGUID());
     return true;
 }
@@ -2424,7 +2382,6 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     CharmInfo* charmInfo = pet->GetCharmInfo();
     Unit* target = GetVashjPetTarget(botAI, pet, vashj);
 
-    // If there is nothing to attack but Vashj, return to the master.
     if (!target)
     {
         pet->AttackStop();
@@ -2568,10 +2525,8 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Melee stay in reach of their target, at the nearest angle around it that no pool covers. When
-// pools cover the whole ring, they step out of the pools as other bots do, and her tank, whose
-// avoid radius reaches past the ring, moves her. Boxed in where that finds nothing, a melee in a
-// pool walks straight out of the nearest one.
+// Melee stay in reach at the nearest angle no pool covers. With the whole ring covered they step
+// out as other bots do, and a boxed-in melee walks straight out of the nearest pool.
 bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;

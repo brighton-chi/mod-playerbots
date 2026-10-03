@@ -61,8 +61,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("the lurker below guardians should be tanked",
         { NextAction("the lurker below tanks pick up guardians", ACTION_RAID) }));
 
-    // This needs to be lower priority than reach melee, which is at least ACTION_HIGH + 1 for
-    // every class.
     triggers.push_back(new TriggerNode("the lurker below melee cannot reach target",
         { NextAction("the lurker below melee move directly to target", ACTION_HIGH) }));
 
@@ -284,7 +282,6 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 namespace
 {
 
-// Tanks other than the designated Frost and Nature tanks must pick up adds only.
 void AppendHydrossAddTankExclusions(
     Player* bot, AiObjectContext* context, GuidSet& exclusions)
 {
@@ -324,7 +321,6 @@ void AppendLadyVashjGeneratorPhaseExclusions(AiObjectContext* context, GuidSet& 
         exclusions.insert(vashj->GetGUID());
 }
 
-// Don't attack any Murlocs not within the eligible distance.
 void AppendMorogrimTidewalkerMurlocExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {

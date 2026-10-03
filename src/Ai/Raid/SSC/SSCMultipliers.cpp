@@ -82,8 +82,7 @@ bool IsDpsHoldCandidate(Player* bot, Action* action)
     return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
 }
 
-// Generally, allow healing, buffing, etc. during a dps holding period. Totems are excluded
-// because some are offensive.
+// Healing, buffs etc. go through a dps hold. Totems don't, since some are offensive.
 float GetDpsHoldValue(Player* bot, Action* action)
 {
     if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
@@ -675,7 +674,6 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     if (isStockMove)
         return 0.0f;
 
-    // Hold AoE threat and taunts only when another tank's target is close enough to be hit.
     return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
 }
 
@@ -756,8 +754,8 @@ float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action
     return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) ? 0.0f : 1.0f;
 }
 
-// Casts must be blocked during the Cyclone and subsequent fall, both to maintain accuracy and keep
-// the bot from gettign stuck in midair (point moves fail mid-cast).
+// Casts are blocked during the Cyclone and the fall, for accuracy and so the bot doesn't get
+// stuck in midair (point moves fail mid-cast).
 float FathomLordKarathressNoCastingWhileLiftedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action))
@@ -1000,11 +998,8 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 2)
         return 1.0f;
 
-    // In either engine. The priority action gives every bot its targets, healers included, and
-    // its Attack() switches them into the combat engine; assist would only add targets the tiers
-    // don't allow, such as an Elite or Strider no tank has yet.
-    // Every bot has its own way back to its post: cluster slots, the idle tank's walk to her, and
-    // melee targets chosen by their distance from her
+    // The priority action gives every bot its targets, and every bot has its own way back to its
+    // post. Assist would only add targets the tiers don't allow.
     if (isAlwaysBlocked)
         return 0.0f;
 
@@ -1019,8 +1014,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return PlayerbotAI::IsHeal(bot) ? 1.0f : 0.0f;
 
     // A dot goes on the attacker in range with the most health that lacks it, whatever the bot is
-    // attacking, so non-tanks hold dots while an Elite or Strider could be pulled off its way to a
-    // tank
+    // attacking, so it could pull an Elite or Strider off its way to a tank
     if (isDebuffOnAttacker)
     {
         if (IsEnchantedElemental(AI_VALUE(Unit*, "current target")))
@@ -1029,8 +1023,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
         return PlayerbotAI::IsTank(bot) || !IsAnyVashjAddUntanked(botAI) ? 1.0f : 0.0f;
     }
 
-    // Only getting behind the target goes through, and not behind an Enchanted Elemental, where it
-    // gains nothing. The rest would pull bots off their posts, and tank facing doesn't work where a
+    // Only getting behind the target, not an Enchanted Elemental. Tank facing doesn't work where a
     // tanking position is set, as for Elites and Striders here.
     if (isCombatFormationAction)
     {
@@ -1091,14 +1084,13 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (isDebuffOnAttacker)
         return IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 0.0f : 1.0f;
 
-    // Two combat formation moves are allowed:
-    // (1) Getting behind the target, except an Enchanted Elemental, where it is a waste of time.
+    // Getting behind the target, except an Enchanted Elemental, where it is a waste of time
     Unit* target = AI_VALUE(Unit*, "current target");
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return IsEnchantedElemental(target) ? 0.0f : 1.0f;
 
-    // (2) a tank turning an Elite away (Cleave), which works in Phase 3 only because Elites lost
-    // their hardcoded tanking positions.
+    // A tank turning an Elite away (Cleave) works in phase 3 only, where Elites lose their
+    // hardcoded tanking positions
     if (dynamic_cast<TankFaceAction*>(action))
         return target && target->GetEntry() == Id(SscNpcs::NPC_COILFANG_ELITE) ? 1.0f : 0.0f;
 
