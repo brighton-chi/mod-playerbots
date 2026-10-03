@@ -550,8 +550,6 @@ public:
 
 private:
     bool StepTowardBreakoutSpot(Unit* vashj);
-
-    // Her tank, pinned by pools, walks to this spot and doesn't stop on the way
     Position _breakoutSpot;
     bool _hasBreakoutSpot = false;
     uint32 _breakoutStartTime = 0;

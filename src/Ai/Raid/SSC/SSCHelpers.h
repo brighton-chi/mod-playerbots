@@ -252,6 +252,7 @@ inline constexpr uint32 LURKER_GUARDIAN_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LURKER_GUARDIAN_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
+// In front of a pillar to limit the distance that the main tank gets knocked back by Whirl.
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 
 extern std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
