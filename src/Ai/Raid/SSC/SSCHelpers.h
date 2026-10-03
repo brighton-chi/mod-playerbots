@@ -15,7 +15,6 @@
 #include <limits>
 #include <type_traits>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 class Creature;

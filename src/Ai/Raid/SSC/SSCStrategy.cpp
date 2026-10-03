@@ -15,7 +15,7 @@ using namespace EncounterHelpers;
 
 void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("ssc no encounter in progress",
         { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10) }));
 

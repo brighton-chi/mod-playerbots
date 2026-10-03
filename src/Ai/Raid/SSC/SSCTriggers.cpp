@@ -12,16 +12,24 @@
 #include "Playerbots.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
-#include "TemporarySummon.h"
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool SscNoEncounterInProgressTrigger::IsActive()
 {
     return !IsEncounterInProgress(bot, SSC_MAP_ID);
+}
+
+bool SscHunterShouldMisdirectTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 // Trash
@@ -41,17 +49,6 @@ bool GreyheartTidecallerWaterElementalTotemSpawnedTrigger::IsActive()
         return false;
 
     return GetWaterElementalTotem(botAI) && !IsSkullOnWaterElementalTotem(botAI);
-}
-
-// Shared Bosses
-
-bool SscHunterShouldMisdirectTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
-    return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 // Hydross the Unstable <Duke of Currents>
@@ -225,12 +222,12 @@ bool TheLurkerBelowMeleeInWaterTrigger::IsActiveInEncounter()
 
 // Leotheras the Blind
 
-bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActive()
 {
-    if (!PlayerbotAI::IsRanged(bot))
+    if (bot->GetMapId() != SSC_MAP_ID || !PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    Creature* leotheras = GetLeotheras(botAI);
     if (!leotheras || !IsSpellbinderPhase(leotheras))
         return false;
 

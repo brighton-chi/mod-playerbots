@@ -12,7 +12,7 @@
 #include "Trigger.h"
 #include <string>
 
-// General
+// Shared
 
 class SscEncounterTrigger : public Trigger
 {
@@ -33,10 +33,24 @@ protected:
 class SscNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    // Between-encounter clean-up, true through all trash and downtime, so no hurry
     SscNoEncounterInProgressTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "ssc no encounter in progress", 1000) {}
     bool IsActive() override;
+};
+
+// Used for Fathom-Lord Karathress, Morogrim Tidewalker, and Lady Vashj.
+class SscHunterShouldMisdirectTrigger : public SscEncounterTrigger
+{
+public:
+    SscHunterShouldMisdirectTrigger(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : SscEncounterTrigger(botAI, name), _bossName(bossName) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    std::string const _bossName;
 };
 
 // Trash
@@ -55,23 +69,6 @@ public:
     GreyheartTidecallerWaterElementalTotemSpawnedTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "greyheart tidecaller water elemental totem spawned") {}
     bool IsActive() override;
-};
-
-// Shared Bosses
-
-// Used for Fathom-Lord Karathress (on Tidalvess), Morogrim Tidewalker and Lady Vashj.
-class SscHunterShouldMisdirectTrigger : public SscEncounterTrigger
-{
-public:
-    SscHunterShouldMisdirectTrigger(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : SscEncounterTrigger(botAI, name), _bossName(bossName) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-
-private:
-    std::string const _bossName;
 };
 
 // Hydross the Unstable <Duke of Currents>
@@ -210,14 +207,14 @@ protected:
 
 // Leotheras the Blind
 
-class LeotherasTheBlindRangedShouldSpreadUponPullTrigger : public SscEncounterTrigger
+// Not encounter gated because the encounter does not start during the Spellbinder phase unless he
+// is hit by something (it's likely he'll get hit by an AoE spell in practice).
+class LeotherasTheBlindRangedShouldSpreadUponPullTrigger : public Trigger
 {
 public:
     LeotherasTheBlindRangedShouldSpreadUponPullTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind ranged should spread upon pull") {}
-
-protected:
-    bool IsActiveInEncounter() override;
+        : Trigger(botAI, "leotheras the blind ranged should spread upon pull", 1000) {}
+    bool IsActive() override;
 };
 
 class LeotherasTheBlindWarlockShouldTankDemonFormTrigger : public SscEncounterTrigger

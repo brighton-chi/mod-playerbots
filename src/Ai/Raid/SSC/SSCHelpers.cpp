@@ -12,7 +12,6 @@
 #include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "SSCValueContext.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>

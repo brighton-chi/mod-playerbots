@@ -12,6 +12,8 @@
 #include "SSCHelpers.h"
 #include <string>
 
+// Shared
+
 class SscEncounterMultiplier : public Multiplier
 {
 public:
@@ -20,27 +22,15 @@ public:
 
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, SscHelpers::SSC_MAP_ID)
-            ? GetValueInEncounter(action) : 1.0f;
+        return EncounterHelpers::IsEncounterInProgress(bot, SscHelpers::SSC_MAP_ID) ?
+            GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 };
 
-// Trash
-
-class UnderbogColossusHoldNearToxicPoolMultiplier : public Multiplier
-{
-public:
-    UnderbogColossusHoldNearToxicPoolMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "underbog colossus hold near toxic pool") {}
-    float GetValue(Action* action) override;
-};
-
-// Shared Bosses
-
-// For Lady Vashj, Fathom-Lord Karathress, Hydross, and Leotheras (Warlock tank).
+// For Lady Vashj, Fathom-Lord Karathress, Hydross, and Leotheras (to Warlock tank).
 class SscControlMisdirectionMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -51,7 +41,8 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Not encounter gated because Leotheras is not set to engaged until the Spellbinders are killed.
+// Not encounter gated: Leotheras is engaged only once something hostile touches him, which may
+// not happen until the Spellbinders are dead.
 class SscDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:
@@ -69,6 +60,16 @@ public:
 
 protected:
     float GetValueInEncounter(Action* action) override;
+};
+
+// Trash
+
+class UnderbogColossusHoldNearToxicPoolMultiplier : public Multiplier
+{
+public:
+    UnderbogColossusHoldNearToxicPoolMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "underbog colossus hold near toxic pool") {}
+    float GetValue(Action* action) override;
 };
 
 // Hydross the Unstable <Duke of Currents>

@@ -14,7 +14,6 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
-#include "TemporarySummon.h"
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>

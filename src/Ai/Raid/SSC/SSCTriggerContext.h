@@ -15,7 +15,7 @@ class RaidSscTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidSscTriggerContext()
     {
-        // General
+        // Shared
         creators["ssc no encounter in progress"] =
             &RaidSscTriggerContext::ssc_no_encounter_in_progress;
 
@@ -220,7 +220,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Trigger* ssc_no_encounter_in_progress(PlayerbotAI* botAI) {
         return new SscNoEncounterInProgressTrigger(botAI);
     }
