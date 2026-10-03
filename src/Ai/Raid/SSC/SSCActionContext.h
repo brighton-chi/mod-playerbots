@@ -124,9 +124,6 @@ public:
             &RaidSscActionContext::fathom_lord_karathress_drop_to_ground_after_cyclone;
 
         // Morogrim Tidewalker
-        creators["morogrim tidewalker misdirect to main tank"] =
-            &RaidSscActionContext::morogrim_tidewalker_misdirect_to_main_tank;
-
         creators["morogrim tidewalker position main tank"] =
             &RaidSscActionContext::morogrim_tidewalker_position_main_tank;
 
@@ -135,6 +132,9 @@ public:
 
         creators["morogrim tidewalker return to boss"] =
             &RaidSscActionContext::morogrim_tidewalker_return_to_boss;
+
+        creators["morogrim tidewalker misdirect to main tank"] =
+            &RaidSscActionContext::morogrim_tidewalker_misdirect_to_main_tank;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj main tank position boss"] =
@@ -194,11 +194,11 @@ public:
         creators["lady vashj destroy tainted core"] =
             &RaidSscActionContext::lady_vashj_destroy_tainted_core;
 
-        creators["lady vashj return to the ground"] =
-            &RaidSscActionContext::lady_vashj_return_to_the_ground;
-
         creators["lady vashj command pet target"] =
             &RaidSscActionContext::lady_vashj_command_pet_target;
+
+        creators["lady vashj return to the ground"] =
+            &RaidSscActionContext::lady_vashj_return_to_the_ground;
 
         creators["lady vashj avoid toxic spores"] =
             &RaidSscActionContext::lady_vashj_avoid_toxic_spores;
@@ -299,14 +299,14 @@ private:
     static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_misdirect_demon_form_to_tank(PlayerbotAI* botAI) {
-        return new LeotherasTheBlindMisdirectDemonFormToTankAction(botAI);
-    }
     static Action* leotheras_the_blind_final_phase_attack_boss(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseAttackBossAction(botAI);
     }
     static Action* leotheras_the_blind_final_phase_separate_boss_from_demon(PlayerbotAI* botAI) {
         return new LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(botAI);
+    }
+    static Action* leotheras_the_blind_misdirect_demon_form_to_tank(PlayerbotAI* botAI) {
+        return new LeotherasTheBlindMisdirectDemonFormToTankAction(botAI);
     }
     static Action* leotheras_the_blind_melee_stop_attacking(PlayerbotAI* botAI) {
         return new SscStopAttackingAction(botAI, "leotheras the blind melee stop attacking");
@@ -341,10 +341,6 @@ private:
     }
 
     // Morogrim Tidewalker
-    static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI) {
-        return new SscMisdirectToMainTankAction(
-            botAI, "morogrim tidewalker misdirect to main tank", "morogrim tidewalker");
-    }
     static Action* morogrim_tidewalker_position_main_tank(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerPositionMainTankAction(botAI);
     }
@@ -353,6 +349,10 @@ private:
     }
     static Action* morogrim_tidewalker_return_to_boss(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerReturnToBossAction(botAI);
+    }
+    static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI) {
+        return new SscMisdirectToMainTankAction(
+            botAI, "morogrim tidewalker misdirect to main tank", "morogrim tidewalker");
     }
 
     // Lady Vashj <Coilfang Matron>
@@ -414,11 +414,11 @@ private:
     static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI) {
         return new LadyVashjDestroyTaintedCoreAction(botAI);
     }
-    static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
-        return new LadyVashjReturnToTheGroundAction(botAI);
-    }
     static Action* lady_vashj_command_pet_target(PlayerbotAI* botAI) {
         return new LadyVashjCommandPetTargetAction(botAI);
+    }
+    static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
+        return new LadyVashjReturnToTheGroundAction(botAI);
     }
     static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
         return new LadyVashjAvoidToxicSporesAction(botAI);

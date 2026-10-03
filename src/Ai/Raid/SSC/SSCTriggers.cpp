@@ -725,29 +725,6 @@ bool LadyVashjTaintedCoreLooterTrigger::IsActiveInEncounter()
     return !tainted->IsAlive() || bot->GetDistance(tainted) > VASHJ_CORE_LOOT_RANGE;
 }
 
-// In phase 3 with no generator left, from a chain that found no way, or still held when the next
-// core is ready to loot. Its Paralyze roots the holder until it leaves the bags.
-bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
-{
-    if (!HasTaintedCore(bot))
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    int8 const phase = GetLadyVashjPhase(vashj);
-    if (phase == 3)
-        return true;
-
-    if (phase != 2)
-        return false;
-
-    VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
-    if (chain && chain->failed)
-        return true;
-
-    Creature* nextTainted = GetAssignedTaintedElemental(bot);
-    return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
-}
-
 bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
 {
     VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
@@ -778,6 +755,29 @@ bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
     }
 
     return IsVashjCoreCatcherActive(bot, *chain, index);
+}
+
+// In phase 3 with no generator left, from a chain that found no way, or still held when the next
+// core is ready to loot. Its Paralyze roots the holder until it leaves the bags.
+bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
+{
+    if (!HasTaintedCore(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    int8 const phase = GetLadyVashjPhase(vashj);
+    if (phase == 3)
+        return true;
+
+    if (phase != 2)
+        return false;
+
+    VashjCorePassingChain const* chain = GetVashjCorePassingChain(bot);
+    if (chain && chain->failed)
+        return true;
+
+    Creature* nextTainted = GetAssignedTaintedElemental(bot);
+    return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
 bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()

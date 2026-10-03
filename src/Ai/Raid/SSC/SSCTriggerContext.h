@@ -130,14 +130,14 @@ public:
         creators["morogrim tidewalker should be tanked"] =
             &RaidSscTriggerContext::morogrim_tidewalker_should_be_tanked;
 
-        creators["morogrim tidewalker hunter should misdirect"] =
-            &RaidSscTriggerContext::morogrim_tidewalker_hunter_should_misdirect;
-
         creators["morogrim tidewalker ranged should stack"] =
             &RaidSscTriggerContext::morogrim_tidewalker_ranged_should_stack;
 
         creators["morogrim tidewalker too far from boss"] =
             &RaidSscTriggerContext::morogrim_tidewalker_too_far_from_boss;
+
+        creators["morogrim tidewalker hunter should misdirect"] =
+            &RaidSscTriggerContext::morogrim_tidewalker_hunter_should_misdirect;
 
         // Lady Vashj <Coilfang Matron>
         creators["lady vashj should be tanked"] =
@@ -342,15 +342,15 @@ private:
     static Trigger* morogrim_tidewalker_should_be_tanked(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerShouldBeTankedTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI) {
-        return new SscHunterShouldMisdirectTrigger(
-            botAI, "morogrim tidewalker hunter should misdirect", "morogrim tidewalker");
-    }
     static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
     }
     static Trigger* morogrim_tidewalker_too_far_from_boss(PlayerbotAI* botAI) {
         return new MorogrimTidewalkerTooFarFromBossTrigger(botAI);
+    }
+    static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI) {
+        return new SscHunterShouldMisdirectTrigger(
+            botAI, "morogrim tidewalker hunter should misdirect", "morogrim tidewalker");
     }
 
     // Lady Vashj <Coilfang Matron>

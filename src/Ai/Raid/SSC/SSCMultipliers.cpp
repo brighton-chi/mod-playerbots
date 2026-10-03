@@ -478,6 +478,27 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     return 1.0f;
 }
 
+float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!PlayerbotAI::IsMelee(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) && !IsMeleeReachSpell(bot, action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action))
+        return 1.0f;
+
+    if (!HasTooManyChaosBlastStacks(bot))
+        return 1.0f;
+
+    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
+    return leotherasDemon && leotherasDemon->GetVictim() != bot ? 0.0f : 1.0f;
+}
+
 float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -598,27 +619,6 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         dynamic_cast<CastInnervateOnHealerAction*>(action) ||
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
         dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action) ? 0.0f : 1.0f;
-}
-
-float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!PlayerbotAI::IsMelee(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) && !IsMeleeReachSpell(bot, action))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<LeotherasTheBlindDestroyInnerDemonAction*>(action))
-        return 1.0f;
-
-    if (!HasTooManyChaosBlastStacks(bot))
-        return 1.0f;
-
-    Creature* leotherasDemon = GetLeotherasDemonOrShadow(botAI);
-    return leotherasDemon && leotherasDemon->GetVictim() != bot ? 0.0f : 1.0f;
 }
 
 float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)

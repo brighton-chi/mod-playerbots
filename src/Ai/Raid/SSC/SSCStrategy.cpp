@@ -169,21 +169,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj hunter should misdirect",
         { NextAction("lady vashj misdirect to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("lady vashj tainted elemental needs looter",
-        { NextAction("lady vashj assign tainted core looter", ACTION_EMERGENCY + 13) }));
-
-    triggers.push_back(new TriggerNode("lady vashj should attack tainted elemental",
-        { NextAction("lady vashj attack tainted elemental", ACTION_EMERGENCY + 12) }));
-
-    triggers.push_back(new TriggerNode("lady vashj tainted core looter",
-        { NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 11) }));
-
-    triggers.push_back(new TriggerNode("lady vashj core passing chain member",
-        { NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10) }));
-
-    triggers.push_back(new TriggerNode("lady vashj should destroy tainted core",
-        { NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 11) }));
-
     triggers.push_back(new TriggerNode("lady vashj should assign target priority",
         { NextAction("lady vashj assign target priority", ACTION_RAID) }));
 
@@ -198,6 +183,21 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("lady vashj tank is idle away from the middle",
         { NextAction("lady vashj tank wait in the middle", ACTION_RAID - 1) }));
+
+    triggers.push_back(new TriggerNode("lady vashj tainted elemental needs looter",
+        { NextAction("lady vashj assign tainted core looter", ACTION_EMERGENCY + 13) }));
+
+    triggers.push_back(new TriggerNode("lady vashj should attack tainted elemental",
+        { NextAction("lady vashj attack tainted elemental", ACTION_EMERGENCY + 12) }));
+
+    triggers.push_back(new TriggerNode("lady vashj tainted core looter",
+        { NextAction("lady vashj loot tainted core", ACTION_EMERGENCY + 11) }));
+
+    triggers.push_back(new TriggerNode("lady vashj core passing chain member",
+        { NextAction("lady vashj pass the tainted core", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("lady vashj should destroy tainted core",
+        { NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("lady vashj pet should switch target",
         { NextAction("lady vashj command pet target", ACTION_RAID + 2) }));
@@ -223,13 +223,13 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // Trash
-    multipliers.push_back(new UnderbogColossusHoldNearToxicPoolMultiplier(botAI));
-
-    // Shared Bosses
+    // Shared
     multipliers.push_back(new SscControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new SscDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new SscNoFishingDuringEncounterMultiplier(botAI));
+
+    // Trash
+    multipliers.push_back(new UnderbogColossusHoldNearToxicPoolMultiplier(botAI));
 
     // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(botAI));

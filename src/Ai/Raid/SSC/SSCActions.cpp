@@ -1507,6 +1507,62 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         priority, true, false);
 }
 
+// Mechanic tracker only. Fills the slots in group order the first time, then puts the first
+// living spare of the right role into each vacated slot. Holders never move.
+bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
+    auto holdsSlot = [&holders](ObjectGuid guid)
+    {
+        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
+        {
+            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
+        });
+    };
+
+    std::vector<Player*> rangedSpares;
+    std::vector<Player*> healerSpares;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+            !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
+        {
+            continue;
+        }
+
+        if (PlayerbotAI::IsRangedDps(member))
+            rangedSpares.push_back(member);
+        else if (PlayerbotAI::IsHeal(member))
+            healerSpares.push_back(member);
+    }
+
+    bool changed = false;
+    size_t nextRanged = 0;
+    size_t nextHealer = 0;
+    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
+    {
+        ObjectGuid& holder = holders[slot.cluster][slot.slot];
+        if (IsLiveVashjClusterHolder(bot, holder))
+            continue;
+
+        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
+        std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
+        size_t& next = isHealerSlot ? nextHealer : nextRanged;
+        if (next >= spares.size())
+            continue;
+
+        holder = spares[next++]->GetGUID();
+        changed = true;
+    }
+
+    return changed;
+}
+
 // The cluster nearest a Tainted Elemental kills it and its healer loots it, and Enchanted
 // Elementals are met on their way in.
 bool LadyVashjPhase2PositionInClusterAction::Execute(Event /*event*/)
@@ -1871,26 +1927,6 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     return false;
 }
 
-bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
-{
-    float const x = bot->GetPositionX();
-    float const y = bot->GetPositionY();
-
-    // Search down from the dais, not from the bot, so the floor found is the dais or the
-    // stairs and never the pipes the bot may be standing on
-    float const floorZ = bot->GetMapHeight(x, y, VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
-    if (floorZ <= INVALID_HEIGHT)
-        return false;
-
-    bot->AttackStop();
-    bot->CastStop();
-    bot->StopMoving();
-    bot->GetMotionMaster()->Clear();
-    bot->NearTeleportTo(x, y, floorZ, bot->GetOrientation());
-
-    return true;
-}
-
 // Fear Ward makes Striders tankable. This simulates the real-life strategy of meleeing a Strider
 // in an Ogre Suit (due to the extended combat reach).
 bool LadyVashjTankApplyFearWardAction::Execute(Event /*event*/)
@@ -1939,25 +1975,25 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderToHoldPosition(Unit* str
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Walks a path, which goes round the generators.
-bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
+// Phase 3: keep the Strider away from Vashj, where bots tend to congregate to take down
+// elementals.
+bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
+    Unit* strider, Unit* vashj)
 {
-    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
-    if (IsWaitingForLastMove(priority))
-        return false;
-
-    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!vashj)
-        return false;
-
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_IDLE_TANK_DISTANCE, stepX, stepY))
+    float stepZ;
+    bool backwards;
+    if (!FindVashjDaisStepAwayFromUnits(
+            bot, { vashj }, strider, VASHJ_STANDING_ROCK_CLEARANCE, stepX, stepY, stepZ,
+            backwards, &GetToxicSporePositions(botAI)))
+    {
         return false;
+    }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // For a human tank: about 12y in front of the north rock's tip, or south-east of the middle.
@@ -1985,81 +2021,25 @@ bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Phase 3: keep the Strider away from Vashj, where bots tend to congregate to take down
-// elementals.
-bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
-    Unit* strider, Unit* vashj)
+// Walks a path, which goes round the generators.
+bool LadyVashjTankWaitInTheMiddleAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
     float stepX;
     float stepY;
-    float stepZ;
-    bool backwards;
-    if (!FindVashjDaisStepAwayFromUnits(
-            bot, { vashj }, strider, VASHJ_STANDING_ROCK_CLEARANCE, stepX, stepY, stepZ,
-            backwards, &GetToxicSporePositions(botAI)))
-    {
+    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_IDLE_TANK_DISTANCE, stepX, stepY))
         return false;
-    }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
-
-// Mechanic tracker only. Fills the slots in group order the first time, then puts the first
-// living spare of the right role into each vacated slot. Holders never move.
-bool LadyVashjAssignClusterSlotsAction::Execute(Event /*event*/)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    VashjClusterHolders& holders = vashjClusterHolders[bot->GetInstanceId()];
-    auto holdsSlot = [&holders](ObjectGuid guid)
-    {
-        return std::any_of(holders.begin(), holders.end(), [guid](auto const& cluster)
-        {
-            return std::find(cluster.begin(), cluster.end(), guid) != cluster.end();
-        });
-    };
-
-    std::vector<Player*> rangedSpares;
-    std::vector<Player*> healerSpares;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
-        {
-            continue;
-        }
-
-        if (PlayerbotAI::IsRangedDps(member))
-            rangedSpares.push_back(member);
-        else if (PlayerbotAI::IsHeal(member))
-            healerSpares.push_back(member);
-    }
-
-    bool changed = false;
-    size_t nextRanged = 0;
-    size_t nextHealer = 0;
-    for (VashjClusterSlot const& slot : GetVashjClusterFillOrder())
-    {
-        ObjectGuid& holder = holders[slot.cluster][slot.slot];
-        if (IsLiveVashjClusterHolder(bot, holder))
-            continue;
-
-        bool const isHealerSlot = slot.slot == VASHJ_CLUSTER_HEALER_SLOT;
-        std::vector<Player*> const& spares = isHealerSlot ? healerSpares : rangedSpares;
-        size_t& next = isHealerSlot ? nextHealer : nextRanged;
-        if (next >= spares.size())
-            continue;
-
-        holder = spares[next++]->GetGUID();
-        changed = true;
-    }
-
-    return changed;
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 // Chosen when the elemental spawns, and again if the looter dies before it does.
@@ -2187,16 +2167,6 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     *releasePacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(releasePacket);
 
-    return true;
-}
-
-// As a player would delete it from their bags. Removing it takes off its Paralyze.
-bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
-{
-    if (!HasTaintedCore(bot))
-        return false;
-
-    bot->DestroyItemCount(Id(SscItems::ITEM_TAINTED_CORE), -1, true);
     return true;
 }
 
@@ -2366,6 +2336,16 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnGenerator(Item* core, GameObjec
     return true;
 }
 
+// As a player would delete it from their bags. Removing it takes off its Paralyze.
+bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
+{
+    if (!HasTaintedCore(bot))
+        return false;
+
+    bot->DestroyItemCount(Id(SscItems::ITEM_TAINTED_CORE), -1, true);
+    return true;
+}
+
 // Pets never leave a living target on their own (PetAI::OwnerAttacked), so they would stay on
 // Vashj through all of phase 2. This puts them on their master's target instead.
 bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
@@ -2413,6 +2393,26 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     }
 
     pet->AI()->AttackStart(target);
+    return true;
+}
+
+bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)
+{
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+
+    // Search down from the dais, not from the bot, so the floor found is the dais or the
+    // stairs and never the pipes the bot may be standing on
+    float const floorZ = bot->GetMapHeight(x, y, VASHJ_PLATFORM_CENTER_POSITION.GetPositionZ());
+    if (floorZ <= INVALID_HEIGHT)
+        return false;
+
+    bot->AttackStop();
+    bot->CastStop();
+    bot->StopMoving();
+    bot->GetMotionMaster()->Clear();
+    bot->NearTeleportTo(x, y, floorZ, bot->GetOrientation());
+
     return true;
 }
 

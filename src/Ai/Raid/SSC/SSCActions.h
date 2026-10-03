@@ -386,19 +386,19 @@ private:
     bool _reachedRangedPosition = false;
 };
 
-class LadyVashjPhase2PositionInClusterAction : public MovementAction
-{
-public:
-    LadyVashjPhase2PositionInClusterAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "lady vashj phase 2 position in cluster") {}
-    bool Execute(Event event) override;
-};
-
 class LadyVashjAssignClusterSlotsAction : public Action
 {
 public:
     LadyVashjAssignClusterSlotsAction(PlayerbotAI* botAI)
         : Action(botAI, "lady vashj assign cluster slots") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjPhase2PositionInClusterAction : public MovementAction
+{
+public:
+    LadyVashjPhase2PositionInClusterAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj phase 2 position in cluster") {}
     bool Execute(Event event) override;
 };
 
@@ -439,14 +439,6 @@ class LadyVashjAssignTargetPriorityAction : public AttackAction
 public:
     LadyVashjAssignTargetPriorityAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "lady vashj assign target priority") {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjReturnToTheGroundAction : public Action
-{
-public:
-    LadyVashjReturnToTheGroundAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj return to the ground") {}
     bool Execute(Event event) override;
 };
 
@@ -510,14 +502,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjDestroyTaintedCoreAction : public Action
-{
-public:
-    LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI)
-        : Action(botAI, "lady vashj destroy tainted core") {}
-    bool Execute(Event event) override;
-};
-
 class LadyVashjPassTheTaintedCoreAction : public MovementAction
 {
 public:
@@ -532,11 +516,27 @@ private:
     bool UseCoreOnGenerator(Item* core, GameObject* generator);
 };
 
+class LadyVashjDestroyTaintedCoreAction : public Action
+{
+public:
+    LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj destroy tainted core") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjCommandPetTargetAction : public Action
 {
 public:
     LadyVashjCommandPetTargetAction(PlayerbotAI* botAI)
         : Action(botAI, "lady vashj command pet target") {}
+    bool Execute(Event event) override;
+};
+
+class LadyVashjReturnToTheGroundAction : public Action
+{
+public:
+    LadyVashjReturnToTheGroundAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj return to the ground") {}
     bool Execute(Event event) override;
 };
 

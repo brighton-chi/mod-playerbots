@@ -584,21 +584,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LadyVashjShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
-{
-public:
-    LadyVashjShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "lady vashj should destroy tainted core") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class LadyVashjCorePassingChainMemberTrigger : public SscEncounterTrigger
 {
 public:
     LadyVashjCorePassingChainMemberTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "lady vashj core passing chain member") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LadyVashjShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should destroy tainted core") {}
 
 protected:
     bool IsActiveInEncounter() override;
