@@ -1287,8 +1287,8 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
     return true;
 }
 
-// Measured in the same way as IsWithinLOSInMap: from the thrower's collision height to the catcher.
-// The height for the catcher is assumed to be that of a Gnome.
+// Measured in the same way as IsWithinLOSInMap: from the thrower's collision height to the
+// catcher's. The height for the catcher is assumed to be that of a Gnome.
 bool IsVashjCoreThrowInSight(
     Map* map, uint32 phaseMask, Position const& from, float fromEyeHeight, Position const& to)
 {
@@ -1298,14 +1298,13 @@ bool IsVashjCoreThrowInSight(
         phaseMask, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
 }
 
-// The farthest point from the generator's center, along angle, still within its interaction
-// distance (5y from its box, Opening's range too) less a margin for where the bot stops.
-bool FindVashjCoreUseSpot(GameObject* generator, uint32 phaseMask, float angle, Position& spot)
+bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float angle, Position& spot)
 {
     constexpr float useSpotMargin = 0.5f;
-    float const useRange = generator->GetInteractionDistance() - useSpotMargin;
+    float const useRange = generator->GetInteractionDistance() - useSpotMargin; // 4.5y
     constexpr float stepLength = 0.25f;
     constexpr int steps = 48;
+
     for (int step = steps; step > 0; --step)
     {
         float const reach = step * stepLength;
@@ -1357,10 +1356,12 @@ bool PlanVashjCoreLegs(
     constexpr float minReach = 4.0f;
     constexpr int angles = 6;
     constexpr float angleStep = static_cast<float>(M_PI) / 18.0f;
+
     Position const& aim = useSpots.front();
     float const toAim = from.GetAngle(&aim);
     float const maxDistance = from.GetExactDist2d(aim) - minGain;
     std::vector<std::pair<float, Position>> candidates;
+
     for (int r = 0; r < reaches; ++r)
     {
         float const reach = leg - r * reachStep;
@@ -1441,7 +1442,7 @@ std::vector<Position> PlanVashjCoreSpots(
 
             Position spot;
             float const angle = toOrigin + sign * i * useAngleStep;
-            if (FindVashjCoreUseSpot(generator, phaseMask, angle, spot))
+            if (FindVashjGeneratorUseSpot(generator, phaseMask, angle, spot))
                 useSpots.push_back(spot);
         }
     }
