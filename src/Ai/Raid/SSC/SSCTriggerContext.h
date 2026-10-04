@@ -221,216 +221,281 @@ public:
 
 private:
     // Shared
-    static Trigger* ssc_no_encounter_in_progress(PlayerbotAI* botAI) {
+    static Trigger* ssc_no_encounter_in_progress(PlayerbotAI* botAI)
+    {
         return new SscNoEncounterInProgressTrigger(botAI);
     }
 
     // Trash
-    static Trigger* underbog_colossus_in_toxic_pool(PlayerbotAI* botAI) {
+    static Trigger* underbog_colossus_in_toxic_pool(PlayerbotAI* botAI)
+    {
         return new UnderbogColossusInToxicPoolTrigger(botAI);
     }
-    static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI) {
+    static Trigger* greyheart_tidecaller_water_elemental_totem_spawned(PlayerbotAI* botAI)
+    {
         return new GreyheartTidecallerWaterElementalTotemSpawnedTrigger(botAI);
     }
 
     // Hydross the Unstable <Duke of Currents>
-    static Trigger* hydross_the_unstable_should_be_tanked_by_frost_tank(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_should_be_tanked_by_frost_tank(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableShouldBeTankedByFrostTankTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_should_be_tanked_by_nature_tank(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_should_be_tanked_by_nature_tank(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableShouldBeTankedByNatureTankTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_ranged_should_spread_in_frost_phase(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_ranged_should_spread_in_frost_phase(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableRangedShouldSpreadInFrostPhaseTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_should_misdirect_upon_phase_change(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_should_misdirect_upon_phase_change(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_non_phase_tank_attacking(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_non_phase_tank_attacking(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableNonPhaseTankAttackingTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI) {
+    static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
     }
 
     // The Lurker Below
-    static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowSpoutIsActiveTrigger(botAI);
     }
-    static Trigger* the_lurker_below_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowShouldBeTankedTrigger(botAI);
     }
-    static Trigger* the_lurker_below_ranged_should_spread(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_ranged_should_spread(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* the_lurker_below_guardians_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_guardians_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowGuardiansShouldBeTankedTrigger(botAI);
     }
-    static Trigger* the_lurker_below_melee_cannot_reach_target(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_melee_cannot_reach_target(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowMeleeCannotReachTargetTrigger(botAI);
     }
-    static Trigger* the_lurker_below_melee_in_water(PlayerbotAI* botAI) {
+    static Trigger* the_lurker_below_melee_in_water(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowMeleeInWaterTrigger(botAI);
     }
 
     // Leotheras the Blind
-    static Trigger* leotheras_the_blind_ranged_should_spread_upon_pull(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_ranged_should_spread_upon_pull(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindRangedShouldSpreadUponPullTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_tanks_should_auto_attack_demon_form(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_tanks_should_auto_attack_demon_form(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_ranged_should_keep_distance(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_ranged_should_keep_distance(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindRangedShouldKeepDistanceTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_channeling_whirlwind(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_channeling_whirlwind(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_too_many_chaos_blast_stacks(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_too_many_chaos_blast_stacks(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindTooManyChaosBlastStacksTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_inner_demon_has_awakened(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_inner_demon_has_awakened(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindInnerDemonHasAwakenedTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_should_separate_boss_from_demon(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_should_separate_boss_from_demon(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindShouldSeparateBossFromDemonTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_hunter_should_misdirect_demon_form(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_hunter_should_misdirect_demon_form(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_aggro_resets(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_aggro_resets(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindAggroResetsTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI) {
+    static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindShouldManageDpsWaitTimersTrigger(botAI);
     }
 
     // Fathom-Lord Karathress
-    static Trigger* fathom_lord_karathress_targets_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_targets_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressTargetsShouldBeTankedTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_should_heal_caribdis_tank(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_should_heal_caribdis_tank(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressShouldHealCaribdisTankTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_hunter_should_misdirect(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
         return new SscHunterShouldMisdirectTrigger(
             botAI, "fathom-lord karathress hunter should misdirect", "fathom-guard tidalvess");
     }
-    static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressShouldManageDpsTimerTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_ranged_should_spread(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_ranged_should_spread(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_stuck_midair_after_cyclone(PlayerbotAI* botAI) {
+    static Trigger* fathom_lord_karathress_stuck_midair_after_cyclone(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressStuckMidairAfterCycloneTrigger(botAI);
     }
 
     // Morogrim Tidewalker
-    static Trigger* morogrim_tidewalker_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* morogrim_tidewalker_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerShouldBeTankedTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI) {
+    static Trigger* morogrim_tidewalker_ranged_should_stack(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerRangedShouldStackTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_too_far_from_boss(PlayerbotAI* botAI) {
+    static Trigger* morogrim_tidewalker_too_far_from_boss(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerTooFarFromBossTrigger(botAI);
     }
-    static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI) {
+    static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
         return new SscHunterShouldMisdirectTrigger(
             botAI, "morogrim tidewalker hunter should misdirect", "morogrim tidewalker");
     }
 
     // Lady Vashj <Coilfang Matron>
-    static Trigger* lady_vashj_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new LadyVashjShouldBeTankedTrigger(botAI);
     }
-    static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_ranged_should_spread_in_phase_1(PlayerbotAI* botAI)
+    {
         return new LadyVashjRangedShouldSpreadInPhase1Trigger(botAI);
     }
-    static Trigger* lady_vashj_station_slots_need_holders(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_station_slots_need_holders(PlayerbotAI* botAI)
+    {
         return new LadyVashjStationSlotsNeedHoldersTrigger(botAI);
     }
-    static Trigger* lady_vashj_should_hold_station_in_phase_2(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_should_hold_station_in_phase_2(PlayerbotAI* botAI)
+    {
         return new LadyVashjShouldHoldStationInPhase2Trigger(botAI);
     }
-    static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI)
+    {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
     }
-    static Trigger* lady_vashj_main_tank_needs_grounding_shaman(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_main_tank_needs_grounding_shaman(PlayerbotAI* botAI)
+    {
         return new LadyVashjMainTankNeedsGroundingShamanTrigger(botAI);
     }
-    static Trigger* lady_vashj_shaman_should_ground_shock_blast(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_shaman_should_ground_shock_blast(PlayerbotAI* botAI)
+    {
         return new LadyVashjShamanShouldGroundShockBlastTrigger(botAI);
     }
-    static Trigger* lady_vashj_static_charge_on_group_member(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_static_charge_on_group_member(PlayerbotAI* botAI)
+    {
         return new LadyVashjStaticChargeOnGroupMemberTrigger(botAI);
     }
-    static Trigger* lady_vashj_hunter_should_misdirect(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_hunter_should_misdirect(PlayerbotAI* botAI)
+    {
         return new SscHunterShouldMisdirectTrigger(
             botAI, "lady vashj hunter should misdirect", "lady vashj");
     }
-    static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI)
+    {
         return new LadyVashjShouldAssignTargetPriorityTrigger(botAI);
     }
-    static Trigger* lady_vashj_tank_needs_fear_ward(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_tank_needs_fear_ward(PlayerbotAI* botAI)
+    {
         return new LadyVashjTankNeedsFearWardTrigger(botAI);
     }
-    static Trigger* lady_vashj_coilfang_strider_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_coilfang_strider_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new LadyVashjCoilfangStriderShouldBeTankedTrigger(botAI);
     }
-    static Trigger* lady_vashj_coilfang_elite_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_coilfang_elite_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new LadyVashjCoilfangEliteShouldBeTankedTrigger(botAI);
     }
-    static Trigger* lady_vashj_tank_is_idle_away_from_the_middle(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_tank_is_idle_away_from_the_middle(PlayerbotAI* botAI)
+    {
         return new LadyVashjTankIsIdleAwayFromTheMiddleTrigger(botAI);
     }
-    static Trigger* lady_vashj_tainted_elemental_needs_looter(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_tainted_elemental_needs_looter(PlayerbotAI* botAI)
+    {
         return new LadyVashjTaintedElementalNeedsLooterTrigger(botAI);
     }
-    static Trigger* lady_vashj_should_attack_tainted_elemental(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_should_attack_tainted_elemental(PlayerbotAI* botAI)
+    {
         return new LadyVashjShouldAttackTaintedElementalTrigger(botAI);
     }
-    static Trigger* lady_vashj_tainted_core_looter(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_tainted_core_looter(PlayerbotAI* botAI)
+    {
         return new LadyVashjTaintedCoreLooterTrigger(botAI);
     }
-    static Trigger* lady_vashj_core_passing_chain_member(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_core_passing_chain_member(PlayerbotAI* botAI)
+    {
         return new LadyVashjCorePassingChainMemberTrigger(botAI);
     }
-    static Trigger* lady_vashj_should_destroy_tainted_core(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_should_destroy_tainted_core(PlayerbotAI* botAI)
+    {
         return new LadyVashjShouldDestroyTaintedCoreTrigger(botAI);
     }
-    static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI)
+    {
         return new LadyVashjPetShouldSwitchTargetTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_above_the_ground(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_bot_above_the_ground(PlayerbotAI* botAI)
+    {
         return new LadyVashjBotAboveTheGroundTrigger(botAI);
     }
-    static Trigger* lady_vashj_bot_in_toxic_spores(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_bot_in_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjBotInToxicSporesTrigger(botAI);
     }
-    static Trigger* lady_vashj_melee_near_toxic_spores(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_melee_near_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjMeleeNearToxicSporesTrigger(botAI);
     }
-    static Trigger* lady_vashj_ranged_reach_blocked_by_toxic_spores(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_ranged_reach_blocked_by_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjRangedReachBlockedByToxicSporesTrigger(botAI);
     }
-    static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_entangle_on_melee(PlayerbotAI* botAI)
+    {
         return new LadyVashjEntangleOnMeleeTrigger(botAI);
     }
-    static Trigger* lady_vashj_static_charge_on_rogue(PlayerbotAI* botAI) {
+    static Trigger* lady_vashj_static_charge_on_rogue(PlayerbotAI* botAI)
+    {
         return new LadyVashjStaticChargeOnRogueTrigger(botAI);
     }
 };

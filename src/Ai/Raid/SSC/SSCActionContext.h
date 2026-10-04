@@ -218,221 +218,285 @@ public:
 
 private:
     // Shared
-    static Action* ssc_reset_encounter_states(PlayerbotAI* botAI) {
+    static Action* ssc_reset_encounter_states(PlayerbotAI* botAI)
+    {
         return new SscResetEncounterStatesAction(botAI);
     }
 
     // Trash
-    static Action* underbog_colossus_escape_toxic_pool(PlayerbotAI* botAI) {
+    static Action* underbog_colossus_escape_toxic_pool(PlayerbotAI* botAI)
+    {
         return new UnderbogColossusEscapeToxicPoolAction(botAI);
     }
-    static Action* greyheart_tidecaller_mark_water_elemental_totem(PlayerbotAI* botAI) {
+    static Action* greyheart_tidecaller_mark_water_elemental_totem(PlayerbotAI* botAI)
+    {
         return new GreyheartTidecallerMarkWaterElementalTotemAction(botAI);
     }
 
     // Hydross the Unstable <Duke of Currents>
-    static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_position_frost_tank(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstablePositionAndSwapTanksAction(
             botAI, "hydross the unstable position frost tank", true);
     }
-    static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_position_nature_tank(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstablePositionAndSwapTanksAction(
             botAI, "hydross the unstable position nature tank", false);
     }
-    static Action* hydross_the_unstable_frost_phase_spread_ranged(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_frost_phase_spread_ranged(PlayerbotAI* botAI)
+    {
         return new SscSpreadRangedAction(
             botAI, "hydross the unstable frost phase spread ranged",
             SscHelpers::HYDROSS_FROST_RANGED_SPREAD_DISTANCE);
     }
-    static Action* hydross_the_unstable_misdirect_to_tank(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_misdirect_to_tank(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableMisdirectToTankAction(botAI);
     }
-    static Action* hydross_the_unstable_stop_attacking_upon_phase_change(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_stop_attacking_upon_phase_change(PlayerbotAI* botAI)
+    {
         return new SscStopAttackingAction(
             botAI, "hydross the unstable stop attacking upon phase change");
     }
-    static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI) {
+    static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI)
+    {
         return new HydrossTheUnstableManagePhaseTimersAction(botAI);
     }
 
     // The Lurker Below
-    static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowRunAroundBehindBossAction(botAI);
     }
-    static Action* the_lurker_below_position_main_tank(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_position_main_tank(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowPositionMainTankAction(botAI);
     }
-    static Action* the_lurker_below_spread_ranged_in_arc(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_spread_ranged_in_arc(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowSpreadRangedInArcAction(botAI);
     }
-    static Action* the_lurker_below_tanks_pick_up_guardians(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_tanks_pick_up_guardians(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowTanksPickUpGuardiansAction(botAI);
     }
-    static Action* the_lurker_below_melee_move_directly_to_target(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_melee_move_directly_to_target(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowMeleeMoveDirectlyToTargetAction(botAI);
     }
-    static Action* the_lurker_below_melee_get_out_of_water(PlayerbotAI* botAI) {
+    static Action* the_lurker_below_melee_get_out_of_water(PlayerbotAI* botAI)
+    {
         return new TheLurkerBelowMeleeGetOutOfWaterAction(botAI);
     }
 
     // Leotheras the Blind
-    static Action* leotheras_the_blind_spread_ranged_upon_pull(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_spread_ranged_upon_pull(PlayerbotAI* botAI)
+    {
         return new SscSpreadRangedAction(
             botAI, "leotheras the blind spread ranged upon pull",
             SscHelpers::LEOTHERAS_RANGED_SPREAD_DISTANCE);
     }
-    static Action* leotheras_the_blind_warlock_tank_attack_demon_form(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_warlock_tank_attack_demon_form(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindWarlockTankAttackDemonFormAction(botAI);
     }
-    static Action* leotheras_the_blind_tanks_build_rage_on_demon_form(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_tanks_build_rage_on_demon_form(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindTanksBuildRageOnDemonFormAction(botAI);
     }
-    static Action* leotheras_the_blind_ranged_keep_distance(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_ranged_keep_distance(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindRangedKeepDistanceAction(botAI);
     }
-    static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_run_away_from_whirlwind(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindRunAwayFromWhirlwindAction(botAI);
     }
-    static Action* leotheras_the_blind_melee_run_from_chaos_blast(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_melee_run_from_chaos_blast(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindMeleeRunFromChaosBlastAction(botAI);
     }
-    static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_destroy_inner_demon(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindDestroyInnerDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_final_phase_attack_boss(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_final_phase_attack_boss(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindFinalPhaseAttackBossAction(botAI);
     }
-    static Action* leotheras_the_blind_final_phase_separate_boss_from_demon(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_final_phase_separate_boss_from_demon(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindFinalPhaseSeparateBossFromDemonAction(botAI);
     }
-    static Action* leotheras_the_blind_misdirect_demon_form_to_tank(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_misdirect_demon_form_to_tank(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindMisdirectDemonFormToTankAction(botAI);
     }
-    static Action* leotheras_the_blind_melee_stop_attacking(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_melee_stop_attacking(PlayerbotAI* botAI)
+    {
         return new SscStopAttackingAction(botAI, "leotheras the blind melee stop attacking");
     }
-    static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI) {
+    static Action* leotheras_the_blind_manage_dps_wait_timers(PlayerbotAI* botAI)
+    {
         return new LeotherasTheBlindManageDpsWaitTimersAction(botAI);
     }
 
     // Fathom-Lord Karathress
-    static Action* fathom_lord_karathress_tanks_position_targets(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_tanks_position_targets(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressTanksPositionTargetsAction(botAI);
     }
-    static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_position_caribdis_tank_healer(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressPositionCaribdisTankHealerAction(botAI);
     }
-    static Action* fathom_lord_karathress_misdirect_to_tanks(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_misdirect_to_tanks(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressMisdirectToTanksAction(botAI);
     }
-    static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
     }
-    static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressManageDpsTimerAction(botAI);
     }
-    static Action* fathom_lord_karathress_spread_ranged(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_spread_ranged(PlayerbotAI* botAI)
+    {
         return new SscSpreadRangedAction(
             botAI, "fathom-lord karathress spread ranged",
             SscHelpers::CARIBDIS_RANGED_SPREAD_DISTANCE);
     }
-    static Action* fathom_lord_karathress_drop_to_ground_after_cyclone(PlayerbotAI* botAI) {
+    static Action* fathom_lord_karathress_drop_to_ground_after_cyclone(PlayerbotAI* botAI)
+    {
         return new FathomLordKarathressDropToGroundAfterCycloneAction(botAI);
     }
 
     // Morogrim Tidewalker
-    static Action* morogrim_tidewalker_position_main_tank(PlayerbotAI* botAI) {
+    static Action* morogrim_tidewalker_position_main_tank(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerPositionMainTankAction(botAI);
     }
-    static Action* morogrim_tidewalker_stack_ranged_behind_boss(PlayerbotAI* botAI) {
+    static Action* morogrim_tidewalker_stack_ranged_behind_boss(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerStackRangedBehindBossAction(botAI);
     }
-    static Action* morogrim_tidewalker_return_to_boss(PlayerbotAI* botAI) {
+    static Action* morogrim_tidewalker_return_to_boss(PlayerbotAI* botAI)
+    {
         return new MorogrimTidewalkerReturnToBossAction(botAI);
     }
-    static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI) {
+    static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI)
+    {
         return new SscMisdirectToMainTankAction(
             botAI, "morogrim tidewalker misdirect to main tank", "morogrim tidewalker");
     }
 
     // Lady Vashj <Coilfang Matron>
-    static Action* lady_vashj_main_tank_position_boss(PlayerbotAI* botAI) {
+    static Action* lady_vashj_main_tank_position_boss(PlayerbotAI* botAI)
+    {
         return new LadyVashjMainTankPositionBossAction(botAI);
     }
-    static Action* lady_vashj_phase_1_spread_ranged_in_arc(PlayerbotAI* botAI) {
+    static Action* lady_vashj_phase_1_spread_ranged_in_arc(PlayerbotAI* botAI)
+    {
         return new LadyVashjPhase1SpreadRangedInArcAction(botAI);
     }
-    static Action* lady_vashj_assign_station_slots(PlayerbotAI* botAI) {
+    static Action* lady_vashj_assign_station_slots(PlayerbotAI* botAI)
+    {
         return new LadyVashjAssignStationSlotsAction(botAI);
     }
-    static Action* lady_vashj_phase_2_position_at_station(PlayerbotAI* botAI) {
+    static Action* lady_vashj_phase_2_position_at_station(PlayerbotAI* botAI)
+    {
         return new LadyVashjPhase2PositionAtStationAction(botAI);
     }
-    static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI) {
+    static Action* lady_vashj_phase_3_position_ranged(PlayerbotAI* botAI)
+    {
         return new LadyVashjPhase3PositionRangedAction(botAI);
     }
-    static Action* lady_vashj_assign_grounding_shaman(PlayerbotAI* botAI) {
+    static Action* lady_vashj_assign_grounding_shaman(PlayerbotAI* botAI)
+    {
         return new LadyVashjAssignGroundingShamanAction(botAI);
     }
-    static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI) {
+    static Action* lady_vashj_set_grounding_totem_in_main_tank_group(PlayerbotAI* botAI)
+    {
         return new LadyVashjSetGroundingTotemInMainTankGroupAction(botAI);
     }
-    static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI) {
+    static Action* lady_vashj_static_charge_move_away_from_group(PlayerbotAI* botAI)
+    {
         return new LadyVashjStaticChargeMoveAwayFromGroupAction(botAI);
     }
-    static Action* lady_vashj_misdirect_to_main_tank(PlayerbotAI* botAI) {
+    static Action* lady_vashj_misdirect_to_main_tank(PlayerbotAI* botAI)
+    {
         return new SscMisdirectToMainTankAction(
             botAI, "lady vashj misdirect to main tank", "lady vashj");
     }
-    static Action* lady_vashj_assign_target_priority(PlayerbotAI* botAI) {
+    static Action* lady_vashj_assign_target_priority(PlayerbotAI* botAI)
+    {
         return new LadyVashjAssignTargetPriorityAction(botAI);
     }
-    static Action* lady_vashj_tank_apply_fear_ward(PlayerbotAI* botAI) {
+    static Action* lady_vashj_tank_apply_fear_ward(PlayerbotAI* botAI)
+    {
         return new LadyVashjTankApplyFearWardAction(botAI);
     }
-    static Action* lady_vashj_position_coilfang_strider(PlayerbotAI* botAI) {
+    static Action* lady_vashj_position_coilfang_strider(PlayerbotAI* botAI)
+    {
         return new LadyVashjPositionCoilfangStriderAction(botAI);
     }
-    static Action* lady_vashj_position_coilfang_elite(PlayerbotAI* botAI) {
+    static Action* lady_vashj_position_coilfang_elite(PlayerbotAI* botAI)
+    {
         return new LadyVashjPositionCoilfangEliteAction(botAI);
     }
-    static Action* lady_vashj_tank_wait_in_the_middle(PlayerbotAI* botAI) {
+    static Action* lady_vashj_tank_wait_in_the_middle(PlayerbotAI* botAI)
+    {
         return new LadyVashjTankWaitInTheMiddleAction(botAI);
     }
-    static Action* lady_vashj_assign_tainted_core_looter(PlayerbotAI* botAI) {
+    static Action* lady_vashj_assign_tainted_core_looter(PlayerbotAI* botAI)
+    {
         return new LadyVashjAssignTaintedCoreLooterAction(botAI);
     }
-    static Action* lady_vashj_attack_tainted_elemental(PlayerbotAI* botAI) {
+    static Action* lady_vashj_attack_tainted_elemental(PlayerbotAI* botAI)
+    {
         return new LadyVashjAttackTaintedElementalAction(botAI);
     }
-    static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI) {
+    static Action* lady_vashj_loot_tainted_core(PlayerbotAI* botAI)
+    {
         return new LadyVashjLootTaintedCoreAction(botAI);
     }
-    static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI) {
+    static Action* lady_vashj_pass_the_tainted_core(PlayerbotAI* botAI)
+    {
         return new LadyVashjPassTheTaintedCoreAction(botAI);
     }
-    static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI) {
+    static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI)
+    {
         return new LadyVashjDestroyTaintedCoreAction(botAI);
     }
-    static Action* lady_vashj_command_pet_target(PlayerbotAI* botAI) {
+    static Action* lady_vashj_command_pet_target(PlayerbotAI* botAI)
+    {
         return new LadyVashjCommandPetTargetAction(botAI);
     }
-    static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI) {
+    static Action* lady_vashj_return_to_the_ground(PlayerbotAI* botAI)
+    {
         return new LadyVashjReturnToTheGroundAction(botAI);
     }
-    static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI) {
+    static Action* lady_vashj_avoid_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjAvoidToxicSporesAction(botAI);
     }
-    static Action* lady_vashj_melee_move_around_toxic_spores(PlayerbotAI* botAI) {
+    static Action* lady_vashj_melee_move_around_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjMeleeMoveAroundToxicSporesAction(botAI);
     }
-    static Action* lady_vashj_ranged_reach_around_toxic_spores(PlayerbotAI* botAI) {
+    static Action* lady_vashj_ranged_reach_around_toxic_spores(PlayerbotAI* botAI)
+    {
         return new LadyVashjRangedReachAroundToxicSporesAction(botAI);
     }
-    static Action* lady_vashj_paladin_use_hand_of_freedom(PlayerbotAI* botAI) {
+    static Action* lady_vashj_paladin_use_hand_of_freedom(PlayerbotAI* botAI)
+    {
         return new LadyVashjPaladinUseHandOfFreedomAction(botAI);
     }
-    static Action* lady_vashj_rogue_use_cloak_of_shadows(PlayerbotAI* botAI) {
+    static Action* lady_vashj_rogue_use_cloak_of_shadows(PlayerbotAI* botAI)
+    {
         return new LadyVashjRogueUseCloakOfShadowsAction(botAI);
     }
 };

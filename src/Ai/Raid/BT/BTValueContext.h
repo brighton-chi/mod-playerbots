@@ -83,16 +83,20 @@ public:
     }
 
 private:
-    static UntypedValue* supremus_volcanoes(PlayerbotAI* botAI) {
+    static UntypedValue* supremus_volcanoes(PlayerbotAI* botAI)
+    {
         return new SupremusVolcanoesValue(botAI);
     }
-    static UntypedValue* illidari_council_zerevor_mage_tank(PlayerbotAI* botAI) {
+    static UntypedValue* illidari_council_zerevor_mage_tank(PlayerbotAI* botAI)
+    {
         return new IllidariCouncilZerevorMageTankValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_warlock_tank(PlayerbotAI* botAI) {
+    static UntypedValue* illidan_stormrage_warlock_tank(PlayerbotAI* botAI)
+    {
         return new IllidanStormrageWarlockTankValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_bot_with_parasitic_shadowfiend(PlayerbotAI* botAI) {
+    static UntypedValue* illidan_stormrage_bot_with_parasitic_shadowfiend(PlayerbotAI* botAI)
+    {
         return new IllidanStormrageBotWithParasiticShadowfiendValue(botAI);
     }
 };

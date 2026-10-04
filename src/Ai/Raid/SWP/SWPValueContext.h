@@ -157,34 +157,44 @@ public:
     }
 
 private:
-    static UntypedValue* felmyst_demonic_vapors(PlayerbotAI* botAI) {
+    static UntypedValue* felmyst_demonic_vapors(PlayerbotAI* botAI)
+    {
         return new FelmystDemonicVaporsValue(botAI);
     }
-    static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI) {
+    static UntypedValue* eredar_twins_blaze(PlayerbotAI* botAI)
+    {
         return new EredarTwinsBlazePositionsValue(botAI);
     }
-    static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI) {
+    static UntypedValue* muru_encounter_targets(PlayerbotAI* botAI)
+    {
         return new MuruEncounterTargetsValue(botAI);
     }
-    static UntypedValue* muru_void_zones(PlayerbotAI* botAI) {
+    static UntypedValue* muru_void_zones(PlayerbotAI* botAI)
+    {
         return new MuruVoidZonesValue(botAI);
     }
-    static UntypedValue* muru_dark_fiends(PlayerbotAI* botAI) {
+    static UntypedValue* muru_dark_fiends(PlayerbotAI* botAI)
+    {
         return new MuruDarkFiendsValue(botAI);
     }
-    static UntypedValue* swp_volatile_fiend(PlayerbotAI* botAI) {
+    static UntypedValue* swp_volatile_fiend(PlayerbotAI* botAI)
+    {
         return new SwpVolatileFiendValue(botAI);
     }
-    static UntypedValue* kalecgos_spectral_rift(PlayerbotAI* botAI) {
+    static UntypedValue* kalecgos_spectral_rift(PlayerbotAI* botAI)
+    {
         return new KalecgosSpectralRiftValue(botAI);
     }
-    static UntypedValue* muru_singularity(PlayerbotAI* botAI) {
+    static UntypedValue* muru_singularity(PlayerbotAI* botAI)
+    {
         return new MuruSingularityValue(botAI);
     }
-    static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI) {
+    static UntypedValue* kiljaeden_dragon_orbs(PlayerbotAI* botAI)
+    {
         return new KiljaedenDragonOrbsValue(botAI);
     }
-    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI) {
+    static UntypedValue* kiljaeden_hands(PlayerbotAI* botAI)
+    {
         return new KiljaedenHandsValue(botAI);
     }
 };

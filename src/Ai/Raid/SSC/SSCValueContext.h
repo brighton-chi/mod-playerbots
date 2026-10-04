@@ -135,35 +135,44 @@ public:
     }
 
 private:
-    static UntypedValue* ssc_toxic_pool(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_toxic_pool(PlayerbotAI* botAI)
+    {
         return new SscHazardPositionsValue(
             botAI, "ssc toxic pool", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_POOL),
             SscHelpers::TOXIC_POOL_SEARCH_RADIUS);
     }
-    static UntypedValue* ssc_water_elemental_totem(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_water_elemental_totem(PlayerbotAI* botAI)
+    {
         return new SscWaterElementalTotemValue(botAI);
     }
-    static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_lurker_guardians(PlayerbotAI* botAI)
+    {
         return new SscLurkerGuardiansValue(botAI);
     }
-    static UntypedValue* ssc_lurker_guardian_tanks(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_lurker_guardian_tanks(PlayerbotAI* botAI)
+    {
         return new SscLurkerGuardianTanksValue(botAI);
     }
-    static UntypedValue* ssc_leotheras(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_leotheras(PlayerbotAI* botAI)
+    {
         return new SscLeotherasValue(botAI);
     }
-    static UntypedValue* ssc_shadow_of_leotheras(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_shadow_of_leotheras(PlayerbotAI* botAI)
+    {
         return new SscShadowOfLeotherasValue(botAI);
     }
-    static UntypedValue* ssc_spitfire_totem(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_spitfire_totem(PlayerbotAI* botAI)
+    {
         return new SscSpitfireTotemValue(botAI);
     }
-    static UntypedValue* ssc_toxic_spores(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_toxic_spores(PlayerbotAI* botAI)
+    {
         return new SscHazardPositionsValue(
             botAI, "ssc toxic spores", SscHelpers::Id(SscHelpers::SscSpells::SPELL_TOXIC_SPORES),
             SscHelpers::TOXIC_SPORES_SEARCH_RADIUS);
     }
-    static UntypedValue* ssc_vashj_adds(PlayerbotAI* botAI) {
+    static UntypedValue* ssc_vashj_adds(PlayerbotAI* botAI)
+    {
         return new SscVashjAddsValue(botAI);
     }
 };
