@@ -44,10 +44,12 @@ public:
     }
 
 private:
-    static UntypedValue* mag_burning_abyssals(PlayerbotAI* botAI) {
+    static UntypedValue* mag_burning_abyssals(PlayerbotAI* botAI)
+    {
         return new MagBurningAbyssalsValue(botAI);
     }
-    static UntypedValue* mag_debris_positions(PlayerbotAI* botAI) {
+    static UntypedValue* mag_debris_positions(PlayerbotAI* botAI)
+    {
         return new MagDebrisPositionsValue(botAI);
     }
 };

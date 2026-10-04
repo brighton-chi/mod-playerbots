@@ -60,47 +60,60 @@ public:
 
 private:
     // General
-    static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI) {
+    static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI)
+    {
         return new GruulsLairNoEncounterInProgressTrigger(botAI);
     }
 
     // High King Maulgar <Lord of the Ogres>
-    static Trigger* high_king_maulgar_three_ogres_need_melee_tanks(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_three_ogres_need_melee_tanks(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_krosh_needs_mage_tank(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_krosh_needs_mage_tank(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarKroshNeedsMageTankTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_kiggler_needs_moonkin_tank(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_kiggler_needs_moonkin_tank(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarKigglerNeedsMoonkinTankTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarDeterminingKillOrderTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_channeling_whirlwind(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_channeling_whirlwind(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarChannelingWhirlwindTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_should_stand_back_from_krosh(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_should_stand_back_from_krosh(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarShouldStandBackFromKroshTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_wild_fel_stalker_spawned(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_wild_fel_stalker_spawned(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarWildFelStalkerSpawnedTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_pulling_ogre_council(PlayerbotAI* botAI) {
+    static Trigger* high_king_maulgar_pulling_ogre_council(PlayerbotAI* botAI)
+    {
         return new HighKingMaulgarPullingOgreCouncilTrigger(botAI);
     }
 
     // Gruul the Dragonkiller
-    static Trigger* gruul_the_dragonkiller_should_be_tanked(PlayerbotAI* botAI) {
+    static Trigger* gruul_the_dragonkiller_should_be_tanked(PlayerbotAI* botAI)
+    {
         return new GruulTheDragonkillerShouldBeTankedTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI) {
+    static Trigger* gruul_the_dragonkiller_ranged_should_spread(PlayerbotAI* botAI)
+    {
         return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_in_cave_in(PlayerbotAI* botAI) {
+    static Trigger* gruul_the_dragonkiller_in_cave_in(PlayerbotAI* botAI)
+    {
         return new GruulTheDragonkillerInCaveInTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) {
+    static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI)
+    {
         return new GruulTheDragonkillerIncomingShatterTrigger(botAI);
     }
 };

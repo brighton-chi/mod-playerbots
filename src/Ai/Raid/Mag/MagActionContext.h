@@ -50,37 +50,48 @@ public:
     }
 
 private:
-    static Action* magtheridon_reset_encounter_states(PlayerbotAI* botAI) {
+    static Action* magtheridon_reset_encounter_states(PlayerbotAI* botAI)
+    {
         return new MagtheridonResetEncounterStatesAction(botAI);
     }
-    static Action* magtheridon_main_tank_attack_first_three_channelers(PlayerbotAI* botAI) {
+    static Action* magtheridon_main_tank_attack_first_three_channelers(PlayerbotAI* botAI)
+    {
         return new MagtheridonMainTankAttackFirstThreeChannelersAction(botAI);
     }
-    static Action* magtheridon_assist_tanks_attack_last_two_channelers(PlayerbotAI* botAI) {
+    static Action* magtheridon_assist_tanks_attack_last_two_channelers(PlayerbotAI* botAI)
+    {
         return new MagtheridonAssistTanksAttackLastTwoChannelersAction(botAI);
     }
-    static Action* magtheridon_misdirect_hellfire_channelers_to_main_tank(PlayerbotAI* botAI) {
+    static Action* magtheridon_misdirect_hellfire_channelers_to_main_tank(PlayerbotAI* botAI)
+    {
         return new MagtheridonMisdirectHellfireChannelersToMainTankAction(botAI);
     }
-    static Action* magtheridon_assign_dps_priority(PlayerbotAI* botAI) {
+    static Action* magtheridon_assign_dps_priority(PlayerbotAI* botAI)
+    {
         return new MagtheridonAssignDpsPriorityAction(botAI);
     }
-    static Action* magtheridon_warlock_cc_burning_abyssal(PlayerbotAI* botAI) {
+    static Action* magtheridon_warlock_cc_burning_abyssal(PlayerbotAI* botAI)
+    {
         return new MagtheridonWarlockCcBurningAbyssalAction(botAI);
     }
-    static Action* magtheridon_main_tank_position_boss(PlayerbotAI* botAI) {
+    static Action* magtheridon_main_tank_position_boss(PlayerbotAI* botAI)
+    {
         return new MagtheridonMainTankPositionBossAction(botAI);
     }
-    static Action* magtheridon_spread_ranged(PlayerbotAI* botAI) {
+    static Action* magtheridon_spread_ranged(PlayerbotAI* botAI)
+    {
         return new MagtheridonSpreadRangedAction(botAI);
     }
-    static Action* magtheridon_move_out_of_debris(PlayerbotAI* botAI) {
+    static Action* magtheridon_move_out_of_debris(PlayerbotAI* botAI)
+    {
         return new MagtheridonMoveOutOfDebrisAction(botAI);
     }
-    static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI) {
+    static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI)
+    {
         return new MagtheridonUseManticronCubeAction(botAI);
     }
-    static Action* magtheridon_update_timers_and_assignments(PlayerbotAI* botAI) {
+    static Action* magtheridon_update_timers_and_assignments(PlayerbotAI* botAI)
+    {
         return new MagtheridonUpdateTimersAndAssignmentsAction(botAI);
     }
 };

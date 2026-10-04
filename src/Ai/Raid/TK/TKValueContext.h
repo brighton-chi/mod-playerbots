@@ -42,10 +42,12 @@ public:
     }
 
 private:
-    static UntypedValue* tk_flame_patches(PlayerbotAI* botAI) {
+    static UntypedValue* tk_flame_patches(PlayerbotAI* botAI)
+    {
         return new TKFlamePatchesValue(botAI);
     }
-    static UntypedValue* tk_legendary_weapons(PlayerbotAI* botAI) {
+    static UntypedValue* tk_legendary_weapons(PlayerbotAI* botAI)
+    {
         return new TKLegendaryWeaponsValue(botAI);
     }
 };
