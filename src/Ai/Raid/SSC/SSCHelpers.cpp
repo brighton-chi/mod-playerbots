@@ -540,7 +540,7 @@ std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI)
 {
     std::vector<Unit*> guardians;
 
-    for (ObjectGuid const& guid :
+    for (auto const& guid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc lurker guardians")->RefGet())
     {
         Unit* guardian = botAI->GetUnit(guid);
@@ -571,7 +571,7 @@ GuidVector FindLurkerGuardianTankGuids(Player* bot)
 
 int8 GetLurkerGuardianTankIndex(PlayerbotAI* botAI)
 {
-    GuidVector const& tanks = botAI->GetAiObjectContext()
+    auto const& tanks = botAI->GetAiObjectContext()
         ->GetValue<GuidVector>("ssc lurker guardian tanks")->RefGet();
     ObjectGuid const guid = botAI->GetBot()->GetGUID();
     for (size_t i = 0; i < tanks.size(); ++i)
@@ -870,12 +870,12 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
     ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
     AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
+    auto const& targets = context->GetValue<GuidVector>("possible targets no los")->RefGet();
 
     Creature* innerDemon = nullptr;
-    for (auto creatureGuid : targets)
+    for (ObjectGuid const& guid : targets)
     {
-        Creature* creature = botAI->GetCreature(creatureGuid);
+        Creature* creature = botAI->GetCreature(guid);
         if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
             creature->GetSummonerGUID() == botGuid)
         {
@@ -2245,7 +2245,7 @@ VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
     VashjAddGuids adds;
-    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    for (auto const& guid : context->GetValue<GuidVector>("possible targets no los")->RefGet())
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit)
@@ -2359,7 +2359,7 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase)
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || member == vashjTank || !member->IsAlive() ||
-            !member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsTank(member) || member->GetExactDist2d(add) >= botDistance)
         {
             continue;
@@ -2475,7 +2475,7 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
     }
 
     Unit* enchanted = nullptr;
-    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     for (ObjectGuid const& guid : adds.enchanted)
     {
         Unit* unit = botAI->GetUnit(guid);

@@ -621,9 +621,10 @@ bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 
 bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
 {
+    constexpr uint32 minInterval = 0;
+
     if (Creature* leotherasHumanoid = GetLeotherasHumanoidToAvoid(botAI))
     {
-        constexpr uint32 minInterval = 0;
         if (FleePosition(
                 leotherasHumanoid->GetPosition(), LEOTHERAS_RANGED_SAFE_DISTANCE, minInterval))
         {
@@ -1362,7 +1363,7 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
 bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit* vashj)
 {
     constexpr float searchRadius = 25.0f;
-    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
 
     // Surge range is 5.5y from Vashj's center so this leaves some room.
     constexpr float safeDistance = 10.0f;
@@ -1822,7 +1823,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     if (facts.holdsStationSlot)
         facts.tainted = GetTaintedElementalToKill(bot);
 
-    VashjAddGuids const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
     {
         for (ObjectGuid const& guid : adds.striders)

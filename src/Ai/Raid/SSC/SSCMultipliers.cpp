@@ -99,7 +99,7 @@ float GetDpsHoldValue(Player* bot, Action* action)
 
 bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
 {
-    VashjAddGuids const& adds =
+    auto const& adds =
         botAI->GetAiObjectContext()->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
     for (GuidVector const* guids : { &adds.elites, &adds.striders })
     {
