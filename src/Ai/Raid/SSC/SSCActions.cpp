@@ -621,10 +621,9 @@ bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
 
 bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
 {
-    constexpr uint32 minInterval = 0;
-
     if (Creature* leotherasHumanoid = GetLeotherasHumanoidToAvoid(botAI))
     {
+        constexpr uint32 minInterval = 0;
         if (FleePosition(
                 leotherasHumanoid->GetPosition(), LEOTHERAS_RANGED_SAFE_DISTANCE, minInterval))
         {
@@ -1714,7 +1713,6 @@ bool IsVashjTargetAllowed(
             if (unit->GetEntry() != Id(SscNpcs::NPC_TOXIC_SPOREBAT))
                 return false;
 
-            // Chasing a bat any higher, or off the dais, walks bots up into the air.
             constexpr float maxSporebatHeight = 40.0f;
             if (unit->GetPositionZ() - center.GetPositionZ() > maxSporebatHeight)
                 return false;
@@ -1889,7 +1887,7 @@ bool LadyVashjPositionCoilfangStriderAction::Execute(Event /*event*/)
 
     int8 const phase = GetLadyVashjPhase(vashj);
     Unit* strider = AI_VALUE(Unit*, "current target");
-    if (!ShouldTankVashjStrider(bot, strider, vashj, phase))
+    if (!ShouldPositionVashjStrider(bot, strider, vashj, phase))
         return false;
 
     // If the main tank is holding a Strider when entering phase 3, another tank must taunt it off

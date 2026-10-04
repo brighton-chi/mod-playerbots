@@ -611,7 +611,7 @@ bool LadyVashjCoilfangStriderShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && ShouldTankVashjStrider(bot, strider, vashj, GetLadyVashjPhase(vashj));
+    return vashj && ShouldPositionVashjStrider(bot, strider, vashj, GetLadyVashjPhase(vashj));
 }
 
 bool LadyVashjCoilfangEliteShouldBeTankedTrigger::IsActiveInEncounter()

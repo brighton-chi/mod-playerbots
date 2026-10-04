@@ -920,8 +920,8 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValueInEncounter(Acti
     return vashj && ShouldAvoidVashjStaticCharge(bot, vashj) ? 0.0f : 1.0f;
 }
 
-// Bots won't pick up the Core regardless, but we don't want them to get distracted moving to the
-// Tainted Elemental's corpse.
+// Bots won't pick up the Core, so ninja looting is not a concern. This multiplier is instead to
+/// keep them from wasting time moving to the corpse to check for loot.
 float LadyVashjNoUnauthorizedLootingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_COMBAT)
