@@ -221,23 +221,6 @@ bool TeronGorefiendTransformedIntoVengefulSpiritTrigger::IsActiveInEncounter()
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilHunterShouldMisdirectTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
-        return false;
-
-    auto it = gurtoggPhaseTimer.find(gurtogg->GetMap()->GetInstanceId());
-    if (it == gurtoggPhaseTimer.end())
-        return false;
-
-    constexpr uint32 engageWindowMs = 10 * IN_MILLISECONDS;
-    return GetMSTimeDiffToNow(it->second) < engageWindowMs;
-}
-
 bool GurtoggBloodboilShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -247,41 +230,23 @@ bool GurtoggBloodboilShouldBeTankedTrigger::IsActiveInEncounter()
     return gurtogg && !gurtogg->HasAura(Id(BlackTempleSpells::SPELL_BOSS_FEL_RAGE));
 }
 
-bool GurtoggBloodboilCastsBloodboilTrigger::IsActiveInEncounter()
+bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    return gurtogg && !gurtogg->HasAura(Id(BlackTempleSpells::SPELL_BOSS_FEL_RAGE));
-}
-
-bool GurtoggBloodboilFelRageOnGroupMemberTrigger::IsActiveInEncounter()
-{
-    if (!PlayerbotAI::IsRanged(bot))
-        return false;
-
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg || !gurtogg->HasAura(Id(BlackTempleSpells::SPELL_BOSS_FEL_RAGE)))
-        return false;
-
-    if (Group* group = bot->GetGroup())
+    if (!PlayerbotAI::IsRanged(bot) || bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) ||
+        !AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
-                return true;
-        }
+        return false;
     }
 
-    return false;
+    Position const& position = GetGurtoggBloodboilPosition(botAI);
+    return bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) >
+        GURTOGG_POSITION_TOLERANCE;
 }
 
-bool GurtoggBloodboilShouldManagePhaseTimerTrigger::IsActiveInEncounter()
+bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    return bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
+        bot->GetExactDist2d(GURTOGG_TANK_POSITION) > GURTOGG_POSITION_TOLERANCE;
 }
 
 // Reliquary of Souls

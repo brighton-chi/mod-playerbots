@@ -9,8 +9,10 @@
 #include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
+#include "SpellAuras.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "ThreatManager.h"
 #include "Timer.h"
 #include <algorithm>
 #include <cmath>
@@ -665,52 +667,119 @@ bool GetPathStepTowardPoint(
 
 // Gurtogg Bloodboil
 
-std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
+namespace
+{
 
+// Ranged bots in group order, the Fel Rage target left out.
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 {
+    std::vector<std::vector<Player*>> groups(GURTOGG_ROTATION_GROUP_COUNT);
     Group* group = bot->GetGroup();
-    std::vector<Player*> rangedMembers;
-    std::vector<std::vector<Player*>> groups(3);
-
     if (!group)
         return groups;
 
+    size_t count = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
-            GET_PLAYERBOT_AI(member) && PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
+            !GET_PLAYERBOT_AI(member) ||
+            member->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) ||
+            !PlayerbotAI::IsRanged(member))
         {
-            rangedMembers.push_back(member);
+            continue;
         }
-    }
 
-    for (size_t i = 0; i < rangedMembers.size(); ++i)
-    {
-        groups[i / 5].push_back(rangedMembers[i]);
-        if (groups[2].size() == 5)
+        groups[count / GURTOGG_ROTATION_GROUP_SIZE].push_back(member);
+        if (++count == GURTOGG_ROTATION_GROUP_COUNT * GURTOGG_ROTATION_GROUP_SIZE)
             break;
     }
 
     return groups;
 }
 
-int GetGurtoggActiveRotationGroup(Unit* gurtogg)
+} // namespace
+
+// The group hit longest ago soaks next: the lowest mean Bloodboil time left, ties to the first.
+// Just after a cast, that group's debuffs run out before the next one.
+GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 {
+    std::vector<std::vector<Player*>> const groups = GetGurtoggRangedRotationGroups(bot);
+    std::vector<Player*> const* soakers = nullptr;
+    float lowestMeanRemaining = 0.0f;
+    for (std::vector<Player*> const& group : groups)
+    {
+        if (group.empty())
+            continue;
+
+        int32 totalRemaining = 0;
+        for (Player* member : group)
+        {
+            if (Aura* bloodboil = member->GetAura(Id(BlackTempleSpells::SPELL_BLOODBOIL)))
+                totalRemaining += bloodboil->GetDuration();
+        }
+
+        float const meanRemaining = static_cast<float>(totalRemaining) / group.size();
+        if (!soakers || meanRemaining < lowestMeanRemaining)
+        {
+            soakers = &group;
+            lowestMeanRemaining = meanRemaining;
+        }
+    }
+
+    GuidVector guids;
+    if (soakers)
+    {
+        for (Player* member : *soakers)
+            guids.push_back(member->GetGUID());
+    }
+
+    return guids;
+}
+
+Position const& GetGurtoggBloodboilPosition(PlayerbotAI* botAI)
+{
+    auto const& soakers = botAI->GetAiObjectContext()
+                              ->GetValue<GuidVector>("gurtogg bloodboil soakers")
+                              ->RefGet();
+    bool const isSoaker =
+        std::find(soakers.begin(), soakers.end(), botAI->GetBot()->GetGUID()) != soakers.end();
+    return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
+}
+
+float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
+{
+    Unit* gurtogg = botAI->GetAiObjectContext()
+                        ->GetValue<Unit*>("find target", "gurtogg bloodboil")
+                        ->Get();
     if (!gurtogg)
-        return -1;
+        return 0.0f;
 
-    auto it = gurtoggPhaseTimer.find(gurtogg->GetMap()->GetInstanceId());
-    if (it == gurtoggPhaseTimer.end())
-        return -1;
+    float highestThreat = 0.0f;
+    float secondThreat = 0.0f;
+    for (ThreatReference const* ref : gurtogg->GetThreatMgr().GetUnsortedThreatList())
+    {
+        if (!ref->IsAvailable())
+            continue;
 
-    constexpr uint32 groupSwapIntervalMs = 10 * IN_MILLISECONDS;
-    constexpr uint32 rotationCycleMs = 3 * groupSwapIntervalMs;
-    uint32 const elapsed = GetMSTimeDiffToNow(it->second);
-    int const groupIndex = (elapsed % rotationCycleMs) / groupSwapIntervalMs;
+        Unit* victim = ref->GetVictim();
+        Player* player = victim ? victim->ToPlayer() : nullptr;
+        if (!player || !player->IsAlive() || !PlayerbotAI::IsTank(player))
+            continue;
 
-    return groupIndex;
+        float const threat = ref->GetThreat();
+        if (threat > highestThreat)
+        {
+            secondThreat = highestThreat;
+            highestThreat = threat;
+        }
+        else if (threat > secondThreat)
+        {
+            secondThreat = threat;
+        }
+    }
+
+    return secondThreat;
 }
 
 // Reliquary of Souls

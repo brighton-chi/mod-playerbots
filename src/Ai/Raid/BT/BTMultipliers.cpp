@@ -20,6 +20,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "SpellMgr.h"
+#include "ThreatManager.h"
 #include "Timer.h"
 #include "WipeAction.h"
 #include <array>
@@ -235,30 +236,52 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValueInEncounter(Ac
 
 float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-        return 1.0f;
-
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<FollowAction*>(action) ||
+    bool const isFormationMove = dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action);
+    bool const isFollowOrFlee =
+        dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action))
+        dynamic_cast<CastBlinkBackAction*>(action);
+    // The Fel Rage target only walks him to the tank spot.
+    bool const isFelRageTargetMove =
+        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<GurtoggBloodboilLeadBossToTankPositionAction*>(action) &&
+        bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE));
+
+    if (!isFormationMove && !isFollowOrFlee && !isFelRageTargetMove)
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
+}
+
+float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action))
+        return 1.0f;
+
+    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        bot->HasAura(Id(BlackTempleSpells::SPELL_INSIGNIFICANCE)))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
-        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action))
-    {
-        return 0.0f;
-    }
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return 1.0f;
 
-    return 1.0f;
+    if (action->GetTarget() != gurtogg && AI_VALUE(Unit*, "current target") != gurtogg)
+        return 1.0f;
+
+    float const secondTankThreat = AI_VALUE(float, "gurtogg bloodboil second tank threat");
+    if (secondTankThreat <= 0.0f)
+        return 1.0f;
+
+    return gurtogg->GetThreatMgr().GetThreat(bot) >= secondTankThreat * GURTOGG_THREAT_HOLD_RATIO ?
+        0.0f : 1.0f;
 }
 
 // Reliquary of Souls

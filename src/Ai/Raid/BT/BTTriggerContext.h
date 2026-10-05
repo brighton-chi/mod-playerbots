@@ -92,14 +92,11 @@ public:
         creators["gurtogg bloodboil should be tanked"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_be_tanked;
 
-        creators["gurtogg bloodboil casts bloodboil"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_casts_bloodboil;
+        creators["gurtogg bloodboil should position for bloodboil"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_position_for_bloodboil;
 
-        creators["gurtogg bloodboil fel rage on group member"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_group_member;
-
-        creators["gurtogg bloodboil should manage phase timer"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_manage_phase_timer;
+        creators["gurtogg bloodboil fel rage on bot"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_bot;
 
         // Reliquary of Souls
         creators["reliquary of souls hunter should misdirect"] =
@@ -327,23 +324,20 @@ private:
     // Gurtogg Bloodboil
     static Trigger* gurtogg_bloodboil_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilHunterShouldMisdirectTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "gurtogg bloodboil hunter should misdirect", "gurtogg bloodboil");
     }
     static Trigger* gurtogg_bloodboil_should_be_tanked(PlayerbotAI* botAI)
     {
         return new GurtoggBloodboilShouldBeTankedTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_casts_bloodboil(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_should_position_for_bloodboil(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilCastsBloodboilTrigger(botAI);
+        return new GurtoggBloodboilShouldPositionForBloodboilTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_fel_rage_on_group_member(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_fel_rage_on_bot(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilFelRageOnGroupMemberTrigger(botAI);
-    }
-    static Trigger* gurtogg_bloodboil_should_manage_phase_timer(PlayerbotAI* botAI)
-    {
-        return new GurtoggBloodboilShouldManagePhaseTimerTrigger(botAI);
+        return new GurtoggBloodboilFelRageOnBotTrigger(botAI);
     }
 
     // Reliquary of Souls

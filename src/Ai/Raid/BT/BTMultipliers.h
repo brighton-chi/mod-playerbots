@@ -166,6 +166,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Non-tanks other than healers hold below the second tank's threat. No hold under Insignificance,
+// when no one gains threat.
+class GurtoggBloodboilHoldThreatMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    GurtoggBloodboilHoldThreatMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "gurtogg bloodboil hold threat") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsDontWasteHealingMultiplier : public BlackTempleEncounterMultiplier

@@ -95,11 +95,8 @@ public:
         creators["gurtogg bloodboil rotate ranged groups"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_rotate_ranged_groups;
 
-        creators["gurtogg bloodboil ranged move away from enraged player"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_away_from_enraged_player;
-
-        creators["gurtogg bloodboil manage phase timer"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_manage_phase_timer;
+        creators["gurtogg bloodboil lead boss to tank position"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_lead_boss_to_tank_position;
 
         // Reliquary of Souls
         creators["reliquary of souls misdirect to main tank"] =
@@ -338,13 +335,9 @@ private:
     {
         return new GurtoggBloodboilRotateRangedGroupsAction(botAI);
     }
-    static Action* gurtogg_bloodboil_ranged_move_away_from_enraged_player(PlayerbotAI* botAI)
+    static Action* gurtogg_bloodboil_lead_boss_to_tank_position(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(botAI);
-    }
-    static Action* gurtogg_bloodboil_manage_phase_timer(PlayerbotAI* botAI)
-    {
-        return new GurtoggBloodboilManagePhaseTimerAction(botAI);
+        return new GurtoggBloodboilLeadBossToTankPositionAction(botAI);
     }
 
     // Reliquary of Souls

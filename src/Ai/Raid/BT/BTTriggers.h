@@ -251,16 +251,6 @@ protected:
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    GurtoggBloodboilHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil hunter should misdirect") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class GurtoggBloodboilShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -271,31 +261,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilCastsBloodboilTrigger : public BlackTempleEncounterTrigger
+class GurtoggBloodboilShouldPositionForBloodboilTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilCastsBloodboilTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil casts bloodboil") {}
+    GurtoggBloodboilShouldPositionForBloodboilTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should position for bloodboil") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilFelRageOnGroupMemberTrigger : public BlackTempleEncounterTrigger
+class GurtoggBloodboilFelRageOnBotTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilFelRageOnGroupMemberTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil fel rage on group member") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class GurtoggBloodboilShouldManagePhaseTimerTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    GurtoggBloodboilShouldManagePhaseTimerTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should manage phase timer") {}
+    GurtoggBloodboilFelRageOnBotTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil fel rage on bot") {}
 
 protected:
     bool IsActiveInEncounter() override;

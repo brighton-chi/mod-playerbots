@@ -89,14 +89,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gurtogg bloodboil should be tanked",
         { NextAction("gurtogg bloodboil tanks position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("gurtogg bloodboil casts bloodboil",
+    triggers.push_back(new TriggerNode("gurtogg bloodboil should position for bloodboil",
         { NextAction("gurtogg bloodboil rotate ranged groups", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("gurtogg bloodboil fel rage on group member",
-        { NextAction("gurtogg bloodboil ranged move away from enraged player", ACTION_RAID + 1) }));
-
-    triggers.push_back(new TriggerNode("gurtogg bloodboil should manage phase timer",
-        { NextAction("gurtogg bloodboil manage phase timer", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("gurtogg bloodboil fel rage on bot",
+        { NextAction("gurtogg bloodboil lead boss to tank position", ACTION_RAID + 1) }));
 
     // Reliquary of Souls
     triggers.push_back(new TriggerNode("reliquary of souls hunter should misdirect",
@@ -249,6 +246,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Gurtogg Bloodboil
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
+    multipliers.push_back(new GurtoggBloodboilHoldThreatMultiplier(botAI));
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));

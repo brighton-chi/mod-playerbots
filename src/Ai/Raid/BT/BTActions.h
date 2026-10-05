@@ -236,19 +236,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction : public MovementAction
+// The Fel Rage target brings him to the tank spot, his cones facing the wall.
+class GurtoggBloodboilLeadBossToTankPositionAction : public MovementAction
 {
 public:
-    GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil ranged move away from enraged player") {}
-    bool Execute(Event event) override;
-};
-
-class GurtoggBloodboilManagePhaseTimerAction : public Action
-{
-public:
-    GurtoggBloodboilManagePhaseTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "gurtogg bloodboil manage phase timer") {}
+    GurtoggBloodboilLeadBossToTankPositionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gurtogg bloodboil lead boss to tank position") {}
     bool Execute(Event event) override;
 };
 

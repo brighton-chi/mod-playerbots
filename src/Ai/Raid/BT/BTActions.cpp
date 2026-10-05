@@ -58,7 +58,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= illidanLastPhase.erase(instanceId) > 0;
     reset |= westFlameGuid.erase(instanceId) > 0;
     reset |= eastFlameGuid.erase(instanceId) > 0;
-    reset |= gurtoggPhaseTimer.erase(instanceId) > 0;
 
     return reset;
 }
@@ -766,83 +765,21 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
 
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
-        return false;
-
-    std::vector<std::vector<Player*>> const groups = GetGurtoggRangedRotationGroups(bot);
-    int const activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
-
-    bool inActiveGroup = false;
-    if (activeGroup >= 0 && static_cast<size_t>(activeGroup) < groups.size())
-    {
-        auto const& group = groups[activeGroup];
-        inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
-    }
-
-    Position const& nearPosition = GURTOGG_RANGED_POSITION;
-    Position const& farPosition = GURTOGG_SOAKER_POSITION;
-    constexpr float distFromPos = 2.0f;
-
-    if (inActiveGroup && bot->GetExactDist2d(farPosition) > distFromPos)
-    {
-        return MoveInside(BT_MAP_ID, farPosition.GetPositionX(),
-                          farPosition.GetPositionY(), bot->GetPositionZ(),
-                          distFromPos, MovementPriority::MOVEMENT_FORCED);
-    }
-    else if (!inActiveGroup && bot->GetExactDist2d(nearPosition) > distFromPos)
-    {
-        return MoveInside(BT_MAP_ID, nearPosition.GetPositionX(),
-                          nearPosition.GetPositionY(), bot->GetPositionZ(),
-                          distFromPos, MovementPriority::MOVEMENT_FORCED);
-    }
-
-    return false;
+    Position const& position = GetGurtoggBloodboilPosition(botAI);
+    return MoveInside(
+        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
+        GURTOGG_POSITION_TOLERANCE, MovementPriority::MOVEMENT_FORCED);
 }
 
-bool GurtoggBloodboilRangedMoveAwayFromEnragedPlayerAction::Execute(Event /*event*/)
+bool GurtoggBloodboilLeadBossToTankPositionAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    Position const& position = GURTOGG_TANK_POSITION;
+    if (bot->GetExactDist2d(position) <= GURTOGG_POSITION_TOLERANCE)
         return false;
 
-    Player* enragedPlayer = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)))
-        {
-            enragedPlayer = member;
-            break;
-        }
-    }
-
-    constexpr float safeDistance = 20.0f;
-    constexpr uint32 minInterval = 0;
-    if (enragedPlayer && bot->GetExactDist2d(enragedPlayer) < safeDistance)
-        return FleePosition(enragedPlayer->GetPosition(), safeDistance, minInterval);
-
-    return false;
-}
-
-bool GurtoggBloodboilManagePhaseTimerAction::Execute(Event /*event*/)
-{
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
-        return false;
-
-    uint32 const now = getMSTime();
-    uint32 const instanceId = gurtogg->GetMap()->GetInstanceId();
-
-    if (gurtogg->HasAura(Id(BlackTempleSpells::SPELL_BOSS_FEL_RAGE)))
-    {
-        return gurtoggPhaseTimer.erase(instanceId) > 0;
-    }
-    else
-    {
-        auto const [it, inserted] = gurtoggPhaseTimer.try_emplace(instanceId, now);
-        return inserted;
-    }
+    return MoveTo(
+        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false,
+        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Reliquary of Souls
