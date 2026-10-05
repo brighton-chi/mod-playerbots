@@ -22,6 +22,10 @@ public:
         // Trash
         creators["sister of pleasure should be marked"] =
             &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_marked;
+        creators["shadowmoon reaver wand builds charges"] =
+            &RaidBlackTempleTriggerContext::shadowmoon_reaver_wand_builds_charges;
+        creators["shadowmoon reaver should control caster pet"] =
+            &RaidBlackTempleTriggerContext::shadowmoon_reaver_should_control_caster_pet;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus hunter should misdirect"] =
@@ -230,6 +234,14 @@ private:
     static Trigger* sister_of_pleasure_should_be_marked(PlayerbotAI* botAI)
     {
         return new SisterOfPleasureShouldBeMarkedTrigger(botAI);
+    }
+    static Trigger* shadowmoon_reaver_wand_builds_charges(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverWandBuildsChargesTrigger(botAI);
+    }
+    static Trigger* shadowmoon_reaver_should_control_caster_pet(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverShouldControlCasterPetTrigger(botAI);
     }
 
     // High Warlord Naj'entus

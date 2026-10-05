@@ -12,6 +12,20 @@
 #include "ObjectGuid.h"
 #include "Value.h"
 
+// Trash
+
+class ShadowmoonReaversValue : public CalculatedValue<GuidVector>
+{
+public:
+    ShadowmoonReaversValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "shadowmoon reavers",
+              BlackTempleHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return BlackTempleHelpers::FindShadowmoonReaverGuids(botAI); }
+};
+
 // Supremus
 
 class SupremusVolcanoesValue : public CalculatedValue<GuidVector>
@@ -73,6 +87,7 @@ class RaidBlackTempleValueContext : public NamedObjectContext<UntypedValue>
 public:
     RaidBlackTempleValueContext()
     {
+        creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus volcanoes"] = &RaidBlackTempleValueContext::supremus_volcanoes;
         creators["illidari council zerevor mage tank"] =
             &RaidBlackTempleValueContext::illidari_council_zerevor_mage_tank;
@@ -83,6 +98,10 @@ public:
     }
 
 private:
+    static UntypedValue* shadowmoon_reavers(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaversValue(botAI);
+    }
     static UntypedValue* supremus_volcanoes(PlayerbotAI* botAI)
     {
         return new SupremusVolcanoesValue(botAI);

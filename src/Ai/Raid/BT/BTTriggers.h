@@ -70,6 +70,24 @@ public:
     bool IsActive() override;
 };
 
+// A wand keeps shooting once started, so a multiplier can't stop it.
+class ShadowmoonReaverWandBuildsChargesTrigger : public Trigger
+{
+public:
+    ShadowmoonReaverWandBuildsChargesTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "shadowmoon reaver wand builds charges") {}
+    bool IsActive() override;
+};
+
+// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
+class ShadowmoonReaverShouldControlCasterPetTrigger : public Trigger
+{
+public:
+    ShadowmoonReaverShouldControlCasterPetTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "shadowmoon reaver should control caster pet") {}
+    bool IsActive() override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusShouldBeTankedTrigger : public BlackTempleEncounterTrigger

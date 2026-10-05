@@ -22,6 +22,10 @@ public:
         // Trash
         creators["mark sister of pleasure"] =
             &RaidBlackTempleActionContext::mark_sister_of_pleasure;
+        creators["shadowmoon reaver stop wand"] =
+            &RaidBlackTempleActionContext::shadowmoon_reaver_stop_wand;
+        creators["shadowmoon reaver control caster pet"] =
+            &RaidBlackTempleActionContext::shadowmoon_reaver_control_caster_pet;
 
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect to main tank"] =
@@ -230,6 +234,14 @@ private:
     static Action* mark_sister_of_pleasure(PlayerbotAI* botAI)
     {
         return new MarkSisterOfPleasureAction(botAI);
+    }
+    static Action* shadowmoon_reaver_stop_wand(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverStopWandAction(botAI);
+    }
+    static Action* shadowmoon_reaver_control_caster_pet(PlayerbotAI* botAI)
+    {
+        return new ShadowmoonReaverControlCasterPetAction(botAI);
     }
 
     // High Warlord Naj'entus

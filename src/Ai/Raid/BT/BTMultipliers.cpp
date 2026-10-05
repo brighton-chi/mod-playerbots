@@ -8,15 +8,18 @@
 #include "BTActions.h"
 #include "BTHelpers.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
 #include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
+#include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "SpellMgr.h"
 #include "Timer.h"
 #include "WipeAction.h"
 #include <array>
@@ -51,6 +54,40 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         return 0.0f;
 
     return 1.0f;
+}
+
+// Trash
+
+float ShadowmoonReaverHoldChargeBuildingSpellsMultiplier::GetValue(Action* action)
+{
+    auto* spellAction = dynamic_cast<CastSpellAction*>(action);
+    if (!spellAction)
+        return 1.0f;
+
+    auto const& reavers = context->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    if (reavers.empty())
+        return 1.0f;
+
+    // Summons whose own casts build charges, held for the whole pull.
+    if (dynamic_cast<CastMirrorImageAction*>(action) ||
+        dynamic_cast<CastSummonGargoyleAction*>(action) ||
+        dynamic_cast<CastSearingTotemAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemMeleeAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    SpellInfo const* spellInfo =
+        sSpellMgr->GetSpellInfo(AI_VALUE2(uint32, "spell id", spellAction->getSpell()));
+    ChaoticChargeReach const reach = GetChaoticChargeReach(spellInfo);
+    if (reach == ChaoticChargeReach::None)
+        return 1.0f;
+
+    if (reach == ChaoticChargeReach::Target)
+        return IsShadowmoonReaverUnsafeForMagic(action->GetTarget()) ? 0.0f : 1.0f;
+
+    return IsAnyShadowmoonReaverUnsafeForMagic(botAI) ? 0.0f : 1.0f;
 }
 
 // High Warlord Naj'entus

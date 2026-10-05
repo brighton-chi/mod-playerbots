@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "BTHelpers.h"
 #include "MovementActions.h"
+#include "Unit.h"
 #include <string>
 
 namespace BlackTempleHelpers
@@ -50,6 +51,28 @@ class MarkSisterOfPleasureAction : public Action
 public:
     MarkSisterOfPleasureAction(PlayerbotAI* botAI) : Action(botAI, "mark sister of pleasure") {}
     bool Execute(Event event) override;
+};
+
+class ShadowmoonReaverStopWandAction : public Action
+{
+public:
+    ShadowmoonReaverStopWandAction(
+        PlayerbotAI* botAI) : Action(botAI, "shadowmoon reaver stop wand") {}
+    bool Execute(Event event) override;
+};
+
+class ShadowmoonReaverControlCasterPetAction : public Action
+{
+public:
+    ShadowmoonReaverControlCasterPetAction(
+        PlayerbotAI* botAI) : Action(botAI, "shadowmoon reaver control caster pet") {}
+    bool Execute(Event event) override;
+
+private:
+    bool RestoreReactState(Guardian* pet);
+
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
 };
 
 // High Warlord Naj'entus

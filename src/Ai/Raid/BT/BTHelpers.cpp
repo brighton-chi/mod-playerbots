@@ -6,7 +6,10 @@
 
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
+#include "PetDefines.h"
 #include "Playerbots.h"
+#include "SpellInfo.h"
+#include "SpellMgr.h"
 #include "Timer.h"
 #include <algorithm>
 #include <limits>
@@ -59,6 +62,94 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 
 // Trash
 
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> shadowmoonReaverAbsorptionStart;
+
+namespace
+{
+
+bool IsMagicDamageSpell(SpellInfo const* spellInfo)
+{
+    return (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC ||
+            spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE) &&
+        (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_MAGIC);
+}
+
+// Walks the spell and the spells it triggers. Spell Absorption's charge proc ignores triggered
+// spells unless they carry NOT_A_PROC, and ignores periodic ticks. A dummy effect on enemies counts
+// whatever its flags, because a script picks the spell that follows it (Death Coil, Holy Shock,
+// Penance, Starfall).
+bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 depth, bool& area)
+{
+    constexpr uint8 maxDepth = 3;
+    if (!spellInfo || depth > maxDepth)
+        return false;
+
+    bool const canProc = !triggered || spellInfo->HasAttribute(SPELL_ATTR3_NOT_A_PROC);
+    bool builds = false;
+    for (SpellEffectInfo const& effect : spellInfo->GetEffects())
+    {
+        uint32 triggerSpell = 0;
+        switch (effect.Effect)
+        {
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_POWER_BURN:
+                if (canProc && IsMagicDamageSpell(spellInfo))
+                {
+                    builds = true;
+                    area |= effect.IsTargetingArea() || effect.ChainTarget > 1;
+                }
+                break;
+            // Wands: magic class, with the school taken from the wand.
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                if (canProc && spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
+                    builds = true;
+                break;
+            case SPELL_EFFECT_DUMMY:
+                if (!IsMagicDamageSpell(spellInfo))
+                    break;
+
+                if (effect.IsTargetingArea())
+                {
+                    builds = true;
+                    area = true;
+                }
+                else if (effect.TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                         effect.TargetA.GetTarget() == TARGET_UNIT_TARGET_ANY)
+                {
+                    builds = true;
+                }
+                break;
+            case SPELL_EFFECT_TRIGGER_SPELL:
+            case SPELL_EFFECT_TRIGGER_MISSILE:
+                triggerSpell = effect.TriggerSpell;
+                break;
+            case SPELL_EFFECT_APPLY_AURA:
+            case SPELL_EFFECT_PERSISTENT_AREA_AURA:
+                if (effect.ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL ||
+                    effect.ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE)
+                {
+                    triggerSpell = effect.TriggerSpell;
+                }
+                break;
+            default:
+                break;
+        }
+
+        bool triggeredArea = false;
+        if (triggerSpell && CanBuildChaoticCharge(
+                sSpellMgr->GetSpellInfo(triggerSpell), true, depth + 1, triggeredArea))
+        {
+            builds = true;
+            area |= triggeredArea;
+        }
+    }
+
+    return builds;
+}
+
+}
+
 bool IsLinkedSisterOfPleasure(Unit* unit)
 {
     if (!unit || unit->GetEntry() != Id(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE) ||
@@ -80,6 +171,137 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (IsLinkedSisterOfPleasure(unit))
+            return unit;
+    }
+
+    return nullptr;
+}
+
+GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)
+{
+    GuidVector reavers;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER))
+        {
+            reavers.push_back(guid);
+        }
+    }
+
+    return reavers;
+}
+
+bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
+{
+    if (!unit || unit->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER) ||
+        !unit->IsAlive())
+    {
+        return false;
+    }
+
+    ObjectGuid const guid = unit->GetGUID();
+    uint32 const instanceId = unit->GetInstanceId();
+    if (Aura* absorption = unit->GetAura(Id(BlackTempleSpells::SPELL_SPELL_ABSORPTION)))
+    {
+        // Reconstructed from the aura, so every caller stamps the same start.
+        uint32 const elapsed =
+            static_cast<uint32>(absorption->GetMaxDuration() - absorption->GetDuration());
+        shadowmoonReaverAbsorptionStart[instanceId][guid] = getMSTime() - elapsed;
+        return true;
+    }
+
+    auto const instanceIt = shadowmoonReaverAbsorptionStart.find(instanceId);
+    if (instanceIt == shadowmoonReaverAbsorptionStart.end())
+        return true;
+
+    auto const it = instanceIt->second.find(guid);
+    if (it == instanceIt->second.end())
+        return true;
+
+    uint32 const sinceStart = GetMSTimeDiffToNow(it->second);
+    return sinceStart < REAVER_ABSORPTION_DURATION_MS ||
+        sinceStart >= REAVER_ABSORPTION_MIN_RECAST_MS - REAVER_MAGIC_MARGIN_MS;
+}
+
+bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI)
+{
+    auto const& reavers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    for (ObjectGuid const& guid : reavers)
+    {
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
+            return true;
+    }
+
+    return false;
+}
+
+ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo)
+{
+    bool area = false;
+    if (!CanBuildChaoticCharge(spellInfo, false, 0, area))
+        return ChaoticChargeReach::None;
+
+    return area ? ChaoticChargeReach::Area : ChaoticChargeReach::Target;
+}
+
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
+        return;
+
+    auto const& reavers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    for (ObjectGuid const& guid : reavers)
+    {
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
+            exclusions.insert(guid);
+    }
+}
+
+bool IsChargeBuildingPet(Unit* unit)
+{
+    if (!unit)
+        return false;
+
+    switch (unit->GetEntry())
+    {
+        case NPC_IMP:
+        case NPC_FELHUNTER:
+        case NPC_SUCCUBUS:
+        case NPC_WATER_ELEMENTAL_TEMP:
+        case NPC_WATER_ELEMENTAL_PERM:
+            return true;
+        default:
+            return false;
+    }
+}
+
+Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    auto const isAllowed = [bot](Unit* unit)
+    {
+        return unit && unit->IsAlive() &&
+            unit->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER) &&
+            bot->IsValidAttackTarget(unit);
+    };
+
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (isAllowed(currentTarget))
+        return currentTarget;
+
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (isAllowed(unit))
             return unit;
     }
 

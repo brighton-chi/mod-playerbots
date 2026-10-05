@@ -11,6 +11,7 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SharedDefines.h"
+#include "Spell.h"
 #include "Timer.h"
 
 using namespace BlackTempleHelpers;
@@ -43,6 +44,26 @@ bool SisterOfPleasureShouldBeMarkedTrigger::IsActive()
 
     Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
     return !IsLinkedSisterOfPleasure(skull) && FindLinkedSisterOfPleasure(botAI);
+}
+
+bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
+{
+    Spell* wand = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    if (!wand || GetChaoticChargeReach(wand->m_spellInfo) == ChaoticChargeReach::None)
+        return false;
+
+    return IsShadowmoonReaverUnsafeForMagic(wand->m_targets.GetUnitTarget());
+}
+
+bool ShadowmoonReaverShouldControlCasterPetTrigger::IsActive()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!IsChargeBuildingPet(pet))
+        return false;
+
+    // Also true while the pet is passive, so the action can restore a stance it set.
+    return pet->HasReactState(REACT_PASSIVE) ||
+        !context->GetValue<GuidVector>("shadowmoon reavers")->RefGet().empty();
 }
 
 // High Warlord Naj'entus

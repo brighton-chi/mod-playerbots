@@ -40,6 +40,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Trash
+
+// Not gated on an encounter: Reavers are trash.
+class ShadowmoonReaverHoldChargeBuildingSpellsMultiplier : public Multiplier
+{
+public:
+    ShadowmoonReaverHoldChargeBuildingSpellsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "shadowmoon reaver hold charge building spells") {}
+
+    float GetValue(Action* action) override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public BlackTempleEncounterMultiplier

@@ -20,6 +20,7 @@
 class GameObject;
 class Player;
 class PlayerbotAI;
+class SpellInfo;
 class Unit;
 
 namespace BlackTempleHelpers
@@ -35,6 +36,7 @@ enum class BlackTempleSpells : uint32
 {
     // Trash
     SPELL_SHARED_BONDS              = 41363,
+    SPELL_SPELL_ABSORPTION          = 41034,
 
     // High Warlord Naj'entus
     SPELL_IMPALING_SPINE            = 39837,
@@ -103,6 +105,7 @@ enum class BlackTempleNpcs : uint32
     // Trash
     NPC_SISTER_OF_PAIN        = 22956,
     NPC_SISTER_OF_PLEASURE    = 22964,
+    NPC_SHADOWMOON_REAVER     = 22879,
 
     // Supremus
     NPC_SUPREMUS_VOLCANO      = 23085,
@@ -153,9 +156,42 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 
 // Trash
 
+// Where a spell would build Chaotic Charge on a Shadowmoon Reaver: on its target, or on anyone in
+// its area.
+enum class ChaoticChargeReach : uint8
+{
+    None,
+    Target,
+    Area,
+};
+
+// Spell Absorption lasts 15 s and is recast 30 to 40 s after the last one began. Magic is held
+// from the margin before the earliest recast, for casts and channels still landing.
+inline constexpr uint32 REAVER_ABSORPTION_DURATION_MS = 15000;
+inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30000;
+inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5000;
+inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
+
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
+    shadowmoonReaverAbsorptionStart;
+
 // A living Sister of Pleasure carrying Shared Bonds from a living Sister of Pain.
 bool IsLinkedSisterOfPleasure(Unit* unit);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
+// True for a Shadowmoon Reaver while magic would build Chaotic Charge on her: from the start of
+// Spell Absorption until it ends, from the margin before her earliest recast, and before her
+// first one.
+bool IsShadowmoonReaverUnsafeForMagic(Unit* unit);
+bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI);
+ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo);
+// Casters and healers leave a Reaver while magic would build Chaotic Charge on her; everyone else
+// stays, with the spells that would build it held.
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions);
+// Imps, water elementals, succubi and felhunters, whose attacks build Chaotic Charge.
+bool IsChargeBuildingPet(Unit* unit);
+// Where to send such a pet instead of a Reaver: the owner's target, else any other attacker.
+Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI);
 
 // High Warlord Naj'entus
 

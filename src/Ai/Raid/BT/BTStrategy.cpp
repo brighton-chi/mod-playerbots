@@ -17,6 +17,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sister of pleasure should be marked",
         { NextAction("mark sister of pleasure", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("shadowmoon reaver wand builds charges",
+        { NextAction("shadowmoon reaver stop wand", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("shadowmoon reaver should control caster pet",
+        { NextAction("shadowmoon reaver control caster pet", ACTION_EMERGENCY + 1) }));
+
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus hunter should misdirect",
         { NextAction("high warlord naj'entus misdirect to main tank", ACTION_RAID + 2) }));
@@ -224,6 +230,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // General
     multipliers.push_back(new BlackTempleDelayDpsCooldownsMultiplier(botAI));
 
+    // Trash
+    multipliers.push_back(new ShadowmoonReaverHoldChargeBuildingSpellsMultiplier(botAI));
+
     // High Warlord Naj'entus
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
@@ -262,4 +271,12 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageControlNonTankMovementMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageUseEarthbindTotemMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
+}
+
+void RaidBlackTempleStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    // Trash
+    if (type != TargetValueExclusionType::TankTarget)
+        BlackTempleHelpers::AppendShadowmoonReaverExclusions(botAI, exclusions);
 }

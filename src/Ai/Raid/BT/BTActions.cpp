@@ -8,6 +8,7 @@
 #include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
+#include "PetDefines.h"
 #include "Playerbots.h"
 #include "Timer.h"
 #include <vector>
@@ -46,6 +47,11 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 
     reset |= najentusSpineAssignments.erase(instanceId) > 0;
     reset |= najentusSpineThrower.erase(instanceId) > 0;
+
+    // Kept while the group fights, since this action also runs during trash.
+    if (!AI_VALUE2(bool, "combat", "self target"))
+        reset |= shadowmoonReaverAbsorptionStart.erase(instanceId) > 0;
+
     reset |= illidanBossDpsWaitTimer.erase(instanceId) > 0;
     reset |= illidanFlameDpsWaitTimer.erase(instanceId) > 0;
     reset |= illidanLastPhase.erase(instanceId) > 0;
@@ -80,6 +86,80 @@ bool MarkSisterOfPleasureAction::Execute(Event /*event*/)
 {
     Unit* pleasure = FindLinkedSisterOfPleasure(botAI);
     return pleasure && MarkTargetWithSkull(bot, pleasure);
+}
+
+bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
+{
+    bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+    return true;
+}
+
+// Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
+// attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
+// may attack them otherwise.
+bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet)
+        return false;
+
+    if (context->GetValue<GuidVector>("shadowmoon reavers")->RefGet().empty())
+        return RestoreReactState(pet);
+
+    Unit* target = FindPetTargetOtherThanReaver(botAI);
+    if (!target && IsAnyShadowmoonReaverUnsafeForMagic(botAI))
+    {
+        if (pet->HasReactState(REACT_PASSIVE))
+            return false;
+
+        _previousReactState = pet->GetReactState();
+        _setPassive = true;
+        pet->AttackStop();
+        pet->InterruptNonMeleeSpells(false);
+        pet->SetReactState(REACT_PASSIVE);
+        if (CharmInfo* charmInfo = pet->GetCharmInfo())
+        {
+            charmInfo->SetIsCommandAttack(false);
+            charmInfo->SetIsCommandFollow(true);
+        }
+
+        pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
+        return true;
+    }
+
+    bool const restored = RestoreReactState(pet);
+    Unit* victim = pet->GetVictim();
+    if (!target || !victim || !victim->IsAlive() ||
+        victim->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER))
+    {
+        return restored;
+    }
+
+    pet->AttackStop();
+    pet->InterruptNonMeleeSpells(false);
+    pet->ClearUnitState(UNIT_STATE_FOLLOW);
+    pet->SetTarget(target->GetGUID());
+    if (CharmInfo* charmInfo = pet->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    pet->AI()->AttackStart(target);
+    return true;
+}
+
+bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
+{
+    if (!_setPassive)
+        return false;
+
+    pet->SetReactState(_previousReactState);
+    _setPassive = false;
+    return true;
 }
 
 // High Warlord Naj'entus
