@@ -193,7 +193,10 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    Player* thrower = najentus && FindNajentusSpineThrower(bot, najentus);
+    if (!najentus)
+        return false;
+
+    Player* thrower = FindNajentusSpineThrower(bot, najentus);
     if (!thrower)
         return false;
 
