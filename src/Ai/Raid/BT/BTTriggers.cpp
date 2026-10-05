@@ -40,66 +40,42 @@ bool HighWarlordNajentusShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
 }
 
-bool HighWarlordNajentusCastsNeedleSpinesTrigger::IsActiveInEncounter()
+bool HighWarlordNajentusRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    if (!najentus)
+        return false;
+
+    return bot->GetExactDist2d(najentus) < NAJENTUS_RANGED_DISTANCE_FROM_BOSS ||
+        GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
 }
 
-bool HighWarlordNajentusPlayerIsImpaledTrigger::IsActiveInEncounter()
+bool HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot))
-        return false;
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "high warlord naj'entus") &&
+        FindNajentusUnassignedImpaledPlayer(bot);
+}
 
-    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
-        return false;
+bool HighWarlordNajentusImpalingSpineOnGroupMemberTrigger::IsActiveInEncounter()
+{
+    return GetNajentusImpaledPlayerToFree(bot);
+}
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* impaledPlayer = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member == bot)
-            continue;
-
-        if (member->HasAura(Id(BlackTempleSpells::SPELL_IMPALING_SPINE)))
-        {
-            impaledPlayer = member;
-            break;
-        }
-    }
-
-    Player* closestBot = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
-
-    if (impaledPlayer)
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == impaledPlayer ||
-                !GET_PLAYERBOT_AI(member) || PlayerbotAI::IsTank(member))
-            {
-                continue;
-            }
-
-            float const dist = member->GetDistance(impaledPlayer);
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                closestBot = member;
-            }
-        }
-    }
-
-    return closestBot == bot;
+bool HighWarlordNajentusNeedsSpineThrowerTrigger::IsActiveInEncounter()
+{
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "high warlord naj'entus") && !GetNajentusSpineThrower(bot);
 }
 
 bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
 {
+    if (!IsNajentusSpineThrower(bot))
+        return false;
+
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
     if (!najentus || !najentus->HasAura(Id(BlackTempleSpells::SPELL_TIDAL_SHIELD)))
         return false;

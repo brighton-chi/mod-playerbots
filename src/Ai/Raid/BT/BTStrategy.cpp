@@ -20,11 +20,17 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high warlord naj'entus should be tanked",
         { NextAction("high warlord naj'entus tanks position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high warlord naj'entus casts needle spines",
+    triggers.push_back(new TriggerNode("high warlord naj'entus ranged should spread",
         { NextAction("high warlord naj'entus disperse ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high warlord naj'entus player is impaled",
+    triggers.push_back(new TriggerNode("high warlord naj'entus impaled player needs remover",
+        { NextAction("high warlord naj'entus assign spine remover", ACTION_EMERGENCY + 12) }));
+
+    triggers.push_back(new TriggerNode("high warlord naj'entus impaling spine on group member",
         { NextAction("high warlord naj'entus remove impaling spine", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("high warlord naj'entus needs spine thrower",
+        { NextAction("high warlord naj'entus assign spine thrower", ACTION_EMERGENCY + 12) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus has tidal shield",
         { NextAction("high warlord naj'entus throw impaling spine", ACTION_RAID + 2) }));

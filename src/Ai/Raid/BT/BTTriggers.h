@@ -70,21 +70,43 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighWarlordNajentusCastsNeedleSpinesTrigger : public BlackTempleEncounterTrigger
+class HighWarlordNajentusRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusCastsNeedleSpinesTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus casts needle spines") {}
+    HighWarlordNajentusRangedShouldSpreadTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus ranged should spread") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighWarlordNajentusPlayerIsImpaledTrigger : public BlackTempleEncounterTrigger
+class HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    HighWarlordNajentusPlayerIsImpaledTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus player is impaled") {}
+    HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+              botAI, "high warlord naj'entus impaled player needs remover") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class HighWarlordNajentusImpalingSpineOnGroupMemberTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    HighWarlordNajentusImpalingSpineOnGroupMemberTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+              botAI, "high warlord naj'entus impaling spine on group member") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class HighWarlordNajentusNeedsSpineThrowerTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    HighWarlordNajentusNeedsSpineThrowerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "high warlord naj'entus needs spine thrower", 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;

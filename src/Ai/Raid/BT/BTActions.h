@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "BTHelpers.h"
 #include "MovementActions.h"
+#include <string>
 
 namespace BlackTempleHelpers
 {
@@ -27,15 +28,22 @@ public:
     bool Execute(Event event) override;
 };
 
-// High Warlord Naj'entus
+// Shared Bosses
 
-class HighWarlordNajentusMisdirectToMainTankAction : public AttackAction
+// Used for High Warlord Naj'entus, Teron Gorefiend, Gurtogg Bloodboil and Mother Shahraz.
+class BlackTempleMisdirectToMainTankAction : public AttackAction
 {
 public:
-    HighWarlordNajentusMisdirectToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "high warlord naj'entus misdirect to main tank") {}
+    BlackTempleMisdirectToMainTankAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
+        : AttackAction(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
 };
+
+// High Warlord Naj'entus
 
 class HighWarlordNajentusTanksPositionBossAction : public AttackAction
 {
@@ -53,11 +61,33 @@ public:
     bool Execute(Event event) override;
 };
 
+class HighWarlordNajentusAssignSpineRemoverAction : public Action
+{
+public:
+    HighWarlordNajentusAssignSpineRemoverAction(
+        PlayerbotAI* botAI) : Action(botAI, "high warlord naj'entus assign spine remover") {}
+    bool Execute(Event event) override;
+};
+
 class HighWarlordNajentusRemoveImpalingSpineAction : public MovementAction
 {
 public:
     HighWarlordNajentusRemoveImpalingSpineAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus remove impaling spine") {}
+    bool Execute(Event event) override;
+
+private:
+    ObjectGuid _spineGuid;
+    bool _usedSpine = false;
+    uint32 _reactionStartTime = 0;
+    uint32 _reactionDelay = 0;
+};
+
+class HighWarlordNajentusAssignSpineThrowerAction : public Action
+{
+public:
+    HighWarlordNajentusAssignSpineThrowerAction(
+        PlayerbotAI* botAI) : Action(botAI, "high warlord naj'entus assign spine thrower") {}
     bool Execute(Event event) override;
 };
 
@@ -67,6 +97,9 @@ public:
     HighWarlordNajentusThrowImpalingSpineAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus throw impaling spine") {}
     bool Execute(Event event) override;
+
+private:
+    uint32 _throwDelay = 0;
 };
 
 // Supremus
@@ -129,14 +162,6 @@ public:
 
 // Teron Gorefiend
 
-class TeronGorefiendMisdirectToMainTankAction : public AttackAction
-{
-public:
-    TeronGorefiendMisdirectToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend misdirect to main tank") {}
-    bool Execute(Event event) override;
-};
-
 class TeronGorefiendTanksPositionBossAction : public AttackAction
 {
 public:
@@ -178,14 +203,6 @@ public:
 };
 
 // Gurtogg Bloodboil
-
-class GurtoggBloodboilMisdirectToMainTankAction : public AttackAction
-{
-public:
-    GurtoggBloodboilMisdirectToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "gurtogg bloodboil misdirect to main tank") {}
-    bool Execute(Event event) override;
-};
 
 class GurtoggBloodboilTanksPositionBossAction : public AttackAction
 {
@@ -267,14 +284,6 @@ public:
 };
 
 // Mother Shahraz
-
-class MotherShahrazMisdirectToMainTankAction : public AttackAction
-{
-public:
-    MotherShahrazMisdirectToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz misdirect to main tank") {}
-    bool Execute(Event event) override;
-};
 
 class MotherShahrazTanksPositionBossUnderPillarAction : public AttackAction
 {

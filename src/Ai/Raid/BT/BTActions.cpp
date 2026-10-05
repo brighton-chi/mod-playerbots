@@ -26,6 +26,9 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 
     reset |= flameTankWaypointIndex.erase(guid) > 0;
     reset |= hasReachedAkamaChannelerPosition.erase(guid) > 0;
+    reset |= shahrazTankStep.erase(guid) > 0;
+    reset |= illidanShadowTrapGuid.erase(guid) > 0;
+    reset |= illidanShadowTrapDestination.erase(guid) > 0;
 
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
         !AI_VALUE2(bool, "combat", "self target"))
@@ -41,43 +44,35 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
         return reset;
 
+    reset |= najentusSpineAssignments.erase(instanceId) > 0;
+    reset |= najentusSpineThrower.erase(instanceId) > 0;
     reset |= illidanBossDpsWaitTimer.erase(instanceId) > 0;
     reset |= illidanFlameDpsWaitTimer.erase(instanceId) > 0;
     reset |= illidanLastPhase.erase(instanceId) > 0;
-    reset |= illidanShadowTrapGuid.erase(guid) > 0;
-    reset |= illidanShadowTrapDestination.erase(guid) > 0;
     reset |= westFlameGuid.erase(instanceId) > 0;
     reset |= eastFlameGuid.erase(instanceId) > 0;
-    reset |= shahrazTankStep.erase(guid) > 0;
     reset |= gurtoggPhaseTimer.erase(instanceId) > 0;
     reset |= supremusPhaseTimer.erase(instanceId) > 0;
 
     return reset;
 }
 
-// High Warlord Naj'entus
+// Shared Bosses
 
-bool HighWarlordNajentusMisdirectToMainTankAction::Execute(Event /*event*/)
+bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus)
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
         return false;
 
     Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
+    if (!mainTank || !mainTank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", najentus))
-    {
-        return botAI->CastSpell("steady shot", najentus);
-    }
-
-    return false;
+    return MisdirectTargetToTank(botAI, boss, mainTank);
 }
+
+// High Warlord Naj'entus
 
 bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -109,86 +104,91 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
     if (!najentus)
         return false;
 
-    constexpr float safeDistFromBoss = 10.0f;
     constexpr uint32 minInterval = 0;
-    if (bot->GetExactDist2d(najentus) < safeDistFromBoss &&
-        FleePosition(najentus->GetPosition(), safeDistFromBoss, minInterval))
+    if (bot->GetExactDist2d(najentus) < NAJENTUS_RANGED_DISTANCE_FROM_BOSS &&
+        FleePosition(najentus->GetPosition(), NAJENTUS_RANGED_DISTANCE_FROM_BOSS, minInterval))
     {
         return true;
     }
 
-    constexpr float safeDistFromPlayer = 7.0f;
-    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), NAJENTUS_RANGED_SPREAD_DISTANCE);
+}
 
-    return false;
+bool HighWarlordNajentusAssignSpineRemoverAction::Execute(Event /*event*/)
+{
+    Player* impaled = FindNajentusUnassignedImpaledPlayer(bot);
+    if (!impaled)
+        return false;
+
+    // Drop entries for impales that have ended, and any earlier one for this impaled player.
+    std::vector<NajentusSpineAssignment>& assignments =
+        najentusSpineAssignments[bot->GetInstanceId()];
+    std::erase_if(assignments,
+                  [this, impaled](NajentusSpineAssignment const& assignment)
+                  {
+                      return assignment.impaled == impaled->GetGUID() ||
+                          !IsNajentusImpaled(ObjectAccessor::GetPlayer(*bot, assignment.impaled));
+                  });
+
+    Player* remover = FindNajentusSpineRemover(bot, impaled);
+    if (!remover)
+        return false;
+
+    assignments.push_back({ impaled->GetGUID(), remover->GetGUID() });
+    return true;
 }
 
 bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    Player* impaled = GetNajentusImpaledPlayerToFree(bot);
+    if (!impaled)
         return false;
 
-    Player* impaledPlayer = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(Id(BlackTempleSpells::SPELL_IMPALING_SPINE)))
-        {
-            impaledPlayer = member;
-            break;
-        }
-    }
-    if (!impaledPlayer)
-        return false;
-
-    constexpr float searchRadius = 30.0f;
-    GameObject* spineGo = bot->FindNearestGameObject(
+    // The spine is summoned where the impaled player stands.
+    constexpr float searchRadius = 5.0f;
+    GameObject* spineGo = impaled->FindNearestGameObject(
         Id(BlackTempleObjects::GO_NAJENTUS_SPINE), searchRadius, true);
     if (!spineGo)
         return false;
 
-    if (bot->GetExactDist2d(spineGo) > 3.0f)
+    bool const atSpine = bot->GetExactDist2d(spineGo) <= 3.0f;
+
+    // One reaction delay per spine: before clicking if already at it, else before moving, with
+    // the click straight on arrival.
+    if (spineGo->GetGUID() != _spineGuid)
     {
-        uint32 const delay = urand(2000, 3000);
-        ObjectGuid const spineGuid = spineGo->GetGUID();
-
-        botAI->AddTimedEvent(
-            [this, spineGuid]()
-            {
-                if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
-                {
-                    MoveTo(BLACK_TEMPLE_MAP_ID, targetSpine->GetPositionX(),
-                           targetSpine->GetPositionY(), bot->GetPositionZ(),
-                           false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-                           true, false);
-                }
-            },
-            delay);
-
-        return true;
-    }
-    else
-    {
-        uint32 const delay = urand(1000, 2000);
-        ObjectGuid const spineGuid = spineGo->GetGUID();
-
-        botAI->AddTimedEvent(
-            [this, spineGuid]()
-            {
-                if (GameObject* targetSpine = botAI->GetGameObject(spineGuid))
-                    targetSpine->Use(bot);
-            },
-            delay);
-
-        return true;
+        _spineGuid = spineGo->GetGUID();
+        _usedSpine = false;
+        _reactionStartTime = getMSTime();
+        _reactionDelay = atSpine ? urand(1000, 2000) : urand(2000, 3000);
     }
 
-    return false;
+    if (_usedSpine || GetMSTimeDiffToNow(_reactionStartTime) < _reactionDelay)
+        return false;
+
+    if (!atSpine)
+    {
+        return MoveTo(BLACK_TEMPLE_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
+    }
+
+    spineGo->Use(bot);
+    _usedSpine = true;
+    return true;
+}
+
+bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
+{
+    Player* thrower =
+        FindNajentusSpineThrower(bot, AI_VALUE2(Unit*, "find target", "high warlord naj'entus"));
+    if (!thrower)
+        return false;
+
+    najentusSpineThrower[bot->GetInstanceId()] = thrower->GetGUID();
+    return true;
 }
 
 bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
@@ -209,25 +209,21 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
                       true, false);
     }
 
-    if (bot->GetItemByEntry(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE)))
-    {
-        uint32 const delay = urand(500, 1500);
-        ObjectGuid const najentusGuid = najentus->GetGUID();
+    Aura* shield = najentus->GetAura(Id(BlackTempleSpells::SPELL_TIDAL_SHIELD));
+    Item* spine = bot->GetItemByEntry(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
+    if (!shield || !spine)
+        return false;
 
-        botAI->AddTimedEvent(
-            [this, najentusGuid]()
-            {
-                Item* targetSpine = bot->GetItemByEntry(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
-                Unit* targetNajentus = botAI->GetUnit(najentusGuid);
-                if (targetSpine && targetNajentus)
-                    botAI->ImbueItem(targetSpine, targetNajentus);
-            },
-            delay);
+    // Reaction delay of 0.5 to 1.5 s, counted from the shield going up.
+    if (!_throwDelay)
+        _throwDelay = urand(500, 1500);
 
-        return true;
-    }
+    if (static_cast<uint32>(shield->GetMaxDuration() - shield->GetDuration()) < _throwDelay)
+        return false;
 
-    return false;
+    botAI->ImbueItem(spine, najentus);
+    _throwDelay = 0;
+    return true;
 }
 
 // Supremus
@@ -268,19 +264,7 @@ bool SupremusMisdirectToTanksAction::Execute(Event /*event*/)
     else if (hunters.size() > 2 && bot == hunters[2] && secondAssistTank)
         misdirectTarget = secondAssistTank;
 
-    if (!misdirectTarget)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", misdirectTarget))
-        return botAI->CastSpell("misdirection", misdirectTarget);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", supremus))
-    {
-        return botAI->CastSpell("steady shot", supremus);
-    }
-
-    return false;
+    return MisdirectTargetToTank(botAI, supremus, misdirectTarget);
 }
 
 bool SupremusDisperseRangedAction::Execute(Event /*event*/)
@@ -482,28 +466,6 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 }
 
 // Teron Gorefiend
-
-bool TeronGorefiendMisdirectToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", gorefiend))
-    {
-        return botAI->CastSpell("steady shot", gorefiend);
-    }
-
-    return false;
-}
 
 bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
 {
@@ -739,32 +701,6 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilMisdirectToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", gurtogg))
-    {
-        return botAI->CastSpell("steady shot", gurtogg);
-    }
-
-    return false;
-}
-
 bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
@@ -888,19 +824,8 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 
     Unit* target = desire ? desire : anger;
 
-    if (target->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-    {
-        if (botAI->CanCastSpell("misdirection", mainTank))
-            return botAI->CastSpell("misdirection", mainTank);
-
-        if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-            botAI->CanCastSpell("steady shot", target))
-        {
-            return botAI->CastSpell("steady shot", target);
-        }
-    }
-
-    return false;
+    return target->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT &&
+        MisdirectTargetToTank(botAI, target, mainTank);
 }
 
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
@@ -1071,28 +996,6 @@ bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event /*event*/)
 }
 
 // Mother Shahraz
-
-bool MotherShahrazMisdirectToMainTankAction::Execute(Event /*event*/)
-{
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz)
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", shahraz))
-    {
-        return botAI->CastSpell("steady shot", shahraz);
-    }
-
-    return false;
-}
 
 bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 {
@@ -1311,19 +1214,10 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
         tankTarget = GetGroupAssistTank(bot, 1);
     }
 
-    if (!councilTarget || !tankTarget || !tankTarget->IsAlive())
+    if (!tankTarget || !tankTarget->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tankTarget))
-        return botAI->CastSpell("misdirection", tankTarget);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", councilTarget))
-    {
-        return botAI->CastSpell("steady shot", councilTarget);
-    }
-
-    return false;
+    return MisdirectTargetToTank(botAI, councilTarget, tankTarget);
 }
 
 bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
@@ -1675,19 +1569,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
 
     if (hunters.size() == 1)
     {
-        if (eastFlame->GetHealthPct() < 99.0f)
-            return false;
-
-        if (botAI->CanCastSpell("misdirection", secondAssistTank))
-            return botAI->CastSpell("misdirection", secondAssistTank);
-
-        if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-            botAI->CanCastSpell("steady shot", eastFlame))
-        {
-            return botAI->CastSpell("steady shot", eastFlame);
-        }
-
-        return false;
+        return eastFlame->GetHealthPct() >= 99.0f &&
+            MisdirectTargetToTank(botAI, eastFlame, secondAssistTank);
     }
 
     Player* tankTarget = nullptr;
@@ -1709,16 +1592,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     if (!tankTarget || !tankTarget->IsAlive() || flame->GetHealthPct() < 90.0f)
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tankTarget))
-        return botAI->CastSpell("misdirection", tankTarget);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", flame))
-    {
-        return botAI->CastSpell("steady shot", flame);
-    }
-
-    return false;
+    return MisdirectTargetToTank(botAI, flame, tankTarget);
 }
 
 bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* illidan)
@@ -1726,20 +1600,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     if (!illidan)
         return false;
 
-    Player* warlockTank = GetIllidanWarlockTank(botAI);
-    if (!warlockTank)
-        return false;
-
-    if (botAI->CanCastSpell("misdirection", warlockTank))
-        return botAI->CastSpell("misdirection", warlockTank);
-
-    if (bot->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)) &&
-        botAI->CanCastSpell("steady shot", illidan))
-    {
-        return botAI->CastSpell("steady shot", illidan);
-    }
-
-    return false;
+    return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
 }
 
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)

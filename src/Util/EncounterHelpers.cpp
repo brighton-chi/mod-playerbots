@@ -34,7 +34,8 @@ namespace EncounterHelpers
 // for triggers and multipliers that should run only during a boss fight. This will not work for
 // every single encounter, as some bosses are not scripted to report IN_PROGRESS (though all TBC
 // raid bosses now do). It's also possible for a boss script to set IN_PROGRESS upon an event other
-// than the pull (e.g., Leotheras is set to IN_PROGRESS only after the Spellbinders are killed).
+// than the pull (e.g., Leotheras goes IN_PROGRESS when first hit, even while banished, or else
+// when the last Spellbinder dies, not when his Spellbinders are pulled).
 bool IsEncounterInProgress(Player* bot, uint32 mapId)
 {
     if (bot->GetMapId() != mapId)

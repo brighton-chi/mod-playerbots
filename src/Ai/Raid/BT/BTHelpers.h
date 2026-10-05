@@ -141,9 +141,39 @@ enum class TankPositionState : uint8
 
 inline constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 
+// Misdirects onto the tank, then spends it with Steady Shot on the target.
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
+
 // High Warlord Naj'entus
 
+struct NajentusSpineAssignment
+{
+    ObjectGuid impaled;
+    ObjectGuid remover;
+};
+
+inline constexpr float NAJENTUS_RANGED_DISTANCE_FROM_BOSS = 10.0f;
+// Needle Spine Explosion hits allies within 6 yd of each player struck.
+inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = 7.0f;
+
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
+
+// Impales can overlap (every 20 s, 30 s stun), so one entry per impaled player.
+extern std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
+extern std::unordered_map<uint32, ObjectGuid> najentusSpineThrower;
+
+bool IsNajentusImpaled(Player* player);
+// An impaled group member with no living remover assigned, for the mechanic tracker to assign.
+Player* FindNajentusUnassignedImpaledPlayer(Player* bot);
+// The nearest living non-tank bot to the impaled player that isn't impaled or already a remover.
+Player* FindNajentusSpineRemover(Player* bot, Player* impaled);
+// The impaled player this bot was assigned to free, while still impaled.
+Player* GetNajentusImpaledPlayerToFree(Player* bot);
+bool IsNajentusSpineThrower(Player* bot);
+// The assigned thrower while it can still throw: alive, on the map, not impaled, holding a spine.
+Player* GetNajentusSpineThrower(Player* bot);
+// The bot holding a spine nearest Naj'entus that can throw it.
+Player* FindNajentusSpineThrower(Player* bot, Unit* najentus);
 
 // Supremus
 

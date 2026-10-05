@@ -8,6 +8,8 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include <algorithm>
+#include <limits>
 
 using namespace EncounterHelpers;
 
@@ -37,6 +39,185 @@ std::vector<Unit*> GetCachedUnits(PlayerbotAI* botAI, char const* value)
     return units;
 }
 
+}
+
+// General
+
+bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
+{
+    if (!target || !tank)
+        return false;
+
+    if (botAI->CanCastSpell("misdirection", tank))
+        return botAI->CastSpell("misdirection", tank);
+
+    if (!botAI->GetBot()->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)))
+        return false;
+
+    return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
+}
+
+// High Warlord Naj'entus
+
+std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
+std::unordered_map<uint32, ObjectGuid> najentusSpineThrower;
+
+namespace
+{
+
+// A remover counts while it is alive, on the map and free to move.
+bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
+{
+    Player* player = ObjectAccessor::GetPlayer(*bot, remover);
+    return player && player->IsAlive() && player->GetMapId() == BLACK_TEMPLE_MAP_ID &&
+        !IsNajentusImpaled(player);
+}
+
+bool CanThrowNajentusSpine(Player* player)
+{
+    return player && player->IsAlive() && player->GetMapId() == BLACK_TEMPLE_MAP_ID &&
+        !IsNajentusImpaled(player) &&
+        player->HasItemCount(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
+}
+
+}
+
+bool IsNajentusImpaled(Player* player)
+{
+    return player && player->IsAlive() &&
+        player->HasAura(Id(BlackTempleSpells::SPELL_IMPALING_SPINE));
+}
+
+Player* FindNajentusUnassignedImpaledPlayer(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!IsNajentusImpaled(member))
+            continue;
+
+        bool assigned = false;
+        if (it != najentusSpineAssignments.end())
+        {
+            for (NajentusSpineAssignment const& assignment : it->second)
+            {
+                if (assignment.impaled == member->GetGUID() &&
+                    IsValidSpineRemover(bot, assignment.remover))
+                {
+                    assigned = true;
+                    break;
+                }
+            }
+        }
+
+        if (!assigned)
+            return member;
+    }
+
+    return nullptr;
+}
+
+Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
+{
+    Group* group = bot->GetGroup();
+    if (!group || !impaled)
+        return nullptr;
+
+    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
+
+    Player* remover = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == impaled || !member->IsAlive() ||
+            member->GetMapId() != BLACK_TEMPLE_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            PlayerbotAI::IsTank(member) || IsNajentusImpaled(member))
+        {
+            continue;
+        }
+
+        if (it != najentusSpineAssignments.end() &&
+            std::any_of(it->second.begin(), it->second.end(),
+                        [member](NajentusSpineAssignment const& assignment)
+                        { return assignment.remover == member->GetGUID(); }))
+        {
+            continue;
+        }
+
+        float const dist = member->GetExactDist2d(impaled);
+        if (dist < closestDist)
+        {
+            closestDist = dist;
+            remover = member;
+        }
+    }
+
+    return remover;
+}
+
+Player* GetNajentusImpaledPlayerToFree(Player* bot)
+{
+    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
+    if (it == najentusSpineAssignments.end())
+        return nullptr;
+
+    for (NajentusSpineAssignment const& assignment : it->second)
+    {
+        if (assignment.remover != bot->GetGUID())
+            continue;
+
+        Player* impaled = ObjectAccessor::GetPlayer(*bot, assignment.impaled);
+        return IsNajentusImpaled(impaled) ? impaled : nullptr;
+    }
+
+    return nullptr;
+}
+
+bool IsNajentusSpineThrower(Player* bot)
+{
+    auto const it = najentusSpineThrower.find(bot->GetInstanceId());
+    return it != najentusSpineThrower.end() && it->second == bot->GetGUID();
+}
+
+Player* GetNajentusSpineThrower(Player* bot)
+{
+    auto const it = najentusSpineThrower.find(bot->GetInstanceId());
+    if (it == najentusSpineThrower.end())
+        return nullptr;
+
+    Player* thrower = ObjectAccessor::GetPlayer(*bot, it->second);
+    return CanThrowNajentusSpine(thrower) ? thrower : nullptr;
+}
+
+Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
+{
+    Group* group = bot->GetGroup();
+    if (!group || !najentus)
+        return nullptr;
+
+    Player* thrower = nullptr;
+    float closestDist = std::numeric_limits<float>::max();
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !GET_PLAYERBOT_AI(member) || !CanThrowNajentusSpine(member))
+            continue;
+
+        float const dist = member->GetExactDist2d(najentus);
+        if (dist < closestDist)
+        {
+            closestDist = dist;
+            thrower = member;
+        }
+    }
+
+    return thrower;
 }
 
 // Supremus

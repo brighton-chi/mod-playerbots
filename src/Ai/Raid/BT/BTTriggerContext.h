@@ -26,11 +26,17 @@ public:
         creators["high warlord naj'entus should be tanked"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_should_be_tanked;
 
-        creators["high warlord naj'entus casts needle spines"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_casts_needle_spines;
+        creators["high warlord naj'entus ranged should spread"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_ranged_should_spread;
 
-        creators["high warlord naj'entus player is impaled"] =
-            &RaidBlackTempleTriggerContext::high_warlord_najentus_player_is_impaled;
+        creators["high warlord naj'entus impaled player needs remover"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_impaled_player_needs_remover;
+
+        creators["high warlord naj'entus impaling spine on group member"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_impaling_spine_on_group_member;
+
+        creators["high warlord naj'entus needs spine thrower"] =
+            &RaidBlackTempleTriggerContext::high_warlord_najentus_needs_spine_thrower;
 
         creators["high warlord naj'entus has tidal shield"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_has_tidal_shield;
@@ -226,13 +232,21 @@ private:
     {
         return new HighWarlordNajentusShouldBeTankedTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_casts_needle_spines(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_ranged_should_spread(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusCastsNeedleSpinesTrigger(botAI);
+        return new HighWarlordNajentusRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* high_warlord_najentus_player_is_impaled(PlayerbotAI* botAI)
+    static Trigger* high_warlord_najentus_impaled_player_needs_remover(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusPlayerIsImpaledTrigger(botAI);
+        return new HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger(botAI);
+    }
+    static Trigger* high_warlord_najentus_impaling_spine_on_group_member(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusImpalingSpineOnGroupMemberTrigger(botAI);
+    }
+    static Trigger* high_warlord_najentus_needs_spine_thrower(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusNeedsSpineThrowerTrigger(botAI);
     }
     static Trigger* high_warlord_najentus_has_tidal_shield(PlayerbotAI* botAI)
     {

@@ -57,16 +57,13 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
 float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
-        return 1.0f;
-
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<SetBehindTargetAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") ? 0.0f : 1.0f;
 }
 
 // Supremus

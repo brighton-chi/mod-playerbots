@@ -29,8 +29,14 @@ public:
         creators["high warlord naj'entus disperse ranged"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_disperse_ranged;
 
+        creators["high warlord naj'entus assign spine remover"] =
+            &RaidBlackTempleActionContext::high_warlord_najentus_assign_spine_remover;
+
         creators["high warlord naj'entus remove impaling spine"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_remove_impaling_spine;
+
+        creators["high warlord naj'entus assign spine thrower"] =
+            &RaidBlackTempleActionContext::high_warlord_najentus_assign_spine_thrower;
 
         creators["high warlord naj'entus throw impaling spine"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_throw_impaling_spine;
@@ -219,7 +225,8 @@ private:
     // High Warlord Naj'entus
     static Action* high_warlord_najentus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusMisdirectToMainTankAction(botAI);
+        return new BlackTempleMisdirectToMainTankAction(
+            botAI, "high warlord naj'entus misdirect to main tank", "high warlord naj'entus");
     }
     static Action* high_warlord_najentus_tanks_position_boss(PlayerbotAI* botAI)
     {
@@ -229,9 +236,17 @@ private:
     {
         return new HighWarlordNajentusDisperseRangedAction(botAI);
     }
+    static Action* high_warlord_najentus_assign_spine_remover(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusAssignSpineRemoverAction(botAI);
+    }
     static Action* high_warlord_najentus_remove_impaling_spine(PlayerbotAI* botAI)
     {
         return new HighWarlordNajentusRemoveImpalingSpineAction(botAI);
+    }
+    static Action* high_warlord_najentus_assign_spine_thrower(PlayerbotAI* botAI)
+    {
+        return new HighWarlordNajentusAssignSpineThrowerAction(botAI);
     }
     static Action* high_warlord_najentus_throw_impaling_spine(PlayerbotAI* botAI)
     {
@@ -269,7 +284,8 @@ private:
     // Teron Gorefiend
     static Action* teron_gorefiend_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendMisdirectToMainTankAction(botAI);
+        return new BlackTempleMisdirectToMainTankAction(
+            botAI, "teron gorefiend misdirect to main tank", "teron gorefiend");
     }
     static Action* teron_gorefiend_tanks_position_boss(PlayerbotAI* botAI)
     {
@@ -295,7 +311,8 @@ private:
     // Gurtogg Bloodboil
     static Action* gurtogg_bloodboil_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilMisdirectToMainTankAction(botAI);
+        return new BlackTempleMisdirectToMainTankAction(
+            botAI, "gurtogg bloodboil misdirect to main tank", "gurtogg bloodboil");
     }
     static Action* gurtogg_bloodboil_tanks_position_boss(PlayerbotAI* botAI)
     {
@@ -339,7 +356,8 @@ private:
     // Mother Shahraz
     static Action* mother_shahraz_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
-        return new MotherShahrazMisdirectToMainTankAction(botAI);
+        return new BlackTempleMisdirectToMainTankAction(
+            botAI, "mother shahraz misdirect to main tank", "mother shahraz");
     }
     static Action* mother_shahraz_tanks_position_boss_under_pillar(PlayerbotAI* botAI)
     {
