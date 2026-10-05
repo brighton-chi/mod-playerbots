@@ -229,11 +229,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class TeronGorefiendShadowOfDeathTrigger : public BlackTempleEncounterTrigger
+class TeronGorefiendShouldPositionForVengefulSpiritTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    TeronGorefiendShadowOfDeathTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "teron gorefiend shadow of death") {}
+    TeronGorefiendShouldPositionForVengefulSpiritTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+              botAI, "teron gorefiend should position for vengeful spirit") {}
 
 protected:
     bool IsActiveInEncounter() override;

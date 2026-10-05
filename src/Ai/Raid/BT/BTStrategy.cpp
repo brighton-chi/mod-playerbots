@@ -75,7 +75,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("teron gorefiend casts shadow of death",
         { NextAction("teron gorefiend avoid shadow of death", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("teron gorefiend shadow of death",
+    triggers.push_back(new TriggerNode("teron gorefiend should position for vengeful spirit",
         { NextAction("teron gorefiend move to corner to die", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend transformed into vengeful spirit",

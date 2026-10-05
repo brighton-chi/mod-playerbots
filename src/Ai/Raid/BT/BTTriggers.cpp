@@ -169,49 +169,28 @@ bool TeronGorefiendRangedShouldPositionOnBalconyTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
+// Feign Death and Vanish cancel his cast. Ice Block and Divine Shield don't help: Shadow of Death
+// pierces invulnerability in AC.
 bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_ROGUE)
-    {
+    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE)
         return false;
-    }
 
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
         return false;
 
-    if (botAI->HasAura("feign death", bot))
-    {
-        botAI->RemoveAura("feign death");
-        return true;
-    }
-    else if (botAI->HasAura("ice block", bot))
-    {
-        botAI->RemoveAura("ice block");
-        return true;
-    }
-    else if (!PlayerbotAI::IsHeal(bot) && botAI->HasAura("divine shield", bot))
-    {
-        botAI->RemoveAura("divine shield");
-        return true;
-    }
-
-    if (!gorefiend->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    Spell* spell = gorefiend->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH))
-        return false;
-
-    Unit* target = spell->m_targets.GetUnitTarget();
-    return target && target->GetGUID() == bot->GetGUID();
+    // Once the bolt is launched, nothing cancels it.
+    Spell* spell =
+        gorefiend->FindCurrentSpellBySpellId(Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
+    return spell && spell->getState() == SPELL_STATE_PREPARING &&
+        spell->m_targets.GetUnitTarget() == bot;
 }
 
-bool TeronGorefiendShadowOfDeathTrigger::IsActiveInEncounter()
+bool TeronGorefiendShouldPositionForVengefulSpiritTrigger::IsActiveInEncounter()
 {
     Aura* aura = bot->GetAura(Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
-    return aura && aura->GetDuration() < 12000;
+    return aura && aura->GetDuration() <= GOREFIEND_SHADOW_OF_DEATH_MOVE_MS;
 }
 
 bool TeronGorefiendTransformedIntoVengefulSpiritTrigger::IsActiveInEncounter()

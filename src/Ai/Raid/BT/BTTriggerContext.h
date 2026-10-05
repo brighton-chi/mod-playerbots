@@ -79,8 +79,8 @@ public:
         creators["teron gorefiend casts shadow of death"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_casts_shadow_of_death;
 
-        creators["teron gorefiend shadow of death"] =
-            &RaidBlackTempleTriggerContext::teron_gorefiend_shadow_of_death;
+        creators["teron gorefiend should position for vengeful spirit"] =
+            &RaidBlackTempleTriggerContext::teron_gorefiend_should_position_for_vengeful_spirit;
 
         creators["teron gorefiend transformed into vengeful spirit"] =
             &RaidBlackTempleTriggerContext::teron_gorefiend_transformed_into_vengeful_spirit;
@@ -312,9 +312,9 @@ private:
     {
         return new TeronGorefiendCastsShadowOfDeathTrigger(botAI);
     }
-    static Trigger* teron_gorefiend_shadow_of_death(PlayerbotAI* botAI)
+    static Trigger* teron_gorefiend_should_position_for_vengeful_spirit(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendShadowOfDeathTrigger(botAI);
+        return new TeronGorefiendShouldPositionForVengefulSpiritTrigger(botAI);
     }
     static Trigger* teron_gorefiend_transformed_into_vengeful_spirit(PlayerbotAI* botAI)
     {

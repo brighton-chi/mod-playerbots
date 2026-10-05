@@ -569,13 +569,11 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     float const targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
     float const targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
-    if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
-    {
-        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
+    if (bot->GetExactDist2d(targetX, targetY) <= GOREFIEND_POSITION_TOLERANCE)
+        return false;
 
-    return false;
+    return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
@@ -583,16 +581,8 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
     switch (bot->getClass())
     {
         case CLASS_HUNTER:
-        return botAI->CanCastSpell("feign death", bot) &&
-               botAI->CastSpell("feign death", bot);
-
-        case CLASS_MAGE:
-            return botAI->CanCastSpell("ice block", bot) &&
-                   botAI->CastSpell("ice block", bot);
-
-        case CLASS_PALADIN:
-            return botAI->CanCastSpell("divine shield", bot) &&
-                   botAI->CastSpell("divine shield", bot);
+            return botAI->CanCastSpell("feign death", bot) &&
+                   botAI->CastSpell("feign death", bot);
 
         case CLASS_ROGUE:
             return botAI->CanCastSpell("vanish", bot) &&
@@ -606,7 +596,7 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 {
     Position const& position = GOREFIEND_DIE_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
+    if (bot->GetExactDist2d(position) > GOREFIEND_POSITION_TOLERANCE)
     {
         return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,

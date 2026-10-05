@@ -163,33 +163,26 @@ float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action
 
 float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
-        return 1.0f;
-
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<FollowAction*>(action) ||
+    bool const isFormationMove = dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action);
+    bool const isFollowOrFlee =
+        dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action))
-    {
-        return 0.0f;
-    }
+        dynamic_cast<CastBlinkBackAction*>(action);
+    bool const isRangedReach =
+        dynamic_cast<ReachTargetAction*>(action) && PlayerbotAI::IsRanged(bot);
 
-    if (PlayerbotAI::IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action))
-        return 0.0f;
+    if (!isFormationMove && !isFollowOrFlee && !isRangedReach)
+        return 1.0f;
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "teron gorefiend") ? 0.0f : 1.0f;
 }
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
 {
     Aura* aura = bot->GetAura(Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
-    if (!aura || aura->GetDuration() >= 15000)
+    if (!aura || aura->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))
@@ -216,20 +209,16 @@ float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValueInEnco
 
 float TeronGorefiendDisableAttackingConstructsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "teron gorefiend"))
-        return 1.0f;
-
-    if (bot->GetVictim() && dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
-
-    if (!PlayerbotAI::IsRangedDps(bot))
-        return 1.0f;
-
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action) && bot->GetVictim();
     CastSpellAction* castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-        return 0.0f;
+    bool const isRangedAoe = castSpellAction &&
+        castSpellAction->getThreatType() == Action::ActionThreatType::Aoe &&
+        PlayerbotAI::IsRangedDps(bot);
 
-    return 1.0f;
+    if (!isTankAssist && !isRangedAoe)
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "teron gorefiend") ? 0.0f : 1.0f;
 }
 
 // Gurtogg Bloodboil
