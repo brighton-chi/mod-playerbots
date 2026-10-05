@@ -991,55 +991,46 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
     if (botIt == attractedPlayers.end())
         return false;
 
-    float const spreadAngle =
-        2.0f * M_PI * std::distance(attractedPlayers.begin(), botIt) / attractedPlayers.size();
-
-    constexpr float maxSpreadDistance = 35.0f;
-    constexpr float distanceStep = 1.0f;
-    float lastValidX = bot->GetPositionX();
-    float lastValidY = bot->GetPositionY();
-    float lastValidZ = bot->GetPositionZ();
-
-    uint32 const numSteps = static_cast<uint32>(maxSpreadDistance / distanceStep);
-    for (uint32 i = 1; i <= numSteps; ++i)
+    // They all land on one spot, so each takes its own heading by index, then keeps away
+    // from the others as they part.
+    float spreadAngle;
+    constexpr float minCenterDistance = 1.0f;
+    if (bot->GetExactDist2d(centerX, centerY) > minCenterDistance)
     {
-        float const currentDistance = i * distanceStep;
-        float testX = centerX + std::cos(spreadAngle) * currentDistance;
-        float testY = centerY + std::sin(spreadAngle) * currentDistance;
-        float testZ = lastValidZ;
-
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, bot->GetPositionX(), bot->GetPositionY(),
-                bot->GetPositionZ(), testX, testY, testZ))
-        {
-            break;
-        }
-
-        lastValidX = testX;
-        lastValidY = testY;
-        lastValidZ = testZ;
-    }
-
-    if (MoveTo(BT_MAP_ID, lastValidX, lastValidY, lastValidZ, false, false,
-               false, false, MovementPriority::MOVEMENT_FORCED, true, false))
-    {
-        return true;
+        spreadAngle = bot->GetAngle(centerX, centerY) + static_cast<float>(M_PI);
     }
     else
     {
-        // In case bots get stuck, try a 5-yard random move
-        float const angle = frand(0.0f, 2.0f * M_PI);
-        constexpr float dist = 5.0f;
-        float randX = bot->GetPositionX() + std::cos(angle) * dist;
-        float randY = bot->GetPositionY() + std::sin(angle) * dist;
-        float randZ = lastValidZ;
-        bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-            randX, randY, randZ);
-
-        return MoveTo(BT_MAP_ID, randX, randY, randZ, false, false, false,
-                      false, MovementPriority::MOVEMENT_FORCED, true, false);
+        spreadAngle = 2.0f * static_cast<float>(M_PI) *
+            std::distance(attractedPlayers.begin(), botIt) / attractedPlayers.size();
     }
+
+    // Straight on first, then alternately left and right out to 90 degrees, so a bot against a
+    // wall slides along it.
+    constexpr uint8 numCandidates = 9;
+    constexpr float angleStep = static_cast<float>(M_PI) / 8.0f;
+    for (uint8 i = 0; i < numCandidates; ++i)
+    {
+        int8 const side = (i % 2) ? 1 : -1;
+        float const angle = spreadAngle + side * ((i + 1) / 2) * angleStep;
+        float const x = bot->GetPositionX() +
+            std::cos(angle) * SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE;
+        float const y = bot->GetPositionY() +
+            std::sin(angle) * SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE;
+
+        float stepX;
+        float stepY;
+        float stepZ;
+        if (CanTakeStepTowards(
+                bot, x, y, SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE, stepX, stepY, stepZ))
+        {
+            return MoveTo(
+                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+    }
+
+    return false;
 }
 
 std::vector<Player*> MotherShahrazRunAwayToBreakFatalAttractionAction::GetAttractedPlayers()

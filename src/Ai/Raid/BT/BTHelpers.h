@@ -341,6 +341,7 @@ inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
 // Wide enough for an off-tank on her victim to take over without melee backing off.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
+inline constexpr float SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE = 5.0f;
 
 // Illidari Council
 
