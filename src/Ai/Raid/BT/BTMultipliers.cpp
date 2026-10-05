@@ -105,7 +105,7 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
 
 // Supremus
 
-float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValueInEncounter(Action* action)
+float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
@@ -123,7 +123,16 @@ float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValueInEncounter(Action* ac
     return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
 }
 
-float SupremusHitboxIsBuggedMultiplier::GetValueInEncounter(Action* action)
+float SupremusDelayDpsCooldownsInKitePhaseMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
+}
+
+float SupremusDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_ROGUE)
         return 1.0f;

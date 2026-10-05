@@ -11,6 +11,8 @@
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 using namespace BlackTempleHelpers;
@@ -58,7 +60,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= westFlameGuid.erase(instanceId) > 0;
     reset |= eastFlameGuid.erase(instanceId) > 0;
     reset |= gurtoggPhaseTimer.erase(instanceId) > 0;
-    reset |= supremusPhaseTimer.erase(instanceId) > 0;
 
     return reset;
 }
@@ -322,109 +323,92 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
 // Supremus
 
-bool SupremusMisdirectToTanksAction::Execute(Event /*event*/)
-{
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    std::vector<Player*> hunters;
-    for (GroupReference* ref = group->GetFirstMember(); ref && hunters.size() < 3; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
-            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
-        {
-            hunters.push_back(member);
-        }
-    }
-
-    if (hunters.empty())
-        return false;
-
-    Player* mainTank = GetGroupMainTank(bot);
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-
-    Player* misdirectTarget = nullptr;
-    if (bot == hunters[0] && mainTank)
-        misdirectTarget = mainTank;
-    else if (hunters.size() > 1 && bot == hunters[1] && firstAssistTank)
-        misdirectTarget = firstAssistTank;
-    else if (hunters.size() > 2 && bot == hunters[2] && secondAssistTank)
-        misdirectTarget = secondAssistTank;
-
-    return MisdirectTargetToTank(botAI, supremus, misdirectTarget);
-}
-
 bool SupremusDisperseRangedAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 8.0f;
-    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistance);
-
-    return false;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
+// Steps around him, never into an erupting volcano or out of his room, taking the step that leaves
+// the bot farthest from him. Molten Flame is ignored.
 bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
+    if (!supremus || bot->GetDistance2d(supremus) >= SUPREMUS_KITE_DISTANCE)
         return false;
 
-    constexpr float safeDistance = 25.0f;
-    float const currentDistance = bot->GetDistance2d(supremus);
-    if (currentDistance < safeDistance)
-        return MoveAway(supremus, safeDistance - currentDistance);
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    std::vector<Unit*> const volcanoes = GetSupremusVolcanoes(botAI);
+    constexpr uint8 numAngles = 16;
+    constexpr float angleStep = 2.0f * M_PI / numAngles;
+    std::vector<std::pair<float, Position>> candidates;
+    for (uint8 i = 0; i < numAngles; ++i)
+    {
+        float const angle = i * angleStep;
+        float const x = bot->GetPositionX() + SUPREMUS_KITE_STEP_DISTANCE * std::cos(angle);
+        float const y = bot->GetPositionY() + SUPREMUS_KITE_STEP_DISTANCE * std::sin(angle);
+        if (!IsInsideSupremusKiteBoundary(x, y) || IsInEruptingSupremusVolcano(volcanoes, x, y))
+            continue;
+
+        candidates.emplace_back(
+            supremus->GetExactDist2d(x, y), Position(x, y, bot->GetPositionZ()));
+    }
+
+    // Farthest first, so the collision check runs only until one step passes.
+    std::sort(candidates.begin(), candidates.end(),
+              [](auto const& a, auto const& b) { return a.first > b.first; });
+
+    for (auto const& candidate : candidates)
+    {
+        float stepX;
+        float stepY;
+        float stepZ;
+        if (CanTakeStepTowards(
+                bot, candidate.second.GetPositionX(), candidate.second.GetPositionY(),
+                SUPREMUS_KITE_STEP_DISTANCE, stepX, stepY, stepZ))
+        {
+            return MoveTo(
+                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
+        }
+    }
 
     return false;
 }
 
 bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> const volcanos = GetSupremusVolcanoes(botAI);
-    if (volcanos.empty())
+    std::vector<Unit*> const volcanoes = GetSupremusVolcanoes(botAI);
+    if (!IsInEruptingSupremusVolcano(volcanoes, bot->GetPositionX(), bot->GetPositionY()))
         return false;
 
-    constexpr float hazardRadius = 16.0f;
-    bool inDanger = false;
-    for (Unit* volcano : volcanos)
-    {
-        if (bot->GetDistance2d(volcano) < hazardRadius)
-        {
-            inDanger = true;
-            break;
-        }
-    }
-
-    if (!inDanger)
+    Position destination;
+    if (!FindSafestNearbyPosition(volcanoes, destination))
         return false;
 
-    constexpr float maxRadius = 40.0f;
-    Position const safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
-
-    return MoveTo(BT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
-                  bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_FORCED, true, false);
+    return MoveTo(
+        BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
-    std::vector<Unit*> const& volcanos, float maxRadius, float hazardRadius)
+// The nearest spot a yard clear of the trigger's radius from every erupting volcano, so reach has
+// room before avoidance pushes the bot back out. A spot whose path crosses no other volcano is
+// preferred; otherwise the nearest clear spot.
+bool SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
+    std::vector<Unit*> const& volcanoes, Position& destination)
 {
+    constexpr float maxRadius = 40.0f;
+    constexpr float distanceStep = 1.0f;
     constexpr uint8 numAngles = 16;
     constexpr float angleStep = 2.0f * M_PI / numAngles;
-    constexpr float distanceStep = 1.0f;
-    uint32 const numDistances = static_cast<uint32>(maxRadius / distanceStep);
+    constexpr float clearance = SUPREMUS_VOLCANO_SAFE_DISTANCE + 1.0f;
+    constexpr uint32 numDistances = static_cast<uint32>(maxRadius / distanceStep);
 
-    Position bestPos;
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    for (uint32 i = 0; i <= numDistances; ++i)
+    bool found = false;
+    for (uint32 i = 1; i <= numDistances; ++i)
     {
         float const distance = i * distanceStep;
         for (uint8 j = 0; j < numAngles; ++j)
@@ -432,83 +416,55 @@ Position SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
             float const angle = j * angleStep;
             float const x = bot->GetPositionX() + distance * std::cos(angle);
             float const y = bot->GetPositionY() + distance * std::sin(angle);
-
-            bool isSafe = true;
-            for (Unit* volcano : volcanos)
-            {
-                if (volcano->GetDistance2d(x, y) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
+            if (IsInEruptingSupremusVolcano(volcanoes, x, y, clearance))
                 continue;
 
-            Position const testPos(x, y, bot->GetPositionZ());
-
-            bool const pathSafe =
-                IsPathSafeFromVolcanos(bot->GetPosition(), testPos, volcanos, hazardRadius);
-            if (pathSafe || !foundSafe)
+            Position const candidate(x, y, bot->GetPositionZ());
+            if (IsPathSafeFromVolcanos(bot->GetPosition(), candidate, volcanoes))
             {
-                float const moveDistance = bot->GetExactDist2d(x, y);
+                destination = candidate;
+                return true;
+            }
 
-                if (pathSafe && (!foundSafe || moveDistance < minMoveDistance))
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && moveDistance < minMoveDistance)
-                {
-                    bestPos = testPos;
-                    minMoveDistance = moveDistance;
-                }
+            if (!found)
+            {
+                destination = candidate;
+                found = true;
             }
         }
-
-        if (foundSafe)
-            break;
     }
 
-    return bestPos;
+    return found;
 }
 
-bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(Position const& start,
-    Position const& end, std::vector<Unit*> const& volcanos, float hazardRadius)
+// A path is unsafe only through a volcano the bot isn't already in; leaving the one it stands in
+// means crossing part of it.
+bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(
+    Position const& start, Position const& end, std::vector<Unit*> const& volcanoes)
 {
     constexpr uint8 numChecks = 10;
     float const dx = end.GetPositionX() - start.GetPositionX();
     float const dy = end.GetPositionY() - start.GetPositionY();
 
-    for (uint8 i = 1; i <= numChecks; ++i)
+    for (Unit* volcano : volcanoes)
     {
-        float const ratio = static_cast<float>(i) / numChecks;
-        float const checkX = start.GetPositionX() + dx * ratio;
-        float const checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* volcano : volcanos)
+        if (!IsSupremusVolcanoErupting(volcano) ||
+            volcano->GetExactDist2d(&start) < SUPREMUS_VOLCANO_SAFE_DISTANCE)
         {
-            float const distToVol = volcano->GetDistance2d(checkX, checkY);
-            if (distToVol < hazardRadius)
+            continue;
+        }
+
+        for (uint8 i = 1; i <= numChecks; ++i)
+        {
+            float const ratio = static_cast<float>(i) / numChecks;
+            float const checkX = start.GetPositionX() + dx * ratio;
+            float const checkY = start.GetPositionY() + dy * ratio;
+            if (volcano->GetExactDist2d(checkX, checkY) < SUPREMUS_VOLCANO_SAFE_DISTANCE)
                 return false;
         }
     }
 
     return true;
-}
-
-bool SupremusManagePhaseTimerAction::Execute(Event /*event*/)
-{
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    supremusPhaseTimer.try_emplace(
-        supremus->GetMap()->GetInstanceId(), getMSTime());
-
-    return false;
 }
 
 // Shade of Akama

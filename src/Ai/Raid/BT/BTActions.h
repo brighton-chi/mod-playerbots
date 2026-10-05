@@ -31,7 +31,8 @@ public:
 
 // Shared Bosses
 
-// Used for High Warlord Naj'entus, Teron Gorefiend, Gurtogg Bloodboil and Mother Shahraz.
+// Used for High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil and Mother
+// Shahraz.
 class BlackTempleMisdirectToMainTankAction : public AttackAction
 {
 public:
@@ -136,14 +137,6 @@ private:
 
 // Supremus
 
-class SupremusMisdirectToTanksAction : public AttackAction
-{
-public:
-    SupremusMisdirectToTanksAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "supremus misdirect to tanks") {}
-    bool Execute(Event event) override;
-};
-
 class SupremusDisperseRangedAction : public MovementAction
 {
 public:
@@ -168,18 +161,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position FindSafestNearbyPosition(
-        std::vector<Unit*> const& volcanos, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromVolcanos(Position const& start,
-        Position const& end, std::vector<Unit*> const& volcanos, float hazardRadius);
-};
-
-class SupremusManagePhaseTimerAction : public Action
-{
-public:
-    SupremusManagePhaseTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "supremus manage phase timer") {}
-    bool Execute(Event event) override;
+    bool FindSafestNearbyPosition(std::vector<Unit*> const& volcanoes, Position& destination);
+    bool IsPathSafeFromVolcanos(
+        Position const& start, Position const& end, std::vector<Unit*> const& volcanoes);
 };
 
 // Shade of Akama

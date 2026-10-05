@@ -44,6 +44,7 @@ enum class BlackTempleSpells : uint32
 
     // Supremus
     SPELL_SNARE_SELF                = 41922,
+    SPELL_VOLCANIC_GEYSER           = 42055,
 
     // Teron Gorefiend
     SPELL_SHADOW_OF_DEATH           = 40251,
@@ -232,13 +233,30 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus);
 
 inline constexpr float SUPREMUS_VOLCANO_SEARCH_RADIUS = 40.0f;
 inline constexpr uint32 SUPREMUS_VOLCANO_CACHE_INTERVAL_MS = 200;
-
-extern std::unordered_map<uint32, uint32> supremusPhaseTimer;
+// Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
+inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 5.0f;
+// Volcanic Geyser hits within 15 yd of the volcano's centre. The 3 yd is one AI tick of running
+// in, so avoidance stops a bot that reach is carrying in before the damage radius.
+inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = 15.0f + 3.0f;
+inline constexpr float SUPREMUS_KITE_DISTANCE = 25.0f;
+inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 5.0f;
+// He evades when his own position leaves this box (instance_black_temple.cpp boundaries). He
+// follows the kiter in a straight line and the box is convex, so a kiter inside it keeps him in.
+inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 556.1f;
+inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 850.2f;
+inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 542.0f;
+inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 1001.0f;
+inline constexpr float SUPREMUS_KITE_BOUNDARY_MARGIN = 10.0f;
 
 bool IsSupremusKitePhase(Unit* supremus);
 GuidVector FindSupremusVolcanoGuids(Player* bot);
 std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
-bool HasSupremusVolcanoNearby(PlayerbotAI* botAI);
+// Erupting from its 1 s cast until Volcanic Geyser ends, about 19 s of its 30.
+bool IsSupremusVolcanoErupting(Unit* volcano);
+bool IsInEruptingSupremusVolcano(
+    std::vector<Unit*> const& volcanoes, float x, float y,
+    float radius = SUPREMUS_VOLCANO_SAFE_DISTANCE);
+bool IsInsideSupremusKiteBoundary(float x, float y);
 
 // Shade of Akama
 

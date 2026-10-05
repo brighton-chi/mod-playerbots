@@ -50,8 +50,8 @@ public:
             &RaidBlackTempleActionContext::high_warlord_najentus_throw_impaling_spine;
 
         // Supremus
-        creators["supremus misdirect to tanks"] =
-            &RaidBlackTempleActionContext::supremus_misdirect_to_tanks;
+        creators["supremus misdirect to main tank"] =
+            &RaidBlackTempleActionContext::supremus_misdirect_to_main_tank;
 
         creators["supremus disperse ranged"] =
             &RaidBlackTempleActionContext::supremus_disperse_ranged;
@@ -61,9 +61,6 @@ public:
 
         creators["supremus move away from volcanos"] =
             &RaidBlackTempleActionContext::supremus_move_away_from_volcanos;
-
-        creators["supremus manage phase timer"] =
-            &RaidBlackTempleActionContext::supremus_manage_phase_timer;
 
         // Shade of Akama
         creators["shade of akama melee dps prioritize channelers"] =
@@ -276,9 +273,10 @@ private:
     }
 
     // Supremus
-    static Action* supremus_misdirect_to_tanks(PlayerbotAI* botAI)
+    static Action* supremus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
-        return new SupremusMisdirectToTanksAction(botAI);
+        return new BlackTempleMisdirectToMainTankAction(
+            botAI, "supremus misdirect to main tank", "supremus");
     }
     static Action* supremus_disperse_ranged(PlayerbotAI* botAI)
     {
@@ -291,10 +289,6 @@ private:
     static Action* supremus_move_away_from_volcanos(PlayerbotAI* botAI)
     {
         return new SupremusMoveAwayFromVolcanosAction(botAI);
-    }
-    static Action* supremus_manage_phase_timer(PlayerbotAI* botAI)
-    {
-        return new SupremusManagePhaseTimerAction(botAI);
     }
 
     // Shade of Akama

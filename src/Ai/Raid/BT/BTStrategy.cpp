@@ -47,7 +47,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Supremus
     triggers.push_back(new TriggerNode("supremus hunter should misdirect",
-        { NextAction("supremus misdirect to tanks", ACTION_RAID + 2) }));
+        { NextAction("supremus misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("supremus ranged should spread",
         { NextAction("supremus disperse ranged", ACTION_RAID + 1) }));
@@ -57,9 +57,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("supremus near volcano",
         { NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6) }));
-
-    triggers.push_back(new TriggerNode("supremus should manage phase timer",
-        { NextAction("supremus manage phase timer", ACTION_EMERGENCY + 10) }));
 
     // Shade of Akama
     triggers.push_back(new TriggerNode("shade of akama killing channelers starts phase 2",
@@ -237,8 +234,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new HighWarlordNajentusDisableCombatFormationMoveMultiplier(botAI));
 
     // Supremus
-    multipliers.push_back(new SupremusFocusOnAvoidanceInPhase2Multiplier(botAI));
-    multipliers.push_back(new SupremusHitboxIsBuggedMultiplier(botAI));
+    multipliers.push_back(new SupremusFocusOnAvoidanceInKitePhaseMultiplier(botAI));
+    multipliers.push_back(new SupremusDelayDpsCooldownsInKitePhaseMultiplier(botAI));
+    multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
 
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));

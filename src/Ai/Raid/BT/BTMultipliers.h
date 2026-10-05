@@ -66,21 +66,33 @@ protected:
 
 // Supremus
 
-class SupremusFocusOnAvoidanceInPhase2Multiplier : public BlackTempleEncounterMultiplier
+class SupremusFocusOnAvoidanceInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusFocusOnAvoidanceInPhase2Multiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "supremus focus on avoidance in phase 2") {}
+    SupremusFocusOnAvoidanceInKitePhaseMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "supremus focus on avoidance in kite phase") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class SupremusHitboxIsBuggedMultiplier : public BlackTempleEncounterMultiplier
+class SupremusDelayDpsCooldownsInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusHitboxIsBuggedMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "supremus hitbox is bugged") {}
+    SupremusDelayDpsCooldownsInKitePhaseMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "supremus delay dps cooldowns in kite phase") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
+// rogue by bounding radius, so it takes the rogue well out of the fight.
+class SupremusDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    SupremusDisableKillingSpreeMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "supremus disable killing spree") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

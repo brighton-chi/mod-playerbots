@@ -43,7 +43,8 @@ public:
 // Shared Bosses
 
 // A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
-// High Warlord Naj'entus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on Gathios).
+// High Warlord Naj'entus, Supremus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on
+// Gathios).
 class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -154,16 +155,6 @@ protected:
 
 // Supremus
 
-class SupremusHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    SupremusHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "supremus hunter should misdirect") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class SupremusRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -189,16 +180,6 @@ class SupremusNearVolcanoTrigger : public BlackTempleEncounterTrigger
 public:
     SupremusNearVolcanoTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(botAI, "supremus near volcano") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class SupremusShouldManagePhaseTimerTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    SupremusShouldManagePhaseTimerTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "supremus should manage phase timer") {}
 
 protected:
     bool IsActiveInEncounter() override;

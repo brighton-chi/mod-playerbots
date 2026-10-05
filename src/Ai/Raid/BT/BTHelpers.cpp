@@ -472,8 +472,6 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
 
 // Supremus
 
-std::unordered_map<uint32, uint32> supremusPhaseTimer;
-
 bool IsSupremusKitePhase(Unit* supremus)
 {
     return supremus && supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF));
@@ -500,17 +498,33 @@ std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI)
     return GetCachedUnits(botAI, "supremus volcanoes");
 }
 
-bool HasSupremusVolcanoNearby(PlayerbotAI* botAI)
+bool IsSupremusVolcanoErupting(Unit* volcano)
 {
-    constexpr float searchRadius = 20.0f;
-    Player* bot = botAI->GetBot();
-    for (Unit* volcano : GetSupremusVolcanoes(botAI))
+    return volcano && volcano->IsAlive() &&
+        (volcano->HasAura(Id(BlackTempleSpells::SPELL_VOLCANIC_GEYSER)) ||
+         volcano->HasUnitState(UNIT_STATE_CASTING));
+}
+
+bool IsInEruptingSupremusVolcano(
+    std::vector<Unit*> const& volcanoes, float x, float y, float radius)
+{
+    for (Unit* volcano : volcanoes)
     {
-        if (bot->GetDistance(volcano) <= searchRadius)
+        if (IsSupremusVolcanoErupting(volcano) && volcano->GetExactDist2d(x, y) < radius)
+        {
             return true;
+        }
     }
 
     return false;
+}
+
+bool IsInsideSupremusKiteBoundary(float x, float y)
+{
+    return x > SUPREMUS_BOUNDARY_MIN_X + SUPREMUS_KITE_BOUNDARY_MARGIN &&
+        x < SUPREMUS_BOUNDARY_MAX_X - SUPREMUS_KITE_BOUNDARY_MARGIN &&
+        y > SUPREMUS_BOUNDARY_MIN_Y + SUPREMUS_KITE_BOUNDARY_MARGIN &&
+        y < SUPREMUS_BOUNDARY_MAX_Y - SUPREMUS_KITE_BOUNDARY_MARGIN;
 }
 
 // Shade of Akama

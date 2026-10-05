@@ -127,52 +127,28 @@ bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
 
 // Supremus
 
-bool SupremusHunterShouldMisdirectTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_HUNTER)
-        return false;
-
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus)
-        return false;
-
-    auto it = supremusPhaseTimer.find(supremus->GetMap()->GetInstanceId());
-    if (it == supremusPhaseTimer.end())
-        return false;
-
-    constexpr uint32 activeWindowMs = 10 * IN_MILLISECONDS;
-    constexpr uint32 phaseCycleMs = 60 * IN_MILLISECONDS;
-    uint32 const elapsed = GetMSTimeDiffToNow(it->second);
-
-    // Active during first 10 seconds, or during 60-70, 120-130, etc.
-    return (elapsed < activeWindowMs) ||
-        ((elapsed % phaseCycleMs) < activeWindowMs && elapsed >= phaseCycleMs);
-}
-
 bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && !IsSupremusKitePhase(supremus);
+    return supremus && !IsSupremusKitePhase(supremus) &&
+        GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
 bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->GetVictim() == bot && IsSupremusKitePhase(supremus);
+    return supremus && supremus->GetVictim() == bot && IsSupremusKitePhase(supremus) &&
+        bot->GetDistance2d(supremus) < SUPREMUS_KITE_DISTANCE;
 }
 
 bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "supremus") && HasSupremusVolcanoNearby(botAI);
-}
-
-bool SupremusShouldManagePhaseTimerTrigger::IsActiveInEncounter()
-{
-    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "supremus");
+    return AI_VALUE2(Unit*, "find target", "supremus") &&
+        IsInEruptingSupremusVolcano(
+            GetSupremusVolcanoes(botAI), bot->GetPositionX(), bot->GetPositionY());
 }
 
 // Shade of Akama

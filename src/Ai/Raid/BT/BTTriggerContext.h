@@ -62,9 +62,6 @@ public:
         creators["supremus near volcano"] =
             &RaidBlackTempleTriggerContext::supremus_near_volcano;
 
-        creators["supremus should manage phase timer"] =
-            &RaidBlackTempleTriggerContext::supremus_should_manage_phase_timer;
-
         // Shade of Akama
         creators["shade of akama killing channelers starts phase 2"] =
             &RaidBlackTempleTriggerContext::shade_of_akama_killing_channelers_starts_phase_2;
@@ -278,7 +275,8 @@ private:
     // Supremus
     static Trigger* supremus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new SupremusHunterShouldMisdirectTrigger(botAI);
+        return new BlackTempleHunterShouldMisdirectTrigger(
+            botAI, "supremus hunter should misdirect", "supremus");
     }
     static Trigger* supremus_ranged_should_spread(PlayerbotAI* botAI)
     {
@@ -291,10 +289,6 @@ private:
     static Trigger* supremus_near_volcano(PlayerbotAI* botAI)
     {
         return new SupremusNearVolcanoTrigger(botAI);
-    }
-    static Trigger* supremus_should_manage_phase_timer(PlayerbotAI* botAI)
-    {
-        return new SupremusShouldManagePhaseTimerTrigger(botAI);
     }
 
     // Shade of Akama
