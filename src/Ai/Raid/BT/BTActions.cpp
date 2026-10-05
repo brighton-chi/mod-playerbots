@@ -755,7 +755,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
 
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
-    Position const& position = GetGurtoggBloodboilPosition(botAI);
+    Position const& position = GetGurtoggBloodboilPosition(bot);
     return MoveInside(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         GURTOGG_POSITION_TOLERANCE, MovementPriority::MOVEMENT_FORCED);

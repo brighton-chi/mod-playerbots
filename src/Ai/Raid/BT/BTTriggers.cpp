@@ -211,15 +211,9 @@ bool GurtoggBloodboilShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot) || bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) ||
-        !AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
-    {
-        return false;
-    }
-
-    Position const& position = GetGurtoggBloodboilPosition(botAI);
-    return bot->GetDistance2d(position.GetPositionX(), position.GetPositionY()) >
-        GURTOGG_POSITION_TOLERANCE;
+    return PlayerbotAI::IsRanged(bot) &&
+        !bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) &&
+        AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()

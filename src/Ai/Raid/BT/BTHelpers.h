@@ -306,7 +306,6 @@ inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f }
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
 inline constexpr float GURTOGG_POSITION_TOLERANCE = 2.0f;
-inline constexpr uint32 GURTOGG_SOAKER_CACHE_INTERVAL_MS = 1000;
 // Bewildering Strike hands him to the second tank, so everyone else stays below it.
 inline constexpr float GURTOGG_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr uint32 GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS = 1000;
@@ -315,8 +314,7 @@ inline Position const GURTOGG_TANK_POSITION   = { 735.987f, 272.451f, 63.554f };
 inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
 inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 
-GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot);
-Position const& GetGurtoggBloodboilPosition(PlayerbotAI* botAI);
+Position const& GetGurtoggBloodboilPosition(Player* bot);
 // 0 with fewer than two tanks on his threat list.
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
 

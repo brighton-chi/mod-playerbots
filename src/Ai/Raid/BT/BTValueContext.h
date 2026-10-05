@@ -55,21 +55,6 @@ protected:
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilSoakersValue : public CalculatedValue<GuidVector>
-{
-public:
-    GurtoggBloodboilSoakersValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-              botAI, "gurtogg bloodboil soakers",
-              BlackTempleHelpers::GURTOGG_SOAKER_CACHE_INTERVAL_MS) {}
-
-protected:
-    GuidVector Calculate() override
-    {
-        return BlackTempleHelpers::FindGurtoggBloodboilSoakerGuids(bot);
-    }
-};
-
 class GurtoggBloodboilSecondTankThreatValue : public FloatCalculatedValue
 {
 public:
@@ -133,8 +118,6 @@ public:
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus volcanoes"] = &RaidBlackTempleValueContext::supremus_volcanoes;
         creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
-        creators["gurtogg bloodboil soakers"] =
-            &RaidBlackTempleValueContext::gurtogg_bloodboil_soakers;
         creators["gurtogg bloodboil second tank threat"] =
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
         creators["illidari council zerevor mage tank"] =
@@ -157,10 +140,6 @@ private:
     static UntypedValue* shade_of_akama_adds(PlayerbotAI* botAI)
     {
         return new ShadeOfAkamaAddsValue(botAI);
-    }
-    static UntypedValue* gurtogg_bloodboil_soakers(PlayerbotAI* botAI)
-    {
-        return new GurtoggBloodboilSoakersValue(botAI);
     }
     static UntypedValue* gurtogg_bloodboil_second_tank_threat(PlayerbotAI* botAI)
     {

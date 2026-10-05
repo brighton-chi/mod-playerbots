@@ -698,8 +698,6 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     return groups;
 }
 
-} // namespace
-
 // The group hit longest ago soaks next: the lowest mean Bloodboil time left, ties to the first.
 // Just after a cast, that group's debuffs run out before the next one.
 GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
@@ -737,13 +735,13 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
     return guids;
 }
 
-Position const& GetGurtoggBloodboilPosition(PlayerbotAI* botAI)
+} // namespace
+
+Position const& GetGurtoggBloodboilPosition(Player* bot)
 {
-    auto const& soakers = botAI->GetAiObjectContext()
-                              ->GetValue<GuidVector>("gurtogg bloodboil soakers")
-                              ->RefGet();
+    GuidVector const soakers = FindGurtoggBloodboilSoakerGuids(bot);
     bool const isSoaker =
-        std::find(soakers.begin(), soakers.end(), botAI->GetBot()->GetGUID()) != soakers.end();
+        std::find(soakers.begin(), soakers.end(), bot->GetGUID()) != soakers.end();
     return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
 }
 
