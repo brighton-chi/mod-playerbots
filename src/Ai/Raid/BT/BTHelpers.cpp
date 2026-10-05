@@ -13,7 +13,6 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 #include "ThreatManager.h"
-#include "Timer.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -21,7 +20,7 @@
 
 using namespace EncounterHelpers;
 
-namespace BlackTempleHelpers
+namespace BtHelpers
 {
 
 namespace
@@ -59,7 +58,7 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     if (botAI->CanCastSpell("misdirection", tank))
         return botAI->CastSpell("misdirection", tank);
 
-    if (!botAI->GetBot()->HasAura(Id(BlackTempleSpells::SPELL_MISDIRECTION)))
+    if (!botAI->GetBot()->HasAura(Id(BtSpells::SPELL_MISDIRECTION)))
         return false;
 
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
@@ -157,13 +156,13 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
 bool IsLinkedSisterOfPleasure(Unit* unit)
 {
-    if (!unit || unit->GetEntry() != Id(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE) ||
+    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) ||
         !unit->IsAlive())
     {
         return false;
     }
 
-    Aura* bonds = unit->GetAura(Id(BlackTempleSpells::SPELL_SHARED_BONDS));
+    Aura* bonds = unit->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
     Unit* pain = bonds ? bonds->GetCaster() : nullptr;
     return pain && pain->IsAlive();
 }
@@ -191,7 +190,7 @@ GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() &&
-            unit->GetEntry() == Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER))
+            unit->GetEntry() == Id(BtNpcs::NPC_SHADOWMOON_REAVER))
         {
             reavers.push_back(guid);
         }
@@ -202,7 +201,7 @@ GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)
 
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 {
-    if (!unit || unit->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER) ||
+    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) ||
         !unit->IsAlive())
     {
         return false;
@@ -210,7 +209,7 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 
     ObjectGuid const guid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();
-    if (Aura* absorption = unit->GetAura(Id(BlackTempleSpells::SPELL_SPELL_ABSORPTION)))
+    if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
         // Reconstructed from the aura, so every caller stamps the same start.
         uint32 const elapsed =
@@ -293,7 +292,7 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
     auto const isAllowed = [bot](Unit* unit)
     {
         return unit && unit->IsAlive() &&
-            unit->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWMOON_REAVER) &&
+            unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) &&
             bot->IsValidAttackTarget(unit);
     };
 
@@ -332,7 +331,7 @@ bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
 bool CanThrowNajentusSpine(Player* bot)
 {
     return bot && bot->IsAlive() && bot->GetMapId() == BT_MAP_ID && !IsNajentusImpaled(bot) &&
-        bot->HasItemCount(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
+        bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
 }
@@ -340,7 +339,7 @@ bool CanThrowNajentusSpine(Player* bot)
 bool IsNajentusImpaled(Player* player)
 {
     return player && player->IsAlive() &&
-        player->HasAura(Id(BlackTempleSpells::SPELL_IMPALING_SPINE));
+        player->HasAura(Id(BtSpells::SPELL_IMPALING_SPINE));
 }
 
 Player* FindNajentusUnassignedImpaledPlayer(Player* bot)
@@ -479,14 +478,14 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
 
 bool IsSupremusKitePhase(Unit* supremus)
 {
-    return supremus && supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF));
+    return supremus && supremus->HasAura(Id(BtSpells::SPELL_SNARE_SELF));
 }
 
 GuidVector FindSupremusVolcanoGuids(Player* bot)
 {
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_SUPREMUS_VOLCANO), SUPREMUS_VOLCANO_SEARCH_RADIUS);
+        creatureList, Id(BtNpcs::NPC_SUPREMUS_VOLCANO), SUPREMUS_VOLCANO_SEARCH_RADIUS);
 
     GuidVector volcanoes;
     for (Creature* creature : creatureList)
@@ -506,7 +505,7 @@ std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI)
 bool IsSupremusVolcanoErupting(Unit* volcano)
 {
     return volcano && volcano->IsAlive() &&
-        (volcano->HasAura(Id(BlackTempleSpells::SPELL_VOLCANIC_GEYSER)) ||
+        (volcano->HasAura(Id(BtSpells::SPELL_VOLCANIC_GEYSER)) ||
          volcano->HasUnitState(UNIT_STATE_CASTING));
 }
 
@@ -547,8 +546,8 @@ GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI)
         return adds;
     }
 
-    for (BlackTempleNpcs const entry :
-         { BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER, BlackTempleNpcs::NPC_ASHTONGUE_SORCERER })
+    for (BtNpcs const entry :
+         { BtNpcs::NPC_ASHTONGUE_CHANNELER, BtNpcs::NPC_ASHTONGUE_SORCERER })
     {
         std::list<Creature*> creatures;
         bot->GetCreatureListWithEntryInGrid(creatures, Id(entry), SHADE_OF_AKAMA_ADD_SEARCH_RADIUS);
@@ -670,11 +669,11 @@ bool GetPathStepTowardPoint(
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 {
     static constexpr std::array spiritSpells = {
-        Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE),
-        Id(BlackTempleSpells::SPELL_SPIRIT_LANCE),
-        Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS),
-        Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY),
-        Id(BlackTempleSpells::SPELL_SPIRIT_SHIELD),
+        Id(BtSpells::SPELL_SPIRIT_STRIKE),
+        Id(BtSpells::SPELL_SPIRIT_LANCE),
+        Id(BtSpells::SPELL_SPIRIT_CHAINS),
+        Id(BtSpells::SPELL_SPIRIT_VOLLEY),
+        Id(BtSpells::SPELL_SPIRIT_SHIELD),
     };
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -718,7 +717,7 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
         Player* member = ref->GetSource();
         if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
             !GET_PLAYERBOT_AI(member) ||
-            member->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE)) ||
+            member->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -747,7 +746,7 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
         int32 totalRemaining = 0;
         for (Player* member : group)
         {
-            if (Aura* bloodboil = member->GetAura(Id(BlackTempleSpells::SPELL_BLOODBOIL)))
+            if (Aura* bloodboil = member->GetAura(Id(BtSpells::SPELL_BLOODBOIL)))
                 totalRemaining += bloodboil->GetDuration();
         }
 
@@ -893,9 +892,9 @@ bool HasDangerousCouncilAura(Unit* unit)
         return false;
 
     static constexpr std::array dangerousAuras = {
-        Id(BlackTempleSpells::SPELL_CONSECRATION),
-        Id(BlackTempleSpells::SPELL_BLIZZARD),
-        Id(BlackTempleSpells::SPELL_FLAMESTRIKE),
+        Id(BtSpells::SPELL_CONSECRATION),
+        Id(BtSpells::SPELL_BLIZZARD),
+        Id(BtSpells::SPELL_FLAMESTRIKE),
     };
 
     for (uint32 aura : dangerousAuras)
@@ -905,6 +904,11 @@ bool HasDangerousCouncilAura(Unit* unit)
     }
 
     return false;
+}
+
+bool IsDarkshadowVanished(Unit* darkshadow)
+{
+    return darkshadow && darkshadow->HasAura(Id(BtSpells::SPELL_DARKSHADOW_VANISH));
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -921,7 +925,7 @@ std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 int GetIllidanPhase(Unit* illidan)
 {
     if (!illidan || illidan->GetHealth() == 1 ||
-        illidan->HasAura(Id(BlackTempleSpells::SPELL_SHADOW_PRISON)))
+        illidan->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON)))
     {
         return -1;
     }
@@ -946,11 +950,11 @@ int GetIllidanPhase(Unit* illidan)
         return 1;
 
     // Phase 4: Demon Form
-    if (!illidan->HasAura(Id(BlackTempleSpells::SPELL_CAGED)) &&
-        (illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_FORM)) ||
-         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_1)) ||
-         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_2)) ||
-         illidan->HasAura(Id(BlackTempleSpells::SPELL_DEMON_TRANSFORM_3))))
+    if (!illidan->HasAura(Id(BtSpells::SPELL_CAGED)) &&
+        (illidan->HasAura(Id(BtSpells::SPELL_DEMON_FORM)) ||
+         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_1)) ||
+         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_2)) ||
+         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_3))))
     {
         return 4;
     }
@@ -972,7 +976,7 @@ std::vector<Unit*> GetAllFlameCrashes(Player* bot)
     std::list<Creature*> creatureList;
     constexpr float searchRadius = 30.0f;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_FLAME_CRASH), searchRadius);
+        creatureList, Id(BtNpcs::NPC_FLAME_CRASH), searchRadius);
 
     for (Creature* creature : creatureList)
     {
@@ -1050,8 +1054,8 @@ bool HasParasiticShadowfiend(Player* player)
     if (!player)
         return false;
 
-    return player->HasAura(Id(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
-        player->HasAura(Id(BlackTempleSpells::SPELL_PARASITIC_SHADOWFIEND_2));
+    return player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
+        player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 }
 
 // Get the first bot hunter that doesn't have Parasitic Shadowfiend
@@ -1104,7 +1108,7 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     constexpr float searchRadius = 100.0f;
     std::list<Creature*> creatureList;
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_ILLIDAN_DB_TARGET), searchRadius);
+        creatureList, Id(BtNpcs::NPC_ILLIDAN_DB_TARGET), searchRadius);
 
     Creature* eyeBlastTrigger = nullptr;
     for (Creature* creature : creatureList)
@@ -1164,7 +1168,7 @@ GameObject* FindNearestTrap(PlayerbotAI* botAI)
     for (ObjectGuid const& guid : gos)
     {
         GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() && go->GetEntry() == Id(BlackTempleObjects::GO_SHADOW_TRAP))
+        if (go && go->isSpawned() && go->GetEntry() == Id(BtObjects::GO_SHADOW_TRAP))
         {
             nearestTrap = go;
             break;

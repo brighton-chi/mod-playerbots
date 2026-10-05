@@ -23,7 +23,7 @@ class PlayerbotAI;
 class SpellInfo;
 class Unit;
 
-namespace BlackTempleHelpers
+namespace BtHelpers
 {
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
@@ -32,7 +32,7 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
-enum class BlackTempleSpells : uint32
+enum class BtSpells : uint32
 {
     // Trash
     SPELL_SHARED_BONDS              = 41363,
@@ -77,7 +77,7 @@ enum class BlackTempleSpells : uint32
     SPELL_CONSECRATION              = 41541,
 
     // Veras Darkshadow
-    SPELL_VANISH                    = 41476,
+    SPELL_DARKSHADOW_VANISH         = 41476,
 
     // High Nethermancer Zerevor
     SPELL_DAMPEN_MAGIC              = 41478,
@@ -99,6 +99,7 @@ enum class BlackTempleSpells : uint32
     SPELL_TREE_OF_LIFE              = 33891,
 
     // Hunter
+    SPELL_FEIGN_DEATH               =  5384,
     SPELL_FROST_TRAP                = 13809,
     SPELL_MISDIRECTION              = 35079,
 
@@ -107,51 +108,54 @@ enum class BlackTempleSpells : uint32
 
     // Shaman
     SPELL_EARTHBIND_TOTEM           =  2484,
+
+    // Warrior
+    SPELL_SPELL_REFLECTION          = 23920,
 };
 
-enum class BlackTempleNpcs : uint32
+enum class BtNpcs : uint32
 {
     // Trash
-    NPC_SISTER_OF_PAIN        = 22956,
-    NPC_SISTER_OF_PLEASURE    = 22964,
-    NPC_SHADOWMOON_REAVER     = 22879,
+    NPC_SISTER_OF_PAIN              = 22956,
+    NPC_SISTER_OF_PLEASURE          = 22964,
+    NPC_SHADOWMOON_REAVER           = 22879,
 
     // Supremus
-    NPC_SUPREMUS_VOLCANO      = 23085,
+    NPC_SUPREMUS_VOLCANO            = 23085,
 
     // Shade of Akama
-    NPC_ASHTONGUE_CHANNELER   = 23421,
-    NPC_ASHTONGUE_SORCERER    = 23215,
+    NPC_ASHTONGUE_CHANNELER         = 23421,
+    NPC_ASHTONGUE_SORCERER          = 23215,
 
     // Teron Gorefiend
-    NPC_SHADOWY_CONSTRUCT     = 23111,
+    NPC_SHADOWY_CONSTRUCT           = 23111,
 
     // Reliquary of Souls
-    NPC_ESSENCE_OF_DESIRE     = 23419,
+    NPC_ESSENCE_OF_DESIRE           = 23419,
 
     // Illidan Stormrage <The Betrayer>
-    NPC_FLAME_OF_AZZINOTH     = 22997,
-    NPC_DEMON_FIRE            = 23069,
-    NPC_ILLIDAN_DB_TARGET     = 23070,
-    NPC_BLAZE                 = 23259,
-    NPC_FLAME_CRASH           = 23336,
-    NPC_SHADOW_DEMON          = 23375,
-    NPC_PARASITIC_SHADOWFIEND = 23498,
+    NPC_FLAME_OF_AZZINOTH           = 22997,
+    NPC_DEMON_FIRE                  = 23069,
+    NPC_ILLIDAN_DB_TARGET           = 23070,
+    NPC_BLAZE                       = 23259,
+    NPC_FLAME_CRASH                 = 23336,
+    NPC_SHADOW_DEMON                = 23375,
+    NPC_PARASITIC_SHADOWFIEND       = 23498,
 };
 
-enum class BlackTempleItems : uint32
+enum class BtItems : uint32
 {
     // High Warlord Naj'entus
-    ITEM_NAJENTUS_SPINE = 32408,
+    ITEM_NAJENTUS_SPINE             = 32408,
 };
 
-enum class BlackTempleObjects : uint32
+enum class BtObjects : uint32
 {
     // High Warlord Naj'entus
-    GO_NAJENTUS_SPINE = 185584,
+    GO_NAJENTUS_SPINE               = 185584,
 
     // Illidan Stormrage <The Betrayer>
-    GO_SHADOW_TRAP    = 185916,
+    GO_SHADOW_TRAP                  = 185916,
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
@@ -368,6 +372,7 @@ inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Unit* unit);
+bool IsDarkshadowVanished(Unit* darkshadow);
 
 // Illidan Stormrage <The Betrayer>
 

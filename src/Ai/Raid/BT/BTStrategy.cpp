@@ -127,7 +127,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("mother shahraz fatal attraction",
         { NextAction(
-            "mother shahraz run away to break fatal attraction", ACTION_EMERGENCY + 10) }));
+            "mother shahraz break fatal attraction", ACTION_EMERGENCY + 10) }));
 
     // Illidari Council
     triggers.push_back(new TriggerNode("illidari council hunter should misdirect",
@@ -241,7 +241,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
-    multipliers.push_back(new TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(botAI));
+    multipliers.push_back(new TeronGorefiendSpiritsAttackShadowyConstructsMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendDisableAttackingConstructsMultiplier(botAI));
 
     // Gurtogg Bloodboil
@@ -255,7 +255,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Mother Shahraz
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));
-    multipliers.push_back(new MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(botAI));
+    multipliers.push_back(new MotherShahrazFatalAttractionRunAwayMultiplier(botAI));
 
     // Illidari Council
     multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
@@ -279,9 +279,9 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
 {
     // Trash
     if (type != TargetValueExclusionType::TankTarget)
-        BlackTempleHelpers::AppendShadowmoonReaverExclusions(botAI, exclusions);
+        BtHelpers::AppendShadowmoonReaverExclusions(botAI, exclusions);
 
     // Shade of Akama
     if (type == TargetValueExclusionType::TankTarget)
-        BlackTempleHelpers::AppendShadeOfAkamaTankExclusions(botAI, exclusions);
+        BtHelpers::AppendShadeOfAkamaTankExclusions(botAI, exclusions);
 }

@@ -23,7 +23,7 @@ public:
     float GetValue(Action* action) final
     {
         return EncounterHelpers::IsEncounterInProgress(
-            bot, BlackTempleHelpers::BT_MAP_ID) ? GetValueInEncounter(action) : 1.0f;
+            bot, BtHelpers::BT_MAP_ID) ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
@@ -133,12 +133,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier : public BlackTempleEncounterMultiplier
+class TeronGorefiendSpiritsAttackShadowyConstructsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier(PlayerbotAI* botAI)
+    TeronGorefiendSpiritsAttackShadowyConstructsMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-            botAI, "teron gorefiend spirits attack only shadowy constructs") {}
+            botAI, "teron gorefiend spirits attack shadowy constructs") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -226,12 +226,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier : public BlackTempleEncounterMultiplier
+class MotherShahrazFatalAttractionRunAwayMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier(PlayerbotAI* botAI)
+    MotherShahrazFatalAttractionRunAwayMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-            botAI, "mother shahraz bots with fatal attraction only run away") {}
+            botAI, "mother shahraz fatal attraction run away") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

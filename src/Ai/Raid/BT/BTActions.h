@@ -14,7 +14,7 @@
 #include "Unit.h"
 #include <string>
 
-namespace BlackTempleHelpers
+namespace BtHelpers
 {
     struct EyeBlastDangerArea;
 }
@@ -318,11 +318,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MotherShahrazRunAwayToBreakFatalAttractionAction : public MovementAction
+class MotherShahrazBreakFatalAttractionAction : public MovementAction
 {
 public:
-    MotherShahrazRunAwayToBreakFatalAttractionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz run away to break fatal attraction") {}
+    MotherShahrazBreakFatalAttractionAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz break fatal attraction") {}
     bool Execute(Event event) override;
 
 private:
@@ -476,7 +476,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RepositionToAvoidEyeBlast(BlackTempleHelpers::EyeBlastDangerArea const& dangerArea);
+    bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 };
 

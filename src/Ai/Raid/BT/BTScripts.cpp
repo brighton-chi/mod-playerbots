@@ -7,9 +7,8 @@
 #include "AllSpellScript.h"
 #include "BTHelpers.h"
 #include "Playerbots.h"
-#include "SpellHistory.h"
 
-using namespace BlackTempleHelpers;
+using namespace BtHelpers;
 
 // A mage mid-cast when Essence of Desire raises Rune Shield drops the cast so it can steal the
 // shield. Interrupting a preparing cast also cancels its global cooldown.
@@ -22,11 +21,11 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        if (!caster || spellInfo->Id != Id(BlackTempleSpells::SPELL_RUNE_SHIELD))
+        if (!caster || spellInfo->Id != Id(BtSpells::SPELL_RUNE_SHIELD))
             return;
 
         constexpr float spellstealRange = 30.0f;
-        uint32 const spellsteal = Id(BlackTempleSpells::SPELL_SPELLSTEAL);
+        uint32 const spellsteal = Id(BtSpells::SPELL_SPELLSTEAL);
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
@@ -49,8 +48,8 @@ public:
 
             // A stolen Rune Shield can still be up when the next is cast.
             if (!player->HasSpell(spellsteal) ||
-                player->GetSpellHistory()->HasCooldown(spellsteal) ||
-                player->HasAura(Id(BlackTempleSpells::SPELL_RUNE_SHIELD)))
+                player->HasSpellCooldown(spellsteal) ||
+                player->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD)))
             {
                 continue;
             }

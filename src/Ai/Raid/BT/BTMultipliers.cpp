@@ -25,8 +25,19 @@
 #include "WipeAction.h"
 #include <array>
 
-using namespace BlackTempleHelpers;
+using namespace BtHelpers;
 using namespace EncounterHelpers;
+
+namespace
+{
+
+bool IsRepositionAction(Player* bot, Action* action)
+{
+    return (bot->getClass() == CLASS_HUNTER && dynamic_cast<CastDisengageAction*>(action)) ||
+        (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
+}
+
+}
 
 // General
 
@@ -155,8 +166,8 @@ float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action
     if (!target || !target->IsAlive())
         return 1.0f;
 
-    return target->GetEntry() == Id(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER) ||
-        target->GetEntry() == Id(BlackTempleNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
+    return target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_CHANNELER) ||
+        target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
 }
 
 // Teron Gorefiend
@@ -168,8 +179,7 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
     bool const isFollowOrFlee =
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action);
+        IsRepositionAction(bot, action);
     bool const isRangedReach =
         dynamic_cast<ReachTargetAction*>(action) && PlayerbotAI::IsRanged(bot);
 
@@ -181,21 +191,19 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
 {
-    Aura* aura = bot->GetAura(Id(BlackTempleSpells::SPELL_SHADOW_OF_DEATH));
+    Aura* aura = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
     if (!aura || aura->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
         return 1.0f;
 
-    if (dynamic_cast<WipeAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
-    else if (!dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action))
-        return 0.0f;
 
-    return 1.0f;
+    return dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action) ? 1.0f : 0.0f;
 }
 
-float TeronGorefiendSpiritsAttackOnlyShadowyConstructsMultiplier::GetValueInEncounter(Action* action)
+float TeronGorefiendSpiritsAttackShadowyConstructsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(BlackTempleSpells::SPELL_SPIRITUAL_VENGEANCE)) ||
+    if (!bot->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)) ||
         dynamic_cast<WipeAction*>(action))
     {
         return 1.0f;
@@ -230,13 +238,12 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
     bool const isFollowOrFlee =
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action);
+        IsRepositionAction(bot, action);
     // The Fel Rage target only walks him to the tank spot.
     bool const isFelRageTargetMove =
         dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<GurtoggBloodboilLeadBossToTankPositionAction*>(action) &&
-        bot->HasAura(Id(BlackTempleSpells::SPELL_PLAYER_FEL_RAGE));
+        bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 
     if (!isFormationMove && !isFollowOrFlee && !isFelRageTargetMove)
         return 1.0f;
@@ -253,7 +260,7 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
-        bot->HasAura(Id(BlackTempleSpells::SPELL_INSIGNIFICANCE)))
+        bot->HasAura(Id(BtSpells::SPELL_INSIGNIFICANCE)))
     {
         return 1.0f;
     }
@@ -322,10 +329,10 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     }
 
     Unit* target = action->GetTarget();
-    if (!target || target->GetEntry() != Id(BlackTempleNpcs::NPC_ESSENCE_OF_DESIRE))
+    if (!target || target->GetEntry() != Id(BtNpcs::NPC_ESSENCE_OF_DESIRE))
         return 1.0f;
 
-    Aura* runeShield = target->GetAura(Id(BlackTempleSpells::SPELL_RUNE_SHIELD));
+    Aura* runeShield = target->GetAura(Id(BtSpells::SPELL_RUNE_SHIELD));
     if (!runeShield)
         return 1.0f;
 
@@ -343,8 +350,7 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
     bool const isFollowOrFlee =
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action);
+        IsRepositionAction(bot, action);
 
     if (!isFormationMove && !isFollowOrFlee)
         return 1.0f;
@@ -352,21 +358,15 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
     return AI_VALUE2(Unit*, "find target", "mother shahraz") ? 0.0f : 1.0f;
 }
 
-float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValueInEncounter(Action* action)
+float MotherShahrazFatalAttractionRunAwayMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(BlackTempleSpells::SPELL_FATAL_ATTRACTION)) ||
-        !AI_VALUE2(Unit*, "find target", "mother shahraz"))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<WipeAction*>(action))
+    if (!bot->HasAura(Id(BtSpells::SPELL_FATAL_ATTRACTION)))
         return 1.0f;
 
-    if (!dynamic_cast<MotherShahrazRunAwayToBreakFatalAttractionAction*>(action))
-        return 0.0f;
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
 
-    return 1.0f;
+    return dynamic_cast<MotherShahrazBreakFatalAttractionAction*>(action) ? 1.0f : 0.0f;
 }
 
 // Illidari Council
@@ -405,8 +405,7 @@ float IllidariCouncilControlMovementMultiplier::GetValueInEncounter(Action* acti
 
     if (dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action))
+        IsRepositionAction(bot, action))
     {
         return 0.0f;
     }
@@ -617,9 +616,9 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValueInEncounter(Act
         return 1.0f;
 
     constexpr float searchRadius = 40.0f;
-    Unit* shadowDemon = bot->FindNearestCreature(Id(BlackTempleNpcs::NPC_SHADOW_DEMON), searchRadius);
+    Unit* shadowDemon = bot->FindNearestCreature(Id(BtNpcs::NPC_SHADOW_DEMON), searchRadius);
     Unit* shadowfiend = bot->FindNearestCreature(
-        Id(BlackTempleNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
+        Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius);
 
     if ((shadowDemon && bot->GetTarget() == shadowDemon->GetGUID()) ||
         (shadowfiend && bot->GetTarget() == shadowfiend->GetGUID()))
@@ -645,10 +644,9 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValueInEncounter(Acti
         return 0.0f;
     }
 
-    if (dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<FollowAction*>(action))
+    if (dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        IsRepositionAction(bot, action))
     {
         return 0.0f;
     }

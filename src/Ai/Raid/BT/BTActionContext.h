@@ -127,8 +127,8 @@ public:
         creators["mother shahraz position ranged under pillar"] =
             &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_pillar;
 
-        creators["mother shahraz run away to break fatal attraction"] =
-            &RaidBlackTempleActionContext::mother_shahraz_run_away_to_break_fatal_attraction;
+        creators["mother shahraz break fatal attraction"] =
+            &RaidBlackTempleActionContext::mother_shahraz_break_fatal_attraction;
 
         // Illidari Council
         creators["illidari council misdirect to tanks"] =
@@ -380,9 +380,9 @@ private:
     {
         return new MotherShahrazPositionRangedUnderPillarAction(botAI);
     }
-    static Action* mother_shahraz_run_away_to_break_fatal_attraction(PlayerbotAI* botAI)
+    static Action* mother_shahraz_break_fatal_attraction(PlayerbotAI* botAI)
     {
-        return new MotherShahrazRunAwayToBreakFatalAttractionAction(botAI);
+        return new MotherShahrazBreakFatalAttractionAction(botAI);
     }
 
     // Illidari Council
