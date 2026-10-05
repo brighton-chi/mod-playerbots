@@ -871,9 +871,9 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
     if (!suffering)
         return false;
 
-    if (PlayerbotAI::IsTank(bot) && bot->GetHealthPct() > 25.0f)
+    if (IsSufferingFixateTank(bot))
         return TanksMoveToMinimumRange(suffering);
-    else if (PlayerbotAI::IsMelee(bot) && bot->GetVictim() != suffering)
+    else if (PlayerbotAI::IsMelee(bot))
         return MeleeDpsStayAtMaximumRange(suffering);
     else if (PlayerbotAI::IsRanged(bot))
         return RangedMoveAwayFromBoss(suffering);
@@ -887,7 +887,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::TanksMoveToMinimumRange(
         return false;
 
     float const distanceToBoss = bot->GetExactDist2d(suffering);
-    if (distanceToBoss > 2.0f)
+    if (distanceToBoss > SUFFERING_TANK_DISTANCE)
     {
         float const dX = suffering->GetPositionX() - bot->GetPositionX();
         float const dY = suffering->GetPositionY() - bot->GetPositionY();
@@ -906,15 +906,12 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MeleeDpsStayAtMaximumRan
     if (!suffering)
         return false;
 
-    float const desiredDist = bot->GetMeleeRange(suffering);
-    float const behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
-    float const targetX = suffering->GetPositionX() + desiredDist * std::cos(behindAngle);
-    float const targetY = suffering->GetPositionY() + desiredDist * std::sin(behindAngle);
-
-    if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
+    Position const position = GetSufferingMeleePosition(bot, suffering);
+    if (bot->GetExactDist2d(position) > SUFFERING_MELEE_POSITION_TOLERANCE)
     {
-        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     return false;
@@ -925,10 +922,9 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
     if (!suffering)
         return false;
 
-    constexpr float safeDistance = 15.0f;
     constexpr uint32 minInterval = 0;
-    if (bot->GetExactDist2d(suffering) < safeDistance)
-        return FleePosition(suffering->GetPosition(), safeDistance, minInterval);
+    if (bot->GetExactDist2d(suffering) < SUFFERING_RANGED_DISTANCE)
+        return FleePosition(suffering->GetPosition(), SUFFERING_RANGED_DISTANCE, minInterval);
 
     return false;
 }
@@ -939,78 +935,54 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
     if (!suffering)
         return false;
 
-    if (bot->getClass() == CLASS_DRUID)
+    switch (bot->getClass())
     {
-        if (botAI->HasAura("tree of life", bot))
-            botAI->RemoveAura("tree of life");
+        case CLASS_DRUID:
+        {
+            if (bot->HasAura(Id(BlackTempleSpells::SPELL_TREE_OF_LIFE)))
+            {
+                bot->RemoveOwnedAura(
+                    Id(BlackTempleSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0,
+                    AURA_REMOVE_BY_CANCEL);
+            }
 
-        bool casted = false;
+            if (botAI->CanCastSpell("barkskin", bot) && botAI->CastSpell("barkskin", bot))
+                return true;
 
-        if (botAI->CanCastSpell("barkskin", bot) &&
-            botAI->CastSpell("barkskin", bot))
-            casted = true;
+            return botAI->CanCastSpell("wrath", suffering) && botAI->CastSpell("wrath", suffering);
+        }
+        case CLASS_PALADIN:
+        {
+            for (char const* spell : { "avenging wrath", "consecration" })
+            {
+                if (botAI->CanCastSpell(spell, bot) && botAI->CastSpell(spell, bot))
+                    return true;
+            }
 
-        if (botAI->CanCastSpell("wrath", suffering) &&
-            botAI->CastSpell("wrath", suffering))
-            casted = true;
+            for (char const* spell :
+                 { "exorcism", "hammer of wrath", "holy shock", "judgement of light" })
+            {
+                if (botAI->CanCastSpell(spell, suffering) && botAI->CastSpell(spell, suffering))
+                    return true;
+            }
 
-        return casted;
+            return false;
+        }
+        case CLASS_PRIEST:
+            return botAI->CanCastSpell("smite", suffering) && botAI->CastSpell("smite", suffering);
+        case CLASS_SHAMAN:
+        {
+            for (char const* spell : { "earth shock", "chain lightning", "lightning bolt" })
+            {
+                if (botAI->CanCastSpell(spell, suffering) && botAI->CastSpell(spell, suffering))
+                    return true;
+            }
+
+            return false;
+        }
+        default:
+            return false;
     }
-    else if (bot->getClass() == CLASS_PALADIN)
-    {
-        bool casted = false;
-
-        if (botAI->CanCastSpell("avenging wrath", bot) &&
-            botAI->CastSpell("avenging wrath", bot))
-            casted = true;
-
-        if (botAI->CanCastSpell("consecration", bot) &&
-            botAI->CastSpell("consecration", bot))
-            casted = true;
-
-        if (botAI->CanCastSpell("exorcism", suffering) &&
-            botAI->CastSpell("exorcism", suffering))
-            casted = true;
-
-        if (botAI->CanCastSpell("hammer of wrath", suffering) &&
-            botAI->CastSpell("hammer of wrath", suffering))
-            casted = true;
-
-        if (botAI->CanCastSpell("holy shock", suffering) &&
-            botAI->CastSpell("holy shock", suffering))
-            casted = true;
-
-        if (botAI->CanCastSpell("judgement of light", suffering) &&
-            botAI->CastSpell("judgement of light", suffering))
-            casted = true;
-
-        return casted;
-    }
-    else if (bot->getClass() == CLASS_PRIEST)
-    {
-        if (botAI->CanCastSpell("smite", suffering))
-            return botAI->CastSpell("smite", suffering);
-    }
-    else if (bot->getClass() == CLASS_SHAMAN)
-    {
-        bool casted = false;
-
-        if (botAI->CanCastSpell("earth shock", suffering) &&
-            botAI->CastSpell("earth shock", suffering))
-            casted = true;
-
-        if (botAI->CanCastSpell("chain lightning", suffering) &&
-            botAI->CastSpell("chain lightning", suffering))
-            casted = true;
-
-        if (botAI->CanCastSpell("lightning bolt", suffering) &&
-            botAI->CastSpell("lightning bolt", suffering))
-            casted = true;
-
-        return casted;
-    }
-
-    return false;
 }
 
 bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)

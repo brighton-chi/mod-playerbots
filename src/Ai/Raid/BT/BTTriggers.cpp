@@ -5,7 +5,6 @@
  */
 
 #include "BTTriggers.h"
-#include "AiFactory.h"
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
@@ -289,20 +288,31 @@ bool GurtoggBloodboilShouldManagePhaseTimerTrigger::IsActiveInEncounter()
 
 bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_HUNTER && AI_VALUE2(Unit*, "find target", "reliquary of the lost");
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    for (char const* name : { "essence of desire", "essence of anger" })
+    {
+        Unit* essence = AI_VALUE2(Unit*, "find target", name);
+        if (essence && essence->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+            return true;
+    }
+
+    return false;
 }
 
-bool ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger::IsActiveInEncounter()
+bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "essence of suffering");
+    return IsOutOfSufferingPosition(bot, AI_VALUE2(Unit*, "find target", "essence of suffering"));
 }
 
-bool ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger::IsActiveInEncounter()
+bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsHeal(bot))
         return false;
 
-    if (bot->getClass() == CLASS_PRIEST && AiFactory::GetPlayerSpecTab(bot) == PRIEST_TAB_DISCIPLINE)
+    // Discipline priests keep shielding.
+    if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
     return AI_VALUE2(Unit*, "find target", "essence of suffering");

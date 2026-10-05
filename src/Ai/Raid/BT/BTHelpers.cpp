@@ -13,6 +13,7 @@
 #include "SpellMgr.h"
 #include "Timer.h"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <list>
 
@@ -710,6 +711,39 @@ int GetGurtoggActiveRotationGroup(Unit* gurtogg)
     int const groupIndex = (elapsed % rotationCycleMs) / groupSwapIntervalMs;
 
     return groupIndex;
+}
+
+// Reliquary of Souls
+
+bool IsSufferingFixateTank(Player* bot)
+{
+    return PlayerbotAI::IsTank(bot) && bot->GetHealthPct() > SUFFERING_TANK_MIN_HEALTH_PCT;
+}
+
+Position GetSufferingMeleePosition(Player* bot, Unit* suffering)
+{
+    float const distance = bot->GetMeleeRange(suffering);
+    float const behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
+    return Position(
+        suffering->GetPositionX() + distance * std::cos(behindAngle),
+        suffering->GetPositionY() + distance * std::sin(behindAngle), bot->GetPositionZ());
+}
+
+bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
+{
+    if (!suffering)
+        return false;
+
+    if (IsSufferingFixateTank(bot))
+        return bot->GetExactDist2d(suffering) > SUFFERING_TANK_DISTANCE;
+
+    if (PlayerbotAI::IsMelee(bot))
+    {
+        return bot->GetExactDist2d(GetSufferingMeleePosition(bot, suffering)) >
+            SUFFERING_MELEE_POSITION_TOLERANCE;
+    }
+
+    return PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d(suffering) < SUFFERING_RANGED_DISTANCE;
 }
 
 // Mother Shahraz

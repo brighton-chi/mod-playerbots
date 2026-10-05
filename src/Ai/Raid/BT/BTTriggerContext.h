@@ -105,11 +105,11 @@ public:
         creators["reliquary of souls hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_hunter_should_misdirect;
 
-        creators["reliquary of souls essence of suffering fixates on closest target"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_fixates_on_closest_target;
+        creators["reliquary of souls should position for suffering"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_should_position_for_suffering;
 
-        creators["reliquary of souls essence of suffering disables healing"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_suffering_disables_healing;
+        creators["reliquary of souls healers should attack suffering"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_healers_should_attack_suffering;
 
         creators["reliquary of souls essence of desire has rune shield"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_has_rune_shield;
@@ -351,13 +351,13 @@ private:
     {
         return new ReliquaryOfSoulsHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* reliquary_of_souls_essence_of_suffering_fixates_on_closest_target(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_should_position_for_suffering(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(botAI);
+        return new ReliquaryOfSoulsShouldPositionForSufferingTrigger(botAI);
     }
-    static Trigger* reliquary_of_souls_essence_of_suffering_disables_healing(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_healers_should_attack_suffering(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(botAI);
+        return new ReliquaryOfSoulsHealersShouldAttackSufferingTrigger(botAI);
     }
     static Trigger* reliquary_of_souls_essence_of_desire_has_rune_shield(PlayerbotAI* botAI)
     {

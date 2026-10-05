@@ -265,8 +265,11 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
 
 float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "essence of suffering"))
+    if (!dynamic_cast<CastTreeFormAction*>(action) &&
+        !dynamic_cast<CastHealingSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
     if (dynamic_cast<CastPowerWordShieldOnAlmostFullHealthBelowAction*>(action) ||
         dynamic_cast<CastPowerWordShieldOnNotFullAction*>(action) ||
@@ -276,13 +279,47 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* ac
         return 1.0f;
     }
 
-    if (dynamic_cast<CastTreeFormAction*>(action) ||
-        dynamic_cast<CastHealingSpellAction*>(action))
+    return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
+}
+
+float ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier::GetValueInEncounter(
+    Action* action)
+{
+    if (!IsDpsCooldownAction(bot, action) ||
+        !AI_VALUE2(Unit*, "find target", "reliquary of the lost"))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    return 1.0f;
+    for (char const* name : { "essence of suffering", "essence of desire", "essence of anger" })
+    {
+        Unit* essence = AI_VALUE2(Unit*, "find target", name);
+        if (essence && essence->IsAlive() && !essence->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+            return 1.0f;
+    }
+
+    return 0.0f;
+}
+
+float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CastPurgeAction*>(action) &&
+        !dynamic_cast<CastTranquilizingShotAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* target = action->GetTarget();
+    if (!target || target->GetEntry() != Id(BlackTempleNpcs::NPC_ESSENCE_OF_DESIRE))
+        return 1.0f;
+
+    Aura* runeShield = target->GetAura(Id(BlackTempleSpells::SPELL_RUNE_SHIELD));
+    if (!runeShield)
+        return 1.0f;
+
+    uint32 const elapsed =
+        static_cast<uint32>(runeShield->GetMaxDuration() - runeShield->GetDuration());
+    return elapsed < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
 }
 
 // Mother Shahraz

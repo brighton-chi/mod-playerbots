@@ -313,23 +313,23 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger : public BlackTempleEncounterTrigger
+class ReliquaryOfSoulsShouldPositionForSufferingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfSufferingFixatesOnClosestTargetTrigger(PlayerbotAI* botAI)
+    ReliquaryOfSoulsShouldPositionForSufferingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "reliquary of souls essence of suffering fixates on closest target") {}
+            botAI, "reliquary of souls should position for suffering") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger : public BlackTempleEncounterTrigger
+class ReliquaryOfSoulsHealersShouldAttackSufferingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfSufferingDisablesHealingTrigger(PlayerbotAI* botAI)
+    ReliquaryOfSoulsHealersShouldAttackSufferingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "reliquary of souls essence of suffering disables healing") {}
+            botAI, "reliquary of souls healers should attack suffering") {}
 
 protected:
     bool IsActiveInEncounter() override;

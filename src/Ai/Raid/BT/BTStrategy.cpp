@@ -103,10 +103,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("reliquary of souls misdirect to main tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode(
-        "reliquary of souls essence of suffering fixates on closest target",
+        "reliquary of souls should position for suffering",
         { NextAction("reliquary of souls adjust distance from suffering", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("reliquary of souls essence of suffering disables healing",
+    triggers.push_back(new TriggerNode("reliquary of souls healers should attack suffering",
         { NextAction("reliquary of souls healers dps suffering", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire has rune shield",
@@ -252,6 +252,8 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
+    multipliers.push_back(new ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier(botAI));
+    multipliers.push_back(new ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(botAI));
 
     // Mother Shahraz
     multipliers.push_back(new MotherShahrazControlMovementMultiplier(botAI));

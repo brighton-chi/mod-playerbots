@@ -93,9 +93,15 @@ enum class BlackTempleSpells : uint32
     SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
     SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
 
+    // Druid
+    SPELL_TREE_OF_LIFE              = 33891,
+
     // Hunter
     SPELL_FROST_TRAP                = 13809,
     SPELL_MISDIRECTION              = 35079,
+
+    // Mage
+    SPELL_SPELLSTEAL                = 30449,
 
     // Shaman
     SPELL_EARTHBIND_TOTEM           =  2484,
@@ -117,6 +123,9 @@ enum class BlackTempleNpcs : uint32
 
     // Teron Gorefiend
     NPC_SHADOWY_CONSTRUCT     = 23111,
+
+    // Reliquary of Souls
+    NPC_ESSENCE_OF_DESIRE     = 23419,
 
     // Illidan Stormrage <The Betrayer>
     NPC_FLAME_OF_AZZINOTH     = 22997,
@@ -295,6 +304,21 @@ inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 extern std::unordered_map<uint32, uint32> gurtoggPhaseTimer;
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot);
 int GetGurtoggActiveRotationGroup(Unit* gurtogg);
+
+// Reliquary of Souls
+
+// Essence of Suffering fixates the nearest enemy every 5 s, so a tank above this health stays
+// closest; other melee hold her back at melee range and ranged keep their distance.
+inline constexpr float SUFFERING_TANK_MIN_HEALTH_PCT = 25.0f;
+inline constexpr float SUFFERING_TANK_DISTANCE = 2.0f;
+inline constexpr float SUFFERING_MELEE_POSITION_TOLERANCE = 0.25f;
+inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
+// Other dispellers wait this long into each Rune Shield, so a mage steals it when one can.
+inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2000;
+
+bool IsSufferingFixateTank(Player* bot);
+Position GetSufferingMeleePosition(Player* bot, Unit* suffering);
+bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 
 // Mother Shahraz
 

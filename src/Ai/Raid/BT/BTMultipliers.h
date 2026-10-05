@@ -178,6 +178,30 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Between essences: until one can be attacked, at the pull and while Enslaved Souls are up.
+class ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+              botAI, "reliquary of souls delay dps cooldowns between essences") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Lets a mage steal Rune Shield before a Purge or Tranquilizing Shot removes it.
+class ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "reliquary of souls let mages steal rune shield") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Mother Shahraz
 
 class MotherShahrazControlMovementMultiplier : public BlackTempleEncounterMultiplier
