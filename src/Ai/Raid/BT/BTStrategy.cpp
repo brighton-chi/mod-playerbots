@@ -13,6 +13,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("black temple no encounter in progress",
         { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 11) }));
 
+    // Trash
+    triggers.push_back(new TriggerNode("sister of pleasure should be marked",
+        { NextAction("mark sister of pleasure", ACTION_RAID + 1) }));
+
     // High Warlord Naj'entus
     triggers.push_back(new TriggerNode("high warlord naj'entus hunter should misdirect",
         { NextAction("high warlord naj'entus misdirect to main tank", ACTION_RAID + 2) }));

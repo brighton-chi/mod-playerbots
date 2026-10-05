@@ -57,6 +57,35 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
+// Trash
+
+bool IsLinkedSisterOfPleasure(Unit* unit)
+{
+    if (!unit || unit->GetEntry() != Id(BlackTempleNpcs::NPC_SISTER_OF_PLEASURE) ||
+        !unit->IsAlive())
+    {
+        return false;
+    }
+
+    Aura* bonds = unit->GetAura(Id(BlackTempleSpells::SPELL_SHARED_BONDS));
+    Unit* pain = bonds ? bonds->GetCaster() : nullptr;
+    return pain && pain->IsAlive();
+}
+
+Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
+{
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (IsLinkedSisterOfPleasure(unit))
+            return unit;
+    }
+
+    return nullptr;
+}
+
 // High Warlord Naj'entus
 
 std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;

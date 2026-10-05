@@ -9,6 +9,7 @@
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "SharedDefines.h"
 #include "Timer.h"
 
@@ -31,6 +32,17 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
+}
+
+// Trash
+
+bool SisterOfPleasureShouldBeMarkedTrigger::IsActive()
+{
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
+        return false;
+
+    Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
+    return !IsLinkedSisterOfPleasure(skull) && FindLinkedSisterOfPleasure(botAI);
 }
 
 // High Warlord Naj'entus

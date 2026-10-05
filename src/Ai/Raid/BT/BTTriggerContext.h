@@ -19,6 +19,10 @@ public:
         creators["black temple no encounter in progress"] =
             &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
+        // Trash
+        creators["sister of pleasure should be marked"] =
+            &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_marked;
+
         // High Warlord Naj'entus
         creators["high warlord naj'entus hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::high_warlord_najentus_hunter_should_misdirect;
@@ -220,6 +224,12 @@ private:
     static Trigger* black_temple_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new BlackTempleNoEncounterInProgressTrigger(botAI);
+    }
+
+    // Trash
+    static Trigger* sister_of_pleasure_should_be_marked(PlayerbotAI* botAI)
+    {
+        return new SisterOfPleasureShouldBeMarkedTrigger(botAI);
     }
 
     // High Warlord Naj'entus

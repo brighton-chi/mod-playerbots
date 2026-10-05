@@ -19,6 +19,10 @@ public:
         creators["black temple reset encounter states"] =
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
+        // Trash
+        creators["mark sister of pleasure"] =
+            &RaidBlackTempleActionContext::mark_sister_of_pleasure;
+
         // High Warlord Naj'entus
         creators["high warlord naj'entus misdirect to main tank"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_misdirect_to_main_tank;
@@ -220,6 +224,12 @@ private:
     static Action* black_temple_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new BlackTempleResetEncounterStatesAction(botAI);
+    }
+
+    // Trash
+    static Action* mark_sister_of_pleasure(PlayerbotAI* botAI)
+    {
+        return new MarkSisterOfPleasureAction(botAI);
     }
 
     // High Warlord Naj'entus

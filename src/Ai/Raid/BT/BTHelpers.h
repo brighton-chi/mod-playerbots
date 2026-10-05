@@ -33,6 +33,9 @@ constexpr uint32 Id(T value)
 
 enum class BlackTempleSpells : uint32
 {
+    // Trash
+    SPELL_SHARED_BONDS              = 41363,
+
     // High Warlord Naj'entus
     SPELL_IMPALING_SPINE            = 39837,
     SPELL_TIDAL_SHIELD              = 39872,
@@ -97,6 +100,10 @@ enum class BlackTempleSpells : uint32
 
 enum class BlackTempleNpcs : uint32
 {
+    // Trash
+    NPC_SISTER_OF_PAIN        = 22956,
+    NPC_SISTER_OF_PLEASURE    = 22964,
+
     // Supremus
     NPC_SUPREMUS_VOLCANO      = 23085,
 
@@ -143,6 +150,12 @@ inline constexpr uint32 BT_MAP_ID = 564;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
+
+// Trash
+
+// A living Sister of Pleasure carrying Shared Bonds from a living Sister of Pain.
+bool IsLinkedSisterOfPleasure(Unit* unit);
+Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 
 // High Warlord Naj'entus
 

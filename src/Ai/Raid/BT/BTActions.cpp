@@ -72,6 +72,16 @@ bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
     return MisdirectTargetToTank(botAI, boss, mainTank);
 }
 
+// Trash
+
+// Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
+// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
+bool MarkSisterOfPleasureAction::Execute(Event /*event*/)
+{
+    Unit* pleasure = FindLinkedSisterOfPleasure(botAI);
+    return pleasure && MarkTargetWithSkull(bot, pleasure);
+}
+
 // High Warlord Naj'entus
 
 bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)

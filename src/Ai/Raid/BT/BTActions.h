@@ -43,6 +43,15 @@ private:
     std::string const _bossName;
 };
 
+// Trash
+
+class MarkSisterOfPleasureAction : public Action
+{
+public:
+    MarkSisterOfPleasureAction(PlayerbotAI* botAI) : Action(botAI, "mark sister of pleasure") {}
+    bool Execute(Event event) override;
+};
+
 // High Warlord Naj'entus
 
 class HighWarlordNajentusTanksPositionBossAction : public AttackAction
