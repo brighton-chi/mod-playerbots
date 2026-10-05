@@ -665,6 +665,40 @@ bool GetPathStepTowardPoint(
     return remaining < stepDistance;
 }
 
+// Teron Gorefiend
+
+bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
+{
+    static constexpr std::array spiritSpells = {
+        Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE),
+        Id(BlackTempleSpells::SPELL_SPIRIT_LANCE),
+        Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS),
+        Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY),
+        Id(BlackTempleSpells::SPELL_SPIRIT_SHIELD),
+    };
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo || spirit->HasSpellCooldown(spellId) ||
+        spirit->CastSpell(target, spellId, true) != SPELL_CAST_OK)
+    {
+        return false;
+    }
+
+    if (uint32 const cooldown =
+            std::max(spellInfo->RecoveryTime, spellInfo->CategoryRecoveryTime))
+    {
+        spirit->AddSpellCooldown(spellId, 0, cooldown);
+    }
+
+    for (uint32 const spiritSpellId : spiritSpells)
+    {
+        if (!spirit->HasSpellCooldown(spiritSpellId))
+            spirit->AddSpellCooldown(spiritSpellId, 0, spellInfo->StartRecoveryTime);
+    }
+
+    return true;
+}
+
 // Gurtogg Bloodboil
 
 namespace

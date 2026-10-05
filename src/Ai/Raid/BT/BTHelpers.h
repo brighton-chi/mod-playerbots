@@ -54,6 +54,7 @@ enum class BlackTempleSpells : uint32
     SPELL_SPIRIT_CHAINS             = 40175,
     SPELL_SPIRIT_VOLLEY             = 40314,
     SPELL_SPIRIT_STRIKE             = 40325,
+    SPELL_SPIRIT_SHIELD             = 40322,
 
     // Gurtogg Bloodboil
     SPELL_BOSS_FEL_RAGE             = 40594,
@@ -296,9 +297,15 @@ bool GetPathStepTowardPoint(
 // The run from the balcony to the corner takes about 12.5 s.
 inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15000;
 inline constexpr float GOREFIEND_POSITION_TOLERANCE = 2.0f;
+// Spirit Chains and Spirit Volley hit within 12 yd of the spirit.
+inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
 
 inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
+
+// A triggered cast records neither its cooldown nor the global cooldown, so both come from the
+// spell data. False if the cast fails.
+bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 
 // Gurtogg Bloodboil
 

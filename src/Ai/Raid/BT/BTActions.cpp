@@ -616,113 +616,83 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     if (!spirit)
         return false;
 
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    Unit* priorityTarget = nullptr;
-    uint32 highestHp = std::numeric_limits<uint32>::min();
-
-    float closestToGorefiend = std::numeric_limits<float>::max();
-
-    for (ObjectGuid const& guid : npcs)
+    // The construct nearest Teron leads the way to the raid. Lances break Chains, so they free
+    // the constructs from the back, keeping the rest together.
+    Unit* leadConstruct = nullptr;
+    Unit* lastConstruct = nullptr;
+    float leadDistance = 0.0f;
+    float lastDistance = 0.0f;
+    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive() ||
             unit->GetEntry() != Id(BlackTempleNpcs::NPC_SHADOWY_CONSTRUCT))
+        {
             continue;
-
-        uint32 const hp = unit->GetHealth();
-        float const distToGorefiend = gorefiend->GetExactDist2d(unit);
-
-        if (hp > highestHp)
-        {
-            highestHp = hp;
-            priorityTarget = unit;
-            closestToGorefiend = distToGorefiend;
         }
-        else if ((hp == highestHp) && (distToGorefiend < closestToGorefiend))
+
+        float const distance = gorefiend->GetExactDist2d(unit);
+        if (!leadConstruct || distance < leadDistance)
         {
-            priorityTarget = unit;
-            closestToGorefiend = distToGorefiend;
+            leadConstruct = unit;
+            leadDistance = distance;
+        }
+
+        if (!lastConstruct || distance > lastDistance)
+        {
+            lastConstruct = unit;
+            lastDistance = distance;
         }
     }
 
-    if (priorityTarget)
+    if (!leadConstruct)
     {
-        float const distToTarget = spirit->GetExactDist2d(priorityTarget);
-        constexpr float desiredDist = 10.0f;
-        if (distToTarget > desiredDist)
+        Unit* victim = gorefiend->GetVictim();
+        if (victim && CastVengefulSpiritSpell(
+                          spirit, victim, Id(BlackTempleSpells::SPELL_SPIRIT_SHIELD)))
         {
-            float const moveDist = distToTarget - desiredDist + 2.0f;
-            float const dX = priorityTarget->GetPositionX() - spirit->GetPositionX();
-            float const dY = priorityTarget->GetPositionY() - spirit->GetPositionY();
-            float const moveX = spirit->GetPositionX() + (dX / distToTarget) * moveDist;
-            float const moveY = spirit->GetPositionY() + (dY / distToTarget) * moveDist;
-
-            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, spirit->GetPositionZ());
             return true;
         }
 
-        // Adding cooldowns manually is needed due to the charmed creature not observing cooldowns,
-        // including the GCD. The ordering, including repeating some spells, is the product of testing
-        // to try to keep the bot from breaking chains with volley, which tends to happen when volley
-        // is cast before chains (maybe due to projectile travel time?)
-        if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS)) &&
-            priorityTarget->GetHealthPct() == 100.0f)
+        bool moving = false;
+        if (!spirit->IsWithinMeleeRange(gorefiend))
         {
-            spirit->CastSpell(priorityTarget, Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
-            return true;
-        }
-        else if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
-        {
-            spirit->CastSpell(priorityTarget, Id(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
-            return true;
-        }
-        else if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
-        {
-            spirit->CastSpell(priorityTarget, Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS), 0, 15000);
-            return true;
-        }
-        else if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_LANCE)))
-        {
-            spirit->CastSpell(priorityTarget, Id(BlackTempleSpells::SPELL_SPIRIT_LANCE), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_LANCE), 0, 1000);
-            return true;
-        }
-        else if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY)) &&
-                 !priorityTarget->HasAura(Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
-        {
-            spirit->CastSpell(priorityTarget, Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY), 0, 15000);
-            return true;
-        }
-    }
-    else
-    {
-        float const distToGorefiend = spirit->GetExactDist2d(gorefiend);
-        constexpr float targetDist = 5.0f;
-        if (distToGorefiend > targetDist)
-        {
-            float const moveDist = distToGorefiend - targetDist;
+            float const distance = spirit->GetExactDist2d(gorefiend);
+            float const moveDistance = distance - gorefiend->GetCombatReach();
             float const dX = gorefiend->GetPositionX() - spirit->GetPositionX();
             float const dY = gorefiend->GetPositionY() - spirit->GetPositionY();
-            float const moveX = spirit->GetPositionX() + (dX / distToGorefiend) * moveDist;
-            float const moveY = spirit->GetPositionY() + (dY / distToGorefiend) * moveDist;
+            spirit->GetMotionMaster()->MovePoint(
+                0, spirit->GetPositionX() + dX / distance * moveDistance,
+                spirit->GetPositionY() + dY / distance * moveDistance, spirit->GetPositionZ());
+            moving = true;
+        }
 
-            spirit->GetMotionMaster()->MovePoint(0, moveX, moveY, spirit->GetPositionZ());
-            return true;
-        }
-        else if (!spirit->HasSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE)))
-        {
-            spirit->CastSpell(gorefiend, Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE), true);
-            spirit->AddSpellCooldown(Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE), 0, 1000);
-            return true;
-        }
+        return CastVengefulSpiritSpell(
+            spirit, gorefiend, Id(BlackTempleSpells::SPELL_SPIRIT_STRIKE)) || moving;
     }
 
-    return false;
+    bool moving = false;
+    float const distanceToLead = spirit->GetExactDist2d(leadConstruct);
+    if (distanceToLead > GOREFIEND_SPIRIT_AOE_DISTANCE)
+    {
+        float const moveDistance = distanceToLead - GOREFIEND_SPIRIT_AOE_DISTANCE + 2.0f;
+        float const dX = leadConstruct->GetPositionX() - spirit->GetPositionX();
+        float const dY = leadConstruct->GetPositionY() - spirit->GetPositionY();
+        spirit->GetMotionMaster()->MovePoint(
+            0, spirit->GetPositionX() + dX / distanceToLead * moveDistance,
+            spirit->GetPositionY() + dY / distanceToLead * moveDistance, spirit->GetPositionZ());
+        moving = true;
+    }
+    else if (CastVengefulSpiritSpell(
+                 spirit, leadConstruct, Id(BlackTempleSpells::SPELL_SPIRIT_VOLLEY)) ||
+             CastVengefulSpiritSpell(
+                 spirit, leadConstruct, Id(BlackTempleSpells::SPELL_SPIRIT_CHAINS)))
+    {
+        return true;
+    }
+
+    return CastVengefulSpiritSpell(
+        spirit, lastConstruct, Id(BlackTempleSpells::SPELL_SPIRIT_LANCE)) || moving;
 }
 
 // Gurtogg Bloodboil
