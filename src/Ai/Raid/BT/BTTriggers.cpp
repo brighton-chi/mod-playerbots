@@ -153,16 +153,9 @@ bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
 
 // Shade of Akama
 
-bool ShadeOfAkamaKillingChannelersStartsPhase2Trigger::IsActiveInEncounter()
+bool ShadeOfAkamaShouldPrioritizeChannelersTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsDps(bot) || !PlayerbotAI::IsMelee(bot))
-        return false;
-
-    constexpr float searchRadius = 30.0f;
-    Unit* channeler = bot->FindNearestCreature(
-        Id(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER), searchRadius, true);
-
-    return channeler && !channeler->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    return PlayerbotAI::IsDps(bot) && PlayerbotAI::IsMelee(bot) && GetShadeOfAkamaKillTarget(botAI);
 }
 
 // Teron Gorefiend

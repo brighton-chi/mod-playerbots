@@ -39,6 +39,20 @@ protected:
     GuidVector Calculate() override { return BlackTempleHelpers::FindSupremusVolcanoGuids(bot); }
 };
 
+// Shade of Akama
+
+class ShadeOfAkamaAddsValue : public CalculatedValue<GuidVector>
+{
+public:
+    ShadeOfAkamaAddsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "shade of akama adds",
+              BlackTempleHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return BlackTempleHelpers::FindShadeOfAkamaAddGuids(botAI); }
+};
+
 // Illidari Council
 
 class IllidariCouncilZerevorMageTankValue : public CalculatedValue<ObjectGuid>
@@ -89,6 +103,7 @@ public:
     {
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus volcanoes"] = &RaidBlackTempleValueContext::supremus_volcanoes;
+        creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
         creators["illidari council zerevor mage tank"] =
             &RaidBlackTempleValueContext::illidari_council_zerevor_mage_tank;
         creators["illidan stormrage warlock tank"] =
@@ -105,6 +120,10 @@ private:
     static UntypedValue* supremus_volcanoes(PlayerbotAI* botAI)
     {
         return new SupremusVolcanoesValue(botAI);
+    }
+    static UntypedValue* shade_of_akama_adds(PlayerbotAI* botAI)
+    {
+        return new ShadeOfAkamaAddsValue(botAI);
     }
     static UntypedValue* illidari_council_zerevor_mage_tank(PlayerbotAI* botAI)
     {

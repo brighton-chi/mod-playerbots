@@ -187,11 +187,11 @@ protected:
 
 // Shade of Akama
 
-class ShadeOfAkamaKillingChannelersStartsPhase2Trigger : public BlackTempleEncounterTrigger
+class ShadeOfAkamaShouldPrioritizeChannelersTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ShadeOfAkamaKillingChannelersStartsPhase2Trigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "shade of akama killing channelers starts phase 2") {}
+    ShadeOfAkamaShouldPrioritizeChannelersTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "shade of akama should prioritize channelers") {}
 
 protected:
     bool IsActiveInEncounter() override;

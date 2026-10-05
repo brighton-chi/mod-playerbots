@@ -143,6 +143,21 @@ float SupremusDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
     return AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
+// Shade of Akama
+
+float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<DropTargetAction*>(action))
+        return 1.0f;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return 1.0f;
+
+    return target->GetEntry() == Id(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER) ||
+        target->GetEntry() == Id(BlackTempleNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
+}
+
 // Teron Gorefiend
 
 float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* action)

@@ -113,6 +113,7 @@ enum class BlackTempleNpcs : uint32
 
     // Shade of Akama
     NPC_ASHTONGUE_CHANNELER   = 23421,
+    NPC_ASHTONGUE_SORCERER    = 23215,
 
     // Teron Gorefiend
     NPC_SHADOWY_CONSTRUCT     = 23111,
@@ -260,9 +261,25 @@ bool IsInsideSupremusKiteBoundary(float x, float y);
 
 // Shade of Akama
 
-inline Position const AKAMA_CHANNELER_POSITION = { 467.851f, 401.622f, 118.538f };
+// His instance boundary, so the add search runs only in his room.
+inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_X = 406.8f;
+inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_X = 564.0f;
+inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_Y = 327.9f;
+inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
+inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 80.0f;
+inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
-extern std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
+// Living, attackable channelers by GUID, then sorcerers by GUID: the kill order.
+GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI);
+Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
+// Channelers and sorcerers can't be tanked.
+void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions);
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
 
 // Teron Gorefiend
 

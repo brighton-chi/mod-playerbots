@@ -6,6 +6,7 @@
 
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
+#include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
@@ -13,6 +14,7 @@
 #include "Timer.h"
 #include <algorithm>
 #include <limits>
+#include <list>
 
 using namespace EncounterHelpers;
 
@@ -529,7 +531,136 @@ bool IsInsideSupremusKiteBoundary(float x, float y)
 
 // Shade of Akama
 
-std::unordered_set<ObjectGuid> hasReachedAkamaChannelerPosition;
+GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    GuidVector adds;
+    if (bot->GetPositionX() < SHADE_OF_AKAMA_BOUNDARY_MIN_X ||
+        bot->GetPositionX() > SHADE_OF_AKAMA_BOUNDARY_MAX_X ||
+        bot->GetPositionY() < SHADE_OF_AKAMA_BOUNDARY_MIN_Y ||
+        bot->GetPositionY() > SHADE_OF_AKAMA_BOUNDARY_MAX_Y ||
+        !IsEncounterInProgress(bot, BT_MAP_ID))
+    {
+        return adds;
+    }
+
+    for (BlackTempleNpcs const entry :
+         { BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER, BlackTempleNpcs::NPC_ASHTONGUE_SORCERER })
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, Id(entry), SHADE_OF_AKAMA_ADD_SEARCH_RADIUS);
+
+        std::vector<Creature*> living;
+        for (Creature* creature : creatures)
+        {
+            if (creature && creature->IsAlive() &&
+                !creature->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+            {
+                living.push_back(creature);
+            }
+        }
+
+        std::sort(living.begin(), living.end(), [](Creature* first, Creature* second)
+            { return first->GetGUID() < second->GetGUID(); });
+
+        for (Creature* creature : living)
+            adds.push_back(creature->GetGUID());
+    }
+
+    return adds;
+}
+
+Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
+{
+    auto const& adds =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    for (ObjectGuid const& guid : adds)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive())
+            return unit;
+    }
+
+    return nullptr;
+}
+
+void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (!PlayerbotAI::IsTank(botAI->GetBot()))
+        return;
+
+    auto const& adds =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    exclusions.insert(adds.begin(), adds.end());
+}
+
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
+{
+    if (!target)
+        return false;
+
+    return GetPathStepTowardPoint(
+        bot, target->GetPosition(), stopDistance, PATH_STEP_DISTANCE, stepX, stepY);
+}
+
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY)
+{
+    if (bot->GetExactDist(destination) < stopDistance)
+        return false;
+
+    PathGenerator path(bot);
+    path.CalculatePath(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+    if (!(path.GetPathType() & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_SHORTCUT)))
+        return false;
+
+    Movement::PointsArray const& points = path.GetPath();
+    if (points.size() < 2)
+        return false;
+
+    G3D::Vector3 const targetPos(
+        destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
+
+    float remaining = stepDistance;
+    for (std::size_t i = 1; i < points.size(); ++i)
+    {
+        G3D::Vector3 const& from = points[i - 1];
+        G3D::Vector3 const& to = points[i];
+
+        float const segment = (to - from).length();
+        if (segment <= 0.0f)
+            continue;
+
+        float const toDist = (to - targetPos).length();
+        float ratio = 1.0f;
+
+        if (toDist < stopDistance)
+        {
+            float const fromDist = (from - targetPos).length();
+            if (fromDist <= stopDistance)
+                break;
+
+            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+        }
+
+        if (segment * ratio >= remaining)
+            ratio = remaining / segment;
+
+        remaining -= segment * ratio;
+
+        G3D::Vector3 const step = from + (to - from) * ratio;
+        stepX = step.x;
+        stepY = step.y;
+
+        if (remaining <= 0.0f || ratio < 1.0f)
+            return true;
+    }
+
+    return remaining < stepDistance;
+}
 
 // Gurtogg Bloodboil
 

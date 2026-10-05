@@ -28,7 +28,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     bool reset = false;
 
     reset |= flameTankWaypointIndex.erase(guid) > 0;
-    reset |= hasReachedAkamaChannelerPosition.erase(guid) > 0;
     reset |= shahrazTankStep.erase(guid) > 0;
     reset |= illidanShadowTrapGuid.erase(guid) > 0;
     reset |= illidanShadowTrapDestination.erase(guid) > 0;
@@ -469,48 +468,36 @@ bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(
 
 // Shade of Akama
 
+// Channelers stand on a platform out of sight from below, and Attack refuses a target out of
+// sight, so a bot walks the path toward its target until it can see it.
 bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 {
-    if (!hasReachedAkamaChannelerPosition.count(bot->GetGUID()))
-    {
-        Position const& position = AKAMA_CHANNELER_POSITION;
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-        else
-        {
-            hasReachedAkamaChannelerPosition.insert(bot->GetGUID());
-        }
-    }
-
-    constexpr float searchRadius = 30.0f;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BlackTempleNpcs::NPC_ASHTONGUE_CHANNELER), searchRadius);
-
-    std::vector<Creature*> channelers;
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            channelers.push_back(creature);
-    }
-
-    if (channelers.empty())
+    Unit* target = GetShadeOfAkamaKillTarget(botAI);
+    if (!target)
         return false;
 
-    std::sort(channelers.begin(), channelers.end(),
-        [](Creature* first, Creature* second) { return first->GetGUID() < second->GetGUID(); });
-
-    Creature* const channeler = channelers.front();
-
-    if (MarkTargetWithSkull(bot, channeler))
+    if (MarkTargetWithSkull(bot, target))
         return true;
 
-    if (AI_VALUE(Unit*, "current target") != channeler)
-        return Attack(channeler);
+    if (!bot->IsWithinLOSInMap(target))
+    {
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+        if (IsWaitingForLastMove(priority))
+            return false;
+
+        constexpr float stopDistance = 5.0f;
+        float stepX;
+        float stepY;
+        if (!GetPathStepTowardUnit(bot, target, stopDistance, stepX, stepY))
+            return false;
+
+        return MoveTo(
+            BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, false);
+    }
+
+    if (AI_VALUE(Unit*, "current target") != target)
+        return Attack(target);
 
     return false;
 }

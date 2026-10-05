@@ -63,8 +63,8 @@ public:
             &RaidBlackTempleTriggerContext::supremus_near_volcano;
 
         // Shade of Akama
-        creators["shade of akama killing channelers starts phase 2"] =
-            &RaidBlackTempleTriggerContext::shade_of_akama_killing_channelers_starts_phase_2;
+        creators["shade of akama should prioritize channelers"] =
+            &RaidBlackTempleTriggerContext::shade_of_akama_should_prioritize_channelers;
 
         // Teron Gorefiend
         creators["teron gorefiend hunter should misdirect"] =
@@ -292,9 +292,9 @@ private:
     }
 
     // Shade of Akama
-    static Trigger* shade_of_akama_killing_channelers_starts_phase_2(PlayerbotAI* botAI)
+    static Trigger* shade_of_akama_should_prioritize_channelers(PlayerbotAI* botAI)
     {
-        return new ShadeOfAkamaKillingChannelersStartsPhase2Trigger(botAI);
+        return new ShadeOfAkamaShouldPrioritizeChannelersTrigger(botAI);
     }
 
     // Teron Gorefiend

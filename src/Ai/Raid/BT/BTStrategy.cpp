@@ -59,7 +59,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6) }));
 
     // Shade of Akama
-    triggers.push_back(new TriggerNode("shade of akama killing channelers starts phase 2",
+    triggers.push_back(new TriggerNode("shade of akama should prioritize channelers",
         { NextAction("shade of akama melee dps prioritize channelers", ACTION_RAID + 1) }));
 
     // Teron Gorefiend
@@ -238,6 +238,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new SupremusDelayDpsCooldownsInKitePhaseMultiplier(botAI));
     multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
 
+    // Shade of Akama
+    multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));
+
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
     multipliers.push_back(new TeronGorefiendMarkedBotOnlyMoveToDieMultiplier(botAI));
@@ -277,4 +280,8 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
     // Trash
     if (type != TargetValueExclusionType::TankTarget)
         BlackTempleHelpers::AppendShadowmoonReaverExclusions(botAI, exclusions);
+
+    // Shade of Akama
+    if (type == TargetValueExclusionType::TankTarget)
+        BlackTempleHelpers::AppendShadeOfAkamaTankExclusions(botAI, exclusions);
 }

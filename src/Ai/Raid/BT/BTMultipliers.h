@@ -98,6 +98,19 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Shade of Akama
+
+// Walking up to the platform can lose sight of the target, which would otherwise drop it.
+class ShadeOfAkamaDontDropOutOfSightTargetMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ShadeOfAkamaDontDropOutOfSightTargetMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "shade of akama don't drop out of sight target") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Teron Gorefiend
 
 class TeronGorefiendControlMovementMultiplier : public BlackTempleEncounterMultiplier
