@@ -23,7 +23,7 @@ public:
     float GetValue(Action* action) final
     {
         return EncounterHelpers::IsEncounterInProgress(
-            bot, BlackTempleHelpers::BLACK_TEMPLE_MAP_ID) ? GetValueInEncounter(action) : 1.0f;
+            bot, BlackTempleHelpers::BT_MAP_ID) ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:

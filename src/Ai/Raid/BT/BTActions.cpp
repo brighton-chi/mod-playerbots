@@ -41,7 +41,7 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
             reset = true;
     }
 
-    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return reset;
 
     reset |= najentusSpineAssignments.erase(instanceId) > 0;
@@ -94,7 +94,7 @@ bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -126,11 +126,11 @@ bool HighWarlordNajentusAssignSpineRemoverAction::Execute(Event /*event*/)
     std::vector<NajentusSpineAssignment>& assignments =
         najentusSpineAssignments[bot->GetInstanceId()];
     std::erase_if(assignments,
-                  [this, impaled](NajentusSpineAssignment const& assignment)
-                  {
-                      return assignment.impaled == impaled->GetGUID() ||
-                          !IsNajentusImpaled(ObjectAccessor::GetPlayer(*bot, assignment.impaled));
-                  });
+        [this, impaled](NajentusSpineAssignment const& assignment)
+        {
+            return assignment.impaled == impaled->GetGUID() ||
+                !IsNajentusImpaled(ObjectAccessor::GetPlayer(*bot, assignment.impaled));
+        });
 
     Player* remover = FindNajentusSpineRemover(bot, impaled);
     if (!remover)
@@ -155,8 +155,8 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 
     bool const atSpine = bot->GetExactDist2d(spineGo) <= 3.0f;
 
-    // One reaction delay per spine: before clicking if already at it, else before moving, with
-    // the click straight on arrival.
+    // One reaction delay per spine. If already in range, delay between 1 and 2s to click. If not
+    // yet in range, delay between 2 and 3s to move and click immediately when in range.
     if (spineGo->GetGUID() != _spineGuid)
     {
         _spineGuid = spineGo->GetGUID();
@@ -170,9 +170,9 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 
     if (!atSpine)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(),
-                      bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+        return MoveTo(
+            BT_MAP_ID, spineGo->GetPositionX(), spineGo->GetPositionY(), bot->GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     spineGo->Use(bot);
@@ -182,8 +182,8 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 
 bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 {
-    Player* thrower =
-        FindNajentusSpineThrower(bot, AI_VALUE2(Unit*, "find target", "high warlord naj'entus"));
+    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    Player* thrower = najentus && FindNajentusSpineThrower(bot, najentus);
     if (!thrower)
         return false;
 
@@ -197,16 +197,17 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
     if (!najentus)
         return false;
 
-    if (bot->GetExactDist2d(najentus) > 24.0f)
+    if (!bot->IsWithinCombatRange(najentus, NAJENTUS_HURL_SPINE_RANGE))
     {
-        float const angle = atan2(bot->GetPositionY() - najentus->GetPositionY(),
-                                  bot->GetPositionX() - najentus->GetPositionX());
-        float const targetX = najentus->GetPositionX() + 23.0f * std::cos(angle);
-        float const targetY = najentus->GetPositionY() + 23.0f * std::sin(angle);
+        float const approachDist = NAJENTUS_HURL_SPINE_RANGE - NAJENTUS_HURL_SPINE_APPROACH_MARGIN +
+            bot->GetCombatReach() + najentus->GetCombatReach();
+        float const angle = najentus->GetAngle(bot);
+        float const targetX = najentus->GetPositionX() + approachDist * std::cos(angle);
+        float const targetY = najentus->GetPositionY() + approachDist * std::sin(angle);
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(),
-                      false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-                      true, false);
+        return MoveTo(
+            BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     Aura* shield = najentus->GetAura(Id(BlackTempleSpells::SPELL_TIDAL_SHIELD));
@@ -242,7 +243,7 @@ bool SupremusMisdirectToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref && hunters.size() < 3; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
@@ -313,7 +314,7 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
     constexpr float maxRadius = 40.0f;
     Position const safestPos = FindSafestNearbyPosition(volcanos, maxRadius, hazardRadius);
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+    return MoveTo(BT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -426,7 +427,7 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
         Position const& position = AKAMA_CHANNELER_POSITION;
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_FORCED, true, false);
         }
@@ -490,7 +491,7 @@ bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -505,7 +506,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -535,7 +536,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -572,7 +573,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
     Position const& position = GOREFIEND_DIE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -723,7 +724,7 @@ bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -749,13 +750,13 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 
     if (inActiveGroup && bot->GetExactDist2d(farPosition) > distFromPos)
     {
-        return MoveInside(BLACK_TEMPLE_MAP_ID, farPosition.GetPositionX(),
+        return MoveInside(BT_MAP_ID, farPosition.GetPositionX(),
                           farPosition.GetPositionY(), bot->GetPositionZ(),
                           distFromPos, MovementPriority::MOVEMENT_FORCED);
     }
     else if (!inActiveGroup && bot->GetExactDist2d(nearPosition) > distFromPos)
     {
-        return MoveInside(BLACK_TEMPLE_MAP_ID, nearPosition.GetPositionX(),
+        return MoveInside(BT_MAP_ID, nearPosition.GetPositionX(),
                           nearPosition.GetPositionY(), bot->GetPositionZ(),
                           distFromPos, MovementPriority::MOVEMENT_FORCED);
     }
@@ -857,7 +858,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::TanksMoveToMinimumRange(
         float const targetX = bot->GetPositionX() + (dX / distanceToBoss);
         float const targetY = bot->GetPositionY() + (dY / distanceToBoss);
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -876,7 +877,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MeleeDpsStayAtMaximumRan
 
     if (bot->GetExactDist2d(targetX, targetY) > 0.25f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -1023,7 +1024,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
         if (distToPosition > maxDistance && bot->IsWithinMeleeRange(shahraz))
         {
             bool const backwards = (shahraz->GetVictim() == bot);
-            return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                           bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, backwards);
         }
@@ -1045,7 +1046,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 
 bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 {
-    return MoveTo(BLACK_TEMPLE_MAP_ID, SHAHRAZ_RANGED_POSITION.GetPositionX(),
+    return MoveTo(BT_MAP_ID, SHAHRAZ_RANGED_POSITION.GetPositionX(),
                   SHAHRAZ_RANGED_POSITION.GetPositionY(), bot->GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -1057,7 +1058,7 @@ bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
     Position const& position = SHAHRAZ_RANGED_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1113,7 +1114,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
         lastValidZ = testZ;
     }
 
-    if (MoveTo(BLACK_TEMPLE_MAP_ID, lastValidX, lastValidY, lastValidZ, false, false,
+    if (MoveTo(BT_MAP_ID, lastValidX, lastValidY, lastValidZ, false, false,
                false, false, MovementPriority::MOVEMENT_FORCED, true, false))
     {
         return true;
@@ -1130,7 +1131,7 @@ bool MotherShahrazRunAwayToBreakFatalAttractionAction::Execute(Event /*event*/)
             bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
             randX, randY, randZ);
 
-        return MoveTo(BLACK_TEMPLE_MAP_ID, randX, randY, randZ, false, false, false,
+        return MoveTo(BT_MAP_ID, randX, randY, randZ, false, false, false,
                       false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 }
@@ -1169,7 +1170,7 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
@@ -1229,7 +1230,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
+        bot->TeleportTo(BT_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
                         gathios->GetPositionZ(), bot->GetOrientation());
     }
 
@@ -1265,7 +1266,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1286,7 +1287,7 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
+        bot->TeleportTo(BT_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
                         malande->GetPositionZ(), bot->GetOrientation());
     }
 
@@ -1310,7 +1311,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BLACK_TEMPLE_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
+        bot->TeleportTo(BT_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
                         darkshadow->GetPositionZ(), bot->GetOrientation());
     }
 
@@ -1337,7 +1338,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1372,7 +1373,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1409,7 +1410,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         priority, true, backwards);
 }
 
@@ -1536,7 +1537,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
@@ -1652,7 +1653,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     constexpr float maxRadius = 30.0f;
     Position const safestPos = FindSafestNearbyPosition(flameCrashes, maxRadius, hazardRadius);
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
+    return MoveTo(BT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(),
                   bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, true);
 }
@@ -1706,7 +1707,7 @@ bool IllidanStormrageMainTankRepositionBossAction::MoveToShadowTrap(Unit* illida
         return false;
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -1853,7 +1854,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(Posi
     if (bot->GetExactDist2d(target) < 1.0f)
         return false;
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+    return MoveTo(BT_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                   target.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -1869,7 +1870,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(Positio
 
     if (bot->GetExactDist2d(target) > 2.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+        return MoveTo(BT_MAP_ID, target.GetPositionX(), target.GetPositionY(),
                       target.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -1905,7 +1906,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             {
                 if (!bot->IsWithinMeleeRange(eastFlame))
                 {
-                    return MoveTo(BLACK_TEMPLE_MAP_ID, eastFlame->GetPositionX(),
+                    return MoveTo(BT_MAP_ID, eastFlame->GetPositionX(),
                                   eastFlame->GetPositionY(), eastFlame->GetPositionZ(),
                                   false, false, false, false,
                                   MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1928,7 +1929,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
 
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
+                return MoveTo(BT_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
                               pos.GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
             }
@@ -1939,7 +1940,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             Position const& pos = ILLIDAN_E_GRATE_POSITION;
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
+                return MoveTo(BT_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
                               pos.GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
             }
@@ -1956,7 +1957,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             {
                 if (!bot->IsWithinMeleeRange(westFlame))
                 {
-                    return MoveTo(BLACK_TEMPLE_MAP_ID, westFlame->GetPositionX(),
+                    return MoveTo(BT_MAP_ID, westFlame->GetPositionX(),
                                   westFlame->GetPositionY(), westFlame->GetPositionZ(),
                                   false, false, false, false,
                                   MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -1979,7 +1980,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
 
             if (bot->GetExactDist2d(pos.GetPositionX(), pos.GetPositionY()) > 0.5f)
             {
-                return MoveTo(BLACK_TEMPLE_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
+                return MoveTo(BT_MAP_ID, pos.GetPositionX(), pos.GetPositionY(),
                               pos.GetPositionZ(), false, false, false, false,
                               MovementPriority::MOVEMENT_COMBAT, true, false);
             }
@@ -2053,7 +2054,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
     if (tooCloseToNorthGrate || tooCloseToEastGrate || tooCloseToWestGrate)
         return false;
 
-    return MoveTo(BLACK_TEMPLE_MAP_ID, safeX, safeY, safeZ, false, false, false,
+    return MoveTo(BT_MAP_ID, safeX, safeY, safeZ, false, false, false,
                   false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -2118,7 +2119,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     }
 
     return MoveTo(
-        BLACK_TEMPLE_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
@@ -2161,7 +2162,7 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && GET_PLAYERBOT_AI(member) &&
+        if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
             !PlayerbotAI::IsAssistTankOfIndex(member, 0, true) &&
             !PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
         {
@@ -2185,7 +2186,7 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
     Position const& position = gratePositions[index];
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 0.2f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+        return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
                       position.GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
@@ -2255,7 +2256,7 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -2301,7 +2302,7 @@ bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(),
+        return MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
                       true, false);
     }
@@ -2337,7 +2338,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -2375,7 +2376,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
     if (bot->GetExactDist2d(targetX, targetY) > 1.0f)
     {
-        if (MoveTo(BLACK_TEMPLE_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+        if (MoveTo(BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
             false, false, MovementPriority::MOVEMENT_COMBAT, true, false))
         {
             return true;
@@ -2579,7 +2580,7 @@ bool IllidanStormrageUseShadowTrapAction::Execute(Event /*event*/)
     }
     else
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, trap->GetPositionX(), trap->GetPositionY(),
+        return MoveTo(BT_MAP_ID, trap->GetPositionX(), trap->GetPositionY(),
                       trap->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }

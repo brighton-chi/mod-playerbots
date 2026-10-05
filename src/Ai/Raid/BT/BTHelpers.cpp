@@ -69,15 +69,14 @@ namespace
 bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
 {
     Player* player = ObjectAccessor::GetPlayer(*bot, remover);
-    return player && player->IsAlive() && player->GetMapId() == BLACK_TEMPLE_MAP_ID &&
+    return player && player->IsAlive() && player->GetMapId() == BT_MAP_ID &&
         !IsNajentusImpaled(player);
 }
 
-bool CanThrowNajentusSpine(Player* player)
+bool CanThrowNajentusSpine(Player* bot)
 {
-    return player && player->IsAlive() && player->GetMapId() == BLACK_TEMPLE_MAP_ID &&
-        !IsNajentusImpaled(player) &&
-        player->HasItemCount(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
+    return bot && bot->IsAlive() && bot->GetMapId() == BT_MAP_ID && !IsNajentusImpaled(bot) &&
+        bot->HasItemCount(Id(BlackTempleItems::ITEM_NAJENTUS_SPINE));
 }
 
 }
@@ -136,7 +135,7 @@ Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
     {
         Player* member = ref->GetSource();
         if (!member || member == impaled || !member->IsAlive() ||
-            member->GetMapId() != BLACK_TEMPLE_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member) ||
             PlayerbotAI::IsTank(member) || IsNajentusImpaled(member))
         {
             continue;
@@ -224,6 +223,11 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
 
 std::unordered_map<uint32, uint32> supremusPhaseTimer;
 
+bool IsSupremusKitePhase(Unit* supremus)
+{
+    return supremus && supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF));
+}
+
 GuidVector FindSupremusVolcanoGuids(Player* bot)
 {
     std::list<Creature*> creatureList;
@@ -278,7 +282,7 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             GET_PLAYERBOT_AI(member) && PlayerbotAI::IsRanged(member))
         {
             rangedMembers.push_back(member);
@@ -348,7 +352,7 @@ ObjectGuid FindZerevorMageTankGuid(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !member->IsAlive() ||
+        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
             member->getClass() != CLASS_MAGE)
         {
             continue;
@@ -506,7 +510,7 @@ ObjectGuid FindIllidanWarlockTankGuid(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BLACK_TEMPLE_MAP_ID || !member->IsAlive() ||
+        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
             member->getClass() != CLASS_WARLOCK)
         {
             continue;
@@ -546,7 +550,7 @@ Player* GetIllidanTrapperHunter(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BLACK_TEMPLE_MAP_ID && member->IsAlive() &&
+        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member) &&
             !HasParasiticShadowfiend(member))
         {

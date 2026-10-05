@@ -19,7 +19,7 @@ using namespace EncounterHelpers;
 
 bool BlackTempleNoEncounterInProgressTrigger::IsActive()
 {
-    return !IsEncounterInProgress(bot, BLACK_TEMPLE_MAP_ID);
+    return !IsEncounterInProgress(bot, BT_MAP_ID);
 }
 
 // Shared Bosses
@@ -55,9 +55,13 @@ bool HighWarlordNajentusRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 bool HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "high warlord naj'entus") &&
-        FindNajentusUnassignedImpaledPlayer(bot);
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
+        return false;
+
+    return FindNajentusUnassignedImpaledPlayer(bot);
 }
 
 bool HighWarlordNajentusImpalingSpineOnGroupMemberTrigger::IsActiveInEncounter()
@@ -67,8 +71,13 @@ bool HighWarlordNajentusImpalingSpineOnGroupMemberTrigger::IsActiveInEncounter()
 
 bool HighWarlordNajentusNeedsSpineThrowerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "high warlord naj'entus") && !GetNajentusSpineThrower(bot);
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
+        return false;
+
+    return !GetNajentusSpineThrower(bot);
 }
 
 bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
@@ -113,14 +122,13 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && !supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF));
+    return supremus && !IsSupremusKitePhase(supremus);
 }
 
 bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->GetVictim() == bot &&
-        supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF));
+    return supremus && supremus->GetVictim() == bot && IsSupremusKitePhase(supremus);
 }
 
 bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
@@ -130,7 +138,7 @@ bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
 
 bool SupremusShouldManagePhaseTimerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "supremus");
 }
 
@@ -271,7 +279,7 @@ bool GurtoggBloodboilFelRageOnGroupMemberTrigger::IsActiveInEncounter()
 
 bool GurtoggBloodboilShouldManagePhaseTimerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
@@ -475,7 +483,7 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
         AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
@@ -705,7 +713,7 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActiveInEncounter()
 
 bool IllidanStormrageShouldManageDpsTimerAndRtiTrigger::IsActiveInEncounter()
 {
-    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -716,7 +724,7 @@ bool IllidanStormrageShouldManageDpsTimerAndRtiTrigger::IsActiveInEncounter()
 // The strategy simply cannot work without doing this
 bool IllidanStormrageShouldClearHazardsBetweenPhasesTrigger::IsActiveInEncounter()
 {
-    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

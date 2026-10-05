@@ -70,32 +70,31 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
 
 float SupremusFocusOnAvoidanceInPhase2Multiplier::GetValueInEncounter(Action* action)
 {
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus || supremus->GetVictim() != bot ||
-        !supremus->HasAura(Id(BlackTempleSpells::SPELL_SNARE_SELF)))
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<SupremusMoveAwayFromVolcanosAction*>(action) ||
+        dynamic_cast<SupremusKiteBossAction*>(action))
     {
         return 1.0f;
     }
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<SupremusKiteBossAction*>(action) &&
-        !dynamic_cast<SupremusMoveAwayFromVolcanosAction*>(action))
-    {
-        return 0.0f;
-    }
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    if (!supremus || supremus->GetVictim() != bot)
+        return 1.0f;
 
-    return 1.0f;
+    return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
 }
 
 float SupremusHitboxIsBuggedMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->getClass() != CLASS_ROGUE || !AI_VALUE2(Unit*, "find target", "supremus"))
+    if (bot->getClass() != CLASS_ROGUE)
         return 1.0f;
 
-    if (dynamic_cast<CastKillingSpreeAction*>(action))
-        return 0.0f;
+    if (!dynamic_cast<CastKillingSpreeAction*>(action))
+        return 1.0f;
 
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
 // Teron Gorefiend

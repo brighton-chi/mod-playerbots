@@ -139,7 +139,7 @@ enum class TankPositionState : uint8
     Unknown            = 255,
 };
 
-inline constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
+inline constexpr uint32 BT_MAP_ID = 564;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
@@ -155,6 +155,10 @@ struct NajentusSpineAssignment
 inline constexpr float NAJENTUS_RANGED_DISTANCE_FROM_BOSS = 10.0f;
 // Needle Spine Explosion hits allies within 6 yd of each player struck.
 inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = 7.0f;
+// Hurl Spine (39948) range, counted beyond both combat reaches as Spell::CheckRange does.
+inline constexpr float NAJENTUS_HURL_SPINE_RANGE = 25.0f;
+// How far inside that range a thrower walking in stops.
+inline constexpr float NAJENTUS_HURL_SPINE_APPROACH_MARGIN = 2.0f;
 
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
@@ -181,6 +185,8 @@ inline constexpr float SUPREMUS_VOLCANO_SEARCH_RADIUS = 40.0f;
 inline constexpr uint32 SUPREMUS_VOLCANO_CACHE_INTERVAL_MS = 200;
 
 extern std::unordered_map<uint32, uint32> supremusPhaseTimer;
+
+bool IsSupremusKitePhase(Unit* supremus);
 GuidVector FindSupremusVolcanoGuids(Player* bot);
 std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
 bool HasSupremusVolcanoNearby(PlayerbotAI* botAI);

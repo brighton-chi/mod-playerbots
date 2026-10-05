@@ -22,7 +22,7 @@ public:
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, BlackTempleHelpers::BLACK_TEMPLE_MAP_ID) &&
+        return EncounterHelpers::IsEncounterInProgress(bot, BlackTempleHelpers::BT_MAP_ID) &&
             IsActiveInEncounter();
     }
 
