@@ -154,14 +154,6 @@ enum class BlackTempleObjects : uint32
     GO_SHADOW_TRAP    = 185916,
 };
 
-enum class TankPositionState : uint8
-{
-    MovingToTransition = 0,
-    MovingToFinal      = 1,
-    Positioned         = 2,
-    Unknown            = 255,
-};
-
 inline constexpr uint32 BT_MAP_ID = 564;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
@@ -345,9 +337,10 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
 inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
 inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
-
-extern std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
-TankPositionState GetShahrazTankPositionState(Player* bot);
+inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
+// Wide enough for an off-tank on her victim to take over without melee backing off.
+inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
+inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
 
 // Illidari Council
 

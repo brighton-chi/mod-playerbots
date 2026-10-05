@@ -847,23 +847,6 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
     return PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d(suffering) < SUFFERING_RANGED_DISTANCE;
 }
 
-// Mother Shahraz
-
-std::unordered_map<ObjectGuid, TankPositionState> shahrazTankStep;
-
-TankPositionState GetShahrazTankPositionState(Player* bot)
-{
-    Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
-        return TankPositionState::Unknown;
-
-    auto it = shahrazTankStep.find(mainTank->GetGUID());
-    if (it != shahrazTankStep.end())
-        return it->second;
-
-    return TankPositionState::Unknown;
-}
-
 // Illidari Council
 
 std::unordered_map<uint32, uint32> councilDpsWaitTimer;

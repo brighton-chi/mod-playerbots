@@ -28,7 +28,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     bool reset = false;
 
     reset |= flameTankWaypointIndex.erase(guid) > 0;
-    reset |= shahrazTankStep.erase(guid) > 0;
     reset |= illidanShadowTrapGuid.erase(guid) > 0;
     reset |= illidanShadowTrapDestination.erase(guid) > 0;
 
@@ -913,40 +912,42 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
         return Attack(shahraz);
 
     Unit* victim = shahraz->GetVictim();
-    Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
-    if (playerVictim && PlayerbotAI::IsTank(playerVictim))
+    if (!victim)
+        return false;
+
+    // Saber Lash is split between her victim and the two closest to it.
+    if (victim != bot)
     {
-        ObjectGuid const guid = bot->GetGUID();
-        auto const it = shahrazTankStep.try_emplace(
-            guid, TankPositionState::MovingToTransition).first;
-        TankPositionState const state = it->second;
+        if (bot->GetExactDist2d(victim) <= SHAHRAZ_OFF_TANK_DISTANCE)
+            return false;
 
-        constexpr float maxDistance = 0.5f;
-        Position const& position = state == TankPositionState::MovingToTransition ?
-            SHAHRAZ_TRANSITION_POSITION : SHAHRAZ_TANK_POSITION;
-        float const distToPosition = bot->GetExactDist2d(position);
-
-        if (distToPosition > maxDistance && bot->IsWithinMeleeRange(shahraz))
-        {
-            bool const backwards = (shahraz->GetVictim() == bot);
-            return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                          bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT, true, backwards);
-        }
-
-        if (state == TankPositionState::MovingToTransition && distToPosition <= maxDistance)
-            shahrazTankStep[guid] = TankPositionState::MovingToFinal;
-
-        if (state != TankPositionState::MovingToTransition && distToPosition <= maxDistance)
-        {
-            float const orientation = atan2(shahraz->GetPositionY() - bot->GetPositionY(),
-                                            shahraz->GetPositionX() - bot->GetPositionX());
-            bot->SetFacingTo(orientation);
-            shahrazTankStep[guid] = TankPositionState::Positioned;
-        }
+        return MoveTo(BT_MAP_ID, victim->GetPositionX(), victim->GetPositionY(),
+                      bot->GetPositionZ(), false, false, false, false,
+                      MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    return false;
+    float const distToTankPosition = bot->GetExactDist2d(SHAHRAZ_TANK_POSITION);
+    if (distToTankPosition <= SHAHRAZ_TANK_POSITION_TOLERANCE)
+    {
+        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, shahraz))
+            bot->SetFacingTo(bot->GetAngle(shahraz));
+
+        return false;
+    }
+
+    if (!bot->IsWithinMeleeRange(shahraz))
+        return false;
+
+    // Within this distance of the tank spot, the bot is past the statue.
+    float const finalLegDistance =
+        SHAHRAZ_TRANSITION_POSITION.GetExactDist2d(SHAHRAZ_TANK_POSITION) +
+        SHAHRAZ_TANK_POSITION_TOLERANCE;
+    Position const& position = distToTankPosition <= finalLegDistance ?
+        SHAHRAZ_TANK_POSITION : SHAHRAZ_TRANSITION_POSITION;
+
+    return MoveTo(BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+                  bot->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT, true, true);
 }
 
 bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)

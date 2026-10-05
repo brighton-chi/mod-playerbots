@@ -338,30 +338,24 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
 
 float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
-        return 1.0f;
-
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<FollowAction*>(action) ||
+    bool const isFormationMove = dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action);
+    bool const isFollowOrFlee =
+        dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action))
-    {
-        return 0.0f;
-    }
+        dynamic_cast<CastBlinkBackAction*>(action);
 
-    return 1.0f;
+    if (!isFormationMove && !isFollowOrFlee)
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "mother shahraz") ? 0.0f : 1.0f;
 }
 
 float MotherShahrazBotsWithFatalAttractionOnlyRunAwayMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "mother shahraz") ||
-        !bot->HasAura(Id(BlackTempleSpells::SPELL_FATAL_ATTRACTION)))
+    if (!bot->HasAura(Id(BlackTempleSpells::SPELL_FATAL_ATTRACTION)) ||
+        !AI_VALUE2(Unit*, "find target", "mother shahraz"))
     {
         return 1.0f;
     }

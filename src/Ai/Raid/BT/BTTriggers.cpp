@@ -304,8 +304,9 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
     if (!shahraz || shahraz->GetHealthPct() < 90.0f)
         return false;
 
-    TankPositionState const tankState = GetShahrazTankPositionState(bot);
-    return tankState != TankPositionState::Positioned;
+    Unit* victim = shahraz->GetVictim();
+    return !victim ||
+        victim->GetExactDist2d(SHAHRAZ_TANK_POSITION) > SHAHRAZ_POSITIONED_DISTANCE;
 }
 
 bool MotherShahrazRangedShouldPositionUnderPillarTrigger::IsActiveInEncounter()
