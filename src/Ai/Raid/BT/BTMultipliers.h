@@ -76,16 +76,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class SupremusDelayDpsCooldownsInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    SupremusDelayDpsCooldownsInKitePhaseMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "supremus delay dps cooldowns in kite phase") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
 // rogue by bounding radius, so it takes the rogue well out of the fight.
 class SupremusDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
@@ -190,19 +180,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Between essences: until one can be attacked, at the pull and while Enslaved Souls are up.
-class ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier
-    : public BlackTempleEncounterMultiplier
-{
-public:
-    ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-              botAI, "reliquary of souls delay dps cooldowns between essences") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Lets a mage steal Rune Shield before a Purge or Tranquilizing Shot removes it.
 class ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier : public BlackTempleEncounterMultiplier
 {
@@ -300,16 +277,6 @@ protected:
 };
 
 // Illidan Stormrage <The Betrayer>
-
-class IllidanStormrageDelayDpsCooldownsMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidanStormrageDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage delay dps cooldowns") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
 
 class IllidanStormrageControlTankActionsMultiplier : public BlackTempleEncounterMultiplier
 {

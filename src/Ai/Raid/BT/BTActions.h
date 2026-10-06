@@ -45,6 +45,26 @@ private:
     std::string const _bossName;
 };
 
+// Used for High Warlord Naj'entus, Teron Gorefiend and Gurtogg Bloodboil, including his Fel Rage
+// target. The bot the boss is on walks it to the spot. With _allTanks, every tank does while the
+// boss is on any tank. A tank walks only while in melee range; a non-tank leads from anywhere.
+class BlackTemplePositionBossAction : public AttackAction
+{
+public:
+    BlackTemplePositionBossAction(
+        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        Position const& position, float arrivalDist = 3.0f, bool allTanks = false)
+        : AttackAction(botAI, name), _bossName(bossName), _position(position),
+          _arrivalDist(arrivalDist), _allTanks(allTanks) {}
+    bool Execute(Event event) override;
+
+private:
+    std::string const _bossName;
+    Position const _position;
+    float const _arrivalDist;
+    bool const _allTanks;
+};
+
 // Trash
 
 class MarkSisterOfPleasureAction : public Action
@@ -77,14 +97,6 @@ private:
 };
 
 // High Warlord Naj'entus
-
-class HighWarlordNajentusTanksPositionBossAction : public AttackAction
-{
-public:
-    HighWarlordNajentusTanksPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "high warlord naj'entus tanks position boss") {}
-    bool Execute(Event event) override;
-};
 
 class HighWarlordNajentusDisperseRangedAction : public MovementAction
 {
@@ -178,14 +190,6 @@ public:
 
 // Teron Gorefiend
 
-class TeronGorefiendTanksPositionBossAction : public AttackAction
-{
-public:
-    TeronGorefiendTanksPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "teron gorefiend tanks position boss") {}
-    bool Execute(Event event) override;
-};
-
 class TeronGorefiendPositionRangedOnBalconyAction : public MovementAction
 {
 public:
@@ -220,28 +224,11 @@ public:
 
 // Gurtogg Bloodboil
 
-class GurtoggBloodboilTanksPositionBossAction : public AttackAction
-{
-public:
-    GurtoggBloodboilTanksPositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "gurtogg bloodboil tanks position boss") {}
-    bool Execute(Event event) override;
-};
-
 class GurtoggBloodboilRotateRangedGroupsAction : public MovementAction
 {
 public:
     GurtoggBloodboilRotateRangedGroupsAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil rotate ranged groups") {}
-    bool Execute(Event event) override;
-};
-
-// The Fel Rage target brings him to the tank spot, his cones facing the wall.
-class GurtoggBloodboilLeadBossToTankPositionAction : public MovementAction
-{
-public:
-    GurtoggBloodboilLeadBossToTankPositionAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "gurtogg bloodboil lead boss to tank position") {}
     bool Execute(Event event) override;
 };
 

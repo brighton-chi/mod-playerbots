@@ -131,22 +131,28 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && !IsSupremusKitePhase(supremus) &&
-        GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
+    if (!supremus || IsSupremusKitePhase(supremus))
+        return false;
+
+    return GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
 bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    return supremus && supremus->GetVictim() == bot && IsSupremusKitePhase(supremus) &&
-        bot->GetDistance2d(supremus) < SUPREMUS_KITE_DISTANCE;
+    if (!supremus || supremus->GetVictim() != bot || !IsSupremusKitePhase(supremus))
+        return false;
+
+    return bot->GetDistance2d(supremus) < SUPREMUS_KITE_DISTANCE;
 }
 
 bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "supremus") &&
-        IsInEruptingSupremusVolcano(
-            GetSupremusVolcanoes(botAI), bot->GetPositionX(), bot->GetPositionY());
+    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+        return false;
+
+    return IsInEruptingSupremusVolcano(
+        GetSupremusVolcanoes(botAI), bot->GetPositionX(), bot->GetPositionY());
 }
 
 // Shade of Akama
@@ -210,9 +216,13 @@ bool GurtoggBloodboilShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) &&
-        !bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) &&
-        AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!PlayerbotAI::IsRanged(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
+        return false;
+
+    return !bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 }
 
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
@@ -228,19 +238,18 @@ bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    for (char const* name : { "essence of desire", "essence of anger" })
-    {
-        Unit* essence = AI_VALUE2(Unit*, "find target", name);
-        if (essence && essence->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-            return true;
-    }
+    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    if (desire && desire->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+        return true;
 
-    return false;
+    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+    return anger && anger->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
-    return IsOutOfSufferingPosition(bot, AI_VALUE2(Unit*, "find target", "essence of suffering"));
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    return suffering && IsOutOfSufferingPosition(bot, suffering);
 }
 
 bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
@@ -299,8 +308,9 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
+    constexpr float shahrazMeleeStartHealthPct = 90.0f;
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz || shahraz->GetHealthPct() < 90.0f)
+    if (!shahraz || shahraz->GetHealthPct() < shahrazMeleeStartHealthPct)
         return false;
 
     Unit* victim = shahraz->GetVictim();
@@ -328,8 +338,13 @@ bool MotherShahrazFatalAttractionTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilGathiosShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "gathios the shatterer") &&
-        PlayerbotAI::IsMainTank(bot);
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        return false;
+
+    return PlayerbotAI::IsMainTank(bot);
 }
 
 bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
@@ -354,33 +369,28 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "lady malande") &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) &&
+        AI_VALUE2(Unit*, "find target", "lady malande");
 }
 
 bool IllidariCouncilDarkshadowShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsTank(bot))
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
         return false;
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return darkshadow && !IsDarkshadowVanished(darkshadow) &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
+    return darkshadow && !IsDarkshadowVanished(darkshadow);
 }
 
 bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_MAGE)
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
-        GetZerevorMageTank(botAI) == bot;
+    return IsZerevorMageTank(botAI) && AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsHeal(bot) && AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") &&
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
+    return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
+        AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
 bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -414,15 +424,15 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return false;
 
-    bool const isTank = PlayerbotAI::IsTank(bot);
-    if ((isTank && (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))) ||
-        (bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot))
+    if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+        IsZerevorMageTank(botAI))
     {
         return false;
     }
 
     Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (isTank && darkshadow && !IsDarkshadowVanished(darkshadow) &&
+    if (darkshadow && !IsDarkshadowVanished(darkshadow) &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
         return false;
@@ -445,7 +455,7 @@ bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    return illidan && !IsIllidanDeathScene(illidan);
 }
 
 bool IllidanStormrageCastsFlameCrashTrigger::IsActiveInEncounter()
@@ -464,7 +474,7 @@ bool IllidanStormrageCastsFlameCrashTrigger::IsActiveInEncounter()
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1 || illidan->GetVictim() == bot)
+    if (!illidan || IsIllidanDeathScene(illidan) || illidan->GetVictim() == bot)
         return false;
 
     int const phase = GetIllidanPhase(illidan);
@@ -493,7 +503,7 @@ bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1 || GetIllidanPhase(illidan) == 2)
+    if (!illidan || IsIllidanDeathScene(illidan) || GetIllidanPhase(illidan) == 2)
         return false;
 
     ObjectGuid const guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
@@ -521,7 +531,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
 bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
+    if (!illidan || IsIllidanDeathScene(illidan))
         return false;
 
     Pet* pet = bot->GetPet();
@@ -614,7 +624,7 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
+    if (!illidan || IsIllidanDeathScene(illidan))
         return false;
 
     if (PlayerbotAI::IsTank(bot) && GetIllidanPhase(illidan) != 4)
@@ -626,7 +636,7 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1 || GetIllidanPhase(illidan) != 5)
+    if (!illidan || IsIllidanDeathScene(illidan) || GetIllidanPhase(illidan) != 5)
         return false;
 
     GameObject* trap = FindNearestTrap(botAI);
@@ -667,7 +677,7 @@ bool IllidanStormrageShouldManageDpsTimerAndRtiTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && illidan->GetHealth() > 1;
+    return illidan && !IsIllidanDeathScene(illidan);
 }
 
 // Destroying hazards behind phases is not gated behind CheatMask
@@ -678,7 +688,7 @@ bool IllidanStormrageShouldClearHazardsBetweenPhasesTrigger::IsActiveInEncounter
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
+    if (!illidan || IsIllidanDeathScene(illidan))
         return false;
 
     int const phase = GetIllidanPhase(illidan);

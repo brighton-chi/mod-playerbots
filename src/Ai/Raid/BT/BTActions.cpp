@@ -74,6 +74,40 @@ bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
     return MisdirectTargetToTank(botAI, boss, mainTank);
 }
 
+bool BlackTemplePositionBossAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    if (!boss)
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != boss)
+        return Attack(boss);
+
+    Unit* victim = boss->GetVictim();
+    if (!victim)
+        return false;
+
+    if (victim != bot)
+    {
+        Player* playerVictim = victim->ToPlayer();
+        if (!_allTanks || !playerVictim || !PlayerbotAI::IsTank(playerVictim))
+            return false;
+    }
+
+    if (PlayerbotAI::IsTank(bot) && !bot->IsWithinMeleeRange(boss))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, _position, _arrivalDist, boss, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+}
+
 // Trash
 
 // Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
@@ -159,33 +193,6 @@ bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
 }
 
 // High Warlord Naj'entus
-
-bool HighWarlordNajentusTanksPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != najentus)
-        return Attack(najentus);
-
-    if (najentus->GetVictim() != bot || !bot->IsWithinMeleeRange(najentus))
-        return false;
-
-    constexpr float arrivalDist = 3.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, NAJENTUS_TANK_POSITION, arrivalDist, najentus, moveX, moveY, backwards))
-    {
-        return false;
-    }
-
-    return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
 
 bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
 {
@@ -505,36 +512,6 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
 
 // Teron Gorefiend
 
-bool TeronGorefiendTanksPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
-    if (!gorefiend)
-        return false;
-
-    if (MarkTargetWithSkull(bot, gorefiend))
-        return true;
-
-    if (AI_VALUE(Unit*, "current target") != gorefiend)
-        return Attack(gorefiend);
-
-    if (gorefiend->GetVictim() != bot || !bot->IsWithinMeleeRange(gorefiend))
-        return false;
-
-    constexpr float arrivalDist = 3.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, GOREFIEND_TANK_POSITION, arrivalDist, gorefiend, moveX, moveY, backwards))
-    {
-        return false;
-    }
-
-    return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
-
 // Assume positions in arc at the edge of the balcony (farthest from Constructs)
 bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
 {
@@ -697,52 +674,12 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
 
 // Gurtogg Bloodboil
 
-bool GurtoggBloodboilTanksPositionBossAction::Execute(Event /*event*/)
-{
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    if (!gurtogg)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != gurtogg)
-        return Attack(gurtogg);
-
-    Unit* victim = gurtogg->GetVictim();
-    Player* playerVictim = victim ? victim->ToPlayer() : nullptr;
-    if (!playerVictim || !PlayerbotAI::IsTank(playerVictim) || !bot->IsWithinMeleeRange(gurtogg))
-        return false;
-
-    constexpr float arrivalDist = 2.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, GURTOGG_TANK_POSITION, arrivalDist, gurtogg, moveX, moveY, backwards))
-    {
-        return false;
-    }
-
-    return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
-
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
     Position const& position = GetGurtoggBloodboilPosition(bot);
     return MoveInside(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         GURTOGG_POSITION_TOLERANCE, MovementPriority::MOVEMENT_FORCED);
-}
-
-bool GurtoggBloodboilLeadBossToTankPositionAction::Execute(Event /*event*/)
-{
-    Position const& position = GURTOGG_TANK_POSITION;
-    if (bot->GetExactDist2d(position) <= GURTOGG_POSITION_TOLERANCE)
-        return false;
-
-    return MoveTo(
-        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Reliquary of Souls

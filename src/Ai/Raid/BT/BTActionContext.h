@@ -246,7 +246,9 @@ private:
     }
     static Action* high_warlord_najentus_tanks_position_boss(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusTanksPositionBossAction(botAI);
+        return new BlackTemplePositionBossAction(
+            botAI, "high warlord naj'entus tanks position boss", "high warlord naj'entus",
+            BtHelpers::NAJENTUS_TANK_POSITION);
     }
     static Action* high_warlord_najentus_disperse_ranged(PlayerbotAI* botAI)
     {
@@ -302,7 +304,9 @@ private:
     }
     static Action* teron_gorefiend_tanks_position_boss(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendTanksPositionBossAction(botAI);
+        return new BlackTemplePositionBossAction(
+            botAI, "teron gorefiend tanks position boss", "teron gorefiend",
+            BtHelpers::GOREFIEND_TANK_POSITION);
     }
     static Action* teron_gorefiend_position_ranged_on_balcony(PlayerbotAI* botAI)
     {
@@ -329,7 +333,10 @@ private:
     }
     static Action* gurtogg_bloodboil_tanks_position_boss(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilTanksPositionBossAction(botAI);
+        constexpr bool allTanks = true;
+        return new BlackTemplePositionBossAction(
+            botAI, "gurtogg bloodboil tanks position boss", "gurtogg bloodboil",
+            BtHelpers::GURTOGG_TANK_POSITION, BtHelpers::GURTOGG_POSITION_TOLERANCE, allTanks);
     }
     static Action* gurtogg_bloodboil_rotate_ranged_groups(PlayerbotAI* botAI)
     {
@@ -337,7 +344,9 @@ private:
     }
     static Action* gurtogg_bloodboil_lead_boss_to_tank_position(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilLeadBossToTankPositionAction(botAI);
+        return new BlackTemplePositionBossAction(
+            botAI, "gurtogg bloodboil lead boss to tank position", "gurtogg bloodboil",
+            BtHelpers::GURTOGG_TANK_POSITION, BtHelpers::GURTOGG_POSITION_TOLERANCE);
     }
 
     // Reliquary of Souls

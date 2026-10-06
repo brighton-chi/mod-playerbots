@@ -194,9 +194,6 @@ GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit);
 bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI);
 ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo);
-// Casters and healers leave a Reaver while magic would build Chaotic Charge on her; everyone else
-// stays, with the spells that would build it held.
-void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions);
 // Imps, water elementals, succubi and felhunters, whose attacks build Chaotic Charge.
 bool IsChargeBuildingPet(Unit* unit);
 // Where to send such a pet instead of a Reaver: the owner's target, else any other attacker.
@@ -280,8 +277,6 @@ inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 // Living, attackable channelers by GUID, then sorcerers by GUID: the kill order.
 GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
-// Channelers and sorcerers can't be tanked.
-void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions);
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 bool GetPathStepTowardPoint(
@@ -295,9 +290,12 @@ inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15000;
 inline constexpr float GOREFIEND_POSITION_TOLERANCE = 2.0f;
 // Spirit Chains and Spirit Volley hit within 12 yd of the spirit.
 inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
+inline constexpr uint32 GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS = 1000;
 
 inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
+
+GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI);
 
 // A triggered cast records neither its cooldown nor the global cooldown, so both come from the
 // spell data. False if the cast fails.
@@ -305,7 +303,7 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 
 // Gurtogg Bloodboil
 
-// Bloodboil hits the 5 farthest, so three groups of five ranged take it in turn.
+// Bloodboil hits the 5 farthest players, so 3 groups of 5 ranged rotate to soak it.
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
 inline constexpr float GURTOGG_POSITION_TOLERANCE = 2.0f;
@@ -371,7 +369,8 @@ inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
-bool HasDangerousCouncilAura(Unit* unit);
+bool IsZerevorMageTank(PlayerbotAI* botAI);
+bool HasDangerousCouncilAura(Player* bot);
 bool IsDarkshadowVanished(Unit* darkshadow);
 
 // Illidan Stormrage <The Betrayer>
@@ -421,6 +420,7 @@ inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 
 int GetIllidanPhase(Unit* illidan);
+bool IsIllidanDeathScene(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot);

@@ -253,21 +253,6 @@ ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo)
     return area ? ChaoticChargeReach::Area : ChaoticChargeReach::Target;
 }
 
-void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Player* bot = botAI->GetBot();
-    if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
-        return;
-
-    auto const& reavers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    for (ObjectGuid const& guid : reavers)
-    {
-        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
-            exclusions.insert(guid);
-    }
-}
-
 bool IsChargeBuildingPet(Unit* unit)
 {
     if (!unit)
@@ -586,16 +571,6 @@ Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
     return nullptr;
 }
 
-void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    if (!PlayerbotAI::IsTank(botAI->GetBot()))
-        return;
-
-    auto const& adds =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shade of akama adds")->RefGet();
-    exclusions.insert(adds.begin(), adds.end());
-}
-
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
 {
@@ -665,6 +640,24 @@ bool GetPathStepTowardPoint(
 }
 
 // Teron Gorefiend
+
+GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI)
+{
+    GuidVector constructs;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == Id(BtNpcs::NPC_SHADOWY_CONSTRUCT))
+        {
+            constructs.push_back(guid);
+        }
+    }
+
+    return constructs;
+}
 
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 {
@@ -886,11 +879,14 @@ Player* GetZerevorMageTank(PlayerbotAI* botAI)
     return GetCachedPlayer(botAI, "illidari council zerevor mage tank");
 }
 
-bool HasDangerousCouncilAura(Unit* unit)
+bool IsZerevorMageTank(PlayerbotAI* botAI)
 {
-    if (!unit)
-        return false;
+    Player* bot = botAI->GetBot();
+    return bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot;
+}
 
+bool HasDangerousCouncilAura(Player* bot)
+{
     static constexpr std::array dangerousAuras = {
         Id(BtSpells::SPELL_CONSECRATION),
         Id(BtSpells::SPELL_BLIZZARD),
@@ -899,7 +895,7 @@ bool HasDangerousCouncilAura(Unit* unit)
 
     for (uint32 aura : dangerousAuras)
     {
-        if (unit->HasAura(aura))
+        if (bot->HasAura(aura))
             return true;
     }
 
@@ -924,7 +920,7 @@ std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
 int GetIllidanPhase(Unit* illidan)
 {
-    if (!illidan || illidan->GetHealth() == 1 ||
+    if (!illidan || IsIllidanDeathScene(illidan) ||
         illidan->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON)))
     {
         return -1;
@@ -968,6 +964,11 @@ int GetIllidanPhase(Unit* illidan)
         return 5;
 
     return -1;
+}
+
+bool IsIllidanDeathScene(Unit* illidan)
+{
+    return illidan && illidan->GetHealth() == 1;
 }
 
 std::vector<Unit*> GetAllFlameCrashes(Player* bot)

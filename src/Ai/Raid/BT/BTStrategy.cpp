@@ -5,7 +5,13 @@
  */
 
 #include "BTStrategy.h"
+#include "BTHelpers.h"
 #include "BTMultipliers.h"
+#include "EncounterHelpers.h"
+#include "Playerbots.h"
+
+using namespace BtHelpers;
+using namespace EncounterHelpers;
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -99,8 +105,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("reliquary of souls hunter should misdirect",
         { NextAction("reliquary of souls misdirect to main tank", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode(
-        "reliquary of souls should position for suffering",
+    triggers.push_back(new TriggerNode("reliquary of souls should position for suffering",
         { NextAction("reliquary of souls adjust distance from suffering", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls healers should attack suffering",
@@ -232,7 +237,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInKitePhaseMultiplier(botAI));
-    multipliers.push_back(new SupremusDelayDpsCooldownsInKitePhaseMultiplier(botAI));
     multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
 
     // Shade of Akama
@@ -250,7 +254,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
-    multipliers.push_back(new ReliquaryOfSoulsDelayDpsCooldownsBetweenEssencesMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(botAI));
 
     // Mother Shahraz
@@ -266,7 +269,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
-    multipliers.push_back(new IllidanStormrageDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlNonTankMovementMultiplier(botAI));
@@ -274,14 +276,61 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }
 
+namespace
+{
+
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
+        return;
+
+    auto const& reavers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    for (ObjectGuid const& guid : reavers)
+    {
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
+            exclusions.insert(guid);
+    }
+}
+
+void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (!PlayerbotAI::IsTank(botAI->GetBot()))
+        return;
+
+    auto const& adds =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    exclusions.insert(adds.begin(), adds.end());
+}
+
+void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
+        return;
+
+    auto const& constructs =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowy constructs")->RefGet();
+    exclusions.insert(constructs.begin(), constructs.end());
+}
+
+} // end anonymous namespace
+
 void RaidBlackTempleStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType type)
 {
-    // Trash
-    if (type != TargetValueExclusionType::TankTarget)
-        BtHelpers::AppendShadowmoonReaverExclusions(botAI, exclusions);
+    Player* bot = botAI->GetBot();
+    if (bot->GetMapId() != BT_MAP_ID)
+        return;
 
-    // Shade of Akama
+    if (type != TargetValueExclusionType::TankTarget)
+        AppendShadowmoonReaverExclusions(botAI, exclusions);
+
+    if (!IsEncounterInProgress(bot, BT_MAP_ID))
+        return;
+
     if (type == TargetValueExclusionType::TankTarget)
-        BtHelpers::AppendShadeOfAkamaTankExclusions(botAI, exclusions);
+        AppendShadeOfAkamaTankExclusions(botAI, exclusions);
+
+    AppendShadowyConstructExclusions(botAI, exclusions);
 }
