@@ -1324,6 +1324,8 @@ void MovementAction::WaitForReach(float distance)
         delay = 0;
 
     botAI->SetNextCheckDelay((uint32)delay);
+    if (IsReaction())
+        SetDuration((uint32)delay);
 }
 
 // similiar to botAI->SetNextCheckDelay() but only stops movement
