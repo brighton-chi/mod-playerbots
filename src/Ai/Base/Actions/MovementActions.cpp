@@ -1343,9 +1343,6 @@ bool MovementAction::Flee(Unit* target)
     if (!target)
         return false;
 
-    if (!sPlayerbotAIConfig.fleeingEnabled)
-        return false;
-
     if (!IsMovingAllowed())
     {
         botAI->TellError("I am stuck while fleeing");
@@ -1480,18 +1477,9 @@ bool MovementAction::Flee(Unit* target)
     if ((foundFlee || lastFlee) && bot->GetGroup())
     {
         if (!lastFlee)
-        {
             AI_VALUE(LastMovement&, "last movement").lastFlee = now;
-        }
         else
-        {
-            if ((now - lastFlee) > fleeDelay)
-            {
-                AI_VALUE(LastMovement&, "last movement").lastFlee = 0;
-            }
-            else
-                return false;
-        }
+            AI_VALUE(LastMovement&, "last movement").lastFlee = 0;
     }
 
     FleeManager manager(bot, botAI->GetRange("flee"), bot->GetAngle(target) + M_PI);
@@ -2607,6 +2595,9 @@ bool RunAwayAction::Execute(Event /*event*/) { return Flee(AI_VALUE(Unit*, "grou
 
 bool MoveToLootAction::Execute(Event /*event*/)
 {
+    if (AI_VALUE(LootObjectStack*, "available loot")->IsLootPending() || bot->GetLootGUID())
+        return false;
+
     LootObject loot = AI_VALUE(LootObject, "loot target");
     if (!loot.IsLootPossible(bot))
         return false;
