@@ -22,8 +22,10 @@ public:
         // Trash
         creators["sister of pleasure should be marked"] =
             &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_marked;
+
         creators["shadowmoon reaver wand builds charges"] =
             &RaidBlackTempleTriggerContext::shadowmoon_reaver_wand_builds_charges;
+
         creators["shadowmoon reaver should control caster pet"] =
             &RaidBlackTempleTriggerContext::shadowmoon_reaver_should_control_caster_pet;
 

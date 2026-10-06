@@ -108,6 +108,12 @@ bool BlackTemplePositionBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
+{
+    return botAI->CanCastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot) &&
+        botAI->CastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot);
+}
+
 // Trash
 
 // Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
@@ -625,22 +631,23 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     if (!leadConstruct)
     {
         Unit* victim = gorefiend->GetVictim();
-        if (victim && CastVengefulSpiritSpell(
-                          spirit, victim, Id(BtSpells::SPELL_SPIRIT_SHIELD)))
-        {
+        if (victim && CastVengefulSpiritSpell(spirit, victim, Id(BtSpells::SPELL_SPIRIT_SHIELD)))
             return true;
-        }
 
+        constexpr float spiritStrikeRange = 5.0f;
+        float const currentDistance = spirit->GetDistance2d(gorefiend);
         bool moving = false;
-        if (!spirit->IsWithinMeleeRange(gorefiend))
+        if (currentDistance > spiritStrikeRange)
         {
-            float const distance = spirit->GetExactDist2d(gorefiend);
-            float const moveDistance = distance - gorefiend->GetCombatReach();
+            float const moveDistance = currentDistance - spiritStrikeRange;
             float const dX = gorefiend->GetPositionX() - spirit->GetPositionX();
             float const dY = gorefiend->GetPositionY() - spirit->GetPositionY();
+
             spirit->GetMotionMaster()->MovePoint(
-                0, spirit->GetPositionX() + dX / distance * moveDistance,
-                spirit->GetPositionY() + dY / distance * moveDistance, spirit->GetPositionZ());
+                0, spirit->GetPositionX() + dX / currentDistance * moveDistance,
+                spirit->GetPositionY() + dY / currentDistance * moveDistance,
+                spirit->GetPositionZ());
+
             moving = true;
         }
 
@@ -655,15 +662,15 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         float const moveDistance = distanceToLead - GOREFIEND_SPIRIT_AOE_DISTANCE + 2.0f;
         float const dX = leadConstruct->GetPositionX() - spirit->GetPositionX();
         float const dY = leadConstruct->GetPositionY() - spirit->GetPositionY();
+
         spirit->GetMotionMaster()->MovePoint(
             0, spirit->GetPositionX() + dX / distanceToLead * moveDistance,
             spirit->GetPositionY() + dY / distanceToLead * moveDistance, spirit->GetPositionZ());
+
         moving = true;
     }
-    else if (CastVengefulSpiritSpell(
-                 spirit, leadConstruct, Id(BtSpells::SPELL_SPIRIT_VOLLEY)) ||
-             CastVengefulSpiritSpell(
-                 spirit, leadConstruct, Id(BtSpells::SPELL_SPIRIT_CHAINS)))
+    else if (CastVengefulSpiritSpell(spirit, leadConstruct, Id(BtSpells::SPELL_SPIRIT_VOLLEY)) ||
+        CastVengefulSpiritSpell(spirit, leadConstruct, Id(BtSpells::SPELL_SPIRIT_CHAINS)))
     {
         return true;
     }
@@ -688,7 +695,6 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
     Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
-
     if (!desire && !anger)
         return false;
 
@@ -821,12 +827,6 @@ bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
     return botAI->CastSpell(Id(BtSpells::SPELL_SPELLSTEAL), desire);
 }
 
-bool ReliquaryOfSoulsSpellReflectDeadenAction::Execute(Event /*event*/)
-{
-    return botAI->CanCastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot) &&
-        botAI->CastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot);
-}
-
 // Mother Shahraz
 
 bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
@@ -853,7 +853,10 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    float const distToTankPosition = bot->GetExactDist2d(SHAHRAZ_TANK_POSITION);
+    Position const& tankPosition = SHAHRAZ_TANK_POSITION;
+    Position const& transitionPosition = SHAHRAZ_TRANSITION_POSITION;
+
+    float const distToTankPosition = bot->GetExactDist2d(tankPosition);
     if (distToTankPosition <= SHAHRAZ_TANK_POSITION_TOLERANCE)
     {
         if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, shahraz))
@@ -867,10 +870,9 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 
     // Within this distance of the tank spot, the bot is past the statue.
     float const finalLegDistance =
-        SHAHRAZ_TRANSITION_POSITION.GetExactDist2d(SHAHRAZ_TANK_POSITION) +
-        SHAHRAZ_TANK_POSITION_TOLERANCE;
+        transitionPosition.GetExactDist2d(tankPosition) + SHAHRAZ_TANK_POSITION_TOLERANCE;
     Position const& position = distToTankPosition <= finalLegDistance ?
-        SHAHRAZ_TANK_POSITION : SHAHRAZ_TRANSITION_POSITION;
+        tankPosition : transitionPosition;
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
@@ -883,7 +885,6 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-
 }
 
 // This doesn't matter for bots since they don't take fall damage, and it's actually easier
@@ -971,9 +972,7 @@ std::vector<Player*> MotherShahrazBreakFatalAttractionAction::GetAttractedPlayer
     {
         Player* member = ref->GetSource();
         if (member && member->HasAura(Id(BtSpells::SPELL_FATAL_ATTRACTION)))
-        {
             attractedPlayers.push_back(member);
-        }
     }
 
     std::sort(attractedPlayers.begin(), attractedPlayers.end(),
@@ -1054,8 +1053,9 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BT_MAP_ID, gathios->GetPositionX(), gathios->GetPositionY(),
-                        gathios->GetPositionZ(), bot->GetOrientation());
+        bot->NearTeleportTo(
+            gathios->GetPositionX(), gathios->GetPositionY(),
+            gathios->GetPositionZ(), bot->GetOrientation());
     }
 
     if (MarkTargetWithSquare(bot, gathios))
@@ -1094,14 +1094,6 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event /*event*/)
-{
-    if (botAI->CanCastSpell("spell reflection", bot))
-        return botAI->CastSpell("spell reflection", bot);
-
-    return false;
-}
-
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
@@ -1111,8 +1103,9 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BT_MAP_ID, malande->GetPositionX(), malande->GetPositionY(),
-                        malande->GetPositionZ(), bot->GetOrientation());
+        bot->NearTeleportTo(
+            malande->GetPositionX(), malande->GetPositionY(),
+            malande->GetPositionZ(), bot->GetOrientation());
     }
 
     if (MarkTargetWithStar(bot, malande))
@@ -1135,8 +1128,9 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
-        bot->TeleportTo(BT_MAP_ID, darkshadow->GetPositionX(), darkshadow->GetPositionY(),
-                        darkshadow->GetPositionZ(), bot->GetOrientation());
+        bot->NearTeleportTo(
+            darkshadow->GetPositionX(), darkshadow->GetPositionY(),
+            darkshadow->GetPositionZ(), bot->GetOrientation());
     }
 
     if (MarkTargetWithCircle(bot, darkshadow))

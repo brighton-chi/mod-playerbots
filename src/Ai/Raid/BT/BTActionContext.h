@@ -22,8 +22,10 @@ public:
         // Trash
         creators["mark sister of pleasure"] =
             &RaidBlackTempleActionContext::mark_sister_of_pleasure;
+
         creators["shadowmoon reaver stop wand"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_stop_wand;
+
         creators["shadowmoon reaver control caster pet"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_control_caster_pet;
 
@@ -368,7 +370,8 @@ private:
     }
     static Action* reliquary_of_souls_spell_reflect_deaden(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsSpellReflectDeadenAction(botAI);
+        return new BlackTempleCastSpellReflectionAction(
+            botAI, "reliquary of souls spell reflect deaden");
     }
 
     // Mother Shahraz
@@ -405,7 +408,8 @@ private:
     }
     static Action* illidari_council_main_tank_reflect_judgement_of_command(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilMainTankReflectJudgementOfCommandAction(botAI);
+        return new BlackTempleCastSpellReflectionAction(
+            botAI, "illidari council main tank reflect judgement of command");
     }
     static Action* illidari_council_first_assist_tank_focus_malande(PlayerbotAI* botAI)
     {

@@ -65,6 +65,15 @@ private:
     bool const _allTanks;
 };
 
+// Used for Reliquary of Souls and Illidari Council.
+class BlackTempleCastSpellReflectionAction : public Action
+{
+public:
+    BlackTempleCastSpellReflectionAction(PlayerbotAI* botAI, std::string const& name)
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class MarkSisterOfPleasureAction : public Action
@@ -271,14 +280,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class ReliquaryOfSoulsSpellReflectDeadenAction : public Action
-{
-public:
-    ReliquaryOfSoulsSpellReflectDeadenAction(
-        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls spell reflect deaden") {}
-    bool Execute(Event event) override;
-};
-
 // Mother Shahraz
 
 class MotherShahrazTanksPositionBossUnderPillarAction : public AttackAction
@@ -331,14 +332,6 @@ class IllidariCouncilMainTankPositionGathiosAction : public AttackAction
 public:
     IllidariCouncilMainTankPositionGathiosAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "illidari council main tank position gathios") {}
-    bool Execute(Event event) override;
-};
-
-class IllidariCouncilMainTankReflectJudgementOfCommandAction : public Action
-{
-public:
-    IllidariCouncilMainTankReflectJudgementOfCommandAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidari council main tank reflect judgement of command") {}
     bool Execute(Event event) override;
 };
 

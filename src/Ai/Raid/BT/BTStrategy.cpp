@@ -17,7 +17,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("black temple no encounter in progress",
-        { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 11) }));
+        { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Trash
     triggers.push_back(new TriggerNode("sister of pleasure should be marked",
@@ -40,13 +40,13 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("high warlord naj'entus disperse ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus impaled player needs remover",
-        { NextAction("high warlord naj'entus assign spine remover", ACTION_EMERGENCY + 12) }));
+        { NextAction("high warlord naj'entus assign spine remover", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus impaling spine on group member",
         { NextAction("high warlord naj'entus remove impaling spine", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus needs spine thrower",
-        { NextAction("high warlord naj'entus assign spine thrower", ACTION_EMERGENCY + 12) }));
+        { NextAction("high warlord naj'entus assign spine thrower", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus has tidal shield",
         { NextAction("high warlord naj'entus throw impaling spine", ACTION_RAID + 2) }));
