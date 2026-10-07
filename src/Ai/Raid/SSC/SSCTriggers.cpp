@@ -422,7 +422,7 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    if (karathressDpsWaitTimer.find(bot->GetInstanceId()) != karathressDpsWaitTimer.end())
+    if (SscState(bot->GetInstanceId()).karathressDpsWaitTimer)
         return false;
 
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) &&
@@ -672,11 +672,11 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     if (!tainted)
         return false;
 
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end() || it->second.tainted != tainted->GetGUID())
+    std::optional<TaintedCoreLooter> const& assigned = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    if (!assigned || assigned->tainted != tainted->GetGUID())
         return true;
 
-    Player* looter = ObjectAccessor::GetPlayer(*bot, it->second.looter);
+    Player* looter = ObjectAccessor::GetPlayer(*bot, assigned->looter);
     return !looter || !looter->IsAlive();
 }
 

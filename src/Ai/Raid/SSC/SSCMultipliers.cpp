@@ -349,17 +349,17 @@ float TheLurkerBelowTanksFocusAssignedGuardianMultiplier::GetValueInEncounter(Ac
         return 1.0f;
     }
 
-    auto const instanceIt = lurkerGuardianTankAssignments.find(bot->GetInstanceId());
-    if (instanceIt == lurkerGuardianTankAssignments.end())
+    std::optional<LurkerGuardianTankAssignments> const& assignments =
+        SscState(bot->GetInstanceId()).lurkerGuardianTankAssignments;
+    if (!assignments)
         return 1.0f;
 
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive())
         return 1.0f;
 
-    auto const& assignments = instanceIt->second;
-    return std::find(assignments.begin(), assignments.end(), target->GetGUID()) !=
-        assignments.end() ? 0.0f : 1.0f;
+    return std::find(assignments->begin(), assignments->end(), target->GetGUID()) !=
+        assignments->end() ? 0.0f : 1.0f;
 }
 
 // Killing Spree puts bots right at the center of Lurker, and then they don't move back.
@@ -714,12 +714,9 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
     if (!karathress)
         return 1.0f;
 
-    auto it = karathressDpsWaitTimer.find(karathress->GetInstanceId());
-    if (it != karathressDpsWaitTimer.end() &&
-        getMSTimeDiff(it->second, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
-    {
+    std::optional<uint32> const& waitStart = SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
+    if (waitStart && getMSTimeDiff(*waitStart, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
         return 1.0f;
-    }
 
     return GetDpsHoldValue(bot, action);
 }

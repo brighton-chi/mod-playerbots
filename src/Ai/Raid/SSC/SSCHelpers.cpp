@@ -15,7 +15,9 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 using namespace EncounterHelpers;
@@ -25,6 +27,9 @@ namespace SscHelpers
 
 namespace
 {
+
+std::mutex sscStateMutex;
+std::unordered_map<uint32, SscInstanceState> sscStates;
 
 Creature* GetCachedCreature(PlayerbotAI* botAI, char const* value)
 {
@@ -303,11 +308,6 @@ bool IsSkullOnWaterElementalTotem(PlayerbotAI* botAI)
 
 // Hydross the Unstable <Duke of Currents>
 
-std::unordered_map<uint32, uint32> hydrossFrostPhaseStartTime;
-std::unordered_map<uint32, uint32> hydrossNaturePhaseStartTime;
-std::unordered_map<uint32, uint32> hydrossNatureMarkMaxedTime;
-std::unordered_map<uint32, uint32> hydrossFrostMarkMaxedTime;
-
 bool IsHydrossFrostTank(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
@@ -344,26 +344,20 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
         return HydrossDpsHoldWindow::None;
 
     bool const frostPhase = IsHydrossInFrostPhase(hydross);
-    std::unordered_map<uint32, uint32> const& phaseStartTimes =
-        frostPhase ? hydrossFrostPhaseStartTime : hydrossNaturePhaseStartTime;
-    std::unordered_map<uint32, uint32> const& markMaxedTimes =
-        frostPhase ? hydrossFrostMarkMaxedTime : hydrossNatureMarkMaxedTime;
+    SscInstanceState const& state = SscState(hydross->GetInstanceId());
+    std::optional<uint32> const& phaseStartTime =
+        frostPhase ? state.hydrossFrostPhaseStartTime : state.hydrossNaturePhaseStartTime;
+    std::optional<uint32> const& markMaxedTime =
+        frostPhase ? state.hydrossFrostMarkMaxedTime : state.hydrossNatureMarkMaxedTime;
 
-    uint32 const instanceId = hydross->GetInstanceId();
     uint32 const now = getMSTime();
     constexpr uint32 handOverWaitMs = 1 * IN_MILLISECONDS;
     constexpr uint32 phaseStartWaitMs = 5 * IN_MILLISECONDS;
 
-    auto itMarkMaxed = markMaxedTimes.find(instanceId);
-    if (itMarkMaxed != markMaxedTimes.end() &&
-        getMSTimeDiff(itMarkMaxed->second, now) >= handOverWaitMs)
-    {
+    if (markMaxedTime && getMSTimeDiff(*markMaxedTime, now) >= handOverWaitMs)
         return HydrossDpsHoldWindow::BeforePhaseChange;
-    }
 
-    auto itStart = phaseStartTimes.find(instanceId);
-    if (itStart == phaseStartTimes.end() ||
-        getMSTimeDiff(itStart->second, now) < phaseStartWaitMs)
+    if (!phaseStartTime || getMSTimeDiff(*phaseStartTime, now) < phaseStartWaitMs)
     {
         return HydrossDpsHoldWindow::AfterPhaseChange;
     }
@@ -445,9 +439,6 @@ bool HasNoMarkOfCorruption(Player* bot)
 }
 
 // The Lurker Below
-
-std::unordered_map<uint32, std::array<ObjectGuid, LURKER_GUARDIAN_TANK_COUNT>>
-    lurkerGuardianTankAssignments;
 
 bool IsLurkerSpouting(Unit* lurker)
 {
@@ -596,11 +587,6 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target)
 }
 
 // Leotheras the Blind
-
-std::unordered_map<uint32, uint32> leotherasHumanoidPhaseStartTime;
-std::unordered_map<uint32, uint32> leotherasWhirlwindEndTime;
-std::unordered_map<uint32, uint32> leotherasDemonPhaseStartTime;
-std::unordered_map<uint32, uint32> leotherasFinalPhaseStartTime;
 
 ObjectGuid FindLeotherasGuid(Player* bot)
 {
@@ -795,16 +781,16 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         return false;
 
     Player* bot = botAI->GetBot();
-    uint32 const instanceId = leotheras->GetInstanceId();
+    SscInstanceState const& state = SscState(leotheras->GetInstanceId());
     uint32 const now = getMSTime();
 
-    auto const isJustAfterWhirlwind = [instanceId, now]()
+    auto const isJustAfterWhirlwind = [&state, now]()
     {
-        auto whirlwind = leotherasWhirlwindEndTime.find(instanceId);
-        if (whirlwind == leotherasWhirlwindEndTime.end() || now < whirlwind->second)
+        std::optional<uint32> const& whirlwindEnd = state.leotherasWhirlwindEndTime;
+        if (!whirlwindEnd || now < *whirlwindEnd)
             return false;
 
-        return now - whirlwind->second < LEOTHERAS_WHIRLWIND_DPS_WAIT_MS;
+        return now - *whirlwindEnd < LEOTHERAS_WHIRLWIND_DPS_WAIT_MS;
     };
 
     if (IsLeotherasHumanoidPhase(botAI))
@@ -812,9 +798,8 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         if (PlayerbotAI::IsTank(bot))
             return false;
 
-        auto it = leotherasHumanoidPhaseStartTime.find(instanceId);
-        if (it == leotherasHumanoidPhaseStartTime.end() ||
-            getMSTimeDiff(it->second, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
+        std::optional<uint32> const& start = state.leotherasHumanoidPhaseStartTime;
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
         {
             return true;
         }
@@ -830,11 +815,11 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         if (PlayerbotAI::IsTank(bot) && !GetLeotherasWarlockTank(bot))
             return false;
 
-        auto it = leotherasDemonPhaseStartTime.find(instanceId);
-        if (it == leotherasDemonPhaseStartTime.end())
+        std::optional<uint32> const& start = state.leotherasDemonPhaseStartTime;
+        if (!start)
             return true;
 
-        return getMSTimeDiff(it->second, now) < LEOTHERAS_DEMON_DPS_WAIT_MS;
+        return getMSTimeDiff(*start, now) < LEOTHERAS_DEMON_DPS_WAIT_MS;
     }
 
     if (IsLeotherasFinalPhase(botAI))
@@ -842,9 +827,8 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
         if (PlayerbotAI::IsTank(bot) || IsLeotherasWarlockTank(bot))
             return false;
 
-        auto it = leotherasFinalPhaseStartTime.find(instanceId);
-        if (it == leotherasFinalPhaseStartTime.end() ||
-            getMSTimeDiff(it->second, now) < LEOTHERAS_FINAL_DPS_WAIT_MS)
+        std::optional<uint32> const& start = state.leotherasFinalPhaseStartTime;
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_WAIT_MS)
         {
             return true;
         }
@@ -888,8 +872,6 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 }
 
 // Fathom-Lord Karathress
-
-std::unordered_map<uint32, uint32> karathressDpsWaitTimer;
 
 ObjectGuid FindSpitfireTotemGuid(Player* bot)
 {
@@ -1189,13 +1171,13 @@ Position const& GetVashjStationPosition(VashjStationSlot const& slot)
 std::vector<Player*> GetVashjStationRanged(Player* bot, int8 station)
 {
     std::vector<Player*> ranged;
-    auto it = vashjStationHolders.find(bot->GetInstanceId());
-    if (it == vashjStationHolders.end() || station < 0)
+    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    if (!holders || station < 0)
         return ranged;
 
     for (size_t slot = 0; slot < VASHJ_STATION_RANGED_SLOTS; ++slot)
     {
-        Player* holder = ObjectAccessor::GetPlayer(*bot, it->second[station][slot]);
+        Player* holder = ObjectAccessor::GetPlayer(*bot, (*holders)[station][slot]);
         if (holder && holder->IsAlive())
             ranged.push_back(holder);
     }
@@ -1205,12 +1187,12 @@ std::vector<Player*> GetVashjStationRanged(Player* bot, int8 station)
 
 Player* GetVashjStationHealer(Player* bot, int8 station)
 {
-    auto it = vashjStationHolders.find(bot->GetInstanceId());
-    if (it == vashjStationHolders.end() || station < 0)
+    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    if (!holders || station < 0)
         return nullptr;
 
     Player* holder =
-        ObjectAccessor::GetPlayer(*bot, it->second[station][VASHJ_STATION_HEALER_SLOT]);
+        ObjectAccessor::GetPlayer(*bot, (*holders)[station][VASHJ_STATION_HEALER_SLOT]);
     return holder && holder->IsAlive() ? holder : nullptr;
 }
 
@@ -1599,8 +1581,6 @@ bool IsOnVashjDais(float x, float y, float margin, float rockClearance)
 
 // Vashj: Static Charge, Entangle and Shock Blast
 
-std::unordered_map<uint32, ObjectGuid> vashjGroundingShaman;
-
 bool HasVashjStaticCharge(Player* player)
 {
     return player && player->HasAura(Id(SscSpells::SPELL_STATIC_CHARGE));
@@ -1713,11 +1693,11 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
 
 Player* GetVashjGroundingShaman(Player* bot)
 {
-    auto const it = vashjGroundingShaman.find(bot->GetInstanceId());
-    if (it == vashjGroundingShaman.end())
+    std::optional<ObjectGuid> const& shamanGuid = SscState(bot->GetInstanceId()).vashjGroundingShaman;
+    if (!shamanGuid)
         return nullptr;
 
-    Player* shaman = ObjectAccessor::GetPlayer(*bot, it->second);
+    Player* shaman = ObjectAccessor::GetPlayer(*bot, *shamanGuid);
     return shaman && shaman->IsAlive() ? shaman : nullptr;
 }
 
@@ -2130,8 +2110,6 @@ bool GetStepToCastRangeAroundSpores(
 
 // Vashj: Phase 2 Ranged Stations
 
-std::unordered_map<uint32, VashjStationHolders> vashjStationHolders;
-
 std::vector<VashjStationSlot> GetVashjStationFillOrder()
 {
     std::vector<VashjStationSlot> order;
@@ -2155,11 +2133,11 @@ bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid)
 
 bool HasVashjStationVacancy(Player* bot)
 {
-    auto it = vashjStationHolders.find(bot->GetInstanceId());
-    if (it == vashjStationHolders.end())
+    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    if (!holders)
         return true;
 
-    for (auto const& station : it->second)
+    for (auto const& station : *holders)
     {
         for (ObjectGuid const& guid : station)
         {
@@ -2174,8 +2152,8 @@ bool HasVashjStationVacancy(Player* bot)
 VashjStationSlot GetVashjStationSlot(Player* bot)
 {
     VashjStationSlot result;
-    auto it = vashjStationHolders.find(bot->GetInstanceId());
-    if (it == vashjStationHolders.end())
+    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    if (!holders)
         return result;
 
     ObjectGuid const guid = bot->GetGUID();
@@ -2183,7 +2161,7 @@ VashjStationSlot GetVashjStationSlot(Player* bot)
     {
         for (size_t slot = 0; slot <= VASHJ_STATION_RANGED_SLOTS; ++slot)
         {
-            if (it->second[station][slot] == guid)
+            if ((*holders)[station][slot] == guid)
             {
                 result.station = static_cast<int8>(station);
                 result.slot = static_cast<int8>(slot);
@@ -2494,8 +2472,6 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 
 // Vashj: Tainted Elemental
 
-std::unordered_map<uint32, TaintedCoreLooter> vashjTaintedCoreLooter;
-
 Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
 {
     if (!tainted)
@@ -2545,11 +2521,11 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
 
 Creature* GetAssignedTaintedElemental(Player* bot)
 {
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end())
+    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    if (!looter)
         return nullptr;
 
-    return ObjectAccessor::GetCreature(*bot, it->second.tainted);
+    return ObjectAccessor::GetCreature(*bot, looter->tainted);
 }
 
 int8 GetTaintedCoreLootSlot(Creature* tainted)
@@ -2577,21 +2553,18 @@ Creature* GetTaintedElementalToKill(Player* bot)
     if (!PlayerbotAI::IsRangedDps(bot))
         return nullptr;
 
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    if (it == vashjTaintedCoreLooter.end() ||
-        GetVashjStationSlot(bot).station != it->second.station)
-    {
+    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    if (!looter || GetVashjStationSlot(bot).station != looter->station)
         return nullptr;
-    }
 
-    Creature* tainted = ObjectAccessor::GetCreature(*bot, it->second.tainted);
+    Creature* tainted = ObjectAccessor::GetCreature(*bot, looter->tainted);
     return tainted && tainted->IsAlive() ? tainted : nullptr;
 }
 
 bool IsDesignatedCoreLooter(Player* bot)
 {
-    auto it = vashjTaintedCoreLooter.find(bot->GetInstanceId());
-    return it != vashjTaintedCoreLooter.end() && it->second.looter == bot->GetGUID();
+    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    return looter && looter->looter == bot->GetGUID();
 }
 
 // Paralyze is present when the Core is held, and the aura check is much cheaper than a bag search.
@@ -2601,8 +2574,6 @@ bool HasTaintedCore(Player* player)
 }
 
 // Vashj: Core Passing Chain
-
-std::unordered_map<uint32, VashjCorePassingChain> vashjCorePassingChains;
 
 void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
 {
@@ -2624,7 +2595,7 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
     }
 
     AssignVashjCoreCatchers(bot, chain);
-    vashjCorePassingChains.insert_or_assign(bot->GetInstanceId(), std::move(chain));
+    SscState(bot->GetInstanceId()).vashjCorePassingChain = std::move(chain);
 }
 
 bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, ObjectGuid excluded)
@@ -2683,8 +2654,8 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t i
 
 VashjCorePassingChain* GetVashjCorePassingChain(Player* bot)
 {
-    auto it = vashjCorePassingChains.find(bot->GetInstanceId());
-    return it != vashjCorePassingChains.end() ? &it->second : nullptr;
+    std::optional<VashjCorePassingChain>& chain = SscState(bot->GetInstanceId()).vashjCorePassingChain;
+    return chain ? &*chain : nullptr;
 }
 
 int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot)
@@ -2721,6 +2692,34 @@ float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 i
 {
     return static_cast<size_t>(index) + 1 == chain.catchers.size() ?
         VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE : VASHJ_CORE_SPOT_ARRIVAL_DISTANCE;
+}
+
+// Shared encounter state
+
+SscInstanceState& SscState(uint32 instanceId)
+{
+    std::lock_guard lock(sscStateMutex);
+    return sscStates[instanceId];
+}
+
+bool SscResetInstance(uint32 instanceId)
+{
+    std::lock_guard lock(sscStateMutex);
+    auto it = sscStates.find(instanceId);
+    if (it == sscStates.end())
+        return false;
+
+    SscInstanceState const& state = it->second;
+    bool const wasSet = state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
+                        state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
+                        state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
+                        state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
+                        state.leotherasFinalPhaseStartTime || state.karathressDpsWaitTimer ||
+                        state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
+                        state.vashjCorePassingChain;
+
+    sscStates.erase(it);
+    return wasSet;
 }
 
 }

@@ -16,7 +16,7 @@
 #include "SSCHelpers.h"
 #include <algorithm>
 #include <cmath>
-#include <unordered_map>
+#include <optional>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -44,22 +44,7 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return reset;
 
-    uint32 const instanceId = bot->GetInstanceId();
-
-    reset |= vashjStationHolders.erase(instanceId) > 0;
-    reset |= vashjTaintedCoreLooter.erase(instanceId) > 0;
-    reset |= vashjCorePassingChains.erase(instanceId) > 0;
-    reset |= vashjGroundingShaman.erase(instanceId) > 0;
-    reset |= karathressDpsWaitTimer.erase(instanceId) > 0;
-    reset |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
-    reset |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
-    reset |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
-    reset |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
-    reset |= lurkerGuardianTankAssignments.erase(instanceId) > 0;
-    reset |= hydrossFrostMarkMaxedTime.erase(instanceId) > 0;
-    reset |= hydrossNatureMarkMaxedTime.erase(instanceId) > 0;
-    reset |= hydrossNaturePhaseStartTime.erase(instanceId) > 0;
-    reset |= hydrossFrostPhaseStartTime.erase(instanceId) > 0;
+    reset |= SscResetInstance(bot->GetInstanceId());
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
@@ -168,12 +153,12 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
 
     Position const& otherPosition = _frostTank ?
         HYDROSS_NATURE_TANK_POSITION : HYDROSS_FROST_TANK_POSITION;
-    std::unordered_map<uint32, uint32> const& markMaxedTimes =
-        _frostTank ? hydrossFrostMarkMaxedTime : hydrossNatureMarkMaxedTime;
+    SscInstanceState const& state = SscState(hydross->GetInstanceId());
+    std::optional<uint32> const& markMaxedTime =
+        _frostTank ? state.hydrossFrostMarkMaxedTime : state.hydrossNatureMarkMaxedTime;
 
     constexpr uint32 phaseChangeDelayMs = 1 * IN_MILLISECONDS;
-    auto it = markMaxedTimes.find(hydross->GetInstanceId());
-    if (it != markMaxedTimes.end() && getMSTimeDiff(it->second, getMSTime()) >= phaseChangeDelayMs)
+    if (markMaxedTime && getMSTimeDiff(*markMaxedTime, getMSTime()) >= phaseChangeDelayMs)
         return StepTo(otherPosition, hydross);
 
     bot->AttackStop();
@@ -223,31 +208,26 @@ bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
     Unit* victim = hydross->GetVictim();
     Player* marked = victim && victim->IsPlayer() ? victim->ToPlayer() : bot;
 
+    SscInstanceState& state = SscState(instanceId);
     bool updated = false;
 
     if (IsHydrossInFrostPhase(hydross))
     {
-        updated |= hydrossFrostPhaseStartTime.try_emplace(instanceId, now).second;
-        updated |= hydrossNaturePhaseStartTime.erase(instanceId) > 0;
-        updated |= hydrossNatureMarkMaxedTime.erase(instanceId) > 0;
+        updated |= EmplaceIfUnset(state.hydrossFrostPhaseStartTime, now);
+        updated |= ResetIfSet(state.hydrossNaturePhaseStartTime);
+        updated |= ResetIfSet(state.hydrossNatureMarkMaxedTime);
 
-        if (!hydrossFrostMarkMaxedTime.contains(instanceId) &&
-            HasMarkOfHydrossAt100Percent(marked))
-        {
-            updated |= hydrossFrostMarkMaxedTime.try_emplace(instanceId, now).second;
-        }
+        if (!state.hydrossFrostMarkMaxedTime && HasMarkOfHydrossAt100Percent(marked))
+            updated |= EmplaceIfUnset(state.hydrossFrostMarkMaxedTime, now);
     }
     else // Nature phase
     {
-        updated |= hydrossNaturePhaseStartTime.try_emplace(instanceId, now).second;
-        updated |= hydrossFrostPhaseStartTime.erase(instanceId) > 0;
-        updated |= hydrossFrostMarkMaxedTime.erase(instanceId) > 0;
+        updated |= EmplaceIfUnset(state.hydrossNaturePhaseStartTime, now);
+        updated |= ResetIfSet(state.hydrossFrostPhaseStartTime);
+        updated |= ResetIfSet(state.hydrossFrostMarkMaxedTime);
 
-        if (!hydrossNatureMarkMaxedTime.contains(instanceId) &&
-            HasMarkOfCorruptionAt100Percent(marked))
-        {
-            updated |= hydrossNatureMarkMaxedTime.try_emplace(instanceId, now).second;
-        }
+        if (!state.hydrossNatureMarkMaxedTime && HasMarkOfCorruptionAt100Percent(marked))
+            updated |= EmplaceIfUnset(state.hydrossNatureMarkMaxedTime, now);
     }
 
     return updated;
@@ -504,7 +484,9 @@ bool TheLurkerBelowTanksPickUpGuardiansAction::Execute(Event /*event*/)
 ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
     std::vector<Unit*> const& guardians, int8 myIndex)
 {
-    auto& assignments = lurkerGuardianTankAssignments[bot->GetInstanceId()];
+    std::optional<LurkerGuardianTankAssignments>& assignmentsField =
+        SscState(bot->GetInstanceId()).lurkerGuardianTankAssignments;
+    LurkerGuardianTankAssignments& assignments = assignmentsField ? *assignmentsField : assignmentsField.emplace();
     ObjectGuid& assignedGuid = assignments[myIndex];
 
     if (std::any_of(guardians.begin(), guardians.end(),
@@ -880,31 +862,31 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
     if (!leotheras)
         return false;
 
-    uint32 const instanceId = leotheras->GetInstanceId();
+    SscInstanceState& state = SscState(leotheras->GetInstanceId());
     uint32 const now = getMSTime();
 
     bool changed = false;
 
     if (IsLeotherasHumanoidPhase(botAI))
     {
-        changed |= leotherasHumanoidPhaseStartTime.try_emplace(instanceId, now).second;
-        changed |= TrackWhirlwindEnd(leotheras, instanceId, now);
-        changed |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
-        changed |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
+        changed |= EmplaceIfUnset(state.leotherasHumanoidPhaseStartTime, now);
+        changed |= TrackWhirlwindEnd(leotheras, state.leotherasWhirlwindEndTime, now);
+        changed |= ResetIfSet(state.leotherasDemonPhaseStartTime);
+        changed |= ResetIfSet(state.leotherasFinalPhaseStartTime);
     }
     else if (IsLeotherasDemonPhase(botAI))
     {
-        changed |= leotherasDemonPhaseStartTime.try_emplace(instanceId, now).second;
-        changed |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
-        changed |= leotherasWhirlwindEndTime.erase(instanceId) > 0;
-        changed |= leotherasFinalPhaseStartTime.erase(instanceId) > 0;
+        changed |= EmplaceIfUnset(state.leotherasDemonPhaseStartTime, now);
+        changed |= ResetIfSet(state.leotherasHumanoidPhaseStartTime);
+        changed |= ResetIfSet(state.leotherasWhirlwindEndTime);
+        changed |= ResetIfSet(state.leotherasFinalPhaseStartTime);
     }
     else if (IsLeotherasFinalPhase(botAI))
     {
-        changed |= leotherasFinalPhaseStartTime.try_emplace(instanceId, now).second;
-        changed |= TrackWhirlwindEnd(leotheras, instanceId, now);
-        changed |= leotherasHumanoidPhaseStartTime.erase(instanceId) > 0;
-        changed |= leotherasDemonPhaseStartTime.erase(instanceId) > 0;
+        changed |= EmplaceIfUnset(state.leotherasFinalPhaseStartTime, now);
+        changed |= TrackWhirlwindEnd(leotheras, state.leotherasWhirlwindEndTime, now);
+        changed |= ResetIfSet(state.leotherasHumanoidPhaseStartTime);
+        changed |= ResetIfSet(state.leotherasDemonPhaseStartTime);
     }
 
     return changed;
@@ -913,27 +895,23 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 // Whirlwind resets threat on every tick. Hold dps for a moment after it ends. But do not hold
 // dps while Whirlwind is active.
 bool LeotherasTheBlindManageDpsWaitTimersAction::TrackWhirlwindEnd(
-    Unit* leotheras, uint32 instanceId, uint32 now)
+    Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now)
 {
     if (Aura const* whirlwind = leotheras->GetAura(Id(SscSpells::SPELL_LEOTHERAS_WHIRLWIND)))
-    {
-        return leotherasWhirlwindEndTime.try_emplace(
-            instanceId, now + whirlwind->GetDuration()).second;
-    }
+        return EmplaceIfUnset(whirlwindEnd, now + whirlwind->GetDuration());
 
-    auto it = leotherasWhirlwindEndTime.find(instanceId);
-    if (it == leotherasWhirlwindEndTime.end())
+    if (!whirlwindEnd)
         return false;
 
-    if (now < it->second)
+    if (now < *whirlwindEnd)
     {
-        it->second = now;
+        whirlwindEnd = now;
         return true;
     }
 
-    if (now - it->second >= LEOTHERAS_WHIRLWIND_DPS_WAIT_MS)
+    if (now - *whirlwindEnd >= LEOTHERAS_WHIRLWIND_DPS_WAIT_MS)
     {
-        leotherasWhirlwindEndTime.erase(it);
+        whirlwindEnd.reset();
         return true;
     }
 
@@ -1176,7 +1154,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
     if (!karathress)
         return false;
 
-    return karathressDpsWaitTimer.try_emplace(karathress->GetInstanceId(), getMSTime()).second;
+    return EmplaceIfUnset(SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -1475,7 +1453,8 @@ bool LadyVashjAssignStationSlotsAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    VashjStationHolders& holders = vashjStationHolders[bot->GetInstanceId()];
+    std::optional<VashjStationHolders>& holdersField = SscState(bot->GetInstanceId()).vashjStationHolders;
+    VashjStationHolders& holders = holdersField ? *holdersField : holdersField.emplace();
     auto holdsSlot = [&holders](ObjectGuid guid)
     {
         return std::any_of(holders.begin(), holders.end(), [guid](auto const& station)
@@ -1585,7 +1564,7 @@ bool LadyVashjAssignGroundingShamanAction::Execute(Event /*event*/)
     if (!shaman)
         return false;
 
-    vashjGroundingShaman[bot->GetInstanceId()] = shaman->GetGUID();
+    SscState(bot->GetInstanceId()).vashjGroundingShaman = shaman->GetGUID();
     return true;
 }
 
@@ -1995,8 +1974,8 @@ bool LadyVashjAssignTaintedCoreLooterAction::Execute(Event /*event*/)
     if (!looter)
         return false;
 
-    vashjTaintedCoreLooter.insert_or_assign(bot->GetInstanceId(),
-        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), station });
+    SscState(bot->GetInstanceId()).vashjTaintedCoreLooter =
+        TaintedCoreLooter{ tainted->GetGUID(), looter->GetGUID(), station };
 
     VashjCorePassingChain* chain = GetVashjCorePassingChain(bot);
     if (!chain || chain->tainted != tainted->GetGUID())
