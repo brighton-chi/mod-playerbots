@@ -24,8 +24,8 @@ namespace BtHelpers
 class BlackTempleResetEncounterStatesAction : public Action
 {
 public:
-    BlackTempleResetEncounterStatesAction(
-        PlayerbotAI* botAI) : Action(botAI, "black temple reset encounter states") {}
+    BlackTempleResetEncounterStatesAction(PlayerbotAI* botAI)
+        : Action(botAI, "black temple reset encounter states") {}
     bool Execute(Event event) override;
 };
 
@@ -86,16 +86,16 @@ public:
 class ShadowmoonReaverStopWandAction : public Action
 {
 public:
-    ShadowmoonReaverStopWandAction(
-        PlayerbotAI* botAI) : Action(botAI, "shadowmoon reaver stop wand") {}
+    ShadowmoonReaverStopWandAction(PlayerbotAI* botAI)
+        : Action(botAI, "shadowmoon reaver stop wand") {}
     bool Execute(Event event) override;
 };
 
 class ShadowmoonReaverControlCasterPetAction : public Action
 {
 public:
-    ShadowmoonReaverControlCasterPetAction(
-        PlayerbotAI* botAI) : Action(botAI, "shadowmoon reaver control caster pet") {}
+    ShadowmoonReaverControlCasterPetAction(PlayerbotAI* botAI)
+        : Action(botAI, "shadowmoon reaver control caster pet") {}
     bool Execute(Event event) override;
 
 private:
@@ -110,24 +110,24 @@ private:
 class HighWarlordNajentusDisperseRangedAction : public MovementAction
 {
 public:
-    HighWarlordNajentusDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus disperse ranged") {}
+    HighWarlordNajentusDisperseRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high warlord naj'entus disperse ranged") {}
     bool Execute(Event event) override;
 };
 
 class HighWarlordNajentusAssignSpineRemoverAction : public Action
 {
 public:
-    HighWarlordNajentusAssignSpineRemoverAction(
-        PlayerbotAI* botAI) : Action(botAI, "high warlord naj'entus assign spine remover") {}
+    HighWarlordNajentusAssignSpineRemoverAction(PlayerbotAI* botAI)
+        : Action(botAI, "high warlord naj'entus assign spine remover") {}
     bool Execute(Event event) override;
 };
 
 class HighWarlordNajentusRemoveImpalingSpineAction : public MovementAction
 {
 public:
-    HighWarlordNajentusRemoveImpalingSpineAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus remove impaling spine") {}
+    HighWarlordNajentusRemoveImpalingSpineAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high warlord naj'entus remove impaling spine") {}
     bool Execute(Event event) override;
 
 private:
@@ -140,16 +140,16 @@ private:
 class HighWarlordNajentusAssignSpineThrowerAction : public Action
 {
 public:
-    HighWarlordNajentusAssignSpineThrowerAction(
-        PlayerbotAI* botAI) : Action(botAI, "high warlord naj'entus assign spine thrower") {}
+    HighWarlordNajentusAssignSpineThrowerAction(PlayerbotAI* botAI)
+        : Action(botAI, "high warlord naj'entus assign spine thrower") {}
     bool Execute(Event event) override;
 };
 
 class HighWarlordNajentusThrowImpalingSpineAction : public MovementAction
 {
 public:
-    HighWarlordNajentusThrowImpalingSpineAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "high warlord naj'entus throw impaling spine") {}
+    HighWarlordNajentusThrowImpalingSpineAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "high warlord naj'entus throw impaling spine") {}
     bool Execute(Event event) override;
 
 private:
@@ -161,24 +161,23 @@ private:
 class SupremusDisperseRangedAction : public MovementAction
 {
 public:
-    SupremusDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "supremus disperse ranged") {}
+    SupremusDisperseRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "supremus disperse ranged") {}
     bool Execute(Event event) override;
 };
 
 class SupremusKiteBossAction : public MovementAction
 {
 public:
-    SupremusKiteBossAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
+    SupremusKiteBossAction(PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
     bool Execute(Event event) override;
 };
 
 class SupremusMoveAwayFromVolcanosAction : public MovementAction
 {
 public:
-    SupremusMoveAwayFromVolcanosAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "supremus move away from volcanos") {}
+    SupremusMoveAwayFromVolcanosAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "supremus move away from volcanos") {}
     bool Execute(Event event) override;
 
 private:
@@ -192,8 +191,8 @@ private:
 class ShadeOfAkamaMeleeDpsPrioritizeChannelersAction : public AttackAction
 {
 public:
-    ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "shade of akama melee dps prioritize channelers") {}
+    ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "shade of akama melee dps prioritize channelers") {}
     bool Execute(Event event) override;
 };
 
@@ -202,32 +201,32 @@ public:
 class TeronGorefiendPositionRangedOnBalconyAction : public MovementAction
 {
 public:
-    TeronGorefiendPositionRangedOnBalconyAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend position ranged on balcony") {}
+    TeronGorefiendPositionRangedOnBalconyAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "teron gorefiend position ranged on balcony") {}
     bool Execute(Event event) override;
 };
 
 class TeronGorefiendAvoidShadowOfDeathAction : public Action
 {
 public:
-    TeronGorefiendAvoidShadowOfDeathAction(
-        PlayerbotAI* botAI) : Action(botAI, "teron gorefiend avoid shadow of death") {}
+    TeronGorefiendAvoidShadowOfDeathAction(PlayerbotAI* botAI)
+        : Action(botAI, "teron gorefiend avoid shadow of death") {}
     bool Execute(Event event) override;
 };
 
 class TeronGorefiendMoveToCornerToDieAction : public MovementAction
 {
 public:
-    TeronGorefiendMoveToCornerToDieAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend move to corner to die") {}
+    TeronGorefiendMoveToCornerToDieAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "teron gorefiend move to corner to die") {}
     bool Execute(Event event) override;
 };
 
 class TeronGorefiendControlAndDestroyShadowyConstructsAction : public MovementAction
 {
 public:
-    TeronGorefiendControlAndDestroyShadowyConstructsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "teron gorefiend control and destroy shadowy constructs") {}
+    TeronGorefiendControlAndDestroyShadowyConstructsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "teron gorefiend control and destroy shadowy constructs") {}
     bool Execute(Event event) override;
 };
 
@@ -236,8 +235,8 @@ public:
 class GurtoggBloodboilRotateRangedGroupsAction : public MovementAction
 {
 public:
-    GurtoggBloodboilRotateRangedGroupsAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "gurtogg bloodboil rotate ranged groups") {}
+    GurtoggBloodboilRotateRangedGroupsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gurtogg bloodboil rotate ranged groups") {}
     bool Execute(Event event) override;
 };
 
@@ -246,16 +245,16 @@ public:
 class ReliquaryOfSoulsMisdirectToMainTankAction : public AttackAction
 {
 public:
-    ReliquaryOfSoulsMisdirectToMainTankAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "reliquary of souls misdirect to main tank") {}
+    ReliquaryOfSoulsMisdirectToMainTankAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "reliquary of souls misdirect to main tank") {}
     bool Execute(Event event) override;
 };
 
 class ReliquaryOfSoulsAdjustDistanceFromSufferingAction : public MovementAction
 {
 public:
-    ReliquaryOfSoulsAdjustDistanceFromSufferingAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "reliquary of souls adjust distance from suffering") {}
+    ReliquaryOfSoulsAdjustDistanceFromSufferingAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "reliquary of souls adjust distance from suffering") {}
     bool Execute(Event event) override;
 
 private:
@@ -267,16 +266,16 @@ private:
 class ReliquaryOfSoulsHealersDpsSufferingAction : public Action
 {
 public:
-    ReliquaryOfSoulsHealersDpsSufferingAction(
-        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls healers dps suffering") {}
+    ReliquaryOfSoulsHealersDpsSufferingAction(PlayerbotAI* botAI)
+        : Action(botAI, "reliquary of souls healers dps suffering") {}
     bool Execute(Event event) override;
 };
 
 class ReliquaryOfSoulsSpellstealRuneShieldAction : public Action
 {
 public:
-    ReliquaryOfSoulsSpellstealRuneShieldAction(
-        PlayerbotAI* botAI) : Action(botAI, "reliquary of souls spellsteal rune shield") {}
+    ReliquaryOfSoulsSpellstealRuneShieldAction(PlayerbotAI* botAI)
+        : Action(botAI, "reliquary of souls spellsteal rune shield") {}
     bool Execute(Event event) override;
 };
 
@@ -285,32 +284,32 @@ public:
 class MotherShahrazTanksPositionBossUnderPillarAction : public AttackAction
 {
 public:
-    MotherShahrazTanksPositionBossUnderPillarAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "mother shahraz tanks position boss under pillar") {}
+    MotherShahrazTanksPositionBossUnderPillarAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "mother shahraz tanks position boss under pillar") {}
     bool Execute(Event event) override;
 };
 
 class MotherShahrazMeleeDpsWaitAtSafePositionAction : public MovementAction
 {
 public:
-    MotherShahrazMeleeDpsWaitAtSafePositionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz melee dps wait at safe position") {}
+    MotherShahrazMeleeDpsWaitAtSafePositionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mother shahraz melee dps wait at safe position") {}
     bool Execute(Event event) override;
 };
 
 class MotherShahrazPositionRangedUnderPillarAction : public MovementAction
 {
 public:
-    MotherShahrazPositionRangedUnderPillarAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz position ranged under pillar") {}
+    MotherShahrazPositionRangedUnderPillarAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mother shahraz position ranged under pillar") {}
     bool Execute(Event event) override;
 };
 
 class MotherShahrazBreakFatalAttractionAction : public MovementAction
 {
 public:
-    MotherShahrazBreakFatalAttractionAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "mother shahraz break fatal attraction") {}
+    MotherShahrazBreakFatalAttractionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mother shahraz break fatal attraction") {}
     bool Execute(Event event) override;
 
 private:
@@ -322,90 +321,90 @@ private:
 class IllidariCouncilMisdirectToTanksAction : public AttackAction
 {
 public:
-    IllidariCouncilMisdirectToTanksAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council misdirect to tanks") {}
+    IllidariCouncilMisdirectToTanksAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council misdirect to tanks") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilMainTankPositionGathiosAction : public AttackAction
 {
 public:
-    IllidariCouncilMainTankPositionGathiosAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council main tank position gathios") {}
+    IllidariCouncilMainTankPositionGathiosAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council main tank position gathios") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction
 {
 public:
-    IllidariCouncilFirstAssistTankFocusMalandeAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council first assist tank focus malande") {}
+    IllidariCouncilFirstAssistTankFocusMalandeAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council first assist tank focus malande") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilSecondAssistTankPositionDarkshadowAction : public AttackAction
 {
 public:
-    IllidariCouncilSecondAssistTankPositionDarkshadowAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council second assist tank position darkshadow") {}
+    IllidariCouncilSecondAssistTankPositionDarkshadowAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council second assist tank position darkshadow") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilMageTankPositionZerevorAction : public AttackAction
 {
 public:
-    IllidariCouncilMageTankPositionZerevorAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council mage tank position zerevor") {}
+    IllidariCouncilMageTankPositionZerevorAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council mage tank position zerevor") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilPositionMageTankHealerAction : public AttackAction
 {
 public:
-    IllidariCouncilPositionMageTankHealerAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council position mage tank healer") {}
+    IllidariCouncilPositionMageTankHealerAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council position mage tank healer") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:
-    IllidariCouncilAssignDpsTargetsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council assign dps targets") {}
+    IllidariCouncilAssignDpsTargetsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council assign dps targets") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilDisperseRangedAction : public MovementAction
 {
 public:
-    IllidariCouncilDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidari council disperse ranged") {}
+    IllidariCouncilDisperseRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidari council disperse ranged") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilCommandPetsToAttackGathiosAction : public AttackAction
 {
 public:
-    IllidariCouncilCommandPetsToAttackGathiosAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council command pets to attack gathios") {}
+    IllidariCouncilCommandPetsToAttackGathiosAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council command pets to attack gathios") {}
     bool Execute(Event event) override;
 };
 
 class IllidariCouncilManageDpsTimerAction : public Action
 {
 public:
-    IllidariCouncilManageDpsTimerAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidari council manage dps timer") {}
+    IllidariCouncilManageDpsTimerAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidari council manage dps timer") {}
     bool Execute(Event event) override;
 };
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageMisdirectToTanksAction : public AttackAction
+class IllidanStormrageMisdirectToTanksAction : public Action
 {
 public:
-    IllidanStormrageMisdirectToTanksAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage misdirect to tanks") {}
+    IllidanStormrageMisdirectToTanksAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage misdirect to tanks") {}
     bool Execute(Event event) override;
 
 private:
@@ -416,8 +415,8 @@ private:
 class IllidanStormrageMainTankRepositionBossAction : public AttackAction
 {
 public:
-    IllidanStormrageMainTankRepositionBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage main tank reposition boss") {}
+    IllidanStormrageMainTankRepositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage main tank reposition boss") {}
     bool Execute(Event event) override;
 
 private:
@@ -431,8 +430,8 @@ private:
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
 {
 public:
-    IllidanStormrageIsolateBotWithParasiteAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
+    IllidanStormrageIsolateBotWithParasiteAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
     bool Execute(Event event) override;
 
 private:
@@ -443,16 +442,16 @@ private:
 class IllidanStormrageSetEarthbindTotemAction : public Action
 {
 public:
-    IllidanStormrageSetEarthbindTotemAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage set earthbind totem") {}
+    IllidanStormrageSetEarthbindTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage set earthbind totem") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
 {
 public:
-    IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage assist tanks handle flames of azzinoth") {}
+    IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage assist tanks handle flames of azzinoth") {}
     bool Execute(Event event) override;
 
 private:
@@ -463,40 +462,40 @@ private:
 class IllidanStormrageControlPetAggressionAction : public Action
 {
 public:
-    IllidanStormrageControlPetAggressionAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage control pet aggression") {}
+    IllidanStormrageControlPetAggressionAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage control pet aggression") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormragePositionAboveGrateAction : public MovementAction
 {
 public:
-    IllidanStormragePositionAboveGrateAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage position above grate") {}
+    IllidanStormragePositionAboveGrateAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage position above grate") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageRemoveDarkBarrageAction : public Action
 {
 public:
-    IllidanStormrageRemoveDarkBarrageAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage remove dark barrage") {}
+    IllidanStormrageRemoveDarkBarrageAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage remove dark barrage") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageMoveAwayFromLandingPointAction : public MovementAction
 {
 public:
-    IllidanStormrageMoveAwayFromLandingPointAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage move away from landing point") {}
+    IllidanStormrageMoveAwayFromLandingPointAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage move away from landing point") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageDisperseRangedAction : public MovementAction
 {
 public:
-    IllidanStormrageDisperseRangedAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage disperse ranged") {}
+    IllidanStormrageDisperseRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage disperse ranged") {}
     bool Execute(Event event) override;
 
 private:
@@ -507,56 +506,56 @@ private:
 class IllidanStormrageMeleeGoSomewhereToNotDieAction : public MovementAction
 {
 public:
-    IllidanStormrageMeleeGoSomewhereToNotDieAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage melee go somewhere to not die") {}
+    IllidanStormrageMeleeGoSomewhereToNotDieAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage melee go somewhere to not die") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageWarlockTankHandleDemonBossAction : public AttackAction
 {
 public:
-    IllidanStormrageWarlockTankHandleDemonBossAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
+    IllidanStormrageWarlockTankHandleDemonBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
 {
 public:
-    IllidanStormrageDpsPrioritizeAddsAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
+    IllidanStormrageDpsPrioritizeAddsAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageUseShadowTrapAction : public MovementAction
 {
 public:
-    IllidanStormrageUseShadowTrapAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "illidan stormrage use shadow trap") {}
+    IllidanStormrageUseShadowTrapAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage use shadow trap") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageManageDpsTimerAndRtiAction : public Action
 {
 public:
-    IllidanStormrageManageDpsTimerAndRtiAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage manage dps timer and rti") {}
+    IllidanStormrageManageDpsTimerAndRtiAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage manage dps timer and rti") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageDestroyHazardsAction : public Action
 {
 public:
-    IllidanStormrageDestroyHazardsAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage destroy hazards") {}
+    IllidanStormrageDestroyHazardsAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage destroy hazards") {}
     bool Execute(Event event) override;
 };
 
 class IllidanStormrageHandleAddsCheatAction : public Action
 {
 public:
-    IllidanStormrageHandleAddsCheatAction(
-        PlayerbotAI* botAI) : Action(botAI, "illidan stormrage handle adds cheat") {}
+    IllidanStormrageHandleAddsCheatAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage handle adds cheat") {}
     bool Execute(Event event) override;
 };
 

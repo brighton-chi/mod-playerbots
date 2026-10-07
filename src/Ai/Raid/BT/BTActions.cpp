@@ -1147,8 +1147,11 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, mainTank->GetPosition(), arrivalDist, darkshadow, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, mainTank->GetPosition(), arrivalDist, darkshadow, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
