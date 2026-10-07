@@ -12,6 +12,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <initializer_list>
 #include <limits>
 #include <optional>
 #include <type_traits>
@@ -118,6 +119,10 @@ enum class SscNpcs : uint32
     NPC_TIDEWALKER_LURKER        = 21920,
 
     // Fathom-Lord Karathress
+    NPC_FATHOM_LORD_KARATHRESS   = 21214,
+    NPC_FATHOM_GUARD_CARIBDIS    = 21964,
+    NPC_FATHOM_GUARD_TIDALVESS   = 21965,
+    NPC_FATHOM_GUARD_SHARKKIS    = 21966,
     NPC_SPITFIRE_TOTEM           = 22091,
     NPC_FATHOM_LURKER            = 22119,
     NPC_FATHOM_SPOREBAT          = 22120,
@@ -147,6 +152,7 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
+bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
@@ -273,6 +279,8 @@ inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
 // Chaos Blast deals splash damage within 8y of the target.
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE = 10.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
+
+inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
 ObjectGuid FindLeotherasGuid(Player* bot);
 ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
@@ -807,9 +815,6 @@ bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, i
 float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index);
 
 // Shared encounter state
-
-// Encounter state shared by every bot in one instance. An unset field means not started or not
-// assigned yet.
 struct SscInstanceState
 {
     std::optional<uint32> hydrossFrostPhaseStartTime;
@@ -828,10 +833,7 @@ struct SscInstanceState
     std::optional<VashjCorePassingChain> vashjCorePassingChain;
 };
 
-// The lock covers only the lookup. Use the reference on this instance's map thread and within the
-// current call only: SscResetInstance() frees it.
 SscInstanceState& SscState(uint32 instanceId);
-// Returns whether any field was set.
 bool SscResetInstance(uint32 instanceId);
 
 template <typename T, typename U>

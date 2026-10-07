@@ -47,6 +47,19 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
 
 // General
 
+bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    uint32 const entry = group->GetTargetIcon(iconId).GetEntry();
+    if (std::find(entries.begin(), entries.end(), entry) == entries.end())
+        return false;
+
+    return ClearTargetIcon(bot, iconId);
+}
+
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
     if (!target || !tank)
@@ -1773,7 +1786,7 @@ bool FindVashjDaisStepAwayFromPositions(
     std::sort(candidates.begin(), candidates.end(),
         [](auto const& a, auto const& b) { return a.second > b.second; });
 
-    bool const tanking = facing && facing->GetVictim() == bot;
+    bool const isTanking = facing && facing->GetVictim() == bot;
     float const current = closestPosition(botX, botY);
     for (auto const& [angle, closest] : candidates)
     {
@@ -1782,7 +1795,7 @@ bool FindVashjDaisStepAwayFromPositions(
 
         float const dirX = std::cos(angle);
         float const dirY = std::sin(angle);
-        backwards = tanking && dirX * (facing->GetPositionX() - botX) +
+        backwards = isTanking && dirX * (facing->GetPositionX() - botX) +
             dirY * (facing->GetPositionY() - botY) < 0.0f;
 
         float const moveDist = backwards ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
@@ -2710,13 +2723,14 @@ bool SscResetInstance(uint32 instanceId)
         return false;
 
     SscInstanceState const& state = it->second;
-    bool const wasSet = state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
-                        state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
-                        state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
-                        state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
-                        state.leotherasFinalPhaseStartTime || state.karathressDpsWaitTimer ||
-                        state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
-                        state.vashjCorePassingChain;
+    bool const wasSet =
+        state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
+        state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
+        state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
+        state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
+        state.leotherasFinalPhaseStartTime || state.karathressDpsWaitTimer ||
+        state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
+        state.vashjCorePassingChain;
 
     sscStates.erase(it);
     return wasSet;

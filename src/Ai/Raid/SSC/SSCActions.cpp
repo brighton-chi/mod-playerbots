@@ -48,8 +48,18 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+        reset |= ClearSscTargetIcon(bot, RtiTargetValue::skullIndex, {
+            Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM),
+            Id(SscNpcs::NPC_SPITFIRE_TOTEM),
+            Id(SscNpcs::NPC_FATHOM_GUARD_TIDALVESS),
+            Id(SscNpcs::NPC_FATHOM_GUARD_SHARKKIS),
+            Id(SscNpcs::NPC_FATHOM_LURKER),
+            Id(SscNpcs::NPC_FATHOM_SPOREBAT),
+            Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS),
+        });
+
+        reset |= ClearSscTargetIcon(
+            bot, RtiTargetValue::crossIndex, { Id(SscNpcs::NPC_FATHOM_GUARD_CARIBDIS) });
     }
 
     return reset;
@@ -70,6 +80,13 @@ bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool SscStopAttackingAction::Execute(Event /*event*/)
 {
+    if (!bot->GetVictim() && !AI_VALUE(Unit*, "current target") &&
+        !bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
+        !bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+    {
+        return false;
+    }
+
     bot->AttackStop();
     bot->InterruptSpell(CURRENT_MELEE_SPELL);
     bot->CastStop();
@@ -2329,13 +2346,13 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
-    bool const tanking = vashj->GetVictim() == bot;
+    bool const isTanking = vashj->GetVictim() == bot;
 
     // Breakout = the tank is pinned in and has to run through Toxic Spores to get to a safe spot.
     if (_hasBreakoutSpot)
     {
         constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
-        _hasBreakoutSpot = tanking &&
+        _hasBreakoutSpot = isTanking &&
             getMSTimeDiff(_breakoutStartTime, getMSTime()) < maxBreakoutMs &&
             std::none_of(spores.begin(), spores.end(), [this](Position const& spore)
             {
@@ -2351,7 +2368,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     float stepZ;
     bool backwards;
     float const rockClearance =
-        tanking ? VASHJ_NORTH_ROCK_CLEARANCE : VASHJ_STANDING_ROCK_CLEARANCE;
+        isTanking ? VASHJ_NORTH_ROCK_CLEARANCE : VASHJ_STANDING_ROCK_CLEARANCE;
     bool found = FindVashjDaisStepAwayFromPositions(
         bot, spores, vashj, rockClearance, stepX, stepY, stepZ, backwards);
 
@@ -2371,7 +2388,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         }
     }
 
-    if (!found && tanking && FindVashjTankBreakoutSpot(bot, spores, _breakoutSpot))
+    if (!found && isTanking && FindVashjTankBreakoutSpot(bot, spores, _breakoutSpot))
     {
         _hasBreakoutSpot = true;
         _breakoutStartTime = getMSTime();
@@ -2381,7 +2398,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     if (!found)
         return false;
 
-    MovementPriority const priority = tanking ?
+    MovementPriority const priority = isTanking ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
 
     return MoveTo(
