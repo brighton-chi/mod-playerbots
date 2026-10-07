@@ -320,7 +320,8 @@ class ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger : public BlackTempleEn
 {
 public:
     ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "reliquary of souls essence of desire has rune shield") {}
+        : BlackTempleEncounterTrigger(
+            botAI, "reliquary of souls essence of desire has rune shield") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -362,7 +363,8 @@ class MotherShahrazRangedShouldPositionUnderPillarTrigger : public BlackTempleEn
 {
 public:
     MotherShahrazRangedShouldPositionUnderPillarTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "mother shahraz ranged should position under pillar") {}
+        : BlackTempleEncounterTrigger(
+            botAI, "mother shahraz ranged should position under pillar") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -394,7 +396,8 @@ class IllidariCouncilGathiosCastsJudgementOfCommandTrigger : public BlackTempleE
 {
 public:
     IllidariCouncilGathiosCastsJudgementOfCommandTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidari council gathios casts judgement of command") {}
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council gathios casts judgement of command") {}
 
 protected:
     bool IsActiveInEncounter() override;

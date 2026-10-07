@@ -176,9 +176,9 @@ enum class ChaoticChargeReach : uint8
 
 // Spell Absorption lasts 15 s and is recast 30 to 40 s after the last one began. Magic is held
 // from the margin before the earliest recast, for casts and channels still landing.
-inline constexpr uint32 REAVER_ABSORPTION_DURATION_MS = 15000;
-inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30000;
-inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5000;
+inline constexpr uint32 REAVER_ABSORPTION_DURATION_MS = 15 * IN_MILLISECONDS;
+inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30 * IN_MILLISECONDS;
+inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
@@ -256,7 +256,7 @@ inline constexpr float SUPREMUS_KITE_BOUNDARY_MARGIN = 10.0f;
 bool IsSupremusKitePhase(Unit* supremus);
 GuidVector FindSupremusVolcanoGuids(Player* bot);
 std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
-// Erupting from its 1 s cast until Volcanic Geyser ends, about 19 s of its 30.
+// Erupting from its 1s cast until Volcanic Geyser ends, about 19s of its 30.
 bool IsSupremusVolcanoErupting(Unit* volcano);
 bool IsInEruptingSupremusVolcano(
     std::vector<Unit*> const& volcanoes, float x, float y,
@@ -286,7 +286,7 @@ bool GetPathStepTowardPoint(
 // Teron Gorefiend
 
 // The run from the balcony to the corner takes about 12.5 s.
-inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15000;
+inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15 * IN_MILLISECONDS;
 inline constexpr float GOREFIEND_POSITION_TOLERANCE = 2.0f;
 // Spirit Chains and Spirit Volley hit within 12 yd of the spirit.
 inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
@@ -336,14 +336,15 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 
 // Mother Shahraz
 
-inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
-inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
-inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
 inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
 // Wide enough for an off-tank on her victim to take over without melee backing off.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
 inline constexpr float SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE = 5.0f;
+
+inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
+inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
+inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
 
 // Illidari Council
 
@@ -374,6 +375,16 @@ bool HasDangerousCouncilAura(Player* bot);
 bool IsDarkshadowVanished(Unit* darkshadow);
 
 // Illidan Stormrage <The Betrayer>
+
+struct EyeBlastDangerArea
+{
+    Position start;
+    Position end;
+    float width;
+};
+
+inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
+inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 
 inline Position const ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
 inline Position const ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
@@ -416,9 +427,6 @@ extern std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
 extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
-inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
-inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
-
 int GetIllidanPhase(Unit* illidan);
 bool IsIllidanDeathScene(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
@@ -429,12 +437,6 @@ bool HasParasiticShadowfiend(Player* player);
 bool IsIllidanTrapperHunter(Player* bot);
 ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot);
 Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI);
-struct EyeBlastDangerArea
-{
-    Position start;
-    Position end;
-    float width;
-};
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 GameObject* FindNearestTrap(PlayerbotAI* botAI);
