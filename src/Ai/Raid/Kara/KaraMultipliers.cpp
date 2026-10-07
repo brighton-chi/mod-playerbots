@@ -342,7 +342,14 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
-    if (!netherspite || IsBanishPhase(netherspite))
+    if (!netherspite)
+        return 1.0f;
+
+    // Derived from CombatFormationMoveAction. Block even in Banish phase so the tank stays put.
+    if (dynamic_cast<TankFaceAction*>(action))
+        return 0.0f;
+
+    if (IsBanishPhase(netherspite))
         return 1.0f;
 
     auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
