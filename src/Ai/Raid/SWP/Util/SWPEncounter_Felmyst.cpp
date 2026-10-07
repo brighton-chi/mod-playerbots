@@ -247,10 +247,10 @@ FogLocation GetDestinationFogLocation(Unit* felmyst)
 
 bool IsNearLandingPosition(Position const& destination)
 {
-    bool const nearRight =
-        destination.GetExactDist2d(FELMYST_RIGHT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
-    bool const nearLeft =
-        destination.GetExactDist2d(FELMYST_LEFT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
+    bool const nearRight = destination.GetExactDist2d(FELMYST_RIGHT_LANDING_POSITION) <=
+        FELMYST_LOCATION_MATCH_DISTANCE;
+    bool const nearLeft = destination.GetExactDist2d(FELMYST_LEFT_LANDING_POSITION) <=
+        FELMYST_LOCATION_MATCH_DISTANCE;
 
     return nearRight || nearLeft;
 }

@@ -407,10 +407,7 @@ bool FelmystMeleeCannotReachFlyingBossTrigger::IsActiveInEncounter()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return false;
-
-    if (AI_VALUE(Unit*, "current target") != felmyst)
+    if (!felmyst || AI_VALUE(Unit*, "current target") != felmyst)
         return false;
 
     return IsFelmystAirPhaseTargetSuppressed(felmyst);
@@ -422,10 +419,7 @@ bool FelmystPlayerIsCharmedByFogTrigger::IsActiveInEncounter()
         return false;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return false;
-
-    return GetFelmystCharmedTarget(bot, felmyst);
+    return felmyst && GetFelmystCharmedTarget(bot, felmyst);
 }
 
 bool FelmystShouldHoldDpsWhileLandingTrigger::IsActiveInEncounter()
@@ -657,7 +651,7 @@ bool MuruDarknessIsComingTrigger::IsActiveInEncounter()
 
 bool MuruBerserkerHasFlurryTrigger::IsActiveInEncounter()
 {
-    // No stuns and can't be a Tauren. Too bad.
+    // These classes have no stuns and can't be Tauren.
     if (bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
         bot->getClass() == CLASS_WARLOCK)
     {
@@ -672,7 +666,7 @@ bool MuruBerserkerHasFlurryTrigger::IsActiveInEncounter()
 
 bool MuruFuryMageCastingFelFireballTrigger::IsActiveInEncounter()
 {
-    // Do Druids have no interrupts...?
+    // Druids are seriously the only class with no interrupts?
     if (bot->getClass() == CLASS_DRUID)
         return false;
 
@@ -847,10 +841,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActiveInEncounter()
     if (!kiljaeden || kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD)
         return false;
 
-    if (GetKiljaedenDragonOrbUser(bot) != bot)
-        return false;
-
-    if (HasKiljaedenDragonAura(bot))
+    if (GetKiljaedenDragonOrbUser(bot) != bot || HasKiljaedenDragonAura(bot))
         return false;
 
     bool orbInUse = false;

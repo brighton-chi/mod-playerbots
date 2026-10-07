@@ -32,7 +32,8 @@ using namespace EncounterHelpers;
 
 // General
 
-// Without this, bots are able to drink after Kil'jaeden's Hands go down.
+// Without this, bots are able to drink after Kil'jaeden's Hands go down. I assume it's due to the
+// issue reported here: https://github.com/azerothcore/azerothcore-wotlk/issues/22122.
 float SunwellNoEncounterDrinkingMultiplier::GetValueInEncounter(Action* action)
 {
     return dynamic_cast<DrinkAction*>(action) || dynamic_cast<EatAction*>(action) ? 0.0f : 1.0f;

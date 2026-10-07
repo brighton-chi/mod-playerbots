@@ -16,7 +16,7 @@
 namespace SwpHelpers
 {
 
-// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f
+// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f (4.5f in PR 28010).
 // Note: Kalecgos remains on player threat lists for the duration of the encounter, even for
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
 
