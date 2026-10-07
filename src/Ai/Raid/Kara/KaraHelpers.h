@@ -61,9 +61,6 @@ enum class KaraSpells : uint32
     SPELL_CHARRED_EARTH           = 30129,
     SPELL_RAIN_OF_BONES           = 37091,
 
-    // Priest
-    SPELL_FEAR_WARD               = 6346,
-
     // Shaman
     SPELL_TREMOR_TOTEM            = 8143,
     SPELL_GROUNDING_TOTEM         = 8177,
@@ -75,7 +72,7 @@ enum class KaraNpcs : uint32
     NPC_MANA_WARP                 = 16530,
 
     // Attumen the Huntsman
-    NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // ID for mounted version
+    NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // Mounted version
 
     // The Curator
     NPC_THE_CURATOR               = 15691,

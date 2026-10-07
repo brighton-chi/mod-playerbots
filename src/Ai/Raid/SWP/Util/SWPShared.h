@@ -41,7 +41,7 @@ enum class SwpSpells : uint32
 
     // Brutallus
     SPELL_METEOR_SLASH                 = 45150, // 120° cone
-    SPELL_BURN                         = 46394, // Spread radius is 2y, no CombatReaches added
+    SPELL_BURN                         = 46394, // Spread radius is 2y, no combat reaches added
 
     // Felmyst
     SPELL_SUMMON_DEMONIC_VAPOR         = 45391,
@@ -169,7 +169,6 @@ inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
 // Radius for Challenging Shout and Challenging Roar.
 inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
-// For the "swp volatile fiend" value.
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 // Felfire Fission (45779), the fiend's death explosion, hits within 10y and just murders melee
 // bots (and me). This distance is farther since the fiends are running toward the raid.
