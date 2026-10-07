@@ -216,21 +216,31 @@ protected:
 
 // Illidari Council
 
-class IllidariCouncilDisableTankActionsMultiplier : public BlackTempleEncounterMultiplier
+class IllidariCouncilDisableMeleeTankActionsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableTankActionsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council disable tank actions") {}
+    IllidariCouncilDisableMeleeTankActionsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidari council disable melee tank actions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilControlMovementMultiplier : public BlackTempleEncounterMultiplier
+class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilControlMovementMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council control movement") {}
+    IllidariCouncilDisableMageTankActionsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidari council disable mage tank actions") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class IllidariCouncilControlNonTankMovementMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidariCouncilControlNonTankMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidari council control non-tank movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -251,16 +261,6 @@ class IllidariCouncilDisableArcaneShotOnZerevorMultiplier : public BlackTempleEn
 public:
     IllidariCouncilDisableArcaneShotOnZerevorMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "illidari council disable arcane shot on zerevor") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class IllidariCouncilDisableIceBlockMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidariCouncilDisableIceBlockMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council disable ice block") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
