@@ -1059,25 +1059,32 @@ bool HasParasiticShadowfiend(Player* player)
         player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 }
 
-// Get the first bot hunter that doesn't have Parasitic Shadowfiend
-Player* GetIllidanTrapperHunter(Player* bot)
+// The first bot hunter that doesn't have Parasitic Shadowfiend
+bool IsIllidanTrapperHunter(Player* bot)
 {
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
-        return nullptr;
+        return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
-            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member) &&
-            !HasParasiticShadowfiend(member))
+        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive())
+            continue;
+
+        if (member->getClass() != CLASS_HUNTER || !GET_PLAYERBOT_AI(member) ||
+            HasParasiticShadowfiend(member))
         {
-            return member;
+            continue;
         }
+
+        return member == bot;
     }
 
-    return nullptr;
+    return false;
 }
 
 ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot)

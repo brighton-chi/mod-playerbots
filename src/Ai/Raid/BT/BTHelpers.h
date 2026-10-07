@@ -426,7 +426,7 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot);
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool HasParasiticShadowfiend(Player* player);
-Player* GetIllidanTrapperHunter(Player* bot);
+bool IsIllidanTrapperHunter(Player* bot);
 ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot);
 Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI);
 struct EyeBlastDangerArea

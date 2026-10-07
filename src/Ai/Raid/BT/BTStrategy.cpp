@@ -261,11 +261,11 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new MotherShahrazFatalAttractionRunAwayMultiplier(botAI));
 
     // Illidari Council
-    multipliers.push_back(new IllidariCouncilDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new IllidariCouncilControlMovementMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilDisableMeleeTankActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilDisableMageTankActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilControlNonTankMovementMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableArcaneShotOnZerevorMultiplier(botAI));
-    multipliers.push_back(new IllidariCouncilDisableIceBlockMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>

@@ -380,7 +380,7 @@ float MotherShahrazFatalAttractionRunAwayMultiplier::GetValueInEncounter(Action*
 
 // Illidari Council
 
-float IllidariCouncilDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
+float IllidariCouncilDisableMeleeTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -388,58 +388,64 @@ float IllidariCouncilDisableTankActionsMultiplier::GetValueInEncounter(Action* a
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) &&
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<AvoidAoeAction*>(action) &&
+        !dynamic_cast<TankAssistAction*>(action) &&
         !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
         return 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        return 0.0f;
-
-    return 1.0f;
-}
-
-float IllidariCouncilControlMovementMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+    if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action) &&
-        !dynamic_cast<TankFaceAction*>(action))
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+}
+
+float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_MAGE)
+        return 1.0f;
+
+    if (!dynamic_cast<AvoidAoeAction*>(action) && dynamic_cast<CastIceBlockAction*>(action))
+        return 1.0f;
+
+    if (!IsZerevorMageTank(botAI))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
+}
+
+float IllidariCouncilControlNonTankMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    bool const isMovementAction = dynamic_cast<MovementAction*>(action);
+
+    if (!isMovementAction && !IsRepositionAction(bot, action))
+        return 1.0f;
+
+    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
     {
-        return 0.0f;
+        if (dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action))
+            return 1.0f;
+
+        return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
     }
 
-    if (dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action))
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    if (isMovementAction &&
+        !dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) &&
+        !dynamic_cast<FleeAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action) &&
-        PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<TankFaceAction*>(action) && !PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-        return 0.0f;
-
-    if (dynamic_cast<AvoidAoeAction*>(action) &&
-        ((PlayerbotAI::IsTank(bot) &&
-          (PlayerbotAI::IsMainTank(bot) ||
-           PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-           PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))) ||
-         IsZerevorMageTank(botAI)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
@@ -448,17 +454,6 @@ float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* 
         return 1.0f;
 
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
-}
-
-float IllidariCouncilDisableIceBlockMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!dynamic_cast<CastIceBlockAction*>(action))
-        return 1.0f;
-
-    if (!IsZerevorMageTank(botAI))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
@@ -648,22 +643,22 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValueInEncounter(Acti
 
 float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) == 2)
-        return 1.0f;
-
-    if (dynamic_cast<CastStrengthOfEarthTotemAction*>(action) ||
-        dynamic_cast<CastStoneskinTotemAction*>(action) ||
-        dynamic_cast<CastStoneclawTotemAction*>(action) ||
-        dynamic_cast<CastTremorTotemAction*>(action))
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastTremorTotemAction*>(action))
     {
-        return 0.0f;
+        return 1.0f;
     }
 
-    return 1.0f;
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && !IsIllidanDeathScene(illidan) && GetIllidanPhase(illidan) != 2 ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
