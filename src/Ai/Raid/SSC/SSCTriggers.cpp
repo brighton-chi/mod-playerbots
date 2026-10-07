@@ -531,7 +531,10 @@ bool LadyVashjStationSlotsNeedHoldersTrigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 2 && HasVashjStationVacancy(bot);
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
+        return false;
+
+    return HasVashjStationVacancy(bot);
 }
 
 bool LadyVashjShouldHoldStationInPhase2Trigger::IsActiveInEncounter()
@@ -555,7 +558,24 @@ bool LadyVashjRangedShouldPositionInPhase3Trigger::IsActiveInEncounter()
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    return vashj && GetLadyVashjPhase(vashj) == 3 && IsVashjPhase3RangedTooClose(bot, vashj);
+    if (!vashj || GetLadyVashjPhase(vashj) != 3)
+        return false;
+
+    if (!IsOnVashjDais(bot->GetPositionX(), bot->GetPositionY(), 0.0f, 0.0f))
+        return false;
+
+    return IsVashjPhase3RangedTooClose(bot, vashj);
+}
+
+// Attack() rejects targets out of LoS. Thus, bots down the stairs or behind generators in phase 3
+// cannot acquire a target, and with follow zeroed, nothing else moves them in phase 3.
+bool LadyVashjOutOfSightInPhase3Trigger::IsActiveInEncounter()
+{
+    if (AI_VALUE(Unit*, "current target") || HasVashjStaticCharge(bot))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    return vashj && GetLadyVashjPhase(vashj) == 3 && !bot->IsWithinLOSInMap(vashj);
 }
 
 bool LadyVashjMainTankNeedsGroundingShamanTrigger::IsActiveInEncounter()
@@ -680,7 +700,8 @@ bool LadyVashjTaintedElementalNeedsLooterTrigger::IsActiveInEncounter()
     if (!tainted)
         return false;
 
-    std::optional<TaintedCoreLooter> const& assigned = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    std::optional<TaintedCoreLooter> const& assigned =
+        SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
     if (!assigned || assigned->tainted != tainted->GetGUID())
         return true;
 

@@ -16,7 +16,6 @@
 #include "SSCHelpers.h"
 #include <algorithm>
 #include <cmath>
-#include <optional>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -503,7 +502,8 @@ ObjectGuid TheLurkerBelowTanksPickUpGuardiansAction::ClaimGuardianForTank(
 {
     std::optional<LurkerGuardianTankAssignments>& assignmentsField =
         SscState(bot->GetInstanceId()).lurkerGuardianTankAssignments;
-    LurkerGuardianTankAssignments& assignments = assignmentsField ? *assignmentsField : assignmentsField.emplace();
+    LurkerGuardianTankAssignments& assignments =
+        assignmentsField ? *assignmentsField : assignmentsField.emplace();
     ObjectGuid& assignedGuid = assignments[myIndex];
 
     if (std::any_of(guardians.begin(), guardians.end(),
@@ -1171,7 +1171,8 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
     if (!karathress)
         return false;
 
-    return EmplaceIfUnset(SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
+    return EmplaceIfUnset(
+        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -1470,7 +1471,8 @@ bool LadyVashjAssignStationSlotsAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    std::optional<VashjStationHolders>& holdersField = SscState(bot->GetInstanceId()).vashjStationHolders;
+    std::optional<VashjStationHolders>& holdersField =
+        SscState(bot->GetInstanceId()).vashjStationHolders;
     VashjStationHolders& holders = holdersField ? *holdersField : holdersField.emplace();
     auto holdsSlot = [&holders](ObjectGuid guid)
     {
@@ -1551,7 +1553,7 @@ bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!IsVashjPhase3RangedTooClose(bot, vashj))
+    if (!vashj || !IsVashjPhase3RangedTooClose(bot, vashj))
         return false;
 
     std::vector<Unit*> avoid;
@@ -1573,6 +1575,26 @@ bool LadyVashjPhase3PositionRangedAction::Execute(Event /*event*/)
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
+}
+
+bool LadyVashjPhase3MoveIntoSightAction::Execute(Event /*event*/)
+{
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
+        return false;
+
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, stepX, stepY))
+        return false;
+
+    return MoveTo(
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool LadyVashjAssignGroundingShamanAction::Execute(Event /*event*/)
@@ -1600,7 +1622,7 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (bot->GetDistance(mainTank) > distFromTank)
     {
         Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-        if (vashj && ShouldAvoidVashjStaticCharge(bot, vashj))
+        if (!vashj || ShouldAvoidVashjStaticCharge(bot, vashj))
             return false;
 
         return MoveTo(mainTank, distFromTank, MovementPriority::MOVEMENT_COMBAT);
@@ -1616,19 +1638,15 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
         return false;
 
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
-    if (!IsInVashjStaticChargeReach(bot, vashj))
+    if (!vashj || !IsInVashjStaticChargeReach(bot, vashj))
         return false;
 
     std::vector<Unit*> avoid;
 
     if (HasVashjStaticCharge(bot))
-    {
         avoid = GetOtherLivingGroupMembers(bot);
-    }
     else
-    {
         avoid.push_back(vashj->GetVictim());
-    }
 
     float stepX;
     float stepY;

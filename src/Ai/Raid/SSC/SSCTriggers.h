@@ -474,6 +474,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LadyVashjOutOfSightInPhase3Trigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjOutOfSightInPhase3Trigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj out of sight in phase 3") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class LadyVashjMainTankNeedsGroundingShamanTrigger : public SscEncounterTrigger
 {
 public:

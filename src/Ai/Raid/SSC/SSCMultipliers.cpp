@@ -722,7 +722,8 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
     if (!karathress)
         return 1.0f;
 
-    std::optional<uint32> const& waitStart = SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
+    std::optional<uint32> const& waitStart =
+        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
     if (waitStart && getMSTimeDiff(*waitStart, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
         return 1.0f;
 

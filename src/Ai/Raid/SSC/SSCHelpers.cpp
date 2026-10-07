@@ -1184,7 +1184,8 @@ Position const& GetVashjStationPosition(VashjStationSlot const& slot)
 std::vector<Player*> GetVashjStationRanged(Player* bot, int8 station)
 {
     std::vector<Player*> ranged;
-    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    std::optional<VashjStationHolders> const& holders =
+        SscState(bot->GetInstanceId()).vashjStationHolders;
     if (!holders || station < 0)
         return ranged;
 
@@ -1200,7 +1201,8 @@ std::vector<Player*> GetVashjStationRanged(Player* bot, int8 station)
 
 Player* GetVashjStationHealer(Player* bot, int8 station)
 {
-    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    std::optional<VashjStationHolders> const& holders =
+        SscState(bot->GetInstanceId()).vashjStationHolders;
     if (!holders || station < 0)
         return nullptr;
 
@@ -1706,7 +1708,8 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
 
 Player* GetVashjGroundingShaman(Player* bot)
 {
-    std::optional<ObjectGuid> const& shamanGuid = SscState(bot->GetInstanceId()).vashjGroundingShaman;
+    std::optional<ObjectGuid> const& shamanGuid =
+        SscState(bot->GetInstanceId()).vashjGroundingShaman;
     if (!shamanGuid)
         return nullptr;
 
@@ -2078,6 +2081,7 @@ bool GetStepToCastRangeAroundSpores(
 
     float const ringRadius = GetCastRingRadius(bot, target, castRange);
     Position const from = bot->GetPosition();
+    bool const fromDais = IsOnVashjDais(from.GetPositionX(), from.GetPositionY(), 0.0f, 0.0f);
     float bestCost = std::numeric_limits<float>::max();
     float bestX = 0.0f;
     float bestY = 0.0f;
@@ -2100,8 +2104,15 @@ bool GetStepToCastRangeAroundSpores(
             continue;
         }
 
-        if (!IsVashjLineOnDais(from, candidate, VASHJ_DAIS_MARGIN, VASHJ_STANDING_ROCK_CLEARANCE))
+        // From the stairs the line can't keep to the dais; it only must not cut through a rock.
+        if (fromDais ?
+                !IsVashjLineOnDais(
+                    from, candidate, VASHJ_DAIS_MARGIN, VASHJ_STANDING_ROCK_CLEARANCE) :
+                SegmentCrossesPolygon(from, candidate, VASHJ_NORTH_ROCK) ||
+                    SegmentCrossesPolygon(from, candidate, VASHJ_SOUTH_WEST_ROCK))
+        {
             continue;
+        }
 
         float const distance = from.GetExactDist2d(candidate);
         float inPools = 0.0f;
@@ -2146,7 +2157,8 @@ bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid)
 
 bool HasVashjStationVacancy(Player* bot)
 {
-    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    std::optional<VashjStationHolders> const& holders =
+        SscState(bot->GetInstanceId()).vashjStationHolders;
     if (!holders)
         return true;
 
@@ -2165,7 +2177,8 @@ bool HasVashjStationVacancy(Player* bot)
 VashjStationSlot GetVashjStationSlot(Player* bot)
 {
     VashjStationSlot result;
-    std::optional<VashjStationHolders> const& holders = SscState(bot->GetInstanceId()).vashjStationHolders;
+    std::optional<VashjStationHolders> const& holders =
+        SscState(bot->GetInstanceId()).vashjStationHolders;
     if (!holders)
         return result;
 
@@ -2534,7 +2547,8 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
 
 Creature* GetAssignedTaintedElemental(Player* bot)
 {
-    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    std::optional<TaintedCoreLooter> const& looter =
+        SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
     if (!looter)
         return nullptr;
 
@@ -2566,7 +2580,8 @@ Creature* GetTaintedElementalToKill(Player* bot)
     if (!PlayerbotAI::IsRangedDps(bot))
         return nullptr;
 
-    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    std::optional<TaintedCoreLooter> const& looter =
+        SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
     if (!looter || GetVashjStationSlot(bot).station != looter->station)
         return nullptr;
 
@@ -2576,7 +2591,8 @@ Creature* GetTaintedElementalToKill(Player* bot)
 
 bool IsDesignatedCoreLooter(Player* bot)
 {
-    std::optional<TaintedCoreLooter> const& looter = SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
+    std::optional<TaintedCoreLooter> const& looter =
+        SscState(bot->GetInstanceId()).vashjTaintedCoreLooter;
     return looter && looter->looter == bot->GetGUID();
 }
 
@@ -2667,7 +2683,8 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t i
 
 VashjCorePassingChain* GetVashjCorePassingChain(Player* bot)
 {
-    std::optional<VashjCorePassingChain>& chain = SscState(bot->GetInstanceId()).vashjCorePassingChain;
+    std::optional<VashjCorePassingChain>& chain =
+        SscState(bot->GetInstanceId()).vashjCorePassingChain;
     return chain ? &*chain : nullptr;
 }
 

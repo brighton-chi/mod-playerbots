@@ -411,6 +411,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class LadyVashjPhase3MoveIntoSightAction : public MovementAction
+{
+public:
+    LadyVashjPhase3MoveIntoSightAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "lady vashj phase 3 move into sight") {}
+    bool Execute(Event event) override;
+};
+
 class LadyVashjAssignGroundingShamanAction : public Action
 {
 public:

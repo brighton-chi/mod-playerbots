@@ -155,6 +155,9 @@ public:
         creators["lady vashj ranged should position in phase 3"] =
             &RaidSscTriggerContext::lady_vashj_ranged_should_position_in_phase_3;
 
+        creators["lady vashj out of sight in phase 3"] =
+            &RaidSscTriggerContext::lady_vashj_out_of_sight_in_phase_3;
+
         creators["lady vashj main tank needs grounding shaman"] =
             &RaidSscTriggerContext::lady_vashj_main_tank_needs_grounding_shaman;
 
@@ -412,6 +415,10 @@ private:
     static Trigger* lady_vashj_ranged_should_position_in_phase_3(PlayerbotAI* botAI)
     {
         return new LadyVashjRangedShouldPositionInPhase3Trigger(botAI);
+    }
+    static Trigger* lady_vashj_out_of_sight_in_phase_3(PlayerbotAI* botAI)
+    {
+        return new LadyVashjOutOfSightInPhase3Trigger(botAI);
     }
     static Trigger* lady_vashj_main_tank_needs_grounding_shaman(PlayerbotAI* botAI)
     {

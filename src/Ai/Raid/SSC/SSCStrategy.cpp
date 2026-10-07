@@ -157,6 +157,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj ranged should position in phase 3",
         { NextAction("lady vashj phase 3 position ranged", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("lady vashj out of sight in phase 3",
+        { NextAction("lady vashj phase 3 move into sight", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("lady vashj main tank needs grounding shaman",
         { NextAction("lady vashj assign grounding shaman", ACTION_EMERGENCY + 14) }));
 
