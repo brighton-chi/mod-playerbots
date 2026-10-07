@@ -72,7 +72,7 @@ bool MindSearChannelCheckTrigger::IsActive()
     {
         // Only trigger if the spell being channeled is Mind Sear
         if (MIND_SEAR_SPELL_IDS.count(spell->m_spellInfo->Id))
-            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
+            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.SightDistance, minEnemies);
     }
 
     // Not channeling Mind Sear

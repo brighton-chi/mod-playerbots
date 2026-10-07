@@ -165,7 +165,7 @@ bool VolleyChannelCheckTrigger::IsActive()
     if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
         spell && VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
     {
-        return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
+        return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.SightDistance, minEnemies);
     }
 
     return false;

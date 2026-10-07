@@ -249,7 +249,7 @@ bool RainOfFireChannelCheckTrigger::IsActive()
     {
         // Only trigger if the spell being channeled is Rain of Fire
         if (RAIN_OF_FIRE_SPELL_IDS.count(spell->m_spellInfo->Id))
-            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.sightDistance, minEnemies);
+            return !HasEnoughAoeTargets(botAI, bot->GetPosition(), sPlayerbotAIConfig.SightDistance, minEnemies);
     }
 
     // Not channeling Rain of Fire
