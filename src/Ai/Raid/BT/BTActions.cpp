@@ -12,6 +12,9 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include <algorithm>
+#include <array>
+#include <cmath>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -336,64 +339,232 @@ bool SupremusDisperseRangedAction::Execute(Event /*event*/)
         FleePosition(nearestPlayer->GetPosition(), SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
-// Steps around him, never into an erupting volcano or out of the open area, taking the step that
-// leaves the bot farthest from him. Molten Flame is ignored.
+namespace
+{
+
+constexpr float NEVER_CAUGHT = std::numeric_limits<float>::max();
+
+float GetKiteHeadingAngle(uint8 index)
+{
+    return index * 2.0f * M_PI / SUPREMUS_KITE_HEADINGS;
+}
+
+// How far along a heading from (x, y) stays inside the open area.
+float GetKiteBoundaryDistance(float x, float y, float angle)
+{
+    float const dx = std::cos(angle);
+    float const dy = std::sin(angle);
+    float distance = std::numeric_limits<float>::max();
+    if (dx > 0.0f)
+        distance = std::min(distance, (SUPREMUS_BOUNDARY_MAX_X - x) / dx);
+    else if (dx < 0.0f)
+        distance = std::min(distance, (SUPREMUS_BOUNDARY_MIN_X - x) / dx);
+
+    if (dy > 0.0f)
+        distance = std::min(distance, (SUPREMUS_BOUNDARY_MAX_Y - y) / dy);
+    else if (dy < 0.0f)
+        distance = std::min(distance, (SUPREMUS_BOUNDARY_MIN_Y - y) / dy);
+
+    // Negative only for a heading that leads further out from outside the area.
+    return std::max(0.0f, distance);
+}
+
+// Along a heading from (x, y): how far to the first hazard's safe zone that (x, y) is outside of,
+// and how far until clear of every one it is inside (0 if none).
+void GetFireCrossing(
+    std::vector<SupremusHazard> const& hazards, float x, float y, float angle,
+    float& entryDistance, float& exitDistance)
+{
+    float const dx = std::cos(angle);
+    float const dy = std::sin(angle);
+
+    entryDistance = std::numeric_limits<float>::max();
+    exitDistance = 0.0f;
+    for (SupremusHazard const& hazard : hazards)
+    {
+        // The heading crosses the circle where t^2 + 2 * along * t + outside = 0.
+        float const offsetX = x - hazard.position.GetPositionX();
+        float const offsetY = y - hazard.position.GetPositionY();
+        float const along = offsetX * dx + offsetY * dy;
+        float const outside =
+            offsetX * offsetX + offsetY * offsetY - hazard.safeRadius * hazard.safeRadius;
+        float const discriminant = along * along - outside;
+        if (outside < 0.0f)
+            exitDistance = std::max(exitDistance, -along + std::sqrt(discriminant));
+        else if (along < 0.0f && discriminant > 0.0f)
+            entryDistance = std::min(entryDistance, -along - std::sqrt(discriminant));
+    }
+}
+
+}
+
+// Re-planned every step. Each heading runs until a wall, the open area's edge or fire stops it,
+// and is scored by when he would reach the bot. Fire is ignored only when that is the one way to
+// stay out of his reach.
 bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
-    if (!supremus || bot->GetDistance2d(supremus) >= SUPREMUS_KITE_DISTANCE)
+    if (!supremus)
         return false;
 
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
     if (IsWaitingForLastMove(priority))
         return false;
 
-    std::vector<Unit*> const volcanoes = GetSupremusVolcanoes(botAI);
-    constexpr uint8 numAngles = 16;
-    constexpr float angleStep = 2.0f * M_PI / numAngles;
-    std::vector<std::pair<float, Position>> candidates;
-    for (uint8 i = 0; i < numAngles; ++i)
+    float const timeRemaining = GetSupremusFixateTimeRemaining(supremus);
+    float const catchDistance = GetSupremusCatchDistance(bot, supremus);
+    // At least a volcano's width, so a bot standing in one sees the way out.
+    float const probeDistance = std::max(
+        bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_SAFE_DISTANCE);
+    std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
+
+    // Keep the way the last step went, or else start straight away from him.
+    constexpr uint32 headingMemoryMs = 2000;
+    float const preferredAngle = getMSTimeDiff(_lastStepTime, getMSTime()) < headingMemoryMs ?
+        _lastAngle : supremus->GetAngle(bot);
+
+    std::array<float, SUPREMUS_KITE_HEADINGS> openDistances;
+    for (uint8 i = 0; i < SUPREMUS_KITE_HEADINGS; ++i)
     {
-        float const angle = i * angleStep;
-        float const x = bot->GetPositionX() + SUPREMUS_KITE_STEP_DISTANCE * std::cos(angle);
-        float const y = bot->GetPositionY() + SUPREMUS_KITE_STEP_DISTANCE * std::sin(angle);
-
-        if (!IsInsideSupremusKiteBoundary(x, y) || IsInEruptingSupremusVolcano(volcanoes, x, y))
-            continue;
-
-        candidates.emplace_back(
-            supremus->GetExactDist2d(x, y), Position(x, y, bot->GetPositionZ()));
+        float const angle = GetKiteHeadingAngle(i);
+        openDistances[i] = std::min(
+            GetCollisionFreeDistance(angle, probeDistance),
+            GetKiteBoundaryDistance(bot->GetPositionX(), bot->GetPositionY(), angle));
     }
 
-    // Farthest first, so the collision check runs only until one step passes.
-    std::sort(candidates.begin(), candidates.end(),
-        [](auto const& a, auto const& b) { return a.first > b.first; });
-
-    for (auto const& candidate : candidates)
+    // He one-shots what he reaches, so a heading he reaches only delays it. Headings he never
+    // reaches go by the quickest way out of fire, then the smallest turn.
+    auto const isBetter = [](KitePlan const& a, KitePlan const& b)
     {
+        if (a.timeUntilCaught != b.timeUntilCaught)
+            return a.timeUntilCaught > b.timeUntilCaught;
+
+        if (a.fireExitDistance != b.fireExitDistance)
+            return a.fireExitDistance < b.fireExitDistance;
+
+        return a.turn < b.turn;
+    };
+
+    auto const planHeadings = [&](std::vector<SupremusHazard> const& fire)
+    {
+        std::vector<KitePlan> plans;
+        for (uint8 i = 0; i < SUPREMUS_KITE_HEADINGS; ++i)
+        {
+            float const angle = GetKiteHeadingAngle(i);
+            float entryDistance;
+            float exitDistance;
+            GetFireCrossing(
+                fire, bot->GetPositionX(), bot->GetPositionY(), angle, entryDistance,
+                exitDistance);
+            float const runDistance = std::min(openDistances[i], entryDistance);
+            // Stopping short of leaving the fire the bot stands in is no way out.
+            if (runDistance < exitDistance)
+                continue;
+
+            float const turn = std::abs(std::remainder(angle - preferredAngle, 2.0f * M_PI));
+            float const timeUntilCaught =
+                SimulateChase(supremus, timeRemaining, catchDistance, angle, runDistance);
+            plans.push_back({ angle, runDistance, exitDistance, turn, timeUntilCaught });
+        }
+
+        std::sort(plans.begin(), plans.end(), isBetter);
+        return plans;
+    };
+
+    std::vector<KitePlan> plans = planHeadings(hazards);
+    if (!hazards.empty() && (plans.empty() || plans.front().timeUntilCaught != NEVER_CAUGHT))
+    {
+        std::vector<KitePlan> ignoringFire = planHeadings({});
+        if (plans.empty() || ignoringFire.front().timeUntilCaught == NEVER_CAUGHT)
+            plans = std::move(ignoringFire);
+    }
+
+    for (KitePlan const& plan : plans)
+    {
+        float const targetX = bot->GetPositionX() + plan.runDistance * std::cos(plan.angle);
+        float const targetY = bot->GetPositionY() + plan.runDistance * std::sin(plan.angle);
         float stepX;
         float stepY;
         float stepZ;
-        if (CanTakeStepTowards(
-                bot, candidate.second.GetPositionX(), candidate.second.GetPositionY(),
-                SUPREMUS_KITE_STEP_DISTANCE, stepX, stepY, stepZ))
+        if (!CanTakeStepTowards(
+                bot, targetX, targetY, SUPREMUS_KITE_STEP_DISTANCE, stepX, stepY, stepZ))
         {
-            return MoveTo(
-                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
+            continue;
         }
+
+        _lastAngle = plan.angle;
+        _lastStepTime = getMSTime();
+        return MoveTo(
+            BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
     }
 
     return false;
 }
 
-bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
+float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDistance)
 {
-    std::vector<Unit*> const volcanoes = GetSupremusVolcanoes(botAI);
-    if (!IsInEruptingSupremusVolcano(volcanoes, bot->GetPositionX(), bot->GetPositionY()))
+    float x = bot->GetPositionX() + maxDistance * std::cos(angle);
+    float y = bot->GetPositionY() + maxDistance * std::sin(angle);
+    float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+    if (z <= INVALID_HEIGHT)
+        z = bot->GetPositionZ();
+
+    // With failOnCollision off, a blocked run is cut short at the contact point and still returns
+    // true. A false return leaves the point uncut, so it counts as no room at all.
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, false, false))
+        return 0.0f;
+
+    return bot->GetExactDist2d(x, y);
+}
+
+// Seconds until he reaches the bot, or NEVER_CAUGHT if not before the fixate ends. He runs straight
+// at wherever the bot is; the bot runs the heading, then stands. In game he has to path around
+// whatever stopped the bot, so this errs toward his catching it.
+float SupremusKiteBossAction::SimulateChase(
+    Unit* supremus, float timeRemaining, float catchDistance, float angle, float runDistance)
+{
+    constexpr float timeStep = 0.25f;
+    float const botStep = bot->GetSpeed(MOVE_RUN) * timeStep;
+    float const supremusStep = supremus->GetSpeed(MOVE_RUN) * timeStep;
+    float const dx = std::cos(angle);
+    float const dy = std::sin(angle);
+    uint32 const numSteps = static_cast<uint32>(std::ceil(timeRemaining / timeStep));
+
+    float botX = bot->GetPositionX();
+    float botY = bot->GetPositionY();
+    float supremusX = supremus->GetPositionX();
+    float supremusY = supremus->GetPositionY();
+    float runLeft = runDistance;
+    for (uint32 i = 1; i <= numSteps; ++i)
+    {
+        float const botMove = std::min(botStep, runLeft);
+        runLeft -= botMove;
+        botX += botMove * dx;
+        botY += botMove * dy;
+
+        float const gap = std::hypot(botX - supremusX, botY - supremusY);
+        float const supremusMove = std::min(supremusStep, gap);
+        if (gap - supremusMove < catchDistance)
+            return i * timeStep;
+
+        supremusX += (botX - supremusX) / gap * supremusMove;
+        supremusY += (botY - supremusY) / gap * supremusMove;
+    }
+
+    return NEVER_CAUGHT;
+}
+
+bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
+{
+    std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
+    if (!IsInSupremusHazard(
+            hazards, bot->GetPositionX(), bot->GetPositionY(), SupremusHazardZone::Safe))
+    {
         return false;
+    }
 
     Position destination;
-    if (!FindSafestNearbyPosition(volcanoes, destination))
+    if (!FindSafestNearbyPosition(hazards, destination))
         return false;
 
     return MoveTo(
@@ -401,78 +572,183 @@ bool SupremusMoveAwayFromVolcanosAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// The nearest spot a yard clear of the trigger's radius from every erupting volcano, so reach has
-// room before avoidance pushes the bot back out. A spot whose path crosses no other volcano is
-// preferred; otherwise the nearest clear spot.
-bool SupremusMoveAwayFromVolcanosAction::FindSafestNearbyPosition(
-    std::vector<Unit*> const& volcanoes, Position& destination)
+// The nearest spot a yard clear of every hazard's safe zone that the bot can run to in a straight
+// line. A bot not yet burning takes only a route that stays out of every damage zone, and otherwise
+// holds: walled in, running through fire is worse than waiting at its edge. A burning bot takes the
+// route with the least ground under fire, then the nearest.
+bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
+    std::vector<SupremusHazard> const& hazards, Position& destination)
 {
     constexpr float maxRadius = 40.0f;
-    constexpr float distanceStep = 1.0f;
+    // Two yards keeps the search to 320 spots against a trail of 20 or more patches.
+    constexpr float distanceStep = 2.0f;
     constexpr uint8 numAngles = 16;
     constexpr float angleStep = 2.0f * M_PI / numAngles;
-    constexpr float clearance = SUPREMUS_VOLCANO_SAFE_DISTANCE + 1.0f;
+    constexpr float clearance = 1.0f;
     constexpr uint32 numDistances = static_cast<uint32>(maxRadius / distanceStep);
+    // Spots along one heading cross the same fire, and their yards differ only by rounding, which
+    // picked one at random up to 40 yd out; half-yard buckets keep the nearest first among them.
+    constexpr float underFireBucket = 0.5f;
+    constexpr uint8 maxStraightChecks = 16;
 
-    bool found = false;
+    Position const start = bot->GetPosition();
+    bool const isBurning = IsInSupremusHazard(
+        hazards, start.GetPositionX(), start.GetPositionY(), SupremusHazardZone::Damage);
+    std::vector<std::pair<uint32, Position>> burningRoutes;
+    uint8 straightChecks = 0;
     for (uint32 i = 1; i <= numDistances; ++i)
     {
         float const distance = i * distanceStep;
         for (uint8 j = 0; j < numAngles; ++j)
         {
             float const angle = j * angleStep;
-            float const x = bot->GetPositionX() + distance * std::cos(angle);
-            float const y = bot->GetPositionY() + distance * std::sin(angle);
-            if (IsInEruptingSupremusVolcano(volcanoes, x, y, clearance))
+            float const x = start.GetPositionX() + distance * std::cos(angle);
+            float const y = start.GetPositionY() + distance * std::sin(angle);
+            if (IsInSupremusHazard(hazards, x, y, SupremusHazardZone::Safe, clearance))
                 continue;
 
-            Position const candidate(x, y, bot->GetPositionZ());
-            if (IsPathSafeFromVolcanos(bot->GetPosition(), candidate, volcanoes))
+            Position const candidate(x, y, start.GetPositionZ());
+            float const underFire = GetLineLengthInSupremusHazards(
+                hazards, start, candidate, SupremusHazardZone::Damage);
+            // Rings run nearest first, so the first clear route is the nearest.
+            if (underFire <= 0.0f)
             {
-                destination = candidate;
-                return true;
+                if (straightChecks++ >= maxStraightChecks)
+                    return false;
+
+                if (CanRunStraightTo(candidate))
+                {
+                    destination = candidate;
+                    return true;
+                }
+
+                continue;
             }
 
-            if (!found)
+            if (isBurning)
             {
-                destination = candidate;
-                found = true;
+                burningRoutes.emplace_back(
+                    static_cast<uint32>(underFire / underFireBucket), candidate);
             }
         }
     }
 
-    return found;
+    if (burningRoutes.empty())
+        return false;
+
+    std::stable_sort(burningRoutes.begin(), burningRoutes.end(),
+        [](auto const& a, auto const& b) { return a.first < b.first; });
+
+    for (auto const& route : burningRoutes)
+    {
+        if (straightChecks++ >= maxStraightChecks)
+            break;
+
+        if (CanRunStraightTo(route.second))
+        {
+            destination = route.second;
+            return true;
+        }
+    }
+
+    // Better to run the least fiery route unchecked than to stand burning.
+    destination = burningRoutes.front().second;
+    return true;
 }
 
-// A path is unsafe only through a volcano the bot isn't already in; leaving the one it stands in
-// means crossing part of it.
-bool SupremusMoveAwayFromVolcanosAction::IsPathSafeFromVolcanos(
-    Position const& start, Position const& end, std::vector<Unit*> const& volcanoes)
+// Without this, a spot behind wreckage or a wall sends MoveTo pathing the long way round.
+bool SupremusMoveAwayFromFireAction::CanRunStraightTo(Position const& destination)
 {
-    constexpr uint8 numChecks = 10;
-    float const dx = end.GetPositionX() - start.GetPositionX();
-    float const dy = end.GetPositionY() - start.GetPositionY();
+    float x = destination.GetPositionX();
+    float y = destination.GetPositionY();
+    float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+    if (z <= INVALID_HEIGHT)
+        z = bot->GetPositionZ();
 
-    for (Unit* volcano : volcanoes)
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
+        return false;
+
+    // An incomplete path can cut the point short without counting as a collision.
+    constexpr float truncationTolerance = 1.0f;
+    return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
+        truncationTolerance;
+}
+
+// Steps toward the target, turning as little as it must to keep each step clear of fire, which
+// slides the bot round a volcano or a trail in its way. With nothing clear it holds.
+bool SupremusReachAroundFireAction::Execute(Event /*event*/)
+{
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    Unit* target;
+    float range;
+    if (!GetSupremusReachBlockedByFire(botAI, target, range))
+        return false;
+
+    std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
+    float const aim = bot->GetAngle(target);
+    constexpr float turnStep = static_cast<float>(M_PI) / 16.0f;
+
+    auto const tryStep = [&](uint8 turns, int8 side)
     {
-        if (!IsSupremusVolcanoErupting(volcano) ||
-            volcano->GetExactDist2d(&start) < SUPREMUS_VOLCANO_SAFE_DISTANCE)
+        // Between two clear ends, a 3.5 yd step cuts at most 0.25 yd into a safe zone, which is
+        // still a yard short of the damage zone.
+        float const angle = aim + side * turns * turnStep;
+        float const x = bot->GetPositionX() + SUPREMUS_REACH_STEP_DISTANCE * std::cos(angle);
+        float const y = bot->GetPositionY() + SUPREMUS_REACH_STEP_DISTANCE * std::sin(angle);
+        if (IsInSupremusHazard(hazards, x, y, SupremusHazardZone::Safe))
+            return false;
+
+        float stepX;
+        float stepY;
+        float stepZ;
+        if (!CanTakeStepTowards(bot, x, y, SUPREMUS_REACH_STEP_DISTANCE, stepX, stepY, stepZ))
+            return false;
+
+        if (turns > 0)
+            _lastSide = side;
+
+        _lastStepTime = getMSTime();
+        return MoveTo(
+            BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
+    };
+
+    constexpr uint8 turnsToSquare = 8;
+    constexpr uint8 turnsToBehind = 16;
+
+    // Once sliding one way it keeps to that side, turning back if it must, which follows a
+    // volcano's edge out of the notch where two meet; trying the other side first makes it dither.
+    constexpr uint32 sideMemoryMs = 2000;
+    if (getMSTimeDiff(_lastStepTime, getMSTime()) < sideMemoryMs)
+    {
+        int8 const side = _lastSide;
+        for (uint8 i = 0; i <= turnsToBehind; ++i)
         {
-            continue;
+            if (tryStep(i, side))
+                return true;
         }
 
-        for (uint8 i = 1; i <= numChecks; ++i)
+        for (uint8 i = 1; i <= turnsToSquare; ++i)
         {
-            float const ratio = static_cast<float>(i) / numChecks;
-            float const checkX = start.GetPositionX() + dx * ratio;
-            float const checkY = start.GetPositionY() + dy * ratio;
-
-            if (volcano->GetExactDist2d(checkX, checkY) < SUPREMUS_VOLCANO_SAFE_DISTANCE)
-                return false;
+            if (tryStep(i, static_cast<int8>(-side)))
+                return true;
         }
+
+        return false;
     }
 
-    return true;
+    if (tryStep(0, 1))
+        return true;
+
+    for (uint8 i = 1; i <= turnsToSquare; ++i)
+    {
+        if (tryStep(i, 1) || tryStep(i, -1))
+            return true;
+    }
+
+    return false;
 }
 
 // Shade of Akama

@@ -6,6 +6,7 @@
 
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
+#include "GameTime.h"
 #include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
@@ -461,30 +462,54 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
 
 // Supremus
 
+namespace
+{
+
+float GetSupremusHazardRadius(SupremusHazard const& hazard, SupremusHazardZone zone)
+{
+    return zone == SupremusHazardZone::Damage ? hazard.damageRadius : hazard.safeRadius;
+}
+
+}
+
 bool IsSupremusKitePhase(Unit* supremus)
 {
     return supremus && supremus->HasAura(Id(BtSpells::SPELL_SNARE_SELF));
 }
 
-GuidVector FindSupremusVolcanoGuids(Player* bot)
+float GetSupremusFixateTimeRemaining(Unit* supremus)
 {
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BtNpcs::NPC_SUPREMUS_VOLCANO), SUPREMUS_VOLCANO_SEARCH_RADIUS);
+    if (!supremus)
+        return 0.0f;
 
-    GuidVector volcanoes;
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            volcanoes.push_back(creature->GetGUID());
-    }
+    Aura* snareSelf = supremus->GetAura(Id(BtSpells::SPELL_SNARE_SELF));
+    if (!snareSelf)
+        return 0.0f;
 
-    return volcanoes;
+    int64 const elapsed =
+        GameTime::GetGameTime().count() - static_cast<int64>(snareSelf->GetApplyTime());
+    int64 const remaining = std::min(
+        SUPREMUS_FIXATE_INTERVAL_SECONDS,
+        SUPREMUS_FIXATE_INTERVAL_SECONDS + 1 - elapsed % SUPREMUS_FIXATE_INTERVAL_SECONDS);
+
+    return static_cast<float>(remaining);
 }
 
-std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI)
+float GetSupremusCatchDistance(Player* bot, Unit* supremus)
 {
-    return GetCachedUnits(botAI, "supremus volcanoes");
+    if (!supremus)
+        return 0.0f;
+
+    return supremus->GetMeleeRange(bot) + SUPREMUS_KITE_SAFETY_MARGIN;
+}
+
+bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus)
+{
+    if (!supremus)
+        return false;
+
+    float const closing = supremus->GetSpeed(MOVE_RUN) * GetSupremusFixateTimeRemaining(supremus);
+    return supremus->GetExactDist2d(bot) - closing < GetSupremusCatchDistance(bot, supremus);
 }
 
 bool IsSupremusVolcanoErupting(Unit* volcano)
@@ -494,22 +519,132 @@ bool IsSupremusVolcanoErupting(Unit* volcano)
          volcano->HasUnitState(UNIT_STATE_CASTING));
 }
 
-bool IsInEruptingSupremusVolcano(
-    std::vector<Unit*> const& volcanoes, float x, float y, float radius)
+std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
 {
-    for (Unit* volcano : volcanoes)
+    Player* bot = botAI->GetBot();
+    std::vector<SupremusHazard> hazards;
+
+    std::list<Creature*> volcanoes;
+    bot->GetCreatureListWithEntryInGrid(
+        volcanoes, Id(BtNpcs::NPC_SUPREMUS_VOLCANO), SUPREMUS_HAZARD_SEARCH_RADIUS);
+    for (Creature* volcano : volcanoes)
     {
-        if (IsSupremusVolcanoErupting(volcano) && volcano->GetExactDist2d(x, y) < radius)
+        if (IsSupremusVolcanoErupting(volcano))
+        {
+            hazards.push_back({
+                volcano->GetPosition(), SUPREMUS_VOLCANO_HAZARD_RADIUS,
+                SUPREMUS_VOLCANO_SAFE_DISTANCE });
+        }
+    }
+
+    // In the tank phase stock avoid aoe handles Molten Flame; it sidesteps, keeping bots near.
+    Unit* supremus =
+        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "supremus")->Get();
+    if (!IsSupremusKitePhase(supremus))
+        return hazards;
+
+    for (Position const& patch : GetDynamicObjectPositions(
+             bot, SUPREMUS_HAZARD_SEARCH_RADIUS, Id(BtSpells::SPELL_MOLTEN_FLAME_PATCH)))
+    {
+        hazards.push_back(
+            { patch, SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS, SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE });
+    }
+
+    return hazards;
+}
+
+std::vector<SupremusHazard> const& GetSupremusHazards(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<SupremusHazard>>("supremus hazards")
+        ->RefGet();
+}
+
+bool IsInSupremusHazard(
+    std::vector<SupremusHazard> const& hazards, float x, float y, SupremusHazardZone zone,
+    float margin)
+{
+    for (SupremusHazard const& hazard : hazards)
+    {
+        if (hazard.position.GetExactDist2d(x, y) < GetSupremusHazardRadius(hazard, zone) + margin)
             return true;
     }
 
     return false;
 }
 
-bool IsInsideSupremusKiteBoundary(float x, float y)
+float GetLineLengthInSupremusHazards(
+    std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
+    SupremusHazardZone zone)
 {
-    return x > SUPREMUS_BOUNDARY_MIN_X && x < SUPREMUS_BOUNDARY_MAX_X &&
-        y > SUPREMUS_BOUNDARY_MIN_Y && y < SUPREMUS_BOUNDARY_MAX_Y;
+    float const length = from.GetExactDist2d(to);
+    if (length <= 0.0f)
+        return 0.0f;
+
+    float const dx = (to.GetPositionX() - from.GetPositionX()) / length;
+    float const dy = (to.GetPositionY() - from.GetPositionY()) / length;
+    float total = 0.0f;
+    for (SupremusHazard const& hazard : hazards)
+    {
+        // The line crosses the circle where t^2 + 2 * along * t + outside = 0.
+        float const radius = GetSupremusHazardRadius(hazard, zone);
+        float const offsetX = from.GetPositionX() - hazard.position.GetPositionX();
+        float const offsetY = from.GetPositionY() - hazard.position.GetPositionY();
+        float const along = offsetX * dx + offsetY * dy;
+        float const outside = offsetX * offsetX + offsetY * offsetY - radius * radius;
+        float const discriminant = along * along - outside;
+        if (discriminant <= 0.0f)
+            continue;
+
+        float const root = std::sqrt(discriminant);
+        float const enter = std::max(0.0f, -along - root);
+        float const exit = std::min(length, -along + root);
+        if (exit > enter)
+            total += exit - enter;
+    }
+
+    return total;
+}
+
+bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range)
+{
+    Player* bot = botAI->GetBot();
+    target = nullptr;
+    range = 0.0f;
+
+    // Stock reach doesn't break a channel either.
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    bool const isHealer = PlayerbotAI::IsHeal(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    target = context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    if (isHealer)
+        range = botAI->GetRange("heal");
+    else if (PlayerbotAI::IsRanged(bot))
+        range = botAI->GetRange("spell");
+    else
+        range = sPlayerbotAIConfig.MeleeDistance;
+
+    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
+        return false;
+
+    // Where the walk in would stop: a yard inside range, on the straight line to the target.
+    constexpr float rangeInset = 1.0f;
+    float const stopDistance =
+        range + bot->GetCombatReach() + target->GetCombatReach() - rangeInset;
+    float const distance = bot->GetExactDist2d(target);
+    if (distance <= stopDistance)
+        return false;
+
+    float const ratio = stopDistance / distance;
+    Position const stop(
+        target->GetPositionX() + (bot->GetPositionX() - target->GetPositionX()) * ratio,
+        target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * ratio,
+        bot->GetPositionZ());
+
+    return GetLineLengthInSupremusHazards(
+        GetSupremusHazards(botAI), bot->GetPosition(), stop, SupremusHazardZone::Safe) > 0.0f;
 }
 
 // Shade of Akama

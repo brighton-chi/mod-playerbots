@@ -143,16 +143,31 @@ bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
     if (!supremus || supremus->GetVictim() != bot || !IsSupremusKitePhase(supremus))
         return false;
 
-    return bot->GetDistance2d(supremus) < SUPREMUS_KITE_DISTANCE;
+    // The kite multiplier holds every other mover, fire avoidance included.
+    return CanSupremusCatchStandingBot(bot, supremus) ||
+        IsInSupremusHazard(
+            GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
+            SupremusHazardZone::Safe);
 }
 
-bool SupremusNearVolcanoTrigger::IsActiveInEncounter()
+bool SupremusNearFireTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
         return false;
 
-    return IsInEruptingSupremusVolcano(
-        GetSupremusVolcanoes(botAI), bot->GetPositionX(), bot->GetPositionY());
+    return IsInSupremusHazard(
+        GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
+        SupremusHazardZone::Safe);
+}
+
+bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
+{
+    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+        return false;
+
+    Unit* target;
+    float range;
+    return GetSupremusReachBlockedByFire(botAI, target, range);
 }
 
 // Shade of Akama

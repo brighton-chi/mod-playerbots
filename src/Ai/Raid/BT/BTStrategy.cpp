@@ -61,8 +61,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus fixates on bot",
         { NextAction("supremus kite boss", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("supremus near volcano",
-        { NextAction("supremus move away from volcanos", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("supremus near fire",
+        { NextAction("supremus move away from fire", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("supremus reach blocked by fire",
+        { NextAction("supremus reach around fire", ACTION_RAID - 1) }));
 
     // Shade of Akama
     triggers.push_back(new TriggerNode("shade of akama should prioritize channelers",
@@ -238,6 +241,8 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInKitePhaseMultiplier(botAI));
     multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
+    multipliers.push_back(new SupremusDoNotReachThroughFireMultiplier(botAI));
+    multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));

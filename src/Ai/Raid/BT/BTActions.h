@@ -171,19 +171,48 @@ class SupremusKiteBossAction : public MovementAction
 public:
     SupremusKiteBossAction(PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
     bool Execute(Event event) override;
+
+private:
+    struct KitePlan
+    {
+        float angle;
+        float runDistance;
+        float fireExitDistance;
+        float turn;
+        float timeUntilCaught;
+    };
+
+    float GetCollisionFreeDistance(float angle, float maxDistance);
+    float SimulateChase(
+        Unit* supremus, float timeRemaining, float catchDistance, float angle, float runDistance);
+
+    float _lastAngle = 0.0f;
+    uint32 _lastStepTime = 0;
 };
 
-class SupremusMoveAwayFromVolcanosAction : public MovementAction
+class SupremusMoveAwayFromFireAction : public MovementAction
 {
 public:
-    SupremusMoveAwayFromVolcanosAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "supremus move away from volcanos") {}
+    SupremusMoveAwayFromFireAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "supremus move away from fire") {}
     bool Execute(Event event) override;
 
 private:
-    bool FindSafestNearbyPosition(std::vector<Unit*> const& volcanoes, Position& destination);
-    bool IsPathSafeFromVolcanos(
-        Position const& start, Position const& end, std::vector<Unit*> const& volcanoes);
+    bool FindSafestNearbyPosition(
+        std::vector<BtHelpers::SupremusHazard> const& hazards, Position& destination);
+    bool CanRunStraightTo(Position const& destination);
+};
+
+class SupremusReachAroundFireAction : public MovementAction
+{
+public:
+    SupremusReachAroundFireAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "supremus reach around fire") {}
+    bool Execute(Event event) override;
+
+private:
+    int8 _lastSide = 1;
+    uint32 _lastStepTime = 0;
 };
 
 // Shade of Akama

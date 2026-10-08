@@ -175,11 +175,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class SupremusNearVolcanoTrigger : public BlackTempleEncounterTrigger
+class SupremusNearFireTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusNearVolcanoTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "supremus near volcano") {}
+    SupremusNearFireTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus near fire") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class SupremusReachBlockedByFireTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    SupremusReachBlockedByFireTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus reach blocked by fire") {}
 
 protected:
     bool IsActiveInEncounter() override;

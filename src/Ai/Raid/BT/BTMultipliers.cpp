@@ -184,6 +184,30 @@ float SupremusDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
     return AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
+float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
+    bool const isDpsReach =
+        dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
+    if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isDpsReach)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+        return 1.0f;
+
+    Unit* target;
+    float range;
+    return GetSupremusReachBlockedByFire(botAI, target, range) ? 0.0f : 1.0f;
+}
+
+float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<AvoidAoeAction*>(action))
+        return 1.0f;
+
+    return IsSupremusKitePhase(AI_VALUE2(Unit*, "find target", "supremus")) ? 0.0f : 1.0f;
+}
+
 // Shade of Akama
 
 float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)

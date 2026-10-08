@@ -28,15 +28,19 @@ protected:
 
 // Supremus
 
-class SupremusVolcanoesValue : public CalculatedValue<GuidVector>
+// Positions, not units, so nothing dangles when a volcano despawns.
+class SupremusHazardsValue : public CalculatedValue<std::vector<BtHelpers::SupremusHazard>>
 {
 public:
-    SupremusVolcanoesValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-              botAI, "supremus volcanoes", BtHelpers::SUPREMUS_VOLCANO_CACHE_INTERVAL_MS) {}
+    SupremusHazardsValue(PlayerbotAI* botAI)
+        : CalculatedValue<std::vector<BtHelpers::SupremusHazard>>(
+              botAI, "supremus hazards", BtHelpers::SUPREMUS_HAZARD_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindSupremusVolcanoGuids(bot); }
+    std::vector<BtHelpers::SupremusHazard> Calculate() override
+    {
+        return BtHelpers::FindSupremusHazards(botAI);
+    }
 };
 
 // Shade of Akama
@@ -130,7 +134,7 @@ public:
     RaidBlackTempleValueContext()
     {
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
-        creators["supremus volcanoes"] = &RaidBlackTempleValueContext::supremus_volcanoes;
+        creators["supremus hazards"] = &RaidBlackTempleValueContext::supremus_hazards;
         creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
         creators["shadowy constructs"] = &RaidBlackTempleValueContext::shadowy_constructs;
         creators["gurtogg bloodboil second tank threat"] =
@@ -148,9 +152,9 @@ private:
     {
         return new ShadowmoonReaversValue(botAI);
     }
-    static UntypedValue* supremus_volcanoes(PlayerbotAI* botAI)
+    static UntypedValue* supremus_hazards(PlayerbotAI* botAI)
     {
-        return new SupremusVolcanoesValue(botAI);
+        return new SupremusHazardsValue(botAI);
     }
     static UntypedValue* shade_of_akama_adds(PlayerbotAI* botAI)
     {

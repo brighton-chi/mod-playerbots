@@ -61,8 +61,11 @@ public:
         creators["supremus fixates on bot"] =
             &RaidBlackTempleTriggerContext::supremus_fixates_on_bot;
 
-        creators["supremus near volcano"] =
-            &RaidBlackTempleTriggerContext::supremus_near_volcano;
+        creators["supremus near fire"] =
+            &RaidBlackTempleTriggerContext::supremus_near_fire;
+
+        creators["supremus reach blocked by fire"] =
+            &RaidBlackTempleTriggerContext::supremus_reach_blocked_by_fire;
 
         // Shade of Akama
         creators["shade of akama should prioritize channelers"] =
@@ -285,9 +288,13 @@ private:
     {
         return new SupremusFixatesOnBotTrigger(botAI);
     }
-    static Trigger* supremus_near_volcano(PlayerbotAI* botAI)
+    static Trigger* supremus_near_fire(PlayerbotAI* botAI)
     {
-        return new SupremusNearVolcanoTrigger(botAI);
+        return new SupremusNearFireTrigger(botAI);
+    }
+    static Trigger* supremus_reach_blocked_by_fire(PlayerbotAI* botAI)
+    {
+        return new SupremusReachBlockedByFireTrigger(botAI);
     }
 
     // Shade of Akama
