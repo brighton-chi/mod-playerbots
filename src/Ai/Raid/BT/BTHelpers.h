@@ -240,23 +240,36 @@ inline constexpr float SUPREMUS_VOLCANO_SEARCH_RADIUS = 40.0f;
 inline constexpr uint32 SUPREMUS_VOLCANO_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 5.0f;
-// Volcanic Geyser hits within 15 yd of the volcano's centre. The 3 yd is one AI tick of running
-// in, so avoidance stops a bot that reach is carrying in before the damage radius.
-inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = 15.0f + 3.0f;
+// Volcanic Geyser hits within 15 yd of the volcano's centre. The 4 yd is buffer, so avoidance stops
+// a bot that is trying to reach Supremus with reach target before crossing the damage radius.
+inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
+inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 4.0f;
 inline constexpr float SUPREMUS_KITE_DISTANCE = 25.0f;
-inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 5.0f;
+inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 3.5f;
 // He evades when his own position leaves this box (instance_black_temple.cpp boundaries). He
 // follows the kiter in a straight line and the box is convex, so a kiter inside it keeps him in.
-inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 556.1f;
-inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 850.2f;
-inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 542.0f;
-inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 1001.0f;
-inline constexpr float SUPREMUS_KITE_BOUNDARY_MARGIN = 10.0f;
+// inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 556.1f;
+// inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 850.2f;
+// inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 542.0f;
+// inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 1001.0f;
+// inline constexpr float SUPREMUS_KITE_BOUNDARY_MARGIN = 10.0f;
+// A rectangular area in front of the Black Temple entrance that is wide open. Min_X to Max_X is
+// pretty close to the width of the courtyard, but the length extends much farther beyond Max_Y.
+// However, extending Max_Y any further moves into a battlefield area with destroyed war marchines
+// and other debris all over, which block movement.
+inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 587.0f;
+inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 820.0f;
+// inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 675.0f;
+// inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 745.0f;
+// These boundaries run from the top of the ramp leading up into the temple to just before reaching
+// the vestibule inside the courtyard gate.
+inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;
+inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
 bool IsSupremusKitePhase(Unit* supremus);
 GuidVector FindSupremusVolcanoGuids(Player* bot);
 std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
-// Erupting from its 1s cast until Volcanic Geyser ends, about 19s of its 30.
+// Erupting from its 1s cast until Volcanic Geyser ends, about 19s of its full 30s duration.
 bool IsSupremusVolcanoErupting(Unit* volcano);
 bool IsInEruptingSupremusVolcano(
     std::vector<Unit*> const& volcanoes, float x, float y,

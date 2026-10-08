@@ -336,8 +336,8 @@ bool SupremusDisperseRangedAction::Execute(Event /*event*/)
         FleePosition(nearestPlayer->GetPosition(), SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
-// Steps around him, never into an erupting volcano or out of his room, taking the step that leaves
-// the bot farthest from him. Molten Flame is ignored.
+// Steps around him, never into an erupting volcano or out of the open area, taking the step that
+// leaves the bot farthest from him. Molten Flame is ignored.
 bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
@@ -505,10 +505,7 @@ bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
             true, false);
     }
 
-    if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
-
-    return false;
+    return AI_VALUE(Unit*, "current target") != target && Attack(target);
 }
 
 // Teron Gorefiend
