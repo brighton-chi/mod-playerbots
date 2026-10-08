@@ -61,8 +61,11 @@ public:
         creators["supremus kite boss"] =
             &RaidBlackTempleActionContext::supremus_kite_boss;
 
-        creators["supremus move away from volcanos"] =
-            &RaidBlackTempleActionContext::supremus_move_away_from_volcanos;
+        creators["supremus move away from fire"] =
+            &RaidBlackTempleActionContext::supremus_move_away_from_fire;
+
+        creators["supremus reach around fire"] =
+            &RaidBlackTempleActionContext::supremus_reach_around_fire;
 
         // Shade of Akama
         creators["shade of akama melee dps prioritize channelers"] =
@@ -287,9 +290,13 @@ private:
     {
         return new SupremusKiteBossAction(botAI);
     }
-    static Action* supremus_move_away_from_volcanos(PlayerbotAI* botAI)
+    static Action* supremus_move_away_from_fire(PlayerbotAI* botAI)
     {
-        return new SupremusMoveAwayFromVolcanosAction(botAI);
+        return new SupremusMoveAwayFromFireAction(botAI);
+    }
+    static Action* supremus_reach_around_fire(PlayerbotAI* botAI)
+    {
+        return new SupremusReachAroundFireAction(botAI);
     }
 
     // Shade of Akama

@@ -45,6 +45,7 @@ enum class BtSpells : uint32
     // Supremus
     SPELL_SNARE_SELF                = 41922,
     SPELL_VOLCANIC_GEYSER           = 42055,
+    SPELL_MOLTEN_FLAME_PATCH        = 40253, // the patches' dynamic objects
 
     // Teron Gorefiend
     SPELL_SHADOW_OF_DEATH           = 40251,
@@ -236,16 +237,38 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus);
 
 // Supremus
 
-inline constexpr float SUPREMUS_VOLCANO_SEARCH_RADIUS = 40.0f;
-inline constexpr uint32 SUPREMUS_VOLCANO_CACHE_INTERVAL_MS = 200;
+// Ground fire: an erupting volcano or a Molten Flame patch.
+struct SupremusHazard
+{
+    Position position;
+    float damageRadius;
+    float safeRadius;
+};
+
+enum class SupremusHazardZone
+{
+    Damage,
+    Safe,
+};
+
+inline constexpr float SUPREMUS_HAZARD_SEARCH_RADIUS = 40.0f;
+inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
-inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 5.0f;
+inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
 // Volcanic Geyser hits within 15 yd of the volcano's centre. The 4 yd is buffer, so avoidance stops
 // a bot that is trying to reach Supremus with reach target before crossing the damage radius.
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
 inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 4.0f;
-inline constexpr float SUPREMUS_KITE_DISTANCE = 25.0f;
+// A Molten Flame patch hits within 5 yd plus the victim's combat reach, 6.5 yd for a player.
+inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f;
+inline constexpr float SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE =
+    SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS + 1.0f;
+inline constexpr int64 SUPREMUS_FIXATE_INTERVAL_SECONDS = 10;
+// Kept beyond his melee range, which is about 27 yd from his centre: his combat reach is 24.
+inline constexpr float SUPREMUS_KITE_SAFETY_MARGIN = 3.0f;
 inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 3.5f;
+inline constexpr uint8 SUPREMUS_KITE_HEADINGS = 16;
+inline constexpr float SUPREMUS_REACH_STEP_DISTANCE = 3.5f;
 // He evades when his own position leaves this box (instance_black_temple.cpp boundaries). He
 // follows the kiter in a straight line and the box is convex, so a kiter inside it keeps him in.
 // inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 556.1f;
@@ -267,14 +290,27 @@ inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
 bool IsSupremusKitePhase(Unit* supremus);
-GuidVector FindSupremusVolcanoGuids(Player* bot);
-std::vector<Unit*> GetSupremusVolcanoes(PlayerbotAI* botAI);
+// Fixates fall every 10s from the start of the kite phase. Snare Self's apply time is in whole
+// seconds, so this can run up to 1s long.
+float GetSupremusFixateTimeRemaining(Unit* supremus);
+float GetSupremusCatchDistance(Player* bot, Unit* supremus);
+// Whether he would reach the bot before the fixate ends if it stood still.
+bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus);
 // Erupting from its 1s cast until Volcanic Geyser ends, about 19s of its full 30s duration.
 bool IsSupremusVolcanoErupting(Unit* volcano);
-bool IsInEruptingSupremusVolcano(
-    std::vector<Unit*> const& volcanoes, float x, float y,
-    float radius = SUPREMUS_VOLCANO_SAFE_DISTANCE);
-bool IsInsideSupremusKiteBoundary(float x, float y);
+// Molten Flame only in the kite phase; in the tank phase stock avoid aoe handles it.
+std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI);
+std::vector<SupremusHazard> const& GetSupremusHazards(PlayerbotAI* botAI);
+bool IsInSupremusHazard(
+    std::vector<SupremusHazard> const& hazards, float x, float y, SupremusHazardZone zone,
+    float margin = 0.0f);
+// Yards of the straight line inside the hazards' zones, summed over hazards.
+float GetLineLengthInSupremusHazards(
+    std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
+    SupremusHazardZone zone);
+// The target and range stock reach would use; true when its straight walk into range passes
+// through a hazard's safe zone.
+bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range);
 
 // Shade of Akama
 

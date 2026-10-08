@@ -88,6 +88,29 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Stock reach walks a straight line, so it gives way while that line passes through fire.
+class SupremusDoNotReachThroughFireMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    SupremusDoNotReachThroughFireMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "supremus do not reach through fire") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Stock avoid aoe flees one patch at a time and can't see volcanoes; in the kite phase the fire
+// avoidance sees both. In the tank phase it handles Molten Flame again.
+class SupremusDisableAvoidAoeInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    SupremusDisableAvoidAoeInKitePhaseMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "supremus disable avoid aoe in kite phase") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Shade of Akama
 
 // Walking up to the platform can lose sight of the target, which would otherwise drop it.
