@@ -5,6 +5,7 @@
  */
 
 #include "RogueActions.h"
+#include "AiFactory.h"
 #include "Event.h"
 #include "ObjectGuid.h"
 #include "Player.h"
@@ -44,14 +45,14 @@ bool UnstealthAction::Execute(Event /*event*/)
 
 bool CheckStealthAction::Execute(Event /*event*/)
 {
+    // Spec strategies are siblings, so adding the wrong one replaces the bot's spec.
+    // Mirrors the spec choice in AiFactory::AddDefaultCombatStrategies.
+    std::string const spec = AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT ? "combat" : "assassin";
+
     if (botAI->HasAura("stealth", bot))
-    {
-        botAI->ChangeStrategy("-combat,+stealthed", BOT_STATE_COMBAT);
-    }
+        botAI->ChangeStrategy("-" + spec + ",+stealthed", BOT_STATE_COMBAT);
     else
-    {
-        botAI->ChangeStrategy("+combat,-stealthed", BOT_STATE_COMBAT);
-    }
+        botAI->ChangeStrategy("+" + spec + ",-stealthed", BOT_STATE_COMBAT);
 
     return true;
 }

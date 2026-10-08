@@ -64,14 +64,12 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    // The right priority for poisons is probably above any attack but below any survival ability.
-    // Everything about Rogues needs to be redone, but right now 26 is just below Cloak of Shadows
-    // and Evasion and just above Slice and Dice.
+    // Poisons sit just below the survival cooldowns and above most of the rotation.
     triggers.push_back(
         new TriggerNode(
             "main hand weapon no enchant",
             {
-                NextAction("use instant poison on main hand", 26.0f)
+                NextAction("use instant poison on main hand", ACTION_HIGH + 6)
             }
         )
     );
@@ -79,7 +77,7 @@ void GenericRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "off hand weapon no enchant",
             {
-                NextAction("use deadly poison on off hand", 25.5f)
+                NextAction("use deadly poison on off hand", ACTION_HIGH + 5.5f)
             }
         )
     );
