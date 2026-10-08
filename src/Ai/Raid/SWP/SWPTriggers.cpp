@@ -745,11 +745,17 @@ bool KiljaedenShouldCoordinateOrbUseTrigger::IsActiveInEncounter()
     if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
         return false;
 
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) < HAND_SEARCH_RADIUS)
+        return false;
+
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()
 {
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) < HAND_SEARCH_RADIUS)
+        return false;
+
     return AI_VALUE2(Unit*, "find target", "hand of the deceiver");
 }
 

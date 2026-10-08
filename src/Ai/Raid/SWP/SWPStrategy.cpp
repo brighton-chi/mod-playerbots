@@ -196,7 +196,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden should coordinate orb use",
-        { NextAction("kil'jaeden announce dragon orb user", ACTION_RAID) }));
+        { NextAction("kil'jaeden announce dragon orb user", ACTION_RAID - 1) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active",
         { NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY),

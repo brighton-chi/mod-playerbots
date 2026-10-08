@@ -25,10 +25,10 @@ using namespace EncounterHelpers;
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
-    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
+    /* auto const stateItr = kiljaedenEncounterStates.find(instanceId);
 
     if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
-        return false;
+        return false; */
 
     kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
 
