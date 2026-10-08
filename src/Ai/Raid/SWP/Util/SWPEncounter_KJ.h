@@ -73,7 +73,7 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
 
-inline constexpr float HAND_SEARCH_RADIUS = 75.0f;
+inline constexpr float HAND_SEARCH_RADIUS = 80.0f;
 // Hammer of Justice is a single-target spell that counts both combat reaches so its actual range is
 // its tooltip range of 10y + 1.5y (player) + 2.5y (Hand) = 14y. Holding a little inside that
 // threshold leaves room for the Hand to shift between the range check and the cast landing.
