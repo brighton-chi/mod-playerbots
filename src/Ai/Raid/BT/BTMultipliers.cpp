@@ -154,14 +154,14 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
 
 float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<SupremusMoveAwayFromVolcanosAction*>(action) ||
-        dynamic_cast<SupremusKiteBossAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
+
+    if (dynamic_cast<SupremusKiteBossAction*>(action))
+        return 1.0f;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus || supremus->GetVictim() != bot)
@@ -450,6 +450,9 @@ float IllidariCouncilControlNonTankMovementMultiplier::GetValueInEncounter(Actio
 
 float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -461,11 +464,14 @@ float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* 
 
 float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
     if (!dynamic_cast<CastArcaneShotAction*>(action))
-        return 0.0f;
+        return 1.0f;
 
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (!zerevor)
