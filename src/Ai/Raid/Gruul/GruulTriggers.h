@@ -72,11 +72,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HighKingMaulgarDeterminingKillOrderTrigger : public GruulsLairEncounterTrigger
+class HighKingMaulgarShouldAssignDpsPriorityTrigger : public GruulsLairEncounterTrigger
 {
 public:
-    HighKingMaulgarDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar determining kill order") {}
+    HighKingMaulgarShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(botAI, "high king maulgar should assign dps priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

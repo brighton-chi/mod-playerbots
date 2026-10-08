@@ -94,7 +94,7 @@ public:
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_hold_phase_3_positions;
 
         creators["kael'thas sunstrider determining advisor kill order"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_determining_advisor_kill_order;
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_assign_advisor_dps_priority;
 
         creators["kael'thas sunstrider should manage advisor dps timer"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_manage_advisor_dps_timer;
@@ -236,9 +236,9 @@ private:
     {
         return new KaelthasSunstriderShouldHoldPhase3PositionsTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI)
+    static Trigger* kaelthas_sunstrider_should_assign_advisor_dps_priority(PlayerbotAI* botAI)
     {
-        return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI);
+        return new KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger(botAI);
     }
     static Trigger* kaelthas_sunstrider_should_manage_advisor_dps_timer(PlayerbotAI* botAI)
     {

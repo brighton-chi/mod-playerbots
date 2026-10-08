@@ -21,7 +21,7 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers",
         { NextAction("magtheridon misdirect hellfire channelers to main tank", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("magtheridon determining kill order",
+    triggers.push_back(new TriggerNode("magtheridon should assign dps priority",
         { NextAction("magtheridon assign dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("magtheridon burning abyssal spawned",

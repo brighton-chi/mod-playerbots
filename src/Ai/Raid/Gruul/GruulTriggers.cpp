@@ -42,7 +42,7 @@ bool HighKingMaulgarKigglerNeedsMoonkinTankTrigger::IsActiveInEncounter()
     return IsKigglerMoonkinTank(botAI) && AI_VALUE2(Unit*, "find target", "kiggler the crazed");
 }
 
-bool HighKingMaulgarDeterminingKillOrderTrigger::IsActiveInEncounter()
+bool HighKingMaulgarShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "high king maulgar"))
         return false;

@@ -55,7 +55,7 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActiveInEncounter()
     return GetChanneler(bot, WEST_CHANNELER_DB_GUID) || GetChanneler(bot, EAST_CHANNELER_DB_GUID);
 }
 
-bool MagtheridonDeterminingKillOrderTrigger::IsActiveInEncounter()
+bool MagtheridonShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "magtheridon");
 }
