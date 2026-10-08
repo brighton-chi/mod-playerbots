@@ -13,6 +13,7 @@ public:
     CombatRogueStrategyActionNodeFactory()
     {
         creators["sinister strike"] = &sinister_strike;
+        creators["rupture"] = &rupture;
     }
 
 private:
@@ -23,6 +24,15 @@ private:
             /*P*/ {},
             /*A*/ {
                 NextAction("melee") },
+            /*C*/ {}
+        );
+    }
+    static ActionNode* rupture([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "rupture",
+            /*P*/ {},
+            /*A*/ { NextAction("eviscerate") },
             /*C*/ {}
         );
     }

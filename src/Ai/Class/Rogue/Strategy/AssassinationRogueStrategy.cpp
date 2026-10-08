@@ -14,6 +14,7 @@ public:
     {
         creators["mutilate"] = &mutilate;
         creators["envenom"] = &envenom;
+        creators["backstab"] = &backstab;
     }
 
 private:
@@ -32,6 +33,15 @@ private:
             "envenom",
             /*P*/ {},
             /*A*/ { NextAction("eviscerate") },
+            /*C*/ {}
+        );
+    }
+    static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "backstab",
+            /*P*/ {},
+            /*A*/ { NextAction("sinister strike") },
             /*C*/ {}
         );
     }

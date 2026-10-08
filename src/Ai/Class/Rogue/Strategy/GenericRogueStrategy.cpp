@@ -14,8 +14,6 @@ public:
     {
         creators["use deadly poison on off hand"] = &use_deadly_poison_on_off_hand;
         creators["kick"] = &kick;
-        creators["backstab"] = &backstab;
-        creators["rupture"] = &rupture;
     }
 
 private:
@@ -32,24 +30,6 @@ private:
             "kick",
             /*P*/ {},
             /*A*/ { NextAction("kidney shot") },
-            /*C*/ {}
-        );
-    }
-    static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "backstab",
-            /*P*/ {},
-            /*A*/ { NextAction("sinister strike") },
-            /*C*/ {}
-        );
-    }
-    static ActionNode* rupture([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "rupture",
-            /*P*/ {},
-            /*A*/ { NextAction("eviscerate") },
             /*C*/ {}
         );
     }
