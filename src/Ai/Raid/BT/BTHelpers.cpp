@@ -500,9 +500,7 @@ bool IsInEruptingSupremusVolcano(
     for (Unit* volcano : volcanoes)
     {
         if (IsSupremusVolcanoErupting(volcano) && volcano->GetExactDist2d(x, y) < radius)
-        {
             return true;
-        }
     }
 
     return false;
@@ -510,10 +508,8 @@ bool IsInEruptingSupremusVolcano(
 
 bool IsInsideSupremusKiteBoundary(float x, float y)
 {
-    return x > SUPREMUS_BOUNDARY_MIN_X + SUPREMUS_KITE_BOUNDARY_MARGIN &&
-        x < SUPREMUS_BOUNDARY_MAX_X - SUPREMUS_KITE_BOUNDARY_MARGIN &&
-        y > SUPREMUS_BOUNDARY_MIN_Y + SUPREMUS_KITE_BOUNDARY_MARGIN &&
-        y < SUPREMUS_BOUNDARY_MAX_Y - SUPREMUS_KITE_BOUNDARY_MARGIN;
+    return x > SUPREMUS_BOUNDARY_MIN_X && x < SUPREMUS_BOUNDARY_MAX_X &&
+        y > SUPREMUS_BOUNDARY_MIN_Y && y < SUPREMUS_BOUNDARY_MAX_Y;
 }
 
 // Shade of Akama
