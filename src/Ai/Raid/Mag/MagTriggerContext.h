@@ -27,8 +27,8 @@ public:
         creators["magtheridon pulling west and east channelers"] =
             &RaidMagtheridonTriggerContext::magtheridon_pulling_west_and_east_channelers;
 
-        creators["magtheridon determining kill order"] =
-            &RaidMagtheridonTriggerContext::magtheridon_determining_kill_order;
+        creators["magtheridon should assign dps priority"] =
+            &RaidMagtheridonTriggerContext::magtheridon_should_assign_dps_priority;
 
         creators["magtheridon burning abyssal spawned"] =
             &RaidMagtheridonTriggerContext::magtheridon_burning_abyssal_spawned;
@@ -66,9 +66,9 @@ private:
     {
         return new MagtheridonPullingWestAndEastChannelersTrigger(botAI);
     }
-    static Trigger* magtheridon_determining_kill_order(PlayerbotAI* botAI)
+    static Trigger* magtheridon_should_assign_dps_priority(PlayerbotAI* botAI)
     {
-        return new MagtheridonDeterminingKillOrderTrigger(botAI);
+        return new MagtheridonShouldAssignDpsPriorityTrigger(botAI);
     }
     static Trigger* magtheridon_burning_abyssal_spawned(PlayerbotAI* botAI)
     {

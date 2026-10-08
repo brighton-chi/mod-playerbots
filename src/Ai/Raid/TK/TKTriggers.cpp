@@ -270,7 +270,7 @@ bool KaelthasSunstriderShouldHoldPhase3PositionsTrigger::IsActiveInEncounter()
         IsCapernianTank(bot);
 }
 
-bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActiveInEncounter()
+bool KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
         return false;

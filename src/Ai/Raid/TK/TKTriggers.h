@@ -284,10 +284,10 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KaelthasSunstriderDeterminingAdvisorKillOrderTrigger : public TempestKeepEncounterTrigger
+class KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger : public TempestKeepEncounterTrigger
 {
 public:
-    KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(PlayerbotAI* botAI)
+    KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
             botAI, "kael'thas sunstrider determining advisor kill order") {}
 

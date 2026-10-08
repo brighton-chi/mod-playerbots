@@ -29,8 +29,8 @@ public:
         creators["high king maulgar kiggler needs moonkin tank"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_kiggler_needs_moonkin_tank;
 
-        creators["high king maulgar determining kill order"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_determining_kill_order;
+        creators["high king maulgar should assign dps priority"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_should_assign_dps_priority;
 
         creators["high king maulgar channeling whirlwind"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_channeling_whirlwind;
@@ -78,9 +78,9 @@ private:
     {
         return new HighKingMaulgarKigglerNeedsMoonkinTankTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI)
+    static Trigger* high_king_maulgar_should_assign_dps_priority(PlayerbotAI* botAI)
     {
-        return new HighKingMaulgarDeterminingKillOrderTrigger(botAI);
+        return new HighKingMaulgarShouldAssignDpsPriorityTrigger(botAI);
     }
     static Trigger* high_king_maulgar_channeling_whirlwind(PlayerbotAI* botAI)
     {

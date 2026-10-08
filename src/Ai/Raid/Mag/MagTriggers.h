@@ -68,11 +68,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MagtheridonDeterminingKillOrderTrigger : public MagtheridonEncounterTrigger
+class MagtheridonShouldAssignDpsPriorityTrigger : public MagtheridonEncounterTrigger
 {
 public:
-    MagtheridonDeterminingKillOrderTrigger(PlayerbotAI* botAI)
-        : MagtheridonEncounterTrigger(botAI, "magtheridon determining kill order") {}
+    MagtheridonShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
+        : MagtheridonEncounterTrigger(botAI, "magtheridon should assign dps priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

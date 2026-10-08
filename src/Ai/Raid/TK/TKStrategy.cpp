@@ -92,7 +92,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider should hold phase 3 positions",
         { NextAction("kael'thas sunstrider handle advisor roles in phase 3", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider determining advisor kill order",
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should assign advisor dps priority",
         { NextAction("kael'thas sunstrider assign advisor dps priority", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider should manage advisor dps timer",
