@@ -251,14 +251,15 @@ enum class SupremusHazardZone
     Safe,
 };
 
-inline constexpr float SUPREMUS_HAZARD_SEARCH_RADIUS = 40.0f;
+// Avoidance picks spots up to 40 yd out, and a volcano's safe zone reaches 18 yd from its centre.
+inline constexpr float SUPREMUS_HAZARD_SEARCH_RADIUS = 60.0f;
 inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
-// Volcanic Geyser hits within 15 yd of the volcano's centre. The 4 yd is buffer, so avoidance stops
-// a bot that is trying to reach Supremus with reach target before crossing the damage radius.
+// Volcanic Geyser hits within 15 yd of the volcano's centre. Reach gives way to fire, so the 3 yd
+// buffer is for movers that don't check it: a tick or two of running before avoidance turns back.
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
-inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 4.0f;
+inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
 // A Molten Flame patch hits within 5 yd plus the victim's combat reach, 6.5 yd for a player.
 inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f;
 inline constexpr float SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE =

@@ -563,9 +563,22 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
         return false;
     }
 
+    // A bot walled in holds, and the fire around it changes slowly; the search runs up to 16
+    // raycasts, so don't repeat it every tick unless the bot starts burning.
+    constexpr uint32 retryDelayMs = 500;
+    if (getMSTimeDiff(_lastFailedSearchTime, getMSTime()) < retryDelayMs &&
+        !IsInSupremusHazard(
+            hazards, bot->GetPositionX(), bot->GetPositionY(), SupremusHazardZone::Damage))
+    {
+        return false;
+    }
+
     Position destination;
     if (!FindSafestNearbyPosition(hazards, destination))
+    {
+        _lastFailedSearchTime = getMSTime();
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
@@ -693,8 +706,8 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
 
     auto const tryStep = [&](uint8 turns, int8 side)
     {
-        // Between two clear ends, a 3.5 yd step cuts at most 0.25 yd into a safe zone, which is
-        // still a yard short of the damage zone.
+        // Between two clear ends, a 3.5 yd step cuts at most 0.25 yd into a safe zone, still well
+        // short of the damage zone (0.75 yd for a patch, 2.75 for a volcano).
         float const angle = aim + side * turns * turnStep;
         float const x = bot->GetPositionX() + SUPREMUS_REACH_STEP_DISTANCE * std::cos(angle);
         float const y = bot->GetPositionY() + SUPREMUS_REACH_STEP_DISTANCE * std::sin(angle);

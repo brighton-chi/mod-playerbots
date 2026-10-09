@@ -201,6 +201,8 @@ private:
     bool FindSafestNearbyPosition(
         std::vector<BtHelpers::SupremusHazard> const& hazards, Position& destination);
     bool CanRunStraightTo(Position const& destination);
+
+    uint32 _lastFailedSearchTime = 0;
 };
 
 class SupremusReachAroundFireAction : public MovementAction
