@@ -13,6 +13,7 @@
 #include "MovementActions.h"
 #include "Unit.h"
 #include <string>
+#include <vector>
 
 namespace BtHelpers
 {
@@ -259,6 +260,11 @@ public:
     TeronGorefiendControlAndDestroyShadowyConstructsAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "teron gorefiend control and destroy shadowy constructs") {}
     bool Execute(Event event) override;
+
+private:
+    std::vector<Unit*> GetConstructs(Unit* gorefiend) const;
+    Unit* GetLeadConstruct(Unit* gorefiend, std::vector<Unit*> const& constructs) const;
+    Unit* GetLanceTarget(Unit* gorefiend, std::vector<Unit*> const& constructs) const;
 };
 
 // Gurtogg Bloodboil

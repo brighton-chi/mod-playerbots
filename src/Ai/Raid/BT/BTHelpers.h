@@ -343,6 +343,8 @@ inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
 // Spirit Lance's lowest damage. Constructs within one Lance of the highest health count as even.
 inline constexpr uint32 GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE = 6175;
 inline constexpr uint32 GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS = 1000;
+// From his tank spot, about 90 yd reaches the far corners of his room.
+inline constexpr float GOREFIEND_CONSTRUCT_SEARCH_RADIUS = 100.0f;
 
 inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };

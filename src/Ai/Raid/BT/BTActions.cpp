@@ -15,6 +15,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <list>
 #include <utility>
 #include <vector>
 
@@ -268,6 +269,8 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (_usedSpine || GetMSTimeDiffToNow(_reactionStartTime) < _reactionDelay)
         return false;
 
+    bot->CastStop();
+
     if (!atSpine)
     {
         return MoveTo(
@@ -308,6 +311,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
         float const targetX = najentus->GetPositionX() + approachDist * std::cos(angle);
         float const targetY = najentus->GetPositionY() + approachDist * std::sin(angle);
 
+        bot->CastStop();
         return MoveTo(
             BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
             MovementPriority::MOVEMENT_FORCED, true, false);
@@ -325,6 +329,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
     if (static_cast<uint32>(shield->GetMaxDuration() - shield->GetDuration()) < _throwDelay)
         return false;
 
+    bot->CastStop();
     botAI->ImbueItem(spine, najentus);
     _throwDelay = 0;
     return true;
@@ -339,7 +344,7 @@ bool SupremusDisperseRangedAction::Execute(Event /*event*/)
         FleePosition(nearestPlayer->GetPosition(), SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
-namespace
+namespace // Supremus
 {
 
 constexpr float NEVER_CAUGHT = std::numeric_limits<float>::max();
@@ -396,7 +401,7 @@ void GetFireCrossing(
     }
 }
 
-}
+} // end anonymous namespace (Supremus)
 
 // Re-planned every step. Each heading runs until a wall, the open area's edge or fire stops it,
 // and is scored by when he would reach the bot. Fire is ignored only when that is the one way to
@@ -580,6 +585,7 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
         return false;
     }
 
+    bot->CastStop();
     return MoveTo(
         BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -863,6 +869,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position) <= GOREFIEND_POSITION_TOLERANCE)
         return false;
 
+    bot->CastStop();
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -878,28 +885,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     if (!spirit)
         return false;
 
-    // The construct nearest Teron leads the way to the raid.
-    std::vector<Unit*> constructs;
-    Unit* leadConstruct = nullptr;
-    float leadDistance = 0.0f;
-    uint32 highestHealth = 0;
-    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWY_CONSTRUCT))
-            continue;
-
-        constructs.push_back(unit);
-        highestHealth = std::max(highestHealth, unit->GetHealth());
-
-        float const distance = gorefiend->GetExactDist2d(unit);
-        if (!leadConstruct || distance < leadDistance)
-        {
-            leadConstruct = unit;
-            leadDistance = distance;
-        }
-    }
-
+    std::vector<Unit*> const constructs = GetConstructs(gorefiend);
+    Unit* leadConstruct = GetLeadConstruct(gorefiend, constructs);
     if (!leadConstruct)
     {
         Unit* victim = gorefiend->GetVictim();
@@ -947,12 +934,61 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         return true;
     }
 
-    // Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping
-    // the rest together.
-    Unit* lanceTarget = nullptr;
-    float lanceDistance = 0.0f;
+    return CastVengefulSpiritSpell(
+        spirit, GetLanceTarget(gorefiend, constructs), Id(BtSpells::SPELL_SPIRIT_LANCE)) ||
+        moving;
+}
+
+// A grid search from Teron, not the bot's own targets: the bot is the possessing body, left
+// where Shadow of Death sent it, and its target lists keep only units it can see.
+std::vector<Unit*> TeronGorefiendControlAndDestroyShadowyConstructsAction::GetConstructs(
+    Unit* gorefiend) const
+{
+    std::list<Creature*> creatures;
+    gorefiend->GetCreatureListWithEntryInGrid(
+        creatures, Id(BtNpcs::NPC_SHADOWY_CONSTRUCT), GOREFIEND_CONSTRUCT_SEARCH_RADIUS);
+
+    std::vector<Unit*> constructs;
+    for (Creature* creature : creatures)
+    {
+        if (creature->IsAlive())
+            constructs.push_back(creature);
+    }
+
+    return constructs;
+}
+
+// The construct nearest Teron leads the way to the raid.
+Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLeadConstruct(
+    Unit* gorefiend, std::vector<Unit*> const& constructs) const
+{
+    Unit* leadConstruct = nullptr;
+    float leadDistance = 0.0f;
     for (Unit* construct : constructs)
     {
+        float const distance = gorefiend->GetExactDist2d(construct);
+        if (!leadConstruct || distance < leadDistance)
+        {
+            leadConstruct = construct;
+            leadDistance = distance;
+        }
+    }
+
+    return leadConstruct;
+}
+
+// Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping the
+// rest together. With none chained, Lance goes round them, keeping its 9 s slow on each and
+// wearing them down evenly: of those within one Lance of the highest health, the nearest Teron.
+Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLanceTarget(
+    Unit* gorefiend, std::vector<Unit*> const& constructs) const
+{
+    Unit* lanceTarget = nullptr;
+    float lanceDistance = 0.0f;
+    uint32 highestHealth = 0;
+    for (Unit* construct : constructs)
+    {
+        highestHealth = std::max(highestHealth, construct->GetHealth());
         if (!construct->HasAura(Id(BtSpells::SPELL_SPIRIT_CHAINS)))
             continue;
 
@@ -964,26 +1000,23 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         }
     }
 
-    // With none chained, Lance goes round them, keeping its 9 s slow on each and wearing them down
-    // evenly: of those within one Lance of the highest health, the nearest Teron.
-    if (!lanceTarget)
-    {
-        for (Unit* construct : constructs)
-        {
-            if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
-                continue;
+    if (lanceTarget)
+        return lanceTarget;
 
-            float const distance = gorefiend->GetExactDist2d(construct);
-            if (!lanceTarget || distance < lanceDistance)
-            {
-                lanceTarget = construct;
-                lanceDistance = distance;
-            }
+    for (Unit* construct : constructs)
+    {
+        if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
+            continue;
+
+        float const distance = gorefiend->GetExactDist2d(construct);
+        if (!lanceTarget || distance < lanceDistance)
+        {
+            lanceTarget = construct;
+            lanceDistance = distance;
         }
     }
 
-    return CastVengefulSpiritSpell(
-        spirit, lanceTarget, Id(BtSpells::SPELL_SPIRIT_LANCE)) || moving;
+    return lanceTarget;
 }
 
 // Gurtogg Bloodboil
@@ -991,6 +1024,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
     Position const& position = GetGurtoggBloodboilPosition(bot);
+
+    bot->CastStop();
     return MoveInside(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         GURTOGG_POSITION_TOLERANCE, MovementPriority::MOVEMENT_FORCED);
