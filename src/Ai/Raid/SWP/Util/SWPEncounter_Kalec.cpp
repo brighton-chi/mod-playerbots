@@ -5,13 +5,17 @@
  */
 
 #include "SWPEncounter_Kalec.h"
+#include "EncounterHelpers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "SWPState.h"
 #include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -19,8 +23,6 @@ namespace SwpHelpers
 // Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.0f (4.5f in PR 28010).
 // Note: Kalecgos remains on player threat lists for the duration of the encounter, even for
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
-
-std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 
 namespace
 {
@@ -47,7 +49,7 @@ uint8 GetAssignedGroup(KalecgosEncounterState const& state, ObjectGuid playerGui
 
 KalecgosEncounterState& GetPreparedEncounterState(Player* player)
 {
-    KalecgosEncounterState& state = kalecgosEncounterStates[player->GetInstanceId()];
+    KalecgosEncounterState& state = GetOrEmplace(SwpState(player->GetInstanceId()).kalecgosEncounterState);
     if (!state.encounterStartMs)
         state.encounterStartMs = getMSTime();
 
@@ -518,7 +520,7 @@ void EnsureKalecgosRaidAssignments(Player* player)
     if (!group)
         return;
 
-    KalecgosEncounterState& state = kalecgosEncounterStates[player->GetInstanceId()];
+    KalecgosEncounterState& state = GetOrEmplace(SwpState(player->GetInstanceId()).kalecgosEncounterState);
     std::vector<Player*> botMembers;
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const expectedTankAssignmentGuids =
         GetExpectedTankAssignmentGuids(player);
@@ -625,11 +627,11 @@ Player* FindKalecgosDesignatedTank(Player* player)
     if (!group)
         return nullptr;
 
-    auto const stateItr = kalecgosEncounterStates.find(player->GetInstanceId());
-    if (stateItr == kalecgosEncounterStates.end())
+    std::optional<KalecgosEncounterState>& kalecgosState = SwpState(player->GetInstanceId()).kalecgosEncounterState;
+    if (!kalecgosState)
         return nullptr;
 
-    return ResolveKalecgosDesignatedTank(player, group, stateItr->second);
+    return ResolveKalecgosDesignatedTank(player, group, *kalecgosState);
 }
 
 Player* GetKalecgosDesignatedTank(Player* player)

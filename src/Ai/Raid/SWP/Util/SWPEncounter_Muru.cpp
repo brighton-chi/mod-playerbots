@@ -8,10 +8,14 @@
 #include "AiObjectContext.h"
 #include "CharmInfo.h"
 #include "CreatureAI.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "SWPState.h"
 #include <algorithm>
 #include <limits>
 #include <list>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -148,9 +152,6 @@ Unit* SelectNearestQualifying(
 
 } // end anonymous namespace
 
-std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>> muruVoidSentinelTankAssignments;
-
 bool IsMuruPhaseActive(Unit* muru)
 {
     // DamageTaken caps M'uru at exactly 1 health when phase 2 activates, and from then on M'uru
@@ -172,7 +173,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
         int32 const elapsedZoneMs = std::max(darkness->GetMaxDuration() - remainingMs, 0);
 
         StampMuruDarknessWindow(
-            muruDarknessStates[instanceId], now,
+            GetOrEmplace(SwpState(instanceId).muruDarknessState), now,
             MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
             static_cast<uint32>(remainingMs));
     }
@@ -184,20 +185,20 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
             std::min(static_cast<uint32>(duration), MURU_DARKNESS_PRE_EFFECT_MS);
 
         StampMuruDarknessWindow(
-            muruDarknessStates[instanceId], now, MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
-            remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
+            GetOrEmplace(SwpState(instanceId).muruDarknessState), now,
+            MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs, remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
     }
 
-    auto const stateItr = muruDarknessStates.find(instanceId);
-    if (stateItr == muruDarknessStates.end())
+    std::optional<MuruDarknessState>& darknessState = SwpState(instanceId).muruDarknessState;
+    if (!darknessState)
         return false;
 
-    uint32 const expireMs = stateItr->second.expireMs;
+    uint32 const expireMs = darknessState->expireMs;
     if (expireMs > now)
         return true;
 
     if (expireMs <= now)
-        muruDarknessStates.erase(stateItr);
+        darknessState.reset();
 
     return false;
 }
@@ -212,21 +213,21 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
 
 bool PeekMuruDarknessActiveState(Player* bot)
 {
-    auto const stateItr = muruDarknessStates.find(bot->GetInstanceId());
-    return stateItr != muruDarknessStates.end() && stateItr->second.expireMs > getMSTime();
+    std::optional<MuruDarknessState>& darknessState = SwpState(bot->GetInstanceId()).muruDarknessState;
+    return darknessState && darknessState->expireMs > getMSTime();
 }
 
 bool PeekMuruDarknessEarlyState(Player* bot, uint32 earlyWindowMs)
 {
-    auto const stateItr = muruDarknessStates.find(bot->GetInstanceId());
-    if (stateItr == muruDarknessStates.end())
+    std::optional<MuruDarknessState>& darknessState = SwpState(bot->GetInstanceId()).muruDarknessState;
+    if (!darknessState)
         return false;
 
     uint32 const now = getMSTime();
-    if (stateItr->second.expireMs <= now)
+    if (darknessState->expireMs <= now)
         return false;
 
-    return stateItr->second.startMs < now && now - stateItr->second.startMs < earlyWindowMs;
+    return darknessState->startMs < now && now - darknessState->startMs < earlyWindowMs;
 }
 
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI)
@@ -375,7 +376,7 @@ Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel)
     Position const& northPosition = MURU_VOID_SENTINEL_N_TANK_POSITION;
     Position const& eastPosition = MURU_VOID_SENTINEL_E_TANK_POSITION;
 
-    auto& assignments = muruVoidSentinelTankAssignments[voidSentinel->GetInstanceId()];
+    auto& assignments = GetOrEmplace(SwpState(voidSentinel->GetInstanceId()).muruVoidSentinelTankAssignments);
     auto assignmentItr = assignments.find(sentinelGuid);
     if (assignmentItr == assignments.end())
     {

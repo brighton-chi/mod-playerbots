@@ -5,13 +5,17 @@
  */
 
 #include "SWPEncounter_KJ.h"
+#include "EncounterHelpers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <list>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -95,11 +99,6 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
 
 } // end anonymous namespace
 
-std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> kiljaedenHandControlClaims;
-std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-
 GuidVector FindKiljaedenHandGuids(Player* bot)
 {
     GuidVector guids;
@@ -136,24 +135,24 @@ std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI)
 
 bool IsKiljaedenHandControlClaimed(Unit* hand)
 {
-    auto const instanceItr = kiljaedenHandControlClaims.find(hand->GetInstanceId());
-    if (instanceItr == kiljaedenHandControlClaims.end())
+    std::optional<KiljaedenHandControlClaims>& handClaims = SwpState(hand->GetInstanceId()).kiljaedenHandControlClaims;
+    if (!handClaims)
         return false;
 
-    auto const claimItr = instanceItr->second.find(hand->GetGUID());
-    if (claimItr == instanceItr->second.end())
+    auto const claimItr = handClaims->find(hand->GetGUID());
+    if (claimItr == handClaims->end())
         return false;
 
     if (claimItr->second > getMSTime())
         return true;
 
-    instanceItr->second.erase(claimItr);
+    handClaims->erase(claimItr);
     return false;
 }
 
 void ClaimKiljaedenHandControl(Unit* hand)
 {
-    kiljaedenHandControlClaims[hand->GetInstanceId()][hand->GetGUID()] =
+    GetOrEmplace(SwpState(hand->GetInstanceId()).kiljaedenHandControlClaims)[hand->GetGUID()] =
         getMSTime() + HAND_CONTROL_CLAIM_MS;
 }
 
@@ -170,20 +169,20 @@ void AddKiljaedenArmageddon(
     armageddon.destination = destination;
     armageddon.expireMs = now + durationMs;
     armageddon.safeDistance = safeDistance;
-    kiljaedenEncounterStates[instanceId].armageddons.push_back(armageddon);
+    GetOrEmplace(SwpState(instanceId).kiljaedenEncounterState).armageddons.push_back(armageddon);
 }
 
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    auto const stateItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
-    if (stateItr == kiljaedenEncounterStates.end())
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(bot->GetInstanceId()).kiljaedenEncounterState;
+    if (!kiljaedenState)
         return false;
 
     bool foundArmageddon = false;
     float bestDistance = std::numeric_limits<float>::max();
 
-    for (KiljaedenArmageddon const& candidate : stateItr->second.armageddons)
+    for (KiljaedenArmageddon const& candidate : kiljaedenState->armageddons)
     {
         float const distance = bot->GetExactDist2d(candidate.destination);
         if (distance >= candidate.safeDistance)
@@ -202,12 +201,12 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
 
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
 {
-    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
-    if (stateItr == kiljaedenEncounterStates.end())
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(instanceId).kiljaedenEncounterState;
+    if (!kiljaedenState)
         return;
 
     uint32 const now = getMSTime();
-    std::vector<KiljaedenArmageddon>& armageddons = stateItr->second.armageddons;
+    std::vector<KiljaedenArmageddon>& armageddons = kiljaedenState->armageddons;
     armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
         [now](KiljaedenArmageddon const& armageddon) {
             return !armageddon.expireMs || armageddon.expireMs <= now;
@@ -251,7 +250,7 @@ void EnsureKiljaedenRangedAssignments(Player* bot)
     if (!group)
         return;
 
-    KiljaedenEncounterState& state = kiljaedenEncounterStates[bot->GetInstanceId()];
+    KiljaedenEncounterState& state = GetOrEmplace(SwpState(bot->GetInstanceId()).kiljaedenEncounterState);
     if (!ShouldRebuildKiljaedenAssignments(
             state.rangedAssignmentRebuildMs, KILJAEDEN_RANGED_ASSIGNMENT_REBUILD_INTERVAL_MS))
     {
@@ -355,11 +354,11 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
     uint32 const instanceId = bot->GetInstanceId();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
-    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
-    if (stateItr == kiljaedenEncounterStates.end())
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(instanceId).kiljaedenEncounterState;
+    if (!kiljaedenState)
         return;
 
-    KiljaedenEncounterState& state = stateItr->second;
+    KiljaedenEncounterState& state = *kiljaedenState;
 
     Group* group = bot->GetGroup();
     if (state.armageddons.empty() || !group)
@@ -553,11 +552,6 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     }
 
     return nullptr;
-}
-
-bool HasUsedKiljaedenDragonOrb(Player* bot)
-{
-    return kiljaedenDragonOrbUseTimes.contains(bot->GetGUID().GetCounter());
 }
 
 bool HasKiljaedenDragonAura(Player* bot)

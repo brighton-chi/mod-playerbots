@@ -41,8 +41,6 @@ struct KalecgosEncounterState
     std::unordered_map<ObjectGuid, uint8> playerToGroup;
 };
 
-extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
-
 // How long assist tanks hold off on attacking after the pull.
 inline constexpr uint32 KALECGOS_PULL_THREAT_SUPPRESSION_MS = 5 * IN_MILLISECONDS;
 

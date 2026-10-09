@@ -11,6 +11,7 @@
 #include "RtiTargetValue.h"
 #include "SWPEncounter_KJ.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
@@ -25,12 +26,12 @@ using namespace EncounterHelpers;
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
-    /* auto const stateItr = kiljaedenEncounterStates.find(instanceId);
+    /* std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(instanceId).kiljaedenEncounterState;
 
-    if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
+    if (kiljaedenState && kiljaedenState->dragonOrbAnnouncementMs)
         return false; */
 
-    kiljaedenEncounterStates[instanceId].dragonOrbAnnouncementMs = getMSTime();
+    GetOrEmplace(SwpState(instanceId).kiljaedenEncounterState).dragonOrbAnnouncementMs = getMSTime();
 
     Player* orbUser = GetKiljaedenDragonOrbUser(bot);
     std::string text;
@@ -322,9 +323,9 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddo
     Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
-    if (armageddonItr == kiljaedenEncounterStates.end() ||
-        armageddonItr->second.armageddons.empty())
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(bot->GetInstanceId()).kiljaedenEncounterState;
+    if (!kiljaedenState ||
+        kiljaedenState->armageddons.empty())
     {
         return true;
     }
@@ -344,7 +345,7 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddo
 
     auto const isSafePosition = [&](Position const& pos)
     {
-        for (KiljaedenArmageddon const& armageddon : armageddonItr->second.armageddons)
+        for (KiljaedenArmageddon const& armageddon : kiljaedenState->armageddons)
         {
             if (pos.GetExactDist2d(
                     armageddon.destination.GetPositionX(),
@@ -399,12 +400,12 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Posi
 {
     EnsureKiljaedenRangedAssignments(bot);
 
-    auto const instanceItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
-    if (instanceItr == kiljaedenEncounterStates.end())
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(bot->GetInstanceId()).kiljaedenEncounterState;
+    if (!kiljaedenState)
         return false;
 
-    auto const assignmentItr = instanceItr->second.rangedAssignments.find(bot->GetGUID());
-    if (assignmentItr == instanceItr->second.rangedAssignments.end())
+    auto const assignmentItr = kiljaedenState->rangedAssignments.find(bot->GetGUID());
+    if (assignmentItr == kiljaedenState->rangedAssignments.end())
         return false;
 
     return TryGetKiljaedenRangedSlotPosition(assignmentItr->second, position);
@@ -413,15 +414,14 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryGetRangedPosition(Posi
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::TryAdjustRangedForArmageddon(Position& position)
 {
     EnsureKiljaedenRangedArmageddonAssignments(bot);
-    auto const armageddonAssignmentItr =
-        kiljaedenEncounterStates.find(bot->GetInstanceId());
+    std::optional<KiljaedenEncounterState>& kiljaedenState = SwpState(bot->GetInstanceId()).kiljaedenEncounterState;
 
-    if (armageddonAssignmentItr == kiljaedenEncounterStates.end())
+    if (!kiljaedenState)
         return true;
 
     auto const tempAssignmentItr =
-        armageddonAssignmentItr->second.rangedArmageddonAssignments.find(bot->GetGUID());
-    if (tempAssignmentItr == armageddonAssignmentItr->second.rangedArmageddonAssignments.end())
+        kiljaedenState->rangedArmageddonAssignments.find(bot->GetGUID());
+    if (tempAssignmentItr == kiljaedenState->rangedArmageddonAssignments.end())
         return true;
 
     return TryGetKiljaedenRangedSlotPosition(tempAssignmentItr->second, position);
@@ -525,7 +525,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     if (closestOrb->IsAtInteractDistance(*bot, closestOrb->GetInteractionDistance()))
     {
         closestOrb->Use(bot);
-        kiljaedenDragonOrbUseTimes[bot->GetGUID().GetCounter()] = getMSTime();
+        RecordKiljaedenDragonOrbUse(bot);
         return true;
     }
 

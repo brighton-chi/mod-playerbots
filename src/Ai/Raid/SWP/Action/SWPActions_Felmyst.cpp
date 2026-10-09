@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <cmath>
 #include <limits>
 #include <string>
@@ -514,7 +515,7 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
         return false;
 
     uint32 const instanceId = felmyst->GetInstanceId();
-    auto& state = felmystEncounterStates[instanceId];
+    auto& state = GetOrEmplace(SwpState(instanceId).felmystEncounterState);
 
     auto const clearTimers = [&state]
     {

@@ -5,18 +5,20 @@
  */
 
 #include "SWPEncounter_Brut.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
 
 // Note: Brutallus's CombatReach is 18.0f
-
-std::unordered_map<uint32, BrutallusEncounterState> brutallusEncounterStates;
 
 namespace
 {
@@ -287,7 +289,7 @@ bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)
         return false;
 
     bool const isRanged = PlayerbotAI::IsRanged(bot);
-    auto& state = brutallusEncounterStates[bot->GetInstanceId()];
+    auto& state = GetOrEmplace(SwpState(bot->GetInstanceId()).brutallusEncounterState);
 
     if (isRanged)
         EnsureRangedAssignments(group, state);
@@ -338,7 +340,7 @@ bool TryGetBrutallusBurnPadPosition(
 
     uint8 padIndex = 0;
     if (!TryGetBurnPadIndex(
-            brutallusEncounterStates[bot->GetInstanceId()], bot, rangedIndex, padIndex))
+            GetOrEmplace(SwpState(bot->GetInstanceId()).brutallusEncounterState), bot, rangedIndex, padIndex))
     {
         return false;
     }
@@ -398,11 +400,11 @@ bool TryGetBrutallusLaneTraversalPosition(
 
 bool ReleaseBrutallusBurnPad(Player* bot)
 {
-    auto const instanceItr = brutallusEncounterStates.find(bot->GetInstanceId());
-    if (instanceItr == brutallusEncounterStates.end())
+    std::optional<BrutallusEncounterState>& brutallusState = SwpState(bot->GetInstanceId()).brutallusEncounterState;
+    if (!brutallusState)
         return false;
 
-    return instanceItr->second.rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
+    return brutallusState->rangedBurnPadAssignments.erase(bot->GetGUID()) > 0;
 }
 
 bool HasBrutallusBurn(Player* bot)

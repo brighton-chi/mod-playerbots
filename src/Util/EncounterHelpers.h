@@ -76,6 +76,13 @@ bool ResetIfSet(std::optional<T>& field)
     return wasSet;
 }
 
+// What m[id] did for a map entry: the field's value, default-constructed first if unset.
+template <typename T>
+T& GetOrEmplace(std::optional<T>& field)
+{
+    return field ? *field : field.emplace();
+}
+
 }
 
 #endif

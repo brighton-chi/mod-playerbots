@@ -41,8 +41,6 @@ struct BrutallusEncounterState
     uint32 meleeAssignmentRebuildMs = 0;
 };
 
-extern std::unordered_map<uint32, BrutallusEncounterState> brutallusEncounterStates;
-
 struct BrutallusMeleeRingLayout
 {
     float radius;

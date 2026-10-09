@@ -12,7 +12,6 @@
 #include "SWPShared.h"
 #include <array>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 class Player;
@@ -121,12 +120,6 @@ inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.82
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
 inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
-extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
-    kiljaedenHandControlClaims;
-extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-
 GuidVector FindKiljaedenHandGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
 bool IsKiljaedenHandControlClaimed(Unit* hand);
@@ -141,7 +134,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
-bool HasUsedKiljaedenDragonOrb(Player* bot);
 bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);

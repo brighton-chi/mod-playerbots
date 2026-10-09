@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -58,7 +59,7 @@ bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
     if (source == AlythessTankSource::Unresolved || !alythessTank)
         return false;
 
-    eredarTwinsTankAssignments[bot->GetInstanceId()].announcementMs = getMSTime();
+    GetOrEmplace(SwpState(bot->GetInstanceId()).eredarTwinsTankAssignment).announcementMs = getMSTime();
 
     std::map<std::string, std::string> placeholders = {{"%bot", alythessTank->GetName()}};
     std::string text;
@@ -339,7 +340,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
 bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 {
     // Start the 8s clock for tanks to get aggro first.
-    eredarTwinsDpsHoldStartMs.try_emplace(bot->GetInstanceId(), getMSTime());
+    EmplaceIfUnset(SwpState(bot->GetInstanceId()).eredarTwinsDpsHoldStartMs, getMSTime());
 
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
     Unit* twinTarget =

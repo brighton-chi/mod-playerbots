@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <cmath>
 
 using namespace SwpHelpers;
@@ -219,7 +220,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
     if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
-    auto& burnStates = brutallusEncounterStates[bot->GetInstanceId()].rangedBurnStates;
+    auto& burnStates = GetOrEmplace(SwpState(bot->GetInstanceId()).brutallusEncounterState).rangedBurnStates;
 
     auto const burnStateItr = burnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;
@@ -357,7 +358,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
     if (!TryGetBrutallusAssignedPositionIndex(bot, rangedIndex))
         return false;
 
-    auto& burnStates = brutallusEncounterStates[bot->GetInstanceId()].rangedBurnStates;
+    auto& burnStates = GetOrEmplace(SwpState(bot->GetInstanceId()).brutallusEncounterState).rangedBurnStates;
 
     auto const burnStateItr = burnStates.find(guid);
     BrutallusRangedBurnState burnState = BrutallusRangedBurnState::None;

@@ -110,8 +110,6 @@ struct FelmystEncounterState
     ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
 };
 
-extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
-
 struct FelmystDemonicVaporGuids
 {
     GuidVector heads;

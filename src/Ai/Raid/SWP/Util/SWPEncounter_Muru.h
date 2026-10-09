@@ -101,10 +101,6 @@ inline Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f
 inline Position const MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
 inline Position const MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
 
-extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    muruVoidSentinelTankAssignments;
-
 bool IsMuruPhaseActive(Unit* muru);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(

@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <cmath>
 #include <map>
 #include <string>
@@ -23,11 +24,11 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
     if (!kalecgos)
         return false;
 
-    auto const stateItr = kalecgosEncounterStates.find(bot->GetInstanceId());
-    if (stateItr == kalecgosEncounterStates.end())
+    std::optional<KalecgosEncounterState>& kalecgosState = SwpState(bot->GetInstanceId()).kalecgosEncounterState;
+    if (!kalecgosState)
         return false;
 
-    KalecgosEncounterState& state = stateItr->second;
+    KalecgosEncounterState& state = *kalecgosState;
     std::string text;
 
     if (!IsInSpectralRealm(bot))

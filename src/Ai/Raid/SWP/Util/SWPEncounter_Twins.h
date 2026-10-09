@@ -99,12 +99,6 @@ inline Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.45
 inline Position const EREDAR_TWINS_P2_MELEE_POSITION =       { 1814.327f, 625.645f, 33.404f };
 inline Position const EREDAR_TWINS_P2_RANGED_POSITION =      { 1805.587f, 625.653f, 33.404f };
 
-extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
-    eredarTwinsIncomingConflagrationStates;
-extern std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
-extern std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
-extern std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
-
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleePosition(Unit* alythess);
 Position GetEredarTwinsP2RangedPosition(Unit* alythess);

@@ -14,6 +14,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <list>
 #include <vector>
 
@@ -341,7 +342,7 @@ public:
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
 
-        if (kiljaedenTrackedArmageddonTargets.count(creature->GetGUID()))
+        if (IsKiljaedenArmageddonTargetTracked(creature->GetGUID()))
             return;
 
         bool hasSunwellStrategy = false;
@@ -371,7 +372,7 @@ public:
         if (!hasSunwellStrategy)
             return;
 
-        kiljaedenTrackedArmageddonTargets.insert(creature->GetGUID());
+        TrackKiljaedenArmageddonTarget(creature->GetGUID());
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
@@ -386,7 +387,7 @@ public:
         if (!creature || creature->GetEntry() != Id(SwpNpcs::NPC_ARMAGEDDON_TARGET))
             return;
 
-        kiljaedenTrackedArmageddonTargets.erase(creature->GetGUID());
+        UntrackKiljaedenArmageddonTarget(creature->GetGUID());
     }
 };
 

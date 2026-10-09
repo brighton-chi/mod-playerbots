@@ -12,6 +12,7 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
+#include "SWPState.h"
 #include "ThreatManager.h"
 #include <list>
 
@@ -84,8 +85,8 @@ EredarTwinsTankAssignment const emptyTankAssignment;
 
 EredarTwinsTankAssignment const& GetTankAssignment(Player* bot)
 {
-    auto const itr = eredarTwinsTankAssignments.find(bot->GetInstanceId());
-    return itr != eredarTwinsTankAssignments.end() ? itr->second : emptyTankAssignment;
+    std::optional<EredarTwinsTankAssignment>& tankAssignment = SwpState(bot->GetInstanceId()).eredarTwinsTankAssignment;
+    return tankAssignment ? *tankAssignment : emptyTankAssignment;
 }
 
 // Hold once the bot has closed to within the ratio of the lowest tank threat on that boss.
@@ -96,15 +97,6 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
 }
 
 } // end anonymous namespace
-
-std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
-    eredarTwinsIncomingConflagrationStates;
-
-std::unordered_map<uint32, EredarTwinsBlazeTargetState> eredarTwinsBlazeTargetStates;
-
-std::unordered_map<uint32, uint32> eredarTwinsDpsHoldStartMs;
-
-std::unordered_map<uint32, EredarTwinsTankAssignment> eredarTwinsTankAssignments;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {
@@ -153,7 +145,7 @@ void ResolveEredarTwinsTankAssignment(Player* bot)
     if (!alythessTank)
         return;
 
-    EredarTwinsTankAssignment& assignment = eredarTwinsTankAssignments[bot->GetInstanceId()];
+    EredarTwinsTankAssignment& assignment = GetOrEmplace(SwpState(bot->GetInstanceId()).eredarTwinsTankAssignment);
     assignment.alythessTankGuid = alythessTank->GetGUID();
     assignment.source = source;
 }
@@ -337,7 +329,7 @@ void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
 
     uint32 const now = getMSTime();
     EredarTwinsIncomingConflagrationState& state =
-        eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
+        GetOrEmplace(SwpState(target->GetInstanceId()).eredarTwinsIncomingConflagrationState);
 
     if (state.targetGuid != target->GetGUID())
         state.delayMs = now + CONFLAGRATION_DELAY_MS;
@@ -348,17 +340,18 @@ void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
 
 Player* GetEredarTwinsConflagrationTarget(Player* bot)
 {
-    auto const incomingItr = eredarTwinsIncomingConflagrationStates.find(bot->GetInstanceId());
+    std::optional<EredarTwinsIncomingConflagrationState>& conflagrationState =
+        SwpState(bot->GetInstanceId()).eredarTwinsIncomingConflagrationState;
 
-    if (incomingItr == eredarTwinsIncomingConflagrationStates.end())
+    if (!conflagrationState)
         return nullptr;
 
-    EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
+    EredarTwinsIncomingConflagrationState const& state = *conflagrationState;
     uint32 const now = getMSTime();
 
     if (state.expireMs <= now)
     {
-        eredarTwinsIncomingConflagrationStates.erase(incomingItr);
+        conflagrationState.reset();
         return nullptr;
     }
 
@@ -384,21 +377,22 @@ void RecordEredarTwinsBlazeTarget(Player* target)
     if (!target)
         return;
 
-    EredarTwinsBlazeTargetState& state = eredarTwinsBlazeTargetStates[target->GetInstanceId()];
+    EredarTwinsBlazeTargetState& state = GetOrEmplace(SwpState(target->GetInstanceId()).eredarTwinsBlazeTargetState);
     state.targetGuid = target->GetGUID();
     state.startMs = getMSTime();
 }
 
 Player* GetEredarTwinsBlazeTarget(Player* bot)
 {
-    auto const itr = eredarTwinsBlazeTargetStates.find(bot->GetInstanceId());
-    if (itr == eredarTwinsBlazeTargetStates.end())
+    std::optional<EredarTwinsBlazeTargetState>& blazeTargetState =
+        SwpState(bot->GetInstanceId()).eredarTwinsBlazeTargetState;
+    if (!blazeTargetState)
         return nullptr;
 
-    EredarTwinsBlazeTargetState const& state = itr->second;
+    EredarTwinsBlazeTargetState const& state = *blazeTargetState;
     if (GetMSTimeDiffToNow(state.startMs) >= BLAZE_TARGET_WINDOW_MS)
     {
-        eredarTwinsBlazeTargetStates.erase(itr);
+        blazeTargetState.reset();
         return nullptr;
     }
 

@@ -16,6 +16,7 @@
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "SWPState.h"
 #include <list>
 
 using namespace SwpHelpers;
@@ -39,9 +40,9 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Brutallus
-    auto const brutallusItr = brutallusEncounterStates.find(instanceId);
-    if (brutallusItr != brutallusEncounterStates.end())
-        reset |= brutallusItr->second.rangedBurnStates.erase(guid) > 0;
+    std::optional<BrutallusEncounterState>& brutallusState = SwpState(instanceId).brutallusEncounterState;
+    if (brutallusState)
+        reset |= brutallusState->rangedBurnStates.erase(guid) > 0;
 
     reset |= ReleaseBrutallusBurnPad(bot);
 
@@ -69,7 +70,7 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     // Kil'jaeden
-    reset |= kiljaedenDragonOrbUseTimes.erase(guid.GetCounter()) > 0;
+    reset |= ResetKiljaedenDragonOrbUse(bot);
 
     // A drake lost as Kil'jaeden dies leaves its rider stale-rooted after the encounter, when the
     // in-combat release (KiljaedenReleaseStaleRootAction) can no longer run.
@@ -82,17 +83,7 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     if (!AI_VALUE2(bool, "combat", "self target"))
         reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
-    reset |= kalecgosEncounterStates.erase(instanceId) > 0;
-    reset |= brutallusEncounterStates.erase(instanceId) > 0;
-    reset |= felmystEncounterStates.erase(instanceId) > 0;
-    reset |= eredarTwinsIncomingConflagrationStates.erase(instanceId) > 0;
-    reset |= eredarTwinsBlazeTargetStates.erase(instanceId) > 0;
-    reset |= eredarTwinsDpsHoldStartMs.erase(instanceId) > 0;
-    reset |= eredarTwinsTankAssignments.erase(instanceId) > 0;
-    reset |= muruDarknessStates.erase(instanceId) > 0;
-    reset |= muruVoidSentinelTankAssignments.erase(instanceId) > 0;
-    reset |= kiljaedenEncounterStates.erase(instanceId) > 0;
-    reset |= kiljaedenHandControlClaims.erase(instanceId) > 0;
+    reset |= SwpResetInstance(instanceId);
 
     return reset;
 }
