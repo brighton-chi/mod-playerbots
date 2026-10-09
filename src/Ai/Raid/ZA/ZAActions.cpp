@@ -23,7 +23,7 @@ using namespace EncounterHelpers;
 bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
-    reset |= akilzonStormTimer.erase(bot->GetInstanceId()) > 0;
+    reset |= ZaResetInstance(bot->GetInstanceId());
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
@@ -131,7 +131,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
 
 bool AkilzonStartElectricalStormTimerAction::Execute(Event /*event*/)
 {
-    return akilzonStormTimer.try_emplace(bot->GetInstanceId(), getMSTime()).second;
+    return EmplaceIfUnset(ZaState(bot->GetInstanceId()).akilzonStormTimer, getMSTime());
 }
 
 // Nalorakk <Bear Avatar>

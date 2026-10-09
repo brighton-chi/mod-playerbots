@@ -250,11 +250,11 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<AkilzonMoveToEyeOfTheStormAction*>(action))
         return 1.0f;
 
-    auto it = akilzonStormTimer.find(bot->GetInstanceId());
-    if (it == akilzonStormTimer.end())
+    std::optional<uint32> const& stormTimer = ZaState(bot->GetInstanceId()).akilzonStormTimer;
+    if (!stormTimer)
         return 1.0f;
 
-    return IsInStormWindow(it->second) ? 0.0f : 1.0f;
+    return IsInStormWindow(*stormTimer) ? 0.0f : 1.0f;
 }
 
 // Nalorakk <Bear Avatar>
