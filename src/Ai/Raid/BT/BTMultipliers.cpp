@@ -155,7 +155,8 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
 float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !(bot->getClass() == CLASS_MAGE && dynamic_cast<CastEvocationAction*>(action)))
     {
         return 1.0f;
     }
