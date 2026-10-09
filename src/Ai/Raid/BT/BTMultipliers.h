@@ -111,17 +111,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// The spread's FleePosition step can go any way and doesn't see fire.
-class SupremusDisableRangedSpreadNearVolcanoMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    SupremusDisableRangedSpreadNearVolcanoMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "supremus disable ranged spread near volcano") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Shade of Akama
 
 // Walking up to the platform can lose sight of the target, which would otherwise drop it.

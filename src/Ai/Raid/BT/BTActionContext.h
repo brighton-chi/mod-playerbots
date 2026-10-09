@@ -58,8 +58,7 @@ public:
         creators["supremus disperse ranged"] =
             &RaidBlackTempleActionContext::supremus_disperse_ranged;
 
-        creators["supremus kite boss"] =
-            &RaidBlackTempleActionContext::supremus_kite_boss;
+        creators["supremus kite boss"] = &RaidBlackTempleActionContext::supremus_kite_boss;
 
         creators["supremus move away from fire"] =
             &RaidBlackTempleActionContext::supremus_move_away_from_fire;

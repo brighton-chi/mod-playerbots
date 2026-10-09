@@ -15,7 +15,6 @@
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
-#include "PlayerbotAIConfig.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
@@ -24,7 +23,6 @@
 #include "ThreatManager.h"
 #include "Timer.h"
 #include "WipeAction.h"
-#include <algorithm>
 #include <array>
 
 using namespace BtHelpers;
@@ -210,22 +208,6 @@ float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* 
     return IsSupremusKitePhase(AI_VALUE2(Unit*, "find target", "supremus")) ? 0.0f : 1.0f;
 }
 
-// Held while one flee step could carry the bot into a volcano's safe zone. The spread runs only
-// in the tank phase, when the hazards are volcanoes alone.
-float SupremusDisableRangedSpreadNearVolcanoMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!dynamic_cast<SupremusDisperseRangedAction*>(action))
-        return 1.0f;
-
-    // As FleePosition sizes its step.
-    float const fleeStep =
-        std::min(SUPREMUS_RANGED_SPREAD_DISTANCE + 1.0f, sPlayerbotAIConfig.FleeDistance);
-    bool const nearVolcano = IsInSupremusHazard(
-        GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
-        SupremusHazardZone::Safe, fleeStep);
-    return nearVolcano ? 0.0f : 1.0f;
-}
-
 // Shade of Akama
 
 float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
@@ -249,7 +231,8 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
         PlayerbotAI::IsRanged(bot) && dynamic_cast<ReachTargetAction*>(action);
 
     if (!isRangedReach && !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FollowAction*>(action) && !IsRepositionAction(bot, action))
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
+        !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }

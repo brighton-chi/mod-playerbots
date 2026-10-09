@@ -165,11 +165,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class SupremusFixatesOnBotTrigger : public BlackTempleEncounterTrigger
+class SupremusFixatedOnBotTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    SupremusFixatesOnBotTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "supremus fixates on bot") {}
+    SupremusFixatedOnBotTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "supremus fixated on bot") {}
 
 protected:
     bool IsActiveInEncounter() override;

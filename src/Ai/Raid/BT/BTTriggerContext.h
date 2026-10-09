@@ -58,8 +58,8 @@ public:
         creators["supremus ranged should spread"] =
             &RaidBlackTempleTriggerContext::supremus_ranged_should_spread;
 
-        creators["supremus fixates on bot"] =
-            &RaidBlackTempleTriggerContext::supremus_fixates_on_bot;
+        creators["supremus fixated on bot"] =
+            &RaidBlackTempleTriggerContext::supremus_fixated_on_bot;
 
         creators["supremus near fire"] =
             &RaidBlackTempleTriggerContext::supremus_near_fire;
@@ -284,9 +284,9 @@ private:
     {
         return new SupremusRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* supremus_fixates_on_bot(PlayerbotAI* botAI)
+    static Trigger* supremus_fixated_on_bot(PlayerbotAI* botAI)
     {
-        return new SupremusFixatesOnBotTrigger(botAI);
+        return new SupremusFixatedOnBotTrigger(botAI);
     }
     static Trigger* supremus_near_fire(PlayerbotAI* botAI)
     {
