@@ -250,10 +250,10 @@ float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action
     if (!aura || aura->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
+    if (dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action))
         return 1.0f;
 
-    return dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action) ? 1.0f : 0.0f;
+    return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }
 
 float TeronGorefiendSpiritsAttackShadowyConstructsMultiplier::GetValueInEncounter(Action* action)
