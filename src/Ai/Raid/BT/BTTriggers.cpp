@@ -11,6 +11,7 @@
 #include "RtiTargetValue.h"
 #include "SharedDefines.h"
 #include "Spell.h"
+#include <algorithm>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
@@ -134,10 +135,21 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!supremus || IsSupremusKitePhase(supremus))
         return false;
 
+    // FleePosition's step goes any way and doesn't see fire, so hold while one could carry the bot
+    // into a volcano's safe zone. Outside the kite phase the hazards are volcanoes alone.
+    float const fleeStep =
+        std::min(SUPREMUS_RANGED_SPREAD_DISTANCE + 1.0f, sPlayerbotAIConfig.FleeDistance);
+    if (IsInSupremusHazard(
+            GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
+            SupremusHazardZone::Safe, fleeStep))
+    {
+        return false;
+    }
+
     return GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
 }
 
-bool SupremusFixatesOnBotTrigger::IsActiveInEncounter()
+bool SupremusFixatedOnBotTrigger::IsActiveInEncounter()
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus || supremus->GetVictim() != bot || !IsSupremusKitePhase(supremus))

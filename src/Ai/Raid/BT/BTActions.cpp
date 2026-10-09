@@ -853,10 +853,8 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
         return botAI->CanCastSpell(Id(BtSpells::SPELL_FEIGN_DEATH), bot) &&
             botAI->CastSpell(Id(BtSpells::SPELL_FEIGN_DEATH), bot);
     }
-    else
-    {
-        return botAI->CanCastSpell("vanish", bot) && botAI->CastSpell("vanish", bot);
-    }
+
+    return botAI->CanCastSpell("vanish", bot) && botAI->CastSpell("vanish", bot);
 }
 
 bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)

@@ -58,7 +58,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus ranged should spread",
         { NextAction("supremus disperse ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("supremus fixates on bot",
+    triggers.push_back(new TriggerNode("supremus fixated on bot",
         { NextAction("supremus kite boss", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("supremus near fire",
@@ -243,7 +243,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new SupremusDoNotReachThroughFireMultiplier(botAI));
     multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
-    multipliers.push_back(new SupremusDisableRangedSpreadNearVolcanoMultiplier(botAI));
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));
