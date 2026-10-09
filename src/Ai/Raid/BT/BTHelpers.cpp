@@ -34,19 +34,6 @@ Player* GetCachedPlayer(PlayerbotAI* botAI, char const* value)
     return player && player->IsAlive() ? player : nullptr;
 }
 
-std::vector<Unit*> GetCachedUnits(PlayerbotAI* botAI, char const* value)
-{
-    std::vector<Unit*> units;
-    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>(value)->RefGet())
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive())
-            units.push_back(unit);
-    }
-
-    return units;
-}
-
 }
 
 // General

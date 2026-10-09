@@ -243,6 +243,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new SupremusDoNotReachThroughFireMultiplier(botAI));
     multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
+    multipliers.push_back(new SupremusDisableRangedSpreadNearVolcanoMultiplier(botAI));
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));
