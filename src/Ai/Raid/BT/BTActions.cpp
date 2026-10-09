@@ -886,11 +886,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() ||
-            unit->GetEntry() != Id(BtNpcs::NPC_SHADOWY_CONSTRUCT))
-        {
+        if (!unit || !unit->IsAlive() || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWY_CONSTRUCT))
             continue;
-        }
 
         constructs.push_back(unit);
         highestHealth = std::max(highestHealth, unit->GetHealth());
@@ -950,20 +947,38 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         return true;
     }
 
-    // Lance goes round the constructs, keeping its 9 s slow on each and wearing them down evenly:
-    // of those within one Lance of the highest health, the nearest Teron.
+    // Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping
+    // the rest together.
     Unit* lanceTarget = nullptr;
     float lanceDistance = 0.0f;
     for (Unit* construct : constructs)
     {
-        if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
+        if (!construct->HasAura(Id(BtSpells::SPELL_SPIRIT_CHAINS)))
             continue;
 
         float const distance = gorefiend->GetExactDist2d(construct);
-        if (!lanceTarget || distance < lanceDistance)
+        if (!lanceTarget || distance > lanceDistance)
         {
             lanceTarget = construct;
             lanceDistance = distance;
+        }
+    }
+
+    // With none chained, Lance goes round them, keeping its 9 s slow on each and wearing them down
+    // evenly: of those within one Lance of the highest health, the nearest Teron.
+    if (!lanceTarget)
+    {
+        for (Unit* construct : constructs)
+        {
+            if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
+                continue;
+
+            float const distance = gorefiend->GetExactDist2d(construct);
+            if (!lanceTarget || distance < lanceDistance)
+            {
+                lanceTarget = construct;
+                lanceDistance = distance;
+            }
         }
     }
 
