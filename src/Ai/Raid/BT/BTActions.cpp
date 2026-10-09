@@ -884,7 +884,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     std::vector<Unit*> constructs;
     Unit* leadConstruct = nullptr;
     float leadDistance = 0.0f;
-    uint32 lowestHealth = std::numeric_limits<uint32>::max();
+    uint32 highestHealth = 0;
     for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -895,7 +895,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         }
 
         constructs.push_back(unit);
-        lowestHealth = std::min(lowestHealth, unit->GetHealth());
+        highestHealth = std::max(highestHealth, unit->GetHealth());
 
         float const distance = gorefiend->GetExactDist2d(unit);
         if (!leadConstruct || distance < leadDistance)
@@ -969,12 +969,13 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         }
     }
 
-    // With none chained, the lowest health; of those within one Lance of it, the nearest Teron.
+    // With none chained, Lance goes round them, keeping its 9 s slow on each and wearing them down
+    // evenly: of those within one Lance of the highest health, the nearest Teron.
     if (!lanceTarget)
     {
         for (Unit* construct : constructs)
         {
-            if (construct->GetHealth() >= lowestHealth + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE)
+            if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
                 continue;
 
             float const distance = gorefiend->GetExactDist2d(construct);
