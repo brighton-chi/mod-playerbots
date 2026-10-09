@@ -880,12 +880,11 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     if (!spirit)
         return false;
 
-    // The construct nearest Teron leads the way to the raid. Lances break Chains, so they free
-    // the constructs from the back, keeping the rest together.
+    // The construct nearest Teron leads the way to the raid.
+    std::vector<Unit*> constructs;
     Unit* leadConstruct = nullptr;
-    Unit* lastConstruct = nullptr;
     float leadDistance = 0.0f;
-    float lastDistance = 0.0f;
+    uint32 highestHealth = 0;
     for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -895,17 +894,14 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
             continue;
         }
 
+        constructs.push_back(unit);
+        highestHealth = std::max(highestHealth, unit->GetHealth());
+
         float const distance = gorefiend->GetExactDist2d(unit);
         if (!leadConstruct || distance < leadDistance)
         {
             leadConstruct = unit;
             leadDistance = distance;
-        }
-
-        if (!lastConstruct || distance > lastDistance)
-        {
-            lastConstruct = unit;
-            lastDistance = distance;
         }
     }
 
@@ -956,8 +952,25 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         return true;
     }
 
+    // Lance goes round the constructs, keeping its 9 s slow on each and wearing them down evenly:
+    // of those within one Lance of the highest health, the nearest Teron.
+    Unit* lanceTarget = nullptr;
+    float lanceDistance = 0.0f;
+    for (Unit* construct : constructs)
+    {
+        if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
+            continue;
+
+        float const distance = gorefiend->GetExactDist2d(construct);
+        if (!lanceTarget || distance < lanceDistance)
+        {
+            lanceTarget = construct;
+            lanceDistance = distance;
+        }
+    }
+
     return CastVengefulSpiritSpell(
-        spirit, lastConstruct, Id(BtSpells::SPELL_SPIRIT_LANCE)) || moving;
+        spirit, lanceTarget, Id(BtSpells::SPELL_SPIRIT_LANCE)) || moving;
 }
 
 // Gurtogg Bloodboil
