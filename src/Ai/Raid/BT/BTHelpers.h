@@ -340,7 +340,7 @@ inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15 * IN_MILLISECONDS;
 inline constexpr float GOREFIEND_POSITION_TOLERANCE = 2.0f;
 // Spirit Chains and Spirit Volley hit within 12 yd of the spirit.
 inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
-// Spirit Lance's lowest damage. Constructs within one Lance of the highest health count as even.
+// Spirit Lance's lowest damage. Constructs within one Lance of the lowest health count as even.
 inline constexpr uint32 GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE = 6175;
 inline constexpr uint32 GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS = 1000;
 

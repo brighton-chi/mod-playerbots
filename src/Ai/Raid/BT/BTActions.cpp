@@ -884,7 +884,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     std::vector<Unit*> constructs;
     Unit* leadConstruct = nullptr;
     float leadDistance = 0.0f;
-    uint32 highestHealth = 0;
+    uint32 lowestHealth = std::numeric_limits<uint32>::max();
     for (ObjectGuid const& guid : AI_VALUE(GuidVector, "possible targets no los"))
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -895,7 +895,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         }
 
         constructs.push_back(unit);
-        highestHealth = std::max(highestHealth, unit->GetHealth());
+        lowestHealth = std::min(lowestHealth, unit->GetHealth());
 
         float const distance = gorefiend->GetExactDist2d(unit);
         if (!leadConstruct || distance < leadDistance)
@@ -952,20 +952,37 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         return true;
     }
 
-    // Lance goes round the constructs, keeping its 9 s slow on each and wearing them down evenly:
-    // of those within one Lance of the highest health, the nearest Teron.
+    // Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping
+    // the rest together.
     Unit* lanceTarget = nullptr;
     float lanceDistance = 0.0f;
     for (Unit* construct : constructs)
     {
-        if (construct->GetHealth() + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE <= highestHealth)
+        if (!construct->HasAura(Id(BtSpells::SPELL_SPIRIT_CHAINS)))
             continue;
 
         float const distance = gorefiend->GetExactDist2d(construct);
-        if (!lanceTarget || distance < lanceDistance)
+        if (!lanceTarget || distance > lanceDistance)
         {
             lanceTarget = construct;
             lanceDistance = distance;
+        }
+    }
+
+    // With none chained, the lowest health; of those within one Lance of it, the nearest Teron.
+    if (!lanceTarget)
+    {
+        for (Unit* construct : constructs)
+        {
+            if (construct->GetHealth() >= lowestHealth + GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE)
+                continue;
+
+            float const distance = gorefiend->GetExactDist2d(construct);
+            if (!lanceTarget || distance < lanceDistance)
+            {
+                lanceTarget = construct;
+                lanceDistance = distance;
+            }
         }
     }
 
