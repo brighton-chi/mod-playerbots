@@ -103,8 +103,6 @@ inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
 inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;
 inline constexpr float DRAGON_ORB_IN_USE_HOLD_DISTANCE = 15.0f;
-// Grace after using an Orb before a lingering root is considered stale and is cleared.
-inline constexpr uint32 DRAGON_ORB_ANNOUNCEMENT_RESET_MS = 10 * IN_MILLISECONDS;
 // Shield of the Blue (45848) lasts 5s and Darkness of a Thousand Souls (46605) is an 8s channel, so
 // the dragon casts once <4.5s remain.
 inline constexpr int32 SHIELD_OF_THE_BLUE_CAST_WINDOW_MS = 4500;
@@ -143,7 +141,6 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
-bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
 bool HasUsedKiljaedenDragonOrb(Player* bot);
 bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);

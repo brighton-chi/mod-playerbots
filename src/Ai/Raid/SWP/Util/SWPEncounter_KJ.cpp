@@ -555,22 +555,6 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     return nullptr;
 }
 
-bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
-{
-    auto const stateItr = kiljaedenEncounterStates.find(instanceId);
-    if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
-        return false;
-
-    if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) <
-        DRAGON_ORB_ANNOUNCEMENT_RESET_MS)
-    {
-        return false;
-    }
-
-    stateItr->second.dragonOrbAnnouncementMs = 0;
-    return true;
-}
-
 bool HasUsedKiljaedenDragonOrb(Player* bot)
 {
     return kiljaedenDragonOrbUseTimes.contains(bot->GetGUID().GetCounter());
