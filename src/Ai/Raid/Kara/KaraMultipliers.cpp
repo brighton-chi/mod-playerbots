@@ -181,12 +181,12 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto it = attumenDpsWaitTimer.find(attumen->GetInstanceId());
-    if (it == attumenDpsWaitTimer.end())
+    std::optional<uint32> const& waitStart = KaraState(attumen->GetInstanceId()).attumenDpsWaitTimer;
+    if (!waitStart)
         return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
 
     constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Maiden of Virtue
@@ -379,12 +379,12 @@ float NetherspiteWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    auto it = netherspiteDpsWaitTimer.find(netherspite->GetInstanceId());
-    if (it == netherspiteDpsWaitTimer.end())
+    std::optional<uint32> const& waitStart = KaraState(netherspite->GetInstanceId()).netherspiteDpsWaitTimer;
+    if (!waitStart)
         return 0.0f;
 
     constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Prince Malchezaar
@@ -489,12 +489,12 @@ float NightbaneWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto it = nightbaneDpsWaitTimer.find(nightbane->GetInstanceId());
-    if (it == nightbaneDpsWaitTimer.end())
+    std::optional<uint32> const& waitStart = KaraState(nightbane->GetInstanceId()).nightbaneDpsWaitTimer;
+    if (!waitStart)
         return 0.0f;
 
     constexpr uint32 dpsWaitMs = 8 * IN_MILLISECONDS;
-    return getMSTimeDiff(it->second, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
@@ -544,10 +544,10 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
         return 0.0f;
 
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    auto const it = nightbaneFlightPhaseStartTimer.find(nightbane->GetInstanceId());
-    if (it == nightbaneFlightPhaseStartTimer.end())
+    std::optional<uint32> const& flightStart = KaraState(nightbane->GetInstanceId()).nightbaneFlightPhaseStartTimer;
+    if (!flightStart)
         return 0.0f;
 
     constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
-    return getMSTimeDiff(it->second, getMSTime()) < flightPhaseDurationMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*flightStart, getMSTime()) < flightPhaseDurationMs ? 0.0f : 1.0f;
 }

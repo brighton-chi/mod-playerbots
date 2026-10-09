@@ -49,9 +49,7 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    reset |= currentRedBlocker.erase(instanceId) > 0;
-    reset |= currentGreenBlocker.erase(instanceId) > 0;
-    reset |= currentBlueBlocker.erase(instanceId) > 0;
+    reset |= KaraResetBeamBlockers(instanceId);
 
     Action* wolfAction = context->GetAction("big bad wolf little red riding hood run away");
     if (wolfAction &&
@@ -66,10 +64,7 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
     if (!AI_VALUE2(bool, "combat", "self target"))
         reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
-    reset |= attumenDpsWaitTimer.erase(instanceId) > 0;
-    reset |= netherspiteDpsWaitTimer.erase(instanceId) > 0;
-    reset |= nightbaneDpsWaitTimer.erase(instanceId) > 0;
-    reset |= nightbaneFlightPhaseStartTimer.erase(instanceId) > 0;
+    reset |= KaraResetInstance(instanceId);
 
     return reset;
 }
@@ -214,7 +209,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
 bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
 {
     uint32 const now = getMSTime();
-    return attumenDpsWaitTimer.try_emplace(bot->GetInstanceId(), now).second;
+    return EmplaceIfUnset(KaraState(bot->GetInstanceId()).attumenDpsWaitTimer, now);
 }
 
 // Moroes
@@ -899,14 +894,14 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    uint32 const instanceId = netherspite->GetInstanceId();
+    std::optional<uint32>& dpsWaitTimer = KaraState(netherspite->GetInstanceId()).netherspiteDpsWaitTimer;
     uint32 const now = getMSTime();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
 
     if (IsBanishPhase(netherspite))
     {
-        if (isMechanicTracker && netherspiteDpsWaitTimer.erase(instanceId) > 0)
+        if (isMechanicTracker && ResetIfSet(dpsWaitTimer))
             didSomething = true;
 
         Action* redAction = context->GetAction("netherspite block red beam");
@@ -930,7 +925,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
             didSomething = true;
         }
     }
-    else if (isMechanicTracker && netherspiteDpsWaitTimer.try_emplace(instanceId, now).second)
+    else if (isMechanicTracker && EmplaceIfUnset(dpsWaitTimer, now))
     {
         didSomething = true;
     }
@@ -1433,7 +1428,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!nightbane)
         return false;
 
-    uint32 const instanceId = nightbane->GetInstanceId();
+    KaraInstanceState& state = KaraState(nightbane->GetInstanceId());
     uint32 const now = getMSTime();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
     bool didSomething = false;
@@ -1449,14 +1444,14 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
         if (isMechanicTracker)
         {
-            didSomething |= nightbaneFlightPhaseStartTimer.erase(instanceId) > 0;
-            didSomething |= nightbaneDpsWaitTimer.try_emplace(instanceId, now).second;
+            didSomething |= ResetIfSet(state.nightbaneFlightPhaseStartTimer);
+            didSomething |= EmplaceIfUnset(state.nightbaneDpsWaitTimer, now);
         }
     }
     else if (isMechanicTracker)
     {
-        didSomething |= nightbaneDpsWaitTimer.erase(instanceId) > 0;
-        didSomething |= nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now).second;
+        didSomething |= ResetIfSet(state.nightbaneDpsWaitTimer);
+        didSomething |= EmplaceIfUnset(state.nightbaneFlightPhaseStartTimer, now);
     }
 
     return didSomething;

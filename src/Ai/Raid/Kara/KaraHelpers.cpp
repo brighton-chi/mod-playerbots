@@ -5,13 +5,26 @@
  */
 
 #include "KaraHelpers.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <mutex>
+#include <unordered_map>
+
+using namespace EncounterHelpers;
 
 namespace KaraHelpers
 {
+
+namespace
+{
+
+std::mutex karaStateMutex;
+std::unordered_map<uint32, KaraInstanceState> karaStates;
+
+}
 
 // General
 
@@ -28,8 +41,6 @@ bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float h
 }
 
 // Attumen the Huntsman
-
-std::unordered_map<uint32, uint32> attumenDpsWaitTimer;
 
 Unit* GetAttumenMounted(Player* bot)
 {
@@ -74,11 +85,6 @@ bool IsFlameWreathActive(Player* bot)
 }
 
 // Netherspite
-
-std::unordered_map<uint32, uint32> netherspiteDpsWaitTimer;
-std::unordered_map<uint32, ObjectGuid> currentRedBlocker;
-std::unordered_map<uint32, ObjectGuid> currentGreenBlocker;
-std::unordered_map<uint32, ObjectGuid> currentBlueBlocker;
 
 bool IsBanishPhase(Unit* netherspite)
 {
@@ -194,13 +200,14 @@ std::vector<Player*> GetGreenBlockers(Player* bot)
 
 std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
 {
-    uint32 const instanceId = bot->GetInstanceId();
+    KaraInstanceState& state = KaraState(bot->GetInstanceId());
 
     Player* redBlocker = nullptr;
     auto redBlockers = GetRedBlockers(bot);
     if (!redBlockers.empty())
     {
-        ObjectGuid& redGuid = currentRedBlocker[instanceId];
+        ObjectGuid& redGuid =
+            state.currentRedBlocker ? *state.currentRedBlocker : state.currentRedBlocker.emplace();
         auto const it = std::find_if(redBlockers.begin(), redBlockers.end(), [&redGuid](Player* player)
         {
             return player && player->GetGUID() == redGuid;
@@ -222,7 +229,8 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     auto greenBlockers = GetGreenBlockers(bot);
     if (!greenBlockers.empty())
     {
-        ObjectGuid& greenGuid = currentGreenBlocker[instanceId];
+        ObjectGuid& greenGuid =
+            state.currentGreenBlocker ? *state.currentGreenBlocker : state.currentGreenBlocker.emplace();
         auto const it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [&greenGuid](Player* player)
         {
             return player && player->GetGUID() == greenGuid;
@@ -244,7 +252,8 @@ std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
     auto blueBlockers = GetBlueBlockers(bot);
     if (!blueBlockers.empty())
     {
-        ObjectGuid& blueGuid = currentBlueBlocker[instanceId];
+        ObjectGuid& blueGuid =
+            state.currentBlueBlocker ? *state.currentBlueBlocker : state.currentBlueBlocker.emplace();
         auto const it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [&blueGuid](Player* player)
         {
             return player && player->GetGUID() == blueGuid;
@@ -440,9 +449,43 @@ bool TryFindSafePositionWithSafePath(
     return false;
 }
 
-// Nightbane
+// Shared encounter state
 
-std::unordered_map<uint32, uint32> nightbaneDpsWaitTimer;
-std::unordered_map<uint32, uint32> nightbaneFlightPhaseStartTimer;
+KaraInstanceState& KaraState(uint32 instanceId)
+{
+    std::lock_guard lock(karaStateMutex);
+    return karaStates[instanceId];
+}
+
+bool KaraResetBeamBlockers(uint32 instanceId)
+{
+    std::lock_guard lock(karaStateMutex);
+    auto it = karaStates.find(instanceId);
+    if (it == karaStates.end())
+        return false;
+
+    KaraInstanceState& state = it->second;
+    bool reset = false;
+    reset |= ResetIfSet(state.currentRedBlocker);
+    reset |= ResetIfSet(state.currentGreenBlocker);
+    reset |= ResetIfSet(state.currentBlueBlocker);
+    return reset;
+}
+
+bool KaraResetInstance(uint32 instanceId)
+{
+    std::lock_guard lock(karaStateMutex);
+    auto it = karaStates.find(instanceId);
+    if (it == karaStates.end())
+        return false;
+
+    KaraInstanceState const& state = it->second;
+    bool const wasSet = state.attumenDpsWaitTimer || state.netherspiteDpsWaitTimer ||
+        state.currentRedBlocker || state.currentGreenBlocker || state.currentBlueBlocker ||
+        state.nightbaneDpsWaitTimer || state.nightbaneFlightPhaseStartTimer;
+
+    karaStates.erase(it);
+    return wasSet;
+}
 
 }
