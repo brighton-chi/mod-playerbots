@@ -449,7 +449,7 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
-    if (!dynamic_cast<AvoidAoeAction*>(action) && dynamic_cast<CastIceBlockAction*>(action))
+    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action))
         return 1.0f;
 
     if (!IsZerevorMageTank(botAI))
