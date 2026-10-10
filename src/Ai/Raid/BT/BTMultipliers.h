@@ -274,14 +274,19 @@ protected:
 
 // Illidari Council
 
-class IllidariCouncilDisableMeleeTankActionsMultiplier : public BlackTempleEncounterMultiplier
+class IllidariCouncilControlMovementAndTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableMeleeTankActionsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council disable melee tank actions") {}
+    IllidariCouncilControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidari council control movement and targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
+
+private:
+    float GetTankValue(Action* action);
+    float GetNonTankValue(Action* action);
 };
 
 class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncounterMultiplier
@@ -289,26 +294,6 @@ class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncoun
 public:
     IllidariCouncilDisableMageTankActionsMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "illidari council disable mage tank actions") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class IllidariCouncilControlNonTankMovementMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidariCouncilControlNonTankMovementMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council control non-tank movement") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class IllidariCouncilDisableAutoTargetingMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidariCouncilDisableAutoTargetingMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council disable auto targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
