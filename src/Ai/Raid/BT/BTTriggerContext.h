@@ -157,8 +157,8 @@ public:
         creators["illidari council malande should be tanked"] =
             &RaidBlackTempleTriggerContext::illidari_council_malande_should_be_tanked;
 
-        creators["illidari council darkshadow should be tanked"] =
-            &RaidBlackTempleTriggerContext::illidari_council_darkshadow_should_be_tanked;
+        creators["illidari council veras should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidari_council_veras_should_be_tanked;
 
         creators["illidari council zerevor should be tanked by mage"] =
             &RaidBlackTempleTriggerContext::illidari_council_zerevor_should_be_tanked_by_mage;
@@ -433,9 +433,9 @@ private:
     {
         return new IllidariCouncilMalandeShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidari_council_darkshadow_should_be_tanked(PlayerbotAI* botAI)
+    static Trigger* illidari_council_veras_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilDarkshadowShouldBeTankedTrigger(botAI);
+        return new IllidariCouncilVerasShouldBeTankedTrigger(botAI);
     }
     static Trigger* illidari_council_zerevor_should_be_tanked_by_mage(PlayerbotAI* botAI)
     {

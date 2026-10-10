@@ -1546,24 +1546,24 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*event*/)
+bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/)
 {
-    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (!darkshadow)
+    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    if (!veras)
         return false;
 
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
     /* if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
         bot->NearTeleportTo(
-            darkshadow->GetPositionX(), darkshadow->GetPositionY(),
-            darkshadow->GetPositionZ(), bot->GetOrientation());
+            veras->GetPositionX(), veras->GetPositionY(),
+            veras->GetPositionZ(), bot->GetOrientation());
     } */
 
-    if (AI_VALUE(Unit*, "current target") != darkshadow)
-        return Attack(darkshadow);
+    if (AI_VALUE(Unit*, "current target") != veras)
+        return Attack(veras);
 
-    if (darkshadow->GetVictim() != bot)
+    if (veras->GetVictim() != bot)
         return false;
 
     Player* mainTank = GetGroupMainTank(bot);
@@ -1575,7 +1575,7 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, mainTank->GetPosition(), arrivalDist, darkshadow, moveX, moveY, backwards))
+            bot, mainTank->GetPosition(), arrivalDist, veras, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1688,46 +1688,72 @@ bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event /*event*/)
     return false;
 }
 
+// Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
+// knights and Enhancement shamans stay, since Mind Freeze and Wind Shear still land. Casters take
+// Gathios, and the mage tank's healer Zerevor. Everyone skips a member immune to their damage.
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-    if (!malande)
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    if (IsVerasVanished(veras))
+        veras = nullptr;
+
+    bool const isCaster = PlayerbotAI::IsCaster(bot);
+    uint32 const immunity = isCaster ? Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING) :
+        Id(BtSpells::SPELL_BLESSING_OF_PROTECTION);
+
+    Unit* target = nullptr;
+    if (zerevor && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+    {
+        target = zerevor;
+    }
+    else if (isCaster)
+    {
+        if (gathios && !gathios->HasAura(immunity))
+            target = gathios;
+        else if (veras && !veras->HasAura(immunity))
+            target = veras;
+        else if (malande && !malande->HasAura(immunity))
+            target = malande;
+    }
+    else if (ShouldAttackMalande(malande, zerevor))
+    {
+        target = malande;
+    }
+    else if (veras && !veras->HasAura(immunity))
+    {
+        target = veras;
+    }
+    else if (gathios && !gathios->HasAura(immunity))
+    {
+        target = gathios;
+    }
+
+    if (!target || AI_VALUE(Unit*, "current target") == target)
         return false;
 
-    bool shouldAttackMalande = false;
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    if (zerevor && zerevor->GetExactDist2d(malande) < 15.0f)
-    {
-        shouldAttackMalande = false;
-    }
-    else if (bot->getClass() == CLASS_ROGUE ||
-             (bot->getClass() == CLASS_WARRIOR && PlayerbotAI::IsDps(bot)))
-    {
-        shouldAttackMalande = !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION));
-    }
-    else if (bot->getClass() == CLASS_SHAMAN && PlayerbotAI::IsDps(bot))
-    {
-        shouldAttackMalande = !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING));
-    }
+    return Attack(target);
+}
 
-    if (shouldAttackMalande)
-    {
-        if (AI_VALUE(Unit*, "current target") != malande)
-            return Attack(malande);
-    }
-    else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-        darkshadow && !IsDarkshadowVanished(darkshadow))
-    {
-        if (AI_VALUE(Unit*, "current target") != darkshadow)
-            return Attack(darkshadow);
-    }
-    else if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-    {
-        if (AI_VALUE(Unit*, "current target") != gathios)
-            return Attack(gathios);
-    }
+bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(Unit* malande, Unit* zerevor) const
+{
+    constexpr float zerevorClearance = 15.0f;
+    if (!malande || (zerevor && zerevor->GetExactDist2d(malande) < zerevorClearance))
+        return false;
 
-    return false;
+    switch (bot->getClass())
+    {
+        case CLASS_ROGUE:
+        case CLASS_WARRIOR:
+            return !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION));
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_SHAMAN:
+            return true;
+        default:
+            return false;
+    }
 }
 
 bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)

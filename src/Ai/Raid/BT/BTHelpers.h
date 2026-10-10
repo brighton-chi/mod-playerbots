@@ -81,7 +81,7 @@ enum class BtSpells : uint32
     SPELL_CIRCLE_OF_HEALING         = 41455,
 
     // Veras Darkshadow
-    SPELL_DARKSHADOW_VANISH         = 41476,
+    SPELL_VERAS_VANISH              = 41476,
 
     // High Nethermancer Zerevor
     SPELL_DAMPEN_MAGIC              = 41478,
@@ -470,7 +470,7 @@ ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
-bool IsDarkshadowVanished(Unit* darkshadow);
+bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
 
 // Illidan Stormrage <The Betrayer>

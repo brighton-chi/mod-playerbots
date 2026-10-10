@@ -156,8 +156,8 @@ public:
         creators["illidari council first assist tank focus malande"] =
             &RaidBlackTempleActionContext::illidari_council_first_assist_tank_focus_malande;
 
-        creators["illidari council second assist tank position darkshadow"] =
-            &RaidBlackTempleActionContext::illidari_council_second_assist_tank_position_darkshadow;
+        creators["illidari council second assist tank position veras"] =
+            &RaidBlackTempleActionContext::illidari_council_second_assist_tank_position_veras;
 
         creators["illidari council mage tank position zerevor"] =
             &RaidBlackTempleActionContext::illidari_council_mage_tank_position_zerevor;
@@ -442,9 +442,9 @@ private:
     {
         return new IllidariCouncilFirstAssistTankFocusMalandeAction(botAI);
     }
-    static Action* illidari_council_second_assist_tank_position_darkshadow(PlayerbotAI* botAI)
+    static Action* illidari_council_second_assist_tank_position_veras(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilSecondAssistTankPositionDarkshadowAction(botAI);
+        return new IllidariCouncilSecondAssistTankPositionVerasAction(botAI);
     }
     static Action* illidari_council_mage_tank_position_zerevor(PlayerbotAI* botAI)
     {

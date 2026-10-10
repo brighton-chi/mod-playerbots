@@ -395,11 +395,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidariCouncilSecondAssistTankPositionDarkshadowAction : public AttackAction
+class IllidariCouncilSecondAssistTankPositionVerasAction : public AttackAction
 {
 public:
-    IllidariCouncilSecondAssistTankPositionDarkshadowAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidari council second assist tank position darkshadow") {}
+    IllidariCouncilSecondAssistTankPositionVerasAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council second assist tank position veras") {}
     bool Execute(Event event) override;
 };
 
@@ -425,6 +425,9 @@ public:
     IllidariCouncilAssignDpsTargetsAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidari council assign dps targets") {}
     bool Execute(Event event) override;
+
+private:
+    bool ShouldAttackMalande(Unit* malande, Unit* zerevor) const;
 };
 
 class IllidariCouncilDisperseRangedAction : public MovementAction

@@ -478,13 +478,13 @@ bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "lady malande");
 }
 
-bool IllidariCouncilDarkshadowShouldBeTankedTrigger::IsActiveInEncounter()
+bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
         return false;
 
-    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return darkshadow && !IsDarkshadowVanished(darkshadow);
+    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    return veras && !IsVerasVanished(veras);
 }
 
 bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
@@ -521,11 +521,10 @@ bool IllidariCouncilPetsScrewUpThePullTrigger::IsActiveInEncounter()
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
+// Every bot but the main tank, the Malande tank and the mage tank, and the Veras tank only while
+// Veras is vanished.
 bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return false;
 
@@ -536,14 +535,11 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return false;
     }
 
-    Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    if (darkshadow && !IsDarkshadowVanished(darkshadow) &&
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
-    {
-        return false;
-    }
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+        return true;
 
-    return true;
+    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    return !veras || IsVerasVanished(veras);
 }
 
 bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()

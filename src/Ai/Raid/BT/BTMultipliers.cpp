@@ -464,7 +464,6 @@ float IllidariCouncilDisableMeleeTankActionsMultiplier::GetValueInEncounter(Acti
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<AvoidAoeAction*>(action) &&
-        !dynamic_cast<TankAssistAction*>(action) &&
         !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
     {
         return 1.0f;
