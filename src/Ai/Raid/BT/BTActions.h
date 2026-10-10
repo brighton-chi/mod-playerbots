@@ -377,6 +377,9 @@ public:
     IllidariCouncilMainTankPositionGathiosAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidari council main tank position gathios") {}
     bool Execute(Event event) override;
+
+private:
+    uint8 _tankStep = 0;
 };
 
 class IllidariCouncilInterruptCircleOfHealingAction : public Action
