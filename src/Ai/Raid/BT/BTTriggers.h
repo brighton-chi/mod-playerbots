@@ -61,11 +61,11 @@ private:
 
 // Not gated on an encounter, so throttled to once per second. A skull is a raid leader's call,
 // and the Sister of Pain's first Shell of Pain is 20 s away.
-class SisterOfPleasureShouldBeMarkedTrigger : public Trigger
+class SisterOfPleasureShouldBeFocusedTrigger : public Trigger
 {
 public:
-    SisterOfPleasureShouldBeMarkedTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "sister of pleasure should be marked", 1000) {}
+    SisterOfPleasureShouldBeFocusedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sister of pleasure should be focused", 1000) {}
     bool IsActive() override;
 };
 
