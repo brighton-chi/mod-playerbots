@@ -77,6 +77,9 @@ enum class BtSpells : uint32
     SPELL_SEAL_OF_COMMAND           = 41469,
     SPELL_CONSECRATION              = 41541,
 
+    // Lady Malande
+    SPELL_CIRCLE_OF_HEALING         = 41455,
+
     // Veras Darkshadow
     SPELL_DARKSHADOW_VANISH         = 41476,
 
@@ -105,10 +108,12 @@ enum class BtSpells : uint32
     SPELL_MISDIRECTION              = 35079,
 
     // Mage
+    SPELL_COUNTERSPELL              =  2139,
     SPELL_SPELLSTEAL                = 30449,
 
     // Shaman
     SPELL_EARTHBIND_TOTEM           =  2484,
+    SPELL_WIND_SHEAR                = 57994,
 
     // Warrior
     SPELL_SPELL_REFLECTION          = 23920,
@@ -133,6 +138,9 @@ enum class BtNpcs : uint32
 
     // Reliquary of Souls
     NPC_ESSENCE_OF_DESIRE           = 23419,
+
+    // Illidari Council
+    NPC_LADY_MALANDE                = 22951,
 
     // Illidan Stormrage <The Betrayer>
     NPC_FLAME_OF_AZZINOTH           = 22997,
@@ -454,12 +462,16 @@ extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
+inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
+// A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
+inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
 
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsDarkshadowVanished(Unit* darkshadow);
+bool CanInterruptCircleOfHealing(Unit* malande);
 
 // Illidan Stormrage <The Betrayer>
 

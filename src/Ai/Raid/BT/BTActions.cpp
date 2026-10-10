@@ -1498,6 +1498,34 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
+{
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    if (!malande)
+        return false;
+
+    auto const castInterrupt = [&](char const* spell)
+    {
+        return botAI->CanCastSpell(spell, malande) && botAI->CastSpell(spell, malande);
+    };
+
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return castInterrupt("mind freeze");
+        case CLASS_MAGE:
+            return castInterrupt("counterspell");
+        case CLASS_ROGUE:
+            return castInterrupt("kick");
+        case CLASS_SHAMAN:
+            return castInterrupt("wind shear");
+        case CLASS_WARRIOR:
+            return castInterrupt("pummel") || castInterrupt("shield bash");
+        default:
+            return false;
+    }
+}
+
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");

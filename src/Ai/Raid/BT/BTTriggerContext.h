@@ -151,6 +151,9 @@ public:
         creators["illidari council gathios casts judgement of command"] =
             &RaidBlackTempleTriggerContext::illidari_council_gathios_casts_judgement_of_command;
 
+        creators["illidari council malande casts circle of healing"] =
+            &RaidBlackTempleTriggerContext::illidari_council_malande_casts_circle_of_healing;
+
         creators["illidari council malande should be tanked"] =
             &RaidBlackTempleTriggerContext::illidari_council_malande_should_be_tanked;
 
@@ -421,6 +424,10 @@ private:
     static Trigger* illidari_council_gathios_casts_judgement_of_command(PlayerbotAI* botAI)
     {
         return new IllidariCouncilGathiosCastsJudgementOfCommandTrigger(botAI);
+    }
+    static Trigger* illidari_council_malande_casts_circle_of_healing(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilMalandeCastsCircleOfHealingTrigger(botAI);
     }
     static Trigger* illidari_council_malande_should_be_tanked(PlayerbotAI* botAI)
     {

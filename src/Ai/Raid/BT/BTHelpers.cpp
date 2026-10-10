@@ -10,6 +10,7 @@
 #include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
+#include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -1089,6 +1090,16 @@ bool HasDangerousCouncilAura(Player* bot)
 bool IsDarkshadowVanished(Unit* darkshadow)
 {
     return darkshadow && darkshadow->HasAura(Id(BtSpells::SPELL_DARKSHADOW_VANISH));
+}
+
+bool CanInterruptCircleOfHealing(Unit* malande)
+{
+    if (!malande)
+        return false;
+
+    Spell* spell = malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_CIRCLE_OF_HEALING));
+    return spell && spell->getState() == SPELL_STATE_PREPARING &&
+        spell->GetCastTime() - spell->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
 // Illidan Stormrage <The Betrayer>

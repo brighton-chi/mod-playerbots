@@ -154,6 +154,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction(
             "illidari council main tank reflect judgement of command", ACTION_EMERGENCY + 1) }));
 
+    triggers.push_back(new TriggerNode("illidari council malande casts circle of healing",
+        { NextAction(
+            "illidari council interrupt circle of healing", ACTION_EMERGENCY + 8) }));
+
     triggers.push_back(new TriggerNode("illidari council malande should be tanked",
         { NextAction("illidari council first assist tank focus malande", ACTION_RAID + 1) }));
 
