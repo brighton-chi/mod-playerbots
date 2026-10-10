@@ -379,6 +379,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilInterruptCircleOfHealingAction : public Action
+{
+public:
+    IllidariCouncilInterruptCircleOfHealingAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidari council interrupt circle of healing") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction
 {
 public:

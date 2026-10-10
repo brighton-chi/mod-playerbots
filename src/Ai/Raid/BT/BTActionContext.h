@@ -150,6 +150,9 @@ public:
         creators["illidari council main tank reflect judgement of command"] =
             &RaidBlackTempleActionContext::illidari_council_main_tank_reflect_judgement_of_command;
 
+        creators["illidari council interrupt circle of healing"] =
+            &RaidBlackTempleActionContext::illidari_council_interrupt_circle_of_healing;
+
         creators["illidari council first assist tank focus malande"] =
             &RaidBlackTempleActionContext::illidari_council_first_assist_tank_focus_malande;
 
@@ -430,6 +433,10 @@ private:
     {
         return new BlackTempleCastSpellReflectionAction(
             botAI, "illidari council main tank reflect judgement of command");
+    }
+    static Action* illidari_council_interrupt_circle_of_healing(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilInterruptCircleOfHealingAction(botAI);
     }
     static Action* illidari_council_first_assist_tank_focus_malande(PlayerbotAI* botAI)
     {

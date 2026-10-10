@@ -431,6 +431,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidariCouncilMalandeCastsCircleOfHealingTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidariCouncilMalandeCastsCircleOfHealingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council malande casts circle of healing") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidariCouncilMalandeShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:

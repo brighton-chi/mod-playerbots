@@ -442,6 +442,36 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
     return target && target->GetGUID() == bot->GetGUID() && PlayerbotAI::IsMainTank(bot);
 }
 
+// Ranged DPS interrupt only while Blessing of Protection stops melee interrupts. Paladins, priests
+// and hunters have nothing she isn't immune to.
+bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_MAGE:
+        case CLASS_ROGUE:
+        case CLASS_SHAMAN:
+        case CLASS_WARRIOR:
+            break;
+        default:
+            return false;
+    }
+
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
+    if (isRanged && (!PlayerbotAI::IsRangedDps(bot) || IsZerevorMageTank(botAI)))
+        return false;
+
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    if (!malande)
+        return false;
+
+    if (isRanged && !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)))
+        return false;
+
+    return CanInterruptCircleOfHealing(malande);
+}
+
 bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) &&
