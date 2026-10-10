@@ -161,9 +161,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council malande should be tanked",
         { NextAction("illidari council first assist tank focus malande", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("illidari council darkshadow should be tanked",
+    triggers.push_back(new TriggerNode("illidari council veras should be tanked",
         { NextAction(
-            "illidari council second assist tank position darkshadow", ACTION_RAID + 1) }));
+            "illidari council second assist tank position veras", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council zerevor should be tanked by mage",
         { NextAction("illidari council mage tank position zerevor", ACTION_EMERGENCY + 6) }));

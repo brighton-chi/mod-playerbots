@@ -452,11 +452,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilDarkshadowShouldBeTankedTrigger : public BlackTempleEncounterTrigger
+class IllidariCouncilVerasShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilDarkshadowShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidari council darkshadow should be tanked") {}
+    IllidariCouncilVerasShouldBeTankedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council veras should be tanked") {}
 
 protected:
     bool IsActiveInEncounter() override;

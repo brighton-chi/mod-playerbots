@@ -1087,9 +1087,9 @@ bool HasDangerousCouncilAura(Player* bot)
     return false;
 }
 
-bool IsDarkshadowVanished(Unit* darkshadow)
+bool IsVerasVanished(Unit* veras)
 {
-    return darkshadow && darkshadow->HasAura(Id(BtSpells::SPELL_DARKSHADOW_VANISH));
+    return veras && veras->HasAura(Id(BtSpells::SPELL_VERAS_VANISH));
 }
 
 bool CanInterruptCircleOfHealing(Unit* malande)
