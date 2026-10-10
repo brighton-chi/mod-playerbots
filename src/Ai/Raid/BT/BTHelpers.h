@@ -145,6 +145,7 @@ enum class BtNpcs : uint32
     NPC_ESSENCE_OF_DESIRE           = 23419,
 
     // Illidari Council
+    NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
     NPC_LADY_MALANDE                = 22951,
 
     // Illidan Stormrage <The Betrayer>
@@ -469,6 +470,7 @@ inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
+inline constexpr float COUNCIL_ZEREVOR_SEARCH_RADIUS = 100.0f;
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
@@ -479,6 +481,7 @@ bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
+bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet);
 uint32 GetReadySpellLock(Creature* pet, Unit* target);
