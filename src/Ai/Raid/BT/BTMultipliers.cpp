@@ -38,6 +38,35 @@ bool IsRepositionAction(Player* bot, Action* action)
         (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
 }
 
+bool IsDpsHoldCandidate(Player* bot, Action* action)
+{
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return false;
+
+    if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
+        return false;
+
+    // AttackAction for healers only keeps them in their combat engine; their damage, wands
+    // included, comes from CastSpellAction.
+    return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
+}
+
+// Buffs, cures, protection and resurrection go through a dps hold. Totems don't, since some are
+// offensive.
+float GetDpsHoldValue(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
+        return 0.0f;
+
+    bool const castOnRaidSpell = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+
+    return castOnRaidSpell ? 1.0f : 0.0f;
+}
+
 }
 
 // Shared
@@ -462,17 +491,22 @@ float IllidariCouncilDisableMeleeTankActionsMultiplier::GetValueInEncounter(Acti
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<AvoidAoeAction*>(action) &&
-        !IsTauntAction(bot, action) && !IsAoeThreatAction(bot, action))
-    {
+    bool const isStockMove =
+        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
+    bool const isAoeThreat = IsAoeThreatAction(bot, action) || IsAoeTauntAction(bot, action);
+    if (!isStockMove && !isAoeThreat && !IsTauntAction(bot, action))
         return 1.0f;
-    }
+
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        return 1.0f;
+
+    if (isAoeThreat)
+        return IsAnotherCouncilMemberWithin(botAI, COUNCIL_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+    return 0.0f;
 }
 
 float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Action* action)
@@ -551,25 +585,18 @@ float IllidariCouncilControlHunterActionsMultiplier::GetValueInEncounter(Action*
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios)
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     if (dynamic_cast<IllidariCouncilMisdirectToTanksAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<AttackAction*>(action) &&
-        (!dynamic_cast<CastSpellAction*>(action) || dynamic_cast<CastHealingSpellAction*>(action)))
+    auto it = councilDpsWaitTimer.find(bot->GetInstanceId());
+    if (it == councilDpsWaitTimer.end() ||
+        getMSTimeDiff(it->second, getMSTime()) >= COUNCIL_DPS_WAIT_MS)
     {
         return 1.0f;
     }
-
-    uint32 const now = getMSTime();
-    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-
-    auto it = councilDpsWaitTimer.find(gathios->GetMap()->GetInstanceId());
-    if (it == councilDpsWaitTimer.end() || getMSTimeDiff(it->second, now) >= dpsWaitMs)
-        return 1.0f;
 
     if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
@@ -579,7 +606,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    return 0.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 // Illidan Stormrage <The Betrayer>
