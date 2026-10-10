@@ -163,6 +163,15 @@ inline constexpr uint32 BT_MAP_ID = 564;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
+// A rectangle around centre whose depth runs toward facing and whose width runs across it.
+bool IsInRectangle(
+    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth);
+// This bot's own point in that rectangle, the same every call and spread between bots, at the
+// bot's Z. Falls back to centre when the way from centre to the point is blocked.
+Position GetBotPointInRectangle(
+    Player* bot, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth);
 
 // Trash
 
@@ -361,6 +370,23 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
 inline constexpr float GURTOGG_POSITION_TOLERANCE = 2.0f;
+// Each ranged group spreads over a rectangle facing the tank position.
+inline constexpr float GURTOGG_RANGED_HALF_WIDTH = 5.0f;
+inline constexpr float GURTOGG_RANGED_HALF_DEPTH = 2.0f;
+// Groups swap this long after a Bloodboil lands, not as it lands.
+inline constexpr int32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
+// Arcing Smash during Fel Rage reaches about 11.5 yd from him, and he stays within about 8 yd of
+// the Fel Rage target, so the cleave can't reach past about 10 yd from that player. Everyone else
+// in front of him steps off his line to that player to keep this far away.
+inline constexpr float GURTOGG_FEL_RAGE_AVOID_DISTANCE = 15.0f;
+inline constexpr float GURTOGG_FEL_RAGE_AVOID_MARGIN = 1.0f;
+// Melee without Fel Rage stand this far behind him during it, opposite the Fel Rage target. A bot
+// in front first goes to a point this far around to his side, so it doesn't cut across his front.
+inline constexpr float GURTOGG_FEL_RAGE_MELEE_DISTANCE = 5.0f;
+inline constexpr float GURTOGG_FEL_RAGE_MELEE_TOLERANCE = 2.0f;
+inline constexpr float GURTOGG_FEL_RAGE_MELEE_SIDE_ANGLE = 2.0f * static_cast<float>(M_PI) / 3.0f;
+// For this long into Fel Rage, bots behind him keep away too.
+inline constexpr int32 GURTOGG_FEL_RAGE_EARLY_AVOID_MS = 5 * IN_MILLISECONDS;
 // Bewildering Strike hands him to the second tank, so everyone else stays below it.
 inline constexpr float GURTOGG_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr uint32 GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS = 1000;
@@ -370,6 +396,9 @@ inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
 inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 
 Position const& GetGurtoggBloodboilPosition(Player* bot);
+// The player he is fixed on during Fel Rage, or nullptr outside it.
+Unit* GetGurtoggFelRageTarget(Unit* gurtogg);
+Position GetGurtoggFelRageMeleePosition(Player* bot, Unit* gurtogg, Unit* felRageTarget);
 // 0 with fewer than two tanks on his threat list.
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
 

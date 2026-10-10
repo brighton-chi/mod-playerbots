@@ -180,6 +180,30 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Fel Rage fixes him on its target, so tanks don't taunt and hunters don't misdirect until it ends.
+class GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+              botAI, "gurtogg bloodboil no threat redirects during fel rage") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// The Fel Rage target keeps him for all of Fel Rage, so it uses nothing that drops its threat.
+class GurtoggBloodboilFelRageTargetHoldsAggroMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    GurtoggBloodboilFelRageTargetHoldsAggroMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "gurtogg bloodboil fel rage target holds aggro") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Non-tanks other than healers hold below the second tank's threat. No hold under Insignificance,
 // when no one gains threat.
 class GurtoggBloodboilHoldThreatMultiplier : public BlackTempleEncounterMultiplier

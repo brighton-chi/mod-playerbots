@@ -15,6 +15,7 @@
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
@@ -302,6 +303,42 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
+}
+
+float GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier::GetValueInEncounter(
+    Action* action)
+{
+    if (!IsTauntAction(bot, action) &&
+        !dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
+        !dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    return gurtogg && gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)) ? 0.0f : 1.0f;
+}
+
+float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+        return 1.0f;
+
+    // Feign Death, Fade, Invisibility, Vanish, Cower and Soulshatter are left out: their class
+    // strategies use them on "medium threat", which needs two attackers on the bot, and he is
+    // alone.
+    bool const dropsThreat =
+        dynamic_cast<CastIceBlockAction*>(action) ||
+        dynamic_cast<CastDivineShieldAction*>(action) ||
+        dynamic_cast<CastFeintAction*>(action);
+        // dynamic_cast<CastFeignDeathAction*>(action) ||
+        // dynamic_cast<CastFadeAction*>(action) ||
+        // dynamic_cast<CastInvisibilityAction*>(action) ||
+        // dynamic_cast<CastVanishAction*>(action) ||
+        // dynamic_cast<CastCowerAction*>(action) ||
+        // dynamic_cast<CastSoulshatterAction*>(action);
+
+    return dropsThreat ? 0.0f : 1.0f;
 }
 
 float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)

@@ -244,10 +244,49 @@ bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "gurtogg bloodboil"))
+    // He doesn't cast Bloodboil during Fel Rage.
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg || gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return false;
 
     return !bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
+}
+
+bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot) || bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    return felRageTarget &&
+        bot->GetExactDist2d(GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget)) >
+            GURTOGG_FEL_RAGE_MELEE_TOLERANCE;
+}
+
+// Melee go behind him instead.
+bool GurtoggBloodboilShouldAvoidFelRageTargetTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsMelee(bot) || bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+        return false;
+
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    if (!felRageTarget || bot->GetExactDist2d(felRageTarget) >= GURTOGG_FEL_RAGE_AVOID_DISTANCE)
+        return false;
+
+    // Arcing Smash only hits in front of him, but he turns faster than bots can react, so at the
+    // start of Fel Rage everyone near the target moves regardless of side.
+    Aura* felRage = gurtogg->GetAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE));
+    return (felRage && felRage->GetMaxDuration() - felRage->GetDuration() <
+            GURTOGG_FEL_RAGE_EARLY_AVOID_MS) ||
+        gurtogg->HasInArc(static_cast<float>(M_PI), bot);
 }
 
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()

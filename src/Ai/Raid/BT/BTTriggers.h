@@ -280,6 +280,26 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class GurtoggBloodboilMeleeShouldStayBehindTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    GurtoggBloodboilMeleeShouldStayBehindTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil melee should stay behind") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class GurtoggBloodboilShouldAvoidFelRageTargetTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    GurtoggBloodboilShouldAvoidFelRageTargetTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should avoid fel rage target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class GurtoggBloodboilFelRageOnBotTrigger : public BlackTempleEncounterTrigger
 {
 public:
