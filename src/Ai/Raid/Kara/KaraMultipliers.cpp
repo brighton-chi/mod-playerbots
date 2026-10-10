@@ -122,11 +122,8 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<DpsAssistAction*>(action))
-    {
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
-    }
 
     return AI_VALUE2(Unit*, "find target", "midnight") ? 0.0f : 1.0f;
 }
