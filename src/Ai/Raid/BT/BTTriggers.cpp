@@ -442,8 +442,8 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
     return target && target->GetGUID() == bot->GetGUID() && PlayerbotAI::IsMainTank(bot);
 }
 
-// Ranged DPS interrupt only while Blessing of Protection stops melee interrupts. Paladins, priests
-// and hunters have nothing she isn't immune to.
+// Ranged DPS interrupt only while her melee can't: under Blessing of Protection, or while she
+// stands in a Zerevor patch. Paladins, priests and hunters have nothing she isn't immune to.
 bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
 {
     switch (bot->getClass())
@@ -467,8 +467,12 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
     if (!malande)
         return false;
 
-    if (isRanged && !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)))
+    if (isRanged && !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
+        !IsMalandeInZerevorPatch(
+            malande, AI_VALUE2(Unit*, "find target", "high nethermancer zerevor")))
+    {
         return false;
+    }
 
     return CanInterruptCircleOfHealing(malande);
 }

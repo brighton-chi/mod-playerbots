@@ -5,6 +5,7 @@
  */
 
 #include "BTHelpers.h"
+#include "DynamicObject.h"
 #include "EncounterHelpers.h"
 #include "GameTime.h"
 #include "PathGenerator.h"
@@ -1099,6 +1100,27 @@ bool CanInterruptCircleOfHealing(Unit* malande)
     Spell* spell = malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_CIRCLE_OF_HEALING));
     return spell && spell->getState() == SPELL_STATE_PREPARING &&
         spell->GetCastTime() - spell->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
+}
+
+// Zerevor has at most one Blizzard and one Flamestrike down at a time.
+bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor)
+{
+    if (!malande || !zerevor)
+        return false;
+
+    static constexpr std::array patchSpells = {
+        Id(BtSpells::SPELL_BLIZZARD),
+        Id(BtSpells::SPELL_FLAMESTRIKE),
+    };
+
+    for (uint32 spellId : patchSpells)
+    {
+        DynamicObject* patch = zerevor->GetDynObject(spellId);
+        if (patch && malande->GetExactDist2d(patch) < patch->GetRadius())
+            return true;
+    }
+
+    return false;
 }
 
 // Any council member but the bot's own target.
