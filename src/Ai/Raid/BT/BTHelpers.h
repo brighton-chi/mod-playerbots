@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+class Creature;
 class GameObject;
 class Player;
 class PlayerbotAI;
@@ -114,6 +115,10 @@ enum class BtSpells : uint32
     // Shaman
     SPELL_EARTHBIND_TOTEM           =  2484,
     SPELL_WIND_SHEAR                = 57994,
+
+    // Warlock (Felhunter)
+    SPELL_SPELL_LOCK_1              = 19244,
+    SPELL_SPELL_LOCK_2              = 19647,
 
     // Warrior
     SPELL_SPELL_REFLECTION          = 23920,
@@ -472,6 +477,8 @@ bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
+Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet);
+uint32 GetReadySpellLock(Creature* pet, Unit* target);
 
 // Illidan Stormrage <The Betrayer>
 

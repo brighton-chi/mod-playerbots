@@ -174,8 +174,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council ranged should spread",
         { NextAction("illidari council disperse ranged", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("illidari council pets screw up the pull",
-        { NextAction("illidari council command pets to attack gathios", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("illidari council pet should switch target",
+        { NextAction("illidari council command pet target", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidari council should assign dps priority",
         { NextAction("illidari council assign dps targets", ACTION_RAID + 1) }));

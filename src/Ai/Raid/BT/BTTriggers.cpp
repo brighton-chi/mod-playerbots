@@ -452,6 +452,7 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
         case CLASS_MAGE:
         case CLASS_ROGUE:
         case CLASS_SHAMAN:
+        case CLASS_WARLOCK:
         case CLASS_WARRIOR:
             break;
         default:
@@ -509,16 +510,14 @@ bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
     return !HasDangerousCouncilAura(bot);
 }
 
-bool IllidariCouncilPetsScrewUpThePullTrigger::IsActiveInEncounter()
+bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK)
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
         return false;
 
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
-        return false;
-
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* target = GetCouncilPetTarget(botAI, pet);
+    return target && pet->GetVictim() != target;
 }
 
 // Every bot but the main tank, the Malande tank and the mage tank, and the Veras tank only while

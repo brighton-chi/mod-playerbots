@@ -168,8 +168,8 @@ public:
         creators["illidari council disperse ranged"] =
             &RaidBlackTempleActionContext::illidari_council_disperse_ranged;
 
-        creators["illidari council command pets to attack gathios"] =
-            &RaidBlackTempleActionContext::illidari_council_command_pets_to_attack_gathios;
+        creators["illidari council command pet target"] =
+            &RaidBlackTempleActionContext::illidari_council_command_pet_target;
 
         creators["illidari council assign dps targets"] =
             &RaidBlackTempleActionContext::illidari_council_assign_dps_targets;
@@ -458,9 +458,9 @@ private:
     {
         return new IllidariCouncilDisperseRangedAction(botAI);
     }
-    static Action* illidari_council_command_pets_to_attack_gathios(PlayerbotAI* botAI)
+    static Action* illidari_council_command_pet_target(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilCommandPetsToAttackGathiosAction(botAI);
+        return new IllidariCouncilCommandPetTargetAction(botAI);
     }
     static Action* illidari_council_assign_dps_targets(PlayerbotAI* botAI)
     {
