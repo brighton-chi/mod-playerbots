@@ -22,7 +22,7 @@
 using namespace BtHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 {
@@ -57,8 +57,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 
     return reset;
 }
-
-// Shared Bosses
 
 bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
 {
@@ -1056,40 +1054,33 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
     if (!suffering)
         return false;
 
+    float const distance = bot->GetExactDist2d(suffering);
     if (IsSufferingFixateTank(bot))
-        return TanksMoveToMinimumRange(suffering);
+    {
+        return distance > SUFFERING_TANK_MAX_DISTANCE &&
+            MoveToDistanceFromSuffering(suffering, SUFFERING_TANK_DISTANCE);
+    }
 
     if (PlayerbotAI::IsMelee(bot))
-        return MeleeDpsStayAtMaximumRange(suffering);
+    {
+        return distance < SUFFERING_MELEE_MIN_DISTANCE &&
+            MoveToDistanceFromSuffering(suffering, SUFFERING_MELEE_DISTANCE);
+    }
 
     return RangedMoveAwayFromBoss(suffering);
 }
 
-bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::TanksMoveToMinimumRange(Unit* suffering)
+// Straight in or out along her line to the bot, so nobody crosses nearer to her than the tanks.
+bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MoveToDistanceFromSuffering(
+    Unit* suffering, float distance)
 {
-    float const distanceToBoss = bot->GetExactDist2d(suffering);
-    if (distanceToBoss <= SUFFERING_TANK_DISTANCE)
-        return false;
-
-    float const dX = suffering->GetPositionX() - bot->GetPositionX();
-    float const dY = suffering->GetPositionY() - bot->GetPositionY();
-    float const targetX = bot->GetPositionX() + (dX / distanceToBoss);
-    float const targetY = bot->GetPositionY() + (dY / distanceToBoss);
+    float const angle = suffering->GetAngle(bot);
+    float const x = suffering->GetPositionX() + distance * std::cos(angle);
+    float const y = suffering->GetPositionY() + distance * std::sin(angle);
 
     return MoveTo(
-        BT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+        BT_MAP_ID, x, y, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MeleeDpsStayAtMaximumRange(Unit* suffering)
-{
-    Position const position = GetSufferingMeleePosition(bot, suffering);
-    if (bot->GetExactDist2d(position) <= SUFFERING_MELEE_POSITION_TOLERANCE)
-        return false;
-
-    return MoveTo(
-        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(Unit* suffering)

@@ -15,12 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace BtHelpers
-{
-    struct EyeBlastDangerArea;
-}
-
-// General
+// Shared
 
 class BlackTempleResetEncounterStatesAction : public Action
 {
@@ -29,8 +24,6 @@ public:
         : Action(botAI, "black temple reset encounter states") {}
     bool Execute(Event event) override;
 };
-
-// Shared Bosses
 
 // Used for High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil and Mother
 // Shahraz.
@@ -295,8 +288,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TanksMoveToMinimumRange(Unit* suffering);
-    bool MeleeDpsStayAtMaximumRange(Unit* suffering);
+    bool MoveToDistanceFromSuffering(Unit* suffering, float distance);
     bool RangedMoveAwayFromBoss(Unit* suffering);
 };
 
@@ -483,6 +475,11 @@ public:
         : Action(botAI, "illidan stormrage set earthbind totem") {}
     bool Execute(Event event) override;
 };
+
+namespace BtHelpers
+{
+    struct EyeBlastDangerArea;
+}
 
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
 {

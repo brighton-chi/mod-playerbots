@@ -12,7 +12,7 @@
 #include "Multiplier.h"
 #include <string>
 
-// General
+// Shared
 
 class BlackTempleEncounterMultiplier : public Multiplier
 {
@@ -22,8 +22,8 @@ public:
 
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsEncounterInProgress(
-            bot, BtHelpers::BT_MAP_ID) ? GetValueInEncounter(action) : 1.0f;
+        return EncounterHelpers::IsEncounterInProgress(bot, BtHelpers::BT_MAP_ID) ?
+            GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
@@ -35,6 +35,19 @@ class BlackTempleDelayDpsCooldownsMultiplier : public BlackTempleEncounterMultip
 public:
     BlackTempleDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "black temple delay dps cooldowns") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+// Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
+// rogue by bounding radius, so it takes the rogue well out of the fight.
+// Essence of Suffering targets the closest player, and Killing Spree makes the Rogue the closest.
+class BlackTempleDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    BlackTempleDisableKillingSpreeMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "black temple disable killing spree") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -71,18 +84,6 @@ class SupremusFocusOnAvoidanceInKitePhaseMultiplier : public BlackTempleEncounte
 public:
     SupremusFocusOnAvoidanceInKitePhaseMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "supremus focus on avoidance in kite phase") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-// Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
-// rogue by bounding radius, so it takes the rogue well out of the fight.
-class SupremusDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    SupremusDisableKillingSpreeMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "supremus disable killing spree") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -198,6 +199,16 @@ class ReliquaryOfSoulsDontWasteHealingMultiplier : public BlackTempleEncounterMu
 public:
     ReliquaryOfSoulsDontWasteHealingMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "reliquary of souls don't waste healing") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class ReliquaryOfSoulsControlMeleeMovementMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsControlMeleeMovementMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "reliquary of souls control melee movement") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

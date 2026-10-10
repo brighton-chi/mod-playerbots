@@ -36,7 +36,7 @@ Player* GetCachedPlayer(PlayerbotAI* botAI, char const* value)
 
 }
 
-// General
+// Shared
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
@@ -290,7 +290,7 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
 std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
 std::unordered_map<uint32, ObjectGuid> najentusSpineThrower;
 
-namespace
+namespace // High Warlord Naj'entus
 {
 
 // A remover counts while it is alive, on the map and free to move.
@@ -307,7 +307,7 @@ bool CanThrowNajentusSpine(Player* bot)
         bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
-}
+} // end anonymous namespace (High Warlord Naj'entus)
 
 bool IsNajentusImpaled(Player* player)
 {
@@ -930,28 +930,16 @@ bool IsSufferingFixateTank(Player* bot)
     return PlayerbotAI::IsTank(bot) && bot->GetHealthPct() > SUFFERING_TANK_MIN_HEALTH_PCT;
 }
 
-Position GetSufferingMeleePosition(Player* bot, Unit* suffering)
-{
-    float const distance = bot->GetMeleeRange(suffering);
-    float const behindAngle = Position::NormalizeOrientation(suffering->GetOrientation() + M_PI);
-    return Position(
-        suffering->GetPositionX() + distance * std::cos(behindAngle),
-        suffering->GetPositionY() + distance * std::sin(behindAngle), bot->GetPositionZ());
-}
-
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 {
     if (!suffering)
         return false;
 
     if (IsSufferingFixateTank(bot))
-        return bot->GetExactDist2d(suffering) > SUFFERING_TANK_DISTANCE;
+        return bot->GetExactDist2d(suffering) > SUFFERING_TANK_MAX_DISTANCE;
 
     if (PlayerbotAI::IsMelee(bot))
-    {
-        return bot->GetExactDist2d(GetSufferingMeleePosition(bot, suffering)) >
-            SUFFERING_MELEE_POSITION_TOLERANCE;
-    }
+        return bot->GetExactDist2d(suffering) < SUFFERING_MELEE_MIN_DISTANCE;
 
     return PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d(suffering) < SUFFERING_RANGED_DISTANCE;
 }

@@ -229,8 +229,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // General
+    // Shared
     multipliers.push_back(new BlackTempleDelayDpsCooldownsMultiplier(botAI));
+    multipliers.push_back(new BlackTempleDisableKillingSpreeMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new ShadowmoonReaverHoldChargeBuildingSpellsMultiplier(botAI));
@@ -240,7 +241,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Supremus
     multipliers.push_back(new SupremusFocusOnAvoidanceInKitePhaseMultiplier(botAI));
-    multipliers.push_back(new SupremusDisableKillingSpreeMultiplier(botAI));
     multipliers.push_back(new SupremusDoNotReachThroughFireMultiplier(botAI));
     multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
 
@@ -259,6 +259,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Reliquary of Souls
     multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
+    multipliers.push_back(new ReliquaryOfSoulsControlMeleeMovementMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(botAI));
 
     // Mother Shahraz

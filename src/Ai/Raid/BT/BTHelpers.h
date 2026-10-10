@@ -375,17 +375,19 @@ float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
 
 // Reliquary of Souls
 
-// Essence of Suffering fixates the nearest enemy every 5 s, so a tank above this health stays
-// closest; other melee hold her back at melee range and ranged keep their distance.
+// Essence of Suffering fixates the nearest enemy every 5 s, so tanks above this health stand
+// nearer to her than other melee and pets (about 10 yd). She backs away from a victim within
+// about 1.4 yd and chases one beyond about 10 yd, so the tank distance stays between the two.
 inline constexpr float SUFFERING_TANK_MIN_HEALTH_PCT = 25.0f;
-inline constexpr float SUFFERING_TANK_DISTANCE = 2.0f;
-inline constexpr float SUFFERING_MELEE_POSITION_TOLERANCE = 0.25f;
+inline constexpr float SUFFERING_TANK_DISTANCE = 6.0f;
+inline constexpr float SUFFERING_TANK_MAX_DISTANCE = 7.0f;
+inline constexpr float SUFFERING_MELEE_DISTANCE = 10.0f;
+inline constexpr float SUFFERING_MELEE_MIN_DISTANCE = 9.0f;
 inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 // Other dispellers wait this long into each Rune Shield, so a mage steals it when one can.
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2000;
 
 bool IsSufferingFixateTank(Player* bot);
-Position GetSufferingMeleePosition(Player* bot, Unit* suffering);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 
 // Mother Shahraz

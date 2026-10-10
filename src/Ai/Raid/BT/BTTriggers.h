@@ -12,7 +12,7 @@
 #include "Trigger.h"
 #include <string>
 
-// General
+// Shared
 
 class BlackTempleEncounterTrigger : public Trigger
 {
@@ -39,8 +39,6 @@ public:
         : Trigger(botAI, "black temple no encounter in progress", 1000) {}
     bool IsActive() override;
 };
-
-// Shared Bosses
 
 // A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
 // High Warlord Naj'entus, Supremus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on
