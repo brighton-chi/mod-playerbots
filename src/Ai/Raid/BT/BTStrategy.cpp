@@ -20,8 +20,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Trash
-    triggers.push_back(new TriggerNode("sister of pleasure should be marked",
-        { NextAction("mark sister of pleasure", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("sister of pleasure should be focused",
+        { NextAction("focus sister of pleasure", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("shadowmoon reaver wand builds charges",
         { NextAction("shadowmoon reaver stop wand", ACTION_EMERGENCY + 1) }));

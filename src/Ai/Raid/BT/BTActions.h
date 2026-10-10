@@ -70,10 +70,10 @@ public:
 
 // Trash
 
-class MarkSisterOfPleasureAction : public Action
+class FocusSisterOfPleasureAction : public Action
 {
 public:
-    MarkSisterOfPleasureAction(PlayerbotAI* botAI) : Action(botAI, "mark sister of pleasure") {}
+    FocusSisterOfPleasureAction(PlayerbotAI* botAI) : Action(botAI, "focus sister of pleasure") {}
     bool Execute(Event event) override;
 };
 

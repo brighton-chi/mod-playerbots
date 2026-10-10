@@ -34,13 +34,22 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 
 // Trash
 
-bool SisterOfPleasureShouldBeMarkedTrigger::IsActive()
+// The mechanic tracker marks a linked Sister of Pleasure. Other non-tanks on her Sister of Pain
+// drop Pain while the two are linked.
+bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
+    if (IsMechanicTrackerBot(bot, BT_MAP_ID))
+    {
+        Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
+        return !IsLinkedSisterOfPleasure(skull) && FindLinkedSisterOfPleasure(botAI);
+    }
+
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
-    return !IsLinkedSisterOfPleasure(skull) && FindLinkedSisterOfPleasure(botAI);
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
+        IsLinkedSisterOfPleasure(AI_VALUE2(Unit*, "find target", "sister of pleasure"));
 }
 
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()

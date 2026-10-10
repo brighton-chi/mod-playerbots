@@ -200,13 +200,13 @@ bool IsLinkedSisterOfPleasure(Unit* unit)
 
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
+    std::list<Creature*> sisters;
+    botAI->GetBot()->GetCreatureListWithEntryInGrid(
+        sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
+    for (Creature* sister : sisters)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (IsLinkedSisterOfPleasure(unit))
-            return unit;
+        if (IsLinkedSisterOfPleasure(sister))
+            return sister;
     }
 
     return nullptr;

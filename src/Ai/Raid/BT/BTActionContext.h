@@ -20,8 +20,8 @@ public:
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
         // Trash
-        creators["mark sister of pleasure"] =
-            &RaidBlackTempleActionContext::mark_sister_of_pleasure;
+        creators["focus sister of pleasure"] =
+            &RaidBlackTempleActionContext::focus_sister_of_pleasure;
 
         creators["shadowmoon reaver stop wand"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_stop_wand;
@@ -235,9 +235,9 @@ private:
     }
 
     // Trash
-    static Action* mark_sister_of_pleasure(PlayerbotAI* botAI)
+    static Action* focus_sister_of_pleasure(PlayerbotAI* botAI)
     {
-        return new MarkSisterOfPleasureAction(botAI);
+        return new FocusSisterOfPleasureAction(botAI);
     }
     static Action* shadowmoon_reaver_stop_wand(PlayerbotAI* botAI)
     {

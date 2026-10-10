@@ -115,10 +115,30 @@ bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 
 // Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
 // health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
-bool MarkSisterOfPleasureAction::Execute(Event /*event*/)
+bool FocusSisterOfPleasureAction::Execute(Event /*event*/)
 {
-    Unit* pleasure = FindLinkedSisterOfPleasure(botAI);
-    return pleasure && MarkTargetWithSkull(bot, pleasure);
+    if (IsMechanicTrackerBot(bot, BT_MAP_ID))
+    {
+        Unit* pleasure = FindLinkedSisterOfPleasure(botAI);
+        return pleasure && MarkTargetWithSkull(bot, pleasure);
+    }
+
+    // Everyone else drops Sister of Pain, and the DPS target then picks the skull.
+    Unit* pain = AI_VALUE(Unit*, "current target");
+    if (!pain || pain->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
+        return false;
+
+    for (CurrentSpellTypes const type :
+         { CURRENT_GENERIC_SPELL, CURRENT_CHANNELED_SPELL, CURRENT_AUTOREPEAT_SPELL })
+    {
+        Spell* spell = bot->GetCurrentSpell(type);
+        if (spell && spell->m_targets.GetUnitTargetGUID() == pain->GetGUID())
+            bot->InterruptSpell(type);
+    }
+
+    bot->AttackStop();
+    context->GetValue<Unit*>("current target")->Set(nullptr);
+    return true;
 }
 
 bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)

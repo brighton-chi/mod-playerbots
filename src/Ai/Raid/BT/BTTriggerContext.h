@@ -20,8 +20,8 @@ public:
             &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
         // Trash
-        creators["sister of pleasure should be marked"] =
-            &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_marked;
+        creators["sister of pleasure should be focused"] =
+            &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_focused;
 
         creators["shadowmoon reaver wand builds charges"] =
             &RaidBlackTempleTriggerContext::shadowmoon_reaver_wand_builds_charges;
@@ -236,9 +236,9 @@ private:
     }
 
     // Trash
-    static Trigger* sister_of_pleasure_should_be_marked(PlayerbotAI* botAI)
+    static Trigger* sister_of_pleasure_should_be_focused(PlayerbotAI* botAI)
     {
-        return new SisterOfPleasureShouldBeMarkedTrigger(botAI);
+        return new SisterOfPleasureShouldBeFocusedTrigger(botAI);
     }
     static Trigger* shadowmoon_reaver_wand_builds_charges(PlayerbotAI* botAI)
     {

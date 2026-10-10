@@ -194,6 +194,9 @@ inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
     shadowmoonReaverAbsorptionStart;
 
+// Searched by entry around the marking bot, so it finds her without line of sight.
+inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
+
 // A living Sister of Pleasure carrying Shared Bonds from a living Sister of Pain.
 bool IsLinkedSisterOfPleasure(Unit* unit);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
