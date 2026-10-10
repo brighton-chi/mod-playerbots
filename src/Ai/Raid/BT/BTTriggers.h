@@ -492,11 +492,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilPetsScrewUpThePullTrigger : public BlackTempleEncounterTrigger
+class IllidariCouncilPetShouldSwitchTargetTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilPetsScrewUpThePullTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidari council pets screw up the pull") {}
+    IllidariCouncilPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council pet should switch target") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -1519,6 +1519,12 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
             return castInterrupt("kick");
         case CLASS_SHAMAN:
             return castInterrupt("wind shear");
+        case CLASS_WARLOCK:
+        {
+            Pet* pet = bot->GetPet();
+            uint32 const spellLock = GetReadySpellLock(pet, malande);
+            return spellLock && pet->CastSpell(malande, spellLock, false) == SPELL_CAST_OK;
+        }
         case CLASS_WARRIOR:
             return castInterrupt("pummel") || castInterrupt("shield bash");
         default:
@@ -1659,33 +1665,27 @@ bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
     return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), safeDistance);
 }
 
-bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event /*event*/)
+bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios)
+    Guardian* pet = bot->GetGuardianPet();
+    Unit* target = GetCouncilPetTarget(botAI, pet);
+    if (!target || !pet->IsValidAttackTarget(target))
         return false;
 
-    Pet* pet = bot->GetPet();
-    if (pet && pet->IsAlive() && pet->GetVictim() != gathios)
+    pet->ClearUnitState(UNIT_STATE_FOLLOW);
+    pet->AttackStop();
+    pet->SetTarget(target->GetGUID());
+    if (CharmInfo* charmInfo = pet->GetCharmInfo())
     {
-        pet->ClearUnitState(UNIT_STATE_FOLLOW);
-        pet->AttackStop();
-        pet->SetTarget(gathios->GetGUID());
-
-        if (pet->GetCharmInfo())
-        {
-            pet->GetCharmInfo()->SetIsCommandAttack(true);
-            pet->GetCharmInfo()->SetIsAtStay(false);
-            pet->GetCharmInfo()->SetIsFollowing(false);
-            pet->GetCharmInfo()->SetIsCommandFollow(false);
-            pet->GetCharmInfo()->SetIsReturning(false);
-
-            pet->AI()->AttackStart(gathios);
-            return true;
-        }
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
     }
 
-    return false;
+    pet->AI()->AttackStart(target);
+    return true;
 }
 
 // Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death

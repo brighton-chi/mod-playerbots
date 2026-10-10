@@ -1102,6 +1102,52 @@ bool CanInterruptCircleOfHealing(Unit* malande)
         spell->GetCastTime() - spell->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
+// Felhunters stay on Malande for Spell Lock; other pets follow their master's target, or go to
+// Gathios while the master has none.
+Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
+{
+    if (!pet)
+        return nullptr;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios)
+        return nullptr;
+
+    if (pet->GetEntry() == NPC_FELHUNTER)
+    {
+        if (Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande"))
+            return malande;
+    }
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsAlive() ? target : gathios;
+}
+
+// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
+uint32 GetReadySpellLock(Creature* pet, Unit* target)
+{
+    if (!pet || !target || !pet->IsAlive() || pet->GetEntry() != NPC_FELHUNTER)
+        return 0;
+
+    constexpr float spellLockRange = 30.0f;
+    if (!pet->IsWithinCombatRange(target, spellLockRange) || !pet->IsWithinLOSInMap(target))
+        return 0;
+
+    static constexpr std::array spellLockRanks = {
+        Id(BtSpells::SPELL_SPELL_LOCK_2),
+        Id(BtSpells::SPELL_SPELL_LOCK_1),
+    };
+
+    for (uint32 spellLock : spellLockRanks)
+    {
+        if (pet->HasSpell(spellLock))
+            return pet->HasSpellCooldown(spellLock) ? 0 : spellLock;
+    }
+
+    return 0;
+}
+
 // Illidan Stormrage <The Betrayer>
 
 std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;

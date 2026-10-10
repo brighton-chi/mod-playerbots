@@ -169,8 +169,8 @@ public:
         creators["illidari council ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidari_council_ranged_should_spread;
 
-        creators["illidari council pets screw up the pull"] =
-            &RaidBlackTempleTriggerContext::illidari_council_pets_screw_up_the_pull;
+        creators["illidari council pet should switch target"] =
+            &RaidBlackTempleTriggerContext::illidari_council_pet_should_switch_target;
 
         creators["illidari council should assign dps priority"] =
             &RaidBlackTempleTriggerContext::illidari_council_should_assign_dps_priority;
@@ -449,9 +449,9 @@ private:
     {
         return new IllidariCouncilRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* illidari_council_pets_screw_up_the_pull(PlayerbotAI* botAI)
+    static Trigger* illidari_council_pet_should_switch_target(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilPetsScrewUpThePullTrigger(botAI);
+        return new IllidariCouncilPetShouldSwitchTargetTrigger(botAI);
     }
     static Trigger* illidari_council_should_assign_dps_priority(PlayerbotAI* botAI)
     {

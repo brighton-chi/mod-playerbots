@@ -438,11 +438,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidariCouncilCommandPetsToAttackGathiosAction : public AttackAction
+class IllidariCouncilCommandPetTargetAction : public AttackAction
 {
 public:
-    IllidariCouncilCommandPetsToAttackGathiosAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidari council command pets to attack gathios") {}
+    IllidariCouncilCommandPetTargetAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council command pet target") {}
     bool Execute(Event event) override;
 };
 
