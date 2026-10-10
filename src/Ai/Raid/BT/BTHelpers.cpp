@@ -52,6 +52,49 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
+bool IsInRectangle(
+    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth)
+{
+    float const angle = centre.GetAngle(&facing);
+    float const dX = point.GetPositionX() - centre.GetPositionX();
+    float const dY = point.GetPositionY() - centre.GetPositionY();
+    float const depth = dX * std::cos(angle) + dY * std::sin(angle);
+    float const width = -dX * std::sin(angle) + dY * std::cos(angle);
+    return std::fabs(depth) <= halfDepth && std::fabs(width) <= halfWidth;
+}
+
+Position GetBotPointInRectangle(
+    Player* bot, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth)
+{
+    // Keeps points off the edge, so a bot that arrives counts as inside.
+    constexpr float edgeInset = 0.5f;
+
+    // splitmix64 on the GUID: two independent values in [-1, 1].
+    uint64 hash = bot->GetGUID().GetRawValue() + 0x9E3779B97F4A7C15ULL;
+    hash = (hash ^ (hash >> 30)) * 0xBF58476D1CE4E5B9ULL;
+    hash = (hash ^ (hash >> 27)) * 0x94D049BB133111EBULL;
+    hash ^= hash >> 31;
+    float const widthFraction = static_cast<float>(hash & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
+    float const depthFraction = static_cast<float>((hash >> 16) & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
+
+    float const angle = centre.GetAngle(&facing);
+    float const width = widthFraction * std::max(halfWidth - edgeInset, 0.0f);
+    float const depth = depthFraction * std::max(halfDepth - edgeInset, 0.0f);
+    float x = centre.GetPositionX() + depth * std::cos(angle) - width * std::sin(angle);
+    float y = centre.GetPositionY() + depth * std::sin(angle) + width * std::cos(angle);
+    float z = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ(), x, y, z))
+    {
+        return Position(centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ());
+    }
+
+    return Position(x, y, bot->GetPositionZ());
+}
+
 // Trash
 
 std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> shadowmoonReaverAbsorptionStart;
@@ -843,7 +886,8 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 }
 
 // The group hit longest ago soaks next: the lowest mean Bloodboil time left, ties to the first.
-// Just after a cast, that group's debuffs run out before the next one.
+// Just after a cast, that group's debuffs run out before the next one. Debuffs younger than the
+// rotation delay count as none, so the group just hit stays the soakers until then.
 GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 {
     std::vector<std::vector<Player*>> const groups = GetGurtoggRangedRotationGroups(bot);
@@ -857,7 +901,12 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
         int32 totalRemaining = 0;
         for (Player* member : group)
         {
-            if (Aura* bloodboil = member->GetAura(Id(BtSpells::SPELL_BLOODBOIL)))
+            Aura* bloodboil = member->GetAura(Id(BtSpells::SPELL_BLOODBOIL));
+            if (!bloodboil)
+                continue;
+
+            int32 const elapsed = bloodboil->GetMaxDuration() - bloodboil->GetDuration();
+            if (elapsed >= GURTOGG_ROTATION_DELAY_MS)
                 totalRemaining += bloodboil->GetDuration();
         }
 
@@ -887,6 +936,36 @@ Position const& GetGurtoggBloodboilPosition(Player* bot)
     bool const isSoaker =
         std::find(soakers.begin(), soakers.end(), bot->GetGUID()) != soakers.end();
     return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
+}
+
+// The Fel Rage target taunts him onto itself, so it is his victim.
+Unit* GetGurtoggFelRageTarget(Unit* gurtogg)
+{
+    if (!gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
+        return nullptr;
+
+    Unit* victim = gurtogg->GetVictim();
+    return victim && victim->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) ? victim : nullptr;
+}
+
+Position GetGurtoggFelRageMeleePosition(Player* bot, Unit* gurtogg, Unit* felRageTarget)
+{
+    float const axisAngle = gurtogg->GetAngle(felRageTarget);
+    float relativeAngle = Position::NormalizeOrientation(gurtogg->GetAngle(bot) - axisAngle);
+    if (relativeAngle > M_PI)
+        relativeAngle -= 2.0f * M_PI;
+
+    float angle = axisAngle + static_cast<float>(M_PI);
+    if (std::fabs(relativeAngle) < static_cast<float>(M_PI_2))
+    {
+        float const side = relativeAngle >= 0.0f ? 1.0f : -1.0f;
+        angle = axisAngle + side * GURTOGG_FEL_RAGE_MELEE_SIDE_ANGLE;
+    }
+
+    return Position(
+        gurtogg->GetPositionX() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::cos(angle),
+        gurtogg->GetPositionY() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::sin(angle),
+        bot->GetPositionZ());
 }
 
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)

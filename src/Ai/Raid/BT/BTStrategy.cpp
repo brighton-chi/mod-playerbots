@@ -101,6 +101,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gurtogg bloodboil should position for bloodboil",
         { NextAction("gurtogg bloodboil rotate ranged groups", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("gurtogg bloodboil melee should stay behind",
+        { NextAction("gurtogg bloodboil melee move behind", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("gurtogg bloodboil should avoid fel rage target",
+        { NextAction("gurtogg bloodboil avoid fel rage target", ACTION_RAID + 2) }));
+
     triggers.push_back(new TriggerNode("gurtogg bloodboil fel rage on bot",
         { NextAction("gurtogg bloodboil lead boss to tank position", ACTION_RAID + 1) }));
 
@@ -255,6 +261,8 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Gurtogg Bloodboil
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
+    multipliers.push_back(new GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier(botAI));
+    multipliers.push_back(new GurtoggBloodboilFelRageTargetHoldsAggroMultiplier(botAI));
     multipliers.push_back(new GurtoggBloodboilHoldThreatMultiplier(botAI));
 
     // Reliquary of Souls

@@ -1021,12 +1021,68 @@ Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLanceTarget(
 
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
-    Position const& position = GetGurtoggBloodboilPosition(bot);
+    Position const& centre = GetGurtoggBloodboilPosition(bot);
+    if (IsInRectangle(
+            bot->GetPosition(), centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH,
+            GURTOGG_RANGED_HALF_DEPTH))
+    {
+        return false;
+    }
+
+    Position const point = GetBotPointInRectangle(
+        bot, centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH, GURTOGG_RANGED_HALF_DEPTH);
 
     bot->CastStop();
-    return MoveInside(
-        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
-        GURTOGG_POSITION_TOLERANCE, MovementPriority::MOVEMENT_FORCED);
+    return MoveTo(
+        BT_MAP_ID, point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    if (!felRageTarget)
+        return false;
+
+    Position const position = GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget);
+    return MoveTo(
+        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+}
+
+// Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
+// of a walking target isn't pushed along in front of it.
+bool GurtoggBloodboilAvoidFelRageTargetAction::Execute(Event /*event*/)
+{
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    if (!gurtogg)
+        return false;
+
+    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    if (!felRageTarget)
+        return false;
+
+    float const axisAngle = gurtogg->GetAngle(felRageTarget);
+    float const dX = bot->GetPositionX() - felRageTarget->GetPositionX();
+    float const dY = bot->GetPositionY() - felRageTarget->GetPositionY();
+    float const along = dX * std::cos(axisAngle) + dY * std::sin(axisAngle);
+    float const across = -dX * std::sin(axisAngle) + dY * std::cos(axisAngle);
+
+    float const distance = GURTOGG_FEL_RAGE_AVOID_DISTANCE + GURTOGG_FEL_RAGE_AVOID_MARGIN;
+    float const side = across >= 0.0f ? 1.0f : -1.0f;
+    float const targetAcross =
+        side * std::sqrt(std::max(distance * distance - along * along, 0.0f));
+    float const step = targetAcross - across;
+
+    bot->CastStop();
+    return MoveTo(
+        BT_MAP_ID, bot->GetPositionX() - step * std::sin(axisAngle),
+        bot->GetPositionY() + step * std::cos(axisAngle), bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED);
 }
 
 // Reliquary of Souls

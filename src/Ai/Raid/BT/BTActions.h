@@ -270,6 +270,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class GurtoggBloodboilMeleeMoveBehindAction : public MovementAction
+{
+public:
+    GurtoggBloodboilMeleeMoveBehindAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gurtogg bloodboil melee move behind") {}
+    bool Execute(Event event) override;
+};
+
+class GurtoggBloodboilAvoidFelRageTargetAction : public MovementAction
+{
+public:
+    GurtoggBloodboilAvoidFelRageTargetAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gurtogg bloodboil avoid fel rage target") {}
+    bool Execute(Event event) override;
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsMisdirectToMainTankAction : public AttackAction
