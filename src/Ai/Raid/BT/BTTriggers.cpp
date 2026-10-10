@@ -16,14 +16,12 @@
 using namespace BtHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool BlackTempleNoEncounterInProgressTrigger::IsActive()
 {
     return !IsEncounterInProgress(bot, BT_MAP_ID);
 }
-
-// Shared Bosses
 
 bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
@@ -276,7 +274,8 @@ bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
 bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
     Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
-    return suffering && IsOutOfSufferingPosition(bot, suffering);
+    return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+        IsOutOfSufferingPosition(bot, suffering);
 }
 
 bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
@@ -288,7 +287,8 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 }
 
 bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActiveInEncounter()

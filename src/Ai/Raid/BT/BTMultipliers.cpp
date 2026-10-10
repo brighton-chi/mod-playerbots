@@ -39,7 +39,7 @@ bool IsRepositionAction(Player* bot, Action* action)
 
 }
 
-// General
+// Shared
 
 // Held for each boss's first 5%, and also through Supremus's kite phase, between Reliquary
 // essences, and on Illidan from 95% to 62% (Bloodlust all the way until 62%).
@@ -98,6 +98,21 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
     }
 
     return 1.0f;
+}
+
+float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_ROGUE)
+        return 1.0f;
+
+    if (!dynamic_cast<CastKillingSpreeAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "essence of suffering") ||
+        AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
 // Trash
@@ -169,20 +184,6 @@ float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action*
         return 1.0f;
 
     return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
-}
-
-float SupremusDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_ROGUE)
-        return 1.0f;
-
-    if (!dynamic_cast<CastKillingSpreeAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
 float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* action)
@@ -349,6 +350,16 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* ac
     {
         return 1.0f;
     }
+
+    return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
+}
+
+// Tank face, set behind and disperse move tanks and melee around Suffering, which can carry
+// them nearer to her than the tanks.
+float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) || PlayerbotAI::IsRanged(bot))
+        return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
 }
