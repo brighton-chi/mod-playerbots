@@ -533,12 +533,16 @@ float IllidariCouncilControlNonTankMovementMultiplier::GetValueInEncounter(Actio
     if (!isMovementAction && !IsRepositionAction(bot, action))
         return 1.0f;
 
-    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
-    {
-        if (dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action))
-            return 1.0f;
+    if (dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action))
+        return 1.0f;
 
-        return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
+    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+        return 1.0f;
+
+    if (PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
+        IsZerevorOnMageTank(botAI, AI_VALUE2(Unit*, "find target", "high nethermancer zerevor")))
+    {
+        return 0.0f;
     }
 
     if (dynamic_cast<SetBehindTargetAction*>(action))
@@ -552,7 +556,7 @@ float IllidariCouncilControlNonTankMovementMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+    return 0.0f;
 }
 
 float IllidariCouncilDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)

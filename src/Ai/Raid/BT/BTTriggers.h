@@ -472,11 +472,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilMageTankNeedsDedicatedHealerTrigger : public BlackTempleEncounterTrigger
+class IllidariCouncilMageTankHealerShouldRepositionTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilMageTankNeedsDedicatedHealerTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidari council mage tank needs dedicated healer") {}
+    IllidariCouncilMageTankHealerShouldRepositionTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council mage tank healer should reposition") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -412,13 +412,16 @@ public:
     IllidariCouncilMageTankPositionZerevorAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidari council mage tank position zerevor") {}
     bool Execute(Event event) override;
+
+private:
+    uint8 _tankStep = 0;
 };
 
-class IllidariCouncilPositionMageTankHealerAction : public AttackAction
+class IllidariCouncilPositionMageTankHealerAction : public MovementAction
 {
 public:
     IllidariCouncilPositionMageTankHealerAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidari council position mage tank healer") {}
+        : MovementAction(botAI, "illidari council position mage tank healer") {}
     bool Execute(Event event) override;
 };
 

@@ -34,7 +34,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= flameTankWaypointIndex.erase(guid) > 0;
     reset |= illidanShadowTrapGuid.erase(guid) > 0;
     reset |= illidanShadowTrapDestination.erase(guid) > 0;
-    reset |= zerevorHealStep.erase(guid) > 0;
 
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return reset;
@@ -1605,11 +1604,20 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
         return false;
 
     constexpr float arrivalDist = 2.0f;
+    if (bot->GetExactDist2d(ZEREVOR_TANK_POSITIONS[_tankStep]) <= arrivalDist &&
+        HasDangerousCouncilAura(bot))
+    {
+        _tankStep = (_tankStep + 1) % ZEREVOR_TANK_POSITIONS.size();
+    }
+
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, ZEREVOR_TANK_POSITION, arrivalDist, zerevor, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, ZEREVOR_TANK_POSITIONS[_tankStep], arrivalDist, zerevor, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -1618,39 +1626,31 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
 bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Player* mageTank = GetZerevorMageTank(botAI);
-    if (!mageTank)
-        return false;
-
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    if (!zerevor || zerevor->GetVictim() != mageTank)
+    if (!mageTank || !zerevor)
         return false;
 
-    ObjectGuid const guid = bot->GetGUID();
-    uint8 index = zerevorHealStep.count(guid) ? zerevorHealStep[guid] : 0;
-
-    constexpr float arrivalDist = 1.0f;
-    MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
-    if (bot->GetExactDist2d(ZEREVOR_HEALER_POSITIONS[index]) <= arrivalDist &&
-        HasDangerousCouncilAura(bot))
+    Position destination;
+    if (FindMageTankHealerPosition(bot, mageTank, zerevor, destination))
     {
-        index = (index + 1) % ZEREVOR_HEALER_POSITIONS.size();
-        zerevorHealStep[guid] = index;
-        priority = MovementPriority::MOVEMENT_FORCED;
+        return MoveTo(
+            BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+            destination.GetPositionZ(), false, false, false, false, priority, true, false);
     }
 
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, ZEREVOR_HEALER_POSITIONS[index], arrivalDist, nullptr, moveX, moveY, backwards))
-    {
+    float stepX;
+    float stepY;
+    if (!GetPathStepTowardUnit(bot, mageTank, MAGE_TANK_HEALER_MIN_DISTANCE, stepX, stepY))
         return false;
-    }
 
     return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, backwards);
+        BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        false);
 }
 
 bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
