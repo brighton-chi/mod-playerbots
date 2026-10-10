@@ -1460,17 +1460,12 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
         return false;
 
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
-    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    /* if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
         bot->NearTeleportTo(
             gathios->GetPositionX(), gathios->GetPositionY(),
             gathios->GetPositionZ(), bot->GetOrientation());
-    }
-
-    if (MarkTargetWithSquare(bot, gathios))
-        return true;
-
-    SetRtiTarget(botAI, "square");
+    } */
 
     if (AI_VALUE(Unit*, "current target") != gathios)
         return Attack(gathios);
@@ -1510,17 +1505,12 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
         return false;
 
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
-    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    /* if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
         bot->NearTeleportTo(
             malande->GetPositionX(), malande->GetPositionY(),
             malande->GetPositionZ(), bot->GetOrientation());
-    }
-
-    if (MarkTargetWithStar(bot, malande))
-        return true;
-
-    SetRtiTarget(botAI, "star");
+    } */
 
     if (AI_VALUE(Unit*, "current target") != malande)
         return Attack(malande);
@@ -1535,17 +1525,12 @@ bool IllidariCouncilSecondAssistTankPositionDarkshadowAction::Execute(Event /*ev
         return false;
 
     // Failsafe for if bot falls through the floor, which tends to happen upon the pull
-    if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
+    /* if (bot->GetPositionZ() < COUNCIL_FLOOR_Z_THRESHOLD)
     {
         bot->NearTeleportTo(
             darkshadow->GetPositionX(), darkshadow->GetPositionY(),
             darkshadow->GetPositionZ(), bot->GetOrientation());
-    }
-
-    if (MarkTargetWithCircle(bot, darkshadow))
-        return true;
-
-    SetRtiTarget(botAI, "circle");
+    } */
 
     if (AI_VALUE(Unit*, "current target") != darkshadow)
         return Attack(darkshadow);
@@ -1583,11 +1568,6 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     {
         return botAI->CastSpell("spellsteal", zerevor);
     }
-
-    if (MarkTargetWithTriangle(bot, zerevor))
-        return true;
-
-    SetRtiTarget(botAI, "triangle");
 
     if (AI_VALUE(Unit*, "current target") != zerevor)
         return Attack(zerevor);
@@ -1647,10 +1627,8 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 4.0f;
-    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
-        return FleePosition(nearestPlayer->GetPosition(), safeDistance);
-
-    return false;
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), safeDistance);
 }
 
 bool IllidariCouncilCommandPetsToAttackGathiosAction::Execute(Event /*event*/)
@@ -1706,23 +1684,17 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 
     if (shouldAttackMalande)
     {
-        SetRtiTarget(botAI, "star");
-
         if (AI_VALUE(Unit*, "current target") != malande)
             return Attack(malande);
     }
     else if (Unit* darkshadow = AI_VALUE2(Unit*, "find target", "veras darkshadow");
         darkshadow && !IsDarkshadowVanished(darkshadow))
     {
-        SetRtiTarget(botAI, "circle");
-
         if (AI_VALUE(Unit*, "current target") != darkshadow)
             return Attack(darkshadow);
     }
     else if (Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
     {
-        SetRtiTarget(botAI, "square");
-
         if (AI_VALUE(Unit*, "current target") != gathios)
             return Attack(gathios);
     }

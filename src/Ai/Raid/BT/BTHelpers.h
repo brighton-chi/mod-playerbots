@@ -444,7 +444,6 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 655.571f, 261.377f, 271.687f },
     Position{ 673.789f, 274.139f, 271.689f },
 };
-inline Position const MALANDE_TANK_POSITION = { 690.590f, 299.790f, 277.443f };
 inline Position const ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
 inline std::array const ZEREVOR_HEALER_POSITIONS = {
     Position{ 661.385f, 351.219f, 271.690f },

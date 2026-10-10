@@ -304,21 +304,21 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilControlMisdirectionMultiplier : public BlackTempleEncounterMultiplier
+class IllidariCouncilDisableAutoTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilControlMisdirectionMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council control misdirection") {}
+    IllidariCouncilDisableAutoTargetingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidari council disable auto targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilDisableArcaneShotOnZerevorMultiplier : public BlackTempleEncounterMultiplier
+class IllidariCouncilControlHunterActionsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilDisableArcaneShotOnZerevorMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council disable arcane shot on zerevor") {}
+    IllidariCouncilControlHunterActionsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidari council control hunter actions") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

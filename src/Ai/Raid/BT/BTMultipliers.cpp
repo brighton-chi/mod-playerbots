@@ -481,7 +481,7 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
-    if (!dynamic_cast<AvoidAoeAction*>(action) && dynamic_cast<CastIceBlockAction*>(action))
+    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action))
         return 1.0f;
 
     if (!IsZerevorMageTank(botAI))
@@ -522,21 +522,18 @@ float IllidariCouncilControlNonTankMovementMultiplier::GetValueInEncounter(Actio
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
 }
 
-float IllidariCouncilControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
+float IllidariCouncilDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (bot->getClass() != CLASS_HUNTER)
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
 }
 
-float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValueInEncounter(Action* action)
+float IllidariCouncilControlHunterActionsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -544,15 +541,13 @@ float IllidariCouncilDisableArcaneShotOnZerevorMultiplier::GetValueInEncounter(A
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    if (!dynamic_cast<CastArcaneShotAction*>(action))
+    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
+        !dynamic_cast<CastTranquilizingShotAction*>(action))
+    {
         return 1.0f;
+    }
 
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    if (!zerevor)
-        return 1.0f;
-
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return target && target->GetGUID() == zerevor->GetGUID() ? 0.0f : 1.0f;
+    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
