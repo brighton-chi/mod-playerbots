@@ -1102,6 +1102,29 @@ bool CanInterruptCircleOfHealing(Unit* malande)
         spell->GetCastTime() - spell->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
+// Any council member but the bot's own target.
+bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
+{
+    static constexpr std::array memberNames = {
+        "gathios the shatterer",
+        "high nethermancer zerevor",
+        "lady malande",
+        "veras darkshadow",
+    };
+
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* ownTarget = AI_VALUE(Unit*, "current target");
+    for (char const* name : memberNames)
+    {
+        Unit* member = AI_VALUE2(Unit*, "find target", name);
+        if (member && member != ownTarget && bot->GetDistance(member) < range)
+            return true;
+    }
+
+    return false;
+}
+
 // Felhunters stay on Malande for Spell Lock; other pets follow their master's target, or go to
 // Gathios while the master has none.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
