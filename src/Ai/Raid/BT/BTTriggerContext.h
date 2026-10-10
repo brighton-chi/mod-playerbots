@@ -163,8 +163,8 @@ public:
         creators["illidari council zerevor should be tanked by mage"] =
             &RaidBlackTempleTriggerContext::illidari_council_zerevor_should_be_tanked_by_mage;
 
-        creators["illidari council mage tank needs dedicated healer"] =
-            &RaidBlackTempleTriggerContext::illidari_council_mage_tank_needs_dedicated_healer;
+        creators["illidari council mage tank healer should reposition"] =
+            &RaidBlackTempleTriggerContext::illidari_council_mage_tank_healer_should_reposition;
 
         creators["illidari council ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidari_council_ranged_should_spread;
@@ -441,9 +441,9 @@ private:
     {
         return new IllidariCouncilZerevorShouldBeTankedByMageTrigger(botAI);
     }
-    static Trigger* illidari_council_mage_tank_needs_dedicated_healer(PlayerbotAI* botAI)
+    static Trigger* illidari_council_mage_tank_healer_should_reposition(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilMageTankNeedsDedicatedHealerTrigger(botAI);
+        return new IllidariCouncilMageTankHealerShouldRepositionTrigger(botAI);
     }
     static Trigger* illidari_council_ranged_should_spread(PlayerbotAI* botAI)
     {

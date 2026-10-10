@@ -1028,7 +1028,6 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 // Illidari Council
 
 std::unordered_map<uint32, uint32> councilDpsWaitTimer;
-std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
 // (1) First priority is an assistant Mage (real player or bot)
 // (2) If no assistant Mage, then look for any Mage bot
@@ -1103,9 +1102,9 @@ bool CanInterruptCircleOfHealing(Unit* malande)
 }
 
 // Zerevor has at most one Blizzard and one Flamestrike down at a time.
-bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor)
+bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin)
 {
-    if (!malande || !zerevor)
+    if (!zerevor)
         return false;
 
     static constexpr std::array patchSpells = {
@@ -1116,8 +1115,78 @@ bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor)
     for (uint32 spellId : patchSpells)
     {
         DynamicObject* patch = zerevor->GetDynObject(spellId);
-        if (patch && malande->GetExactDist2d(patch) < patch->GetRadius())
+        if (patch && patch->GetExactDist2d(point) < patch->GetRadius() + margin)
             return true;
+    }
+
+    return false;
+}
+
+bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor)
+{
+    return malande && IsInZerevorPatch(zerevor, *malande);
+}
+
+bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)
+{
+    Player* mageTank = GetZerevorMageTank(botAI);
+    return zerevor && mageTank && zerevor->GetVictim() == mageTank;
+}
+
+// Within heal range of the mage tank, clear of a patch on it, of Arcane Explosion, and of any
+// patch down.
+bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor)
+{
+    float const toMageTank = mageTank->GetExactDist2d(point);
+    return toMageTank <= MAGE_TANK_HEALER_MAX_DISTANCE &&
+        toMageTank >= MAGE_TANK_HEALER_MIN_DISTANCE &&
+        zerevor->GetExactDist2d(point) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE &&
+        !IsInZerevorPatch(zerevor, point, ZEREVOR_PATCH_MARGIN);
+}
+
+// The nearest safe point on two rings round the mage tank that the bot can walk to in a straight
+// line and that has line of sight to the mage tank.
+bool FindMageTankHealerPosition(
+    Player* bot, Player* mageTank, Unit* zerevor, Position& destination)
+{
+    static constexpr std::array ringRadii = { 16.0f, 24.0f };
+    constexpr uint8 pointsPerRing = 16;
+
+    std::vector<Position> candidates;
+    for (float radius : ringRadii)
+    {
+        for (uint8 i = 0; i < pointsPerRing; ++i)
+        {
+            float const angle = 2.0f * static_cast<float>(M_PI) * i / pointsPerRing;
+            Position const point(
+                mageTank->GetPositionX() + radius * std::cos(angle),
+                mageTank->GetPositionY() + radius * std::sin(angle), bot->GetPositionZ());
+            if (IsMageTankHealerPositionSafe(point, mageTank, zerevor))
+                candidates.push_back(point);
+        }
+    }
+
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2d(a) < bot->GetExactDist2d(b);
+        });
+
+    for (Position const& candidate : candidates)
+    {
+        float x = candidate.GetPositionX();
+        float y = candidate.GetPositionY();
+        float z = candidate.GetPositionZ();
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z) ||
+            !mageTank->IsWithinLOS(x, y, z))
+        {
+            continue;
+        }
+
+        destination = Position(x, y, bot->GetPositionZ());
+        return true;
     }
 
     return false;

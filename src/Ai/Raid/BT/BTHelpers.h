@@ -458,19 +458,26 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 655.571f, 261.377f, 271.687f },
     Position{ 673.789f, 274.139f, 271.689f },
 };
-inline Position const ZEREVOR_TANK_POSITION = { 686.219f, 377.644f, 271.689f };
-inline std::array const ZEREVOR_HEALER_POSITIONS = {
-    Position{ 661.385f, 351.219f, 271.690f },
-    Position{ 667.003f, 363.768f, 271.690f },
+// The second spot is a placeholder, to be measured in game.
+inline std::array const ZEREVOR_TANK_POSITIONS = {
+    Position{ 686.219f, 377.644f, 271.689f },
+    Position{ 672.219f, 377.644f, 271.689f },
 };
 
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
-extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float COUNCIL_ZEREVOR_SEARCH_RADIUS = 100.0f;
+// Bots heal out to HealDistance, 38.5 yd by default.
+inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
+// A patch on the mage tank reaches 11.9 yd from where it stood.
+inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
+// Zerevor casts Arcane Explosion when anyone is within 10 yd plus both combat reaches (14.65 yd).
+inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
+// A patch reaches a player whose centre is within its radius plus both object sizes (1.9 yd).
+inline constexpr float ZEREVOR_PATCH_MARGIN = 2.5f;
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
@@ -481,7 +488,12 @@ bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
+bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f);
 bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor);
+bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor);
+bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
+bool FindMageTankHealerPosition(
+    Player* bot, Player* mageTank, Unit* zerevor, Position& destination);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet);
 uint32 GetReadySpellLock(Creature* pet, Unit* target);

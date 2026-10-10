@@ -168,7 +168,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council zerevor should be tanked by mage",
         { NextAction("illidari council mage tank position zerevor", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("illidari council mage tank needs dedicated healer",
+    triggers.push_back(new TriggerNode("illidari council mage tank healer should reposition",
         { NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council ranged should spread",

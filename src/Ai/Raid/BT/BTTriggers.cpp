@@ -497,10 +497,18 @@ bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
     return IsZerevorMageTank(botAI) && AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
 }
 
-bool IllidariCouncilMageTankNeedsDedicatedHealerTrigger::IsActiveInEncounter()
+bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
-        AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (!zerevor)
+        return false;
+
+    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) || !IsZerevorOnMageTank(botAI, zerevor))
+        return false;
+
+    Player* mageTank = GetZerevorMageTank(botAI);
+    return !IsMageTankHealerPositionSafe(bot->GetPosition(), mageTank, zerevor) ||
+        !bot->IsWithinLOSInMap(mageTank);
 }
 
 bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
