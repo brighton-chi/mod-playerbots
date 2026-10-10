@@ -34,7 +34,6 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= flameTankWaypointIndex.erase(guid) > 0;
     reset |= illidanShadowTrapGuid.erase(guid) > 0;
     reset |= illidanShadowTrapDestination.erase(guid) > 0;
-    reset |= gathiosTankStep.erase(guid) > 0;
     reset |= zerevorHealStep.erase(guid) > 0;
 
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -1470,25 +1469,21 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != gathios)
         return Attack(gathios);
 
-    ObjectGuid const guid = bot->GetGUID();
-    uint8 index = gathiosTankStep.count(guid) ? gathiosTankStep[guid] : 0;
-
     if (gathios->GetVictim() != bot || !bot->IsWithinMeleeRange(gathios))
         return false;
 
     constexpr float arrivalDist = 2.0f;
-    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[index]) <= arrivalDist &&
+    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[_tankStep]) <= arrivalDist &&
         HasDangerousCouncilAura(bot))
     {
-        index = (index + 1) % GATHIOS_TANK_POSITIONS.size();
-        gathiosTankStep[guid] = index;
+        _tankStep = (_tankStep + 1) % GATHIOS_TANK_POSITIONS.size();
     }
 
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GATHIOS_TANK_POSITIONS[index], arrivalDist, gathios, moveX, moveY, backwards))
+            bot, GATHIOS_TANK_POSITIONS[_tankStep], arrivalDist, gathios, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1660,9 +1655,9 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 
 bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 4.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), safeDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, COUNCIL_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), COUNCIL_RANGED_SPREAD_DISTANCE);
 }
 
 bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)

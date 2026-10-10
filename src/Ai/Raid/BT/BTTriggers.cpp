@@ -507,7 +507,8 @@ bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
         return false;
 
-    return !HasDangerousCouncilAura(bot);
+    return !HasDangerousCouncilAura(bot) &&
+        GetNearestPlayerInRadius(bot, COUNCIL_RANGED_SPREAD_DISTANCE);
 }
 
 bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()

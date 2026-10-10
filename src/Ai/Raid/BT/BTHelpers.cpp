@@ -1027,7 +1027,6 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 // Illidari Council
 
 std::unordered_map<uint32, uint32> councilDpsWaitTimer;
-std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 
 // (1) First priority is an assistant Mage (real player or bot)

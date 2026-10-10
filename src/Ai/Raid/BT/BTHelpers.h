@@ -464,11 +464,11 @@ inline std::array const ZEREVOR_HEALER_POSITIONS = {
 };
 
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
-extern std::unordered_map<ObjectGuid, uint8> gathiosTankStep;
 extern std::unordered_map<ObjectGuid, uint8> zerevorHealStep;
 inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
+inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
