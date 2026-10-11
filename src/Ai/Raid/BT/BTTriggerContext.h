@@ -200,8 +200,11 @@ public:
         creators["illidan stormrage grate is safe from flames"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
 
-        creators["illidan stormrage dark barrage on immunity class"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_dark_barrage_on_immunity_class;
+        creators["illidan stormrage immunity can clear debuff"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_can_clear_debuff;
+
+        creators["illidan stormrage immunity no longer needed"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_no_longer_needed;
 
         creators["illidan stormrage prepares to land"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_prepares_to_land;
@@ -218,11 +221,11 @@ public:
         creators["illidan stormrage should assign dps priority"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_dps_priority;
 
-        creators["illidan stormrage maiev placed shadow trap"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_shadow_trap;
+        creators["illidan stormrage maiev placed cage trap"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_cage_trap;
 
-        creators["illidan stormrage should manage dps timer and rti"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_dps_timer_and_rti;
+        creators["illidan stormrage should manage dps timers"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_dps_timers;
 
         creators["illidan stormrage should clear hazards between phases"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_clear_hazards_between_phases;
@@ -491,9 +494,13 @@ private:
     {
         return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_dark_barrage_on_immunity_class(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_immunity_can_clear_debuff(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageDarkBarrageOnImmunityClassTrigger(botAI);
+        return new IllidanStormrageImmunityCanClearDebuffTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_immunity_no_longer_needed(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageImmunityNoLongerNeededTrigger(botAI);
     }
     static Trigger* illidan_stormrage_prepares_to_land(PlayerbotAI* botAI)
     {
@@ -515,13 +522,13 @@ private:
     {
         return new IllidanStormrageShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_maiev_placed_shadow_trap(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_maiev_placed_cage_trap(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMaievPlacedShadowTrapTrigger(botAI);
+        return new IllidanStormrageMaievPlacedCageTrapTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_should_manage_dps_timer_and_rti(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_manage_dps_timers(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageShouldManageDpsTimerAndRtiTrigger(botAI);
+        return new IllidanStormrageShouldManageDpsTimersTrigger(botAI);
     }
     static Trigger* illidan_stormrage_should_clear_hazards_between_phases(PlayerbotAI* botAI)
     {

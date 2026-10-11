@@ -199,8 +199,11 @@ public:
         creators["illidan stormrage position above grate"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_above_grate;
 
-        creators["illidan stormrage remove dark barrage"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_remove_dark_barrage;
+        creators["illidan stormrage clear debuff with immunity"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_clear_debuff_with_immunity;
+
+        creators["illidan stormrage cancel immunity"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_cancel_immunity;
 
         creators["illidan stormrage move away from landing point"] =
             &RaidBlackTempleActionContext::illidan_stormrage_move_away_from_landing_point;
@@ -217,11 +220,11 @@ public:
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
 
-        creators["illidan stormrage use shadow trap"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_use_shadow_trap;
+        creators["illidan stormrage use cage trap"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_use_cage_trap;
 
-        creators["illidan stormrage manage dps timer and rti"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timer_and_rti;
+        creators["illidan stormrage manage dps timers"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timers;
 
         creators["illidan stormrage destroy hazards"] =
             &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards;
@@ -500,9 +503,13 @@ private:
     {
         return new IllidanStormragePositionAboveGrateAction(botAI);
     }
-    static Action* illidan_stormrage_remove_dark_barrage(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_clear_debuff_with_immunity(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageRemoveDarkBarrageAction(botAI);
+        return new IllidanStormrageClearDebuffWithImmunityAction(botAI);
+    }
+    static Action* illidan_stormrage_cancel_immunity(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageCancelImmunityAction(botAI);
     }
     static Action* illidan_stormrage_move_away_from_landing_point(PlayerbotAI* botAI)
     {
@@ -524,13 +531,13 @@ private:
     {
         return new IllidanStormrageDpsPrioritizeAddsAction(botAI);
     }
-    static Action* illidan_stormrage_use_shadow_trap(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_use_cage_trap(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageUseShadowTrapAction(botAI);
+        return new IllidanStormrageUseCageTrapAction(botAI);
     }
-    static Action* illidan_stormrage_manage_dps_timer_and_rti(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_manage_dps_timers(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageManageDpsTimerAndRtiAction(botAI);
+        return new IllidanStormrageManageDpsTimersAction(botAI);
     }
     static Action* illidan_stormrage_destroy_hazards(PlayerbotAI* botAI)
     {

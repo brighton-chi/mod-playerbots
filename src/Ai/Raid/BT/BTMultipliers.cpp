@@ -612,7 +612,7 @@ float IllidanStormrageControlTankActionsMultiplier::GetValueInEncounter(Action* 
     // if (dynamic_cast<TankFaceAction*>(action))
     //    return 0.0f;
 
-    if (GetIllidanPhase(illidan) != 2)
+    if (GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return 1.0f;
 
     if (PlayerbotAI::IsMainTank(bot))
@@ -657,22 +657,31 @@ float IllidanStormrageDisableDefaultTargetingMultiplier::GetValueInEncounter(Act
     if (!illidan || IsIllidanDeathScene(illidan))
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
-        return 0.0f;
-
-    int const phase = GetIllidanPhase(illidan);
-
-    if (phase == 4 && dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
-
-    if (PlayerbotAI::IsRangedDps(bot))
+    // The opt-in threat strategy reads an add no tank has touched as 100% threat.
+    if (action->getThreatType() != Action::ActionThreatType::None)
     {
-        if (phase != 2)
+        Unit* target = AI_VALUE(Unit*, "current target");
+        uint32 const entry = target ? target->GetEntry() : 0;
+        if (entry == Id(BtNpcs::NPC_SHADOW_DEMON) || entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
             context->GetValue<bool>("neglect threat")->Set(true);
-
-        if (dynamic_cast<DpsAssistAction*>(action))
-            return 0.0f;
     }
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+
+    // Assist tanks have no assigned target outside Flying and Demon Form, so they keep tank
+    // assist there.
+    if (dynamic_cast<TankAssistAction*>(action))
+    {
+        bool const hasAssignedTarget = phase == IllidanPhase::Flying ||
+            phase == IllidanPhase::Demon || PlayerbotAI::IsMainTank(bot);
+        return hasAssignedTarget ? 0.0f : 1.0f;
+    }
+
+    if (phase == IllidanPhase::Demon && dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
+
+    if (PlayerbotAI::IsRangedDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
@@ -713,9 +722,9 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValueInEncounter(Acti
         return 0.0f;
     }
 
-    int const phase = GetIllidanPhase(illidan);
+    IllidanPhase const phase = GetIllidanPhase(illidan);
 
-    if (phase == 2 &&
+    if (phase == IllidanPhase::Flying &&
         (dynamic_cast<SetBehindTargetAction*>(action) ||
          dynamic_cast<CastKillingSpreeAction*>(action) ||
          dynamic_cast<ReachTargetAction*>(action) ||
@@ -725,8 +734,11 @@ float IllidanStormrageControlNonTankMovementMultiplier::GetValueInEncounter(Acti
         return 0.0f;
     }
 
-    if (phase == 4 && PlayerbotAI::IsHeal(bot) && dynamic_cast<ReachTargetAction*>(action))
+    if (phase == IllidanPhase::Demon && PlayerbotAI::IsHeal(bot) &&
+        dynamic_cast<ReachTargetAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -748,7 +760,8 @@ float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* a
     }
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && !IsIllidanDeathScene(illidan) && GetIllidanPhase(illidan) != 2 ? 0.0f : 1.0f;
+    return illidan && !IsIllidanDeathScene(illidan) &&
+        GetIllidanPhase(illidan) != IllidanPhase::Flying ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
@@ -769,25 +782,26 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     uint32 const now = getMSTime();
     uint32 const instanceId = illidan->GetMap()->GetInstanceId();
 
-    int const phase = GetIllidanPhase(illidan);
+    IllidanPhase const phase = GetIllidanPhase(illidan);
 
-    if ((phase == 1 || phase == 3 || phase == 5) &&
+    if ((phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+         phase == IllidanPhase::Maiev) &&
         (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot)))
     {
         constexpr uint32 humanoidPhaseDpsWaitMs = 3 * IN_MILLISECONDS;
-        auto it = illidanBossDpsWaitTimer.find(instanceId);
-        if (it == illidanBossDpsWaitTimer.end() ||
+        auto it = illidanPhaseStartTime.find(instanceId);
+        if (it == illidanPhaseStartTime.end() ||
             getMSTimeDiff(it->second, now) < humanoidPhaseDpsWaitMs)
         {
             return 0.0f;
         }
     }
 
-    if (phase == 4 && GetIllidanWarlockTank(botAI) != bot)
+    if (phase == IllidanPhase::Demon && GetIllidanWarlockTank(botAI) != bot)
     {
         constexpr uint32 demonPhaseDpsWaitMs = 8 * IN_MILLISECONDS;
-        auto it = illidanBossDpsWaitTimer.find(instanceId);
-        if (it == illidanBossDpsWaitTimer.end() ||
+        auto it = illidanPhaseStartTime.find(instanceId);
+        if (it == illidanPhaseStartTime.end() ||
             getMSTimeDiff(it->second, now) < demonPhaseDpsWaitMs)
         {
             return 0.0f;
@@ -799,8 +813,8 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         !PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
         constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
-        auto it = illidanFlameDpsWaitTimer.find(instanceId);
-        if (it == illidanFlameDpsWaitTimer.end() ||
+        auto it = illidanFlamePhaseStartTime.find(instanceId);
+        if (it == illidanFlamePhaseStartTime.end() ||
             getMSTimeDiff(it->second, now) < flamePhaseDpsWaitMs)
         {
             return 0.0f;

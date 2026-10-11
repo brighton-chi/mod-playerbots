@@ -597,11 +597,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageDarkBarrageOnImmunityClassTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageImmunityCanClearDebuffTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageDarkBarrageOnImmunityClassTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage dark barrage on immunity class") {}
+    IllidanStormrageImmunityCanClearDebuffTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage immunity can clear debuff") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class IllidanStormrageImmunityNoLongerNeededTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageImmunityNoLongerNeededTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage immunity no longer needed") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -657,21 +667,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageMaievPlacedShadowTrapTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageMaievPlacedCageTrapTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageMaievPlacedShadowTrapTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage maiev placed shadow trap") {}
+    IllidanStormrageMaievPlacedCageTrapTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage maiev placed cage trap") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageShouldManageDpsTimerAndRtiTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldManageDpsTimersTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageShouldManageDpsTimerAndRtiTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should manage dps timer and rti") {}
+    IllidanStormrageShouldManageDpsTimersTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should manage dps timers") {}
 
 protected:
     bool IsActiveInEncounter() override;
