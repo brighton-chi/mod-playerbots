@@ -482,11 +482,14 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToShadowTrap(Unit* illidan, GameObject* trap);
+    bool MoveToCageTrap(Unit* illidan, GameObject* trap);
     Position FindSafestNearbyPosition(
         std::vector<Unit*> const& flameCrashes, float maxRadius, float hazardRadius);
     bool IsPathSafeFromFlameCrashes(Position const& start,
         Position const& end, std::vector<Unit*> const& flameCrashes, float hazardRadius);
+
+    ObjectGuid _cageTrapGuid;
+    Position _cageTrapDestination;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
@@ -524,6 +527,8 @@ public:
 private:
     bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
+
+    uint8 _tankStep = 0;
 };
 
 class IllidanStormrageControlPetAggressionAction : public Action
@@ -532,6 +537,10 @@ public:
     IllidanStormrageControlPetAggressionAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage control pet aggression") {}
     bool Execute(Event event) override;
+
+private:
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
 };
 
 class IllidanStormragePositionAboveGrateAction : public MovementAction
@@ -542,11 +551,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageRemoveDarkBarrageAction : public Action
+class IllidanStormrageClearDebuffWithImmunityAction : public Action
 {
 public:
-    IllidanStormrageRemoveDarkBarrageAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage remove dark barrage") {}
+    IllidanStormrageClearDebuffWithImmunityAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage clear debuff with immunity") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageCancelImmunityAction : public Action
+{
+public:
+    IllidanStormrageCancelImmunityAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage cancel immunity") {}
     bool Execute(Event event) override;
 };
 
@@ -594,19 +611,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageUseShadowTrapAction : public MovementAction
+class IllidanStormrageUseCageTrapAction : public MovementAction
 {
 public:
-    IllidanStormrageUseShadowTrapAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage use shadow trap") {}
+    IllidanStormrageUseCageTrapAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage use cage trap") {}
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageManageDpsTimerAndRtiAction : public Action
+class IllidanStormrageManageDpsTimersAction : public Action
 {
 public:
-    IllidanStormrageManageDpsTimerAndRtiAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage manage dps timer and rti") {}
+    IllidanStormrageManageDpsTimersAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage manage dps timers") {}
     bool Execute(Event event) override;
 };
 

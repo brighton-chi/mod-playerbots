@@ -95,7 +95,7 @@ enum class BtSpells : uint32
     SPELL_DEMON_TRANSFORM_3         = 40510,
     SPELL_DEMON_FORM                = 40506,
     SPELL_DARK_BARRAGE              = 40585,
-    SPELL_SHADOW_PRISON             = 40647,
+    SPELL_AGONIZING_FLAMES          = 40932,
     SPELL_CAGED                     = 40695,
     SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
     SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
@@ -170,7 +170,7 @@ enum class BtObjects : uint32
     GO_NAJENTUS_SPINE               = 185584,
 
     // Illidan Stormrage <The Betrayer>
-    GO_SHADOW_TRAP                  = 185916,
+    GO_CAGE_TRAP                    = 185916,
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
@@ -500,6 +500,19 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target);
 
 // Illidan Stormrage <The Betrayer>
 
+// Fight phases 1 to 5 are Initial, Flying, Grounded, Demon and Maiev; Landing runs from the last
+// Flame's death until he is back on the ground.
+enum class IllidanPhase : uint8
+{
+    None, // also Maiev's arrival and the death scene
+    Initial,
+    Flying,
+    Landing,
+    Grounded,
+    Demon,
+    Maiev,
+};
+
 struct EyeBlastDangerArea
 {
     Position start;
@@ -542,16 +555,13 @@ inline std::array const W_GLAIVE_TANK_POSITIONS = {
     Position{ 690.889f, 324.277f, 354.204f },
 };
 
-extern std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
-extern std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
-extern std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
-extern std::unordered_map<uint32, int> illidanLastPhase;
-extern std::unordered_map<uint32, uint32> illidanBossDpsWaitTimer;
-extern std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
+extern std::unordered_map<uint32, IllidanPhase> illidanLastPhase;
+extern std::unordered_map<uint32, uint32> illidanPhaseStartTime;
+extern std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
 extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
-int GetIllidanPhase(Unit* illidan);
+IllidanPhase GetIllidanPhase(Unit* illidan);
 bool IsIllidanDeathScene(Unit* illidan);
 std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
@@ -563,7 +573,7 @@ ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot);
 Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
-GameObject* FindNearestTrap(PlayerbotAI* botAI);
+GameObject* FindNearestCageTrap(PlayerbotAI* botAI);
 
 }
 

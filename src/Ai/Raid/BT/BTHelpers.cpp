@@ -1263,61 +1263,46 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 
 // Illidan Stormrage <The Betrayer>
 
-std::unordered_map<ObjectGuid, size_t> flameTankWaypointIndex;
-std::unordered_map<ObjectGuid, ObjectGuid> illidanShadowTrapGuid;
-std::unordered_map<ObjectGuid, Position> illidanShadowTrapDestination;
-std::unordered_map<uint32, int> illidanLastPhase;
-std::unordered_map<uint32, uint32> illidanBossDpsWaitTimer;
-std::unordered_map<uint32, uint32> illidanFlameDpsWaitTimer;
+std::unordered_map<uint32, IllidanPhase> illidanLastPhase;
+std::unordered_map<uint32, uint32> illidanPhaseStartTime;
+std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
 std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
-int GetIllidanPhase(Unit* illidan)
+IllidanPhase GetIllidanPhase(Unit* illidan)
 {
-    if (!illidan || IsIllidanDeathScene(illidan) ||
-        illidan->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON)))
-    {
-        return -1;
-    }
+    if (!illidan || IsIllidanDeathScene(illidan))
+        return IllidanPhase::None;
 
-    // Transitioning from Phase 2 to Phase 3
-    float x, y, z;
-    illidan->GetMotionMaster()->GetDestination(x, y, z);
-    Position const dest(x, y, z);
-    if ((dest.GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
-         illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f) &&
-        illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-    {
-        return 0;
-    }
-
-    // Phase 2: Flying
+    float const healthPct = illidan->GetHealthPct();
     if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
-        return 2;
+    {
+        // He takes no damage while flying, so below 30% he is unselectable only for Maiev's
+        // arrival.
+        if (healthPct <= 30.0f)
+            return IllidanPhase::None;
 
-    // Phase 1: Health > 65%
-    if (illidan->GetHealthPct() > 65.0f)
-        return 1;
+        float x, y, z;
+        bool const isLanding = illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < 0.2f ||
+            (illidan->GetMotionMaster()->GetDestination(x, y, z) &&
+             ILLIDAN_LANDING_POSITION.GetExactDist2d(x, y) < 0.2f);
 
-    // Phase 4: Demon Form
+        return isLanding ? IllidanPhase::Landing : IllidanPhase::Flying;
+    }
+
+    if (healthPct > 65.0f)
+        return IllidanPhase::Initial;
+
     if (!illidan->HasAura(Id(BtSpells::SPELL_CAGED)) &&
         (illidan->HasAura(Id(BtSpells::SPELL_DEMON_FORM)) ||
          illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_1)) ||
          illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_2)) ||
          illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_3))))
     {
-        return 4;
+        return IllidanPhase::Demon;
     }
 
-    // Phase 3: Normal (ground, 65-30%, not demon)
-    if (illidan->GetHealthPct() > 30.0f)
-        return 3;
-
-    // Phase 5: Health <= 30%
-    if (illidan->GetHealthPct() <= 30.0f)
-        return 5;
-
-    return -1;
+    return healthPct > 30.0f ? IllidanPhase::Grounded : IllidanPhase::Maiev;
 }
 
 bool IsIllidanDeathScene(Unit* illidan)
@@ -1489,7 +1474,9 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
         eyeBlastTrigger->GetPositionY(), eyeBlastTrigger->GetPositionZ());
 
     float destX, destY, destZ;
-    eyeBlastTrigger->GetMotionMaster()->GetDestination(destX, destY, destZ);
+    if (!eyeBlastTrigger->GetMotionMaster()->GetDestination(destX, destY, destZ))
+        return {};
+
     Position const endPos(destX, destY, destZ);
 
     if (startPos.GetExactDist2d(endPos) < 0.1f)
@@ -1521,7 +1508,7 @@ bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea cons
     return distToLine < area.width;
 }
 
-GameObject* FindNearestTrap(PlayerbotAI* botAI)
+GameObject* FindNearestCageTrap(PlayerbotAI* botAI)
 {
     GuidVector const& gos =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
@@ -1530,7 +1517,7 @@ GameObject* FindNearestTrap(PlayerbotAI* botAI)
     for (ObjectGuid const& guid : gos)
     {
         GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() && go->GetEntry() == Id(BtObjects::GO_SHADOW_TRAP))
+        if (go && go->isSpawned() && go->GetEntry() == Id(BtObjects::GO_CAGE_TRAP))
         {
             nearestTrap = go;
             break;

@@ -568,7 +568,11 @@ bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && !IsIllidanDeathScene(illidan);
+    if (!illidan)
+        return false;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon;
 }
 
 bool IllidanStormrageCastsFlameCrashTrigger::IsActiveInEncounter()
@@ -580,8 +584,10 @@ bool IllidanStormrageCastsFlameCrashTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    int const phase = GetIllidanPhase(illidan);
-    return (phase == 1 || phase == 3 || phase == 5) && PlayerbotAI::IsMainTank(bot);
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+            phase == IllidanPhase::Maiev) &&
+        PlayerbotAI::IsMainTank(bot);
 }
 
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
@@ -590,21 +596,21 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (!illidan || IsIllidanDeathScene(illidan) || illidan->GetVictim() == bot)
         return false;
 
-    int const phase = GetIllidanPhase(illidan);
-    if (phase == 2 || phase == 4)
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
         return false;
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    if (phase == 5 && FindNearestTrap(botAI))
+    if (phase == IllidanPhase::Maiev && FindNearestCageTrap(botAI))
         return false;
 
     Player* infected = GetBotWithParasiticShadowfiend(botAI);
     if (!infected)
         return false;
 
-    if (infected == bot || (phase != 1 && bot->getClass() == CLASS_HUNTER))
+    if (infected == bot || (phase != IllidanPhase::Initial && bot->getClass() == CLASS_HUNTER))
         return true;
 
     return false;
@@ -616,8 +622,11 @@ bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) || GetIllidanPhase(illidan) == 2)
+    if (!illidan || IsIllidanDeathScene(illidan) ||
+        GetIllidanPhase(illidan) == IllidanPhase::Flying)
+    {
         return false;
+    }
 
     ObjectGuid const guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
     if (guid.IsEmpty())
@@ -634,7 +643,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 2)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
@@ -643,18 +652,23 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
 
 bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan))
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
         return false;
 
-    Pet* pet = bot->GetPet();
-    return pet && pet->IsAlive();
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    bool const shouldBePassive = phase == IllidanPhase::Flying || phase == IllidanPhase::Demon;
+    return shouldBePassive != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 2)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
     return !PlayerbotAI::IsTank(bot) ||
@@ -662,32 +676,49 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
             !PlayerbotAI::IsAssistTankOfIndex(bot, 1, true));
 }
 
-bool IllidanStormrageDarkBarrageOnImmunityClassTrigger::IsActiveInEncounter()
+// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use.
+bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
-    if (!GetSelfImmunitySpell(bot))
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (!spellId || PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    if (!bot->HasAura(Id(BtSpells::SPELL_DARK_BARRAGE)) &&
+        !bot->HasAura(Id(BtSpells::SPELL_AGONIZING_FLAMES)))
+    {
+        return false;
+    }
+
+    return botAI->CanCastSpell(spellId, bot);
+}
+
+// Below half health the immunity may be holding off something else, so it is kept.
+bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_MAGE &&
+        (bot->getClass() != CLASS_PALADIN || PlayerbotAI::IsHeal(bot)))
+    {
+        return false;
+    }
+
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
-    if (botAI->HasAura("ice block", bot))
-    {
-        botAI->RemoveAura("ice block");
-        return true;
-    }
-    else if (!PlayerbotAI::IsHeal(bot) && botAI->HasAura("divine shield", bot))
-    {
-        botAI->RemoveAura("divine shield");
-        return true;
-    }
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (!spellId || !bot->HasAura(spellId))
+        return false;
 
-    return bot->HasAura(Id(BtSpells::SPELL_DARK_BARRAGE));
+    constexpr float keepImmunityHealthPct = 50.0f;
+    if (bot->GetHealthPct() <= keepImmunityHealthPct)
+        return false;
+
+    return AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
 bool IllidanStormragePreparesToLandTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 0)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Landing)
         return false;
 
     return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
@@ -702,12 +733,13 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!illidan || illidan->HasAura(Id(BtSpells::SPELL_CAGED)))
         return false;
 
-    int const phase = GetIllidanPhase(illidan);
+    IllidanPhase const phase = GetIllidanPhase(illidan);
 
-    if (phase == 4 && GetIllidanWarlockTank(botAI) == bot)
+    if (phase == IllidanPhase::Demon && GetIllidanWarlockTank(botAI) == bot)
         return false;
 
-    return phase == 3 || phase == 4 || phase == 5;
+    return phase == IllidanPhase::Grounded || phase == IllidanPhase::Demon ||
+        phase == IllidanPhase::Maiev;
 }
 
 bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActiveInEncounter()
@@ -716,7 +748,7 @@ bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && GetIllidanPhase(illidan) == 4;
+    return illidan && GetIllidanPhase(illidan) == IllidanPhase::Demon;
 }
 
 bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
@@ -725,7 +757,7 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != 4)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
     return GetIllidanWarlockTank(botAI) == bot;
@@ -740,19 +772,22 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     if (!illidan || IsIllidanDeathScene(illidan))
         return false;
 
-    if (PlayerbotAI::IsTank(bot) && GetIllidanPhase(illidan) != 4)
+    if (PlayerbotAI::IsTank(bot) && GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
     return true;
 }
 
-bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActiveInEncounter()
+bool IllidanStormrageMaievPlacedCageTrapTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) || GetIllidanPhase(illidan) != 5)
+    if (!illidan || IsIllidanDeathScene(illidan) ||
+        GetIllidanPhase(illidan) != IllidanPhase::Maiev)
+    {
         return false;
+    }
 
-    GameObject* trap = FindNearestTrap(botAI);
+    GameObject* trap = FindNearestCageTrap(botAI);
     if (!trap)
         return false;
 
@@ -784,7 +819,7 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActiveInEncounter()
     return closestBot == bot;
 }
 
-bool IllidanStormrageShouldManageDpsTimerAndRtiTrigger::IsActiveInEncounter()
+bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
@@ -804,8 +839,9 @@ bool IllidanStormrageShouldClearHazardsBetweenPhasesTrigger::IsActiveInEncounter
     if (!illidan || IsIllidanDeathScene(illidan))
         return false;
 
-    int const phase = GetIllidanPhase(illidan);
-    return phase == 0 || phase == 2 || phase == 4;
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return phase == IllidanPhase::Landing || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Demon;
 }
 
 bool IllidanStormrageCheatTrigger::IsActiveInEncounter()
@@ -817,6 +853,6 @@ bool IllidanStormrageCheatTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    int const phase = GetIllidanPhase(illidan);
-    return phase == 2 || phase == 4;
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon;
 }

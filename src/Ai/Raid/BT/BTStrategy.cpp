@@ -206,8 +206,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
         { NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage dark barrage on immunity class",
-        { NextAction("illidan stormrage remove dark barrage", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("illidan stormrage immunity can clear debuff",
+        { NextAction("illidan stormrage clear debuff with immunity", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage immunity no longer needed",
+        { NextAction("illidan stormrage cancel immunity", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage prepares to land",
         { NextAction("illidan stormrage move away from landing point", ACTION_EMERGENCY + 3) }));
@@ -224,11 +227,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage should assign dps priority",
         { NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage maiev placed shadow trap",
-        { NextAction("illidan stormrage use shadow trap", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("illidan stormrage maiev placed cage trap",
+        { NextAction("illidan stormrage use cage trap", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage should manage dps timer and rti",
-        { NextAction("illidan stormrage manage dps timer and rti", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("illidan stormrage should manage dps timers",
+        { NextAction("illidan stormrage manage dps timers", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage should clear hazards between phases",
         { NextAction("illidan stormrage destroy hazards", ACTION_EMERGENCY + 10) }));
