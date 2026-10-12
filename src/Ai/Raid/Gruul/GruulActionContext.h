@@ -15,7 +15,7 @@ class RaidGruulsLairActionContext : public NamedObjectContext<Action>
 public:
     RaidGruulsLairActionContext()
     {
-        // General
+        // Shared
         creators["gruul's lair reset encounter states"] =
             &RaidGruulsLairActionContext::gruuls_lair_reset_encounter_states;
 
@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* gruuls_lair_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new GruulsLairResetEncounterStatesAction(botAI);

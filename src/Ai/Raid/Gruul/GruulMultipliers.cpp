@@ -17,7 +17,7 @@
 using namespace GruulHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {

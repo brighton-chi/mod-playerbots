@@ -15,7 +15,7 @@ class RaidGruulsLairTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidGruulsLairTriggerContext() : NamedObjectContext<Trigger>()
     {
-        // General
+        // Shared
         creators["gruul's lair no encounter in progress"] =
             &RaidGruulsLairTriggerContext::gruuls_lair_no_encounter_in_progress;
 
@@ -41,8 +41,8 @@ public:
         creators["high king maulgar wild fel stalker spawned"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_wild_fel_stalker_spawned;
 
-        creators["high king maulgar pulling ogre council"] =
-            &RaidGruulsLairTriggerContext::high_king_maulgar_pulling_ogre_council;
+        creators["high king maulgar hunter should misdirect"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_hunter_should_misdirect;
 
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller should be tanked"] =
@@ -51,15 +51,15 @@ public:
         creators["gruul the dragonkiller ranged should spread"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_ranged_should_spread;
 
-        creators["gruul the dragonkiller in cave in"] =
-            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_in_cave_in;
+        creators["gruul the dragonkiller bot in cave in"] =
+            &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_bot_in_cave_in;
 
         creators["gruul the dragonkiller incoming shatter"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
 
 private:
-    // General
+    // Shared
     static Trigger* gruuls_lair_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new GruulsLairNoEncounterInProgressTrigger(botAI);
@@ -94,9 +94,9 @@ private:
     {
         return new HighKingMaulgarWildFelStalkerSpawnedTrigger(botAI);
     }
-    static Trigger* high_king_maulgar_pulling_ogre_council(PlayerbotAI* botAI)
+    static Trigger* high_king_maulgar_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HighKingMaulgarPullingOgreCouncilTrigger(botAI);
+        return new HighKingMaulgarHunterShouldMisdirectTrigger(botAI);
     }
 
     // Gruul the Dragonkiller
@@ -108,9 +108,9 @@ private:
     {
         return new GruulTheDragonkillerRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* gruul_the_dragonkiller_in_cave_in(PlayerbotAI* botAI)
+    static Trigger* gruul_the_dragonkiller_bot_in_cave_in(PlayerbotAI* botAI)
     {
-        return new GruulTheDragonkillerInCaveInTrigger(botAI);
+        return new GruulTheDragonkillerBotInCaveInTrigger(botAI);
     }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI)
     {

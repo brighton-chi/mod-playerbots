@@ -9,7 +9,7 @@
 
 void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("gruul's lair no encounter in progress",
         { NextAction("gruul's lair reset encounter states", ACTION_EMERGENCY + 10) }));
 
@@ -35,7 +35,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar wild fel stalker spawned",
         { NextAction("high king maulgar banish fel stalker", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("high king maulgar pulling ogre council",
+    triggers.push_back(new TriggerNode("high king maulgar hunter should misdirect",
         { NextAction("high king maulgar misdirect ogres to tanks", ACTION_RAID + 1) }));
 
     // Gruul the Dragonkiller
@@ -45,7 +45,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gruul the dragonkiller ranged should spread",
         { NextAction("gruul the dragonkiller spread ranged", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("gruul the dragonkiller in cave in",
+    triggers.push_back(new TriggerNode("gruul the dragonkiller bot in cave in",
         { NextAction("gruul the dragonkiller get out of cave in", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("gruul the dragonkiller incoming shatter",
@@ -54,7 +54,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // General
+    // Shared
     multipliers.push_back(new GruulsLairDelayDpsCooldownsMultiplier(botAI));
 
     // High King Maulgar
