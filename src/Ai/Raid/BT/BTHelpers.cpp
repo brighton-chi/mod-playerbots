@@ -189,11 +189,8 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
 bool IsLinkedSisterOfPleasure(Unit* unit)
 {
-    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) ||
-        !unit->IsAlive())
-    {
+    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) || !unit->IsAlive())
         return false;
-    }
 
     Aura* bonds = unit->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
     Unit* pain = bonds ? bonds->GetCaster() : nullptr;

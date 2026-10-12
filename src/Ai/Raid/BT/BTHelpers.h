@@ -458,10 +458,9 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 655.571f, 261.377f, 271.687f },
     Position{ 673.789f, 274.139f, 271.689f },
 };
-// The second spot is a placeholder, to be measured in game.
 inline std::array const ZEREVOR_TANK_POSITIONS = {
-    Position{ 686.219f, 377.644f, 271.689f },
-    Position{ 672.219f, 377.644f, 271.689f },
+    Position{ 689.749f, 371.569f, 271.660f },
+    Position{ 674.892f, 374.334f, 271.688f },
 };
 
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
