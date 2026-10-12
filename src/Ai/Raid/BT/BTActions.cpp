@@ -2181,6 +2181,15 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     if (!waypoints || !flame)
         return false;
 
+    // Each Phase 2 starts from the first waypoint, after a wipe too.
+    auto const it = illidanFlamePhaseStartTime.find(bot->GetInstanceId());
+    uint32 const flamePhaseStartTime = it != illidanFlamePhaseStartTime.end() ? it->second : 0;
+    if (flamePhaseStartTime != _flamePhaseStartTime)
+    {
+        _flamePhaseStartTime = flamePhaseStartTime;
+        _tankStep = 0;
+    }
+
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
 
@@ -2216,17 +2225,16 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
 // Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive
 // Just like players, pets cannot melee Illidan during Phase 4
+// Also run outside the encounter, without him, so a pet set passive gets its stance back after a
+// wipe.
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
     Pet* pet = bot->GetPet();
     if (!pet)
         return false;
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
+    IllidanPhase const phase =
+        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
     if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
     {
         if (!pet->HasReactState(REACT_PASSIVE))

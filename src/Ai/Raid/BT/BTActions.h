@@ -528,6 +528,7 @@ private:
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 
     uint8 _tankStep = 0;
+    uint32 _flamePhaseStartTime = 0;
 };
 
 class IllidanStormrageControlPetAggressionAction : public Action

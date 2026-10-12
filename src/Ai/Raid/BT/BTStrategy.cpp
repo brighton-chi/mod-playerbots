@@ -206,6 +206,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage pets die to fire",
         { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
 
+    // A pet still passive after a wipe gets its stance back.
+    triggers.push_back(new TriggerNode("black temple no encounter in progress",
+        { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadowfiend",
         { NextAction("illidan stormrage command pet attack shadowfiend", ACTION_RAID + 3) }));
 

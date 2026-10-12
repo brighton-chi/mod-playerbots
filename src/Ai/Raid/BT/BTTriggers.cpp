@@ -867,17 +867,17 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
 // assist tanks have the Flames. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan))
+    IllidanPhase const phase =
+        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
+    if (phase == IllidanPhase::None)
         return false;
 
     if (PlayerbotAI::IsHeal(bot))
-        return GetIllidanPhase(illidan) == IllidanPhase::Demon;
+        return phase == IllidanPhase::Demon;
 
     if (!PlayerbotAI::IsTank(bot))
         return true;
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
         phase != IllidanPhase::Demon && phase != IllidanPhase::Maiev)
     {
