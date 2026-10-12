@@ -24,6 +24,7 @@
 #include "SpellMgr.h"
 #include "ThreatManager.h"
 #include "Timer.h"
+#include "WarriorActions.h"
 #include "WipeAction.h"
 #include <array>
 
@@ -557,6 +558,13 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetValueInEncounter(
 
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
+    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
+    {
+        Player* mageTank = GetZerevorMageTank(botAI);
+        if (mageTank && action->GetTarget() == mageTank)
+            return 0.0f;
+    }
+
     bool const isStockMove =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
     bool const isAoeThreat = IsAoeThreatAction(bot, action);
@@ -741,6 +749,13 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetAssistValue(bool
 // holds the grate and the assist tanks the Flames of Azzinoth, each moving only by its own action.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
+    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
+    {
+        Player* warlockTank = GetIllidanWarlockTank(botAI);
+        if (warlockTank && action->GetTarget() == warlockTank)
+            return 0.0f;
+    }
+
     bool const isMove = dynamic_cast<MovementAction*>(action);
     bool const isGapCloser = dynamic_cast<CastReachTargetSpellAction*>(action);
     bool const isMeleeSpell = isGapCloser || dynamic_cast<CastMeleeSpellAction*>(action);

@@ -448,26 +448,24 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
 {
     switch (bot->getClass())
     {
-        case CLASS_DEATH_KNIGHT:
-        case CLASS_MAGE:
-        case CLASS_ROGUE:
-        case CLASS_SHAMAN:
-        case CLASS_WARLOCK:
-        case CLASS_WARRIOR:
-            break;
-        default:
+        case CLASS_DRUID:
+        case CLASS_HUNTER:
+        case CLASS_PALADIN:
+        case CLASS_PRIEST:
             return false;
+        default:
+            break;
     }
 
-    bool const isRanged = PlayerbotAI::IsRanged(bot);
-    if (isRanged && (!PlayerbotAI::IsRangedDps(bot) || IsZerevorMageTank(botAI)))
+    if (!PlayerbotAI::IsDps(bot) || IsZerevorMageTank(botAI))
         return false;
 
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
         return false;
 
-    if (isRanged && !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
+    if (PlayerbotAI::IsRanged(bot) &&
+        !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
         !IsMalandeInZerevorPatch(
             malande, AI_VALUE2(Unit*, "find target", "high nethermancer zerevor")))
     {
@@ -517,6 +515,9 @@ bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+        return false;
+
+    if (IsZerevorMageTank(botAI) || PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return false;
 
     return !HasDangerousCouncilAura(bot) &&
@@ -598,10 +599,10 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    return (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||
-            phase == IllidanPhase::Grounded || phase == IllidanPhase::Demon ||
-            phase == IllidanPhase::Maiev) &&
-        PlayerbotAI::IsMainTank(bot);
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
+        return false;
+
+    return PlayerbotAI::IsMainTank(bot);
 }
 
 // An infected bot runs to the run spot. The trap hunter goes there while someone else is infected
@@ -613,11 +614,12 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) || illidan->GetVictim() == bot ||
-        GetIllidanPhase(illidan) == IllidanPhase::Flying)
-    {
+    if (!illidan || illidan->GetVictim() == bot)
         return false;
-    }
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
+        return false;
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
@@ -635,11 +637,12 @@ bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) ||
-        GetIllidanPhase(illidan) == IllidanPhase::Flying)
-    {
+    if (!illidan)
         return false;
-    }
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
+        return false;
 
     ObjectGuid const guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
     if (guid.IsEmpty())
@@ -730,9 +733,11 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
-    return !PlayerbotAI::IsTank(bot) ||
-        (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
-            !PlayerbotAI::IsAssistTankOfIndex(bot, 1, true));
+    if (!PlayerbotAI::IsTank(bot))
+        return true;
+
+    return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
+        !PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
 // Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use.

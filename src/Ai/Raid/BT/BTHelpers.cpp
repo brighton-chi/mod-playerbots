@@ -553,7 +553,7 @@ float GetSupremusHazardRadius(SupremusHazard const& hazard, SupremusHazardZone z
     return zone == SupremusHazardZone::Damage ? hazard.damageRadius : hazard.safeRadius;
 }
 
-}
+} // end anonymous namespace (Supremus)
 
 bool IsSupremusKitePhase(Unit* supremus)
 {
@@ -923,9 +923,8 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
-            !GET_PLAYERBOT_AI(member) ||
-            member->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) ||
-            !PlayerbotAI::IsRanged(member))
+            !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member) ||
+            member->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
         {
             continue;
         }
