@@ -128,6 +128,30 @@ protected:
     }
 };
 
+class IllidanStormrageTrapHunterValue : public CalculatedValue<ObjectGuid>
+{
+public:
+    IllidanStormrageTrapHunterValue(PlayerbotAI* botAI)
+        : CalculatedValue<ObjectGuid>(
+              botAI, "illidan stormrage trap hunter",
+              BtHelpers::ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS) {}
+
+protected:
+    ObjectGuid Calculate() override { return BtHelpers::FindIllidanTrapHunterGuid(bot); }
+};
+
+class ParasiticShadowfiendsValue : public CalculatedValue<GuidVector>
+{
+public:
+    ParasiticShadowfiendsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "parasitic shadowfiends",
+              BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(botAI); }
+};
+
 class RaidBlackTempleValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -145,6 +169,9 @@ public:
             &RaidBlackTempleValueContext::illidan_stormrage_warlock_tank;
         creators["illidan stormrage bot with parasitic shadowfiend"] =
             &RaidBlackTempleValueContext::illidan_stormrage_bot_with_parasitic_shadowfiend;
+        creators["illidan stormrage trap hunter"] =
+            &RaidBlackTempleValueContext::illidan_stormrage_trap_hunter;
+        creators["parasitic shadowfiends"] = &RaidBlackTempleValueContext::parasitic_shadowfiends;
     }
 
 private:
@@ -179,6 +206,14 @@ private:
     static UntypedValue* illidan_stormrage_bot_with_parasitic_shadowfiend(PlayerbotAI* botAI)
     {
         return new IllidanStormrageBotWithParasiticShadowfiendValue(botAI);
+    }
+    static UntypedValue* illidan_stormrage_trap_hunter(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageTrapHunterValue(botAI);
+    }
+    static UntypedValue* parasitic_shadowfiends(PlayerbotAI* botAI)
+    {
+        return new ParasiticShadowfiendsValue(botAI);
     }
 };
 

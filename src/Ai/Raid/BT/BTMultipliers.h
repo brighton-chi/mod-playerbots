@@ -321,34 +321,20 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageControlTankActionsMultiplier : public BlackTempleEncounterMultiplier
+class IllidanStormrageControlMovementAndTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageControlTankActionsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage control tank actions") {}
+    IllidanStormrageControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage control movement and targeting") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
-};
 
-class IllidanStormrageDisableDefaultTargetingMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidanStormrageDisableDefaultTargetingMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage disable default targeting") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class IllidanStormrageControlNonTankMovementMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidanStormrageControlNonTankMovementMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage control non-tank movement") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
+private:
+    float GetAssistValue(bool isTankAssist);
+    float GetTankValue(Action* action);
+    float GetNonTankValue(Action* action);
 };
 
 class IllidanStormrageUseEarthbindTotemMultiplier : public BlackTempleEncounterMultiplier

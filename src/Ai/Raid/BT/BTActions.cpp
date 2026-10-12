@@ -2077,7 +2077,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
     if (HasParasiticShadowfiend(bot))
         return InfectedBotMoveFromGroup(target);
 
-    if (IsIllidanTrapperHunter(bot))
+    if (IsIllidanTrapHunter(botAI))
         return FreezeTrapShadowfiend(target);
 
     return false;
@@ -2464,7 +2464,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return SpreadInCircleInDemonPhase(illidan, group);
 
     if (GetBotWithParasiticShadowfiend(botAI) == bot ||
-        (IsIllidanTrapperHunter(bot) && GetBotWithParasiticShadowfiend(botAI)))
+        (IsIllidanTrapHunter(botAI) && GetBotWithParasiticShadowfiend(botAI)))
     {
         return false;
     }
