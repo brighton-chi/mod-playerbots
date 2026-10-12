@@ -67,6 +67,15 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
+// At Illidan's landing stack a bot still picks targets and still runs off with a Shadowfiend
+// debuff.
+bool IsHeldAtIllidanLandingStack(Action* action)
+{
+    return dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<IllidanStormragePositionForLandingAction*>(action) &&
+        !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
+}
+
 }
 
 // Shared
@@ -664,9 +673,10 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetAssistValue(bool
     return isGrounded && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
 }
 
-// In Phases 1, 3 and 5 the Main Tank moves only by its ring action, and its gap-closers are held,
-// since he always comes to it. While he flies, the Main Tank holds the grate and the assist tanks
-// the Flames of Azzinoth, each moving only by its own action.
+// In Phases 1, 3 and 5 and while he lands, the Main Tank moves only by its ring action, and its
+// gap-closers are held, since he always comes to it; the other tanks wait at the landing stack
+// with everyone else. While he flies, the Main Tank holds the grate and the assist tanks the
+// Flames of Azzinoth, each moving only by its own action.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
     bool const isMove = dynamic_cast<MovementAction*>(action);
@@ -681,11 +691,16 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
         return 1.0f;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev)
+    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||
+        phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev)
     {
         if (!PlayerbotAI::IsMainTank(bot))
-            return 1.0f;
+        {
+            if (!IsIllidanLandingWait(*illidan, phase))
+                return 1.0f;
+
+            return isGapCloser || IsHeldAtIllidanLandingStack(action) ? 0.0f : 1.0f;
+        }
 
         if (isMove)
         {
@@ -735,7 +750,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Act
          dynamic_cast<AvoidAoeAction*>(action) ||
          dynamic_cast<CastReachTargetSpellAction*>(action) ||
          dynamic_cast<CastKillingSpreeAction*>(action));
-    if (!isBlockedMove && !isPhaseMove)
+    bool const isLandingMove = !isBlockedMove && IsHeldAtIllidanLandingStack(action);
+    if (!isBlockedMove && !isPhaseMove && !isLandingMove)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -745,7 +761,14 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Act
     if (isBlockedMove)
         return 0.0f;
 
+    // Everyone waits at the landing stack until he has been led out.
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (IsIllidanLandingWait(*illidan, phase))
+        return 0.0f;
+
+    if (!isPhaseMove)
+        return 1.0f;
+
     if (phase == IllidanPhase::Flying)
         return 0.0f;
 

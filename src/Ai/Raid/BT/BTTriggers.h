@@ -636,11 +636,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormragePreparesToLandTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldPositionForLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormragePreparesToLandTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage prepares to land") {}
+    IllidanStormrageShouldPositionForLandingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage should position for landing") {}
 
 protected:
     bool IsActiveInEncounter() override;

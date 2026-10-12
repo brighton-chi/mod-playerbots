@@ -574,11 +574,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageMoveAwayFromLandingPointAction : public MovementAction
+class IllidanStormragePositionForLandingAction : public MovementAction
 {
 public:
-    IllidanStormrageMoveAwayFromLandingPointAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage move away from landing point") {}
+    IllidanStormragePositionForLandingAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage position for landing") {}
     bool Execute(Event event) override;
 };
 
@@ -590,7 +590,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool FanOutBehindInHumanPhase(Unit* illidan, Group* group);
     bool SpreadInCircleInDemonPhase(Unit* illidan, Group* group);
 };
 

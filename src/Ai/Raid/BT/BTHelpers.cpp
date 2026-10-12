@@ -1375,6 +1375,27 @@ bool IsIllidanSpeechInProgress(Player* bot)
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();
 }
 
+bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs)
+{
+    auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
+    return it == illidanPhaseStartTime.end() ||
+        getMSTimeDiff(it->second, getMSTime()) < durationMs;
+}
+
+bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase)
+{
+    if (phase == IllidanPhase::Landing)
+        return true;
+
+    if (phase != IllidanPhase::Grounded ||
+        illidan.GetExactDist2d(ILLIDAN_GRATE_CENTRE) >= ILLIDAN_LANDING_RELEASE_DISTANCE)
+    {
+        return false;
+    }
+
+    return IsIllidanPhaseStartWithin(illidan, ILLIDAN_LANDING_WAIT_MS);
+}
+
 IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan)
 {
     if (!illidan || illidan->GetHealthPct() <= ILLIDAN_BURN_HEALTH_PCT)
@@ -1382,8 +1403,7 @@ IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan)
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     uint32 waitMs = 0;
-    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev)
+    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded)
     {
         waitMs = ILLIDAN_RESET_DPS_WAIT_MS;
     }
@@ -1396,9 +1416,7 @@ IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan)
         return IllidanDpsHold::None;
     }
 
-    // Until the mechanic tracker stamps the phase start, the phase has just started.
-    auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
-    if (it != illidanPhaseStartTime.end() && getMSTimeDiff(it->second, getMSTime()) >= waitMs)
+    if (!IsIllidanPhaseStartWithin(*illidan, waitMs))
         return IllidanDpsHold::None;
 
     return phase == IllidanPhase::Demon ?
@@ -1578,23 +1596,6 @@ Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase)
 
     return GetRingPoint(
         GetGrateAngle(illidan) + ILLIDAN_RUN_SPOT_ANGLE, ILLIDAN_RUN_SPOT_DISTANCE);
-}
-
-std::vector<Unit*> GetAllFlameCrashes(Player* bot)
-{
-    std::vector<Unit*> flameCrashes;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 30.0f;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(BtNpcs::NPC_FLAME_CRASH), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            flameCrashes.push_back(creature);
-    }
-
-    return flameCrashes;
 }
 
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)

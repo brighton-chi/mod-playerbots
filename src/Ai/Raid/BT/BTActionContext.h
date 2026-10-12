@@ -211,8 +211,8 @@ public:
         creators["illidan stormrage cancel immunity"] =
             &RaidBlackTempleActionContext::illidan_stormrage_cancel_immunity;
 
-        creators["illidan stormrage move away from landing point"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_move_away_from_landing_point;
+        creators["illidan stormrage position for landing"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_position_for_landing;
 
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
@@ -525,9 +525,9 @@ private:
     {
         return new IllidanStormrageCancelImmunityAction(botAI);
     }
-    static Action* illidan_stormrage_move_away_from_landing_point(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_position_for_landing(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMoveAwayFromLandingPointAction(botAI);
+        return new IllidanStormragePositionForLandingAction(botAI);
     }
     static Action* illidan_stormrage_disperse_ranged(PlayerbotAI* botAI)
     {

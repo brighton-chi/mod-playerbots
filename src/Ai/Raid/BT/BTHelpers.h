@@ -517,7 +517,7 @@ enum class IllidanPhase : uint8
 enum class IllidanDpsHold : uint8
 {
     None,
-    AfterReset,     // Phase 1 and Phase 3 starts, and Phase 5's; everyone but the Main Tank
+    AfterReset,     // Phase 1 and Phase 3 starts; everyone but the Main Tank
     DemonFormStart, // everyone but the warlock tank
 };
 
@@ -554,10 +554,16 @@ inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = 100.0f;
 inline constexpr float ILLIDAN_SPOT_TOLERANCE = 1.0f;
 // A bot without the Shadowfiend debuff this close to a Shadowfiend is where a debuff just ended.
 inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
+// After landing, everyone else leaves the landing stack once he is led this far from the grate
+// centre, or 3 s after the threat reset, whichever comes first.
+inline constexpr float ILLIDAN_LANDING_RELEASE_DISTANCE = 15.0f;
 // At or below this he is burnt down: no hold and no stop.
 inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 8 * IN_MILLISECONDS;
+inline constexpr uint32 ILLIDAN_LANDING_WAIT_MS = 3 * IN_MILLISECONDS;
+// Hunters misdirect onto the Main Tank this long from each Phase 1, 3 and 5 start.
+inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
 
 // Tank ring: he is held 25 yd from the grate centre with the Main Tank 6 yd outward of him, so he
 // faces out and the raid stands inside.
@@ -646,6 +652,12 @@ IllidanPhase GetIllidanPhase(Unit* illidan);
 bool IsIllidanDeathScene(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
+// The phase started less than durationMs ago; until the mechanic tracker stamps it, it has just
+// started.
+bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs);
+// Everyone but the Main Tank waits at the landing stack while he lands, and then until the Main
+// Tank has led him out or 3 s have passed since the threat reset.
+bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase);
 // The phase-start hold that is running, before who it spares is decided.
 IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan);
 // The hold this bot is in, for the hold multiplier and any stop block.
@@ -660,7 +672,6 @@ Position GetIllidanSettleSpot(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase);
-std::vector<Unit*> GetAllFlameCrashes(Player* bot);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 // The warlock tank is an assistant warlock (player or bot), else the warlock bot with the lowest
 // GUID; dead or alive, for the whole fight, since losing it wipes the raid anyway.

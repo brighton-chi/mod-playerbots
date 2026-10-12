@@ -218,8 +218,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage immunity no longer needed",
         { NextAction("illidan stormrage cancel immunity", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage prepares to land",
-        { NextAction("illidan stormrage move away from landing point", ACTION_EMERGENCY + 3) }));
+    triggers.push_back(new TriggerNode("illidan stormrage should position for landing",
+        { NextAction("illidan stormrage position for landing", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage ranged should spread",
         { NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
@@ -233,8 +233,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage should assign dps priority",
         { NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage maiev placed cage trap",
-        { NextAction("illidan stormrage use cage trap", ACTION_EMERGENCY + 1) }));
+    // triggers.push_back(new TriggerNode("illidan stormrage maiev placed cage trap",
+    //     { NextAction("illidan stormrage use cage trap", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage should manage dps timers",
         { NextAction("illidan stormrage manage dps timers", ACTION_EMERGENCY + 11) }));
