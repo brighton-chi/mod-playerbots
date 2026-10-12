@@ -524,27 +524,35 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
     return 0.0f;
 }
 
-// While Zerevor is on the mage tank, its healer moves only by its own action.
+// While Zerevor is on the mage tank, its healer moves only by its own action. No one else reaches
+// to heal the mage tank.
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Action* action)
 {
     bool const isHealerMove = PlayerbotAI::IsHeal(bot) &&
         dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action);
+    bool const isHealReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
     bool const isBlockedMove =
         (dynamic_cast<CombatFormationMoveAction*>(action) &&
          !dynamic_cast<SetBehindTargetAction*>(action)) ||
         dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action) ||
         IsRepositionAction(bot, action);
-    if (!isHealerMove && !isBlockedMove)
+    if (!isHealerMove && !isHealReach && !isBlockedMove)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
         return 1.0f;
 
-    if (isHealerMove && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) &&
-        IsZerevorOnMageTank(botAI, AI_VALUE2(Unit*, "find target", "high nethermancer zerevor")))
-    {
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    bool const isMageTankHealer = PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
+    if (isHealerMove && isMageTankHealer && IsZerevorOnMageTank(botAI, zerevor))
         return 0.0f;
+
+    if (isHealReach && !isMageTankHealer && zerevor)
+    {
+        Player* mageTank = GetZerevorMageTank(botAI);
+        if (mageTank && AI_VALUE(Unit*, "party member to heal") == mageTank)
+            return 0.0f;
     }
 
     return isBlockedMove ? 0.0f : 1.0f;
@@ -555,8 +563,11 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
-    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action))
+    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action) &&
+        action->getThreatType() != Action::ActionThreatType::Aoe)
+    {
         return 1.0f;
+    }
 
     if (!IsZerevorMageTank(botAI))
         return 1.0f;

@@ -460,8 +460,10 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 673.789f, 274.139f, 271.689f },
 };
 inline std::array const ZEREVOR_TANK_POSITIONS = {
-    Position{ 689.749f, 371.569f, 271.660f },
-    Position{ 674.892f, 374.334f, 271.688f },
+    // Position{ 689.749f, 371.569f, 271.660f },
+    // Position{ 674.892f, 374.334f, 271.688f },
+    Position{ 660.325f, 357.568f, 271.688f },
+    Position{ 679.657f, 356.482f, 271.699f },
 };
 
 extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
