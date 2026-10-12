@@ -606,6 +606,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidanStormragePetShouldAttackShadowDemonTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormragePetShouldAttackShadowDemonTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage pet should attack shadow demon") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidanStormrageGrateIsSafeFromFlamesTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -642,6 +652,26 @@ public:
     IllidanStormrageShouldPositionForLandingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
             botAI, "illidan stormrage should position for landing") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class IllidanStormrageMeleeShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageMeleeShouldStopAttackingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage melee should stop attacking") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class IllidanStormrageShouldStopShootingTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageShouldStopShootingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should stop shooting") {}
 
 protected:
     bool IsActiveInEncounter() override;

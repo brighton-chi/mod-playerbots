@@ -367,6 +367,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class IllidanStormrageHoldGuardianSummonsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageHoldGuardianSummonsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage hold guardian summons") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class IllidanStormrageWaitForDpsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

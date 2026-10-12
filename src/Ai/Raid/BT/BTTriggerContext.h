@@ -203,6 +203,9 @@ public:
         creators["illidan stormrage pet should attack shadowfiend"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadowfiend;
 
+        creators["illidan stormrage pet should attack shadow demon"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadow_demon;
+
         creators["illidan stormrage grate is safe from flames"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
 
@@ -214,6 +217,12 @@ public:
 
         creators["illidan stormrage should position for landing"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_landing;
+
+        creators["illidan stormrage melee should stop attacking"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_melee_should_stop_attacking;
+
+        creators["illidan stormrage should stop shooting"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stop_shooting;
 
         creators["illidan stormrage ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_spread;
@@ -504,6 +513,10 @@ private:
     {
         return new IllidanStormragePetShouldAttackShadowfiendTrigger(botAI);
     }
+    static Trigger* illidan_stormrage_pet_should_attack_shadow_demon(PlayerbotAI* botAI)
+    {
+        return new IllidanStormragePetShouldAttackShadowDemonTrigger(botAI);
+    }
     static Trigger* illidan_stormrage_grate_is_safe_from_flames(PlayerbotAI* botAI)
     {
         return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI);
@@ -519,6 +532,14 @@ private:
     static Trigger* illidan_stormrage_should_position_for_landing(PlayerbotAI* botAI)
     {
         return new IllidanStormrageShouldPositionForLandingTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_melee_should_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageMeleeShouldStopAttackingTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_should_stop_shooting(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShouldStopShootingTrigger(botAI);
     }
     static Trigger* illidan_stormrage_ranged_should_spread(PlayerbotAI* botAI)
     {

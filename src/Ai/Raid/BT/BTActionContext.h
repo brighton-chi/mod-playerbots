@@ -202,6 +202,9 @@ public:
         creators["illidan stormrage command pet attack shadowfiend"] =
             &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_shadowfiend;
 
+        creators["illidan stormrage command pet attack shadow demon"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_shadow_demon;
+
         creators["illidan stormrage position above grate"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_above_grate;
 
@@ -213,6 +216,12 @@ public:
 
         creators["illidan stormrage position for landing"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_for_landing;
+
+        creators["illidan stormrage melee stop attacking"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_melee_stop_attacking;
+
+        creators["illidan stormrage stop shooting"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_stop_shooting;
 
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
@@ -513,6 +522,10 @@ private:
     {
         return new IllidanStormrageCommandPetAttackShadowfiendAction(botAI);
     }
+    static Action* illidan_stormrage_command_pet_attack_shadow_demon(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageCommandPetAttackShadowDemonAction(botAI);
+    }
     static Action* illidan_stormrage_position_above_grate(PlayerbotAI* botAI)
     {
         return new IllidanStormragePositionAboveGrateAction(botAI);
@@ -528,6 +541,14 @@ private:
     static Action* illidan_stormrage_position_for_landing(PlayerbotAI* botAI)
     {
         return new IllidanStormragePositionForLandingAction(botAI);
+    }
+    static Action* illidan_stormrage_melee_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageMeleeStopAttackingAction(botAI);
+    }
+    static Action* illidan_stormrage_stop_shooting(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageStopShootingAction(botAI);
     }
     static Action* illidan_stormrage_disperse_ranged(PlayerbotAI* botAI)
     {

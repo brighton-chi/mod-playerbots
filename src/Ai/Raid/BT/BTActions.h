@@ -550,6 +550,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageCommandPetAttackShadowDemonAction : public Action
+{
+public:
+    IllidanStormrageCommandPetAttackShadowDemonAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage command pet attack shadow demon") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormragePositionAboveGrateAction : public MovementAction
 {
 public:
@@ -582,6 +590,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageMeleeStopAttackingAction : public Action
+{
+public:
+    IllidanStormrageMeleeStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage melee stop attacking") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageStopShootingAction : public Action
+{
+public:
+    IllidanStormrageStopShootingAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage stop shooting") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageDisperseRangedAction : public MovementAction
 {
 public:
@@ -590,7 +614,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool SpreadInCircleInDemonPhase(Unit* illidan, Group* group);
+    bool FindDemonFormSlot(Unit const& illidan, Position& spot);
 };
 
 class IllidanStormrageMeleeGoSomewhereToNotDieAction : public MovementAction
@@ -601,11 +625,13 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageWarlockTankHandleDemonBossAction : public AttackAction
+// A movement action, not an attack, so the hold multiplier leaves it alone: it holds its own
+// casts.
+class IllidanStormrageWarlockTankHandleDemonBossAction : public MovementAction
 {
 public:
     IllidanStormrageWarlockTankHandleDemonBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
+        : MovementAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
     bool Execute(Event event) override;
 };
 
@@ -615,6 +641,9 @@ public:
     IllidanStormrageDpsPrioritizeAddsAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
     bool Execute(Event event) override;
+
+private:
+    Unit* FindShadowfiendForMelee();
 };
 
 class IllidanStormrageUseCageTrapAction : public MovementAction

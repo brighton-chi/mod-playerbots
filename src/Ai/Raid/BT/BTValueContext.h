@@ -164,6 +164,21 @@ protected:
     GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(botAI); }
 };
 
+// Read only in Demon Form, so the search runs only then.
+class ShadowDemonsValue : public CalculatedValue<std::vector<BtHelpers::ShadowDemon>>
+{
+public:
+    ShadowDemonsValue(PlayerbotAI* botAI)
+        : CalculatedValue<std::vector<BtHelpers::ShadowDemon>>(
+              botAI, "shadow demons", BtHelpers::SHADOW_DEMON_CACHE_INTERVAL_MS) {}
+
+protected:
+    std::vector<BtHelpers::ShadowDemon> Calculate() override
+    {
+        return BtHelpers::FindShadowDemons(botAI);
+    }
+};
+
 class RaidBlackTempleValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -186,6 +201,7 @@ public:
         creators["illidan stormrage trap hunter"] =
             &RaidBlackTempleValueContext::illidan_stormrage_trap_hunter;
         creators["parasitic shadowfiends"] = &RaidBlackTempleValueContext::parasitic_shadowfiends;
+        creators["shadow demons"] = &RaidBlackTempleValueContext::shadow_demons;
     }
 
 private:
@@ -232,6 +248,10 @@ private:
     static UntypedValue* parasitic_shadowfiends(PlayerbotAI* botAI)
     {
         return new ParasiticShadowfiendsValue(botAI);
+    }
+    static UntypedValue* shadow_demons(PlayerbotAI* botAI)
+    {
+        return new ShadowDemonsValue(botAI);
     }
 };
 

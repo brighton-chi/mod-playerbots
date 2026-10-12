@@ -9,6 +9,7 @@
 #include "BTHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
+#include "DruidActions.h"
 #include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
@@ -74,6 +75,56 @@ bool IsHeldAtIllidanLandingStack(Action* action)
     return dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<IllidanStormragePositionForLandingAction*>(action) &&
         !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
+}
+
+// A bot waiting out a Shadowfiend debuff at the run spot chases nothing, since its run there
+// stops once it arrives. In Demon Form everyone keeps to their place; melee leave theirs only to
+// reach a Shadow Demon.
+bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action))
+    {
+        return false;
+    }
+
+    Player* bot = botAI->GetBot();
+    if (HasParasiticShadowfiend(bot))
+        return true;
+
+    if (phase != IllidanPhase::Demon)
+        return false;
+
+    if (!PlayerbotAI::IsMelee(bot))
+        return true;
+
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
+}
+
+// Summons that fight on their own, unlike pets, which the strategy can set passive.
+bool IsGuardianSummon(Player* bot, Action* action)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+            return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+                dynamic_cast<CastArmyOfTheDeadAction*>(action);
+        case CLASS_DRUID:
+            return dynamic_cast<CastForceOfNatureAction*>(action);
+        case CLASS_MAGE:
+            return dynamic_cast<CastMirrorImageAction*>(action);
+        case CLASS_PRIEST:
+            return dynamic_cast<CastShadowfiendAction*>(action);
+        case CLASS_SHAMAN:
+            return dynamic_cast<CastFeralSpiritAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+        default:
+            return false;
+    }
 }
 
 }
@@ -684,10 +735,10 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetAssistValue(bool
     return isGrounded && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
 }
 
-// In Phases 1, 3 and 5 and while he lands, the Main Tank moves only by its ring action, and its
+// On the ground and while he lands, the Main Tank moves only by its ring action, and its
 // gap-closers are held, since he always comes to it; the other tanks wait at the landing stack
-// with everyone else. While he flies, the Main Tank holds the grate and the assist tanks the
-// Flames of Azzinoth, each moving only by its own action.
+// with everyone else, and keep to their Demon Form slots as melee. While he flies, the Main Tank
+// holds the grate and the assist tanks the Flames of Azzinoth, each moving only by its own action.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
     bool const isMove = dynamic_cast<MovementAction*>(action);
@@ -703,11 +754,15 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||
-        phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev)
+        phase == IllidanPhase::Grounded || phase == IllidanPhase::Demon ||
+        phase == IllidanPhase::Maiev)
     {
         if (!PlayerbotAI::IsMainTank(bot))
         {
-            if (!IsIllidanLandingWait(*illidan, phase))
+            if (IsHeldIllidanChase(botAI, action, phase))
+                return 0.0f;
+
+            if (phase == IllidanPhase::Demon || !IsIllidanLandingWait(*illidan, phase))
                 return 1.0f;
 
             return isGapCloser || IsHeldAtIllidanLandingStack(action) ? 0.0f : 1.0f;
@@ -783,8 +838,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Act
     if (phase == IllidanPhase::Flying)
         return 0.0f;
 
-    return phase == IllidanPhase::Demon && PlayerbotAI::IsHeal(bot) &&
-        dynamic_cast<ReachTargetAction*>(action) ? 0.0f : 1.0f;
+    return IsHeldIllidanChase(botAI, action, phase) ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* action)
@@ -841,10 +895,29 @@ float IllidanStormrageShadowfiendBirtherHoldMultiplier::GetValueInEncounter(Acti
     return IsIllidanShadowfiendBirther(botAI) ? 0.0f : 1.0f;
 }
 
+// Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5.
+float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsGuardianSummon(bot, action))
+        return 1.0f;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return 1.0f;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev ? 1.0f : 0.0f;
+}
+
+// The targeting action only picks targets and keeps melee off him during a hold itself, so it can
+// still switch a bot from him to an add.
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action))
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<IllidanStormrageDpsPrioritizeAddsAction*>(action))
+    {
         return 1.0f;
+    }
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)

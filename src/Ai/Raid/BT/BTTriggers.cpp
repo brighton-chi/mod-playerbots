@@ -599,7 +599,8 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     return (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||
-            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev) &&
+            phase == IllidanPhase::Grounded || phase == IllidanPhase::Demon ||
+            phase == IllidanPhase::Maiev) &&
         PlayerbotAI::IsMainTank(bot);
 }
 
@@ -612,12 +613,11 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) || illidan->GetVictim() == bot)
+    if (!illidan || IsIllidanDeathScene(illidan) || illidan->GetVictim() == bot ||
+        GetIllidanPhase(illidan) == IllidanPhase::Flying)
+    {
         return false;
-
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
-        return false;
+    }
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
@@ -706,6 +706,24 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     return GetNearestParasiticShadowfiend(botAI, *pet);
 }
 
+// Every pet, passive in Demon Form, is sent onto a Shadow Demon and kept on it until it dies.
+bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* victim = pet->GetVictim();
+    if (victim && victim->IsAlive() && victim->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return false;
+
+    return GetShadowDemonForPet(botAI, *pet);
+}
+
 bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -766,6 +784,37 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
     return illidan && IsIllidanLandingWait(*illidan, GetIllidanPhase(illidan));
 }
 
+// At the transform, and at 33% or below in Demon Form, melee and tanks still on him end their
+// auto-attack: in his melee range they would only need 110% of the warlock tank's threat.
+bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan ||
+        (bot->GetVictim() != illidan && AI_VALUE(Unit*, "current target") != illidan))
+    {
+        return false;
+    }
+
+    IllidanDpsHold const window = GetIllidanHoldWindow(illidan);
+    return window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush;
+}
+
+// Auto Shot and wands keep shooting him through a hold, since a multiplier can't end a running
+// auto-repeat.
+bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
+{
+    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    if (!shot)
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && shot->m_targets.GetUnitTargetGUID() == illidan->GetGUID() &&
+        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None;
+}
+
 bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
@@ -787,9 +836,10 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
         phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev;
 }
 
+// Melee and tanks take their Demon Form slots; the Main Tank has its own spots.
 bool IllidanStormrageThisExpansionHatesMeleeTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot))
+    if (!PlayerbotAI::IsMelee(bot) || (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -808,26 +858,23 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return GetIllidanWarlockTank(botAI) == bot;
 }
 
-// Tanks other than the Main Tank join in Phases 1, 3 and 5 as melee, and every tank in Demon
-// Form; while he flies the assist tanks have the Flames.
+// Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
+// assist tanks have the Flames. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || IsIllidanDeathScene(illidan))
         return false;
+
+    if (PlayerbotAI::IsHeal(bot))
+        return GetIllidanPhase(illidan) == IllidanPhase::Demon;
 
     if (!PlayerbotAI::IsTank(bot))
         return true;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::Demon)
-        return true;
-
     if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
-        phase != IllidanPhase::Maiev)
+        phase != IllidanPhase::Demon && phase != IllidanPhase::Maiev)
     {
         return false;
     }

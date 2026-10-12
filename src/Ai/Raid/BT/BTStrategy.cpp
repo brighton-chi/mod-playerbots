@@ -209,6 +209,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadowfiend",
         { NextAction("illidan stormrage command pet attack shadowfiend", ACTION_RAID + 3) }));
 
+    triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadow demon",
+        { NextAction("illidan stormrage command pet attack shadow demon", ACTION_RAID + 3) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
         { NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
 
@@ -220,6 +223,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("illidan stormrage should position for landing",
         { NextAction("illidan stormrage position for landing", ACTION_RAID + 2) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage melee should stop attacking",
+        { NextAction("illidan stormrage melee stop attacking", ACTION_EMERGENCY + 2) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage should stop shooting",
+        { NextAction("illidan stormrage stop shooting", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage ranged should spread",
         { NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
@@ -298,6 +307,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
     // multipliers.push_back(new IllidanStormrageUseEarthbindTotemMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageShadowfiendBirtherHoldMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }
 
@@ -339,7 +349,8 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     exclusions.insert(constructs.begin(), constructs.end());
 }
 
-// Tanks and melee never attack Illidan's Shadowfiends; ranged and pets kill them.
+// Tanks and melee never pick Illidan's Shadowfiends themselves; ranged and pets kill them, and
+// melee only finish one in their reach, from dps prioritize adds.
 void AppendParasiticShadowfiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(botAI->GetBot()))
