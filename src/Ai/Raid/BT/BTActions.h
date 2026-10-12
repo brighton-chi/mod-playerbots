@@ -462,6 +462,14 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
+class IllidanStormragePositionForPullAction : public MovementAction
+{
+public:
+    IllidanStormragePositionForPullAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage position for pull") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageMisdirectToTanksAction : public Action
 {
 public:
@@ -482,14 +490,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToCageTrap(Unit* illidan, GameObject* trap);
-    Position FindSafestNearbyPosition(
-        std::vector<Unit*> const& flameCrashes, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromFlameCrashes(Position const& start,
-        Position const& end, std::vector<Unit*> const& flameCrashes, float hazardRadius);
-
-    ObjectGuid _cageTrapGuid;
-    Position _cageTrapDestination;
+    float _ringAngle = 0.0f;
+    uint32 _ringPhaseStartTime = 0;
+    ObjectGuid _lastFlameCrash;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
@@ -498,10 +501,6 @@ public:
     IllidanStormrageIsolateBotWithParasiteAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
     bool Execute(Event event) override;
-
-private:
-    bool InfectedBotMoveFromGroup(Position const& targetPos);
-    bool FreezeTrapShadowfiend(Position const& targetPos);
 };
 
 class IllidanStormrageSetEarthbindTotemAction : public Action
@@ -541,6 +540,14 @@ public:
 private:
     ReactStates _previousReactState = REACT_DEFENSIVE;
     bool _setPassive = false;
+};
+
+class IllidanStormrageCommandPetAttackShadowfiendAction : public Action
+{
+public:
+    IllidanStormrageCommandPetAttackShadowfiendAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage command pet attack shadowfiend") {}
+    bool Execute(Event event) override;
 };
 
 class IllidanStormragePositionAboveGrateAction : public MovementAction

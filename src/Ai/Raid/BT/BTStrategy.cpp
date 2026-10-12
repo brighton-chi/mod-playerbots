@@ -184,10 +184,13 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidari council manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Illidan Stormrage <The Betrayer>
+    triggers.push_back(new TriggerNode("illidan stormrage should position for pull",
+        { NextAction("illidan stormrage position for pull", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage hunter should misdirect",
         { NextAction("illidan stormrage misdirect to tanks", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage casts flame crash",
+    triggers.push_back(new TriggerNode("illidan stormrage should be tanked",
         { NextAction("illidan stormrage main tank reposition boss", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiend on group member",
@@ -202,6 +205,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("illidan stormrage pets die to fire",
         { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadowfiend",
+        { NextAction("illidan stormrage command pet attack shadowfiend", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
         { NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
@@ -288,8 +294,10 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
+    multipliers.push_back(new IllidanStormrageHoldPullPositionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
     // multipliers.push_back(new IllidanStormrageUseEarthbindTotemMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageShadowfiendBirtherHoldMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
 }
 
@@ -331,6 +339,20 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     exclusions.insert(constructs.begin(), constructs.end());
 }
 
+// Tanks and melee never attack Illidan's Shadowfiends; ranged and pets kill them.
+void AppendParasiticShadowfiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
+        return;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    if (!context->GetValue<Unit*>("find target", "illidan stormrage")->Get())
+        return;
+
+    auto const& shadowfiends = context->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
+    exclusions.insert(shadowfiends.begin(), shadowfiends.end());
+}
+
 } // end anonymous namespace
 
 void RaidBlackTempleStrategy::AppendTargetExclusions(
@@ -350,4 +372,10 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
         AppendShadeOfAkamaTankExclusions(botAI, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
+
+    if (type == TargetValueExclusionType::TankTarget ||
+        type == TargetValueExclusionType::DpsTarget)
+    {
+        AppendParasiticShadowfiendExclusions(botAI, exclusions);
+    }
 }

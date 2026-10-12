@@ -149,6 +149,7 @@ enum class BtNpcs : uint32
     NPC_LADY_MALANDE                = 22951,
 
     // Illidan Stormrage <The Betrayer>
+    NPC_ILLIDAN_STORMRAGE           = 22917,
     NPC_FLAME_OF_AZZINOTH           = 22997,
     NPC_DEMON_FIRE                  = 23069,
     NPC_ILLIDAN_DB_TARGET           = 23070,
@@ -544,8 +545,15 @@ struct DemonFormLayout
 inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
+inline constexpr uint32 ILLIDAN_SPEECH_CACHE_INTERVAL_MS = 1000;
 // From any bot on the summit, about 90 yd reaches the far edge.
 inline constexpr float ILLIDAN_SHADOWFIEND_SEARCH_RADIUS = 100.0f;
+// From his spot this takes in Akama's, 81 yd away, where the speech is started.
+inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = 100.0f;
+// A bot this close to its place is in it.
+inline constexpr float ILLIDAN_SPOT_TOLERANCE = 1.0f;
+// A bot without the Shadowfiend debuff this close to a Shadowfiend is where a debuff just ended.
+inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // At or below this he is burnt down: no hold and no stop.
 inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
@@ -559,6 +567,10 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 inline constexpr float ILLIDAN_CHASE_STOP_DISTANCE = 9.5f;
 // Each Flame Crash moves him this far counterclockwise round the centre.
 inline constexpr float ILLIDAN_RING_STEP_ANGLE = 20.0f * static_cast<float>(M_PI) / 180.0f;
+// He is on his ring point within this distance.
+inline constexpr float ILLIDAN_RING_POINT_TOLERANCE = 1.5f;
+// A Flame Crash this close to the Main Tank was cast on it.
+inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
 // Phases 3 and 5: the centre, six at 6 yd and twelve at 12 yd, in that fill order.
 inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT = 19;
@@ -584,6 +596,8 @@ inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -115.0f * static_cast<floa
 
 // World trigger 22515.
 inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };
+// He kneels here and stands here for his speech.
+inline Position const ILLIDAN_SPEECH_POSITION = { 705.732f, 304.988f, 353.925f };
 // The Main Tank waits this far north of the centre at the pull, so he stops on the ring.
 inline Position const ILLIDAN_PULL_TANK_POSITION = { 691.521f, 305.455f, 353.790f };
 // While he lands, the Main Tank waits 6 yd north of the landing point and everyone else 22 yd
@@ -630,11 +644,19 @@ extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
 IllidanPhase GetIllidanPhase(Unit* illidan);
 bool IsIllidanDeathScene(Unit* illidan);
+// He is up and talking after Akama's gossip, still immune to players and out of combat.
+bool IsIllidanSpeechInProgress(Player* bot);
+// The phase-start hold that is running, before who it spares is decided.
+IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan);
 // The hold this bot is in, for the hold multiplier and any stop block.
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
+// The Main Tank's two ring spots: 9.5 yd past his ring point on the line from him, so he follows
+// and stops on it; then 6 yd outward of him, so he only turns and faces out.
+Position GetIllidanLeadSpot(Unit const& illidan, Position const& ringPoint);
+Position GetIllidanSettleSpot(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase);
@@ -660,8 +682,12 @@ bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.
 GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
-ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot);
-Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI);
+Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
+// No Shadowfiend debuff and a living Shadowfiend close by, as where a debuff just ended.
+bool IsIllidanShadowfiendBirther(PlayerbotAI* botAI);
+// Humans included, so the trap hunter traps for them too.
+ObjectGuid FindPlayerWithParasiticShadowfiendGuid(Player* bot);
+Player* GetPlayerWithParasiticShadowfiend(PlayerbotAI* botAI);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 GameObject* FindNearestCageTrap(PlayerbotAI* botAI);

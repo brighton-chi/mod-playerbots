@@ -321,6 +321,16 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
+// Not gated on the encounter, which starts as the speech ends.
+class IllidanStormrageHoldPullPositionsMultiplier : public Multiplier
+{
+public:
+    IllidanStormrageHoldPullPositionsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "illidan stormrage hold pull positions") {}
+
+    float GetValue(Action* action) override;
+};
+
 class IllidanStormrageControlMovementAndTargetingMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -342,6 +352,16 @@ class IllidanStormrageUseEarthbindTotemMultiplier : public BlackTempleEncounterM
 public:
     IllidanStormrageUseEarthbindTotemMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "illidan stormrage use earthbind totem") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class IllidanStormrageShadowfiendBirtherHoldMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageShadowfiendBirtherHoldMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage shadowfiend birther hold") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

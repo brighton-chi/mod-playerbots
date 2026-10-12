@@ -600,6 +600,21 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 
 // Illidan Stormrage <The Betrayer>
 
+// While he talks, bots move only to their pull places.
+float IllidanStormrageHoldPullPositionsMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_COMBAT || bot->GetMapId() != BT_MAP_ID)
+        return 1.0f;
+
+    if (!dynamic_cast<MovementAction*>(action) || dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<IllidanStormragePositionForPullAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    return AI_VALUE(bool, "illidan stormrage speech in progress") ? 0.0f : 1.0f;
+}
+
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     bool const inCombat = botAI->GetState() == BOT_STATE_COMBAT;
@@ -628,8 +643,9 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     return GetNonTankValue(action);
 }
 
-// Assist tanks have no assigned target outside Flying and Demon Form, so they keep tank assist
-// there. Ranged DPS, and everyone in Demon Form, take targets from dps prioritize adds.
+// Tanks take their targets from their own actions or dps prioritize adds, except the assist tanks
+// while he lands. Ranged DPS, melee in Phases 1, 3 and 5, and everyone in Demon Form take theirs
+// from dps prioritize adds.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetAssistValue(bool isTankAssist)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -638,31 +654,50 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetAssistValue(bool
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (isTankAssist)
-    {
-        return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
-            PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
-    }
+        return phase == IllidanPhase::Landing && !PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 
-    return phase == IllidanPhase::Demon || PlayerbotAI::IsRangedDps(bot) ? 0.0f : 1.0f;
+    if (phase == IllidanPhase::Demon || PlayerbotAI::IsRangedDps(bot))
+        return 0.0f;
+
+    bool const isGrounded = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev;
+    return isGrounded && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
 }
 
-// While he flies, the Main Tank holds the grate and the assist tanks the Flames of Azzinoth, each
-// moving only by its own action.
+// In Phases 1, 3 and 5 the Main Tank moves only by its ring action, and its gap-closers are held,
+// since he always comes to it. While he flies, the Main Tank holds the grate and the assist tanks
+// the Flames of Azzinoth, each moving only by its own action.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
     bool const isMove = dynamic_cast<MovementAction*>(action);
-    bool const isMeleeSpell = dynamic_cast<CastMeleeSpellAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action);
+    bool const isGapCloser = dynamic_cast<CastReachTargetSpellAction*>(action);
+    bool const isMeleeSpell = isGapCloser || dynamic_cast<CastMeleeSpellAction*>(action);
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
     if (!isMove && !isMeleeSpell && !isHeal)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) ||
-        GetIllidanPhase(illidan) != IllidanPhase::Flying)
-    {
+    if (!illidan || IsIllidanDeathScene(illidan))
         return 1.0f;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev)
+    {
+        if (!PlayerbotAI::IsMainTank(bot))
+            return 1.0f;
+
+        if (isMove)
+        {
+            return dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(
+                action) ? 1.0f : 0.0f;
+        }
+
+        return isGapCloser ? 0.0f : 1.0f;
     }
+
+    if (phase != IllidanPhase::Flying)
+        return 1.0f;
 
     if (PlayerbotAI::IsMainTank(bot))
     {
@@ -737,6 +772,39 @@ float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* a
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     return illidan && !IsIllidanDeathScene(illidan) &&
         GetIllidanPhase(illidan) != IllidanPhase::Flying ? 0.0f : 1.0f;
+}
+
+// Shadowfiends spawn on the player whose debuff ended, a valid target again, and any threat it
+// makes on them brings them back onto it. So near them it holds damage on them, area damage, and
+// for a healer heals, since heal threat reaches them too.
+float IllidanStormrageShadowfiendBirtherHoldMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    bool const isHeal =
+        PlayerbotAI::IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action);
+    if (!isHeal)
+    {
+        if (!IsDpsHoldCandidate(bot, action))
+            return 1.0f;
+
+        Unit* target = AI_VALUE(Unit*, "current target");
+        bool const isOnShadowfiend =
+            target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
+        auto* castSpellAction = dynamic_cast<CastSpellAction*>(action);
+        bool const isAreaDamage = IsAoeThreatAction(bot, action) ||
+            (castSpellAction &&
+             castSpellAction->getThreatType() == Action::ActionThreatType::Aoe &&
+             !dynamic_cast<CastHealingSpellAction*>(action));
+        if (!isOnShadowfiend && !isAreaDamage)
+            return 1.0f;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+        return 1.0f;
+
+    return IsIllidanShadowfiendBirther(botAI) ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)

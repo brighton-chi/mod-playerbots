@@ -179,11 +179,14 @@ public:
             &RaidBlackTempleTriggerContext::illidari_council_should_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
+        creators["illidan stormrage should position for pull"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_pull;
+
         creators["illidan stormrage hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_hunter_should_misdirect;
 
-        creators["illidan stormrage casts flame crash"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_casts_flame_crash;
+        creators["illidan stormrage should be tanked"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_be_tanked;
 
         creators["illidan stormrage parasitic shadowfiend on group member"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiend_on_group_member;
@@ -196,6 +199,9 @@ public:
 
         creators["illidan stormrage pets die to fire"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_fire;
+
+        creators["illidan stormrage pet should attack shadowfiend"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadowfiend;
 
         creators["illidan stormrage grate is safe from flames"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
@@ -466,13 +472,17 @@ private:
     }
 
     // Illidan Stormrage <The Betrayer>
+    static Trigger* illidan_stormrage_should_position_for_pull(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShouldPositionForPullTrigger(botAI);
+    }
     static Trigger* illidan_stormrage_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new IllidanStormrageHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_casts_flame_crash(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageCastsFlameCrashTrigger(botAI);
+        return new IllidanStormrageShouldBeTankedTrigger(botAI);
     }
     static Trigger* illidan_stormrage_parasitic_shadowfiend_on_group_member(PlayerbotAI* botAI)
     {
@@ -489,6 +499,10 @@ private:
     static Trigger* illidan_stormrage_pets_die_to_fire(PlayerbotAI* botAI)
     {
         return new IllidanStormragePetsDieToFireTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_pet_should_attack_shadowfiend(PlayerbotAI* botAI)
+    {
+        return new IllidanStormragePetShouldAttackShadowfiendTrigger(botAI);
     }
     static Trigger* illidan_stormrage_grate_is_safe_from_flames(PlayerbotAI* botAI)
     {

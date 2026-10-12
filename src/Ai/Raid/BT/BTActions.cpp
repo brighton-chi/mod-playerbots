@@ -1760,6 +1760,24 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 
 // Illidan Stormrage <The Betrayer>
 
+// The Main Tank waits 15.5 yd north of the grate centre, so he stops on the ring when he runs in.
+// The trap hunter waits in its slot and everyone else on the grate.
+bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
+{
+    Position spot = ILLIDAN_GRATE_CENTRE;
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+        spot = ILLIDAN_PULL_TANK_POSITION;
+    else if (IsIllidanTrapHunter(botAI))
+        spot = GetGrateSlot(ILLIDAN_GRATE_TRAP_SLOT);
+
+    if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
+        return false;
+
+    return MoveTo(
+        BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_NORMAL, true, false);
+}
+
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1771,6 +1789,13 @@ bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
+
+    if (phase == IllidanPhase::Initial)
+    {
+        Player* mainTank = GetGroupMainTank(bot);
+        return mainTank && mainTank->IsAlive() &&
+            MisdirectTargetToTank(botAI, illidan, mainTank);
+    }
 
     if (phase == IllidanPhase::Flying && TryMisdirectToFlameTanks(group))
         return true;
@@ -1851,6 +1876,9 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
 }
 
+// The Main Tank holds him 25 yd from the grate centre, facing out. At each phase start his ring
+// point is the one nearest the tank, and each Flame Crash on the tank moves it 20 deg
+// counterclockwise: the tank leads him past it, so he follows and stops on it, then settles.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1860,261 +1888,76 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != illidan)
         return Attack(illidan);
 
-    if (GetIllidanPhase(illidan) == IllidanPhase::Maiev)
+    auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
+    uint32 const phaseStartTime = it != illidanPhaseStartTime.end() ? it->second : 0;
+    if (phaseStartTime != _ringPhaseStartTime)
     {
-        GameObject* trap = FindNearestCageTrap(botAI);
-        if (trap && bot->GetExactDist2d(trap) < 40.0f && illidan->GetVictim() == bot)
-            return MoveToCageTrap(illidan, trap);
+        _ringPhaseStartTime = phaseStartTime;
+        _ringAngle = GetGrateAngle(*bot);
+        _lastFlameCrash.Clear();
+    }
+
+    Position spot;
+    if (illidan->GetVictim() != bot)
+    {
+        // A Paladin's rotation casts Avenger's Shield only with two attackers within 8 yd.
+        if (bot->getClass() == CLASS_PALADIN && botAI->CanCastSpell("avenger's shield", illidan))
+            return botAI->CastSpell("avenger's shield", illidan);
+
+        // At a phase start the tank's opener is on its way; later it walks in to take him back.
+        if (GetIllidanPhaseStartHold(illidan) == IllidanDpsHold::AfterReset)
+            return false;
+
+        spot = GetIllidanSettleSpot(*illidan);
     }
     else
     {
-        _cageTrapGuid.Clear();
-    }
-
-    if (illidan->GetVictim() != bot)
-    {
-        _cageTrapGuid.Clear();
-        return false;
-    }
-
-    std::vector<Unit*> const flameCrashes = GetAllFlameCrashes(bot);
-    if (flameCrashes.empty())
-        return false;
-
-    constexpr float hazardRadius = 12.0f;
-    bool inDanger = false;
-    for (Unit* flameCrash : flameCrashes)
-    {
-        if (bot->GetDistance2d(flameCrash) < hazardRadius)
+        Creature* flameCrash = bot->FindNearestCreature(
+            Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE, true);
+        if (flameCrash && flameCrash->GetGUID() != _lastFlameCrash &&
+            bot->GetExactDist2d(flameCrash) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE)
         {
-            inDanger = true;
-            break;
+            _lastFlameCrash = flameCrash->GetGUID();
+            _ringAngle = Position::NormalizeOrientation(_ringAngle + ILLIDAN_RING_STEP_ANGLE);
         }
-    }
 
-    if (!inDanger)
-        return false;
-
-    constexpr float maxRadius = 30.0f;
-    Position const safestPos = FindSafestNearbyPosition(flameCrashes, maxRadius, hazardRadius);
-
-    return MoveTo(
-        BT_MAP_ID, safestPos.GetPositionX(), safestPos.GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, true);
-}
-
-bool IllidanStormrageMainTankRepositionBossAction::MoveToCageTrap(Unit* illidan, GameObject* trap)
-{
-    if (!illidan || !trap)
-        return false;
-
-    if (_cageTrapGuid != trap->GetGUID())
-    {
-        float const trapX = trap->GetPositionX();
-        float const trapY = trap->GetPositionY();
-
-        float const distToTrap = trap->GetExactDist2d(bot);
-        if (distToTrap <= 0.0f)
+        // He is coming to the tank, and stops 9.5 yd short of wherever it stands.
+        if (illidan->isMoving())
             return false;
 
-        constexpr float distBeyondTrap = 6.0f;
-
-        float const dx = trapX - bot->GetPositionX();
-        float const dy = trapY - bot->GetPositionY();
-        float const targetX = trapX + (dx / distToTrap) * distBeyondTrap;
-        float const targetY = trapY + (dy / distToTrap) * distBeyondTrap;
-
-        _cageTrapDestination = Position(targetX, targetY, trap->GetPositionZ());
-        _cageTrapGuid = trap->GetGUID();
+        Position const ringPoint = GetRingPoint(_ringAngle, ILLIDAN_RING_RADIUS);
+        if (illidan->GetExactDist2d(ringPoint) > ILLIDAN_RING_POINT_TOLERANCE)
+            spot = GetIllidanLeadSpot(*illidan, ringPoint);
+        else
+            spot = GetIllidanSettleSpot(*illidan);
     }
 
-    if (bot->GetHealthPct() <= 50.0f)
+    if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
         return false;
-
-    constexpr float arrivalDist = 2.0f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, _cageTrapDestination, arrivalDist, illidan, moveX, moveY, backwards))
-    {
-        return false;
-    }
 
     return MoveTo(
-        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-Position IllidanStormrageMainTankRepositionBossAction::FindSafestNearbyPosition(
-    std::vector<Unit*> const& flameCrashes, float maxRadius, float hazardRadius)
-{
-    constexpr uint8 numAngles = 32;
-    constexpr float angleStep = 2.0f * M_PI / numAngles;
-    constexpr float minDistance = 2.0f;
-    constexpr float distanceStep = 1.0f;
-    uint32 const numDistances = static_cast<uint32>((maxRadius - minDistance) / distanceStep);
-
-    float const backwardsAngle = Position::NormalizeOrientation(bot->GetOrientation() + M_PI);
-
-    Position bestPos;
-    float bestAngleDiff = M_PI * 2.0f;
-    float bestDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    for (uint32 i = 0; i <= numDistances; ++i)
-    {
-        float const distance = minDistance + i * distanceStep;
-        for (uint8 j = 0; j < numAngles; ++j)
-        {
-            float const angleOffset = j * angleStep;
-            for (int sign = -1; sign <= 1; sign += 2)
-            {
-                float const testAngle =
-                    Position::NormalizeOrientation(backwardsAngle + sign * angleOffset);
-                float const x = bot->GetPositionX() + distance * std::cos(testAngle);
-                float const y = bot->GetPositionY() + distance * std::sin(testAngle);
-
-                Position const testPos(x, y, bot->GetPositionZ());
-
-                bool isSafe = true;
-                for (Unit* flameCrash : flameCrashes)
-                {
-                    if (flameCrash->GetDistance2d(x, y) < hazardRadius)
-                    {
-                        isSafe = false;
-                        break;
-                    }
-                }
-                if (!isSafe)
-                    continue;
-
-                bool const pathSafe = IsPathSafeFromFlameCrashes(
-                    bot->GetPosition(), testPos, flameCrashes, hazardRadius);
-
-                float angleDiff = std::abs(Position::NormalizeOrientation(
-                                           testAngle - backwardsAngle));
-                if (angleDiff > M_PI)
-                    angleDiff = 2 * M_PI - angleDiff;
-
-                if (pathSafe && (!foundSafe || angleDiff < bestAngleDiff ||
-                    (angleDiff == bestAngleDiff && distance < bestDistance)))
-                {
-                    bestPos = testPos;
-                    bestAngleDiff = angleDiff;
-                    bestDistance = distance;
-                    foundSafe = true;
-                }
-                else if (!foundSafe && angleDiff < bestAngleDiff)
-                {
-                    bestPos = testPos;
-                    bestAngleDiff = angleDiff;
-                    bestDistance = distance;
-                }
-            }
-            if (foundSafe)
-                break;
-        }
-        if (foundSafe)
-            break;
-    }
-
-    return bestPos;
-}
-
-bool IllidanStormrageMainTankRepositionBossAction::IsPathSafeFromFlameCrashes(
-    Position const& start, Position const& end, std::vector<Unit*> const& flameCrashes,
-    float hazardRadius)
-{
-    constexpr uint8 numChecks = 10;
-    float const dx = end.GetPositionX() - start.GetPositionX();
-    float const dy = end.GetPositionY() - start.GetPositionY();
-
-    for (uint8 i = 1; i <= numChecks; ++i)
-    {
-        float const ratio = static_cast<float>(i) / numChecks;
-        float const checkX = start.GetPositionX() + dx * ratio;
-        float const checkY = start.GetPositionY() + dy * ratio;
-
-        for (Unit* flameCrash : flameCrashes)
-        {
-            float const distToFlameCrash = flameCrash->GetDistance2d(checkX, checkY);
-            if (distToFlameCrash < hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
-}
-
+// An infected hunter, or the trap hunter, drops Frost Trap on arrival.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
-    if (GetIllidanPhase(illidan) == IllidanPhase::Initial)
-    {
-        constexpr float safeDistance = 15.0f;
-        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        if (!nearestPlayer)
-            return false;
-
-        float const currentDistance = bot->GetExactDist2d(nearestPlayer);
-        if (currentDistance >= safeDistance)
-            return false;
-
-        return MoveAway(nearestPlayer, safeDistance - currentDistance);
-    }
-
-    float const angle = illidan->GetOrientation() + M_PI;
-    constexpr float distBehindIllidan = 35.0f;
-
-    float const targetX = illidan->GetPositionX() + std::cos(angle) * distBehindIllidan;
-    float const targetY = illidan->GetPositionY() + std::sin(angle) * distBehindIllidan;
-    Position const target(targetX, targetY, bot->GetPositionZ());
-
-    if (HasParasiticShadowfiend(bot))
-        return InfectedBotMoveFromGroup(target);
-
-    if (IsIllidanTrapHunter(botAI))
-        return FreezeTrapShadowfiend(target);
-
-    return false;
-}
-
-bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(Position const& target)
-{
-    if (bot->GetExactDist2d(target) < 1.0f)
-        return false;
-
-    return MoveTo(
-        BT_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(Position const& target)
-{
-    if (bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)))
-        return false;
-
-    Player* infected = GetBotWithParasiticShadowfiend(botAI);
-    if (!infected)
-        return false;
-
-    if (bot->GetExactDist2d(target) > 2.0f)
+    Position const runSpot = GetIllidanShadowfiendRunSpot(*illidan, GetIllidanPhase(illidan));
+    if (bot->GetExactDist2d(runSpot) > ILLIDAN_SPOT_TOLERANCE)
     {
         return MoveTo(
-            BT_MAP_ID, target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
+            BT_MAP_ID, runSpot.GetPositionX(), runSpot.GetPositionY(), runSpot.GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
-    else if (bot->GetExactDist2d(infected) < 2.0f &&
-        botAI->CanCastSpell(Id(BtSpells::SPELL_FROST_TRAP), bot))
-    {
-        return botAI->CastSpell(Id(BtSpells::SPELL_FROST_TRAP), bot);
-    }
 
-    return false;
+    uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
+    return bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell(frostTrap, bot) &&
+        botAI->CastSpell(frostTrap, bot);
 }
 
 bool IllidanStormrageSetEarthbindTotemAction::Execute(Event /*event*/)
@@ -2378,6 +2221,32 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
+bool IllidanStormrageCommandPetAttackShadowfiendAction::Execute(Event /*event*/)
+{
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
+
+    Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *pet);
+    if (!shadowfiend || !pet->IsValidAttackTarget(shadowfiend))
+        return false;
+
+    pet->ClearUnitState(UNIT_STATE_FOLLOW);
+    pet->AttackStop();
+    pet->SetTarget(shadowfiend->GetGUID());
+    if (CharmInfo* charmInfo = pet->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    pet->AI()->AttackStart(shadowfiend);
+    return true;
+}
+
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -2460,16 +2329,25 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    if (GetIllidanPhase(illidan) == IllidanPhase::Demon)
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::Demon)
         return SpreadInCircleInDemonPhase(illidan, group);
 
-    if (GetBotWithParasiticShadowfiend(botAI) == bot ||
-        (IsIllidanTrapHunter(botAI) && GetBotWithParasiticShadowfiend(botAI)))
-    {
+    if (HasParasiticShadowfiend(bot))
         return false;
-    }
 
-    return FanOutBehindInHumanPhase(illidan, group);
+    if (phase != IllidanPhase::Initial)
+        return FanOutBehindInHumanPhase(illidan, group);
+
+    // Phase 1: stacked on the grate centre, the trap hunter in its slot.
+    Position const spot = IsIllidanTrapHunter(botAI) ?
+        GetGrateSlot(ILLIDAN_GRATE_TRAP_SLOT) : ILLIDAN_GRATE_CENTRE;
+    if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
+        return false;
+
+    return MoveTo(
+        BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool IllidanStormrageDisperseRangedAction::FanOutBehindInHumanPhase(
@@ -2758,6 +2636,12 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
                 targets = { eastFlame, westFlame };
             }
         }
+    }
+    // Melee, assist tanks included, are on him alone.
+    else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev)
+    {
+        targets = { illidan };
     }
 
     for (Unit* candidate : targets)

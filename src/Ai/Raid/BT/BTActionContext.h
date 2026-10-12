@@ -178,6 +178,9 @@ public:
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
+        creators["illidan stormrage position for pull"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_position_for_pull;
+
         creators["illidan stormrage misdirect to tanks"] =
             &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tanks;
 
@@ -195,6 +198,9 @@ public:
 
         creators["illidan stormrage control pet aggression"] =
             &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
+
+        creators["illidan stormrage command pet attack shadowfiend"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_shadowfiend;
 
         creators["illidan stormrage position above grate"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_above_grate;
@@ -475,6 +481,10 @@ private:
     }
 
     // Illidan Stormrage <The Betrayer>
+    static Action* illidan_stormrage_position_for_pull(PlayerbotAI* botAI)
+    {
+        return new IllidanStormragePositionForPullAction(botAI);
+    }
     static Action* illidan_stormrage_misdirect_to_tanks(PlayerbotAI* botAI)
     {
         return new IllidanStormrageMisdirectToTanksAction(botAI);
@@ -498,6 +508,10 @@ private:
     static Action* illidan_stormrage_control_pet_aggression(PlayerbotAI* botAI)
     {
         return new IllidanStormrageControlPetAggressionAction(botAI);
+    }
+    static Action* illidan_stormrage_command_pet_attack_shadowfiend(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageCommandPetAttackShadowfiendAction(botAI);
     }
     static Action* illidan_stormrage_position_above_grate(PlayerbotAI* botAI)
     {

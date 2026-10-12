@@ -1360,7 +1360,22 @@ bool IsIllidanDeathScene(Unit* illidan)
     return illidan && illidan->GetHealth() == 1;
 }
 
-IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
+bool IsIllidanSpeechInProgress(Player* bot)
+{
+    if (IsEncounterInProgress(bot, BT_MAP_ID) ||
+        bot->GetExactDist(ILLIDAN_SPEECH_POSITION) > ILLIDAN_SPEECH_SEARCH_RADIUS)
+    {
+        return false;
+    }
+
+    Creature* illidan = bot->FindNearestCreature(
+        Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS, true);
+
+    return illidan && illidan->getStandState() == UNIT_STAND_STATE_STAND &&
+        illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();
+}
+
+IllidanDpsHold GetIllidanPhaseStartHold(Unit* illidan)
 {
     if (!illidan || illidan->GetHealthPct() <= ILLIDAN_BURN_HEALTH_PCT)
         return IllidanDpsHold::None;
@@ -1386,15 +1401,21 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
     if (it != illidanPhaseStartTime.end() && getMSTimeDiff(it->second, getMSTime()) >= waitMs)
         return IllidanDpsHold::None;
 
-    Player* bot = botAI->GetBot();
-    if (phase == IllidanPhase::Demon)
-    {
-        return GetIllidanWarlockTank(botAI) == bot ?
-            IllidanDpsHold::None : IllidanDpsHold::DemonFormStart;
-    }
+    return phase == IllidanPhase::Demon ?
+        IllidanDpsHold::DemonFormStart : IllidanDpsHold::AfterReset;
+}
 
-    return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ?
-        IllidanDpsHold::None : IllidanDpsHold::AfterReset;
+IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
+{
+    IllidanDpsHold const hold = GetIllidanPhaseStartHold(illidan);
+    if (hold == IllidanDpsHold::None)
+        return IllidanDpsHold::None;
+
+    Player* bot = botAI->GetBot();
+    if (hold == IllidanDpsHold::DemonFormStart)
+        return GetIllidanWarlockTank(botAI) == bot ? IllidanDpsHold::None : hold;
+
+    return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ? IllidanDpsHold::None : hold;
 }
 
 float GetGrateAngle(Position const& position)
@@ -1408,6 +1429,21 @@ Position GetRingPoint(float angle, float radius)
         ILLIDAN_GRATE_CENTRE.GetPositionX() + radius * std::cos(angle),
         ILLIDAN_GRATE_CENTRE.GetPositionY() + radius * std::sin(angle),
         ILLIDAN_GRATE_CENTRE.GetPositionZ());
+}
+
+Position GetIllidanLeadSpot(Unit const& illidan, Position const& ringPoint)
+{
+    float const angle = illidan.GetAngle(&ringPoint);
+    return Position(
+        ringPoint.GetPositionX() + ILLIDAN_CHASE_STOP_DISTANCE * std::cos(angle),
+        ringPoint.GetPositionY() + ILLIDAN_CHASE_STOP_DISTANCE * std::sin(angle),
+        ringPoint.GetPositionZ());
+}
+
+Position GetIllidanSettleSpot(Unit const& illidan)
+{
+    float const radius = ILLIDAN_GRATE_CENTRE.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;
+    return GetRingPoint(GetGrateAngle(illidan), radius);
 }
 
 Position GetGrateSlot(size_t index)
@@ -1762,7 +1798,42 @@ GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI)
     return shadowfiends;
 }
 
-ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot)
+Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit)
+{
+    auto const& shadowfiends =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
+
+    Unit* nearest = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (ObjectGuid const& guid : shadowfiends)
+    {
+        Unit* shadowfiend = botAI->GetUnit(guid);
+        if (!shadowfiend || !shadowfiend->IsAlive())
+            continue;
+
+        float const distance = unit.GetExactDist2d(shadowfiend);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = shadowfiend;
+        }
+    }
+
+    return nearest;
+}
+
+bool IsIllidanShadowfiendBirther(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (HasParasiticShadowfiend(bot))
+        return false;
+
+    Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
+    return shadowfiend &&
+        bot->GetExactDist2d(shadowfiend) <= ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE;
+}
+
+ObjectGuid FindPlayerWithParasiticShadowfiendGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1771,19 +1842,16 @@ ObjectGuid FindBotWithParasiticShadowfiendGuid(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-            HasParasiticShadowfiend(member))
-        {
+        if (member && member->IsAlive() && HasParasiticShadowfiend(member))
             return member->GetGUID();
-        }
     }
 
     return ObjectGuid::Empty;
 }
 
-Player* GetBotWithParasiticShadowfiend(PlayerbotAI* botAI)
+Player* GetPlayerWithParasiticShadowfiend(PlayerbotAI* botAI)
 {
-    return GetCachedPlayer(botAI, "illidan stormrage bot with parasitic shadowfiend");
+    return GetCachedPlayer(botAI, "illidan stormrage player with parasitic shadowfiend");
 }
 
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
