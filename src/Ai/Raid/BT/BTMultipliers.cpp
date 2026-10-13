@@ -555,11 +555,22 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetValueInEncounter(
 
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action* action)
 {
-    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
+    if (bot->getClass() == CLASS_WARRIOR)
     {
-        Player* mageTank = GetZerevorMageTank(botAI);
-        if (mageTank && action->GetTarget() == mageTank)
-            return 0.0f;
+        if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+            return 1.0f;
+
+        // The main tank will attempt to Shield Bash Malande, despite not being in range, which
+        // permanently switches its target to Malande. This ultimately needs a fix in CastSpell to
+        // restore the old selection following a failed cast.
+        if (dynamic_cast<CastShieldBashOnEnemyHealerAction*>(action))
+            return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+
+        if (dynamic_cast<CastVigilanceAction*>(action))
+        {
+            Player* mageTank = GetZerevorMageTank(botAI);
+            return mageTank && action->GetTarget() == mageTank ? 0.0f : 1.0f;
+        }
     }
 
     bool const isStockMove =
