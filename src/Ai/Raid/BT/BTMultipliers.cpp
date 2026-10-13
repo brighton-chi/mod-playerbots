@@ -562,8 +562,8 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
             return 1.0f;
 
         // The main tank will attempt to Shield Bash Malande, despite not being in range, which
-        // permanently switches its target to Malande. This ultimately needs a fix in CastSpell to
-        // restore the old selection following a failed cast.
+        // permanently switches its target to Malande. The issue needs a fix in CastSpell to
+        // restore the old selection following a failed cast, but this is a bandaid for now.
         if (dynamic_cast<CastShieldBashOnEnemyHealerAction*>(action))
             return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 
@@ -576,28 +576,29 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 
     bool const isStockMove =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
-    bool const isAoeThreat = IsAoeThreatAction(bot, action) ||
-        (bot->getClass() == CLASS_DRUID && dynamic_cast<CastMaulAction*>(action));
+    bool const isAoeThreat = IsAoeThreatAction(bot, action);
 
     if (!isStockMove && !isAoeThreat && !IsTauntAction(bot, action))
         return 1.0f;
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios)
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    if (!gathios || !zerevor || !malande)
         return 1.0f;
 
     if (isAoeThreat)
+    {
+        if (zerevor->GetVictim() == bot)
+            return 0.0f;
+
         return IsAnotherCouncilMemberWithin(botAI, COUNCIL_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
+    }
 
     // Tank face ignores patches, so it would walk the Malande tank back into one it just left.
     if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
-        Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-        if (!malande)
-            return 1.0f;
-
         float const reach = bot->GetMeleeRange(malande) + COUNCIL_PATCH_MARGIN;
-        Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
         return IsInCouncilPatch(*malande, gathios, zerevor, reach) ? 0.0f : 1.0f;
     }
 
