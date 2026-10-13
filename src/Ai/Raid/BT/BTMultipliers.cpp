@@ -582,14 +582,24 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
     if (!isStockMove && !isAoeThreat && !IsTauntAction(bot, action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    if (!gathios)
         return 1.0f;
 
     if (isAoeThreat)
         return IsAnotherCouncilMemberWithin(botAI, COUNCIL_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
 
+    // Tank face ignores patches, so it would walk the Malande tank back into one it just left.
     if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
-        return 1.0f;
+    {
+        Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+        if (!malande)
+            return 1.0f;
+
+        float const reach = bot->GetMeleeRange(malande) + COUNCIL_PATCH_MARGIN;
+        Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+        return IsInCouncilPatch(*malande, gathios, zerevor, reach) ? 0.0f : 1.0f;
+    }
 
     return 0.0f;
 }

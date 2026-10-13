@@ -1566,7 +1566,29 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != malande)
         return Attack(malande);
 
-    return false;
+    // Leaves a council patch only for a spot from which it can still hit her; otherwise it stays.
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (!HasDangerousCouncilAura(bot) || !bot->IsWithinMeleeRange(malande) ||
+        IsWaitingForLastMove(priority))
+    {
+        return false;
+    }
+
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (!gathios || !zerevor)
+        return false;
+
+    if (!IsInCouncilPatch(bot->GetPosition(), gathios, zerevor, COUNCIL_PATCH_MARGIN))
+        return false;
+
+    Position destination;
+    if (!FindMalandeTankPosition(bot, malande, gathios, zerevor, destination))
+        return false;
+
+    return MoveTo(
+        BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+        destination.GetPositionZ(), false, false, false, false, priority, true, false);
 }
 
 bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/)
@@ -1644,7 +1666,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
