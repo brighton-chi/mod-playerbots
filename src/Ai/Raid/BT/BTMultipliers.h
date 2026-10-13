@@ -309,6 +309,19 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Ranged interrupts are invaluable for Circle of Healing.
+class IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+              botAI, "illidari council save interrupts for circle of healing") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class IllidariCouncilWaitForDpsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

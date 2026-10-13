@@ -304,6 +304,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidariCouncilControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableMageTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilControlHunterActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>

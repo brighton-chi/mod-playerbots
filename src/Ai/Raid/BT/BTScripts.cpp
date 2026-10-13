@@ -61,7 +61,7 @@ public:
     }
 };
 
-// While her melee can't interrupt (Blessing of Protection, or a Zerevor patch on her), a ranged
+// While her melee can't interrupt (Blessing of Protection, or a council patch on her), a ranged
 // bot that could interrupt Lady Malande's Circle of Healing but would still be casting when it
 // closes drops its own cast.
 class IllidariCouncilCircleOfHealingSpellListenerScript : public AllSpellScript
@@ -79,9 +79,12 @@ public:
         }
 
         if (!caster->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
-            !IsMalandeInZerevorPatch(
-                caster, caster->FindNearestCreature(
-                    Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR), COUNCIL_ZEREVOR_SEARCH_RADIUS)))
+            !IsMalandeInCouncilPatch(
+                caster,
+                caster->FindNearestCreature(
+                    Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER), COUNCIL_MEMBER_SEARCH_RADIUS),
+                caster->FindNearestCreature(
+                    Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR), COUNCIL_MEMBER_SEARCH_RADIUS)))
         {
             return;
         }

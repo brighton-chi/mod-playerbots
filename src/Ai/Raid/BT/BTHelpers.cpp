@@ -1172,9 +1172,20 @@ bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin)
     return false;
 }
 
-bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor)
+// Gathios's Consecration reaches her only at the pull, while he is still beside her on the dais.
+bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor)
 {
-    return malande && IsInZerevorPatch(zerevor, *malande);
+    if (!malande)
+        return false;
+
+    if (gathios)
+    {
+        DynamicObject* consecration = gathios->GetDynObject(Id(BtSpells::SPELL_CONSECRATION));
+        if (consecration && consecration->GetExactDist2d(malande) < consecration->GetRadius())
+            return true;
+    }
+
+    return IsInZerevorPatch(zerevor, *malande);
 }
 
 bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)

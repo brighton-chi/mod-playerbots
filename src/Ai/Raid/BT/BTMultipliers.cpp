@@ -10,6 +10,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
+#include "DruidBearActions.h"
 #include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
@@ -575,7 +576,9 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 
     bool const isStockMove =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
-    bool const isAoeThreat = IsAoeThreatAction(bot, action);
+    bool const isAoeThreat = IsAoeThreatAction(bot, action) ||
+        (bot->getClass() == CLASS_DRUID && dynamic_cast<CastMaulAction*>(action));
+
     if (!isStockMove && !isAoeThreat && !IsTauntAction(bot, action))
         return 1.0f;
 
@@ -657,6 +660,32 @@ float IllidariCouncilControlHunterActionsMultiplier::GetValueInEncounter(Action*
     }
 
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+}
+
+float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncounter(
+    Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    bool const isMage = bot->getClass() == CLASS_MAGE;
+    bool const isShaman = bot->getClass() == CLASS_SHAMAN;
+    if (!isMage && !isShaman)
+        return 1.0f;
+
+    if (isMage && !dynamic_cast<CastCounterspellAction*>(action) &&
+        !dynamic_cast<CastCounterspellOnEnemyHealerAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (isShaman && !dynamic_cast<CastWindShearAction*>(action) &&
+        !dynamic_cast<CastWindShearOnEnemyHealerAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    return AI_VALUE2(Unit*, "find target", "lady malande") ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)

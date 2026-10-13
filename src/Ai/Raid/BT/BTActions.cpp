@@ -1708,8 +1708,8 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 // Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
 // knights and Enhancement shamans stay, since Mind Freeze and Wind Shear still land. All of them
-// leave her while she stands in a Zerevor patch. Casters take Gathios, and the mage tank's healer
-// Zerevor. Everyone skips a member immune to their damage.
+// leave her while she stands in a Zerevor patch or Gathios's Consecration. Casters take Gathios,
+// and the mage tank's healer Zerevor. Everyone skips a member immune to their damage.
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
@@ -1737,7 +1737,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
         else if (malande && !malande->HasAura(immunity))
             target = malande;
     }
-    else if (ShouldAttackMalande(malande, zerevor))
+    else if (ShouldAttackMalande(malande, gathios, zerevor))
     {
         target = malande;
     }
@@ -1756,11 +1756,12 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
-bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(Unit* malande, Unit* zerevor) const
+bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
+    Unit* malande, Unit* gathios, Unit* zerevor) const
 {
     constexpr float zerevorClearance = 15.0f;
     if (!malande || (zerevor && zerevor->GetExactDist2d(malande) < zerevorClearance) ||
-        IsMalandeInZerevorPatch(malande, zerevor))
+        IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
         return false;
     }

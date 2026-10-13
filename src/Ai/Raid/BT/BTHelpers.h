@@ -148,6 +148,7 @@ enum class BtNpcs : uint32
     NPC_ESSENCE_OF_DESIRE           = 23419,
 
     // Illidari Council
+    NPC_GATHIOS_THE_SHATTERER       = 22949,
     NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
     NPC_LADY_MALANDE                = 22951,
 
@@ -474,7 +475,7 @@ inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
-inline constexpr float COUNCIL_ZEREVOR_SEARCH_RADIUS = 100.0f;
+inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 100.0f;
 // Bots heal out to HealDistance, 38.5 yd by default.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
 // A patch on the mage tank reaches 11.9 yd from where it stood.
@@ -494,7 +495,7 @@ bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
 bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f);
-bool IsMalandeInZerevorPatch(Unit* malande, Unit* zerevor);
+bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
 bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor);
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
 bool FindMageTankHealerPosition(

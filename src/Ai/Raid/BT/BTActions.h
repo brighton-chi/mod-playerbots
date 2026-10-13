@@ -449,7 +449,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool ShouldAttackMalande(Unit* malande, Unit* zerevor) const;
+    bool ShouldAttackMalande(Unit* malande, Unit* gathios, Unit* zerevor) const;
 };
 
 class IllidariCouncilDisperseRangedAction : public MovementAction
