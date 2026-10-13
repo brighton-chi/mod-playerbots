@@ -203,8 +203,7 @@ bool MarkTargetWithMoon(Player* bot, Unit* target)
     return MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
-// For clearing marks outside of combat so bots don't Leeroy on sight. This is best used when gated
-// behind an out-of-combat check (such as with IsInCombatValue).
+// For clearing marks outside of combat and/or encounters so bots don't Leeroy on sight.
 bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
     Group* group = bot->GetGroup();
@@ -219,6 +218,21 @@ bool ClearTargetIcon(Player* bot, uint8 iconId)
     }
 
     return false;
+}
+
+// Clears the icon only if it is on one of the given entries (i.e., one marked by the strategy).
+// This leaves icons players have put on other mobs (such as most trash) alone.
+bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    uint32 const entry = group->GetTargetIcon(iconId).GetEntry();
+    if (std::find(entries.begin(), entries.end(), entry) == entries.end())
+        return false;
+
+    return ClearTargetIcon(bot, iconId);
 }
 
 // For bots to set their raid target icon to the specified icon

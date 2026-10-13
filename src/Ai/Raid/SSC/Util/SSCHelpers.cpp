@@ -47,19 +47,6 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
 
 // Shared
 
-bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    uint32 const entry = group->GetTargetIcon(iconId).GetEntry();
-    if (std::find(entries.begin(), entries.end(), entry) == entries.end())
-        return false;
-
-    return ClearTargetIcon(bot, iconId);
-}
-
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
     if (!target || !tank)

@@ -12,7 +12,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
-#include <initializer_list>
 #include <limits>
 #include <optional>
 #include <type_traits>
@@ -152,7 +151,6 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
-bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
