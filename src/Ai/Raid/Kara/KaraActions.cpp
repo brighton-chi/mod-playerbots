@@ -63,8 +63,23 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return reset;
 
-    if (!AI_VALUE2(bool, "combat", "self target"))
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(KaraNpcs::NPC_BARONESS_DOROTHEA_MILLSTIPE),
+        Id(KaraNpcs::NPC_LADY_CATRIONA_VON_INDI),
+        Id(KaraNpcs::NPC_LADY_KEIRA_BERRYBUCK),
+        Id(KaraNpcs::NPC_BARON_RAFE_DREUGER),
+        Id(KaraNpcs::NPC_LORD_ROBIN_DARIS),
+        Id(KaraNpcs::NPC_LORD_CRISPIN_FERENCE),
+        Id(KaraNpcs::NPC_ROMULO),
+        Id(KaraNpcs::NPC_JULIANNE),
+        Id(KaraNpcs::NPC_DOROTHEE),
+        Id(KaraNpcs::NPC_TITO),
+        Id(KaraNpcs::NPC_ROAR),
+        Id(KaraNpcs::NPC_STRAWMAN),
+        Id(KaraNpcs::NPC_TINHEAD),
+        Id(KaraNpcs::NPC_KILREK),
+        Id(KaraNpcs::NPC_TERESTIAN_ILLHOOF),
+    });
 
     reset |= attumenDpsWaitTimer.erase(instanceId) > 0;
     reset |= netherspiteDpsWaitTimer.erase(instanceId) > 0;

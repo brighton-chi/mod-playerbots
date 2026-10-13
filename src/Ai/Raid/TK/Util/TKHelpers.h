@@ -77,6 +77,10 @@ enum class TkNpcs : uint32
 
     // Kael'thas Sunstrider
     NPC_KAELTHAS_SUNSTRIDER         = 19622,
+    NPC_LORD_SANGUINAR              = 20060,
+    NPC_GRAND_ASTROMANCER_CAPERNIAN = 20062,
+    NPC_MASTER_ENGINEER_TELONICUS   = 20063,
+    NPC_THALADRED_THE_DARKENER      = 20064,
     NPC_NETHERSTRAND_LONGBOW        = 21268,
     NPC_DEVASTATION                 = 21269,
     NPC_COSMIC_INFUSER              = 21270,

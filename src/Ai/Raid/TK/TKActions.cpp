@@ -30,14 +30,19 @@ using namespace EncounterHelpers;
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
-
     bool reset = false;
+
     reset |= isAlarInPhase2.erase(instanceId) > 0;
     reset |= lastRebirthState.erase(instanceId) > 0;
     reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
     reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
-    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-    reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+    reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(TkNpcs::NPC_THALADRED_THE_DARKENER),
+        Id(TkNpcs::NPC_LORD_SANGUINAR),
+        Id(TkNpcs::NPC_MASTER_ENGINEER_TELONICUS),
+    });
+    reset |= ClearStrategyTargetIcon(
+        bot, RtiTargetValue::crossIndex, { Id(TkNpcs::NPC_GRAND_ASTROMANCER_CAPERNIAN) });
 
     return reset;
 }

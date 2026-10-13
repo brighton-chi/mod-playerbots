@@ -21,14 +21,15 @@ using namespace EncounterHelpers;
 bool MagtheridonResetEncounterStatesAction::Execute(Event /*event*/)
 {
     uint32 const instanceId = bot->GetInstanceId();
-
     bool reset = false;
+
     reset |= magDpsWaitTimer.erase(instanceId) > 0;
     reset |= blastNovaTimer.erase(instanceId) > 0;
     reset |= lastBlastNovaState.erase(instanceId) > 0;
     reset |= ceilingCollapseApplied.erase(instanceId) > 0;
     reset |= botToCubeAssignments.erase(instanceId) > 0;
-    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearStrategyTargetIcon(
+        bot, RtiTargetValue::skullIndex, { Id(MagNpcs::NPC_HELLFIRE_CHANNELER) });
 
     return reset;
 }

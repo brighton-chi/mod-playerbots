@@ -79,8 +79,8 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return reset;
 
-    if (!AI_VALUE2(bool, "combat", "self target"))
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearStrategyTargetIcon(
+        bot, RtiTargetValue::skullIndex, { Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER) });
 
     reset |= kalecgosEncounterStates.erase(instanceId) > 0;
     reset |= brutallusEncounterStates.erase(instanceId) > 0;

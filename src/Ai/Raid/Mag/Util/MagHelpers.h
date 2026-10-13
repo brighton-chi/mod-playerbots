@@ -47,6 +47,7 @@ enum class MagSpells : uint32
 
 enum class MagNpcs : uint32
 {
+    NPC_HELLFIRE_CHANNELER  = 17256,
     NPC_BURNING_ABYSSAL     = 17454,
 };
 

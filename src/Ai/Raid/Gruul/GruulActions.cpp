@@ -32,8 +32,14 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
 
     if (IsMechanicTrackerBot(bot, GRUUL_MAP_ID))
     {
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-        reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
+        reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+            Id(GruulNpcs::NPC_BLINDEYE_THE_SEER),
+            Id(GruulNpcs::NPC_OLM_THE_SUMMONER),
+            Id(GruulNpcs::NPC_KIGGLER_THE_CRAZED),
+            Id(GruulNpcs::NPC_HIGH_KING_MAULGAR),
+        });
+        reset |= ClearStrategyTargetIcon(
+            bot, RtiTargetValue::crossIndex, { Id(GruulNpcs::NPC_KROSH_FIREHAND) });
     }
 
     return reset;

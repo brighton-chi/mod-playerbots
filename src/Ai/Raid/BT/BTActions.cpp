@@ -69,7 +69,11 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
         reset |= shadowmoonReaverAbsorptionStart.erase(instanceId) > 0;
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+        reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+            Id(BtNpcs::NPC_SISTER_OF_PLEASURE),
+            Id(BtNpcs::NPC_ASHTONGUE_CHANNELER),
+            Id(BtNpcs::NPC_ASHTONGUE_SORCERER),
+        });
     }
 
     return reset;

@@ -24,12 +24,17 @@ bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
     reset |= akilzonStormTimer.erase(bot->GetInstanceId()) > 0;
-
-    if (!AI_VALUE2(bool, "combat", "self target"))
-    {
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
-        reset |= ClearTargetIcon(bot, RtiTargetValue::moonIndex);
-    }
+    reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(ZaNpcs::NPC_LORD_RAADAN),
+        Id(ZaNpcs::NPC_ALYSON_ANTILLE),
+        Id(ZaNpcs::NPC_KORAGG),
+        Id(ZaNpcs::NPC_DARKHEART),
+        Id(ZaNpcs::NPC_FENSTALKER),
+        Id(ZaNpcs::NPC_GAZAKROTH),
+        Id(ZaNpcs::NPC_THURG),
+        Id(ZaNpcs::NPC_SLITHER),
+        Id(ZaNpcs::NPC_HEX_LORD_MALACRASS),
+    });
 
     return reset;
 }
