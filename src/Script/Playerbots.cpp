@@ -16,6 +16,7 @@
 #include "PlayerbotsDatabase.h"
 #include <mysqld_error.h>
 #include "AllMapScript.h"
+#include "GatherNodeMgr.h"
 #include "GlobalScript.h"
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
@@ -535,6 +536,9 @@ public:
         PlayerbotSpellRepository::Instance().Initialize();
         CheckMountStateAction::LoadPreferredMounts();
 
+        LOG_INFO("server.loading", "Loading gather node index...");
+        GatherNodeMgr::instance().Load();
+
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
 
@@ -606,10 +610,10 @@ public:
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSelfBotAfkScripts();
 void AddSC_MagtheridonBotScripts();
-void AddSC_BlackTempleBotScripts();
 void AddSC_SerpentshrineCavernBotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_HyjalBotScripts();
+void AddSC_BlackTempleBotScripts();
 void AddSC_SunwellBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
@@ -632,10 +636,10 @@ void AddPlayerbotsScripts()
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
     AddSC_MagtheridonBotScripts();
-    AddSC_BlackTempleBotScripts();
     AddSC_SerpentshrineCavernBotScripts();
     AddSC_TempestKeepBotScripts();
     AddSC_HyjalBotScripts();
+    AddSC_BlackTempleBotScripts();
     AddSC_SunwellBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();

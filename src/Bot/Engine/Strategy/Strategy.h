@@ -77,6 +77,8 @@ public:
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
     virtual void InitReactionTriggers([[maybe_unused]] std::vector<TriggerNode*>& triggers) {}
     virtual void InitReactionMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
+    // Ignoring type results in all four types of exclusions being applied. However, exclusions can
+    // also be filtered by adding checks where they are used in the strategies (role, class, etc.).
     virtual void AppendTargetExclusions([[maybe_unused]] GuidSet& exclusions,
                                         [[maybe_unused]] TargetValueExclusionType type) {}
     virtual bool HasTargetExclusions() const { return false; }
