@@ -16,7 +16,7 @@ class RaidZulAmanActionContext : public NamedObjectContext<Action>
 public:
     RaidZulAmanActionContext()
     {
-        // General
+        // Shared
         creators["zul'aman reset encounter states"] =
             &RaidZulAmanActionContext::zulaman_reset_encounter_states;
 
@@ -109,7 +109,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* zulaman_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new ZulAmanResetEncounterStatesAction(botAI);

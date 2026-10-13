@@ -15,7 +15,7 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
-        // General
+        // Shared
         creators["tempest keep reset encounter states"] =
             &RaidTempestKeepActionContext::tempest_keep_reset_encounter_states;
 
@@ -140,7 +140,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* tempest_keep_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new TempestKeepResetEncounterStatesAction(botAI);

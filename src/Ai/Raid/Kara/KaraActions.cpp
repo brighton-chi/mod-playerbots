@@ -21,7 +21,7 @@
 using namespace KaraHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
 {

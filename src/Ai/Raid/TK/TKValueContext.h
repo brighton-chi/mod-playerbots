@@ -16,7 +16,7 @@ class TKFlamePatchesValue : public CalculatedValue<GuidVector>
 {
 public:
     TKFlamePatchesValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(botAI, "tk flame patches", 200) {}
+        : CalculatedValue<GuidVector>(botAI, "tk flame patches", TkHelpers::TK_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return TkHelpers::FindFlamePatchGuids(bot); }
@@ -26,7 +26,8 @@ class TKLegendaryWeaponsValue : public CalculatedValue<GuidVector>
 {
 public:
     TKLegendaryWeaponsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(botAI, "tk legendary weapons", 200) {}
+        : CalculatedValue<GuidVector>(
+            botAI, "tk legendary weapons", TkHelpers::TK_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return TkHelpers::FindLegendaryWeaponGuids(bot); }

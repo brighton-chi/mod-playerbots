@@ -12,7 +12,7 @@
 #include "Multiplier.h"
 #include <string>
 
-// General
+// Shared
 
 class HyjalEncounterMultiplier : public Multiplier
 {

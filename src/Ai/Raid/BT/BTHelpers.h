@@ -108,7 +108,8 @@ enum class BtSpells : uint32
     // Hunter
     SPELL_FEIGN_DEATH               =  5384,
     SPELL_FROST_TRAP                = 13809,
-    SPELL_MISDIRECTION              = 35079,
+    SPELL_MISDIRECTION              = 34477,
+    SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
 
     // Mage
     SPELL_COUNTERSPELL              =  2139,

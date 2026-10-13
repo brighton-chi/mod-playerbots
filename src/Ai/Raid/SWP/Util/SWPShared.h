@@ -75,8 +75,8 @@ enum class SwpSpells : uint32
     SPELL_SHADOW_SPIKE                 = 46680,
 
     // Hunter
-    SPELL_MISDIRECTION_CAST            = 34477,
-    SPELL_MISDIRECTION                 = 35079,
+    SPELL_MISDIRECTION                 = 34477,
+    SPELL_MISDIRECTION_AURA            = 35079, // the aura on the hunter
 
     // Mage
     SPELL_SPELLSTEAL                   = 30449,

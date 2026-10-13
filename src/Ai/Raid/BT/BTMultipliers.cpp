@@ -436,9 +436,6 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action))
-        return 1.0f;
-
     if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
         bot->HasAura(Id(BtSpells::SPELL_INSIGNIFICANCE)))
     {

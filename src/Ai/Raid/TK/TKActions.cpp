@@ -13,6 +13,7 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "StatsWeightCalculator.h"
 #include "TKHelpers.h"
 #include <algorithm>
@@ -24,7 +25,7 @@
 using namespace TkHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
@@ -35,6 +36,8 @@ bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= lastRebirthState.erase(instanceId) > 0;
     reset |= voidReaverArcaneOrbs.erase(instanceId) > 0;
     reset |= advisorDpsWaitTimer.erase(instanceId) > 0;
+    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearTargetIcon(bot, RtiTargetValue::crossIndex);
 
     return reset;
 }
@@ -103,10 +106,10 @@ bool AlarMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
+    if (botAI->CanCastSpell(Id(TkSpells::SPELL_MISDIRECTION), mainTank))
+        return botAI->CastSpell(Id(TkSpells::SPELL_MISDIRECTION), mainTank);
 
-    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)))
+    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION_AURA)))
         return false;
 
     return botAI->CanCastSpell("steady shot", alar) && botAI->CastSpell("steady shot", alar);
@@ -896,10 +899,10 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     if (!tank || !tank->IsAlive())
         return false;
 
-    if (botAI->CanCastSpell("misdirection", tank))
-        return botAI->CastSpell("misdirection", tank);
+    if (botAI->CanCastSpell(Id(TkSpells::SPELL_MISDIRECTION), tank))
+        return botAI->CastSpell(Id(TkSpells::SPELL_MISDIRECTION), tank);
 
-    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION)))
+    if (!bot->HasAura(Id(TkSpells::SPELL_MISDIRECTION_AURA)))
         return false;
 
     return botAI->CanCastSpell("steady shot", advisor) && botAI->CastSpell("steady shot", advisor);

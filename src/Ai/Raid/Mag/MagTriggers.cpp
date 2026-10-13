@@ -44,7 +44,7 @@ bool MagtheridonAssistTanksShouldTankChannelersTrigger::IsActiveInEncounter()
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
-bool MagtheridonPullingWestAndEastChannelersTrigger::IsActiveInEncounter()
+bool MagtheridonHunterShouldMisdirectChannelersTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;

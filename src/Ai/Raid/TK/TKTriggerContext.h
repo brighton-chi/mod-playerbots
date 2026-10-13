@@ -15,7 +15,7 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
-        // General
+        // Shared
         creators["tempest keep no encounter in progress"] =
             &RaidTempestKeepTriggerContext::tempest_keep_no_encounter_in_progress;
 
@@ -27,13 +27,14 @@ public:
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_flurry;
 
         // Al'ar <Phoenix God>
-        creators["al'ar pulling boss"] = &RaidTempestKeepTriggerContext::alar_pulling_boss;
+        creators["al'ar hunter should misdirect"] =
+            &RaidTempestKeepTriggerContext::alar_hunter_should_misdirect;
 
         creators["al'ar flies between platforms"] =
             &RaidTempestKeepTriggerContext::alar_flies_between_platforms;
 
-        creators["al'ar embers explode upon death"] =
-            &RaidTempestKeepTriggerContext::alar_embers_explode_upon_death;
+        creators["al'ar embers should be tanked"] =
+            &RaidTempestKeepTriggerContext::alar_embers_should_be_tanked;
 
         creators["al'ar should assign non-tank target"] =
             &RaidTempestKeepTriggerContext::alar_should_assign_non_tank_target;
@@ -76,8 +77,8 @@ public:
         creators["kael'thas sunstrider chased by thaladred"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_chased_by_thaladred;
 
-        creators["kael'thas sunstrider pulling tankable advisors"] =
-            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pulling_tankable_advisors;
+        creators["kael'thas sunstrider hunter should misdirect advisors"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_hunter_should_misdirect_advisors;
 
         creators["kael'thas sunstrider sanguinar or telonicus should be tanked"] =
             &RaidTempestKeepTriggerContext::
@@ -128,7 +129,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Trigger* tempest_keep_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new TempestKeepNoEncounterInProgressTrigger(botAI);
@@ -145,17 +146,17 @@ private:
     }
 
     // Al'ar <Phoenix God>
-    static Trigger* alar_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* alar_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new AlarPullingBossTrigger(botAI);
+        return new AlarHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* alar_flies_between_platforms(PlayerbotAI* botAI)
     {
         return new AlarFliesBetweenPlatformsTrigger(botAI);
     }
-    static Trigger* alar_embers_explode_upon_death(PlayerbotAI* botAI)
+    static Trigger* alar_embers_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new AlarEmbersExplodeUponDeathTrigger(botAI);
+        return new AlarEmbersShouldBeTankedTrigger(botAI);
     }
     static Trigger* alar_should_assign_non_tank_target(PlayerbotAI* botAI)
     {
@@ -215,12 +216,11 @@ private:
     {
         return new KaelthasSunstriderChasedByThaladredTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI)
+    static Trigger* kaelthas_sunstrider_hunter_should_misdirect_advisors(PlayerbotAI* botAI)
     {
-        return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI);
+        return new KaelthasSunstriderHunterShouldMisdirectAdvisorsTrigger(botAI);
     }
-    static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked(
-        PlayerbotAI* botAI)
+    static Trigger* kaelthas_sunstrider_sanguinar_or_telonicus_should_be_tanked(PlayerbotAI* botAI)
     {
         return new KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(botAI);
     }

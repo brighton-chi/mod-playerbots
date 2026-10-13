@@ -18,8 +18,8 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon assist tanks should tank channelers",
         { NextAction("magtheridon assist tanks attack last two channelers", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers",
-        { NextAction("magtheridon misdirect hellfire channelers to main tank", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("magtheridon hunter should misdirect channelers",
+        { NextAction("magtheridon misdirect channelers to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("magtheridon should assign dps priority",
         { NextAction("magtheridon assign dps priority", ACTION_RAID) }));

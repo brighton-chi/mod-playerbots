@@ -16,7 +16,7 @@ class RaidHyjalActionContext : public NamedObjectContext<Action>
 public:
     RaidHyjalActionContext()
     {
-        // General
+        // Shared
         creators["hyjal reset encounter states"] =
             &RaidHyjalActionContext::hyjal_reset_encounter_states;
 
@@ -130,7 +130,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* hyjal_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new HyjalResetEncounterStatesAction(botAI);

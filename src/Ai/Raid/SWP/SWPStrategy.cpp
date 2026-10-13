@@ -18,7 +18,7 @@ using namespace EncounterHelpers;
 
 void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("sunwell no encounter in progress",
         { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10) }));
 
@@ -230,7 +230,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // General
+    // Shared
     // multipliers.push_back(new SunwellNoEncounterDrinkingMultiplier(botAI));
 
     // Trash

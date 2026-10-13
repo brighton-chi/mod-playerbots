@@ -9,12 +9,12 @@
 
 void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("hyjal no encounter in progress",
         { NextAction("hyjal reset encounter states", ACTION_EMERGENCY + 10) }));
 
     // Rage Winterchill
-    triggers.push_back(new TriggerNode("rage winterchill pulling boss",
+    triggers.push_back(new TriggerNode("rage winterchill hunter should misdirect",
         { NextAction("rage winterchill misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("rage winterchill should be tanked",
@@ -32,7 +32,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "rage winterchill ranged get out of death and decay", ACTION_EMERGENCY + 1) }));
 
     // Anetheron
-    triggers.push_back(new TriggerNode("anetheron pulling boss or infernal",
+    triggers.push_back(new TriggerNode("anetheron hunter should misdirect",
         { NextAction("anetheron misdirect boss and infernals to tanks", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("anetheron should be tanked",
@@ -57,7 +57,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("anetheron assign dps priority", ACTION_RAID) }));
 
     // Kaz'rogal
-    triggers.push_back(new TriggerNode("kaz'rogal pulling boss",
+    triggers.push_back(new TriggerNode("kaz'rogal hunter should misdirect",
         { NextAction("kaz'rogal misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal should be tanked",
@@ -85,7 +85,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("kaz'rogal warlock manage mana", ACTION_EMERGENCY + 6) }));
 
     // Azgalor
-    triggers.push_back(new TriggerNode("azgalor pulling boss",
+    triggers.push_back(new TriggerNode("azgalor hunter should misdirect",
         { NextAction("azgalor misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor should be tanked",
@@ -110,7 +110,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("azgalor determine dps priority", ACTION_RAID) }));
 
     // Archimonde
-    triggers.push_back(new TriggerNode("archimonde pulling boss",
+    triggers.push_back(new TriggerNode("archimonde hunter should misdirect",
         { NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("archimonde should be tanked",
@@ -134,7 +134,7 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidHyjalStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // General
+    // Shared
     multipliers.push_back(new HyjalDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new HyjalDisableDisperseAndTankFaceMultiplier(botAI));
 

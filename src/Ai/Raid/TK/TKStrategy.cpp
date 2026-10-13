@@ -9,7 +9,7 @@
 
 void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("tempest keep no encounter in progress",
         { NextAction("tempest keep reset encounter states", ACTION_EMERGENCY + 10) }));
 
@@ -21,7 +21,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("crimson hand centurion cast polymorph", ACTION_RAID) }));
 
     // Al'ar <Phoenix God>
-    triggers.push_back(new TriggerNode("al'ar pulling boss",
+    triggers.push_back(new TriggerNode("al'ar hunter should misdirect",
         { NextAction("al'ar misdirect boss to main tank", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("al'ar flies between platforms",
@@ -29,7 +29,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
           NextAction("al'ar melee dps move between platforms", ACTION_RAID),
           NextAction("al'ar ranged and ember tank move under platforms", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("al'ar embers explode upon death",
+    triggers.push_back(new TriggerNode("al'ar embers should be tanked",
         { NextAction("al'ar assist tanks pick up embers", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("al'ar should assign non-tank target",
@@ -75,7 +75,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kael'thas sunstrider chased by thaladred",
         { NextAction("kael'thas sunstrider kite thaladred", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("kael'thas sunstrider pulling tankable advisors",
+    triggers.push_back(new TriggerNode("kael'thas sunstrider hunter should misdirect advisors",
         { NextAction("kael'thas sunstrider misdirect advisors to tanks", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode(
@@ -148,12 +148,12 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKeepDistanceFromCapernianMultiplier(botAI));
-    // multipliers.push_back(new KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageWeaponTankingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderSuppressEquipUpgradeMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }

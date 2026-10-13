@@ -13,7 +13,7 @@
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("karazhan no encounter in progress",
         { NextAction("karazhan reset encounter states", ACTION_EMERGENCY + 10) }));
 

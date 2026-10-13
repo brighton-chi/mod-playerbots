@@ -28,9 +28,7 @@ bool MagtheridonResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= lastBlastNovaState.erase(instanceId) > 0;
     reset |= ceilingCollapseApplied.erase(instanceId) > 0;
     reset |= botToCubeAssignments.erase(instanceId) > 0;
-
-    if (!AI_VALUE2(bool, "combat", "self target"))
-        reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
+    reset |= ClearTargetIcon(bot, RtiTargetValue::skullIndex);
 
     return reset;
 }
@@ -98,7 +96,7 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*event*/)
+bool MagtheridonMisdirectChannelersToMainTankAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -138,10 +136,10 @@ bool MagtheridonMisdirectHellfireChannelersToMainTankAction::Execute(Event /*eve
     if (!channeler)
         return false;
 
-    if (botAI->CanCastSpell("misdirection", mainTank))
-        return botAI->CastSpell("misdirection", mainTank);
+    if (botAI->CanCastSpell(Id(MagSpells::SPELL_MISDIRECTION), mainTank))
+        return botAI->CastSpell(Id(MagSpells::SPELL_MISDIRECTION), mainTank);
 
-    if (!bot->HasAura(Id(MagSpells::SPELL_MISDIRECTION)))
+    if (!bot->HasAura(Id(MagSpells::SPELL_MISDIRECTION_AURA)))
         return false;
 
     return botAI->CanCastSpell("steady shot", channeler) &&

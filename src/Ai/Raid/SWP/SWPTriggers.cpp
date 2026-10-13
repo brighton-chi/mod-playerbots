@@ -19,7 +19,7 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-// General
+// Shared
 
 bool SunwellNoEncounterInProgressTrigger::IsActive()
 {

@@ -15,7 +15,7 @@ class RaidKarazhanTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidKarazhanTriggerContext()
     {
-        // General
+        // Shared
         creators["karazhan no encounter in progress"] =
             &RaidKarazhanTriggerContext::karazhan_no_encounter_in_progress;
 
@@ -145,7 +145,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Trigger* karazhan_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new KarazhanNoEncounterInProgressTrigger(botAI);

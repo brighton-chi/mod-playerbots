@@ -9,7 +9,7 @@
 
 void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("zul'aman no encounter in progress",
         { NextAction("zul'aman reset encounter states", ACTION_EMERGENCY + 10) }));
 
@@ -18,7 +18,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("amani'shi medicine man mark ward", ACTION_RAID) }));
 
     // Akil'zon <Eagle Avatar>
-    triggers.push_back(new TriggerNode("akil'zon pulling boss",
+    triggers.push_back(new TriggerNode("akil'zon hunter should misdirect",
         { NextAction("akil'zon misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("akil'zon should be tanked",
@@ -34,7 +34,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("akil'zon start electrical storm timer", ACTION_EMERGENCY + 10) }));
 
     // Nalorakk <Bear Avatar>
-    triggers.push_back(new TriggerNode("nalorakk pulling boss",
+    triggers.push_back(new TriggerNode("nalorakk hunter should misdirect",
         { NextAction("nalorakk misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("nalorakk both forms should be tanked",
@@ -44,7 +44,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nalorakk spread ranged", ACTION_RAID) }));
 
     // Jan'alai <Dragonhawk Avatar>
-    triggers.push_back(new TriggerNode("jan'alai pulling boss",
+    triggers.push_back(new TriggerNode("jan'alai hunter should misdirect",
         { NextAction("jan'alai misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("jan'alai should be tanked",
@@ -60,7 +60,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("jan'alai mark amani'shi hatchers", ACTION_RAID + 1) }));
 
     // Halazzi <Lynx Avatar>
-    triggers.push_back(new TriggerNode("halazzi pulling boss",
+    triggers.push_back(new TriggerNode("halazzi hunter should misdirect",
         { NextAction("halazzi misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("halazzi should be tanked",
@@ -73,7 +73,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("halazzi dps attack totem and boss", ACTION_RAID) }));
 
     // Hex Lord Malacrass
-    triggers.push_back(new TriggerNode("hex lord malacrass pulling boss",
+    triggers.push_back(new TriggerNode("hex lord malacrass hunter should misdirect",
         { NextAction("hex lord malacrass misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass should prioritize adds",
@@ -86,7 +86,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hex lord malacrass move away from freezing trap", ACTION_EMERGENCY + 1) }));
 
     // Zul'jin
-    triggers.push_back(new TriggerNode("zul'jin pulling boss",
+    triggers.push_back(new TriggerNode("zul'jin hunter should misdirect",
         { NextAction("zul'jin misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("zul'jin should be tanked",
@@ -107,7 +107,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // General
+    // Shared
     multipliers.push_back(new ZulAmanDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ZulAmanDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new ZulAmanControlMisdirectionMultiplier(botAI));
@@ -130,6 +130,6 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new HexLordMalacrassStayAwayFromFreezingTrapMultiplier(botAI));
 
     // Zul'jin
-    multipliers.push_back(new ZuljinStopAttackingDuringPhaseChangeMultiplier(botAI));
+    multipliers.push_back(new ZuljinNoAttackingDuringPhaseChangeMultiplier(botAI));
     multipliers.push_back(new ZuljinEagleDisableAvoidAoeMultiplier(botAI));
 }

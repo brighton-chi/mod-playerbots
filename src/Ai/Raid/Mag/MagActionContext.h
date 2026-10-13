@@ -24,8 +24,8 @@ public:
         creators["magtheridon assist tanks attack last two channelers"] =
             &RaidMagtheridonActionContext::magtheridon_assist_tanks_attack_last_two_channelers;
 
-        creators["magtheridon misdirect hellfire channelers to main tank"] =
-            &RaidMagtheridonActionContext::magtheridon_misdirect_hellfire_channelers_to_main_tank;
+        creators["magtheridon misdirect channelers to main tank"] =
+            &RaidMagtheridonActionContext::magtheridon_misdirect_channelers_to_main_tank;
 
         creators["magtheridon assign dps priority"] =
             &RaidMagtheridonActionContext::magtheridon_assign_dps_priority;
@@ -62,9 +62,9 @@ private:
     {
         return new MagtheridonAssistTanksAttackLastTwoChannelersAction(botAI);
     }
-    static Action* magtheridon_misdirect_hellfire_channelers_to_main_tank(PlayerbotAI* botAI)
+    static Action* magtheridon_misdirect_channelers_to_main_tank(PlayerbotAI* botAI)
     {
-        return new MagtheridonMisdirectHellfireChannelersToMainTankAction(botAI);
+        return new MagtheridonMisdirectChannelersToMainTankAction(botAI);
     }
     static Action* magtheridon_assign_dps_priority(PlayerbotAI* botAI)
     {

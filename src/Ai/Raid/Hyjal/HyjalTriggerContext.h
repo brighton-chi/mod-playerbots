@@ -16,13 +16,13 @@ class RaidHyjalTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidHyjalTriggerContext()
     {
-        // General
+        // Shared
         creators["hyjal no encounter in progress"] =
             &RaidHyjalTriggerContext::hyjal_no_encounter_in_progress;
 
         // Rage Winterchill
-        creators["rage winterchill pulling boss"] =
-            &RaidHyjalTriggerContext::rage_winterchill_pulling_boss;
+        creators["rage winterchill hunter should misdirect"] =
+            &RaidHyjalTriggerContext::rage_winterchill_hunter_should_misdirect;
 
         creators["rage winterchill should be tanked"] =
             &RaidHyjalTriggerContext::rage_winterchill_should_be_tanked;
@@ -37,8 +37,8 @@ public:
             &RaidHyjalTriggerContext::rage_winterchill_ranged_in_death_and_decay;
 
         // Anetheron
-        creators["anetheron pulling boss or infernal"] =
-            &RaidHyjalTriggerContext::anetheron_pulling_boss_or_infernal;
+        creators["anetheron hunter should misdirect"] =
+            &RaidHyjalTriggerContext::anetheron_hunter_should_misdirect;
 
         creators["anetheron should be tanked"] =
             &RaidHyjalTriggerContext::anetheron_should_be_tanked;
@@ -62,7 +62,8 @@ public:
             &RaidHyjalTriggerContext::anetheron_should_divide_dps;
 
         // Kaz'rogal
-        creators["kaz'rogal pulling boss"] = &RaidHyjalTriggerContext::kazrogal_pulling_boss;
+        creators["kaz'rogal hunter should misdirect"] =
+            &RaidHyjalTriggerContext::kazrogal_hunter_should_misdirect;
 
         creators["kaz'rogal should be tanked"] =
             &RaidHyjalTriggerContext::kazrogal_should_be_tanked;
@@ -88,7 +89,8 @@ public:
             &RaidHyjalTriggerContext::kazrogal_warlock_should_manage_mana;
 
         // Azgalor
-        creators["azgalor pulling boss"] = &RaidHyjalTriggerContext::azgalor_pulling_boss;
+        creators["azgalor hunter should misdirect"] =
+            &RaidHyjalTriggerContext::azgalor_hunter_should_misdirect;
 
         creators["azgalor should be tanked"] = &RaidHyjalTriggerContext::azgalor_should_be_tanked;
 
@@ -109,7 +111,8 @@ public:
         creators["azgalor should divide dps"] = &RaidHyjalTriggerContext::azgalor_should_divide_dps;
 
         // Archimonde
-        creators["archimonde pulling boss"] = &RaidHyjalTriggerContext::archimonde_pulling_boss;
+        creators["archimonde hunter should misdirect"] =
+            &RaidHyjalTriggerContext::archimonde_hunter_should_misdirect;
 
         creators["archimonde should be tanked"] =
             &RaidHyjalTriggerContext::archimonde_should_be_tanked;
@@ -130,17 +133,17 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Trigger* hyjal_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new HyjalNoEncounterInProgressTrigger(botAI);
     }
 
     // Rage Winterchill
-    static Trigger* rage_winterchill_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* rage_winterchill_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HyjalPullingBossTrigger(
-            botAI, "rage winterchill pulling boss", "rage winterchill");
+        return new HyjalHunterShouldMisdirectTrigger(
+            botAI, "rage winterchill hunter should misdirect", "rage winterchill");
     }
     static Trigger* rage_winterchill_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -161,9 +164,9 @@ private:
     }
 
     // Anetheron
-    static Trigger* anetheron_pulling_boss_or_infernal(PlayerbotAI* botAI)
+    static Trigger* anetheron_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new AnetheronPullingBossOrInfernalTrigger(botAI);
+        return new AnetheronHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* anetheron_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -196,9 +199,10 @@ private:
     }
 
     // Kaz'rogal
-    static Trigger* kazrogal_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* kazrogal_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HyjalPullingBossTrigger(botAI, "kaz'rogal pulling boss", "kaz'rogal");
+        return new HyjalHunterShouldMisdirectTrigger(
+            botAI, "kaz'rogal hunter should misdirect", "kaz'rogal");
     }
     static Trigger* kazrogal_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -235,9 +239,10 @@ private:
     }
 
     // Azgalor
-    static Trigger* azgalor_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* azgalor_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HyjalPullingBossTrigger(botAI, "azgalor pulling boss", "azgalor");
+        return new HyjalHunterShouldMisdirectTrigger(
+            botAI, "azgalor hunter should misdirect", "azgalor");
     }
     static Trigger* azgalor_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -270,9 +275,10 @@ private:
     }
 
     // Archimonde
-    static Trigger* archimonde_pulling_boss(PlayerbotAI* botAI)
+    static Trigger* archimonde_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new HyjalPullingBossTrigger(botAI, "archimonde pulling boss", "archimonde");
+        return new HyjalHunterShouldMisdirectTrigger(
+            botAI, "archimonde hunter should misdirect", "archimonde");
     }
     static Trigger* archimonde_should_be_tanked(PlayerbotAI* botAI)
     {

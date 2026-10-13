@@ -1706,7 +1706,7 @@ Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)
         bool const nearSpore = std::any_of(spores.begin(), spores.end(),
             [member](Position const& spore)
             {
-                return member->GetExactDist2d(spore) < TOXIC_SPORES_HIT_RADIUS;
+                return member->GetExactDist2d(spore) < TOXIC_SPORES_HAZARD_RADIUS;
             });
 
         if (nearSpore && (!inSpores || isMainTank(member)))
@@ -1879,7 +1879,10 @@ bool FindVashjTankBreakoutSpot(
 
             float inPools = 0.0f;
             for (Position const& spore : spores)
-                inPools += SegmentLengthInCircle(from, candidate, spore, TOXIC_SPORES_HIT_RADIUS);
+            {
+                inPools += SegmentLengthInCircle(
+                    from, candidate, spore, TOXIC_SPORES_HAZARD_RADIUS);
+            }
 
             float const cost = radius + poolYardCost * inPools;
             if (cost < bestCost)

@@ -24,8 +24,8 @@ public:
         creators["magtheridon assist tanks should tank channelers"] =
             &RaidMagtheridonTriggerContext::magtheridon_assist_tanks_should_tank_channelers;
 
-        creators["magtheridon pulling west and east channelers"] =
-            &RaidMagtheridonTriggerContext::magtheridon_pulling_west_and_east_channelers;
+        creators["magtheridon hunter should misdirect channelers"] =
+            &RaidMagtheridonTriggerContext::magtheridon_hunter_should_misdirect_channelers;
 
         creators["magtheridon should assign dps priority"] =
             &RaidMagtheridonTriggerContext::magtheridon_should_assign_dps_priority;
@@ -62,9 +62,9 @@ private:
     {
         return new MagtheridonAssistTanksShouldTankChannelersTrigger(botAI);
     }
-    static Trigger* magtheridon_pulling_west_and_east_channelers(PlayerbotAI* botAI)
+    static Trigger* magtheridon_hunter_should_misdirect_channelers(PlayerbotAI* botAI)
     {
-        return new MagtheridonPullingWestAndEastChannelersTrigger(botAI);
+        return new MagtheridonHunterShouldMisdirectChannelersTrigger(botAI);
     }
     static Trigger* magtheridon_should_assign_dps_priority(PlayerbotAI* botAI)
     {

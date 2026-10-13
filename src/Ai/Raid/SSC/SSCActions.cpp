@@ -196,8 +196,8 @@ bool HydrossTheUnstableMisdirectToTankAction::Execute(Event /*event*/)
     if (!hydross)
         return false;
 
-    Player* tank =
-        IsHydrossInFrostPhase(hydross) ? GetGroupMainTank(bot) : GetGroupAssistTank(bot, 0);
+    Player* tank = IsHydrossInFrostPhase(hydross) ?
+        GetGroupMainTank(bot) : GetGroupAssistTank(bot, 0);
     if (!tank || !tank->IsAlive())
         return false;
 
@@ -2489,7 +2489,7 @@ bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
     if (LadyVashjAvoidToxicSporesAction::Execute(event))
         return true;
 
-    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_HIT_RADIUS) || !GetStepOutOfNearestSpore(
+    if (!IsNearToxicSpores(botAI, TOXIC_SPORES_HAZARD_RADIUS) || !GetStepOutOfNearestSpore(
             bot, spores, TOXIC_SPORES_AVOID_RADIUS, stepX, stepY, stepZ))
     {
         return false;

@@ -15,7 +15,7 @@ class RaidKarazhanActionContext : public NamedObjectContext<Action>
 public:
     RaidKarazhanActionContext()
     {
-        // General
+        // Shared
         creators["karazhan reset encounter states"] =
             &RaidKarazhanActionContext::karazhan_reset_encounter_states;
 
@@ -145,7 +145,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* karazhan_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new KarazhanResetEncounterStatesAction(botAI);

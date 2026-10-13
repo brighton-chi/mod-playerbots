@@ -11,7 +11,7 @@
 #include "KaraHelpers.h"
 #include "Trigger.h"
 
-// General
+// Shared
 
 class KarazhanEncounterTrigger : public Trigger
 {
