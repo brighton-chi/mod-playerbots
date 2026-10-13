@@ -377,6 +377,14 @@ public:
     IllidariCouncilMainTankPositionGathiosAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidari council main tank position gathios") {}
     bool Execute(Event event) override;
+    bool ResetTankStep()
+    {
+        if (_tankStep == 0)
+            return false;
+
+        _tankStep = 0;
+        return true;
+    }
 
 private:
     uint8 _tankStep = 0;
@@ -412,6 +420,14 @@ public:
     IllidariCouncilMageTankPositionZerevorAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidari council mage tank position zerevor") {}
     bool Execute(Event event) override;
+    bool ResetTankStep()
+    {
+        if (_tankStep == 0)
+            return false;
+
+        _tankStep = 0;
+        return true;
+    }
 
 private:
     uint8 _tankStep = 0;
@@ -522,13 +538,20 @@ public:
     IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidan stormrage assist tanks handle flames of azzinoth") {}
     bool Execute(Event event) override;
+    bool ResetTankStep()
+    {
+        if (_tankStep == 0)
+            return false;
+
+        _tankStep = 0;
+        return true;
+    }
 
 private:
     bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
     bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
 
     uint8 _tankStep = 0;
-    uint32 _flamePhaseStartTime = 0;
 };
 
 class IllidanStormrageControlPetAggressionAction : public Action

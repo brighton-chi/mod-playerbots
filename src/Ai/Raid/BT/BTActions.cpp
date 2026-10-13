@@ -26,11 +26,35 @@ using namespace EncounterHelpers;
 
 bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 {
+    bool reset = false;
+
+    Action* gathiosTankAction = context->GetAction("illidari council main tank position gathios");
+    if (gathiosTankAction && static_cast<IllidariCouncilMainTankPositionGathiosAction*>(
+            gathiosTankAction)->ResetTankStep())
+    {
+        reset = true;
+    }
+
+    Action* zerevorTankAction = context->GetAction("illidari council mage tank position zerevor");
+    if (zerevorTankAction && static_cast<IllidariCouncilMageTankPositionZerevorAction*>(
+            zerevorTankAction)->ResetTankStep())
+    {
+        reset = true;
+    }
+
+    Action* flameTankAction =
+        context->GetAction("illidan stormrage assist tanks handle flames of azzinoth");
+    if (flameTankAction &&
+        static_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(
+            flameTankAction)->ResetTankStep())
+    {
+        reset = true;
+    }
+
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
-        return false;
+        return reset;
 
     uint32 const instanceId = bot->GetInstanceId();
-    bool reset = false;
 
     reset |= najentusSpineAssignments.erase(instanceId) > 0;
     reset |= najentusSpineThrower.erase(instanceId) > 0;
@@ -2180,15 +2204,6 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
     if (!waypoints || !flame)
         return false;
-
-    // Each Phase 2 starts from the first waypoint, after a wipe too.
-    auto const it = illidanFlamePhaseStartTime.find(bot->GetInstanceId());
-    uint32 const flamePhaseStartTime = it != illidanFlamePhaseStartTime.end() ? it->second : 0;
-    if (flamePhaseStartTime != _flamePhaseStartTime)
-    {
-        _flamePhaseStartTime = flamePhaseStartTime;
-        _tankStep = 0;
-    }
 
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
