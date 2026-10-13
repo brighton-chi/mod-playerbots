@@ -44,22 +44,16 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
         return reset;
 
     reset |= SscResetInstance(bot->GetInstanceId());
-
-    if (!AI_VALUE2(bool, "combat", "self target"))
-    {
-        reset |= ClearSscTargetIcon(bot, RtiTargetValue::skullIndex, {
-            Id(SscNpcs::NPC_WATER_ELEMENTAL_TOTEM),
-            Id(SscNpcs::NPC_SPITFIRE_TOTEM),
-            Id(SscNpcs::NPC_FATHOM_GUARD_TIDALVESS),
-            Id(SscNpcs::NPC_FATHOM_GUARD_SHARKKIS),
-            Id(SscNpcs::NPC_FATHOM_LURKER),
-            Id(SscNpcs::NPC_FATHOM_SPOREBAT),
-            Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS),
-        });
-
-        reset |= ClearSscTargetIcon(
-            bot, RtiTargetValue::crossIndex, { Id(SscNpcs::NPC_FATHOM_GUARD_CARIBDIS) });
-    }
+    reset |= ClearSscTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(SscNpcs::NPC_SPITFIRE_TOTEM),
+        Id(SscNpcs::NPC_FATHOM_GUARD_TIDALVESS),
+        Id(SscNpcs::NPC_FATHOM_GUARD_SHARKKIS),
+        Id(SscNpcs::NPC_FATHOM_LURKER),
+        Id(SscNpcs::NPC_FATHOM_SPOREBAT),
+        Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS),
+    });
+    reset |= ClearSscTargetIcon(
+        bot, RtiTargetValue::crossIndex, { Id(SscNpcs::NPC_FATHOM_GUARD_CARIBDIS) });
 
     return reset;
 }
@@ -2236,7 +2230,9 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     {
         constexpr uint32 blockedMs = 3 * IN_MILLISECONDS;
         if (!chain.blockedStart)
+        {
             chain.blockedStart = now;
+        }
         else if (getMSTimeDiff(chain.blockedStart, now) > blockedMs)
         {
             ReplanVashjCorePassingChain(bot, chain, ObjectGuid::Empty);

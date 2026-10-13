@@ -45,7 +45,7 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
 
 } // end anonymous namespace
 
-// General
+// Shared
 
 bool ClearSscTargetIcon(Player* bot, uint8 iconId, std::initializer_list<uint32> entries)
 {
@@ -65,10 +65,10 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     if (!target || !tank)
         return false;
 
-    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank))
-        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION_CAST), tank);
+    if (botAI->CanCastSpell(Id(SscSpells::SPELL_MISDIRECTION), tank))
+        return botAI->CastSpell(Id(SscSpells::SPELL_MISDIRECTION), tank);
 
-    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION)))
+    if (!botAI->GetBot()->HasAura(Id(SscSpells::SPELL_MISDIRECTION_AURA)))
         return false;
 
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);

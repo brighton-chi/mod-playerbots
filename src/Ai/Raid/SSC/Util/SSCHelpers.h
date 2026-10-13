@@ -81,8 +81,8 @@ enum class SscSpells : uint32
     SPELL_DRUID_BERSERK          = 50334,
 
     // Hunter
-    SPELL_MISDIRECTION_CAST      = 34477,
-    SPELL_MISDIRECTION           = 35079, // the aura on the hunter
+    SPELL_MISDIRECTION           = 34477,
+    SPELL_MISDIRECTION_AURA      = 35079, // the aura on the hunter
 
     // Paladin
     SPELL_DIVINE_SHIELD          =   642,
@@ -145,7 +145,7 @@ enum class SscItems : uint32
     ITEM_TAINTED_CORE            = 31088,
 };
 
-// General
+// Shared
 
 inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
