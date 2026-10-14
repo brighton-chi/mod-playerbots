@@ -602,12 +602,9 @@ inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
 // faces out and the raid stands inside.
 inline constexpr float ILLIDAN_RING_RADIUS = 25.0f;
 inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
-// He doesn't step while his victim is within his chase range (7.5 + 1.5 + 0.5) of his centre.
-inline constexpr float ILLIDAN_CHASE_STOP_DISTANCE = 9.5f;
-// Each Flame Crash moves him this far counterclockwise round the centre.
-inline constexpr float ILLIDAN_RING_STEP_ANGLE = 20.0f * static_cast<float>(M_PI) / 180.0f;
-// He is on his ring point within this distance.
-inline constexpr float ILLIDAN_RING_POINT_TOLERANCE = 1.5f;
+// On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
+// runs up close behind a walking tank and stops about 30 deg on, back on the ring.
+inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
 // A Flame Crash this close to the Main Tank was cast on it.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
@@ -703,9 +700,7 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
-// The Main Tank's two ring spots: 9.5 yd past his ring point on the line from him, so he follows
-// and stops on it; then 6 yd outward of him, so he only turns and faces out.
-Position GetIllidanLeadSpot(Unit const& illidan, Position const& ringPoint);
+// 6 yd outward of him. A tank walking there from within 9.5 yd only turns him to face out.
 Position GetIllidanSettleSpot(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);

@@ -633,28 +633,6 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         GetPlayerWithParasiticShadowfiend(botAI);
 }
 
-bool IllidanStormrageParasiticShadowfiendsRunWildTrigger::IsActiveInEncounter()
-{
-    if (bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
-        return false;
-
-    ObjectGuid const guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
-    if (guid.IsEmpty())
-        return true;
-
-    Creature* totem = bot->GetMap()->GetCreature(guid);
-    return !totem || totem->GetDistance(bot) > 20.0f ||
-        totem->GetUInt32Value(UNIT_CREATED_BY_SPELL) != Id(BtSpells::SPELL_EARTHBIND_TOTEM);
-}
-
 bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))

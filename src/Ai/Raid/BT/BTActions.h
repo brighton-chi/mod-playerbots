@@ -506,9 +506,10 @@ public:
     bool Execute(Event event) override;
 
 private:
-    float _ringAngle = 0.0f;
-    uint32 _ringPhaseStartTime = 0;
+    uint32 _phaseStartTime = 0;
     ObjectGuid _lastFlameCrash;
+    Position _leadSpot;
+    bool _isLeading = false;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
@@ -516,14 +517,6 @@ class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
 public:
     IllidanStormrageIsolateBotWithParasiteAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
-    bool Execute(Event event) override;
-};
-
-class IllidanStormrageSetEarthbindTotemAction : public Action
-{
-public:
-    IllidanStormrageSetEarthbindTotemAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage set earthbind totem") {}
     bool Execute(Event event) override;
 };
 

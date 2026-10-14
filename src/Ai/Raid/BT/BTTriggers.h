@@ -563,16 +563,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageParasiticShadowfiendsRunWildTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    IllidanStormrageParasiticShadowfiendsRunWildTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage parasitic shadowfiends run wild") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:

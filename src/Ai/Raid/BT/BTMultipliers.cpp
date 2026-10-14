@@ -846,13 +846,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
-        if (isMove)
-        {
-            return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ?
-                1.0f : 0.0f;
-        }
+        if (!isMove)
+            return 1.0f;
 
-        return dynamic_cast<CastHealingSpellAction*>(action) ? 0.0f : 1.0f;
+        return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ?
+            1.0f : 0.0f;
     }
 
     // Flying phase: tanks other than the flame tanks
@@ -898,27 +896,6 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Act
         return 0.0f;
 
     return IsHeldIllidanChase(botAI, action, phase) ? 0.0f : 1.0f;
-}
-
-float IllidanStormrageUseEarthbindTotemMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
-        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
-        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
-        !dynamic_cast<CastTremorTotemAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && !IsIllidanDeathScene(illidan) &&
-        GetIllidanPhase(illidan) != IllidanPhase::Flying ? 0.0f : 1.0f;
 }
 
 // Shadowfiends spawn on the player whose debuff ended, a valid target again, and any threat it

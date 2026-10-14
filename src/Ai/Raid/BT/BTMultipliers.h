@@ -360,16 +360,6 @@ private:
     float GetNonTankValue(Action* action);
 };
 
-class IllidanStormrageUseEarthbindTotemMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    IllidanStormrageUseEarthbindTotemMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage use earthbind totem") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class IllidanStormrageShadowfiendBirtherHoldMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

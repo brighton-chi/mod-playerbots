@@ -1934,9 +1934,9 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
 }
 
-// The Main Tank holds him 25 yd from the grate centre, facing out. At each phase start his ring
-// point is the one nearest the tank, and each Flame Crash on the tank moves it 20 deg
-// counterclockwise: the tank leads him past it, so he follows and stops on it, then settles.
+// The Main Tank holds him about 25 yd from the grate centre, 6 yd outward of him so he faces out.
+// On each Flame Crash on the tank it leads him once, to the ring point 35 deg counterclockwise of
+// him; he stops about 30 deg on, and the tank settles outward of wherever he stopped.
 // While he lands the tank waits north of the landing point, so Phase 3 starts due north. In Demon
 // Form it waits off to the side, then 3 s before the end walks to 6 yd outward of him and takes
 // him at the reset.
@@ -1957,11 +1957,10 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 
     auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
     uint32 const phaseStartTime = it != illidanPhaseStartTime.end() ? it->second : 0;
-    if (phaseStartTime != _ringPhaseStartTime)
+    if (phaseStartTime != _phaseStartTime)
     {
-        _ringPhaseStartTime = phaseStartTime;
-        _ringAngle = GetGrateAngle(*bot);
-        _lastFlameCrash.Clear();
+        _phaseStartTime = phaseStartTime;
+        _isLeading = false;
     }
 
     Position spot;
@@ -1994,18 +1993,24 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             bot->GetExactDist2d(flameCrash) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE)
         {
             _lastFlameCrash = flameCrash->GetGUID();
-            _ringAngle = Position::NormalizeOrientation(_ringAngle + ILLIDAN_RING_STEP_ANGLE);
+            _leadSpot = GetRingPoint(
+                GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+            _isLeading = true;
         }
 
-        // He is coming to the tank, and stops 9.5 yd short of wherever it stands.
+        // Where he stops depends on when the tank stops, so it isn't redirected while he moves.
         if (illidan->isMoving())
             return false;
 
-        Position const ringPoint = GetRingPoint(_ringAngle, ILLIDAN_RING_RADIUS);
-        if (illidan->GetExactDist2d(ringPoint) > ILLIDAN_RING_POINT_TOLERANCE)
-            spot = GetIllidanLeadSpot(*illidan, ringPoint);
+        if (_isLeading && bot->GetExactDist2d(_leadSpot) > ILLIDAN_SPOT_TOLERANCE)
+        {
+            spot = _leadSpot;
+        }
         else
+        {
+            _isLeading = false;
             spot = GetIllidanSettleSpot(*illidan);
+        }
     }
 
     if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
@@ -2034,12 +2039,6 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
     return bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell(frostTrap, bot) &&
         botAI->CastSpell(frostTrap, bot);
-}
-
-bool IllidanStormrageSetEarthbindTotemAction::Execute(Event /*event*/)
-{
-    return botAI->CanCastSpell(Id(BtSpells::SPELL_EARTHBIND_TOTEM ), bot) &&
-        botAI->CastSpell(Id(BtSpells::SPELL_EARTHBIND_TOTEM ), bot);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)

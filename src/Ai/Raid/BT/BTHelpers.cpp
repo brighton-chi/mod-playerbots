@@ -1538,15 +1538,6 @@ Position GetRingPoint(float angle, float radius)
         ILLIDAN_GRATE_CENTRE.GetPositionZ());
 }
 
-Position GetIllidanLeadSpot(Unit const& illidan, Position const& ringPoint)
-{
-    float const angle = illidan.GetAngle(&ringPoint);
-    return Position(
-        ringPoint.GetPositionX() + ILLIDAN_CHASE_STOP_DISTANCE * std::cos(angle),
-        ringPoint.GetPositionY() + ILLIDAN_CHASE_STOP_DISTANCE * std::sin(angle),
-        ringPoint.GetPositionZ());
-}
-
 Position GetIllidanSettleSpot(Unit const& illidan)
 {
     float const radius = ILLIDAN_GRATE_CENTRE.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;

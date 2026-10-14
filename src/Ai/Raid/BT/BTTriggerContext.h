@@ -191,9 +191,6 @@ public:
         creators["illidan stormrage parasitic shadowfiend on group member"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiend_on_group_member;
 
-        creators["illidan stormrage parasitic shadowfiends run wild"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiends_run_wild;
-
         creators["illidan stormrage flames of azzinoth should be tanked"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_flames_of_azzinoth_should_be_tanked;
 
@@ -496,10 +493,6 @@ private:
     static Trigger* illidan_stormrage_parasitic_shadowfiend_on_group_member(PlayerbotAI* botAI)
     {
         return new IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger(botAI);
-    }
-    static Trigger* illidan_stormrage_parasitic_shadowfiends_run_wild(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageParasiticShadowfiendsRunWildTrigger(botAI);
     }
     static Trigger* illidan_stormrage_flames_of_azzinoth_should_be_tanked(PlayerbotAI* botAI)
     {

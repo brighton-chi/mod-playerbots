@@ -196,9 +196,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiend on group member",
         { NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 3) }));
 
-    // triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiends run wild",
-    //     { NextAction("illidan stormrage set earthbind totem", ACTION_RAID + 1) }));
-
     triggers.push_back(new TriggerNode("illidan stormrage flames of azzinoth should be tanked",
         { NextAction(
             "illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));
@@ -310,7 +307,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Illidan Stormrage <The Betrayer>
     multipliers.push_back(new IllidanStormrageHoldPullPositionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
-    // multipliers.push_back(new IllidanStormrageUseEarthbindTotemMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageShadowfiendBirtherHoldMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
