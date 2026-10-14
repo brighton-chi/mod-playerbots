@@ -715,7 +715,8 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot);
 // Null while the warlock tank is dead.
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
-// The trap hunter is the first hunter bot by GUID, dead or alive, for the whole fight.
+bool IsIllidanWarlockTank(PlayerbotAI* botAI);
+// The trap hunter is the first assistant hunter or bot hunter by GUID, dead or alive.
 ObjectGuid FindIllidanTrapHunterGuid(Player* bot);
 ObjectGuid GetIllidanTrapHunterGuid(PlayerbotAI* botAI);
 bool IsIllidanTrapHunter(PlayerbotAI* botAI);
@@ -734,7 +735,7 @@ GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
 // No Shadowfiend debuff and a living Shadowfiend close by, as where a debuff just ended, while
 // that Shadowfiend isn't yet nearly dead.
-bool IsIllidanShadowfiendBirther(PlayerbotAI* botAI);
+bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
 // Humans included, so the trap hunter traps for them too.
 ObjectGuid FindPlayerWithParasiticShadowfiendGuid(Player* bot);
 Player* GetPlayerWithParasiticShadowfiend(PlayerbotAI* botAI);

@@ -1744,6 +1744,12 @@ Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
     return GetCachedPlayer(botAI, "illidan stormrage warlock tank");
 }
 
+bool IsIllidanWarlockTank(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    return bot->getClass() == CLASS_WARLOCK && GetIllidanWarlockTank(botAI) == bot;
+}
+
 ObjectGuid FindIllidanTrapHunterGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -1946,15 +1952,17 @@ Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit)
     return nearest;
 }
 
-bool IsIllidanShadowfiendBirther(PlayerbotAI* botAI)
+bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     if (HasParasiticShadowfiend(bot))
         return false;
 
     Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
-    return shadowfiend &&
-        bot->GetExactDist2d(shadowfiend) <= ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE &&
+    if (!shadowfiend)
+        return false;
+
+    return bot->GetExactDist2d(shadowfiend) <= ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE &&
         shadowfiend->GetHealthPct() >= ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT;
 }
 

@@ -25,6 +25,7 @@
 #include "SpellMgr.h"
 #include "ThreatManager.h"
 #include "Timer.h"
+#include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
 #include <array>
@@ -248,11 +249,11 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<SetBehindTargetAction*>(action))
-    {
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
-    }
+
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") ? 0.0f : 1.0f;
 }
@@ -483,7 +484,13 @@ float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* ac
 // them nearer to her than the tanks.
 float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) || PlayerbotAI::IsRanged(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (PlayerbotAI::IsRanged(bot))
+        return 1.0f;
+
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
@@ -492,6 +499,9 @@ float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action
 float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
     if (!dynamic_cast<CastPurgeAction*>(action) &&
@@ -517,11 +527,11 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
 
 float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FollowAction*>(action) && !IsRepositionAction(bot, action))
-    {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
-    }
+
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) && !IsRepositionAction(bot, action))
+        return 1.0f;
 
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
@@ -898,40 +908,32 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Act
     return IsHeldIllidanChase(botAI, action, phase) ? 0.0f : 1.0f;
 }
 
-// Shadowfiends spawn on the player whose debuff ended, a valid target again, and any threat it
-// makes on them brings them back onto it. So near them it holds damage on them, area damage, and
-// for a healer heals, since heal threat reaches them too.
-float IllidanStormrageShadowfiendBirtherHoldMultiplier::GetValueInEncounter(Action* action)
+// If near a Shadowfiend that is not low on health, do not do anything if
+// targeting the Shadowfiend, cast AoE spells, or cast heals. This is a proxy for having just
+// birthed a Shadowfiend, which can immediately infect the birther if any threat is generated.
+float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    if (!castSpellAction)
         return 1.0f;
 
-    bool const isHeal =
-        PlayerbotAI::IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action);
-    if (!isHeal)
-    {
-        if (!IsDpsHoldCandidate(bot, action))
-            return 1.0f;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    bool const isTargetingShadowfiend =
+        target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
+    bool const isAoeSpell = IsAoeThreatAction(bot, action) ||
+        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
 
-        Unit* target = AI_VALUE(Unit*, "current target");
-        bool const isOnShadowfiend =
-            target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-        auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-        bool const isAreaDamage = IsAoeThreatAction(bot, action) ||
-            (castSpellAction &&
-             castSpellAction->getThreatType() == Action::ActionThreatType::Aoe &&
-             !dynamic_cast<CastHealingSpellAction*>(action));
-        if (!isOnShadowfiend && !isAreaDamage)
-            return 1.0f;
-    }
+    if (!isTargetingShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
         return 1.0f;
 
-    return IsIllidanShadowfiendBirther(botAI) ? 0.0f : 1.0f;
+    return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;
 }
 
-// Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5.
+// Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5 (to keep
+// them from dying in Phase 4 and to save the cooldown through Phases 1 and 2).
 float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsGuardianSummon(bot, action))
@@ -985,4 +987,22 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         (dynamic_cast<AttackAction*>(action) && action->GetTarget() == illidan);
 
     return isOnIllidan ? GetDpsHoldValue(bot, action) : 1.0f;
+}
+
+float IllidanStormrageDisableTankSoulshatterMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_WARLOCK)
+        return 1.0f;
+
+    if (!dynamic_cast<CastSoulshatterAction*>(action))
+        return 1.0f;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return 1.0f;
+
+    return IsIllidanWarlockTank(botAI) ? 0.0f : 1.0f;
 }

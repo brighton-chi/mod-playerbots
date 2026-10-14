@@ -360,11 +360,11 @@ private:
     float GetNonTankValue(Action* action);
 };
 
-class IllidanStormrageShadowfiendBirtherHoldMultiplier : public BlackTempleEncounterMultiplier
+class IllidanStormrageNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidanStormrageShadowfiendBirtherHoldMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage shadowfiend birther hold") {}
+    IllidanStormrageNearNewShadowfiendMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage near new shadowfiend") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -385,6 +385,16 @@ class IllidanStormrageWaitForDpsMultiplier : public BlackTempleEncounterMultipli
 public:
     IllidanStormrageWaitForDpsMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "illidan stormrage wait for dps") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class IllidanStormrageDisableTankSoulshatterMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageDisableTankSoulshatterMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage disable tank soulshatter") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

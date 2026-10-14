@@ -307,9 +307,10 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Illidan Stormrage <The Betrayer>
     multipliers.push_back(new IllidanStormrageHoldPullPositionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageShadowfiendBirtherHoldMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageNearNewShadowfiendMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageDisableTankSoulshatterMultiplier(botAI));
 }
 
 namespace
