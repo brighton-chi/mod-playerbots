@@ -1936,7 +1936,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 
 // The Main Tank holds him about 25 yd from the grate centre, 6 yd outward of him so he faces out.
 // On each Flame Crash on the tank it leads him once, to the ring point 35 deg counterclockwise of
-// him; he stops about 30 deg on, and the tank settles outward of wherever he stopped.
+// him; he stops about 30 deg on, and the tank settles outward of wherever he stopped. Near the
+// centre, as after landing, it leads him straight out instead.
 // While he lands the tank waits north of the landing point, so Phase 3 starts due north. In Demon
 // Form it waits off to the side, then 3 s before the end walks to 6 yd outward of him and takes
 // him at the reset.
@@ -1995,6 +1996,12 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             _lastFlameCrash = flameCrash->GetGUID();
             _leadSpot = GetRingPoint(
                 GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+            _isLeading = true;
+        }
+        else if (!_isLeading &&
+            illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
+        {
+            _leadSpot = GetRingPoint(GetGrateAngle(*bot), ILLIDAN_PICKUP_LEAD_RADIUS);
             _isLeading = true;
         }
 

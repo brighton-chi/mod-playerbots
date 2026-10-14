@@ -605,6 +605,10 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
 // runs up close behind a walking tank and stops about 30 deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
+// While he is this close to the grate centre, as after landing, the Main Tank leads him straight
+// out along its own bearing to the lead radius; he stops 22 to 28 yd out.
+inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
+inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
 // A Flame Crash this close to the Main Tank was cast on it.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
