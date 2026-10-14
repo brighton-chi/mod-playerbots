@@ -49,8 +49,7 @@ public:
                 continue;
 
             // A stolen Rune Shield can still be up when the next is cast.
-            if (!player->HasSpell(spellsteal) ||
-                player->HasSpellCooldown(spellsteal) ||
+            if (!player->HasSpell(spellsteal) || player->HasSpellCooldown(spellsteal) ||
                 player->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD)))
             {
                 continue;
@@ -72,8 +71,8 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!caster || spellInfo->Id != Id(BtSpells::SPELL_CIRCLE_OF_HEALING) ||
-            caster->GetEntry() != Id(BtNpcs::NPC_LADY_MALANDE))
+        if (!caster || caster->GetEntry() != Id(BtNpcs::NPC_LADY_MALANDE) ||
+            spellInfo->Id != Id(BtSpells::SPELL_CIRCLE_OF_HEALING))
         {
             return;
         }
@@ -124,13 +123,17 @@ private:
         switch (player->getClass())
         {
             case CLASS_MAGE:
+            {
                 interrupt = Id(BtSpells::SPELL_COUNTERSPELL);
                 range = 30.0f;
                 break;
+            }
             case CLASS_SHAMAN:
+            {
                 interrupt = Id(BtSpells::SPELL_WIND_SHEAR);
                 range = 25.0f;
                 break;
+            }
             case CLASS_WARLOCK:
                 return GetReadySpellLock(player->GetPet(), malande) != 0;
             default:
