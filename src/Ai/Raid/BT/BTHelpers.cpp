@@ -121,8 +121,7 @@ bool IsInRectangle(
 }
 
 Position GetBotPointInRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth,
-    float halfDepth)
+    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth)
 {
     // Keeps points off the edge, so a bot that arrives counts as inside.
     constexpr float edgeInset = 0.5f;

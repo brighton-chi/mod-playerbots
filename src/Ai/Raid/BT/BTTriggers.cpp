@@ -263,17 +263,22 @@ bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
 
 bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot) || bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+    if (!PlayerbotAI::IsMelee(bot))
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
         return false;
 
+    if (bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+        return false;
+
     Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
-    return felRageTarget &&
-        bot->GetExactDist2d(GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget)) >
-            GURTOGG_FEL_RAGE_MELEE_TOLERANCE;
+    if (!felRageTarget)
+        return false;
+
+    return bot->GetExactDist2d(GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget)) >
+        GURTOGG_FEL_RAGE_MELEE_TOLERANCE;
 }
 
 // Melee go behind him instead.
@@ -293,9 +298,13 @@ bool GurtoggBloodboilShouldAvoidFelRageTargetTrigger::IsActiveInEncounter()
     // Arcing Smash only hits in front of him, but he turns faster than bots can react, so at the
     // start of Fel Rage everyone near the target moves regardless of side.
     Aura* felRage = gurtogg->GetAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE));
-    return (felRage && felRage->GetMaxDuration() - felRage->GetDuration() <
-            GURTOGG_FEL_RAGE_EARLY_AVOID_MS) ||
-        gurtogg->HasInArc(static_cast<float>(M_PI), bot);
+    if (felRage &&
+        felRage->GetMaxDuration() - felRage->GetDuration() < GURTOGG_FEL_RAGE_EARLY_AVOID_MS)
+    {
+        return true;
+    }
+
+    return gurtogg->HasInArc(static_cast<float>(M_PI), bot);
 }
 
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
@@ -383,9 +392,9 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
-    constexpr float shahrazMeleeStartHealthPct = 90.0f;
+    constexpr float meleeEngageHealthPct = 90.0f;
     Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz || shahraz->GetHealthPct() < shahrazMeleeStartHealthPct)
+    if (!shahraz || shahraz->GetHealthPct() < meleeEngageHealthPct)
         return false;
 
     Unit* victim = shahraz->GetVictim();
@@ -447,15 +456,10 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
 // she isn't immune to.
 bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
 {
-    switch (bot->getClass())
+    if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_HUNTER ||
+        bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_PRIEST)
     {
-        case CLASS_DRUID:
-        case CLASS_HUNTER:
-        case CLASS_PALADIN:
-        case CLASS_PRIEST:
-            return false;
-        default:
-            break;
+        return false;
     }
 
     if (!PlayerbotAI::IsDps(bot) || IsZerevorMageTank(botAI))

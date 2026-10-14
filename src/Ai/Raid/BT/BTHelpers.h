@@ -60,8 +60,8 @@ enum class BtSpells : uint32
     SPELL_SPIRIT_SHIELD             = 40322,
 
     // Gurtogg Bloodboil
-    SPELL_BOSS_FEL_RAGE             = 40594,
-    SPELL_PLAYER_FEL_RAGE           = 40604,
+    SPELL_BOSS_FEL_RAGE             = 40594, // Is dropped for the final 2s of phase 2
+    SPELL_PLAYER_FEL_RAGE           = 40604, // Lasts the entirety of phase 2 (30s)
     SPELL_INSIGNIFICANCE            = 40618,
     SPELL_BLOODBOIL                 = 42005,
 
@@ -189,8 +189,7 @@ bool IsInRectangle(
 // This bot's own point in that rectangle, the same every call and spread between bots, at the
 // bot's Z. Falls back to centre when the way from centre to the point is blocked.
 Position GetBotPointInRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth,
-    float halfDepth);
+    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
 
 // Trash
 
@@ -301,23 +300,11 @@ inline constexpr float SUPREMUS_KITE_SAFETY_MARGIN = 3.0f;
 inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 3.5f;
 inline constexpr uint8 SUPREMUS_KITE_HEADINGS = 16;
 inline constexpr float SUPREMUS_REACH_STEP_DISTANCE = 3.5f;
-// He evades when his own position leaves this box (instance_black_temple.cpp boundaries). He
-// follows the kiter in a straight line and the box is convex, so a kiter inside it keeps him in.
-// inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 556.1f;
-// inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 850.2f;
-// inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 542.0f;
-// inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 1001.0f;
-// inline constexpr float SUPREMUS_KITE_BOUNDARY_MARGIN = 10.0f;
-// A rectangular area in front of the Black Temple entrance that is wide open. Min_X to Max_X is
-// pretty close to the width of the courtyard, but the length extends much farther beyond Max_Y.
-// However, extending Max_Y any further moves into a battlefield area with destroyed war marchines
-// and other debris all over, which block movement.
+// The Y boundaries run from the top of the ramp leading up into the temple to just before reaching
+// the vestibule inside the courtyard gate. The X boundaries are pretty close to spanning the entire
+// width of the courtyard
 inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 587.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 820.0f;
-// inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 675.0f;
-// inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 745.0f;
-// These boundaries run from the top of the ramp leading up into the temple to just before reaching
-// the vestibule inside the courtyard gate.
 inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
@@ -381,7 +368,6 @@ inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f }
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
 
 GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI);
-
 // A triggered cast records neither its cooldown nor the global cooldown, so both come from the
 // spell data. False if the cast fails.
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
