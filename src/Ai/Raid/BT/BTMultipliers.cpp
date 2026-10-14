@@ -805,15 +805,15 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
     }
 
     bool const isMove = dynamic_cast<MovementAction*>(action);
-    bool const isGapCloser = dynamic_cast<CastReachTargetSpellAction*>(action);
-    bool const isMeleeSpell = isGapCloser || dynamic_cast<CastMeleeSpellAction*>(action);
-    bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
-    if (!isMove && !isMeleeSpell && !isHeal)
+    bool const isSpell = dynamic_cast<CastSpellAction*>(action);
+    if (!isMove && !isSpell)
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || IsIllidanDeathScene(illidan))
         return 1.0f;
+
+    bool const isGapCloser = dynamic_cast<CastReachTargetSpellAction*>(action);
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||
@@ -833,8 +833,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
 
         if (isMove)
         {
-            return dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(
-                action) ? 1.0f : 0.0f;
+            return dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action) ?
+                1.0f : 0.0f;
         }
 
         return isGapCloser ? 0.0f : 1.0f;
@@ -843,27 +843,23 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankValue(Action
     if (phase != IllidanPhase::Flying)
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
-    {
-        if (isMove)
-            return dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action) ? 1.0f : 0.0f;
-
-        return isMeleeSpell ? 0.0f : 1.0f;
-    }
-
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
     {
         if (isMove)
         {
-            return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(
-                action) ? 1.0f : 0.0f;
+            return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ?
+                1.0f : 0.0f;
         }
 
-        return isHeal ? 0.0f : 1.0f;
+        return dynamic_cast<CastHealingSpellAction*>(action) ? 0.0f : 1.0f;
     }
 
-    return 1.0f;
+    // Flying phase: tanks other than the flame tanks
+    if (isMove)
+        return dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action) ? 1.0f : 0.0f;
+
+    return isSpell ? 0.0f : 1.0f;
 }
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankValue(Action* action)

@@ -388,10 +388,5 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
         AppendShadeOfAkamaTankExclusions(botAI, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
-
-    if (type == TargetValueExclusionType::TankTarget ||
-        type == TargetValueExclusionType::DpsTarget)
-    {
-        AppendParasiticShadowfiendExclusions(botAI, exclusions);
-    }
+    AppendParasiticShadowfiendExclusions(botAI, exclusions);
 }

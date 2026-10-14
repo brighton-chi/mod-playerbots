@@ -1759,21 +1759,30 @@ ObjectGuid FindIllidanTrapHunterGuid(Player* bot)
     if (!group)
         return ObjectGuid::Empty;
 
-    ObjectGuid trapHunter;
+    ObjectGuid assistantHunter;
+    ObjectGuid botHunter;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || member->getClass() != CLASS_HUNTER ||
-            !GET_PLAYERBOT_AI(member))
+        if (!member || !member->IsAlive() || member->GetMapId() != BT_MAP_ID ||
+            member->getClass() != CLASS_HUNTER)
         {
             continue;
         }
 
-        if (trapHunter.IsEmpty() || member->GetGUID() < trapHunter)
-            trapHunter = member->GetGUID();
+        ObjectGuid const guid = member->GetGUID();
+        if (group->IsAssistant(guid))
+        {
+            if (assistantHunter.IsEmpty() || guid < assistantHunter)
+                assistantHunter = guid;
+        }
+        else if (GET_PLAYERBOT_AI(member) && (botHunter.IsEmpty() || guid < botHunter))
+        {
+            botHunter = guid;
+        }
     }
 
-    return trapHunter;
+    return assistantHunter.IsEmpty() ? botHunter : assistantHunter;
 }
 
 ObjectGuid GetIllidanTrapHunterGuid(PlayerbotAI* botAI)

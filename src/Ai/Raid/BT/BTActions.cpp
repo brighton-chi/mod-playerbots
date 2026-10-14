@@ -2210,21 +2210,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
     if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
     {
-        if (!eastFlame || eastFlame->GetVictim() != bot ||
-            !bot->IsWithinMeleeRange(eastFlame))
-        {
+        if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
             return false;
-        }
+
         waypoints = &E_GLAIVE_TANK_POSITIONS;
         flame = eastFlame;
     }
     else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
     {
-        if (!westFlame || westFlame->GetVictim() != bot ||
-            !bot->IsWithinMeleeRange(westFlame))
-        {
+        if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
             return false;
-        }
+
         waypoints = &W_GLAIVE_TANK_POSITIONS;
         flame = westFlame;
     }
