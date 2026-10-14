@@ -2043,9 +2043,11 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
-    return bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell(frostTrap, bot) &&
-        botAI->CastSpell(frostTrap, bot);
+    return botAI->CanCastSpell(frostTrap, bot) && botAI->CastSpell(frostTrap, bot);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
@@ -2054,7 +2056,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     // The second assist tank's flame is killed first; this is so that if the tank
     // for the second flame dies after the first flame is down, the dead flame's
     // tank will become the first assist tank and take over the remaining flame
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    if (IsEastFlameOfAzzinothTank(bot))
     {
         if (eastFlame && westFlame)
         {
@@ -2105,7 +2107,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             }
         }
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+    else if (IsWestFlameOfAzzinothTank(bot))
     {
         if (westFlame)
         {
@@ -2214,7 +2216,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     decltype(E_GLAIVE_TANK_POSITIONS)* waypoints = nullptr;
     Unit* flame = nullptr;
 
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    if (IsEastFlameOfAzzinothTank(bot))
     {
         if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
             return false;
@@ -2222,7 +2224,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         waypoints = &E_GLAIVE_TANK_POSITIONS;
         flame = eastFlame;
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+    else if (IsWestFlameOfAzzinothTank(bot))
     {
         if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
             return false;
@@ -2504,15 +2506,8 @@ bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(Unit const& illidan
 }
 
 // Melee and tanks wait in their Demon Form slots and leave them only for a Shadow Demon.
-bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
+bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 {
-    if (HasParasiticShadowfiend(bot))
-        return false;
-
-    Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && target->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
-        return false;
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
@@ -2532,7 +2527,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
 }
 
 // The warlock tank holds him from its spot with Shadow Ward and Searing Pain.
-bool IllidanStormrageWarlockTankHandleDemonBossAction::Execute(Event /*event*/)
+bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2581,7 +2576,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
             targets = { GetShadowDemonToAttack(botAI, *bot) };
         }
-        else if (GetIllidanWarlockTank(botAI) == bot)
+        else if (IsIllidanWarlockTank(botAI))
         {
             targets = { GetShadowDemonToAttack(botAI, *bot), illidan };
         }
@@ -2614,30 +2609,26 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         {
             constexpr float searchRadius = 35.0f;
             Unit* shadowfiend = bot->FindNearestCreature(
-                Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND),
-                searchRadius, true);
+                Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
-            else
-                targets = { illidan };
+
+            targets = { illidan };
         }
         else if (phase == IllidanPhase::Flying)
         {
-            constexpr float searchRadius = 20.0f;
-            Unit* shadowfiend = bot->FindNearestCreature(
-                Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND),
-                searchRadius, true);
+            if (botAI->HasCheat(BotCheatMask::raid))
+            {
+                constexpr float searchRadius = 20.0f;
+                Unit* shadowfiend = bot->FindNearestCreature(
+                    Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
+                if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
+                    targets = { shadowfiend };
+            }
 
-            if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
-            {
-                targets = { shadowfiend };
-            }
-            else
-            {
-                auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-                targets = { eastFlame, westFlame };
-            }
+            auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+            targets = { eastFlame, westFlame };
         }
     }
     // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in

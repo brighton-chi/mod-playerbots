@@ -116,7 +116,6 @@ enum class BtSpells : uint32
     SPELL_SPELLSTEAL                = 30449,
 
     // Shaman
-    SPELL_EARTHBIND_TOTEM           =  2484,
     SPELL_WIND_SHEAR                = 57994,
 
     // Warlock (Felhunter)
@@ -125,6 +124,7 @@ enum class BtSpells : uint32
 
     // Warrior
     SPELL_SPELL_REFLECTION          = 23920,
+    SPELL_VIGILANCE                 = 50720,
 };
 
 enum class BtNpcs : uint32
@@ -710,6 +710,9 @@ Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
+bool IsWestFlameOfAzzinothTank(Player* bot);
+bool IsEastFlameOfAzzinothTank(Player* bot);
+bool IsFlameOfAzzinothTank(Player* bot);
 // The warlock tank is an assistant warlock (player or bot), else the warlock bot with the lowest
 // GUID; dead or alive, for the whole fight, since losing it wipes the raid anyway.
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot);

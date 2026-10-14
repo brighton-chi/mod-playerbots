@@ -1507,7 +1507,7 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
     Player* bot = botAI->GetBot();
     if (window == IllidanDpsHold::DemonFormStart)
     {
-        return GetIllidanWarlockTank(botAI) == bot ? IllidanDpsHold::None : window;
+        return IsIllidanWarlockTank(botAI) ? IllidanDpsHold::None : window;
     }
     else if (window == IllidanDpsHold::DemonFormMiddle)
     {
@@ -1706,6 +1706,21 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     }
 
     return { eastFlame, westFlame };
+}
+
+bool IsWestFlameOfAzzinothTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+}
+
+bool IsEastFlameOfAzzinothTank(Player* bot)
+{
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
+}
+
+bool IsFlameOfAzzinothTank(Player* bot)
+{
+    return IsEastFlameOfAzzinothTank(bot) || IsWestFlameOfAzzinothTank(bot);
 }
 
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot)

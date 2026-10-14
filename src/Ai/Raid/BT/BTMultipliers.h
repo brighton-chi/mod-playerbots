@@ -355,9 +355,10 @@ protected:
     float GetValueInEncounter(Action* action) override;
 
 private:
-    float GetAssistValue(BtHelpers::IllidanPhase phase, bool isTankAssist);
-    float GetTankValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
-    float GetNonTankValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
+    float GetTargetingValue(
+        BtHelpers::IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist);
+    float GetTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
+    float GetNonTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
 };
 
 class IllidanStormrageNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier

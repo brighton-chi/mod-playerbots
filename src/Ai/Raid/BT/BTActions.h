@@ -634,21 +634,21 @@ private:
     bool FindDemonFormSlot(Unit const& illidan, Position& spot);
 };
 
-class IllidanStormrageMeleeGoSomewhereToNotDieAction : public MovementAction
+class IllidanStormrageMeleeStayAwayFromDemonFormAction : public MovementAction
 {
 public:
-    IllidanStormrageMeleeGoSomewhereToNotDieAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage melee go somewhere to not die") {}
+    IllidanStormrageMeleeStayAwayFromDemonFormAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage melee stay away from demon form") {}
     bool Execute(Event event) override;
 };
 
 // A movement action, not an attack, so the hold multiplier leaves it alone: it holds its own
 // casts.
-class IllidanStormrageWarlockTankHandleDemonBossAction : public MovementAction
+class IllidanStormrageWarlockTankHandleDemonFormAction : public MovementAction
 {
 public:
-    IllidanStormrageWarlockTankHandleDemonBossAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage warlock tank handle demon boss") {}
+    IllidanStormrageWarlockTankHandleDemonFormAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage warlock tank handle demon form") {}
     bool Execute(Event event) override;
 };
 

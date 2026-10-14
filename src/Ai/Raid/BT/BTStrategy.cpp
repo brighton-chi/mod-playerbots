@@ -235,10 +235,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage this expansion hates melee",
-        { NextAction("illidan stormrage melee go somewhere to not die", ACTION_RAID + 2) }));
+        { NextAction("illidan stormrage melee stay away from demon form", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage warlock should tank demon form",
-        { NextAction("illidan stormrage warlock tank handle demon boss", ACTION_EMERGENCY + 9) }));
+        { NextAction("illidan stormrage warlock tank handle demon form", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage should assign dps priority",
         { NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 1) }));

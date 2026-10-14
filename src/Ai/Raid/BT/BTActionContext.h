@@ -223,11 +223,11 @@ public:
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
 
-        creators["illidan stormrage melee go somewhere to not die"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_melee_go_somewhere_to_not_die;
+        creators["illidan stormrage melee stay away from demon form"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_melee_stay_away_from_demon_form;
 
-        creators["illidan stormrage warlock tank handle demon boss"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_warlock_tank_handle_demon_boss;
+        creators["illidan stormrage warlock tank handle demon form"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_warlock_tank_handle_demon_form;
 
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
@@ -547,13 +547,13 @@ private:
     {
         return new IllidanStormrageDisperseRangedAction(botAI);
     }
-    static Action* illidan_stormrage_melee_go_somewhere_to_not_die(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_melee_stay_away_from_demon_form(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMeleeGoSomewhereToNotDieAction(botAI);
+        return new IllidanStormrageMeleeStayAwayFromDemonFormAction(botAI);
     }
-    static Action* illidan_stormrage_warlock_tank_handle_demon_boss(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_warlock_tank_handle_demon_form(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageWarlockTankHandleDemonBossAction(botAI);
+        return new IllidanStormrageWarlockTankHandleDemonFormAction(botAI);
     }
     static Action* illidan_stormrage_dps_prioritize_adds(PlayerbotAI* botAI)
     {
