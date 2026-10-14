@@ -870,11 +870,8 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 bool IllidanStormrageMaievPlacedCageTrapTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan) ||
-        GetIllidanPhase(illidan) != IllidanPhase::Maiev)
-    {
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Maiev)
         return false;
-    }
 
     GameObject* trap = FindNearestCageTrap(botAI);
     if (!trap)
@@ -910,11 +907,8 @@ bool IllidanStormrageMaievPlacedCageTrapTrigger::IsActiveInEncounter()
 
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
 {
-    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
-        return false;
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && !IsIllidanDeathScene(illidan);
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
+        AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
 // Destroying hazards behind phases is not gated behind CheatMask
@@ -925,12 +919,12 @@ bool IllidanStormrageShouldClearHazardsBetweenPhasesTrigger::IsActiveInEncounter
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || IsIllidanDeathScene(illidan))
+    if (!illidan)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    return phase == IllidanPhase::Landing || phase == IllidanPhase::Flying ||
-        phase == IllidanPhase::Demon;
+    return phase == IllidanPhase::Landing /* || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Demon */;
 }
 
 bool IllidanStormrageCheatTrigger::IsActiveInEncounter()

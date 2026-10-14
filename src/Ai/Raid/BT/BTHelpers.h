@@ -510,16 +510,17 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target);
 // Illidan Stormrage <The Betrayer>
 
 // Fight phases 1 to 5 are Initial, Flying, Grounded, Demon and Maiev; Landing runs from the last
-// Flame's death until he is back on the ground.
+// Flame's death until he is back on the ground. Dying is during the 1 HP death scene.
 enum class IllidanPhase : uint8
 {
-    None, // also Maiev's arrival and the death scene
+    None, // also Maiev's arrival
     Initial,
     Flying,
     Landing,
     Grounded,
     Demon,
     Maiev,
+    Dying,
 };
 
 // Damage on him is held after each threat reset, so the tank that should have him acts first.
@@ -686,7 +687,6 @@ extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
 IllidanPhase GetIllidanPhase(Unit* illidan);
-bool IsIllidanDeathScene(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
 // The phase started less than durationMs ago; until the mechanic tracker stamps it, it has just

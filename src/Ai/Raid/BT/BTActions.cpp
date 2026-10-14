@@ -2788,11 +2788,11 @@ bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
     constexpr float searchRadius = 50.0f;
     std::list<Creature*> hazards;
     std::vector<uint32> entries;
 
+    IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
         entries = { Id(BtNpcs::NPC_FLAME_CRASH) };
     else if (phase == IllidanPhase::Landing)
@@ -2813,7 +2813,7 @@ bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
     return false;
 }
 
-// Reduce Shadow Demon to 25% health and kill residual Shadowfiends in Phase 2
+// Reduce Shadow Demon health, and kill residual Shadowfiends in Phase 2
 bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2833,17 +2833,17 @@ bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float searchRadius = 75.0f;
+    constexpr float searchRadius = 50.0f;
     Unit* shadowDemon = bot->FindNearestCreature(
         Id(BtNpcs::NPC_SHADOW_DEMON), searchRadius, true);
     if (!shadowDemon)
         return false;
 
-    uint32 const quarterHealth = shadowDemon->GetMaxHealth() / 4;
-    if (shadowDemon->GetHealth() <= quarterHealth)
+    uint32 const halfHealth = shadowDemon->GetMaxHealth() / 2;
+    if (shadowDemon->GetHealth() <= halfHealth)
         return false;
 
-    uint32 damage = shadowDemon->GetHealth() - quarterHealth;
+    uint32 damage = shadowDemon->GetHealth() - halfHealth;
     Unit::DealDamage(
         bot, shadowDemon, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL,
         nullptr, false, false, nullptr);

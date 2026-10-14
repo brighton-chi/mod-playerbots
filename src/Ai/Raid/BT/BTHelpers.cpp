@@ -1392,8 +1392,11 @@ std::unordered_map<uint32, ObjectGuid> westFlameGuid;
 
 IllidanPhase GetIllidanPhase(Unit* illidan)
 {
-    if (!illidan || IsIllidanDeathScene(illidan))
+    if (!illidan)
         return IllidanPhase::None;
+
+    if (illidan->GetHealth() == 1)
+        return IllidanPhase::Dying;
 
     float const healthPct = illidan->GetHealthPct();
     if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
@@ -1424,11 +1427,6 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
     }
 
     return healthPct > 30.0f ? IllidanPhase::Grounded : IllidanPhase::Maiev;
-}
-
-bool IsIllidanDeathScene(Unit* illidan)
-{
-    return illidan && illidan->GetHealth() == 1;
 }
 
 bool IsIllidanSpeechInProgress(Player* bot)
