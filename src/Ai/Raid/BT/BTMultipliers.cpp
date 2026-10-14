@@ -368,7 +368,7 @@ float TeronGorefiendDisableAttackingConstructsMultiplier::GetValueInEncounter(Ac
     if (!PlayerbotAI::IsRangedDps(bot))
         return 1.0f;
 
-    auto* castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     if (!castSpellAction || castSpellAction->getThreatType() != Action::ActionThreatType::Aoe)
         return 1.0f;
 
@@ -916,7 +916,7 @@ float IllidanStormrageShadowfiendBirtherHoldMultiplier::GetValueInEncounter(Acti
         Unit* target = AI_VALUE(Unit*, "current target");
         bool const isOnShadowfiend =
             target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-        auto* castSpellAction = dynamic_cast<CastSpellAction*>(action);
+        auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
         bool const isAreaDamage = IsAoeThreatAction(bot, action) ||
             (castSpellAction &&
              castSpellAction->getThreatType() == Action::ActionThreatType::Aoe &&
