@@ -605,8 +605,11 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Dying)
+    {
         return false;
+    }
 
     return PlayerbotAI::IsMainTank(bot);
 }
@@ -624,8 +627,11 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying)
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Dying)
+    {
         return false;
+    }
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
@@ -858,7 +864,7 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     IllidanPhase const phase =
         GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
-    if (phase == IllidanPhase::None)
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return false;
 
     if (PlayerbotAI::IsHeal(bot))

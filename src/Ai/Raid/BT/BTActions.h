@@ -27,12 +27,12 @@ public:
 
 // Used for High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil and Mother
 // Shahraz.
-class BlackTempleMisdirectToMainTankAction : public AttackAction
+class BlackTempleMisdirectToMainTankAction : public Action
 {
 public:
     BlackTempleMisdirectToMainTankAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : AttackAction(botAI, name), _bossName(bossName) {}
+        : Action(botAI, name), _bossName(bossName) {}
     bool Execute(Event event) override;
 
 private:
@@ -363,11 +363,11 @@ private:
 
 // Illidari Council
 
-class IllidariCouncilMisdirectToTanksAction : public AttackAction
+class IllidariCouncilMisdirectToTanksAction : public Action
 {
 public:
     IllidariCouncilMisdirectToTanksAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidari council misdirect to tanks") {}
+        : Action(botAI, "illidari council misdirect to tanks") {}
     bool Execute(Event event) override;
 };
 

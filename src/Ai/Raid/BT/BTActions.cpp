@@ -1636,6 +1636,12 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     if (!zerevor)
         return false;
 
+    if (bot->HasAura(Id(BtSpells::SPELL_VIGILANCE)))
+    {
+        bot->RemoveOwnedAura(
+            Id(BtSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
+
     if (zerevor->HasAura(Id(BtSpells::SPELL_DAMPEN_MAGIC)) &&
         botAI->CanCastSpell("spellsteal", zerevor))
     {
@@ -2533,6 +2539,12 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
+    if (bot->HasAura(Id(BtSpells::SPELL_VIGILANCE)))
+    {
+        bot->RemoveOwnedAura(
+            Id(BtSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+    }
+
     Position const spot = GetDemonFormLayout(*illidan).warlockSpot;
     if (bot->GetExactDist2d(spot) > ILLIDAN_SPOT_TOLERANCE)
     {
@@ -2613,22 +2625,25 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
                 targets = { shadowfiend };
-
-            targets = { illidan };
+            else
+                targets = { illidan };
         }
         else if (phase == IllidanPhase::Flying)
         {
-            if (botAI->HasCheat(BotCheatMask::raid))
-            {
-                constexpr float searchRadius = 20.0f;
-                Unit* shadowfiend = bot->FindNearestCreature(
-                    Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
-                if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
-                    targets = { shadowfiend };
-            }
+            constexpr float searchRadius = 20.0f;
+            Unit* shadowfiend = botAI->HasCheat(BotCheatMask::raid) ?
+                bot->FindNearestCreature(
+                    Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true) : nullptr;
 
-            auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-            targets = { eastFlame, westFlame };
+            if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
+            {
+                targets = { shadowfiend };
+            }
+            else
+            {
+                auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+                targets = { eastFlame, westFlame };
+            }
         }
     }
     // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in
