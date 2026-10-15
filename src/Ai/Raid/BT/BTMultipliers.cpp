@@ -910,9 +910,10 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     return IsHeldIllidanChase(botAI, action, phase) ? 0.0f : 1.0f;
 }
 
-// If near a Shadowfiend that is not low on health, do not do anything if
-// targeting the Shadowfiend, cast AoE spells, or cast heals. This is a proxy for having just
-// birthed a Shadowfiend, which can immediately infect the birther if any threat is generated.
+// If near a Shadowfiend that is not low on health, nothing goes onto a Shadowfiend and no AoE
+// spell or heal is cast. This is a proxy for having just birthed a Shadowfiend, which can
+// immediately infect the birther if any threat is generated. Switching targets stays free, so a
+// bot on a Shadowfiend can still turn to him.
 float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
 {
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
@@ -923,20 +924,15 @@ float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* 
     if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
         return 1.0f;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    bool const isTargetingShadowfiend =
+    // An attack action that picks its target in Execute has the bot itself as its target.
+    Unit* target = castSpellAction ? AI_VALUE(Unit*, "current target") : action->GetTarget();
+    bool const isOnShadowfiend =
         target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
     bool const isAoeSpell = IsAoeThreatAction(bot, action) ||
         (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
 
-    Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
-    bool const isAttackOnShadowfiend = isAttackAction && action->GetTarget() == shadowfiend;
-
-    if (!isTargetingShadowfiend && !isAttackOnShadowfiend && !isAoeSpell &&
-        !dynamic_cast<CastHealingSpellAction*>(action))
-    {
+    if (!isOnShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
-    }
 
     return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;
 }
