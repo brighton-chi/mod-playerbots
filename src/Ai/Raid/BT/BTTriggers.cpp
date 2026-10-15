@@ -282,7 +282,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
 }
 
 // Melee go behind him instead.
-bool GurtoggBloodboilShouldAvoidFelRageTargetTrigger::IsActiveInEncounter()
+bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsMelee(bot) || bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
         return false;

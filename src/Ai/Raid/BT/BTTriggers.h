@@ -288,11 +288,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class GurtoggBloodboilShouldAvoidFelRageTargetTrigger : public BlackTempleEncounterTrigger
+class GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    GurtoggBloodboilShouldAvoidFelRageTargetTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil should avoid fel rage target") {}
+    GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "gurtogg bloodboil ranged should avoid frontal cone") {}
 
 protected:
     bool IsActiveInEncounter() override;

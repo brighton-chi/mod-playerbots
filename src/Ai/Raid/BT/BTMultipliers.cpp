@@ -831,6 +831,9 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
     if (!isMove && !isSpell)
         return 1.0f;
 
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
     bool const isGapCloser = dynamic_cast<CastReachTargetSpellAction*>(action);
 
     if (phase == IllidanPhase::Initial || phase == IllidanPhase::Landing ||

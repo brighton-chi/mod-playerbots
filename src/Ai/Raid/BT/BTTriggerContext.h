@@ -103,8 +103,8 @@ public:
         creators["gurtogg bloodboil melee should stay behind"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_melee_should_stay_behind;
 
-        creators["gurtogg bloodboil should avoid fel rage target"] =
-            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_avoid_fel_rage_target;
+        creators["gurtogg bloodboil ranged should avoid frontal cone"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_ranged_should_avoid_frontal_cone;
 
         creators["gurtogg bloodboil fel rage on bot"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_bot;
@@ -371,9 +371,9 @@ private:
     {
         return new GurtoggBloodboilShouldPositionForBloodboilTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_should_avoid_fel_rage_target(PlayerbotAI* botAI)
+    static Trigger* gurtogg_bloodboil_ranged_should_avoid_frontal_cone(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilShouldAvoidFelRageTargetTrigger(botAI);
+        return new GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger(botAI);
     }
     static Trigger* gurtogg_bloodboil_melee_should_stay_behind(PlayerbotAI* botAI)
     {

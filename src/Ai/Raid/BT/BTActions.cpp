@@ -366,18 +366,6 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     return true;
 }
 
-bool HighWarlordNajentusRemoveImpalingSpineAction::ResetEncounterState()
-{
-    if (_spineGuid.IsEmpty() && !_usedSpine && !_reactionStartTime && !_reactionDelay)
-        return false;
-
-    _spineGuid.Clear();
-    _usedSpine = false;
-    _reactionStartTime = 0;
-    _reactionDelay = 0;
-    return true;
-}
-
 bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
@@ -426,15 +414,6 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
     bot->CastStop();
     botAI->ImbueItem(spine, najentus);
-    _throwDelay = 0;
-    return true;
-}
-
-bool HighWarlordNajentusThrowImpalingSpineAction::ResetEncounterState()
-{
-    if (!_throwDelay)
-        return false;
-
     _throwDelay = 0;
     return true;
 }
@@ -610,16 +589,6 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool SupremusKiteBossAction::ResetEncounterState()
-{
-    if (_lastAngle == 0.0f && !_lastStepTime)
-        return false;
-
-    _lastAngle = 0.0f;
-    _lastStepTime = 0;
-    return true;
-}
-
 float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDistance)
 {
     float x = bot->GetPositionX() + maxDistance * std::cos(angle);
@@ -703,15 +672,6 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool SupremusMoveAwayFromFireAction::ResetEncounterState()
-{
-    if (!_lastFailedSearchTime)
-        return false;
-
-    _lastFailedSearchTime = 0;
-    return true;
 }
 
 // The nearest spot a yard clear of every hazard's safe zone that the bot can run to in a straight
@@ -891,16 +851,6 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     }
 
     return false;
-}
-
-bool SupremusReachAroundFireAction::ResetEncounterState()
-{
-    if (_lastSide == 1 && !_lastStepTime)
-        return false;
-
-    _lastSide = 1;
-    _lastStepTime = 0;
-    return true;
 }
 
 // Shade of Akama
@@ -1191,7 +1141,7 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
 
 // Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
 // of a walking target isn't pushed along in front of it.
-bool GurtoggBloodboilAvoidFelRageTargetAction::Execute(Event /*event*/)
+bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
@@ -2141,22 +2091,6 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool IllidanStormrageMainTankRepositionBossAction::ResetEncounterState()
-{
-    if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadSpot == Position() && !_isLeading &&
-        !_hasPassedWalkInWaypoint)
-    {
-        return false;
-    }
-
-    _phaseStartTime = 0;
-    _lastFlameCrash.Clear();
-    _leadSpot = Position();
-    _isLeading = false;
-    _hasPassedWalkInWaypoint = false;
-    return true;
-}
-
 // A trap hunter on duty, infected or not, drops Frost Trap on arrival.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
@@ -2784,7 +2718,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
     // Demon Form: Shadow Demons first for everyone, healers included, but a nearly dead
     // Shadowfiend in a melee bot's reach before them; ranged also Shadowfiends; then him, except
-    // for melee and tanks during a hold, since starting an auto-attack would undo their stop.
+    // for melee and tanks, who never take him in the form.
     if (phase == IllidanPhase::Demon)
     {
         if (PlayerbotAI::IsHeal(bot))
@@ -2803,11 +2737,22 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else if (PlayerbotAI::IsMelee(bot))
         {
-            bool const isHeld = GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None;
-            targets = {
-                FindShadowfiendForMelee(), GetShadowDemonForMelee(botAI, *illidan, *bot),
-                isHeld ? nullptr : illidan,
-            };
+            Unit* shadowDemon = GetShadowDemonForMelee(botAI, *illidan, *bot);
+            Unit* shadowfiend = FindShadowfiendForMelee();
+            // With nothing safe to hit, the target goes, so a Demon that has walked into Aura of
+            // Dread or Shadow Blast isn't chased in there.
+            if (!shadowDemon && !shadowfiend)
+            {
+                if (!AI_VALUE(Unit*, "current target") && !bot->GetVictim())
+                    return false;
+
+                bot->AttackStop();
+                context->GetValue<Unit*>("current target")->Set(nullptr);
+                bot->SetSelection(ObjectGuid());
+                return true;
+            }
+
+            targets = { shadowDemon, shadowfiend };
         }
         else
         {

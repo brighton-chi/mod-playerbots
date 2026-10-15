@@ -102,8 +102,8 @@ public:
         creators["gurtogg bloodboil melee move behind"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_melee_move_behind;
 
-        creators["gurtogg bloodboil avoid fel rage target"] =
-            &RaidBlackTempleActionContext::gurtogg_bloodboil_avoid_fel_rage_target;
+        creators["gurtogg bloodboil ranged move out of frontal cone"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_ranged_move_out_of_frontal_cone;
 
         creators["gurtogg bloodboil lead boss to tank position"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_lead_boss_to_tank_position;
@@ -374,9 +374,9 @@ private:
     {
         return new GurtoggBloodboilRotateRangedGroupsAction(botAI);
     }
-    static Action* gurtogg_bloodboil_avoid_fel_rage_target(PlayerbotAI* botAI)
+    static Action* gurtogg_bloodboil_ranged_move_out_of_frontal_cone(PlayerbotAI* botAI)
     {
-        return new GurtoggBloodboilAvoidFelRageTargetAction(botAI);
+        return new GurtoggBloodboilRangedMoveOutOfFrontalConeAction(botAI);
     }
     static Action* gurtogg_bloodboil_melee_move_behind(PlayerbotAI* botAI)
     {

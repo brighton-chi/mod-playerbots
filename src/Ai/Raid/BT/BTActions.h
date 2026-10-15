@@ -123,7 +123,17 @@ public:
     HighWarlordNajentusRemoveImpalingSpineAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "high warlord naj'entus remove impaling spine") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (_spineGuid.IsEmpty() && !_usedSpine && !_reactionStartTime && !_reactionDelay)
+            return false;
+
+        _spineGuid.Clear();
+        _usedSpine = false;
+        _reactionStartTime = 0;
+        _reactionDelay = 0;
+        return true;
+    }
 
 private:
     ObjectGuid _spineGuid;
@@ -146,7 +156,14 @@ public:
     HighWarlordNajentusThrowImpalingSpineAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "high warlord naj'entus throw impaling spine") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (!_throwDelay)
+            return false;
+
+        _throwDelay = 0;
+        return true;
+    }
 
 private:
     uint32 _throwDelay = 0;
@@ -167,7 +184,15 @@ class SupremusKiteBossAction : public MovementAction
 public:
     SupremusKiteBossAction(PlayerbotAI* botAI) : MovementAction(botAI, "supremus kite boss") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (_lastAngle == 0.0f && !_lastStepTime)
+            return false;
+
+        _lastAngle = 0.0f;
+        _lastStepTime = 0;
+        return true;
+    }
 
 private:
     struct KitePlan
@@ -193,7 +218,14 @@ public:
     SupremusMoveAwayFromFireAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "supremus move away from fire") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (!_lastFailedSearchTime)
+            return false;
+
+        _lastFailedSearchTime = 0;
+        return true;
+    }
 
 private:
     bool FindSafestNearbyPosition(
@@ -209,7 +241,15 @@ public:
     SupremusReachAroundFireAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "supremus reach around fire") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (_lastSide == 1 && !_lastStepTime)
+            return false;
+
+        _lastSide = 1;
+        _lastStepTime = 0;
+        return true;
+    }
 
 private:
     int8 _lastSide = 1;
@@ -283,11 +323,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class GurtoggBloodboilAvoidFelRageTargetAction : public MovementAction
+class GurtoggBloodboilRangedMoveOutOfFrontalConeAction : public MovementAction
 {
 public:
-    GurtoggBloodboilAvoidFelRageTargetAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "gurtogg bloodboil avoid fel rage target") {}
+    GurtoggBloodboilRangedMoveOutOfFrontalConeAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "gurtogg bloodboil ranged move out of frontal cone") {}
     bool Execute(Event event) override;
 };
 
@@ -509,7 +549,21 @@ public:
     IllidanStormrageMainTankRepositionBossAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "illidan stormrage main tank reposition boss") {}
     bool Execute(Event event) override;
-    bool ResetEncounterState();
+    bool ResetEncounterState()
+    {
+        if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadSpot == Position() &&
+            !_isLeading && !_hasPassedWalkInWaypoint)
+        {
+            return false;
+        }
+
+        _phaseStartTime = 0;
+        _lastFlameCrash.Clear();
+        _leadSpot = Position();
+        _isLeading = false;
+        _hasPassedWalkInWaypoint = false;
+        return true;
+    }
 
 private:
     uint32 _phaseStartTime = 0;
