@@ -5,7 +5,6 @@
  */
 
 #include "RogueActions.h"
-#include "AiFactory.h"
 #include "Event.h"
 #include "ObjectGuid.h"
 #include "Player.h"
@@ -38,18 +37,21 @@ bool CastStealthAction::isPossible()
 bool UnstealthAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("stealth");
+    // botAI->ChangeStrategy("+combat,-stealthed", BOT_STATE_COMBAT);
+
     return true;
 }
 
 bool CheckStealthAction::Execute(Event /*event*/)
 {
-    std::string const spec =
-        AiFactory::GetPlayerSpecTab(bot) == ROGUE_TAB_COMBAT ? "combat" : "assassin";
-
     if (botAI->HasAura("stealth", bot))
-        botAI->ChangeStrategy("-" + spec + ",+stealthed", BOT_STATE_COMBAT);
+    {
+        botAI->ChangeStrategy("-combat,+stealthed", BOT_STATE_COMBAT);
+    }
     else
-        botAI->ChangeStrategy("+" + spec + ",-stealthed", BOT_STATE_COMBAT);
+    {
+        botAI->ChangeStrategy("+combat,-stealthed", BOT_STATE_COMBAT);
+    }
 
     return true;
 }
