@@ -2106,8 +2106,10 @@ Unit* GetShadowDemonToAttack(PlayerbotAI* botAI, Unit const& from)
 
 Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from)
 {
+    // Centre distances, as the spells measure. Aura of Dread gets no margin for the bot's reach,
+    // since the Demon walks on while melee close in.
     constexpr float auraOfDreadClearance = 15.0f;
-    constexpr float shadowBlastClearance = 24.0f;
+    constexpr float shadowBlastClearance = 23.0f;
 
     Unit* victim = illidan.GetVictim();
     Unit* nearest = nullptr;
@@ -2118,8 +2120,8 @@ Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
         if (!demon || !demon->IsAlive() ||
-            demon->GetDistance2d(&illidan) <= auraOfDreadClearance ||
-            (victim && demon->GetDistance2d(victim) <= shadowBlastClearance))
+            demon->GetExactDist2d(&illidan) <= auraOfDreadClearance ||
+            (victim && demon->GetExactDist2d(victim) <= shadowBlastClearance))
         {
             continue;
         }
