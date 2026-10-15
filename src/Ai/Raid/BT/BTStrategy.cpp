@@ -211,10 +211,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadowfiend",
-        { NextAction("illidan stormrage command pet attack shadowfiend", ACTION_RAID + 3) }));
+        { NextAction("illidan stormrage command pet attack add", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadow demon",
-        { NextAction("illidan stormrage command pet attack shadow demon", ACTION_RAID + 3) }));
+        { NextAction("illidan stormrage command pet attack add", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
         { NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));

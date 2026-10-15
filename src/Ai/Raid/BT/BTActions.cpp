@@ -2416,12 +2416,18 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
-namespace // Illidan Stormrage <The Betrayer>
+// Shadow Demons in Demon Form, Shadowfiends otherwise. A commanded attack, which a passive pet
+// carries out too.
+bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 {
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
 
-// A commanded attack, which a passive pet carries out too.
-bool CommandPetAttack(Pet* pet, Unit* target)
-{
+    IllidanPhase const phase =
+        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
+    Unit* target = phase == IllidanPhase::Demon ?
+        GetShadowDemonForPet(botAI, *pet) : GetNearestParasiticShadowfiend(botAI, *pet);
     if (!target || !pet->IsValidAttackTarget(target))
         return false;
 
@@ -2439,20 +2445,6 @@ bool CommandPetAttack(Pet* pet, Unit* target)
 
     pet->AI()->AttackStart(target);
     return true;
-}
-
-} // end anonymous namespace (Illidan Stormrage <The Betrayer>)
-
-bool IllidanStormrageCommandPetAttackShadowfiendAction::Execute(Event /*event*/)
-{
-    Pet* pet = bot->GetPet();
-    return pet && CommandPetAttack(pet, GetNearestParasiticShadowfiend(botAI, *pet));
-}
-
-bool IllidanStormrageCommandPetAttackShadowDemonAction::Execute(Event /*event*/)
-{
-    Pet* pet = bot->GetPet();
-    return pet && CommandPetAttack(pet, GetShadowDemonForPet(botAI, *pet));
 }
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)

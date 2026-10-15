@@ -573,19 +573,11 @@ private:
     bool _setPassive = false;
 };
 
-class IllidanStormrageCommandPetAttackShadowfiendAction : public Action
+class IllidanStormrageCommandPetAttackAddAction : public Action
 {
 public:
-    IllidanStormrageCommandPetAttackShadowfiendAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage command pet attack shadowfiend") {}
-    bool Execute(Event event) override;
-};
-
-class IllidanStormrageCommandPetAttackShadowDemonAction : public Action
-{
-public:
-    IllidanStormrageCommandPetAttackShadowDemonAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage command pet attack shadow demon") {}
+    IllidanStormrageCommandPetAttackAddAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage command pet attack add") {}
     bool Execute(Event event) override;
 };
 

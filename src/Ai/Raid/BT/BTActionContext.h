@@ -199,11 +199,8 @@ public:
         creators["illidan stormrage control pet aggression"] =
             &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
 
-        creators["illidan stormrage command pet attack shadowfiend"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_shadowfiend;
-
-        creators["illidan stormrage command pet attack shadow demon"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_shadow_demon;
+        creators["illidan stormrage command pet attack add"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_command_pet_attack_add;
 
         creators["illidan stormrage position above grate"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_above_grate;
@@ -518,13 +515,9 @@ private:
     {
         return new IllidanStormrageControlPetAggressionAction(botAI);
     }
-    static Action* illidan_stormrage_command_pet_attack_shadowfiend(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_command_pet_attack_add(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageCommandPetAttackShadowfiendAction(botAI);
-    }
-    static Action* illidan_stormrage_command_pet_attack_shadow_demon(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageCommandPetAttackShadowDemonAction(botAI);
+        return new IllidanStormrageCommandPetAttackAddAction(botAI);
     }
     static Action* illidan_stormrage_position_above_grate(PlayerbotAI* botAI)
     {
