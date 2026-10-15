@@ -1467,11 +1467,11 @@ bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase)
     return IsIllidanPhaseStartWithin(illidan, ILLIDAN_LANDING_WAIT_MS);
 }
 
-bool IsIllidanDemonFormEnding(Unit const& illidan)
+bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
     auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
-    return it != illidanPhaseStartTime.end() && getMSTimeDiff(it->second, getMSTime()) >=
-        ILLIDAN_DEMON_FORM_DURATION_MS - ILLIDAN_DEMON_FORM_WALK_IN_MS;
+    return it != illidanPhaseStartTime.end() &&
+        getMSTimeDiff(it->second, getMSTime()) >= ILLIDAN_DEMON_FORM_DURATION_MS - durationMs;
 }
 
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
@@ -1485,7 +1485,7 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         if (illidan->GetHealthPct() <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
             return IllidanDpsHold::DemonFormNoPush;
 
-        if (IsIllidanDemonFormEnding(*illidan))
+        if (IsIllidanDemonFormEnding(*illidan, ILLIDAN_DEMON_FORM_END_HOLD_MS))
             return IllidanDpsHold::DemonFormEnd;
 
         return IsIllidanPhaseStartWithin(*illidan, ILLIDAN_DEMON_FORM_DPS_WAIT_MS) ?
@@ -1588,6 +1588,8 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         illidan, inwardAngle, ILLIDAN_WARLOCK_SPOT_DISTANCE, ILLIDAN_WARLOCK_SPOT_ANGLE);
     layout.mainTankWaitSpot = GetDemonFormPoint(
         illidan, inwardAngle, ILLIDAN_MAIN_TANK_WAIT_DISTANCE, ILLIDAN_MAIN_TANK_WAIT_ANGLE);
+    layout.walkInWaypoint = GetDemonFormPoint(
+        illidan, inwardAngle, ILLIDAN_WALK_IN_WAYPOINT_DISTANCE, ILLIDAN_WALK_IN_WAYPOINT_ANGLE);
     layout.pickupSpot = GetDemonFormPoint(
         illidan, inwardAngle, ILLIDAN_TANK_OFFSET, static_cast<float>(M_PI));
 

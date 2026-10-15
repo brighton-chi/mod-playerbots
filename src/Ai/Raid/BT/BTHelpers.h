@@ -516,8 +516,8 @@ enum class IllidanDpsHold : uint8
     AfterReset,      // Phase 1 and Phase 3 starts, and Phase 5 straight from Demon Form;
                      // everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
-    DemonFormMiddle, // from the start hold to the walk-in; the Main Tank only
-    DemonFormEnd,    // from the Main Tank's walk-in to the reset; everyone but the Main Tank
+    DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
+    DemonFormEnd,    // the last 3 s before the reset; everyone but the Main Tank
     DemonFormNoPush, // 33% or below in the form, so he leaves it above 30%; everyone
 };
 
@@ -535,6 +535,7 @@ struct DemonFormLayout
 {
     Position warlockSpot;
     Position mainTankWaitSpot;
+    Position walkInWaypoint;
     Position pickupSpot;
     std::vector<Position> rangedSlots;
     std::vector<Position> healerSlots;
@@ -588,8 +589,11 @@ inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
-// The Main Tank walks in, and everyone else stops damaging him, this long before the end.
-inline constexpr uint32 ILLIDAN_DEMON_FORM_WALK_IN_MS = 3 * IN_MILLISECONDS;
+// Everyone but the Main Tank stops damaging him this long before the end.
+inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
+// The Main Tank's walk-in, about 60 yd, starts this long before the end. No Flame Burst comes in
+// the last 14 s.
+inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_LANDING_WAIT_MS = 3 * IN_MILLISECONDS;
 // Hunters misdirect onto the Main Tank this long from each Phase 1, 3 and 5 start.
 inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
@@ -629,8 +633,14 @@ inline constexpr float ILLIDAN_DEMON_RUN_SPOT_ANGLE = -16.0f * static_cast<float
 // 1.5 in Demon Form, so a 30 yd spell reaches 33 yd on him: the warlock tank stands 2 yd inside.
 inline constexpr float ILLIDAN_WARLOCK_SPOT_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_WARLOCK_SPOT_ANGLE = 75.0f * static_cast<float>(M_PI) / 180.0f;
-inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 17.0f;
-inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -115.0f * static_cast<float>(M_PI) / 180.0f;
+// The Main Tank waits beside the melee, on the first melee row one slot past a group of seven
+// (5 melee DPS and 2 tanks) on the side away from the warlock tank, so the raid can kill a Shadow
+// Demon walking to it. It walks in by a point outside Aura of Dread and clear of Shadow Blast
+// round the warlock tank.
+inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
+inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
+inline constexpr float ILLIDAN_WALK_IN_WAYPOINT_DISTANCE = 18.0f;
+inline constexpr float ILLIDAN_WALK_IN_WAYPOINT_ANGLE = -90.0f * static_cast<float>(M_PI) / 180.0f;
 
 // World trigger 22515.
 inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };
@@ -694,8 +704,8 @@ bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs);
 // Everyone but the Main Tank waits at the landing stack while he lands, and then until the Main
 // Tank has led him out or 3 s have passed since the threat reset.
 bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase);
-// In Demon Form: the last 3 s, from the Main Tank's walk-in to the reset.
-bool IsIllidanDemonFormEnding(Unit const& illidan);
+// Demon Form ends, with a threat reset, less than durationMs from now.
+bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 // The hold window that is running, before who it spares is decided.
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
 // The hold this bot is in, for the hold multiplier and any stop block.

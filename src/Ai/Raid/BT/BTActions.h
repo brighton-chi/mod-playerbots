@@ -510,6 +510,7 @@ private:
     ObjectGuid _lastFlameCrash;
     Position _leadSpot;
     bool _isLeading = false;
+    bool _hasPassedWalkInWaypoint = false;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction

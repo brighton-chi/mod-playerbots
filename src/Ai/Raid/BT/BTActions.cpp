@@ -1944,8 +1944,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // him; he stops about 30 deg on, and the tank settles outward of wherever he stopped. Near the
 // centre, as after landing, it leads him straight out instead.
 // While he lands the tank waits north of the landing point, so Phase 3 starts due north. In Demon
-// Form it waits off to the side, then 3 s before the end walks to 6 yd outward of him and takes
-// him at the reset.
+// Form it waits beside the melee, then 10 s before the end walks round Aura of Dread to 6 yd
+// outward of him, attacks him for the last 3 s and takes him at the reset.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1955,7 +1955,8 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const isLanding = phase == IllidanPhase::Landing;
     bool const isDemonForm = phase == IllidanPhase::Demon;
-    bool const isWalkIn = isDemonForm && IsIllidanDemonFormEnding(*illidan);
+    bool const isWalkIn =
+        isDemonForm && IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
     bool const shouldAttack = isDemonForm ?
         isWalkIn && GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None : !isLanding;
     if (shouldAttack && AI_VALUE(Unit*, "current target") != illidan)
@@ -1977,7 +1978,21 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     else if (isDemonForm)
     {
         DemonFormLayout const layout = GetDemonFormLayout(*illidan);
-        spot = isWalkIn ? layout.pickupSpot : layout.mainTankWaitSpot;
+        if (!isWalkIn)
+        {
+            _hasPassedWalkInWaypoint = false;
+            spot = layout.mainTankWaitSpot;
+        }
+        else if (!_hasPassedWalkInWaypoint &&
+            bot->GetExactDist2d(layout.walkInWaypoint) > ILLIDAN_SPOT_TOLERANCE)
+        {
+            spot = layout.walkInWaypoint;
+        }
+        else
+        {
+            _hasPassedWalkInWaypoint = true;
+            spot = layout.pickupSpot;
+        }
     }
     else if (illidan->GetVictim() != bot)
     {
