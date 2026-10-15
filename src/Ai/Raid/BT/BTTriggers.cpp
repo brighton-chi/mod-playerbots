@@ -614,12 +614,10 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// An infected bot runs to the run spot. The trap hunter goes there while someone else is infected
-// and its Frost Trap is ready.
+// An infected bot runs to the run spot, and so does a trap hunter on duty, to lay its Frost Trap.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
-    bool const isInfected = HasParasiticShadowfiend(bot);
-    if (!isInfected && !IsIllidanTrapHunter(botAI))
+    if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -633,14 +631,47 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
     }
 
-    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+    return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
+}
+
+// The mechanic tracker gives each new infection a trap hunter while there is a run spot, and
+// drops an entry once its debuff is gone.
+bool IllidanStormrageShouldAssignTrapHuntersTrigger::IsActiveInEncounter()
+{
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
-    if (isInfected)
-        return true;
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
 
-    return !bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)) &&
-        GetPlayerWithParasiticShadowfiend(botAI);
+    auto const& infected = context->GetValue<GuidVector>(
+        "illidan stormrage players with parasitic shadowfiend")->RefGet();
+    auto const it = illidanTrapAssignments.find(bot->GetInstanceId());
+    bool const hasAssignments = it != illidanTrapAssignments.end();
+    if (hasAssignments)
+    {
+        for (auto const& [player, hunter] : it->second)
+        {
+            if (std::find(infected.begin(), infected.end(), player) == infected.end())
+                return true;
+        }
+    }
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Dying)
+    {
+        return false;
+    }
+
+    for (ObjectGuid const& guid : infected)
+    {
+        if (!hasAssignments || !it->second.contains(guid))
+            return true;
+    }
+
+    return false;
 }
 
 bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter()

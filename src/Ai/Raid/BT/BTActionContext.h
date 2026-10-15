@@ -190,6 +190,9 @@ public:
         creators["illidan stormrage isolate bot with parasite"] =
             &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_parasite;
 
+        creators["illidan stormrage assign trap hunters"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_assign_trap_hunters;
+
         creators["illidan stormrage assist tanks handle flames of azzinoth"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
 
@@ -502,6 +505,10 @@ private:
     static Action* illidan_stormrage_isolate_bot_with_parasite(PlayerbotAI* botAI)
     {
         return new IllidanStormrageIsolateBotWithParasiteAction(botAI);
+    }
+    static Action* illidan_stormrage_assign_trap_hunters(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageAssignTrapHuntersAction(botAI);
     }
     static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(PlayerbotAI* botAI)
     {

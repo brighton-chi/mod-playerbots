@@ -125,31 +125,31 @@ protected:
     ObjectGuid Calculate() override { return BtHelpers::FindIllidanWarlockTankGuid(bot); }
 };
 
-class IllidanStormragePlayerWithParasiticShadowfiendValue : public CalculatedValue<ObjectGuid>
+class IllidanStormragePlayersWithParasiticShadowfiendValue : public CalculatedValue<GuidVector>
 {
 public:
-    IllidanStormragePlayerWithParasiticShadowfiendValue(PlayerbotAI* botAI)
-        : CalculatedValue<ObjectGuid>(
-              botAI, "illidan stormrage player with parasitic shadowfiend",
+    IllidanStormragePlayersWithParasiticShadowfiendValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "illidan stormrage players with parasitic shadowfiend",
               BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
 
 protected:
-    ObjectGuid Calculate() override
+    GuidVector Calculate() override
     {
-        return BtHelpers::FindPlayerWithParasiticShadowfiendGuid(bot);
+        return BtHelpers::FindPlayersWithParasiticShadowfiendGuids(bot);
     }
 };
 
-class IllidanStormrageTrapHunterValue : public CalculatedValue<ObjectGuid>
+class IllidanStormrageTrapHuntersValue : public CalculatedValue<GuidVector>
 {
 public:
-    IllidanStormrageTrapHunterValue(PlayerbotAI* botAI)
-        : CalculatedValue<ObjectGuid>(
-              botAI, "illidan stormrage trap hunter",
+    IllidanStormrageTrapHuntersValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "illidan stormrage trap hunters",
               BtHelpers::ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS) {}
 
 protected:
-    ObjectGuid Calculate() override { return BtHelpers::FindIllidanTrapHunterGuid(bot); }
+    GuidVector Calculate() override { return BtHelpers::FindIllidanTrapHunterGuids(bot); }
 };
 
 class ParasiticShadowfiendsValue : public CalculatedValue<GuidVector>
@@ -196,10 +196,10 @@ public:
             &RaidBlackTempleValueContext::illidan_stormrage_speech_in_progress;
         creators["illidan stormrage warlock tank"] =
             &RaidBlackTempleValueContext::illidan_stormrage_warlock_tank;
-        creators["illidan stormrage player with parasitic shadowfiend"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_player_with_parasitic_shadowfiend;
-        creators["illidan stormrage trap hunter"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_trap_hunter;
+        creators["illidan stormrage players with parasitic shadowfiend"] =
+            &RaidBlackTempleValueContext::illidan_stormrage_players_with_parasitic_shadowfiend;
+        creators["illidan stormrage trap hunters"] =
+            &RaidBlackTempleValueContext::illidan_stormrage_trap_hunters;
         creators["parasitic shadowfiends"] = &RaidBlackTempleValueContext::parasitic_shadowfiends;
         creators["shadow demons"] = &RaidBlackTempleValueContext::shadow_demons;
     }
@@ -237,13 +237,13 @@ private:
     {
         return new IllidanStormrageWarlockTankValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_player_with_parasitic_shadowfiend(PlayerbotAI* botAI)
+    static UntypedValue* illidan_stormrage_players_with_parasitic_shadowfiend(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePlayerWithParasiticShadowfiendValue(botAI);
+        return new IllidanStormragePlayersWithParasiticShadowfiendValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_trap_hunter(PlayerbotAI* botAI)
+    static UntypedValue* illidan_stormrage_trap_hunters(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageTrapHunterValue(botAI);
+        return new IllidanStormrageTrapHuntersValue(botAI);
     }
     static UntypedValue* parasitic_shadowfiends(PlayerbotAI* botAI)
     {

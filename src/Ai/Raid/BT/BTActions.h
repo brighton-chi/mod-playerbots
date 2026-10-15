@@ -520,6 +520,19 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageAssignTrapHuntersAction : public Action
+{
+public:
+    IllidanStormrageAssignTrapHuntersAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage assign trap hunters") {}
+    bool Execute(Event event) override;
+
+private:
+    bool FindTrapHunter(
+        Unit const& illidan, BtHelpers::IllidanPhase phase, Player const& infected,
+        std::unordered_map<ObjectGuid, ObjectGuid> const& assignments, ObjectGuid& hunter);
+};
+
 namespace BtHelpers
 {
     struct EyeBlastDangerArea;

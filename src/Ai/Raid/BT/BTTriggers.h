@@ -563,6 +563,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidanStormrageShouldAssignTrapHuntersTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageShouldAssignTrapHuntersTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should assign trap hunters") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger : public BlackTempleEncounterTrigger
 {
 public:

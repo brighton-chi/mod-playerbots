@@ -65,6 +65,7 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= illidanPreviousPhase.erase(instanceId) > 0;
     reset |= westFlameGuid.erase(instanceId) > 0;
     reset |= eastFlameGuid.erase(instanceId) > 0;
+    reset |= illidanTrapAssignments.erase(instanceId) > 0;
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
@@ -1819,14 +1820,12 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 // Illidan Stormrage <The Betrayer>
 
 // The Main Tank waits 15.5 yd north of the grate centre, so he stops on the ring when he runs in.
-// The trap hunter waits in its slot and everyone else on the grate.
+// Everyone else waits on the grate.
 bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
 {
     Position spot = ILLIDAN_GRATE_CENTRE;
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         spot = ILLIDAN_PULL_TANK_POSITION;
-    else if (IsIllidanTrapHunter(botAI))
-        spot = GetGrateSlot(ILLIDAN_GRATE_TRAP_SLOT);
 
     if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
         return false;
@@ -2034,7 +2033,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// An infected hunter, or the trap hunter, drops Frost Trap on arrival.
+// A trap hunter on duty, infected or not, drops Frost Trap on arrival.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2049,11 +2048,106 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (bot->getClass() != CLASS_HUNTER)
+    if (!IsIllidanTrapHunterOnDuty(botAI))
         return false;
 
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
     return botAI->CanCastSpell(frostTrap, bot) && botAI->CastSpell(frostTrap, bot);
+}
+
+// Locked once given, so a Frost Trap coming off cooldown mid-run can't pass the job on.
+bool IllidanStormrageAssignTrapHuntersAction::Execute(Event /*event*/)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    auto const& infected = context->GetValue<GuidVector>(
+        "illidan stormrage players with parasitic shadowfiend")->RefGet();
+    uint32 const instanceId = bot->GetInstanceId();
+    auto& assignments = illidanTrapAssignments[instanceId];
+    std::erase_if(
+        assignments,
+        [&infected](auto const& entry)
+        {
+            return std::find(infected.begin(), infected.end(), entry.first) == infected.end();
+        });
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
+        phase != IllidanPhase::Dying)
+    {
+        for (ObjectGuid const& guid : infected)
+        {
+            Player* player = ObjectAccessor::FindPlayer(guid);
+            ObjectGuid hunter;
+            if (player && !assignments.contains(guid) &&
+                FindTrapHunter(*illidan, phase, *player, assignments, hunter))
+            {
+                assignments.emplace(guid, hunter);
+            }
+        }
+    }
+
+    if (assignments.empty())
+        illidanTrapAssignments.erase(instanceId);
+
+    return false;
+}
+
+// A hunter already sent for another infection, its trap not yet down, lays one trap for both. Else
+// an infected trap hunter traps for itself, else the first trap hunter in order with Frost Trap
+// ready. False while none is ready, so the infection is tried again next tick.
+bool IllidanStormrageAssignTrapHuntersAction::FindTrapHunter(
+    Unit const& illidan, IllidanPhase phase, Player const& infected,
+    std::unordered_map<ObjectGuid, ObjectGuid> const& assignments, ObjectGuid& hunter)
+{
+    uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
+    for (auto const& [player, assigned] : assignments)
+    {
+        Player* other = ObjectAccessor::FindPlayer(assigned);
+        if (other && other->IsAlive() && !other->HasSpellCooldown(frostTrap))
+        {
+            hunter = assigned;
+            return true;
+        }
+    }
+
+    auto const& trapHunters =
+        context->GetValue<GuidVector>("illidan stormrage trap hunters")->RefGet();
+    ObjectGuid candidate;
+    if (std::find(trapHunters.begin(), trapHunters.end(), infected.GetGUID()) !=
+            trapHunters.end() &&
+        !infected.HasSpellCooldown(frostTrap))
+    {
+        candidate = infected.GetGUID();
+    }
+    else
+    {
+        for (ObjectGuid const& guid : trapHunters)
+        {
+            Player* trapHunter = ObjectAccessor::FindPlayer(guid);
+            if (trapHunter && trapHunter->IsAlive() && !trapHunter->HasSpellCooldown(frostTrap))
+            {
+                candidate = guid;
+                break;
+            }
+        }
+    }
+
+    if (candidate.IsEmpty())
+        return false;
+
+    // Ice already round the run spot that outlasts the debuff needs no new trap.
+    Aura const* debuff = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1));
+    if (!debuff)
+        debuff = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
+
+    int32 const debuffMs = debuff ? debuff->GetDuration() : 0;
+    bool const isCovered = IsFrostTrapPatchAt(
+        bot, GetIllidanShadowfiendRunSpot(illidan, phase), debuffMs + ILLIDAN_FROST_TRAP_SLOW_MS);
+    hunter = isCovered ? ObjectGuid::Empty : candidate;
+    return true;
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
@@ -2441,18 +2535,14 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    // The trap hunter is in its grate slot. Phase 1: everyone else stacked on the grate centre.
-    // Phases 3 and 5: in the grate slots by roster, healers first.
+    // Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
+    // first.
     IllidanPhase const phase = GetIllidanPhase(illidan);
     Position spot;
     if (phase == IllidanPhase::Demon)
     {
         if (!FindDemonFormSlot(*illidan, spot))
             return false;
-    }
-    else if (IsIllidanTrapHunter(botAI))
-    {
-        spot = GetGrateSlot(ILLIDAN_GRATE_TRAP_SLOT);
     }
     else if (phase == IllidanPhase::Initial)
     {
@@ -2461,8 +2551,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     else
     {
         constexpr bool inDemonForm = false;
-        int32 const slot = GetIllidanRangedIndex(
-            botAI, ILLIDAN_RANGED_SLOT_COUNT, ILLIDAN_GRATE_TRAP_SLOT, inDemonForm);
+        int32 const slot = GetIllidanRangedIndex(botAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
         if (slot < 0)
             return false;
 
@@ -2477,20 +2566,10 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Phase 4: the trap hunter in the ranged DPS slot nearest the run spot, healers in the healer
-// slots and ranged DPS in theirs, each by roster.
+// Phase 4: healers in the healer slots and ranged DPS in theirs, each by roster.
 bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(Unit const& illidan, Position& spot)
 {
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
-    if (IsIllidanTrapHunter(botAI))
-    {
-        if (layout.rangedSlots.empty())
-            return false;
-
-        spot = layout.rangedSlots[layout.trapSlot];
-        return true;
-    }
-
     if (PlayerbotAI::IsHeal(bot))
     {
         int32 const slot = GetIllidanHealerIndex(botAI, layout.healerSlots.size());
@@ -2502,8 +2581,7 @@ bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(Unit const& illidan
     }
 
     constexpr bool inDemonForm = true;
-    int32 const slot = GetIllidanRangedIndex(
-        botAI, layout.rangedSlots.size(), layout.trapSlot, inDemonForm);
+    int32 const slot = GetIllidanRangedIndex(botAI, layout.rangedSlots.size(), inDemonForm);
     if (slot < 0)
         return false;
 
