@@ -28,6 +28,41 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
 
+    Action* spineRemoverAction =
+        context->GetAction("high warlord naj'entus remove impaling spine");
+    if (spineRemoverAction &&
+        static_cast<HighWarlordNajentusRemoveImpalingSpineAction*>(
+            spineRemoverAction)->ResetEncounterState())
+    {
+        reset = true;
+    }
+
+    Action* spineThrowerAction = context->GetAction("high warlord naj'entus throw impaling spine");
+    if (spineThrowerAction &&
+        static_cast<HighWarlordNajentusThrowImpalingSpineAction*>(
+            spineThrowerAction)->ResetEncounterState())
+    {
+        reset = true;
+    }
+
+    Action* kiteAction = context->GetAction("supremus kite boss");
+    if (kiteAction && static_cast<SupremusKiteBossAction*>(kiteAction)->ResetEncounterState())
+        reset = true;
+
+    Action* fireAvoidAction = context->GetAction("supremus move away from fire");
+    if (fireAvoidAction &&
+        static_cast<SupremusMoveAwayFromFireAction*>(fireAvoidAction)->ResetEncounterState())
+    {
+        reset = true;
+    }
+
+    Action* fireReachAction = context->GetAction("supremus reach around fire");
+    if (fireReachAction &&
+        static_cast<SupremusReachAroundFireAction*>(fireReachAction)->ResetEncounterState())
+    {
+        reset = true;
+    }
+
     Action* gathiosTankAction = context->GetAction("illidari council main tank position gathios");
     if (gathiosTankAction && static_cast<IllidariCouncilMainTankPositionGathiosAction*>(
             gathiosTankAction)->ResetTankStep())
@@ -47,6 +82,14 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     if (flameTankAction &&
         static_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(
             flameTankAction)->ResetTankStep())
+    {
+        reset = true;
+    }
+
+    Action* illidanTankAction = context->GetAction("illidan stormrage main tank reposition boss");
+    if (illidanTankAction &&
+        static_cast<IllidanStormrageMainTankRepositionBossAction*>(
+            illidanTankAction)->ResetEncounterState())
     {
         reset = true;
     }
@@ -323,6 +366,18 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     return true;
 }
 
+bool HighWarlordNajentusRemoveImpalingSpineAction::ResetEncounterState()
+{
+    if (_spineGuid.IsEmpty() && !_usedSpine && !_reactionStartTime && !_reactionDelay)
+        return false;
+
+    _spineGuid.Clear();
+    _usedSpine = false;
+    _reactionStartTime = 0;
+    _reactionDelay = 0;
+    return true;
+}
+
 bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 {
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
@@ -371,6 +426,15 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
     bot->CastStop();
     botAI->ImbueItem(spine, najentus);
+    _throwDelay = 0;
+    return true;
+}
+
+bool HighWarlordNajentusThrowImpalingSpineAction::ResetEncounterState()
+{
+    if (!_throwDelay)
+        return false;
+
     _throwDelay = 0;
     return true;
 }
@@ -546,6 +610,16 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     return false;
 }
 
+bool SupremusKiteBossAction::ResetEncounterState()
+{
+    if (_lastAngle == 0.0f && !_lastStepTime)
+        return false;
+
+    _lastAngle = 0.0f;
+    _lastStepTime = 0;
+    return true;
+}
+
 float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDistance)
 {
     float x = bot->GetPositionX() + maxDistance * std::cos(angle);
@@ -629,6 +703,15 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool SupremusMoveAwayFromFireAction::ResetEncounterState()
+{
+    if (!_lastFailedSearchTime)
+        return false;
+
+    _lastFailedSearchTime = 0;
+    return true;
 }
 
 // The nearest spot a yard clear of every hazard's safe zone that the bot can run to in a straight
@@ -808,6 +891,16 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     }
 
     return false;
+}
+
+bool SupremusReachAroundFireAction::ResetEncounterState()
+{
+    if (_lastSide == 1 && !_lastStepTime)
+        return false;
+
+    _lastSide = 1;
+    _lastStepTime = 0;
+    return true;
 }
 
 // Shade of Akama
@@ -2046,6 +2139,22 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool IllidanStormrageMainTankRepositionBossAction::ResetEncounterState()
+{
+    if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadSpot == Position() && !_isLeading &&
+        !_hasPassedWalkInWaypoint)
+    {
+        return false;
+    }
+
+    _phaseStartTime = 0;
+    _lastFlameCrash.Clear();
+    _leadSpot = Position();
+    _isLeading = false;
+    _hasPassedWalkInWaypoint = false;
+    return true;
 }
 
 // A trap hunter on duty, infected or not, drops Frost Trap on arrival.
