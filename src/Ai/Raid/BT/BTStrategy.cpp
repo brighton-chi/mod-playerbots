@@ -196,8 +196,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiend on group member",
         { NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage should assign trap hunters",
-        { NextAction("illidan stormrage assign trap hunters", ACTION_EMERGENCY + 11) }));
+    triggers.push_back(new TriggerNode("illidan stormrage should track infections",
+        { NextAction("illidan stormrage track infections", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage flames of azzinoth should be tanked",
         { NextAction(

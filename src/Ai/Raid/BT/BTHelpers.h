@@ -97,7 +97,6 @@ enum class BtSpells : uint32
     SPELL_DEMON_FORM                = 40506,
     SPELL_DARK_BARRAGE              = 40585,
     SPELL_AGONIZING_FLAMES          = 40932,
-    SPELL_CAGED                     = 40695,
     SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
     SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
     SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
@@ -550,6 +549,17 @@ struct ShadowDemon
     ObjectGuid target = ObjectGuid::Empty;
 };
 
+// One Shadowfiend infection, recorded by the mechanic tracker. The run spot is fixed for the phase
+// it was recorded in. Once the trap is assigned, hunter is empty if a Frost Trap patch already
+// covered the spot.
+struct IllidanInfection
+{
+    Position runSpot;
+    IllidanPhase phase = IllidanPhase::None;
+    ObjectGuid hunter = ObjectGuid::Empty;
+    bool isTrapAssigned = false;
+};
+
 inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
@@ -671,10 +681,9 @@ extern std::unordered_map<uint32, uint32> illidanPhaseStartTime;
 extern std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
 extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-// Each infected player's trap hunter, fixed when the mechanic tracker first assigns it and kept
-// until the debuff is gone; empty when a Frost Trap patch already covers the run spot.
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, ObjectGuid>>
-    illidanTrapAssignments;
+// Each infected player's infection, kept until the debuff is gone or the phase changes.
+extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, IllidanInfection>>
+    illidanInfections;
 
 IllidanPhase GetIllidanPhase(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
@@ -698,7 +707,12 @@ Position GetRingPoint(float angle, float radius);
 Position GetIllidanSettleSpot(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
+// Where an infection's run spot is recorded: from the grate centre in Phases 1, 3 and 5, from him
+// in Demon Form.
 Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase);
+// The run spot recorded for the bot's own infection, else for the infection it traps for, else
+// where one would be recorded now.
+Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* bot);
 bool IsEastFlameOfAzzinothTank(Player* bot);

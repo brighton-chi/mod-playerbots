@@ -634,9 +634,10 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
 }
 
-// The mechanic tracker gives each new infection a trap hunter while there is a run spot, and
-// drops an entry once its debuff is gone.
-bool IllidanStormrageShouldAssignTrapHuntersTrigger::IsActiveInEncounter()
+// The mechanic tracker records each new infection while there is a run spot, keeps looking for a
+// trap hunter while none is ready, and drops an entry once its debuff is gone or the phase
+// changes.
+bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
@@ -647,27 +648,29 @@ bool IllidanStormrageShouldAssignTrapHuntersTrigger::IsActiveInEncounter()
 
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
-    auto const it = illidanTrapAssignments.find(bot->GetInstanceId());
-    bool const hasAssignments = it != illidanTrapAssignments.end();
-    if (hasAssignments)
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    bool const hasRunSpot = phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
+        phase != IllidanPhase::Dying;
+    auto const it = illidanInfections.find(bot->GetInstanceId());
+    bool const hasInfections = it != illidanInfections.end();
+    if (hasInfections)
     {
-        for (auto const& [player, hunter] : it->second)
+        for (auto const& [player, infection] : it->second)
         {
             if (std::find(infected.begin(), infected.end(), player) == infected.end())
+                return true;
+
+            if (hasRunSpot && (infection.phase != phase || !infection.isTrapAssigned))
                 return true;
         }
     }
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
-        phase == IllidanPhase::Dying)
-    {
+    if (!hasRunSpot)
         return false;
-    }
 
     for (ObjectGuid const& guid : infected)
     {
-        if (!hasAssignments || !it->second.contains(guid))
+        if (!hasInfections || !it->second.contains(guid))
             return true;
     }
 
@@ -845,7 +848,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->HasAura(Id(BtSpells::SPELL_CAGED)))
+    if (!illidan)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);

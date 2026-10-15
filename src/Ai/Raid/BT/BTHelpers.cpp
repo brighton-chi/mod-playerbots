@@ -1391,7 +1391,7 @@ std::unordered_map<uint32, uint32> illidanPhaseStartTime;
 std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
 std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
 std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, ObjectGuid>> illidanTrapAssignments;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
 
 IllidanPhase GetIllidanPhase(Unit* illidan)
 {
@@ -1420,11 +1420,10 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
     if (healthPct > 65.0f)
         return IllidanPhase::Initial;
 
-    if (!illidan->HasAura(Id(BtSpells::SPELL_CAGED)) &&
-        (illidan->HasAura(Id(BtSpells::SPELL_DEMON_FORM)) ||
-         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_1)) ||
-         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_2)) ||
-         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_3))))
+    if (illidan->HasAura(Id(BtSpells::SPELL_DEMON_FORM)) ||
+        illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_1)) ||
+        illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_2)) ||
+        illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_3)))
     {
         return IllidanPhase::Demon;
     }
@@ -1671,6 +1670,26 @@ Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase)
         GetGrateAngle(illidan) + ILLIDAN_RUN_SPOT_ANGLE, ILLIDAN_RUN_SPOT_DISTANCE);
 }
 
+Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+{
+    Player* bot = botAI->GetBot();
+    auto const it = illidanInfections.find(bot->GetInstanceId());
+    if (it != illidanInfections.end())
+    {
+        auto const own = it->second.find(bot->GetGUID());
+        if (own != it->second.end() && own->second.phase == phase)
+            return own->second.runSpot;
+
+        for (auto const& [player, infection] : it->second)
+        {
+            if (infection.hunter == bot->GetGUID() && infection.phase == phase)
+                return infection.runSpot;
+        }
+    }
+
+    return GetIllidanShadowfiendRunSpot(illidan, phase);
+}
+
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
 {
     Unit* eastFlame = nullptr;
@@ -1781,13 +1800,13 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
     if (bot->getClass() != CLASS_HUNTER || bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)))
         return false;
 
-    auto const it = illidanTrapAssignments.find(bot->GetInstanceId());
-    if (it == illidanTrapAssignments.end())
+    auto const it = illidanInfections.find(bot->GetInstanceId());
+    if (it == illidanInfections.end())
         return false;
 
-    for (auto const& [infected, hunter] : it->second)
+    for (auto const& [infected, infection] : it->second)
     {
-        if (hunter == bot->GetGUID())
+        if (infection.hunter == bot->GetGUID())
             return true;
     }
 

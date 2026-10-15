@@ -563,11 +563,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageShouldAssignTrapHuntersTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldTrackInfectionsTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageShouldAssignTrapHuntersTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should assign trap hunters") {}
+    IllidanStormrageShouldTrackInfectionsTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should track infections") {}
 
 protected:
     bool IsActiveInEncounter() override;

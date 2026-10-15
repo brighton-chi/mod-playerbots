@@ -191,8 +191,8 @@ public:
         creators["illidan stormrage parasitic shadowfiend on group member"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_parasitic_shadowfiend_on_group_member;
 
-        creators["illidan stormrage should assign trap hunters"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_trap_hunters;
+        creators["illidan stormrage should track infections"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_track_infections;
 
         creators["illidan stormrage flames of azzinoth should be tanked"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_flames_of_azzinoth_should_be_tanked;
@@ -497,9 +497,9 @@ private:
     {
         return new IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_should_assign_trap_hunters(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_track_infections(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageShouldAssignTrapHuntersTrigger(botAI);
+        return new IllidanStormrageShouldTrackInfectionsTrigger(botAI);
     }
     static Trigger* illidan_stormrage_flames_of_azzinoth_should_be_tanked(PlayerbotAI* botAI)
     {

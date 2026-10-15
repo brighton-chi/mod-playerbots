@@ -65,7 +65,7 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= illidanPreviousPhase.erase(instanceId) > 0;
     reset |= westFlameGuid.erase(instanceId) > 0;
     reset |= eastFlameGuid.erase(instanceId) > 0;
-    reset |= illidanTrapAssignments.erase(instanceId) > 0;
+    reset |= illidanInfections.erase(instanceId) > 0;
 
     if (!AI_VALUE2(bool, "combat", "self target"))
     {
@@ -2040,7 +2040,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    Position const runSpot = GetIllidanShadowfiendRunSpot(*illidan, GetIllidanPhase(illidan));
+    Position const runSpot = GetIllidanRecordedRunSpot(botAI, *illidan, GetIllidanPhase(illidan));
     if (bot->GetExactDist2d(runSpot) > ILLIDAN_SPOT_TOLERANCE)
     {
         return MoveTo(
@@ -2055,8 +2055,10 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
     return botAI->CanCastSpell(frostTrap, bot) && botAI->CastSpell(frostTrap, bot);
 }
 
-// Locked once given, so a Frost Trap coming off cooldown mid-run can't pass the job on.
-bool IllidanStormrageAssignTrapHuntersAction::Execute(Event /*event*/)
+// The run spot is fixed when an infection is recorded, so it doesn't move as he does, and the
+// trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job on. A
+// phase change records both again.
+bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2064,33 +2066,47 @@ bool IllidanStormrageAssignTrapHuntersAction::Execute(Event /*event*/)
 
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    bool const hasRunSpot = phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
+        phase != IllidanPhase::Dying;
     uint32 const instanceId = bot->GetInstanceId();
-    auto& assignments = illidanTrapAssignments[instanceId];
+    auto& infections = illidanInfections[instanceId];
     std::erase_if(
-        assignments,
-        [&infected](auto const& entry)
+        infections,
+        [&infected, phase, hasRunSpot](auto const& entry)
         {
-            return std::find(infected.begin(), infected.end(), entry.first) == infected.end();
+            return std::find(infected.begin(), infected.end(), entry.first) == infected.end() ||
+                (hasRunSpot && entry.second.phase != phase);
         });
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
-        phase != IllidanPhase::Dying)
+    if (hasRunSpot)
     {
         for (ObjectGuid const& guid : infected)
         {
+            if (infections.contains(guid))
+                continue;
+
+            // A new infection shares the spot already in use, so one trap does for both.
+            IllidanInfection infection;
+            infection.phase = phase;
+            infection.runSpot = infections.empty() ?
+                GetIllidanShadowfiendRunSpot(*illidan, phase) : infections.begin()->second.runSpot;
+            infections.emplace(guid, infection);
+        }
+
+        for (auto& [guid, infection] : infections)
+        {
             Player* player = ObjectAccessor::FindPlayer(guid);
-            ObjectGuid hunter;
-            if (player && !assignments.contains(guid) &&
-                FindTrapHunter(*illidan, phase, *player, assignments, hunter))
+            if (!infection.isTrapAssigned && player &&
+                FindTrapHunter(*player, infection.runSpot, infections, infection.hunter))
             {
-                assignments.emplace(guid, hunter);
+                infection.isTrapAssigned = true;
             }
         }
     }
 
-    if (assignments.empty())
-        illidanTrapAssignments.erase(instanceId);
+    if (infections.empty())
+        illidanInfections.erase(instanceId);
 
     return false;
 }
@@ -2098,17 +2114,17 @@ bool IllidanStormrageAssignTrapHuntersAction::Execute(Event /*event*/)
 // A hunter already sent for another infection, its trap not yet down, lays one trap for both. Else
 // an infected trap hunter traps for itself, else the first trap hunter in order with Frost Trap
 // ready. False while none is ready, so the infection is tried again next tick.
-bool IllidanStormrageAssignTrapHuntersAction::FindTrapHunter(
-    Unit const& illidan, IllidanPhase phase, Player const& infected,
-    std::unordered_map<ObjectGuid, ObjectGuid> const& assignments, ObjectGuid& hunter)
+bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
+    Player const& infected, Position const& runSpot,
+    std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
 {
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
-    for (auto const& [player, assigned] : assignments)
+    for (auto const& [player, infection] : infections)
     {
-        Player* other = ObjectAccessor::FindPlayer(assigned);
+        Player* other = ObjectAccessor::FindPlayer(infection.hunter);
         if (other && other->IsAlive() && !other->HasSpellCooldown(frostTrap))
         {
-            hunter = assigned;
+            hunter = infection.hunter;
             return true;
         }
     }
@@ -2144,8 +2160,8 @@ bool IllidanStormrageAssignTrapHuntersAction::FindTrapHunter(
         debuff = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 
     int32 const debuffMs = debuff ? debuff->GetDuration() : 0;
-    bool const isCovered = IsFrostTrapPatchAt(
-        bot, GetIllidanShadowfiendRunSpot(illidan, phase), debuffMs + ILLIDAN_FROST_TRAP_SLOW_MS);
+    bool const isCovered =
+        IsFrostTrapPatchAt(bot, runSpot, debuffMs + ILLIDAN_FROST_TRAP_SLOW_MS);
     hunter = isCovered ? ObjectGuid::Empty : candidate;
     return true;
 }
@@ -2450,8 +2466,7 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
-            !PlayerbotAI::IsAssistTankOfIndex(member, 0, true) &&
-            !PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
+            !IsFlameOfAzzinothTank(member))
         {
             bots.push_back(member);
         }

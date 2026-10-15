@@ -520,17 +520,18 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageAssignTrapHuntersAction : public Action
+class IllidanStormrageTrackInfectionsAction : public Action
 {
 public:
-    IllidanStormrageAssignTrapHuntersAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage assign trap hunters") {}
+    IllidanStormrageTrackInfectionsAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage track infections") {}
     bool Execute(Event event) override;
 
 private:
     bool FindTrapHunter(
-        Unit const& illidan, BtHelpers::IllidanPhase phase, Player const& infected,
-        std::unordered_map<ObjectGuid, ObjectGuid> const& assignments, ObjectGuid& hunter);
+        Player const& infected, Position const& runSpot,
+        std::unordered_map<ObjectGuid, BtHelpers::IllidanInfection> const& infections,
+        ObjectGuid& hunter);
 };
 
 namespace BtHelpers
