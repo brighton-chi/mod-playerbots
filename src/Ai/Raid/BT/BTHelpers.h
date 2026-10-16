@@ -747,7 +747,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase);
 // The phase whose infection position applies: the Demon Form transform counts as the phase before
 // it, so an infection from Phase 3 or 5 keeps its position and its Shadowfiends don't come out on
-// a walk across the raid.
+// a walk across the raid. The death scene counts as the phase before it too.
 IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase);
 // The infection position recorded for the bot's own infection, else for the infection it traps for,
 // else where one would be recorded now.

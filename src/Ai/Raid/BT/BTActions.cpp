@@ -2172,8 +2172,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
-    bool const hasInfectionPosition = phase != IllidanPhase::None &&
-        phase != IllidanPhase::Flying && phase != IllidanPhase::Dying;
+    bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     uint32 const instanceId = bot->GetInstanceId();
     auto& infections = illidanInfections[instanceId];
     std::erase_if(

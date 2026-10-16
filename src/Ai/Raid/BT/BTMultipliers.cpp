@@ -792,8 +792,18 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     }
 
     IllidanPhase phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
+    if (phase == IllidanPhase::None)
         return 1.0f;
+
+    // In the death scene only an infected bot is held, so nothing pulls it off its infection
+    // position.
+    if (phase == IllidanPhase::Dying)
+    {
+        bool const isHeldMove = dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<CombatFormationMoveAction*>(action) ||
+            IsHeldIllidanChase(botAI, action, phase);
+        return isHeldMove && HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
+    }
 
     // Unselectable while he flies and lands, he is an invalid target, and dropping him would take
     // a bot out of the combat engine, where its heals and rotation are.

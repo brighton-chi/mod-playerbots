@@ -1702,11 +1702,10 @@ Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 
 IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase)
 {
-    if (phase != IllidanPhase::Demon ||
-        !IsIllidanPhaseStartWithin(illidan, ILLIDAN_DEMON_TRANSFORM_MS))
-    {
+    bool const isTransform = phase == IllidanPhase::Demon &&
+        IsIllidanPhaseStartWithin(illidan, ILLIDAN_DEMON_TRANSFORM_MS);
+    if (!isTransform && phase != IllidanPhase::Dying)
         return phase;
-    }
 
     IllidanPhase const previous = GetIllidanPhaseBefore(illidan, phase);
     return previous != IllidanPhase::None ? previous : IllidanPhase::Grounded;

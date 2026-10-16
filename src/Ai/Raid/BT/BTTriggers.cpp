@@ -627,7 +627,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
+    if (phase == IllidanPhase::None)
         return false;
 
     if (phase == IllidanPhase::Flying)
@@ -655,8 +655,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
-    bool const hasInfectionPosition = phase != IllidanPhase::None &&
-        phase != IllidanPhase::Flying && phase != IllidanPhase::Dying;
+    bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     auto const it = illidanInfections.find(bot->GetInstanceId());
     bool const hasInfections = it != illidanInfections.end();
     if (hasInfections)
