@@ -594,6 +594,12 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
 // The Main Tank's walk-in, about 60 yd, starts this long before the end. No Flame Burst comes in
 // the last 14 s.
 inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
+// Shadow Demons appear this long after the transform starts, 30 s after he turns aggressive.
+inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
+// Warlocks start Seed of Corruption (2 s cast) from this long before the Demons appear until this
+// long after, so its 15 yd blast catches them in the 2.6 s they spend near him.
+inline constexpr uint32 ILLIDAN_SEED_LEAD_MS = 1 * IN_MILLISECONDS;
+inline constexpr uint32 ILLIDAN_SEED_LATE_MS = 500;
 inline constexpr uint32 ILLIDAN_LANDING_WAIT_MS = 3 * IN_MILLISECONDS;
 // Hunters misdirect onto the Main Tank this long from each Phase 1, 3 and 5 start.
 inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
@@ -763,8 +769,8 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
 // For ranged and healers: a Demon walking to the warlock tank first, then the one nearest its
 // target, ties going to the one nearest `from`; idle Demons last.
 Unit* GetShadowDemonToAttack(PlayerbotAI* botAI, Unit const& from);
-// For melee: the Demon nearest `from` clear of Aura of Dread round him and of Shadow Blast round
-// his victim, one still walking to a target before an idle one.
+// For melee: the Demon nearest `from` that has walked out from him and is clear of Shadow Blast
+// round his victim, one still walking to a target before an idle one.
 Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from);
 // Imps and water elementals take Demons as ranged do, other pets as melee do.
 Unit* GetShadowDemonForPet(PlayerbotAI* botAI, Pet const& pet);

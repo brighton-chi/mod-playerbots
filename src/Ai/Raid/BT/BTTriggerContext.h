@@ -233,6 +233,9 @@ public:
         creators["illidan stormrage warlock should tank demon form"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_tank_demon_form;
 
+        creators["illidan stormrage warlock should seed shadow demons"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_seed_shadow_demons;
+
         creators["illidan stormrage should assign dps priority"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_dps_priority;
 
@@ -552,6 +555,10 @@ private:
     static Trigger* illidan_stormrage_warlock_should_tank_demon_form(PlayerbotAI* botAI)
     {
         return new IllidanStormrageWarlockShouldTankDemonFormTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_warlock_should_seed_shadow_demons(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageWarlockShouldSeedShadowDemonsTrigger(botAI);
     }
     static Trigger* illidan_stormrage_should_assign_dps_priority(PlayerbotAI* botAI)
     {

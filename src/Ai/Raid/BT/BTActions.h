@@ -719,6 +719,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageSeedShadowDemonsAction : public Action
+{
+public:
+    IllidanStormrageSeedShadowDemonsAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage seed shadow demons") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
 {
 public:

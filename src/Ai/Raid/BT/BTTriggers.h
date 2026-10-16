@@ -705,6 +705,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidanStormrageWarlockShouldSeedShadowDemonsTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageWarlockShouldSeedShadowDemonsTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage warlock should seed shadow demons")
+    {
+    }
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidanStormrageShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:

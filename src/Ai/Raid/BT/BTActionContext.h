@@ -229,6 +229,9 @@ public:
         creators["illidan stormrage warlock tank handle demon form"] =
             &RaidBlackTempleActionContext::illidan_stormrage_warlock_tank_handle_demon_form;
 
+        creators["illidan stormrage seed shadow demons"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_seed_shadow_demons;
+
         creators["illidan stormrage dps prioritize adds"] =
             &RaidBlackTempleActionContext::illidan_stormrage_dps_prioritize_adds;
 
@@ -554,6 +557,10 @@ private:
     static Action* illidan_stormrage_warlock_tank_handle_demon_form(PlayerbotAI* botAI)
     {
         return new IllidanStormrageWarlockTankHandleDemonFormAction(botAI);
+    }
+    static Action* illidan_stormrage_seed_shadow_demons(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageSeedShadowDemonsAction(botAI);
     }
     static Action* illidan_stormrage_dps_prioritize_adds(PlayerbotAI* botAI)
     {

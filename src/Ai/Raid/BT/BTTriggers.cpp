@@ -892,6 +892,26 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsIllidanWarlockTank(botAI);
 }
 
+// Every warlock, the warlock tank included, starts Seed of Corruption on him just before the
+// Shadow Demons appear round him; the raid's damage on him sets it off as they spawn.
+bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return false;
+
+    if (GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+        return false;
+
+    uint32 const seedStartMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS - ILLIDAN_SEED_LEAD_MS;
+    uint32 const seedEndMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS + ILLIDAN_SEED_LATE_MS;
+    return !IsIllidanPhaseStartWithin(*illidan, seedStartMs) &&
+        IsIllidanPhaseStartWithin(*illidan, seedEndMs);
+}
+
 // Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
 // assist tanks have the Flames. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()

@@ -2051,10 +2051,22 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     }
     else
     {
-        Creature* flameCrash = bot->FindNearestCreature(
-            Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE, true);
-        if (flameCrash && flameCrash->GetGUID() != _lastFlameCrash &&
-            bot->GetExactDist2d(flameCrash) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE)
+        // The newest one (GUIDs only grow), so a Flame Crash landing on an older one still counts.
+        std::list<Creature*> flameCrashes;
+        bot->GetCreatureListWithEntryInGrid(
+            flameCrashes, Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE);
+        Creature* flameCrash = nullptr;
+        for (Creature* creature : flameCrashes)
+        {
+            if (creature->IsAlive() &&
+                bot->GetExactDist2d(creature) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE &&
+                (!flameCrash || flameCrash->GetGUID() < creature->GetGUID()))
+            {
+                flameCrash = creature;
+            }
+        }
+
+        if (flameCrash && _lastFlameCrash < flameCrash->GetGUID())
         {
             _lastFlameCrash = flameCrash->GetGUID();
             _leadSpot = GetRingPoint(
@@ -2078,6 +2090,11 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         }
         else
         {
+            // A cast (Draw Soul often follows a Flame Crash) holds him in place; he follows the
+            // tank to the lead point once it ends, so the tank waits there for him.
+            if (_isLeading && illidan->IsNonMeleeSpellCast(false))
+                return false;
+
             _isLeading = false;
             spot = GetIllidanSettleSpot(*illidan);
         }
@@ -2706,6 +2723,16 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", illidan);
 }
 
+bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    return botAI->CanCastSpell("seed of corruption", illidan) &&
+        botAI->CastSpell("seed of corruption", illidan);
+}
+
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2993,7 +3020,7 @@ bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float searchRadius = 50.0f;
+    /* constexpr float searchRadius = 50.0f;
     Unit* shadowDemon = bot->FindNearestCreature(
         Id(BtNpcs::NPC_SHADOW_DEMON), searchRadius, true);
     if (!shadowDemon)
@@ -3006,7 +3033,7 @@ bool IllidanStormrageHandleAddsCheatAction::Execute(Event /*event*/)
     uint32 damage = shadowDemon->GetHealth() - halfHealth;
     Unit::DealDamage(
         bot, shadowDemon, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL,
-        nullptr, false, false, nullptr);
+        nullptr, false, false, nullptr); */
 
-    return true;
+    return false;
 }
