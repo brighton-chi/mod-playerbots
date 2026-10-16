@@ -757,6 +757,8 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* bot);
 bool IsEastFlameOfAzzinothTank(Player* bot);
 bool IsFlameOfAzzinothTank(Player* bot);
+// The living Flame this bot tanks, if it is a Flame tank.
+Unit* GetAssignedFlameOfAzzinoth(Player* bot);
 // The warlock tank is an assistant warlock (player or bot), else the warlock bot with the lowest
 // GUID; dead or alive, for the whole fight, since losing it wipes the raid anyway.
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot);

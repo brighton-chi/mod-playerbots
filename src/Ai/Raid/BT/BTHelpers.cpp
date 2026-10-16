@@ -1762,6 +1762,17 @@ bool IsFlameOfAzzinothTank(Player* bot)
     return IsEastFlameOfAzzinothTank(bot) || IsWestFlameOfAzzinothTank(bot);
 }
 
+Unit* GetAssignedFlameOfAzzinoth(Player* bot)
+{
+    auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+    if (IsEastFlameOfAzzinothTank(bot))
+        return eastFlame;
+    else if (IsWestFlameOfAzzinothTank(bot))
+        return westFlame;
+
+    return nullptr;
+}
+
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();

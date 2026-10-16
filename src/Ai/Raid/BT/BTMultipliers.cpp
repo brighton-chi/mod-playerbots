@@ -848,7 +848,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 // someone else on the ground; the other tanks wait at the landing stack with everyone else, and
 // keep to their Demon Form slots as melee. While he flies, the Main Tank holds the grate and the
 // assist tanks the Flames of Azzinoth, each moving only by its own action or to the Shadowfiend
-// infection position.
+// infection position, except that a Flame tank uses its own logic while its Flame is off it.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
     Unit* illidan, IllidanPhase phase, Action* action)
 {
@@ -909,8 +909,18 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         if (!isMove)
             return 1.0f;
 
-        return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ||
-            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action) ? 1.0f : 0.0f;
+        if (dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ||
+            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action))
+        {
+            return 1.0f;
+        }
+
+        if (dynamic_cast<AvoidAoeAction*>(action) || IsHeldIllidanChase(botAI, action, phase))
+            return 0.0f;
+
+        // While its Flame isn't on it, the tank's own logic takes the Flame back.
+        Unit* flame = GetAssignedFlameOfAzzinoth(bot);
+        return flame && flame->GetVictim() != bot ? 1.0f : 0.0f;
     }
 
     // Flying phase: tanks other than the flame tanks

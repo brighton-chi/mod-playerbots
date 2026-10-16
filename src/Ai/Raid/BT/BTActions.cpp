@@ -2285,17 +2285,9 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
             if (AI_VALUE(Unit*, "current target") != eastFlame)
                 return Attack(eastFlame);
 
+            // Until it has its Flame, the tank's own logic takes it (taunt, reach).
             if (eastFlame->GetVictim() != bot)
-            {
-                if (!bot->IsWithinMeleeRange(eastFlame))
-                {
-                    return MoveTo(
-                        BT_MAP_ID, eastFlame->GetPositionX(), eastFlame->GetPositionY(),
-                        eastFlame->GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
-                }
                 return false;
-            }
         }
         else if (!eastFlame && !westFlame)
         {
@@ -2340,16 +2332,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                 return Attack(westFlame);
 
             if (westFlame->GetVictim() != bot)
-            {
-                if (!bot->IsWithinMeleeRange(westFlame))
-                {
-                    return MoveTo(
-                        BT_MAP_ID, westFlame->GetPositionX(), westFlame->GetPositionY(),
-                        westFlame->GetPositionZ(), false, false, false, false,
-                        MovementPriority::MOVEMENT_COMBAT, true, false);
-                }
                 return false;
-            }
         }
         else
         {
