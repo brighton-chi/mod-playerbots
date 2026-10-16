@@ -2214,24 +2214,22 @@ Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI)
     return nullptr;
 }
 
-Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from)
+Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& from)
 {
-    // Centre distances, as the spells measure. Demons spawn 5 yd from him and walk out toward the
-    // raid, so melee running in from their slots meet one well outside Aura of Dread's 15 yd even
-    // if they leave immediately.
-    constexpr float shadowBlastClearance = 23.0f;
-
-    Unit* victim = illidan.GetVictim();
+    // Demons spawn 5 yd from him and walk out toward the raid, so melee running in from their
+    // slots meet one well outside Aura of Dread's 15 yd even if they leave immediately.
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    ObjectGuid const warlockTank =
+        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get();
     Unit* nearest = nullptr;
     std::pair<bool, float> nearestKey = { true, std::numeric_limits<float>::max() };
-    auto const& shadowDemons = botAI->GetAiObjectContext()
-        ->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
+    auto const& shadowDemons =
+        context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
         if (!demon || !demon->IsAlive() ||
-            // demon->GetExactDist2d(&illidan) <= illidanClearance ||
-            (victim && demon->GetExactDist2d(victim) <= shadowBlastClearance))
+            (!warlockTank.IsEmpty() && shadowDemon.target == warlockTank))
         {
             continue;
         }
@@ -2259,9 +2257,7 @@ Unit* GetShadowDemonForPet(PlayerbotAI* botAI, Pet const& pet)
         return GetShadowDemonToAttack(botAI, pet);
     }
 
-    Unit* illidan =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "illidan stormrage")->Get();
-    return illidan ? GetShadowDemonForMelee(botAI, *illidan, pet) : nullptr;
+    return GetShadowDemonForMelee(botAI, pet);
 }
 
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)

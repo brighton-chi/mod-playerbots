@@ -788,6 +788,7 @@ bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.
 GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
+// Shadowfiends have a combat reach of 1.0y.
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
 // No Shadowfiend debuff and a living Shadowfiend close by, as where a debuff just ended, while
 // that Shadowfiend isn't yet nearly dead.
@@ -802,9 +803,9 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
 // target, ties going to the one nearest `from`; idle Demons last.
 Unit* GetShadowDemonToAttack(PlayerbotAI* botAI, Unit const& from);
 Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI);
-// For melee: the Demon nearest `from` that has walked out from him and is clear of Shadow Blast
-// round his victim, one still walking to a target before an idle one.
-Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from);
+// For melee: the Demon nearest `from`, one still walking to a target before an idle one. Never one
+// walking to the warlock tank, which stays inside Aura of Dread or Shadow Blast all the way.
+Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& from);
 // Imps and water elementals take Demons as ranged do, other pets as melee do.
 Unit* GetShadowDemonForPet(PlayerbotAI* botAI, Pet const& pet);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);

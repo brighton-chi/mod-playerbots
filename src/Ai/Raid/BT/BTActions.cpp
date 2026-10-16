@@ -2886,10 +2886,10 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         }
         else if (PlayerbotAI::IsMelee(bot))
         {
-            Unit* shadowDemon = GetShadowDemonForMelee(botAI, *illidan, *bot);
+            Unit* shadowDemon = GetShadowDemonForMelee(botAI, *bot);
             Unit* shadowfiend = FindShadowfiendForMelee();
-            // With nothing safe to hit, the target goes, so a Demon that has walked into Aura of
-            // Dread or Shadow Blast isn't chased in there.
+            // With nothing to hit, the target goes, so the bot stays off him and off the Demon
+            // walking to the warlock tank.
             if (!shadowDemon && !shadowfiend)
             {
                 if (!AI_VALUE(Unit*, "current target") && !bot->GetVictim())
@@ -2906,9 +2906,9 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
         else
         {
             constexpr float shadowfiendMinDistance = 10.0f;
-            constexpr float shadowfiendMaxDistance = 35.0f;
+            constexpr float shadowfiendMaxDistance = 28.5f;
             Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
-            float const distance = shadowfiend ? bot->GetDistance2d(shadowfiend) : 0.0f;
+            float const distance = shadowfiend ? bot->GetDistance(shadowfiend) : 0.0f;
             bool const isShadowfiendInReach =
                 distance > shadowfiendMinDistance && distance <= shadowfiendMaxDistance;
             targets = {
