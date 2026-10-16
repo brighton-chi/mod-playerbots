@@ -820,10 +820,10 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 }
 
 // On the ground and while he lands, the Main Tank moves only by its ring action, and its
-// gap-closers are held, since he always comes to it; the other tanks wait at the landing stack
-// with everyone else, and keep to their Demon Form slots as melee. While he flies, the Main Tank
-// holds the grate and the assist tanks the Flames of Azzinoth, each moving only by its own action
-// or to the Shadowfiend run spot.
+// gap-closers are held, since he always comes to it, except on Shadow Demons; the other tanks wait
+// at the landing stack with everyone else, and keep to their Demon Form slots as melee. While he
+// flies, the Main Tank holds the grate and the assist tanks the Flames of Azzinoth, each moving
+// only by its own action or to the Shadowfiend run spot.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
     Unit* illidan, IllidanPhase phase, Action* action)
 {
@@ -852,13 +852,22 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
             return isGapCloser || IsHeldAtIllidanLandingStack(action) ? 0.0f : 1.0f;
         }
 
+        // In Demon Form it chases a Shadow Demon with the melee until it walks in.
+        bool const canChaseDemon = phase == IllidanPhase::Demon &&
+            !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS) &&
+            !IsHeldIllidanChase(botAI, action, phase);
+
         if (isMove)
         {
-            return dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action) ?
-                1.0f : 0.0f;
+            if (dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action))
+                return 1.0f;
+
+            bool const isChase = dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<SetBehindTargetAction*>(action);
+            return isChase && canChaseDemon ? 1.0f : 0.0f;
         }
 
-        return isGapCloser ? 0.0f : 1.0f;
+        return isGapCloser && !canChaseDemon ? 0.0f : 1.0f;
     }
 
     if (phase != IllidanPhase::Flying)

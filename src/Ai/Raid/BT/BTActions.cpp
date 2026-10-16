@@ -1870,13 +1870,12 @@ bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         position = ILLIDAN_PULL_TANK_POSITION;
 
-    constexpr float distFromPosition = 2.0f;
-    if (bot->GetExactDist2d(position) <= distFromPosition)
+    if (bot->GetExactDist2d(position) <= ILLIDAN_SPOT_TOLERANCE)
         return false;
 
     return MoveInside(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        distFromPosition, MovementPriority::MOVEMENT_COMBAT);
+        ILLIDAN_SPOT_TOLERANCE, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
@@ -2019,6 +2018,23 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     }
     else if (isDemonForm)
     {
+        // It joins the melee on the adds until the walk-in, then drops its target, so its
+        // rotation keeps the opener for the reset.
+        Unit* target = AI_VALUE(Unit*, "current target");
+        uint32 const targetEntry = target && target->IsAlive() ? target->GetEntry() : 0;
+        bool const isOnAdd = targetEntry == Id(BtNpcs::NPC_SHADOW_DEMON) ||
+            targetEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
+        if (isWalkIn && (target || bot->GetVictim()))
+        {
+            bot->AttackStop();
+            context->GetValue<Unit*>("current target")->Set(nullptr);
+            bot->SetSelection(ObjectGuid());
+        }
+        else if (!isWalkIn && isOnAdd)
+        {
+            return false;
+        }
+
         DemonFormLayout const layout = GetDemonFormLayout(*illidan);
         spot = isWalkIn ? layout.pickupSpot : layout.mainTankWaitSpot;
     }
@@ -2639,7 +2655,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
         return false;
 
     // Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
-    // first.
+    // first, the warlock tank in the one nearest its Demon Form spot.
     IllidanPhase const phase = GetIllidanPhase(illidan);
     Position spot;
     if (phase == IllidanPhase::Demon)
@@ -2653,8 +2669,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
     }
     else
     {
-        constexpr bool inDemonForm = false;
-        int32 const slot = GetIllidanRangedIndex(botAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
+        int32 const slot = GetIllidanGrateIndex(botAI, *illidan);
         if (slot < 0)
             return false;
 
@@ -2726,6 +2741,9 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
             Id(BtSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
+    if (botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot))
+        return true;
+
     Position const spot = GetDemonFormLayout(*illidan).warlockSpot;
     if (bot->GetExactDist2d(spot) > ILLIDAN_SPOT_TOLERANCE)
     {
@@ -2733,9 +2751,6 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
             BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false,
             false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
-
-    if (botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot))
-        return true;
 
     if (GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
         return false;

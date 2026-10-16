@@ -916,11 +916,12 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 }
 
 // Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
-// assist tanks have the Flames. Healers take Shadow Demons as targets in Demon Form.
+// assist tanks have the Flames. The Main Tank joins them on Shadow Demons in Demon Form until its
+// walk-in. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    IllidanPhase const phase =
-        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return false;
 
@@ -936,7 +937,11 @@ bool IllidanStormrageShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return false;
     }
 
-    return !PlayerbotAI::IsMainTank(bot);
+    if (!PlayerbotAI::IsMainTank(bot))
+        return true;
+
+    return phase == IllidanPhase::Demon &&
+        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
 }
 
 bool IllidanStormrageMaievPlacedCageTrapTrigger::IsActiveInEncounter()

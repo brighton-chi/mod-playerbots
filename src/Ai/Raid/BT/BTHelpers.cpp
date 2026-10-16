@@ -1951,6 +1951,44 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
     return static_cast<int32>(static_cast<size_t>(rosterIndex) % slotCount);
 }
 
+int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
+{
+    constexpr bool inDemonForm = false;
+    int32 const index = GetIllidanRangedIndex(botAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
+    if (index < 0)
+        return index;
+
+    Player* warlockTank = GetIllidanWarlockTank(botAI);
+    PlayerbotAI* warlockTankAI = warlockTank ? GET_PLAYERBOT_AI(warlockTank) : nullptr;
+    if (!warlockTankAI)
+        return index;
+
+    float const inwardAngle = illidan.GetAngle(&ILLIDAN_GRATE_CENTRE);
+    Position const warlockSpot = GetDemonFormPoint(
+        illidan, inwardAngle, ILLIDAN_WARLOCK_SPOT_DISTANCE, ILLIDAN_WARLOCK_SPOT_ANGLE);
+    int32 warlockSlot = 0;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < ILLIDAN_RANGED_SLOT_COUNT; ++i)
+    {
+        float const distance = GetGrateSlot(i).GetExactDist2d(warlockSpot);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            warlockSlot = static_cast<int32>(i);
+        }
+    }
+
+    if (warlockTank == botAI->GetBot())
+        return warlockSlot;
+
+    if (index != warlockSlot)
+        return index;
+
+    int32 const warlockIndex =
+        GetIllidanRangedIndex(warlockTankAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
+    return warlockIndex < 0 ? index : warlockIndex;
+}
+
 bool HasParasiticShadowfiend(Player* player)
 {
     if (!player)

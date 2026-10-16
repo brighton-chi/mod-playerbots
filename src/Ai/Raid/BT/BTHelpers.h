@@ -757,6 +757,10 @@ bool IsFrostTrapPatchAt(Player* bot, Position const& runSpot, int32 minDurationM
 int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm);
 int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount);
 int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
+// Phases 3 and 5: the grate slot by roster, except that the warlock tank (a living bot) takes the
+// slot nearest its Demon Form spot, so its walk at the transform is short, and whoever had that
+// slot takes the warlock tank's.
+int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
 bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.
