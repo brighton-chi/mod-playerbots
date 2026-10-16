@@ -1879,8 +1879,11 @@ GuidVector FindIllidanTrapHunterGuids(Player* bot)
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    if (bot->getClass() != CLASS_HUNTER || bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)))
+    if (bot->getClass() != CLASS_HUNTER || bot->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)) ||
+        HasParasiticShadowfiend(bot))
+    {
         return false;
+    }
 
     auto const it = illidanInfections.find(bot->GetInstanceId());
     if (it == illidanInfections.end())

@@ -771,7 +771,7 @@ bool IsIllidanWarlockTank(PlayerbotAI* botAI);
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
 // The trap hunters in the order they take infections: hunter bots by GUID, dead or alive.
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
-// Assigned to an infection whose debuff is still on, with Frost Trap ready.
+// Assigned to an infection whose debuff is still on, with Frost Trap ready, and not infected.
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
 // While he flies, a bot infected before he took off waits at the infection position until its
 // Shadowfiends are out, tanks included (the raid can't move away from them in Phase 2), and its

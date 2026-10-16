@@ -722,16 +722,19 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive())
         return false;
 
-    Unit* victim = pet->GetVictim();
-    uint32 const victimEntry = victim && victim->IsAlive() ? victim->GetEntry() : 0;
-    if (victimEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) ||
-        victimEntry == Id(BtNpcs::NPC_SHADOW_DEMON))
-    {
-        return false;
-    }
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
+        return false;
+
+    // A pet's hit puts its owner on the Shadowfiend's threat list, the only entry it can act on,
+    // so while its owner has just birthed Shadowfiends the pet is called off them.
+    Unit* victim = pet->GetVictim();
+    uint32 const victimEntry = victim && victim->IsAlive() ? victim->GetEntry() : 0;
+    bool const isNearNewShadowfiend = IsNearNewParasiticShadowfiend(botAI);
+    if (victimEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
+        return isNearNewShadowfiend;
+
+    if (victimEntry == Id(BtNpcs::NPC_SHADOW_DEMON) || isNearNewShadowfiend)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);

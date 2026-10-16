@@ -2136,7 +2136,7 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     }
 }
 
-// A trap hunter on duty, infected or not, drops Frost Trap on arrival.
+// A trap hunter on duty drops Frost Trap on arrival. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2218,8 +2218,9 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 }
 
 // A hunter already sent for another infection, its trap not yet down, lays one trap for both. Else
-// an infected trap hunter traps for itself, else the first trap hunter in order with Frost Trap
-// ready. False while none is ready, so the infection is tried again next tick.
+// the first trap hunter in order with Frost Trap ready. Never an infected hunter: its own
+// Shadowfiends come out on the trap and springing it engages them onto the hunter who laid it.
+// False while none is ready, so the infection is tried again next tick.
 bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     Player const& infected, Position const& infectionPosition,
     std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
@@ -2228,7 +2229,8 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     for (auto const& [player, infection] : infections)
     {
         Player* other = ObjectAccessor::FindPlayer(infection.hunter);
-        if (other && other->IsAlive() && !other->HasSpellCooldown(frostTrap))
+        if (other && other->IsAlive() && !other->HasSpellCooldown(frostTrap) &&
+            !HasParasiticShadowfiend(other))
         {
             hunter = infection.hunter;
             return true;
@@ -2238,22 +2240,14 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     auto const& trapHunters =
         context->GetValue<GuidVector>("illidan stormrage trap hunters")->RefGet();
     ObjectGuid candidate;
-    if (std::find(trapHunters.begin(), trapHunters.end(), infected.GetGUID()) !=
-            trapHunters.end() &&
-        !infected.HasSpellCooldown(frostTrap))
+    for (ObjectGuid const& guid : trapHunters)
     {
-        candidate = infected.GetGUID();
-    }
-    else
-    {
-        for (ObjectGuid const& guid : trapHunters)
+        Player* trapHunter = ObjectAccessor::FindPlayer(guid);
+        if (trapHunter && trapHunter->IsAlive() && !trapHunter->HasSpellCooldown(frostTrap) &&
+            !HasParasiticShadowfiend(trapHunter))
         {
-            Player* trapHunter = ObjectAccessor::FindPlayer(guid);
-            if (trapHunter && trapHunter->IsAlive() && !trapHunter->HasSpellCooldown(frostTrap))
-            {
-                candidate = guid;
-                break;
-            }
+            candidate = guid;
+            break;
         }
     }
 
@@ -2443,18 +2437,27 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 }
 
 // Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
-// carries out too.
+// carries out too. While its owner has just birthed Shadowfiends, the pet is called off them.
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
     if (!pet)
         return false;
 
+    bool const isNearNewShadowfiend = IsNearNewParasiticShadowfiend(botAI);
+    Unit* victim = pet->GetVictim();
+    if (isNearNewShadowfiend && victim &&
+        victim->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
+    {
+        botAI->PetFollow();
+        return true;
+    }
+
     IllidanPhase const phase =
         GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
     Unit* target =
         phase == IllidanPhase::Demon ? GetShadowDemonForPetToAttack(botAI, *pet) : nullptr;
-    if (!target)
+    if (!target && !isNearNewShadowfiend)
         target = GetNearestParasiticShadowfiend(botAI, *pet);
 
     if (!target || !pet->IsValidAttackTarget(target))
