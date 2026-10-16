@@ -550,8 +550,8 @@ struct ShadowDemon
 };
 
 // One Shadowfiend infection, recorded by the mechanic tracker. The run spot is fixed for the phase
-// it was recorded in. Once the trap is assigned, hunter is empty if a Frost Trap patch already
-// covered the spot.
+// it was recorded in (the transform counts as the phase before it), and kept while he flies.
+// Once the trap is assigned, hunter is empty if a Frost Trap patch already covered the spot.
 struct IllidanInfection
 {
     Position runSpot;
@@ -576,14 +576,13 @@ inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // Below this a Shadowfiend is finished off: melee take one in their melee range, and its birther
 // acts again.
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
-// After landing, everyone else leaves the landing stack once he is led this far from the grate
-// centre, or 3 s after the threat reset, whichever comes first.
-inline constexpr float ILLIDAN_LANDING_RELEASE_DISTANCE = 15.0f;
 // At or below this he is burnt down: no hold and no stop.
 inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // At or below this in Demon Form nobody damages him, so he changes back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+// He turns aggressive in Demon Form this long after the transform starts.
+inline constexpr uint32 ILLIDAN_DEMON_TRANSFORM_MS = 12230;
 // The warlock tank has him to itself for the 12.23 s transform and about 2 s more.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
@@ -595,11 +594,16 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
 // Shadow Demons appear this long after the transform starts, 30 s after he turns aggressive.
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
-// Warlocks start Seed of Corruption (2 s cast) from this long before the Demons appear until this
-// long after, so its 15 yd blast catches them in the 2.6 s they spend near him.
-inline constexpr uint32 ILLIDAN_SEED_LEAD_MS = 1 * IN_MILLISECONDS;
-inline constexpr uint32 ILLIDAN_SEED_LATE_MS = 500;
-inline constexpr uint32 ILLIDAN_LANDING_WAIT_MS = 3 * IN_MILLISECONDS;
+// Warlocks cast Seed of Corruption (2 s) from this long before the Demons appear until they are
+// dead, so any cast in progress (2.5 s at most) ends first and a Seed lands in the 2.6 s they
+// spend near him. Until this long after they appear the window runs on time, as the Demon search
+// may not have seen them yet.
+inline constexpr uint32 ILLIDAN_SEED_LEAD_MS = 3 * IN_MILLISECONDS;
+inline constexpr uint32 ILLIDAN_SEED_LATE_MS = 1 * IN_MILLISECONDS;
+// Between Seeds (about 890 mana each at 70) a warlock Life Taps below this mana, if above this
+// health, which the warlock tank needs against Shadow Blast.
+inline constexpr float ILLIDAN_SEED_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float ILLIDAN_SEED_LIFE_TAP_HEALTH_PCT = 50.0f;
 // Hunters misdirect onto the Main Tank this long from each Phase 1, 3 and 5 start.
 inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
 // A Frost Trap patch already on the run spot does for a new infection if it outlasts the debuff
@@ -708,9 +712,6 @@ bool IsIllidanSpeechInProgress(Player* bot);
 // The phase started less than durationMs ago; until the mechanic tracker stamps it, it has just
 // started.
 bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs);
-// Everyone but the Main Tank waits at the landing stack while he lands, and then until the Main
-// Tank has led him out or 3 s have passed since the threat reset.
-bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase);
 // Demon Form ends, with a threat reset, less than durationMs from now.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 // The hold window that is running, before who it spares is decided.
@@ -727,6 +728,10 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 // Where an infection's run spot is recorded: from the grate centre in Phases 1, 3 and 5, from him
 // in Demon Form.
 Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase);
+// The phase whose run spot applies: the Demon Form transform counts as the phase before it, so
+// an infection from Phase 3 or 5 keeps its spot and its Shadowfiends don't come out on a walk
+// across the raid.
+IllidanPhase GetIllidanRunSpotPhase(Unit const& illidan, IllidanPhase phase);
 // The run spot recorded for the bot's own infection, else for the infection it traps for, else
 // where one would be recorded now.
 Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);

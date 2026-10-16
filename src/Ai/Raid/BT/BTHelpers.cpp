@@ -1453,20 +1453,6 @@ bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs)
         getMSTimeDiff(it->second, getMSTime()) < durationMs;
 }
 
-bool IsIllidanLandingWait(Unit const& illidan, IllidanPhase phase)
-{
-    if (phase == IllidanPhase::Landing)
-        return true;
-
-    if (phase != IllidanPhase::Grounded ||
-        illidan.GetExactDist2d(ILLIDAN_GRATE_CENTRE) >= ILLIDAN_LANDING_RELEASE_DISTANCE)
-    {
-        return false;
-    }
-
-    return IsIllidanPhaseStartWithin(illidan, ILLIDAN_LANDING_WAIT_MS);
-}
-
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
     auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
@@ -1670,26 +1656,42 @@ Position GetIllidanShadowfiendRunSpot(Unit const& illidan, IllidanPhase phase)
         GetGrateAngle(illidan) + ILLIDAN_RUN_SPOT_ANGLE, ILLIDAN_RUN_SPOT_DISTANCE);
 }
 
+IllidanPhase GetIllidanRunSpotPhase(Unit const& illidan, IllidanPhase phase)
+{
+    if (phase != IllidanPhase::Demon ||
+        !IsIllidanPhaseStartWithin(illidan, ILLIDAN_DEMON_TRANSFORM_MS))
+    {
+        return phase;
+    }
+
+    auto const it = illidanPreviousPhase.find(illidan.GetInstanceId());
+    return it != illidanPreviousPhase.end() ? it->second : IllidanPhase::Grounded;
+}
+
 Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
 {
+    IllidanPhase const spotPhase = GetIllidanRunSpotPhase(illidan, phase);
     Player* bot = botAI->GetBot();
     auto const it = illidanInfections.find(bot->GetInstanceId());
     if (it != illidanInfections.end())
     {
-        // Entries are kept while he flies, from the phase before.
+        // Entries from the phase before are kept while he flies.
         bool const isFlying = phase == IllidanPhase::Flying;
         auto const own = it->second.find(bot->GetGUID());
-        if (own != it->second.end() && (isFlying || own->second.phase == phase))
+        if (own != it->second.end() && (isFlying || own->second.phase == spotPhase))
             return own->second.runSpot;
 
         for (auto const& [player, infection] : it->second)
         {
-            if (infection.hunter == bot->GetGUID() && (isFlying || infection.phase == phase))
+            if (infection.hunter == bot->GetGUID() &&
+                (isFlying || infection.phase == spotPhase))
+            {
                 return infection.runSpot;
+            }
         }
     }
 
-    return GetIllidanShadowfiendRunSpot(illidan, phase);
+    return GetIllidanShadowfiendRunSpot(illidan, spotPhase);
 }
 
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)

@@ -782,7 +782,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     if (PlayerbotAI::IsTank(bot))
         return GetTankMovementValue(illidan, phase, action);
 
-    return GetNonTankMovementValue(illidan, phase, action);
+    return GetNonTankMovementValue(phase, action);
 }
 
 // Tanks take their targets from their own actions or dps prioritize adds, except the assist tanks
@@ -846,7 +846,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
             if (IsHeldIllidanChase(botAI, action, phase))
                 return 0.0f;
 
-            if (phase == IllidanPhase::Demon || !IsIllidanLandingWait(*illidan, phase))
+            if (phase != IllidanPhase::Landing)
                 return 1.0f;
 
             return isGapCloser || IsHeldAtIllidanLandingStack(action) ? 0.0f : 1.0f;
@@ -893,7 +893,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
 }
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementValue(
-    Unit* illidan, IllidanPhase phase, Action* action)
+    IllidanPhase phase, Action* action)
 {
     bool const isBlockedMove =
         (dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -913,8 +913,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     if (isBlockedMove)
         return 0.0f;
 
-    // Everyone waits at the landing stack until he has been led out.
-    if (IsIllidanLandingWait(*illidan, phase))
+    // Everyone waits at the landing stack while he lands.
+    if (phase == IllidanPhase::Landing)
         return 0.0f;
 
     if (!isPhaseMove)

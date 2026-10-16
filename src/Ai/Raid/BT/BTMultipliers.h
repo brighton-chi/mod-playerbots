@@ -358,7 +358,7 @@ private:
     float GetTargetingValue(
         BtHelpers::IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist);
     float GetTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
-    float GetNonTankMovementValue(Unit* illidan, BtHelpers::IllidanPhase phase, Action* action);
+    float GetNonTankMovementValue(BtHelpers::IllidanPhase phase, Action* action);
 };
 
 class IllidanStormrageNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier

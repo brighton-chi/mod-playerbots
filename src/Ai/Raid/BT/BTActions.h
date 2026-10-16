@@ -725,6 +725,9 @@ public:
     IllidanStormrageSeedShadowDemonsAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage seed shadow demons") {}
     bool Execute(Event event) override;
+
+private:
+    Unit* FindSeedTarget(Unit* illidan);
 };
 
 class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction

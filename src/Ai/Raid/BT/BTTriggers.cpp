@@ -615,6 +615,7 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
 }
 
 // An infected bot runs to the run spot, and so does a trap hunter on duty, to lay its Frost Trap.
+// The Main Tank never runs, and the warlock tank not in Demon Form.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
@@ -631,12 +632,15 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == IllidanPhase::Flying)
         return IsIllidanRunSpotKeptInFlight(botAI);
 
+    if (phase == IllidanPhase::Demon && IsIllidanWarlockTank(botAI))
+        return false;
+
     return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
 }
 
 // The mechanic tracker records each new infection while there is a run spot, keeps looking for a
-// trap hunter while none is ready, and drops an entry once its debuff is gone or the phase
-// changes.
+// trap hunter while none is ready, and drops an entry once its debuff is gone or the run-spot
+// phase changes.
 bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -649,6 +653,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    IllidanPhase const spotPhase = GetIllidanRunSpotPhase(*illidan, phase);
     bool const hasRunSpot = phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
         phase != IllidanPhase::Dying;
     auto const it = illidanInfections.find(bot->GetInstanceId());
@@ -660,7 +665,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (std::find(infected.begin(), infected.end(), player) == infected.end())
                 return true;
 
-            if (hasRunSpot && (infection.phase != phase || !infection.isTrapAssigned))
+            if (hasRunSpot && (infection.phase != spotPhase || !infection.isTrapAssigned))
                 return true;
         }
     }
@@ -705,26 +710,42 @@ bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
 }
 
 // Hunter and warlock pets take the Shadowfiends, which never attack pets.
+// Hunter and warlock pets in Phases 1, 3 and 5. In Demon Form every pet, passive then, once no
+// Shadow Demon is left for it.
 bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK)
-        return false;
-
     Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+    if (!pet || !pet->IsAlive())
         return false;
 
     Unit* victim = pet->GetVictim();
-    if (victim && victim->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
+    uint32 const victimEntry = victim && victim->IsAlive() ? victim->GetEntry() : 0;
+    if (victimEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) ||
+        victimEntry == Id(BtNpcs::NPC_SHADOW_DEMON))
+    {
         return false;
+    }
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
-        phase != IllidanPhase::Maiev)
+    if (phase == IllidanPhase::Demon)
+    {
+        if (GetShadowDemonForPet(botAI, *pet))
+            return false;
+    }
+    else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev)
+    {
+        if ((bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK) ||
+            pet->HasReactState(REACT_PASSIVE))
+        {
+            return false;
+        }
+    }
+    else
     {
         return false;
     }
@@ -811,7 +832,7 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || !IsIllidanLandingWait(*illidan, GetIllidanPhase(illidan)))
+    if (GetIllidanPhase(illidan) != IllidanPhase::Landing)
         return false;
 
     return !HasParasiticShadowfiend(bot);
@@ -859,9 +880,6 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (phase == IllidanPhase::Demon && IsIllidanWarlockTank(botAI))
         return false;
 
-    if (IsIllidanLandingWait(*illidan, phase))
-        return false;
-
     return phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev;
 }
@@ -895,8 +913,9 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsIllidanWarlockTank(botAI);
 }
 
-// Every warlock, the warlock tank included, starts Seed of Corruption on him just before the
-// Shadow Demons appear round him; the raid's damage on him sets it off as they spawn.
+// Every warlock, the warlock tank included, keeps casting Seed of Corruption from just before the
+// Shadow Demons appear round him until they are dead: on him until they are out, so a Seed goes
+// off among them as they spawn, then on the Demons.
 bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -906,13 +925,17 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    if (GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+    uint32 const seedStartMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS - ILLIDAN_SEED_LEAD_MS;
+    if (IsIllidanPhaseStartWithin(*illidan, seedStartMs))
         return false;
 
-    uint32 const seedStartMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS - ILLIDAN_SEED_LEAD_MS;
-    uint32 const seedEndMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS + ILLIDAN_SEED_LATE_MS;
-    return !IsIllidanPhaseStartWithin(*illidan, seedStartMs) &&
-        IsIllidanPhaseStartWithin(*illidan, seedEndMs);
+    if (!context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().empty())
+        return true;
+
+    // Before the Demon search sees them, the Seed goes on him, so only outside a hold.
+    uint32 const seedOnTimeEndMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS + ILLIDAN_SEED_LATE_MS;
+    return IsIllidanPhaseStartWithin(*illidan, seedOnTimeEndMs) &&
+        GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None;
 }
 
 // Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the

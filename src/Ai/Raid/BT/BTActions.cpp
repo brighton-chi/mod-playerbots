@@ -2169,7 +2169,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 
 // The run spot is fixed when an infection is recorded, so it doesn't move as he does, and the
 // trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job on. A
-// phase change records both again.
+// change of run-spot phase records both again.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2179,16 +2179,17 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    IllidanPhase const spotPhase = GetIllidanRunSpotPhase(*illidan, phase);
     bool const hasRunSpot = phase != IllidanPhase::None && phase != IllidanPhase::Flying &&
         phase != IllidanPhase::Dying;
     uint32 const instanceId = bot->GetInstanceId();
     auto& infections = illidanInfections[instanceId];
     std::erase_if(
         infections,
-        [&infected, phase, hasRunSpot](auto const& entry)
+        [&infected, spotPhase, hasRunSpot](auto const& entry)
         {
             return std::find(infected.begin(), infected.end(), entry.first) == infected.end() ||
-                (hasRunSpot && entry.second.phase != phase);
+                (hasRunSpot && entry.second.phase != spotPhase);
         });
 
     if (hasRunSpot)
@@ -2200,9 +2201,10 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             // A new infection shares the spot already in use, so one trap does for both.
             IllidanInfection infection;
-            infection.phase = phase;
+            infection.phase = spotPhase;
             infection.runSpot = infections.empty() ?
-                GetIllidanShadowfiendRunSpot(*illidan, phase) : infections.begin()->second.runSpot;
+                GetIllidanShadowfiendRunSpot(*illidan, spotPhase) :
+                infections.begin()->second.runSpot;
             infections.emplace(guid, infection);
         }
 
@@ -2528,7 +2530,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
-// Shadow Demons in Demon Form, Shadowfiends otherwise. A commanded attack, which a passive pet
+// Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
 // carries out too.
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 {
@@ -2538,8 +2540,10 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 
     IllidanPhase const phase =
         GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
-    Unit* target = phase == IllidanPhase::Demon ?
-        GetShadowDemonForPet(botAI, *pet) : GetNearestParasiticShadowfiend(botAI, *pet);
+    Unit* target = phase == IllidanPhase::Demon ? GetShadowDemonForPet(botAI, *pet) : nullptr;
+    if (!target)
+        target = GetNearestParasiticShadowfiend(botAI, *pet);
+
     if (!target || !pet->IsValidAttackTarget(target))
         return false;
 
@@ -2759,14 +2763,54 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", illidan);
 }
 
+// A channel would hold the first Seed back, and Life Tap comes between Seeds, since the Seed
+// action outranks the stock one, which waits for a Seed to be unaffordable.
 bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
-    return botAI->CanCastSpell("seed of corruption", illidan) &&
-        botAI->CastSpell("seed of corruption", illidan);
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        bot->CastStop();
+        return true;
+    }
+
+    if (bot->GetPowerPct(POWER_MANA) < ILLIDAN_SEED_LIFE_TAP_MANA_PCT &&
+        bot->GetHealthPct() > ILLIDAN_SEED_LIFE_TAP_HEALTH_PCT &&
+        botAI->CanCastSpell("life tap", bot))
+    {
+        return botAI->CastSpell("life tap", bot);
+    }
+
+    Unit* target = FindSeedTarget(illidan);
+    return target && botAI->CanCastSpell("seed of corruption", target) &&
+        botAI->CastSpell("seed of corruption", target);
+}
+
+// Him until the Demons are out (outside a hold), then the bot's usual Demon, else any Demon,
+// each only without the bot's own Seed on it.
+Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget(Unit* illidan)
+{
+    auto const& shadowDemons =
+        context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
+    if (shadowDemons.empty())
+        return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? illidan : nullptr;
+
+    uint32 const seed = AI_VALUE2(uint32, "spell id", "seed of corruption");
+    Unit* usualDemon = GetShadowDemonToAttack(botAI, *bot);
+    if (usualDemon && !usualDemon->HasAura(seed, bot->GetGUID()))
+        return usualDemon;
+
+    for (ShadowDemon const& shadowDemon : shadowDemons)
+    {
+        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        if (demon && demon->IsAlive() && !demon->HasAura(seed, bot->GetGUID()))
+            return demon;
+    }
+
+    return nullptr;
 }
 
 bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
