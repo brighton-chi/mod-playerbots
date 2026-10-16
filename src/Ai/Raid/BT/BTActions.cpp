@@ -1866,16 +1866,17 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 // Everyone else waits on the grate.
 bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
 {
-    Position spot = ILLIDAN_GRATE_CENTRE;
+    Position position = ILLIDAN_GRATE_CENTRE;
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
-        spot = ILLIDAN_PULL_TANK_POSITION;
+        position = ILLIDAN_PULL_TANK_POSITION;
 
-    if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
+    constexpr float distFromPosition = 3.0f;
+    if (bot->GetExactDist2d(position) <= distFromPosition)
         return false;
 
-    return MoveTo(
-        BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_NORMAL, true, false);
+    return MoveInside(
+        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+        distFromPosition, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
@@ -2852,7 +2853,21 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Maiev)
     {
-        targets = { FindShadowfiendForMelee(), illidan };
+        Unit* shadowfiend = FindShadowfiendForMelee();
+        // Attack() starts the swing, which a hold can't stop, so in a hold they only take him as
+        // target and walk in; the melee action starts the swing once the hold ends.
+        if (!shadowfiend && GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+        {
+            if (AI_VALUE(Unit*, "current target") == illidan)
+                return false;
+
+            context->GetValue<Unit*>("current target")->Set(illidan);
+            bot->SetSelection(illidan->GetGUID());
+            botAI->ChangeEngine(BOT_STATE_COMBAT);
+            return true;
+        }
+
+        targets = { shadowfiend, illidan };
     }
 
     for (Unit* candidate : targets)
