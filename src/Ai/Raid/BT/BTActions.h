@@ -565,8 +565,6 @@ public:
     }
 
 private:
-    bool CastPickupOpener(Unit* illidan);
-
     uint32 _phaseStartTime = 0;
     ObjectGuid _lastFlameCrash;
     Position _leadSpot;

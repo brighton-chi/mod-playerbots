@@ -650,7 +650,7 @@ inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
 // At the end it walks straight to the pickup spot in front of the raid, just outside Aura of Dread
 // and 22.5 yd from the warlock tank (Shadow Blast 20). He keeps the warlock tank as his victim
-// through the reset and runs at it, so the Main Tank takes him with a ranged opener.
+// through the reset and runs at it, past the Main Tank.
 inline constexpr float ILLIDAN_PICKUP_SPOT_DISTANCE = 17.0f;
 inline constexpr float ILLIDAN_PICKUP_SPOT_ANGLE = 30.0f * static_cast<float>(M_PI) / 180.0f;
 
@@ -713,6 +713,8 @@ bool IsIllidanSpeechInProgress(Player* bot);
 // The phase started less than durationMs ago; until the mechanic tracker stamps it, it has just
 // started.
 bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs);
+// The phase before the current one; until the tracker records a change, the last one it recorded.
+IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase);
 // Demon Form ends, with a threat reset, less than durationMs from now.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 // The hold window that is running, before who it spares is decided.

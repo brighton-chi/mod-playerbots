@@ -844,10 +844,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 }
 
 // On the ground and while he lands, the Main Tank moves only by its ring action, and its
-// gap-closers are held, since he always comes to it, except on Shadow Demons; the other tanks wait
-// at the landing stack with everyone else, and keep to their Demon Form slots as melee. While he
-// flies, the Main Tank holds the grate and the assist tanks the Flames of Azzinoth, each moving
-// only by its own action or to the Shadowfiend run spot.
+// gap-closers are held, since he always comes to it, except on Shadow Demons and while he is on
+// someone else on the ground; the other tanks wait at the landing stack with everyone else, and
+// keep to their Demon Form slots as melee. While he flies, the Main Tank holds the grate and the
+// assist tanks the Flames of Azzinoth, each moving only by its own action or to the Shadowfiend
+// run spot.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
     Unit* illidan, IllidanPhase phase, Action* action)
 {
@@ -875,6 +876,12 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
 
             return isGapCloser || IsHeldAtIllidanLandingStack(action) ? 0.0f : 1.0f;
         }
+
+        // While he is on someone else on the ground, the tank's own logic takes him back.
+        bool const isGround = phase == IllidanPhase::Initial ||
+            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev;
+        if (isGround && illidan->GetVictim() != bot)
+            return 1.0f;
 
         // In Demon Form it chases a Shadow Demon with the melee until it walks in.
         bool const canChaseDemon = phase == IllidanPhase::Demon &&

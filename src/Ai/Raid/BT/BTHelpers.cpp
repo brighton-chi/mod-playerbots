@@ -1453,6 +1453,20 @@ bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs)
         getMSTimeDiff(it->second, getMSTime()) < durationMs;
 }
 
+IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase)
+{
+    uint32 const instanceId = illidan.GetInstanceId();
+    auto const recorded = illidanLastPhase.find(instanceId);
+    if (recorded == illidanLastPhase.end())
+        return IllidanPhase::None;
+
+    if (recorded->second != phase)
+        return recorded->second;
+
+    auto const previous = illidanPreviousPhase.find(instanceId);
+    return previous != illidanPreviousPhase.end() ? previous->second : IllidanPhase::None;
+}
+
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
     auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
@@ -1466,10 +1480,17 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         return IllidanDpsHold::None;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    // The tracker stamps a new phase's start on its next tick, and until then the start time is
+    // the old phase's, so a change it hasn't recorded yet counts as a phase just started.
+    auto const recorded = illidanLastPhase.find(illidan->GetInstanceId());
+    bool const isUnrecorded = recorded == illidanLastPhase.end() || recorded->second != phase;
     if (phase == IllidanPhase::Demon)
     {
         if (illidan->GetHealthPct() <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
             return IllidanDpsHold::DemonFormNoPush;
+
+        if (isUnrecorded)
+            return IllidanDpsHold::DemonFormStart;
 
         if (IsIllidanDemonFormEnding(*illidan, ILLIDAN_DEMON_FORM_END_HOLD_MS))
             return IllidanDpsHold::DemonFormEnd;
@@ -1480,13 +1501,11 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
 
     bool isAfterReset = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded;
     if (phase == IllidanPhase::Maiev)
-    {
-        auto const it = illidanPreviousPhase.find(illidan->GetInstanceId());
-        isAfterReset = it != illidanPreviousPhase.end() && it->second == IllidanPhase::Demon;
-    }
+        isAfterReset = GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Demon;
 
-    return isAfterReset && IsIllidanPhaseStartWithin(*illidan, ILLIDAN_RESET_DPS_WAIT_MS) ?
-        IllidanDpsHold::AfterReset : IllidanDpsHold::None;
+    bool const isStarting =
+        isUnrecorded || IsIllidanPhaseStartWithin(*illidan, ILLIDAN_RESET_DPS_WAIT_MS);
+    return isAfterReset && isStarting ? IllidanDpsHold::AfterReset : IllidanDpsHold::None;
 }
 
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
@@ -1664,8 +1683,8 @@ IllidanPhase GetIllidanRunSpotPhase(Unit const& illidan, IllidanPhase phase)
         return phase;
     }
 
-    auto const it = illidanPreviousPhase.find(illidan.GetInstanceId());
-    return it != illidanPreviousPhase.end() ? it->second : IllidanPhase::Grounded;
+    IllidanPhase const previous = GetIllidanPhaseBefore(illidan, phase);
+    return previous != IllidanPhase::None ? previous : IllidanPhase::Grounded;
 }
 
 Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
