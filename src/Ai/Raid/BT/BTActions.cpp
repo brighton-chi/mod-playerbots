@@ -1991,9 +1991,9 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 }
 
 // The Main Tank holds him about 25 yd from the grate centre, 6 yd outward of him so he faces out.
-// On each Flame Crash on the tank it leads him once, to the ring point 35 deg counterclockwise of
-// him; he stops about 30 deg on, and the tank settles outward of wherever he stopped. Near the
-// centre, as after landing, it leads him straight out instead.
+// On each Flame Crash on the tank it leads him to the ring point 35 deg counterclockwise of him,
+// once more if he stops under 25 deg on; he stops about 30 deg on, and the tank settles outward of
+// wherever he stopped. Near the centre, as after landing, it leads him straight out instead.
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup spot in front of the raid to take him at the reset. In Maiev's
@@ -2022,7 +2022,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (phaseStartTime != _phaseStartTime)
     {
         _phaseStartTime = phaseStartTime;
-        _isLeading = false;
+        _lead = IllidanTankLead::None;
     }
 
     Position spot;
@@ -2086,9 +2086,9 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             _lastFlameCrash = flameCrash->GetGUID();
             _leadSpot = GetRingPoint(
                 GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
-            _isLeading = true;
+            _lead = IllidanTankLead::Step;
         }
-        else if (!_isLeading &&
+        else if (_lead == IllidanTankLead::None &&
             illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
         {
             // After landing the tank is on the raid's side of him, so it leads him north, away
@@ -2098,25 +2098,39 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             float const leadAngle =
                 isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
             _leadSpot = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
-            _isLeading = true;
+            _lead = IllidanTankLead::Pickup;
         }
 
         // Where he stops depends on when the tank stops, so it isn't redirected while he moves.
         if (illidan->isMoving())
             return false;
 
-        if (_isLeading && bot->GetExactDist2d(_leadSpot) > ILLIDAN_SPOT_TOLERANCE)
+        bool const isLeading = _lead != IllidanTankLead::None;
+        // How far round the ring he stopped short of the lead spot; an overshoot reads near 360.
+        float const shortfall = _lead == IllidanTankLead::Step ?
+            Position::NormalizeOrientation(GetGrateAngle(_leadSpot) - GetGrateAngle(*illidan)) :
+            0.0f;
+        if (isLeading && bot->GetExactDist2d(_leadSpot) > ILLIDAN_SPOT_TOLERANCE)
         {
+            spot = _leadSpot;
+        }
+        else if (isLeading && illidan->IsNonMeleeSpellCast(false))
+        {
+            // A cast (Draw Soul often follows a Flame Crash) holds him in place; he follows the
+            // tank to the lead point once it ends, so the tank waits there for him.
+            return false;
+        }
+        else if (shortfall > ILLIDAN_RING_LEAD_ANGLE - ILLIDAN_RING_SHORT_STEP_ANGLE &&
+            shortfall < static_cast<float>(M_PI))
+        {
+            _leadSpot = GetRingPoint(
+                GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+            _lead = IllidanTankLead::StepAgain;
             spot = _leadSpot;
         }
         else
         {
-            // A cast (Draw Soul often follows a Flame Crash) holds him in place; he follows the
-            // tank to the lead point once it ends, so the tank waits there for him.
-            if (_isLeading && illidan->IsNonMeleeSpellCast(false))
-                return false;
-
-            _isLeading = false;
+            _lead = IllidanTankLead::None;
             spot = GetIllidanSettleSpot(*illidan);
         }
     }

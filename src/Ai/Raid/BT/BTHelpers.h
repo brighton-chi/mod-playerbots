@@ -522,6 +522,15 @@ enum class IllidanDpsHold : uint8
     DemonFormNoPush, // 33% or below in the form, so he leaves it above 30%; everyone
 };
 
+// The Main Tank's lead in Phases 1, 3 and 5.
+enum class IllidanTankLead : uint8
+{
+    None,
+    Pickup,    // straight out from near the grate centre
+    Step,      // on a Flame Crash
+    StepAgain, // once, when he stopped short of the step
+};
+
 struct EyeBlastDangerArea
 {
     Position start;
@@ -616,6 +625,9 @@ inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 3.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
 // runs up close behind a walking tank and stops about 30 deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
+// A cast (Draw Soul) can hold him until the tank stands at its lead spot; against a standing tank
+// he stops 9.5 yd short of it, about 13 deg on. A step under this is led once more.
+inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 25.0f * static_cast<float>(M_PI) / 180.0f;
 // While he is this close to the grate centre, as after landing, the Main Tank leads him straight
 // out along its own bearing (due north after landing) to the lead radius; he stops 22 to 28 yd
 // out.
