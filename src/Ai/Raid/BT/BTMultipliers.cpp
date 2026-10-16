@@ -85,9 +85,9 @@ bool IsHeldAtIllidanLandingStack(Action* action)
         !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
 }
 
-// A bot waiting out a Shadowfiend debuff at the run spot chases nothing, since its run there
-// stops once it arrives. In Demon Form everyone keeps to their place; melee leave theirs only to
-// reach a Shadow Demon.
+// A bot waiting out a Shadowfiend debuff at the infection position chases nothing, since its run
+// there stops once it arrives. In Demon Form everyone keeps to their place; melee leave theirs only
+// to reach a Shadow Demon.
 bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
 {
     Player* bot = botAI->GetBot();
@@ -413,7 +413,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         IsRepositionAction(bot, action);
-    // The Fel Rage target only walks him to the tank spot.
+    // The Fel Rage target only walks him to the tank position.
     bool const isFelRageTargetMove = bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) &&
         dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<BlackTemplePositionBossAction*>(action);
@@ -848,7 +848,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 // someone else on the ground; the other tanks wait at the landing stack with everyone else, and
 // keep to their Demon Form slots as melee. While he flies, the Main Tank holds the grate and the
 // assist tanks the Flames of Azzinoth, each moving only by its own action or to the Shadowfiend
-// run spot.
+// infection position.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
     Unit* illidan, IllidanPhase phase, Action* action)
 {

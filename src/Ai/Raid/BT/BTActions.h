@@ -40,7 +40,7 @@ private:
 };
 
 // Used for High Warlord Naj'entus, Teron Gorefiend and Gurtogg Bloodboil, including his Fel Rage
-// target. The bot the boss is on walks it to the spot. With _allTanks, every tank does while the
+// target. The boss's victim walks it to the position. With _allTanks, every tank does while the
 // boss is on any tank. A tank walks only while in melee range; a non-tank leads from anywhere.
 class BlackTemplePositionBossAction : public AttackAction
 {
@@ -551,7 +551,7 @@ public:
     bool Execute(Event event) override;
     bool ResetEncounterState()
     {
-        if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadSpot == Position() &&
+        if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadPosition == Position() &&
             _lead == BtHelpers::IllidanTankLead::None)
         {
             return false;
@@ -559,7 +559,7 @@ public:
 
         _phaseStartTime = 0;
         _lastFlameCrash.Clear();
-        _leadSpot = Position();
+        _leadPosition = Position();
         _lead = BtHelpers::IllidanTankLead::None;
         return true;
     }
@@ -567,7 +567,7 @@ public:
 private:
     uint32 _phaseStartTime = 0;
     ObjectGuid _lastFlameCrash;
-    Position _leadSpot;
+    Position _leadPosition;
     BtHelpers::IllidanTankLead _lead = BtHelpers::IllidanTankLead::None;
 };
 
@@ -588,7 +588,7 @@ public:
 
 private:
     bool FindTrapHunter(
-        Player const& infected, Position const& runSpot,
+        Player const& infected, Position const& infectionPosition,
         std::unordered_map<ObjectGuid, BtHelpers::IllidanInfection> const& infections,
         ObjectGuid& hunter);
 };
@@ -696,7 +696,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool FindDemonFormSlot(Unit const& illidan, Position& spot);
+    bool FindDemonFormSlot(Unit const& illidan, Position& position);
 };
 
 class IllidanStormrageReachShadowDemonAction : public MovementAction
@@ -768,14 +768,6 @@ class IllidanStormrageDestroyHazardsAction : public Action
 public:
     IllidanStormrageDestroyHazardsAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage destroy hazards") {}
-    bool Execute(Event event) override;
-};
-
-class IllidanStormrageHandleAddsCheatAction : public Action
-{
-public:
-    IllidanStormrageHandleAddsCheatAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage handle adds cheat") {}
     bool Execute(Event event) override;
 };
 

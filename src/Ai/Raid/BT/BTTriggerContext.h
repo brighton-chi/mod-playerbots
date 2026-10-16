@@ -230,8 +230,8 @@ public:
         creators["illidan stormrage ranged should reach shadow demon"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_reach_shadow_demon;
 
-        creators["illidan stormrage this expansion hates melee"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_this_expansion_hates_melee;
+        creators["illidan stormrage melee should stay away from demon form"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stay_away_from_demon_form;
 
         creators["illidan stormrage warlock should tank demon form"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_tank_demon_form;
@@ -250,9 +250,6 @@ public:
 
         creators["illidan stormrage should clear hazards between phases"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_clear_hazards_between_phases;
-
-        creators["illidan stormrage cheat"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_cheat;
     }
 
 private:
@@ -555,9 +552,9 @@ private:
     {
         return new IllidanStormrageRangedShouldReachShadowDemonTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_this_expansion_hates_melee(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_stay_away_from_demon_form(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageThisExpansionHatesMeleeTrigger(botAI);
+        return new IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger(botAI);
     }
     static Trigger* illidan_stormrage_warlock_should_tank_demon_form(PlayerbotAI* botAI)
     {
@@ -582,10 +579,6 @@ private:
     static Trigger* illidan_stormrage_should_clear_hazards_between_phases(PlayerbotAI* botAI)
     {
         return new IllidanStormrageShouldClearHazardsBetweenPhasesTrigger(botAI);
-    }
-    static Trigger* illidan_stormrage_cheat(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageCheatTrigger(botAI);
     }
 };
 

@@ -67,11 +67,13 @@ public:
 
 // High Warlord Naj'entus
 
-class HighWarlordNajentusDisableCombatFormationMoveMultiplier : public BlackTempleEncounterMultiplier
+class HighWarlordNajentusDisableCombatFormationMoveMultiplier
+    : public BlackTempleEncounterMultiplier
 {
 public:
     HighWarlordNajentusDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "high warlord naj'entus disable combat formation move") {}
+        : BlackTempleEncounterMultiplier(
+            botAI, "high warlord naj'entus disable combat formation move") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

@@ -240,7 +240,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage ranged should reach shadow demon",
         { NextAction("illidan stormrage reach shadow demon", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage this expansion hates melee",
+    triggers.push_back(new TriggerNode("illidan stormrage melee should stay away from demon form",
         { NextAction("illidan stormrage melee stay away from demon form", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage warlock should tank demon form",
@@ -260,9 +260,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("illidan stormrage should clear hazards between phases",
         { NextAction("illidan stormrage destroy hazards", ACTION_EMERGENCY + 10) }));
-
-    // triggers.push_back(new TriggerNode("illidan stormrage cheat",
-    //     { NextAction("illidan stormrage handle adds cheat", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

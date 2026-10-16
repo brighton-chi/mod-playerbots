@@ -246,9 +246,6 @@ public:
 
         creators["illidan stormrage destroy hazards"] =
             &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards;
-
-        creators["illidan stormrage handle adds cheat"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_handle_adds_cheat;
     }
 
 private:
@@ -584,10 +581,6 @@ private:
     static Action* illidan_stormrage_destroy_hazards(PlayerbotAI* botAI)
     {
         return new IllidanStormrageDestroyHazardsAction(botAI);
-    }
-    static Action* illidan_stormrage_handle_adds_cheat(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageHandleAddsCheatAction(botAI);
     }
 };
 
