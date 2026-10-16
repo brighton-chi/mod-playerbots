@@ -1018,21 +1018,25 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (isHeal)
         return IsHeldIllidanHeal(botAI, illidan, action) ? 0.0f : 1.0f;
 
-    // The Flame tanks get 6s head start on the Flames of Azzinoth.
+    // The Flame tanks get 6s head start on the Flames of Azzinoth, counted from when the tracker
+    // records the first, since a Flame is in combat with nobody for its first 2 s.
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
     {
         constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
         auto const it = illidanFlamePhaseStartTime.find(illidan->GetInstanceId());
-        bool const inWindow = it == illidanFlamePhaseStartTime.end() ||
+        bool const inWindow = it != illidanFlamePhaseStartTime.end() &&
             getMSTimeDiff(it->second, getMSTime()) < flamePhaseDpsWaitMs;
 
-        if (inWindow && AI_VALUE2(Unit*, "find target", "flame of azzinoth") &&
-            !IsFlameOfAzzinothTank(bot))
-        {
-            return GetDpsHoldValue(bot, action);
-        }
+        if (!inWindow || IsFlameOfAzzinothTank(bot))
+            return 1.0f;
 
-        return 1.0f;
+        // Only damage on the Flames is held, never damage on Shadowfiends. Attacks and dots on an
+        // attacker have their own target; other spells go on the current target.
+        bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
+            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+        Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+        bool const isOnFlame = target && target->GetEntry() == Id(BtNpcs::NPC_FLAME_OF_AZZINOTH);
+        return isOnFlame ? GetDpsHoldValue(bot, action) : 1.0f;
     }
 
     if (GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)

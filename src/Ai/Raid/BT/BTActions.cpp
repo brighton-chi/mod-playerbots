@@ -2318,8 +2318,9 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
                     MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
-        // After the first flame dies, its tank waits with other bots
-        else if (!eastFlame && westFlame)
+        // After the first flame dies, its tank waits with other bots. An unrecorded East Flame
+        // hasn't spawned yet (it comes after the West one), so its tank keeps waiting.
+        else if (!eastFlame && westFlame && eastFlameGuid.contains(bot->GetInstanceId()))
         {
             Position const& position = ILLIDAN_E_GRATE_POSITION;
             if (bot->GetExactDist2d(position) > 0.5f)
@@ -3042,42 +3043,27 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     if (phase == IllidanPhase::Flying)
     {
-        if (eastFlameGuid.find(instanceId) == eastFlameGuid.end() &&
-            westFlameGuid.find(instanceId) == westFlameGuid.end())
+        // Each Flame is recorded as it spawns, so its tank can take it at once; the West one comes
+        // about 0.7 s before the East one. The head-start hold counts from the first.
+        if (!eastFlameGuid.contains(instanceId) || !westFlameGuid.contains(instanceId))
         {
-            std::list<Creature*> creatureList;
-            constexpr float searchRadius = 50.0f;
-            illidan->GetCreatureListWithEntryInGrid(
-                creatureList, Id(BtNpcs::NPC_FLAME_OF_AZZINOTH), searchRadius);
+            std::list<Creature*> flames;
+            bot->GetCreatureListWithEntryInGrid(
+                flames, Id(BtNpcs::NPC_FLAME_OF_AZZINOTH), ILLIDAN_ADD_SEARCH_RADIUS);
 
-            std::vector<Creature*> flames;
-            for (Creature* creature : creatureList)
+            for (Creature* flame : flames)
             {
-                if (creature && creature->IsAlive())
-                    flames.push_back(creature);
-            }
+                if (!flame || !flame->IsAlive())
+                    continue;
 
-            if (flames.size() == 2)
-            {
-                float const eastDist0 =
-                    flames[0]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
-                float const eastDist1 =
-                    flames[1]->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION);
-
-                if (eastDist0 < eastDist1)
+                bool const isEast = flame->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION) <
+                    flame->GetExactDist2d(ILLIDAN_W_GLAIVE_WAITING_POSITION);
+                auto& flameGuid = isEast ? eastFlameGuid : westFlameGuid;
+                if (flameGuid.try_emplace(instanceId, flame->GetGUID()).second)
                 {
-                    eastFlameGuid[instanceId] = flames[0]->GetGUID();
-                    westFlameGuid[instanceId] = flames[1]->GetGUID();
+                    illidanFlamePhaseStartTime.try_emplace(instanceId, now);
+                    updated = true;
                 }
-                else
-                {
-                    eastFlameGuid[instanceId] = flames[1]->GetGUID();
-                    westFlameGuid[instanceId] = flames[0]->GetGUID();
-                }
-
-                illidanFlamePhaseStartTime[instanceId] = now;
-
-                updated = true;
             }
         }
     }
