@@ -1982,13 +1982,8 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    bool const isLanding = phase == IllidanPhase::Landing;
-    bool const isDemonForm = phase == IllidanPhase::Demon;
-    bool const isMaievScene = phase == IllidanPhase::None;
-    bool const isWalkIn =
-        isDemonForm && IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
-    if (!isLanding && !isDemonForm && !isMaievScene &&
-        AI_VALUE(Unit*, "current target") != illidan)
+    if (phase != IllidanPhase::Landing && phase != IllidanPhase::Demon &&
+        phase != IllidanPhase::None && AI_VALUE(Unit*, "current target") != illidan)
     {
         return Attack(illidan);
     }
@@ -2002,113 +1997,26 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     }
 
     Position position;
-    if (isLanding)
+    if (phase == IllidanPhase::Landing)
     {
         position = ILLIDAN_LANDING_TANK_POSITION;
     }
-    else if (isMaievScene)
+    else if (phase == IllidanPhase::None)
     {
         float const radius = std::max(
             0.0f,
             illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
         position = GetRingPoint(GetGrateAngle(*illidan), radius);
     }
-    else if (isDemonForm)
+    else if (phase == IllidanPhase::Demon)
     {
-        // It joins the melee on the adds until the walk-in, then drops its target, so its
-        // rotation keeps its cooldowns for the reset.
-        Unit* target = AI_VALUE(Unit*, "current target");
-        uint32 const targetEntry = target && target->IsAlive() ? target->GetEntry() : 0;
-        bool const isOnAdd = targetEntry == Id(BtNpcs::NPC_SHADOW_DEMON) ||
-            targetEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-        if (isWalkIn && (target || bot->GetVictim()))
-        {
-            bot->AttackStop();
-            context->GetValue<Unit*>("current target")->Set(nullptr);
-            bot->SetSelection(ObjectGuid());
-        }
-        else if (!isWalkIn && isOnAdd)
-        {
+        if (!FindDemonFormPosition(*illidan, position))
             return false;
-        }
-
-        DemonFormLayout const layout = GetDemonFormLayout(*illidan);
-        position = isWalkIn ? layout.mainTankPickupPosition : layout.mainTankWaitPosition;
     }
-    else if (illidan->GetVictim() != bot)
+    // The tank's own logic takes him back; the ring movement is only for when he is on it.
+    else if (illidan->GetVictim() != bot || !FindRingPosition(*illidan, phase, position))
     {
-        // The tank's own logic takes him back; the ring movement is only for when he is on it.
         return false;
-    }
-    else
-    {
-        // The newest one (GUIDs only grow), so a Flame Crash landing on an older one still counts.
-        std::list<Creature*> flameCrashes;
-        bot->GetCreatureListWithEntryInGrid(
-            flameCrashes, Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE);
-        Creature* flameCrash = nullptr;
-        for (Creature* creature : flameCrashes)
-        {
-            if (creature->IsAlive() &&
-                bot->GetExactDist2d(creature) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE &&
-                (!flameCrash || flameCrash->GetGUID() < creature->GetGUID()))
-            {
-                flameCrash = creature;
-            }
-        }
-
-        if (flameCrash && _lastFlameCrash < flameCrash->GetGUID())
-        {
-            _lastFlameCrash = flameCrash->GetGUID();
-            _leadPosition = GetRingPoint(
-                GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
-            _lead = IllidanTankLead::Step;
-        }
-        else if (_lead == IllidanTankLead::None &&
-            illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
-        {
-            // After landing the tank is on the raid's side of him, so it leads him north, away
-            // from them.
-            bool const isAfterLanding =
-                GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Landing;
-            float const leadAngle =
-                isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
-            _leadPosition = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
-            _lead = IllidanTankLead::Pickup;
-        }
-
-        // Where he stops depends on when the tank stops, so it isn't redirected while he moves.
-        if (illidan->isMoving())
-            return false;
-
-        bool const isLeading = _lead != IllidanTankLead::None;
-        // How far round the ring he stopped short of the lead position; an overshoot reads ~360.
-        float const shortfall = _lead == IllidanTankLead::Step ?
-            Position::NormalizeOrientation(GetGrateAngle(_leadPosition) - GetGrateAngle(*illidan)) :
-            0.0f;
-        if (isLeading && bot->GetExactDist2d(_leadPosition) > ILLIDAN_POSITION_TOLERANCE)
-        {
-            position = _leadPosition;
-        }
-        else if (isLeading && illidan->IsNonMeleeSpellCast(false))
-        {
-            // A cast (Draw Soul often follows a Flame Crash) holds him in place; he follows the
-            // tank to the lead point once it ends, so the tank waits there for him.
-            return false;
-        }
-        else if (shortfall > ILLIDAN_RING_LEAD_ANGLE - ILLIDAN_RING_SHORT_STEP_ANGLE &&
-            shortfall < static_cast<float>(M_PI))
-        {
-            _leadPosition = GetRingPoint(
-                GetGrateAngle(*illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
-            _lead = IllidanTankLead::StepAgain;
-            position = _leadPosition;
-        }
-        else
-        {
-            _lead = IllidanTankLead::None;
-            position = GetIllidanSettlePosition(*illidan);
-        }
     }
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
@@ -2122,6 +2030,110 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+// It joins the melee on the adds until the walk-in, then drops its target, so its rotation keeps
+// its cooldowns for the reset.
+bool IllidanStormrageMainTankRepositionBossAction::FindDemonFormPosition(
+    Unit const& illidan, Position& position)
+{
+    bool const isWalkIn = IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
+    Unit* target = AI_VALUE(Unit*, "current target");
+    uint32 const targetEntry = target && target->IsAlive() ? target->GetEntry() : 0;
+    bool const isOnAdd = targetEntry == Id(BtNpcs::NPC_SHADOW_DEMON) ||
+        targetEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
+    if (isWalkIn && (target || bot->GetVictim()))
+    {
+        bot->AttackStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+    }
+    else if (!isWalkIn && isOnAdd)
+    {
+        return false;
+    }
+
+    DemonFormLayout const layout = GetDemonFormLayout(illidan);
+    position = isWalkIn ? layout.mainTankPickupPosition : layout.mainTankWaitPosition;
+    return true;
+}
+
+bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
+    Unit const& illidan, IllidanPhase phase, Position& position)
+{
+    StartRingLead(illidan, phase);
+
+    // Where he stops depends on when the tank stops, so it isn't redirected while he moves.
+    if (illidan.isMoving())
+        return false;
+
+    bool const isLeading = _lead != IllidanTankLead::None;
+    // How far round the ring he stopped short of the lead position; an overshoot reads ~360.
+    float const shortfall = _lead == IllidanTankLead::Step ?
+        Position::NormalizeOrientation(GetGrateAngle(_leadPosition) - GetGrateAngle(illidan)) :
+        0.0f;
+    if (isLeading && bot->GetExactDist2d(_leadPosition) > ILLIDAN_POSITION_TOLERANCE)
+    {
+        position = _leadPosition;
+    }
+    else if (isLeading && illidan.IsNonMeleeSpellCast(false))
+    {
+        // A cast (Draw Soul often follows a Flame Crash) holds him in place; he follows the tank
+        // to the lead point once it ends, so the tank waits there for him.
+        return false;
+    }
+    else if (shortfall > ILLIDAN_RING_LEAD_ANGLE - ILLIDAN_RING_SHORT_STEP_ANGLE &&
+        shortfall < static_cast<float>(M_PI))
+    {
+        _leadPosition = GetRingPoint(
+            GetGrateAngle(illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+        _lead = IllidanTankLead::StepAgain;
+        position = _leadPosition;
+    }
+    else
+    {
+        _lead = IllidanTankLead::None;
+        position = GetIllidanSettlePosition(illidan);
+    }
+
+    return true;
+}
+
+void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
+    Unit const& illidan, IllidanPhase phase)
+{
+    // The newest one (GUIDs only grow), so a Flame Crash landing on an older one still counts.
+    std::list<Creature*> flameCrashes;
+    bot->GetCreatureListWithEntryInGrid(
+        flameCrashes, Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE);
+    Creature* flameCrash = nullptr;
+    for (Creature* creature : flameCrashes)
+    {
+        if (creature->IsAlive() &&
+            bot->GetExactDist2d(creature) <= ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE &&
+            (!flameCrash || flameCrash->GetGUID() < creature->GetGUID()))
+        {
+            flameCrash = creature;
+        }
+    }
+
+    if (flameCrash && _lastFlameCrash < flameCrash->GetGUID())
+    {
+        _lastFlameCrash = flameCrash->GetGUID();
+        _leadPosition = GetRingPoint(
+            GetGrateAngle(illidan) + ILLIDAN_RING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+        _lead = IllidanTankLead::Step;
+    }
+    else if (_lead == IllidanTankLead::None &&
+        illidan.GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
+    {
+        // After landing the tank is on the raid's side of him, so it leads him north, away from
+        // them.
+        bool const isAfterLanding = GetIllidanPhaseBefore(illidan, phase) == IllidanPhase::Landing;
+        float const leadAngle = isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
+        _leadPosition = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
+        _lead = IllidanTankLead::Pickup;
+    }
 }
 
 // A trap hunter on duty, infected or not, drops Frost Trap on arrival.
