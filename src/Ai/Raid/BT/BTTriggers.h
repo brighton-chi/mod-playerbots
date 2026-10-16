@@ -685,6 +685,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidanStormrageRangedShouldReachShadowDemonTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageRangedShouldReachShadowDemonTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage ranged should reach shadow demon") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidanStormrageThisExpansionHatesMeleeTrigger : public BlackTempleEncounterTrigger
 {
 public:

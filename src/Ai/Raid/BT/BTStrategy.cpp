@@ -237,6 +237,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage ranged should spread",
         { NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("illidan stormrage ranged should reach shadow demon",
+        { NextAction("illidan stormrage reach shadow demon", ACTION_RAID + 2) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage this expansion hates melee",
         { NextAction("illidan stormrage melee stay away from demon form", ACTION_RAID + 2) }));
 
@@ -317,6 +320,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankSoulshatterMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageDisableAoeOnShadowDemonsMultiplier(botAI));
 }
 
 namespace

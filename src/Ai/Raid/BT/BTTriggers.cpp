@@ -881,8 +881,30 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (phase == IllidanPhase::Demon && IsIllidanWarlockTank(botAI))
         return false;
 
+    // While a Demon walks to the warlock tank, ranged DPS may leave their slots to reach it.
+    if (phase == IllidanPhase::Demon && !PlayerbotAI::IsHeal(bot) &&
+        GetShadowDemonWalkingToWarlockTank(botAI))
+    {
+        return false;
+    }
+
     return phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev;
+}
+
+// Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
+// wipes the raid. Healers stay to heal.
+bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsHeal(bot) || HasParasiticShadowfiend(bot))
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || IsIllidanWarlockTank(botAI))
+        return false;
+
+    Unit* demon = GetShadowDemonWalkingToWarlockTank(botAI);
+    return demon && !bot->IsWithinCombatRange(demon, botAI->GetRange("spell"));
 }
 
 // Melee and tanks take their Demon Form slots; the Main Tank has its own spots.

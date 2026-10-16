@@ -699,6 +699,14 @@ private:
     bool FindDemonFormSlot(Unit const& illidan, Position& spot);
 };
 
+class IllidanStormrageReachShadowDemonAction : public MovementAction
+{
+public:
+    IllidanStormrageReachShadowDemonAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage reach shadow demon") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormrageMeleeStayAwayFromDemonFormAction : public MovementAction
 {
 public:

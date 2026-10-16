@@ -1063,3 +1063,25 @@ float IllidanStormrageDisableTankSoulshatterMultiplier::GetValueInEncounter(Acti
 
     return IsIllidanWarlockTank(botAI) ? 0.0f : 1.0f;
 }
+
+// While Shadow Demons are up, the only area damage is the warlocks' Seed of Corruption on them,
+// which has its own action.
+float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Action* action)
+{
+    // Heals report AoE threat too.
+    if (dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    bool const isAoe = IsAoeThreatAction(bot, action) ||
+        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
+    if (!isAoe)
+        return 1.0f;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return 1.0f;
+
+    return context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().empty() ?
+        1.0f : 0.0f;
+}

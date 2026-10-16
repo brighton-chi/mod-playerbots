@@ -401,4 +401,15 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class IllidanStormrageDisableAoeOnShadowDemonsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageDisableAoeOnShadowDemonsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage disable aoe on shadow demons") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif

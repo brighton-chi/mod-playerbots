@@ -2190,12 +2190,35 @@ Unit* GetShadowDemonToAttack(PlayerbotAI* botAI, Unit const& from)
     return best;
 }
 
+Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI)
+{
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    ObjectGuid const warlockTank =
+        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get();
+    if (warlockTank.IsEmpty())
+        return nullptr;
+
+    auto const& shadowDemons =
+        context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
+    for (ShadowDemon const& shadowDemon : shadowDemons)
+    {
+        if (shadowDemon.target != warlockTank)
+            continue;
+
+        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* target = botAI->GetUnit(shadowDemon.target);
+        if (demon && demon->IsAlive() && target && target->IsAlive())
+            return demon;
+    }
+
+    return nullptr;
+}
+
 Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from)
 {
     // Centre distances, as the spells measure. Demons spawn 5 yd from him and walk out toward the
     // raid, so melee running in from their slots meet one well outside Aura of Dread's 15 yd even
-    // if they leave at 8.
-    // constexpr float illidanClearance = 8.0f;
+    // if they leave immediately.
     constexpr float shadowBlastClearance = 23.0f;
 
     Unit* victim = illidan.GetVictim();

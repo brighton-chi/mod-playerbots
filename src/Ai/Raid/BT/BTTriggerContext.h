@@ -227,6 +227,9 @@ public:
         creators["illidan stormrage ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_spread;
 
+        creators["illidan stormrage ranged should reach shadow demon"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_reach_shadow_demon;
+
         creators["illidan stormrage this expansion hates melee"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_this_expansion_hates_melee;
 
@@ -547,6 +550,10 @@ private:
     static Trigger* illidan_stormrage_ranged_should_spread(PlayerbotAI* botAI)
     {
         return new IllidanStormrageRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_ranged_should_reach_shadow_demon(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageRangedShouldReachShadowDemonTrigger(botAI);
     }
     static Trigger* illidan_stormrage_this_expansion_hates_melee(PlayerbotAI* botAI)
     {

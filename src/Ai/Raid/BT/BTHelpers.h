@@ -801,6 +801,7 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
 // For ranged and healers: a Demon walking to the warlock tank first, then the one nearest its
 // target, ties going to the one nearest `from`; idle Demons last.
 Unit* GetShadowDemonToAttack(PlayerbotAI* botAI, Unit const& from);
+Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI);
 // For melee: the Demon nearest `from` that has walked out from him and is clear of Shadow Blast
 // round his victim, one still walking to a target before an idle one.
 Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const& from);

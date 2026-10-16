@@ -2714,6 +2714,48 @@ bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(Unit const& illidan
     return true;
 }
 
+// Short steps toward the Demon, so the bot stops once in reach, never into Aura of Dread or near
+// Shadow Blast round his victim. Disperse ranged brings it back once the Demon is dead.
+bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
+{
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    Unit* demon = GetShadowDemonWalkingToWarlockTank(botAI);
+    if (!demon)
+        return false;
+
+    constexpr float maxStep = 3.5f;
+    constexpr float reachMargin = 0.5f;
+    constexpr float auraOfDreadClearance = 17.0f;
+    constexpr float shadowBlastClearance = 22.0f;
+
+    float const range = botAI->GetRange("spell");
+    if (bot->IsWithinCombatRange(demon, range))
+        return false;
+
+    float const reach = range + bot->GetCombatReach() + demon->GetCombatReach();
+    float const distance = bot->GetExactDist2d(demon);
+
+    float const step = std::min(maxStep, std::max(distance - reach, 0.0f) + reachMargin);
+    float const x =
+        bot->GetPositionX() + (demon->GetPositionX() - bot->GetPositionX()) / distance * step;
+    float const y =
+        bot->GetPositionY() + (demon->GetPositionY() - bot->GetPositionY()) / distance * step;
+
+    Unit* victim = illidan->GetVictim();
+    if (illidan->GetExactDist2d(x, y) < auraOfDreadClearance ||
+        (victim && victim->GetExactDist2d(x, y) < shadowBlastClearance))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        BT_MAP_ID, x, y, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
+}
+
 // Melee and tanks wait in their Demon Form slots, facing him, and leave them only for a Shadow
 // Demon.
 bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)

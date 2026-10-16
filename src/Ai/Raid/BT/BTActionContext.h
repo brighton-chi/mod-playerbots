@@ -223,6 +223,9 @@ public:
         creators["illidan stormrage disperse ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
 
+        creators["illidan stormrage reach shadow demon"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_reach_shadow_demon;
+
         creators["illidan stormrage melee stay away from demon form"] =
             &RaidBlackTempleActionContext::illidan_stormrage_melee_stay_away_from_demon_form;
 
@@ -549,6 +552,10 @@ private:
     static Action* illidan_stormrage_disperse_ranged(PlayerbotAI* botAI)
     {
         return new IllidanStormrageDisperseRangedAction(botAI);
+    }
+    static Action* illidan_stormrage_reach_shadow_demon(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageReachShadowDemonAction(botAI);
     }
     static Action* illidan_stormrage_melee_stay_away_from_demon_form(PlayerbotAI* botAI)
     {
