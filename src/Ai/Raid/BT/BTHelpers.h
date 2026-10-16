@@ -517,7 +517,7 @@ enum class IllidanDpsHold : uint8
                      // everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
     DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
-    DemonFormEnd,    // the last 3 s before the reset; everyone but the Main Tank
+    DemonFormEnd,    // the last 3 s before the reset; everyone
     DemonFormNoPush, // 33% or below in the form, so he leaves it above 30%; everyone
 };
 
@@ -535,7 +535,6 @@ struct DemonFormLayout
 {
     Position warlockSpot;
     Position mainTankWaitSpot;
-    Position walkInWaypoint;
     Position pickupSpot;
     std::vector<Position> rangedSlots;
     std::vector<Position> healerSlots;
@@ -589,9 +588,9 @@ inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
-// Everyone but the Main Tank stops damaging him this long before the end.
+// Everyone stops damaging him this long before the end.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
-// The Main Tank's walk-in, about 60 yd, starts this long before the end. No Flame Burst comes in
+// The Main Tank's walk-in, about 44 yd, starts this long before the end. No Flame Burst comes in
 // the last 14 s.
 inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
 // Shadow Demons appear this long after the transform starts, 30 s after he turns aggressive.
@@ -641,12 +640,14 @@ inline constexpr float ILLIDAN_WARLOCK_SPOT_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_WARLOCK_SPOT_ANGLE = 75.0f * static_cast<float>(M_PI) / 180.0f;
 // The Main Tank waits beside the melee, on the first melee row one slot past a group of seven
 // (5 melee DPS and 2 tanks) on the side away from the warlock tank, so the raid can kill a Shadow
-// Demon walking to it. It walks in by a point outside Aura of Dread and clear of Shadow Blast
-// round the warlock tank.
+// Demon walking to it.
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
-inline constexpr float ILLIDAN_WALK_IN_WAYPOINT_DISTANCE = 18.0f;
-inline constexpr float ILLIDAN_WALK_IN_WAYPOINT_ANGLE = -90.0f * static_cast<float>(M_PI) / 180.0f;
+// At the end it walks straight to the pickup spot in front of the raid, just outside Aura of Dread
+// and 22.5 yd from the warlock tank (Shadow Blast 20). He keeps the warlock tank as his victim
+// through the reset and runs at it, so the Main Tank takes him with a ranged opener.
+inline constexpr float ILLIDAN_PICKUP_SPOT_DISTANCE = 17.0f;
+inline constexpr float ILLIDAN_PICKUP_SPOT_ANGLE = 30.0f * static_cast<float>(M_PI) / 180.0f;
 
 // World trigger 22515.
 inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };

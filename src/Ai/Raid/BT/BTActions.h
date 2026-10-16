@@ -552,7 +552,7 @@ public:
     bool ResetEncounterState()
     {
         if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadSpot == Position() &&
-            !_isLeading && !_hasPassedWalkInWaypoint)
+            !_isLeading)
         {
             return false;
         }
@@ -561,16 +561,16 @@ public:
         _lastFlameCrash.Clear();
         _leadSpot = Position();
         _isLeading = false;
-        _hasPassedWalkInWaypoint = false;
         return true;
     }
 
 private:
+    bool CastPickupOpener(Unit* illidan);
+
     uint32 _phaseStartTime = 0;
     ObjectGuid _lastFlameCrash;
     Position _leadSpot;
     bool _isLeading = false;
-    bool _hasPassedWalkInWaypoint = false;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction

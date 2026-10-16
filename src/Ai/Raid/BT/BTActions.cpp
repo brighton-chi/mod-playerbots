@@ -1987,8 +1987,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // him; he stops about 30 deg on, and the tank settles outward of wherever he stopped. Near the
 // centre, as after landing, it leads him straight out instead.
 // While he lands the tank waits north of the landing point, so Phase 3 starts due north. In Demon
-// Form it waits beside the melee, then 10 s before the end walks round Aura of Dread to 6 yd
-// outward of him, attacks him for the last 3 s and takes him at the reset.
+// Form it waits beside the melee, then 10 s before the end walks to the pickup spot in front of
+// the raid and takes him at the reset with a ranged opener.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2000,9 +2000,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     bool const isDemonForm = phase == IllidanPhase::Demon;
     bool const isWalkIn =
         isDemonForm && IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
-    bool const shouldAttack = isDemonForm ?
-        isWalkIn && GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None : !isLanding;
-    if (shouldAttack && AI_VALUE(Unit*, "current target") != illidan)
+    if (!isLanding && !isDemonForm && AI_VALUE(Unit*, "current target") != illidan)
         return Attack(illidan);
 
     auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
@@ -2021,27 +2019,12 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     else if (isDemonForm)
     {
         DemonFormLayout const layout = GetDemonFormLayout(*illidan);
-        if (!isWalkIn)
-        {
-            _hasPassedWalkInWaypoint = false;
-            spot = layout.mainTankWaitSpot;
-        }
-        else if (!_hasPassedWalkInWaypoint &&
-            bot->GetExactDist2d(layout.walkInWaypoint) > ILLIDAN_SPOT_TOLERANCE)
-        {
-            spot = layout.walkInWaypoint;
-        }
-        else
-        {
-            _hasPassedWalkInWaypoint = true;
-            spot = layout.pickupSpot;
-        }
+        spot = isWalkIn ? layout.pickupSpot : layout.mainTankWaitSpot;
     }
     else if (illidan->GetVictim() != bot)
     {
-        // A Paladin's rotation casts Avenger's Shield only with two attackers within 8 yd.
-        if (bot->getClass() == CLASS_PALADIN && botAI->CanCastSpell("avenger's shield", illidan))
-            return botAI->CastSpell("avenger's shield", illidan);
+        if (CastPickupOpener(illidan))
+            return true;
 
         // At a phase start the tank's opener is on its way; later it walks in to take him back.
         if (GetIllidanHoldWindow(illidan) == IllidanDpsHold::AfterReset)
@@ -2106,6 +2089,43 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+// A Paladin's rotation casts Avenger's Shield only with two attackers within 8 yd, so it opens
+// with it whenever he isn't on the tank. The other classes open from range only in the reset hold
+// after Demon Form, when the tank waits off his path: Charge (every Protection warrior has
+// Warbringer, so it works in combat), Faerie Fire (Feral) and Icy Touch.
+bool IllidanStormrageMainTankRepositionBossAction::CastPickupOpener(Unit* illidan)
+{
+    char const* opener = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_PALADIN:
+            opener = "avenger's shield";
+            break;
+        case CLASS_WARRIOR:
+            opener = "charge";
+            break;
+        case CLASS_DRUID:
+            opener = "faerie fire (feral)";
+            break;
+        case CLASS_DEATH_KNIGHT:
+            opener = "icy touch";
+            break;
+        default:
+            return false;
+    }
+
+    if (bot->getClass() != CLASS_PALADIN)
+    {
+        auto const it = illidanPreviousPhase.find(illidan->GetInstanceId());
+        bool const isAfterDemonForm =
+            it != illidanPreviousPhase.end() && it->second == IllidanPhase::Demon;
+        if (!isAfterDemonForm || GetIllidanHoldWindow(illidan) != IllidanDpsHold::AfterReset)
+            return false;
+    }
+
+    return botAI->CanCastSpell(opener, illidan) && botAI->CastSpell(opener, illidan);
 }
 
 // A trap hunter on duty, infected or not, drops Frost Trap on arrival.

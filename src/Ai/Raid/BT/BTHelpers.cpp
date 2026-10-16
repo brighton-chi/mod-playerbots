@@ -1516,7 +1516,7 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
         return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ?
             window : IllidanDpsHold::None;
     }
-    else if (window == IllidanDpsHold::AfterReset || window == IllidanDpsHold::DemonFormEnd)
+    else if (window == IllidanDpsHold::AfterReset)
     {
         return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ?
             IllidanDpsHold::None : window;
@@ -1588,10 +1588,8 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         illidan, inwardAngle, ILLIDAN_WARLOCK_SPOT_DISTANCE, ILLIDAN_WARLOCK_SPOT_ANGLE);
     layout.mainTankWaitSpot = GetDemonFormPoint(
         illidan, inwardAngle, ILLIDAN_MAIN_TANK_WAIT_DISTANCE, ILLIDAN_MAIN_TANK_WAIT_ANGLE);
-    layout.walkInWaypoint = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_WALK_IN_WAYPOINT_DISTANCE, ILLIDAN_WALK_IN_WAYPOINT_ANGLE);
     layout.pickupSpot = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_TANK_OFFSET, static_cast<float>(M_PI));
+        illidan, inwardAngle, ILLIDAN_PICKUP_SPOT_DISTANCE, ILLIDAN_PICKUP_SPOT_ANGLE);
 
     auto const fromWarlockSide =
         [](std::pair<float, Position> const& a, std::pair<float, Position> const& b)
@@ -2111,7 +2109,7 @@ Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const
     // Centre distances, as the spells measure. Demons spawn 5 yd from him and walk out toward the
     // raid, so melee running in from their slots meet one well outside Aura of Dread's 15 yd even
     // if they leave at 8.
-    constexpr float illidanClearance = 8.0f;
+    // constexpr float illidanClearance = 8.0f;
     constexpr float shadowBlastClearance = 23.0f;
 
     Unit* victim = illidan.GetVictim();
@@ -2123,7 +2121,7 @@ Unit* GetShadowDemonForMelee(PlayerbotAI* botAI, Unit const& illidan, Unit const
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
         if (!demon || !demon->IsAlive() ||
-            demon->GetExactDist2d(&illidan) <= illidanClearance ||
+            // demon->GetExactDist2d(&illidan) <= illidanClearance ||
             (victim && demon->GetExactDist2d(victim) <= shadowBlastClearance))
         {
             continue;
