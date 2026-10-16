@@ -100,6 +100,7 @@ enum class BtSpells : uint32
     SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
     SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
     SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
+    SPELL_SHADOW_PRISON             = 40647, // on every player in Maiev's arrival, 30 s
 
     // Druid
     SPELL_TREE_OF_LIFE              = 33891,
@@ -609,6 +610,9 @@ inline constexpr int32 ILLIDAN_FROST_TRAP_SLOW_MS = 5 * IN_MILLISECONDS;
 // faces out and the raid stands inside.
 inline constexpr float ILLIDAN_RING_RADIUS = 25.0f;
 inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
+// Once free of Shadow Prison, for the 2.83 s before he wakes, the Main Tank stands this far
+// inward of him: between him and the raid, and nearer him than the melee.
+inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 3.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
 // runs up close behind a walking tank and stops about 30 deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;

@@ -605,11 +605,12 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
-        phase == IllidanPhase::Dying)
-    {
+    if (phase == IllidanPhase::Flying || phase == IllidanPhase::Dying)
         return false;
-    }
+
+    // In Maiev's arrival, only once the tank is out of Shadow Prison.
+    if (phase == IllidanPhase::None && bot->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON)))
+        return false;
 
     return PlayerbotAI::IsMainTank(bot);
 }

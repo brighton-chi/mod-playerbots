@@ -1989,7 +1989,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup spot in front of the raid and takes him at the reset with a ranged
-// opener.
+// opener. In Maiev's arrival it stands just inward of him once out of Shadow Prison; he wakes
+// with no threat reset, and the settle then takes it round him to outward.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1999,10 +2000,14 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const isLanding = phase == IllidanPhase::Landing;
     bool const isDemonForm = phase == IllidanPhase::Demon;
+    bool const isMaievScene = phase == IllidanPhase::None;
     bool const isWalkIn =
         isDemonForm && IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
-    if (!isLanding && !isDemonForm && AI_VALUE(Unit*, "current target") != illidan)
+    if (!isLanding && !isDemonForm && !isMaievScene &&
+        AI_VALUE(Unit*, "current target") != illidan)
+    {
         return Attack(illidan);
+    }
 
     auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
     uint32 const phaseStartTime = it != illidanPhaseStartTime.end() ? it->second : 0;
@@ -2016,6 +2021,13 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (isLanding)
     {
         spot = ILLIDAN_LANDING_TANK_POSITION;
+    }
+    else if (isMaievScene)
+    {
+        float const radius = std::max(
+            0.0f,
+            illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
+        spot = GetRingPoint(GetGrateAngle(*illidan), radius);
     }
     else if (isDemonForm)
     {

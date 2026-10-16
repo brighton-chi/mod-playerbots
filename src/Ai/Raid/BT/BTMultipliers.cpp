@@ -113,6 +113,30 @@ bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
     return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
+// Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank
+// that should have him. Through the transform he is stunned and takes none, and in Maiev's
+// arrival nobody takes damage under Shadow Prison, while a heal in the gap before he wakes
+// reaches him.
+bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
+{
+    if (!dynamic_cast<CastHealingSpellAction*>(action))
+        return false;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::None)
+        return true;
+
+    if (phase == IllidanPhase::Flying || GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)
+        return false;
+
+    if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
+        return false;
+
+    Player* tank = phase == IllidanPhase::Demon ?
+        GetIllidanWarlockTank(botAI) : GetGroupMainTank(botAI->GetBot());
+    return !tank || illidan->GetThreatMgr().GetLastVictim() != tank;
+}
+
 // Summons that fight on their own, unlike pets, which the strategy can set passive.
 bool IsGuardianSummon(Player* bot, Action* action)
 {
@@ -972,8 +996,10 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
 // still switch a bot from him to an add.
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action) ||
-        dynamic_cast<IllidanStormrageDpsPrioritizeAddsAction*>(action))
+    bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
+    if (!isHeal &&
+        (!IsDpsHoldCandidate(bot, action) ||
+         dynamic_cast<IllidanStormrageDpsPrioritizeAddsAction*>(action)))
     {
         return 1.0f;
     }
@@ -981,6 +1007,9 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return 1.0f;
+
+    if (isHeal)
+        return IsHeldIllidanHeal(botAI, illidan, action) ? 0.0f : 1.0f;
 
     // The Flame tanks get 6s head start on the Flames of Azzinoth.
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
