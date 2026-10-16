@@ -809,9 +809,9 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     return GetNonTankMovementValue(phase, action);
 }
 
-// Tanks take their targets from their own actions or dps prioritize adds, except the assist tanks
-// while he lands. Ranged DPS, melee in Phases 1, 3 and 5, and everyone in Demon Form take theirs
-// from dps prioritize adds.
+// Tanks take their targets from their own actions or assign target priority, except the assist
+// tanks while he lands. Ranged DPS, melee in Phases 1, 3 and 5, and everyone in Demon Form take
+// theirs from assign target priority.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
     IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist)
 {
@@ -1006,7 +1006,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
     if (!isHeal &&
         (!IsDpsHoldCandidate(bot, action) ||
-         dynamic_cast<IllidanStormrageDpsPrioritizeAddsAction*>(action)))
+         dynamic_cast<IllidanStormrageAssignTargetPriorityAction*>(action)))
     {
         return 1.0f;
     }

@@ -2836,53 +2836,88 @@ Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
     return nullptr;
 }
 
-bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
+bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
 
-    std::vector<Unit*> targets;
+    // Heals outrank this, so a healer keeps its Demon until it dies rather than losing heal ticks
+    // to target switches.
+    if (phase == IllidanPhase::Demon && PlayerbotAI::IsHeal(bot) && currentTarget &&
+        currentTarget->IsAlive() && currentTarget->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
+    {
+        return false;
+    }
 
-    // Demon Form: Shadow Demons first for everyone, healers included, but a nearly dead
-    // Shadowfiend in a melee bot's reach before them; ranged also Shadowfiends; then him, except
-    // for melee and tanks, who never take him in the form.
+    Unit* target = nullptr;
+    for (Unit* candidate : GetTargetsInPriorityOrder(illidan, phase))
+    {
+        if (candidate && candidate->IsAlive())
+        {
+            target = candidate;
+            break;
+        }
+    }
+
+    if (!target)
+    {
+        // Melee in Demon Form with nothing to hit drop their target, so they stay off him and off
+        // the Demon walking to the warlock tank.
+        if (phase != IllidanPhase::Demon || PlayerbotAI::IsHeal(bot) ||
+            !PlayerbotAI::IsMelee(bot) || (!currentTarget && !bot->GetVictim()))
+        {
+            return false;
+        }
+
+        bot->AttackStop();
+        context->GetValue<Unit*>("current target")->Set(nullptr);
+        bot->SetSelection(ObjectGuid());
+        return true;
+    }
+
+    if (target == currentTarget)
+        return false;
+
+    // Attack() starts the swing, which a hold can't stop, so in a hold melee only take him as
+    // target and walk in; the melee action starts the swing once the hold ends.
+    if (target == illidan && !PlayerbotAI::IsRanged(bot) &&
+        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+    {
+        context->GetValue<Unit*>("current target")->Set(illidan);
+        bot->SetSelection(illidan->GetGUID());
+        botAI->ChangeEngine(BOT_STATE_COMBAT);
+        return true;
+    }
+
+    return Attack(target);
+}
+
+// Demon Form: Shadow Demons first for everyone, healers included, but a nearly dead Shadowfiend in
+// a melee bot's reach before them; ranged also Shadowfiends; then him, except for melee and tanks,
+// who never take him in the form.
+std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPriorityOrder(
+    Unit* illidan, IllidanPhase phase)
+{
+    bool const isGrounded = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev;
+
     if (phase == IllidanPhase::Demon)
     {
         if (PlayerbotAI::IsHeal(bot))
         {
-            // Heals outrank this, so a healer keeps its Demon until it dies rather than losing
-            // heal ticks to target switches.
-            Unit* target = AI_VALUE(Unit*, "current target");
-            if (target && target->IsAlive() && target->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
-                return false;
-
-            targets = { GetShadowDemonForRangedToAttack(botAI, *bot) };
+            return { GetShadowDemonForRangedToAttack(botAI, *bot) };
         }
         else if (IsIllidanWarlockTank(botAI))
         {
-            targets = { GetShadowDemonForRangedToAttack(botAI, *bot), illidan };
+            return { GetShadowDemonForRangedToAttack(botAI, *bot), illidan };
         }
         else if (PlayerbotAI::IsMelee(bot))
         {
-            Unit* shadowDemon = GetShadowDemonForMeleeToAttack(botAI, *bot);
-            Unit* shadowfiend = FindShadowfiendForMelee();
-            // With nothing to hit, the target goes, so the bot stays off him and off the Demon
-            // walking to the warlock tank.
-            if (!shadowDemon && !shadowfiend)
-            {
-                if (!AI_VALUE(Unit*, "current target") && !bot->GetVictim())
-                    return false;
-
-                bot->AttackStop();
-                context->GetValue<Unit*>("current target")->Set(nullptr);
-                bot->SetSelection(ObjectGuid());
-                return true;
-            }
-
-            targets = { shadowDemon, shadowfiend };
+            return { GetShadowDemonForMeleeToAttack(botAI, *bot), FindShadowfiendForMelee() };
         }
         else
         {
@@ -2892,7 +2927,7 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
             float const distance = shadowfiend ? bot->GetDistance(shadowfiend) : 0.0f;
             bool const isShadowfiendInReach =
                 distance > shadowfiendMinDistance && distance <= shadowfiendMaxDistance;
-            targets = {
+            return {
                 GetShadowDemonForRangedToAttack(botAI, *bot),
                 isShadowfiendInReach ? shadowfiend : nullptr, illidan,
             };
@@ -2900,17 +2935,16 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
     }
     else if (PlayerbotAI::IsRanged(bot))
     {
-        if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-            phase == IllidanPhase::Maiev)
+        if (isGrounded)
         {
             constexpr float searchRadius = 35.0f;
             Unit* shadowfiend = bot->FindNearestCreature(
                 Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
-                targets = { shadowfiend };
+                return { shadowfiend };
             else
-                targets = { illidan };
+                return { illidan };
         }
         else if (phase == IllidanPhase::Flying)
         {
@@ -2921,54 +2955,28 @@ bool IllidanStormrageDpsPrioritizeAddsAction::Execute(Event /*event*/)
 
             if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
             {
-                targets = { shadowfiend };
+                return { shadowfiend };
             }
             else
             {
                 auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-                targets = { eastFlame, westFlame };
+                return { eastFlame, westFlame };
             }
         }
     }
     // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in
     // their reach.
-    else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev)
+    else if (isGrounded)
     {
-        Unit* shadowfiend = FindShadowfiendForMelee();
-        // Attack() starts the swing, which a hold can't stop, so in a hold they only take him as
-        // target and walk in; the melee action starts the swing once the hold ends.
-        if (!shadowfiend && GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
-        {
-            if (AI_VALUE(Unit*, "current target") == illidan)
-                return false;
-
-            context->GetValue<Unit*>("current target")->Set(illidan);
-            bot->SetSelection(illidan->GetGUID());
-            botAI->ChangeEngine(BOT_STATE_COMBAT);
-            return true;
-        }
-
-        targets = { shadowfiend, illidan };
+        return { FindShadowfiendForMelee(), illidan };
     }
 
-    for (Unit* candidate : targets)
-    {
-        if (candidate && candidate->IsAlive())
-        {
-            if (AI_VALUE(Unit*, "current target") != candidate)
-                return Attack(candidate);
-
-            return false;
-        }
-    }
-
-    return false;
+    return {};
 }
 
 // Strict, since hitting a Shadowfiend draws it and its first hit infects: only the nearest one,
 // only already in melee range and only nearly dead.
-Unit* IllidanStormrageDpsPrioritizeAddsAction::FindShadowfiendForMelee()
+Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForMelee()
 {
     Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
     if (!shadowfiend || shadowfiend->GetHealthPct() >= ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT)

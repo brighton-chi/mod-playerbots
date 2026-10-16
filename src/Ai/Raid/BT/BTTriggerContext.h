@@ -239,8 +239,8 @@ public:
         creators["illidan stormrage warlock should seed shadow demons"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_seed_shadow_demons;
 
-        creators["illidan stormrage should assign dps priority"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_dps_priority;
+        creators["illidan stormrage should assign target priority"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_target_priority;
 
         creators["illidan stormrage maiev placed cage trap"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_cage_trap;
@@ -564,9 +564,9 @@ private:
     {
         return new IllidanStormrageWarlockShouldSeedShadowDemonsTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_should_assign_dps_priority(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_assign_target_priority(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageShouldAssignDpsPriorityTrigger(botAI);
+        return new IllidanStormrageShouldAssignTargetPriorityTrigger(botAI);
     }
     static Trigger* illidan_stormrage_maiev_placed_cage_trap(PlayerbotAI* botAI)
     {

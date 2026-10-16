@@ -249,8 +249,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage warlock should seed shadow demons",
         { NextAction("illidan stormrage seed shadow demons", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage should assign dps priority",
-        { NextAction("illidan stormrage dps prioritize adds", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("illidan stormrage should assign target priority",
+        { NextAction("illidan stormrage assign target priority", ACTION_EMERGENCY + 1) }));
 
     // triggers.push_back(new TriggerNode("illidan stormrage maiev placed cage trap",
     //     { NextAction("illidan stormrage use cage trap", ACTION_EMERGENCY + 1) }));
@@ -359,7 +359,7 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 }
 
 // Tanks and melee never pick Illidan's Shadowfiends themselves; ranged and pets kill them, and
-// melee only finish one in their reach, from dps prioritize adds.
+// melee only finish one in their reach, from assign target priority.
 void AppendParasiticShadowfiendMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(botAI->GetBot()))

@@ -730,11 +730,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldAssignTargetPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should assign dps priority") {}
+    IllidanStormrageShouldAssignTargetPriorityTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should assign target priority") {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -736,14 +736,15 @@ private:
     Unit* FindSeedTarget();
 };
 
-class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction
+class IllidanStormrageAssignTargetPriorityAction : public AttackAction
 {
 public:
-    IllidanStormrageDpsPrioritizeAddsAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidan stormrage dps prioritize adds") {}
+    IllidanStormrageAssignTargetPriorityAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage assign target priority") {}
     bool Execute(Event event) override;
 
 private:
+    std::vector<Unit*> GetTargetsInPriorityOrder(Unit* illidan, BtHelpers::IllidanPhase phase);
     Unit* FindShadowfiendForMelee();
 };
 
