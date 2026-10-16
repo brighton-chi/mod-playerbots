@@ -744,6 +744,10 @@ bool IsIllidanWarlockTank(PlayerbotAI* botAI);
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
 // Assigned to an infection whose debuff is still on, with Frost Trap ready.
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
+// While he flies, a bot infected before he took off waits at the run spot until its Shadowfiends
+// are out, tanks included (the raid can't move away from them in Phase 2), and its trap hunter
+// still lays the trap.
+bool IsIllidanRunSpotKeptInFlight(PlayerbotAI* botAI);
 // A Frost Trap patch round runSpot lasting at least minDurationMs more.
 bool IsFrostTrapPatchAt(Player* bot, Position const& runSpot, int32 minDurationMs);
 // Slot lists are bots on the map, the dead kept, each part by GUID: ranged are healers, then

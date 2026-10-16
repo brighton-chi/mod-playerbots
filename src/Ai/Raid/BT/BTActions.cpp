@@ -1870,7 +1870,7 @@ bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         position = ILLIDAN_PULL_TANK_POSITION;
 
-    constexpr float distFromPosition = 3.0f;
+    constexpr float distFromPosition = 2.0f;
     if (bot->GetExactDist2d(position) <= distFromPosition)
         return false;
 

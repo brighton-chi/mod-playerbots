@@ -822,7 +822,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 // On the ground and while he lands, the Main Tank moves only by its ring action, and its
 // gap-closers are held, since he always comes to it; the other tanks wait at the landing stack
 // with everyone else, and keep to their Demon Form slots as melee. While he flies, the Main Tank
-// holds the grate and the assist tanks the Flames of Azzinoth, each moving only by its own action.
+// holds the grate and the assist tanks the Flames of Azzinoth, each moving only by its own action
+// or to the Shadowfiend run spot.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValue(
     Unit* illidan, IllidanPhase phase, Action* action)
 {
@@ -868,13 +869,16 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         if (!isMove)
             return 1.0f;
 
-        return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ?
-            1.0f : 0.0f;
+        return dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ||
+            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action) ? 1.0f : 0.0f;
     }
 
     // Flying phase: tanks other than the flame tanks
     if (isMove)
-        return dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action) ? 1.0f : 0.0f;
+    {
+        return dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action) ||
+            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action) ? 1.0f : 0.0f;
+    }
 
     return isSpell ? 0.0f : 1.0f;
 }

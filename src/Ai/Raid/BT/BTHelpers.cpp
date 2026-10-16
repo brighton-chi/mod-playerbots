@@ -1676,13 +1676,15 @@ Position GetIllidanRecordedRunSpot(PlayerbotAI* botAI, Unit const& illidan, Illi
     auto const it = illidanInfections.find(bot->GetInstanceId());
     if (it != illidanInfections.end())
     {
+        // Entries are kept while he flies, from the phase before.
+        bool const isFlying = phase == IllidanPhase::Flying;
         auto const own = it->second.find(bot->GetGUID());
-        if (own != it->second.end() && own->second.phase == phase)
+        if (own != it->second.end() && (isFlying || own->second.phase == phase))
             return own->second.runSpot;
 
         for (auto const& [player, infection] : it->second)
         {
-            if (infection.hunter == bot->GetGUID() && infection.phase == phase)
+            if (infection.hunter == bot->GetGUID() && (isFlying || infection.phase == phase))
                 return infection.runSpot;
         }
     }
@@ -1811,6 +1813,19 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
     }
 
     return false;
+}
+
+bool IsIllidanRunSpotKeptInFlight(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    auto const it = illidanInfections.find(bot->GetInstanceId());
+    if (it == illidanInfections.end())
+        return false;
+
+    if (HasParasiticShadowfiend(bot) && it->second.contains(bot->GetGUID()))
+        return true;
+
+    return IsIllidanTrapHunterOnDuty(botAI);
 }
 
 bool IsFrostTrapPatchAt(Player* bot, Position const& runSpot, int32 minDurationMs)

@@ -625,11 +625,11 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
         return false;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None || phase == IllidanPhase::Flying ||
-        phase == IllidanPhase::Dying)
-    {
+    if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return false;
-    }
+
+    if (phase == IllidanPhase::Flying)
+        return IsIllidanRunSpotKeptInFlight(botAI);
 
     return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
 }
@@ -686,7 +686,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
-    return IsFlameOfAzzinothTank(bot);
+    return IsFlameOfAzzinothTank(bot) && !IsIllidanRunSpotKeptInFlight(botAI);
 }
 
 bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
@@ -754,6 +754,9 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
+        return false;
+
+    if (IsIllidanRunSpotKeptInFlight(botAI))
         return false;
 
     if (!PlayerbotAI::IsTank(bot))
