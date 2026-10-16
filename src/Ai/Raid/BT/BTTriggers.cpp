@@ -1030,18 +1030,13 @@ bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
-// Destroying hazards behind phases is not gated behind CheatMask
-// The strategy simply cannot work without doing this
-bool IllidanStormrageShouldClearHazardsBetweenPhasesTrigger::IsActiveInEncounter()
+// Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
+// without doing this.
+bool IllidanStormrageShouldClearHazardsBeforeLandingTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    return phase == IllidanPhase::Landing /* || phase == IllidanPhase::Flying ||
-        phase == IllidanPhase::Demon */;
+    return illidan && GetIllidanPhase(illidan) == IllidanPhase::Landing;
 }

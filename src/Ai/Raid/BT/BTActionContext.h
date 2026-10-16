@@ -244,8 +244,8 @@ public:
         creators["illidan stormrage manage dps timers"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timers;
 
-        creators["illidan stormrage destroy hazards"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_destroy_hazards;
+        creators["illidan stormrage clear hazards"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_clear_hazards;
     }
 
 private:
@@ -578,9 +578,9 @@ private:
     {
         return new IllidanStormrageManageDpsTimersAction(botAI);
     }
-    static Action* illidan_stormrage_destroy_hazards(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_clear_hazards(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageDestroyHazardsAction(botAI);
+        return new IllidanStormrageClearHazardsAction(botAI);
     }
 };
 

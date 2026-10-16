@@ -258,8 +258,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage should manage dps timers",
         { NextAction("illidan stormrage manage dps timers", ACTION_EMERGENCY + 11) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage should clear hazards between phases",
-        { NextAction("illidan stormrage destroy hazards", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("illidan stormrage should clear hazards before landing",
+        { NextAction("illidan stormrage clear hazards", ACTION_EMERGENCY + 10) }));
 }
 
 void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

@@ -750,6 +750,7 @@ public:
 private:
     std::vector<Unit*> GetTargetsInPriorityOrder(Unit* illidan, BtHelpers::IllidanPhase phase);
     Unit* FindShadowfiendForMelee();
+    Unit* FindShadowfiendForRanged();
 };
 
 class IllidanStormrageUseCageTrapAction : public MovementAction
@@ -768,11 +769,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageDestroyHazardsAction : public Action
+class IllidanStormrageClearHazardsAction : public Action
 {
 public:
-    IllidanStormrageDestroyHazardsAction(PlayerbotAI* botAI)
-        : Action(botAI, "illidan stormrage destroy hazards") {}
+    IllidanStormrageClearHazardsAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage clear hazards") {}
     bool Execute(Event event) override;
 };
 

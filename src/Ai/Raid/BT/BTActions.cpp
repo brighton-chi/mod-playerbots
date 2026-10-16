@@ -1850,7 +1850,7 @@ bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
         Creature* illidan = isMainTank ? bot->FindNearestCreature(
-            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS, true) : nullptr;
+            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS) : nullptr;
         if (illidan && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
             bot->SetFacingTo(bot->GetAngle(illidan));
 
@@ -2933,15 +2933,8 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
         }
         else
         {
-            constexpr float shadowfiendMinDistance = 10.0f;
-            constexpr float shadowfiendMaxDistance = 28.5f;
-            Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
-            float const distance = shadowfiend ? bot->GetDistance(shadowfiend) : 0.0f;
-            bool const isShadowfiendInReach =
-                distance > shadowfiendMinDistance && distance <= shadowfiendMaxDistance;
             return {
-                GetShadowDemonForRangedToAttack(botAI, *bot),
-                isShadowfiendInReach ? shadowfiend : nullptr, illidan,
+                GetShadowDemonForRangedToAttack(botAI, *bot), FindShadowfiendForRanged(), illidan,
             };
         }
     }
@@ -2949,31 +2942,12 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
     {
         if (isGrounded)
         {
-            constexpr float searchRadius = 35.0f;
-            Unit* shadowfiend = bot->FindNearestCreature(
-                Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true);
-
-            if (shadowfiend && bot->GetDistance2d(shadowfiend) > 10.0f)
-                return { shadowfiend };
-            else
-                return { illidan };
+            return { FindShadowfiendForRanged(), illidan };
         }
         else if (phase == IllidanPhase::Flying)
         {
-            constexpr float searchRadius = 20.0f;
-            Unit* shadowfiend = botAI->HasCheat(BotCheatMask::raid) ?
-                bot->FindNearestCreature(
-                    Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), searchRadius, true) : nullptr;
-
-            if (shadowfiend && bot->GetDistance2d(shadowfiend) > 5.0f)
-            {
-                return { shadowfiend };
-            }
-            else
-            {
-                auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-                return { eastFlame, westFlame };
-            }
+            auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+            return { FindShadowfiendForRanged(), eastFlame, westFlame };
         }
     }
     // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in
@@ -2995,6 +2969,18 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForMelee()
         return nullptr;
 
     return bot->IsWithinMeleeRange(shadowfiend) ? shadowfiend : nullptr;
+}
+
+Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged()
+{
+    Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
+    if (!shadowfiend)
+        return nullptr;
+
+    constexpr float minDistance = 10.0f;
+    constexpr float maxDistance = 28.5f;
+    float const distance = bot->GetDistance(shadowfiend);
+    return distance > minDistance && distance <= maxDistance ? shadowfiend : nullptr;
 }
 
 bool IllidanStormrageUseCageTrapAction::Execute(Event /*event*/)
@@ -3106,33 +3092,23 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     return updated;
 }
 
-bool IllidanStormrageDestroyHazardsAction::Execute(Event /*event*/)
+bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    constexpr float searchRadius = 50.0f;
+    constexpr float hazardSearchRadius = 50.0f;
+    std::vector<uint32> const entries =
+        { Id(BtNpcs::NPC_FLAME_CRASH), Id(BtNpcs::NPC_DEMON_FIRE), Id(BtNpcs::NPC_BLAZE) };
     std::list<Creature*> hazards;
-    std::vector<uint32> entries;
+    bot->GetCreatureListWithEntryInGrid(hazards, entries, hazardSearchRadius);
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
-        entries = { Id(BtNpcs::NPC_FLAME_CRASH) };
-    else if (phase == IllidanPhase::Landing)
-        entries = { Id(BtNpcs::NPC_DEMON_FIRE), Id(BtNpcs::NPC_BLAZE) };
-
-    if (!entries.empty())
-        bot->GetCreatureListWithEntryInGrid(hazards, entries, searchRadius);
-
+    bool isCleared = false;
     for (Creature* creature : hazards)
     {
         if (creature && creature->IsAlive())
         {
             creature->Kill(bot, creature);
-            return true;
+            isCleared = true;
         }
     }
 
-    return false;
+    return isCleared;
 }

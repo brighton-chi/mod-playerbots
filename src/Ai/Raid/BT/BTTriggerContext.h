@@ -248,8 +248,8 @@ public:
         creators["illidan stormrage should manage dps timers"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_dps_timers;
 
-        creators["illidan stormrage should clear hazards between phases"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_clear_hazards_between_phases;
+        creators["illidan stormrage should clear hazards before landing"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_clear_hazards_before_landing;
     }
 
 private:
@@ -576,9 +576,9 @@ private:
     {
         return new IllidanStormrageShouldManageDpsTimersTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_should_clear_hazards_between_phases(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_clear_hazards_before_landing(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageShouldClearHazardsBetweenPhasesTrigger(botAI);
+        return new IllidanStormrageShouldClearHazardsBeforeLandingTrigger(botAI);
     }
 };
 

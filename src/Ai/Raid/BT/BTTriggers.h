@@ -760,12 +760,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageShouldClearHazardsBetweenPhasesTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldClearHazardsBeforeLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageShouldClearHazardsBetweenPhasesTrigger(PlayerbotAI* botAI)
+    IllidanStormrageShouldClearHazardsBeforeLandingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "illidan stormrage should clear hazards between phases") {}
+            botAI, "illidan stormrage should clear hazards before landing") {}
 
 protected:
     bool IsActiveInEncounter() override;

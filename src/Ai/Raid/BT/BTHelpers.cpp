@@ -1443,7 +1443,7 @@ bool IsIllidanSpeechInProgress(Player* bot)
     }
 
     Creature* illidan = bot->FindNearestCreature(
-        Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS, true);
+        Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
 
     return illidan && illidan->getStandState() == UNIT_STAND_STATE_STAND &&
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();
