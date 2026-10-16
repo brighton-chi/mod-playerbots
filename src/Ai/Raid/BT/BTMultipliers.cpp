@@ -795,6 +795,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return 1.0f;
 
+    // Unselectable while he flies and lands, he is an invalid target, and dropping him would take
+    // a bot out of the combat engine, where its heals and rotation are.
+    if (dynamic_cast<DropTargetAction*>(action))
+        return phase == IllidanPhase::Flying || phase == IllidanPhase::Landing ? 0.0f : 1.0f;
+
     bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
     bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
     if (isTankAssist || isDpsAssist || dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
