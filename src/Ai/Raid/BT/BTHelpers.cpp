@@ -1777,6 +1777,18 @@ bool IsIllidanWarlockTank(PlayerbotAI* botAI)
     return bot->getClass() == CLASS_WARLOCK && GetIllidanWarlockTank(botAI) == bot;
 }
 
+bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (bot->GetPowerPct(POWER_MANA) >= ILLIDAN_LIFE_TAP_MANA_PCT ||
+        bot->GetHealthPct() <= ILLIDAN_LIFE_TAP_HEALTH_PCT)
+    {
+        return false;
+    }
+
+    return botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot);
+}
+
 GuidVector FindIllidanTrapHunterGuids(Player* bot)
 {
     Group* group = bot->GetGroup();

@@ -1986,9 +1986,10 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // On each Flame Crash on the tank it leads him once, to the ring point 35 deg counterclockwise of
 // him; he stops about 30 deg on, and the tank settles outward of wherever he stopped. Near the
 // centre, as after landing, it leads him straight out instead.
-// While he lands the tank waits north of the landing point, so Phase 3 starts due north. In Demon
-// Form it waits beside the melee, then 10 s before the end walks to the pickup spot in front of
-// the raid and takes him at the reset with a ranged opener.
+// While he lands the tank waits between the landing point and the raid's stack, then leads him
+// north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
+// the end walks to the pickup spot in front of the raid and takes him at the reset with a ranged
+// opener.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2076,7 +2077,14 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         else if (!_isLeading &&
             illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
         {
-            _leadSpot = GetRingPoint(GetGrateAngle(*bot), ILLIDAN_PICKUP_LEAD_RADIUS);
+            // After landing the tank is on the raid's side of him, so it leads him north, away
+            // from them.
+            auto const previous = illidanPreviousPhase.find(illidan->GetInstanceId());
+            bool const isAfterLanding = previous != illidanPreviousPhase.end() &&
+                previous->second == IllidanPhase::Landing;
+            float const leadAngle =
+                isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
+            _leadSpot = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
             _isLeading = true;
         }
 
@@ -2732,7 +2740,8 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// The warlock tank holds him from its spot with Shadow Ward and Searing Pain.
+// The warlock tank holds him from its spot with Shadow Ward and Searing Pain, Life Tapping between
+// Searing Pains.
 bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2746,6 +2755,9 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
     }
 
     if (botAI->CanCastSpell("shadow ward", bot) && botAI->CastSpell("shadow ward", bot))
+        return true;
+
+    if (CastIllidanLifeTapIfLow(botAI))
         return true;
 
     Position const spot = GetDemonFormLayout(*illidan).warlockSpot;
@@ -2763,41 +2775,28 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", illidan);
 }
 
-// A channel would hold the first Seed back, and Life Tap comes between Seeds, since the Seed
-// action outranks the stock one, which waits for a Seed to be unaffordable.
+// A channel would hold the first Seed back; Life Tap comes between Seeds.
 bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
     {
         bot->CastStop();
         return true;
     }
 
-    if (bot->GetPowerPct(POWER_MANA) < ILLIDAN_SEED_LIFE_TAP_MANA_PCT &&
-        bot->GetHealthPct() > ILLIDAN_SEED_LIFE_TAP_HEALTH_PCT &&
-        botAI->CanCastSpell("life tap", bot))
-    {
-        return botAI->CastSpell("life tap", bot);
-    }
+    if (CastIllidanLifeTapIfLow(botAI))
+        return true;
 
-    Unit* target = FindSeedTarget(illidan);
+    Unit* target = FindSeedTarget();
     return target && botAI->CanCastSpell("seed of corruption", target) &&
         botAI->CastSpell("seed of corruption", target);
 }
 
-// Him until the Demons are out (outside a hold), then the bot's usual Demon, else any Demon,
-// each only without the bot's own Seed on it.
-Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget(Unit* illidan)
+// The bot's usual Demon, else any Demon, each only without the bot's own Seed on it.
+Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
     auto const& shadowDemons =
         context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
-    if (shadowDemons.empty())
-        return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? illidan : nullptr;
-
     uint32 const seed = AI_VALUE2(uint32, "spell id", "seed of corruption");
     Unit* usualDemon = GetShadowDemonToAttack(botAI, *bot);
     if (usualDemon && !usualDemon->HasAura(seed, bot->GetGUID()))

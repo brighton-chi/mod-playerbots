@@ -913,9 +913,9 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsIllidanWarlockTank(botAI);
 }
 
-// Every warlock, the warlock tank included, keeps casting Seed of Corruption from just before the
-// Shadow Demons appear round him until they are dead: on him until they are out, so a Seed goes
-// off among them as they spawn, then on the Demons.
+// Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
+// two or more are alive. They all walk toward the raid, so a Seed going off on one usually
+// catches others.
 bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -925,17 +925,10 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    uint32 const seedStartMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS - ILLIDAN_SEED_LEAD_MS;
-    if (IsIllidanPhaseStartWithin(*illidan, seedStartMs))
+    if (IsIllidanPhaseStartWithin(*illidan, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
         return false;
 
-    if (!context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().empty())
-        return true;
-
-    // Before the Demon search sees them, the Seed goes on him, so only outside a hold.
-    uint32 const seedOnTimeEndMs = ILLIDAN_SHADOW_DEMON_SPAWN_MS + ILLIDAN_SEED_LATE_MS;
-    return IsIllidanPhaseStartWithin(*illidan, seedOnTimeEndMs) &&
-        GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None;
+    return context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().size() >= 2;
 }
 
 // Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the

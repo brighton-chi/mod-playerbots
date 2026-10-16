@@ -727,7 +727,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* FindSeedTarget(Unit* illidan);
+    Unit* FindSeedTarget();
 };
 
 class IllidanStormrageDpsPrioritizeAddsAction : public AttackAction

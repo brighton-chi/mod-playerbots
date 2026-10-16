@@ -594,16 +594,11 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
 // Shadow Demons appear this long after the transform starts, 30 s after he turns aggressive.
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
-// Warlocks cast Seed of Corruption (2 s) from this long before the Demons appear until they are
-// dead, so any cast in progress (2.5 s at most) ends first and a Seed lands in the 2.6 s they
-// spend near him. Until this long after they appear the window runs on time, as the Demon search
-// may not have seen them yet.
-inline constexpr uint32 ILLIDAN_SEED_LEAD_MS = 3 * IN_MILLISECONDS;
-inline constexpr uint32 ILLIDAN_SEED_LATE_MS = 1 * IN_MILLISECONDS;
-// Between Seeds (about 890 mana each at 70) a warlock Life Taps below this mana, if above this
-// health, which the warlock tank needs against Shadow Blast.
-inline constexpr float ILLIDAN_SEED_LIFE_TAP_MANA_PCT = 20.0f;
-inline constexpr float ILLIDAN_SEED_LIFE_TAP_HEALTH_PCT = 50.0f;
+// Between Seeds (about 890 mana each at 70) and between the warlock tank's Searing Pains (about
+// 210), a warlock Life Taps below this mana, if above this health, which the warlock tank needs
+// against Shadow Blast.
+inline constexpr float ILLIDAN_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
 // Hunters misdirect onto the Main Tank this long from each Phase 1, 3 and 5 start.
 inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
 // A Frost Trap patch already on the run spot does for a new infection if it outlasts the debuff
@@ -618,9 +613,11 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 // runs up close behind a walking tank and stops about 30 deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
 // While he is this close to the grate centre, as after landing, the Main Tank leads him straight
-// out along its own bearing to the lead radius; he stops 22 to 28 yd out.
+// out along its own bearing (due north after landing) to the lead radius; he stops 22 to 28 yd
+// out.
 inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
 inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
+inline constexpr float ILLIDAN_LANDING_LEAD_ANGLE = 0.0f;
 // A Flame Crash this close to the Main Tank was cast on it.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
@@ -659,9 +656,9 @@ inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };
 inline Position const ILLIDAN_SPEECH_POSITION = { 705.732f, 304.988f, 353.925f };
 // The Main Tank waits this far north of the centre at the pull, so he stops on the ring.
 inline Position const ILLIDAN_PULL_TANK_POSITION = { 691.521f, 305.455f, 353.790f };
-// While he lands, the Main Tank waits 6 yd north of the landing point and everyone else 22 yd
-// south of the centre.
-inline Position const ILLIDAN_LANDING_TANK_POSITION = { 682.648f, 304.761f, 353.920f };
+// While he lands, everyone else waits 22 yd south of the centre and the Main Tank 6 yd south of
+// the landing point, in his way if he runs at them after the threat reset.
+inline Position const ILLIDAN_LANDING_TANK_POSITION = { 670.648f, 304.761f, 353.920f };
 inline Position const ILLIDAN_LANDING_STACK_POSITION = { 654.021f, 305.455f, 353.790f };
 inline Position const ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
 inline Position const ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
@@ -745,6 +742,9 @@ ObjectGuid FindIllidanWarlockTankGuid(Player* bot);
 // Null while the warlock tank is dead.
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool IsIllidanWarlockTank(PlayerbotAI* botAI);
+// For the Illidan actions that outrank the stock Life Tap, which waits until a spell is
+// unaffordable.
+bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
 // The trap hunters in the order they take infections: hunter bots by GUID, dead or alive.
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
 // Assigned to an infection whose debuff is still on, with Frost Trap ready.
