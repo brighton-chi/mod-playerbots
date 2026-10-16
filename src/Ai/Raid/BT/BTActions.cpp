@@ -1862,16 +1862,24 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 
 // Illidan Stormrage <The Betrayer>
 
-// The Main Tank waits 15.5 yd north of the grate centre, so he stops on the ring when he runs in.
-// Everyone else waits on the grate.
+// The Main Tank waits 15.5 yd north of the grate centre, facing him, so he stops on the ring when
+// he runs in. Everyone else waits on the grate.
 bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
 {
+    bool const isMainTank = PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
     Position position = ILLIDAN_GRATE_CENTRE;
-    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+    if (isMainTank)
         position = ILLIDAN_PULL_TANK_POSITION;
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_SPOT_TOLERANCE)
+    {
+        Creature* illidan = isMainTank ? bot->FindNearestCreature(
+            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS, true) : nullptr;
+        if (illidan && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
+            bot->SetFacingTo(bot->GetAngle(illidan));
+
         return false;
+    }
 
     return MoveInside(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
@@ -2114,7 +2122,12 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     }
 
     if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
+    {
+        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
+            bot->SetFacingTo(bot->GetAngle(illidan));
+
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
@@ -2687,7 +2700,8 @@ bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(Unit const& illidan
     return true;
 }
 
-// Melee and tanks wait in their Demon Form slots and leave them only for a Shadow Demon.
+// Melee and tanks wait in their Demon Form slots, facing him, and leave them only for a Shadow
+// Demon.
 bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2701,7 +2715,12 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 
     Position const& spot = layout.meleeSlots[static_cast<size_t>(slot)];
     if (bot->GetExactDist2d(spot) <= ILLIDAN_SPOT_TOLERANCE)
+    {
+        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
+            bot->SetFacingTo(bot->GetAngle(illidan));
+
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
