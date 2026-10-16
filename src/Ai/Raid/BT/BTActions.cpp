@@ -2272,90 +2272,41 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     return true;
 }
 
+// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
+// other Flame's tank is dead too, when it takes that Flame.
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
 {
-    auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    // The second assist tank's flame is killed first; this is so that if the tank
-    // for the second flame dies after the first flame is down, the dead flame's
-    // tank will become the first assist tank and take over the remaining flame
-    if (IsEastFlameOfAzzinothTank(bot))
+    Unit* flame = GetAssignedFlameOfAzzinoth(bot);
+    if (!flame)
     {
-        if (eastFlame && westFlame)
-        {
-            if (AI_VALUE(Unit*, "current target") != eastFlame)
-                return Attack(eastFlame);
-
-            // Until it has its Flame, the tank's own logic takes it (taunt, reach).
-            if (eastFlame->GetVictim() != bot)
-                return false;
-        }
-        else if (!eastFlame && !westFlame)
-        {
-            // (1) Before flames spawn, go to the waiting position
-            // (2) If both flames are dead and the waiting position is too close to hazards,
-            //     move to a grate position
-            std::list<Creature*> demonFires;
-            constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(
-                demonFires, Id(BtNpcs::NPC_DEMON_FIRE), searchRadius);
-
-            Position const& position = demonFires.empty() ?
-                ILLIDAN_E_GLAIVE_WAITING_POSITION : ILLIDAN_E_GRATE_POSITION;
-
-            if (bot->GetExactDist2d(position) > 0.5f)
-            {
-                return MoveTo(
-                    BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                    position.GetPositionZ(), false, false, false, false,
-                    MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
-        // After the first flame dies, its tank waits with other bots. An unrecorded East Flame
-        // hasn't spawned yet (it comes after the West one), so its tank keeps waiting.
-        else if (!eastFlame && westFlame && eastFlameGuid.contains(bot->GetInstanceId()))
-        {
-            Position const& position = ILLIDAN_E_GRATE_POSITION;
-            if (bot->GetExactDist2d(position) > 0.5f)
-            {
-                return MoveTo(
-                    BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                    position.GetPositionZ(), false, false, false, false,
-                    MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
-    }
-    else if (IsWestFlameOfAzzinothTank(bot))
-    {
-        if (westFlame)
-        {
-            if (AI_VALUE(Unit*, "current target") != westFlame)
-                return Attack(westFlame);
-
-            if (westFlame->GetVictim() != bot)
-                return false;
-        }
+        // An unrecorded Flame hasn't spawned yet, so the tank waits by its glaive.
+        bool const isEast = IsEastFlameOfAzzinothTank(bot);
+        auto const& flameGuid = isEast ? eastFlameGuid : westFlameGuid;
+        bool const isRecorded = flameGuid.contains(bot->GetInstanceId());
+        Position position;
+        if (isEast && isRecorded)
+            position = ILLIDAN_E_GRATE_POSITION;
+        else if (isEast)
+            position = ILLIDAN_E_GLAIVE_WAITING_POSITION;
+        else if (isRecorded)
+            position = ILLIDAN_W_GRATE_POSITION;
         else
-        {
-            // (1) Before flames spawn, go to the waiting position
-            // (2) If both flames are dead and the waiting position is too close to hazards,
-            //     move to a grate position
-            std::list<Creature*> demonFires;
-            constexpr float searchRadius = 40.0f;
-            bot->GetCreatureListWithEntryInGrid(
-                demonFires, Id(BtNpcs::NPC_DEMON_FIRE), searchRadius);
+            position = ILLIDAN_W_GLAIVE_WAITING_POSITION;
 
-            Position const& position = demonFires.empty() ?
-                ILLIDAN_W_GLAIVE_WAITING_POSITION : ILLIDAN_W_GRATE_POSITION;
+        if (bot->GetExactDist2d(position) <= 0.5f)
+            return false;
 
-            if (bot->GetExactDist2d(position) > 0.5f)
-            {
-                return MoveTo(
-                    BT_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                    position.GetPositionZ(), false, false, false, false,
-                    MovementPriority::MOVEMENT_COMBAT, true, false);
-            }
-        }
+        return MoveTo(
+            BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
+
+    if (AI_VALUE(Unit*, "current target") != flame)
+        return Attack(flame);
+
+    // Until it has its Flame, the tank's own logic takes it (taunt, reach).
+    if (flame->GetVictim() != bot)
+        return false;
 
     EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
 
@@ -2364,7 +2315,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     if (dangerArea.width > 0.0f && bot->GetExactDist2d(dangerArea.start) <= eyeBlastTriggerRadius)
         return RepositionToAvoidEyeBlast(dangerArea);
 
-    return RepositionToAvoidBlaze(eastFlame, westFlame);
+    return RepositionToAvoidBlaze(flame);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidEyeBlast(
@@ -2419,31 +2370,14 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(
-    Unit* eastFlame, Unit* westFlame)
+bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* flame)
 {
-    decltype(E_GLAIVE_TANK_POSITIONS)* waypoints = nullptr;
-    Unit* flame = nullptr;
-
-    if (IsEastFlameOfAzzinothTank(bot))
-    {
-        if (!eastFlame || eastFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(eastFlame))
-            return false;
-
-        waypoints = &E_GLAIVE_TANK_POSITIONS;
-        flame = eastFlame;
-    }
-    else if (IsWestFlameOfAzzinothTank(bot))
-    {
-        if (!westFlame || westFlame->GetVictim() != bot || !bot->IsWithinMeleeRange(westFlame))
-            return false;
-
-        waypoints = &W_GLAIVE_TANK_POSITIONS;
-        flame = westFlame;
-    }
-
-    if (!waypoints || !flame)
+    if (flame->GetVictim() != bot || !bot->IsWithinMeleeRange(flame))
         return false;
+
+    // The waypoints go with the Flame, which must stay near its blade.
+    auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+    auto const& waypoints = flame == eastFlame ? E_GLAIVE_TANK_POSITIONS : W_GLAIVE_TANK_POSITIONS;
 
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
@@ -2461,14 +2395,14 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     }
 
     constexpr float arrivalDist = 0.2f;
-    if (blazeNearby && bot->GetExactDist2d((*waypoints)[_tankStep]) <= arrivalDist)
-        _tankStep = (_tankStep + 1) % waypoints->size();
+    if (blazeNearby && bot->GetExactDist2d(waypoints[_tankStep]) <= arrivalDist)
+        _tankStep = (_tankStep + 1) % waypoints.size();
 
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, (*waypoints)[_tankStep], arrivalDist, flame, moveX, moveY, backwards))
+            bot, waypoints[_tankStep], arrivalDist, flame, moveX, moveY, backwards))
     {
         return false;
     }

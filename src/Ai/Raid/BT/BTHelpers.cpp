@@ -93,6 +93,26 @@ int32 GetRosterIndex(
     return it == first.end() ? -1 : static_cast<int32>(std::distance(first.begin(), it));
 }
 
+// Dead or alive; null if no group member has the job (an offline tank among them).
+Player* FindFlameOfAzzinothTank(Player* bot, bool isEast)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && (isEast ? IsEastFlameOfAzzinothTank(member) :
+                                IsWestFlameOfAzzinothTank(member)))
+        {
+            return member;
+        }
+    }
+
+    return nullptr;
+}
+
 }
 
 // Shared
@@ -1749,12 +1769,12 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
 
 bool IsWestFlameOfAzzinothTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0);
 }
 
 bool IsEastFlameOfAzzinothTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1);
 }
 
 bool IsFlameOfAzzinothTank(Player* bot)
@@ -1764,13 +1784,23 @@ bool IsFlameOfAzzinothTank(Player* bot)
 
 Unit* GetAssignedFlameOfAzzinoth(Player* bot)
 {
-    auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    if (IsEastFlameOfAzzinothTank(bot))
-        return eastFlame;
-    else if (IsWestFlameOfAzzinothTank(bot))
-        return westFlame;
+    bool const isEastTank = IsEastFlameOfAzzinothTank(bot);
+    if (!isEastTank && !IsWestFlameOfAzzinothTank(bot))
+        return nullptr;
 
-    return nullptr;
+    auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+    Unit* ownFlame = isEastTank ? eastFlame : westFlame;
+    if (ownFlame)
+        return ownFlame;
+
+    // An unrecorded own Flame hasn't spawned yet; a recorded one is dead.
+    auto const& ownFlameGuid = isEastTank ? eastFlameGuid : westFlameGuid;
+    Unit* otherFlame = isEastTank ? westFlame : eastFlame;
+    if (!otherFlame || !ownFlameGuid.contains(bot->GetInstanceId()))
+        return nullptr;
+
+    Player* otherTank = FindFlameOfAzzinothTank(bot, !isEastTank);
+    return !otherTank || !otherTank->IsAlive() ? otherFlame : nullptr;
 }
 
 ObjectGuid FindIllidanWarlockTankGuid(Player* bot)

@@ -619,7 +619,7 @@ public:
 
 private:
     bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
-    bool RepositionToAvoidBlaze(Unit* eastFlame, Unit* westFlame);
+    bool RepositionToAvoidBlaze(Unit* flame);
 
     uint8 _tankStep = 0;
 };
