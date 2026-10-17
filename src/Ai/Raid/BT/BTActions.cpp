@@ -2054,7 +2054,13 @@ bool IllidanStormrageMainTankRepositionBossAction::FindDemonFormPosition(
     }
 
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
-    position = isWalkIn ? layout.mainTankPickupPosition : layout.mainTankWaitPosition;
+    if (IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_STEP_IN_MS))
+        position = layout.mainTankStepInPosition;
+    else if (isWalkIn)
+        position = layout.mainTankPickupPosition;
+    else
+        position = layout.mainTankWaitPosition;
+
     return true;
 }
 

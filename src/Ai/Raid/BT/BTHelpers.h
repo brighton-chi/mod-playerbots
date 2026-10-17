@@ -135,7 +135,11 @@ enum class BtNpcs : uint32
     NPC_SISTER_OF_PLEASURE          = 22964,
     NPC_SHADOWMOON_REAVER           = 22879,
 
+    // High Warlord Naj'entus
+    NPC_HIGH_WARLORD_NAJENTUS       = 22887,
+
     // Supremus
+    NPC_SUPREMUS                    = 22898,
     NPC_SUPREMUS_VOLCANO            = 23085,
 
     // Shade of Akama
@@ -143,10 +147,20 @@ enum class BtNpcs : uint32
     NPC_ASHTONGUE_SORCERER          = 23215,
 
     // Teron Gorefiend
+    NPC_TERON_GOREFIEND             = 22871,
     NPC_SHADOWY_CONSTRUCT           = 23111,
 
+    // Gurtogg Bloodboil
+    NPC_GURTOGG_BLOODBOIL           = 22948,
+
     // Reliquary of Souls
+    NPC_RELIQUARY_OF_THE_LOST       = 22856,
+    NPC_ESSENCE_OF_SUFFERING        = 23418,
     NPC_ESSENCE_OF_DESIRE           = 23419,
+    NPC_ESSENCE_OF_ANGER            = 23420,
+
+    // Mother Shahraz
+    NPC_MOTHER_SHAHRAZ              = 22947,
 
     // Illidari Council
     NPC_GATHIOS_THE_SHATTERER       = 22949,
@@ -547,6 +561,7 @@ struct DemonFormLayout
     Position warlockTankPosition;
     Position mainTankWaitPosition;
     Position mainTankPickupPosition;
+    Position mainTankStepInPosition;
     std::vector<Position> rangedSlots;
     std::vector<Position> healerSlots;
     std::vector<Position> meleeSlots;
@@ -603,6 +618,10 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
 // The Main Tank's walk-in, about 44 yd, starts this long before the end. No Flame Burst comes in
 // the last 14 s.
 inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
+// For the last 1.3 s it steps in about 8 yd, so at the reset it is in his melee range (his reach
+// is 7.5 again) while he finishes his last Shadow Blast, and can hit before his first victim
+// check; at most one Aura of Dread tick.
+inline constexpr uint32 ILLIDAN_MAIN_TANK_STEP_IN_MS = 1300;
 // Shadow Demons appear this long after the transform starts, 30 s after he turns aggressive.
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
 // Between Seeds (about 890 mana each at 70) and between the warlock tank's Searing Pains (about
@@ -663,10 +682,12 @@ inline constexpr float ILLIDAN_WARLOCK_POSITION_ANGLE = 75.0f * static_cast<floa
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
 // At the end, walk straight to the pickup position in front of the raid, just outside Aura of Dread
-// and 22.5 yd from the warlock tank (Shadow Blast 20). Illidan keeps the warlock tank as his victim
-// through the reset and runs at it, past the Main Tank.
+// and 22.5 yd from the warlock tank (Shadow Blast 20), then step in on the same bearing to 9 yd,
+// 25.4 yd from the warlock tank. At the reset any threat beats his old victim's 0, Replenishment
+// and HoT ticks included, so the tank must hit first.
 inline constexpr float ILLIDAN_PICKUP_POSITION_DISTANCE = 17.0f;
 inline constexpr float ILLIDAN_PICKUP_POSITION_ANGLE = 30.0f * static_cast<float>(M_PI) / 180.0f;
+inline constexpr float ILLIDAN_STEP_IN_POSITION_DISTANCE = 9.0f;
 
 // World trigger 22515.
 inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };
