@@ -593,6 +593,13 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
     return thrower;
 }
 
+bool IsNajentusSpineInFlight(Player* bot)
+{
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state && state->najentusSpineThrowTime &&
+        GetMSTimeDiffToNow(*state->najentusSpineThrowTime) < NAJENTUS_HURL_SPINE_FLIGHT_MS;
+}
+
 // Supremus
 
 namespace
@@ -2439,9 +2446,10 @@ bool BtResetInstance(uint32 instanceId)
 
     BtInstanceState const& state = it->second;
     bool const wasSet = state.najentusSpineAssignments || state.najentusSpineThrower ||
-        state.councilDpsWaitTimer || state.illidanLastPhase || state.illidanPreviousPhase ||
-        state.illidanPhaseStartTime || state.illidanFlamePhaseStartTime || state.eastFlameGuid ||
-        state.westFlameGuid || state.illidanInfections;
+        state.najentusSpineThrowTime || state.councilDpsWaitTimer || state.illidanLastPhase ||
+        state.illidanPreviousPhase || state.illidanPhaseStartTime ||
+        state.illidanFlamePhaseStartTime || state.eastFlameGuid || state.westFlameGuid ||
+        state.illidanInfections;
 
     btStates.erase(it);
     return wasSet;

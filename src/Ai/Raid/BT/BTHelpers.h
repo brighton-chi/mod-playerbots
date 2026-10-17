@@ -248,23 +248,24 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI);
 
 // High Warlord Naj'entus
 
+// Impales can overlap (every 20 s, 30 s stun), so one entry per impaled player.
 struct NajentusSpineAssignment
 {
     ObjectGuid impaled;
     ObjectGuid remover;
 };
 
-inline constexpr float NAJENTUS_RANGED_DISTANCE_FROM_BOSS = 10.0f;
 // Needle Spine Explosion hits allies within 6 yd of each player struck.
 inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = 7.0f;
 // Hurl Spine (39948) range, counted beyond both combat reaches as Spell::CheckRange does.
 inline constexpr float NAJENTUS_HURL_SPINE_RANGE = 25.0f;
 // How far inside that range a thrower walking in stops.
 inline constexpr float NAJENTUS_HURL_SPINE_APPROACH_MARGIN = 2.0f;
+// A spine flies up to 1.25 s and breaks the shield on landing, and the throw is a queued packet,
+// so no spine is thrown this long after the last one.
+inline constexpr uint32 NAJENTUS_HURL_SPINE_FLIGHT_MS = 2 * IN_MILLISECONDS;
 
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
-
-// Impales can overlap (every 20 s, 30 s stun), so one entry per impaled player.
 
 bool IsNajentusImpaled(Player* player);
 // An impaled group member with no living remover assigned, for the mechanic tracker to assign.
@@ -278,6 +279,7 @@ bool IsNajentusSpineThrower(Player* bot);
 Player* GetNajentusSpineThrower(Player* bot);
 // The bot holding a spine nearest Naj'entus that can throw it.
 Player* FindNajentusSpineThrower(Player* bot, Unit* najentus);
+bool IsNajentusSpineInFlight(Player* bot);
 
 // Supremus
 
@@ -832,6 +834,7 @@ struct BtInstanceState
 {
     std::optional<std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
     std::optional<ObjectGuid> najentusSpineThrower;
+    std::optional<uint32> najentusSpineThrowTime;
     std::optional<uint32> councilDpsWaitTimer;
     std::optional<IllidanPhase> illidanLastPhase;
     // The phase before the current one, so Phase 5 straight from Demon Form shows as a reset.

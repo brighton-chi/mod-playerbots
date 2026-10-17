@@ -269,17 +269,6 @@ bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
 
 bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
 {
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus)
-        return false;
-
-    constexpr uint32 minInterval = 0;
-    if (bot->GetExactDist2d(najentus) < NAJENTUS_RANGED_DISTANCE_FROM_BOSS &&
-        FleePosition(najentus->GetPosition(), NAJENTUS_RANGED_DISTANCE_FROM_BOSS, minInterval))
-    {
-        return true;
-    }
-
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
     return nearestPlayer &&
         FleePosition(nearestPlayer->GetPosition(), NAJENTUS_RANGED_SPREAD_DISTANCE);
@@ -401,6 +390,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 
     bot->CastStop();
     botAI->ImbueItem(spine, najentus);
+    BtState(bot->GetInstanceId()).najentusSpineThrowTime = getMSTime();
     _throwDelay = 0;
     return true;
 }

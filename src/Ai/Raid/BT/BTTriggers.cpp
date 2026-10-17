@@ -84,12 +84,10 @@ bool HighWarlordNajentusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    if (!najentus)
+    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
         return false;
 
-    return bot->GetExactDist2d(najentus) < NAJENTUS_RANGED_DISTANCE_FROM_BOSS ||
-        GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
+    return GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
 }
 
 bool HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger::IsActiveInEncounter()
@@ -121,7 +119,7 @@ bool HighWarlordNajentusNeedsSpineThrowerTrigger::IsActiveInEncounter()
 
 bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
 {
-    if (!IsNajentusSpineThrower(bot))
+    if (!IsNajentusSpineThrower(bot) || IsNajentusSpineInFlight(bot))
         return false;
 
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
