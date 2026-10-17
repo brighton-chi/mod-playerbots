@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <list>
 #include <mutex>
-#include <unordered_map>
 
 using namespace EncounterHelpers;
 
@@ -119,7 +118,8 @@ bool IsMagtheridonActive(Unit* magtheridon)
 
 bool IsCubeClicker(Player* bot)
 {
-    std::optional<CubeAssignments> const& assignments = MagState(bot->GetInstanceId()).botToCubeAssignments;
+    std::optional<CubeAssignments> const& assignments =
+        MagState(bot->GetInstanceId()).botToCubeAssignments;
     return assignments && assignments->find(bot->GetGUID()) != assignments->end();
 }
 
