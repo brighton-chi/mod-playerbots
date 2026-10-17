@@ -169,7 +169,7 @@ bool FocusSisterOfPleasureAction::Execute(Event /*event*/)
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
     {
-        Unit* pleasure = GetLinkedSisterOfPleasure(botAI);
+        Unit* pleasure = FindLinkedSisterOfPleasure(botAI);
         return pleasure && MarkTargetWithSkull(bot, pleasure);
     }
 

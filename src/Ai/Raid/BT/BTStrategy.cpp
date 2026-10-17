@@ -9,7 +9,6 @@
 #include "BTMultipliers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include <algorithm>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
@@ -324,28 +323,16 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 namespace
 {
 
-// Non-tanks leave a linked Sister of Pain to her Pleasure, which takes the damage for both.
-// Looked up only while a Sister of Pain is an attacker.
+// Non-tanks leave the skulled Pleasure's Sister of Pain to her, since Pleasure takes the damage
+// for both.
 void AppendSisterOfPainExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (PlayerbotAI::IsTank(botAI->GetBot()))
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot))
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& attackers = context->GetValue<GuidVector>("attackers")->RefGet();
-    bool const isPainAttacker = std::any_of(
-        attackers.begin(), attackers.end(),
-        [](ObjectGuid const& guid) { return guid.GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN); });
-    if (!isPainAttacker)
-        return;
-
-    auto const& pleasures =
-        context->GetValue<GuidVector>("linked sisters of pleasure")->RefGet();
-    for (ObjectGuid const& guid : pleasures)
-    {
-        if (Unit* pain = GetLinkedSisterOfPain(botAI->GetUnit(guid)))
-            exclusions.insert(pain->GetGUID());
-    }
+    if (Unit* pain = GetSkullSisterOfPain(bot))
+        exclusions.insert(pain->GetGUID());
 }
 
 void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)

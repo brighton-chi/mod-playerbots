@@ -14,6 +14,7 @@
 #include "PathGenerator.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellInfo.h"
@@ -279,47 +280,28 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
     return pain && pain->IsAlive() ? pain : nullptr;
 }
 
-GuidVector FindLinkedSisterOfPleasureGuids(PlayerbotAI* botAI)
+Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
     std::list<Creature*> sisters;
     botAI->GetBot()->GetCreatureListWithEntryInGrid(
         sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
-
-    GuidVector pleasures;
     for (Creature* sister : sisters)
     {
         if (GetLinkedSisterOfPain(sister))
-            pleasures.push_back(sister->GetGUID());
-    }
-
-    return pleasures;
-}
-
-Unit* GetLinkedSisterOfPleasure(PlayerbotAI* botAI)
-{
-    auto const& pleasures =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("linked sisters of pleasure")->RefGet();
-    for (ObjectGuid const& guid : pleasures)
-    {
-        Unit* pleasure = botAI->GetUnit(guid);
-        if (GetLinkedSisterOfPain(pleasure))
-            return pleasure;
+            return sister;
     }
 
     return nullptr;
 }
 
-bool IsLinkedSisterOfPain(PlayerbotAI* botAI, Unit* pain)
+Unit* GetSkullSisterOfPain(Player* bot)
 {
-    if (!pain || pain->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
-        return false;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
 
-    auto const& pleasures =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("linked sisters of pleasure")->RefGet();
-    return std::any_of(
-        pleasures.begin(), pleasures.end(),
-        [botAI, pain](ObjectGuid const& guid)
-        { return GetLinkedSisterOfPain(botAI->GetUnit(guid)) == pain; });
+    return GetLinkedSisterOfPain(
+        ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex)));
 }
 
 GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)

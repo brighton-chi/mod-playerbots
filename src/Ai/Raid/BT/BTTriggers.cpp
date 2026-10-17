@@ -8,7 +8,6 @@
 #include "BTHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
 #include "SharedDefines.h"
 #include "Spell.h"
 #include <algorithm>
@@ -39,15 +38,14 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
-    {
-        Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
-        return !GetLinkedSisterOfPain(skull) && GetLinkedSisterOfPleasure(botAI);
-    }
+        return !GetSkullSisterOfPain(bot) && FindLinkedSisterOfPleasure(botAI);
 
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    return IsLinkedSisterOfPain(botAI, AI_VALUE(Unit*, "current target"));
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
+        GetSkullSisterOfPain(bot) == target;
 }
 
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
