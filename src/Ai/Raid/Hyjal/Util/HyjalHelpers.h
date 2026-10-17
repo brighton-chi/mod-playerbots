@@ -61,10 +61,21 @@ enum class HyjalSpells : uint32
 
 enum class HyjalNpcs : uint32
 {
+    // Rage Winterchill
+    NPC_RAGE_WINTERCHILL  = 17767,
+
     // Anetheron
+    NPC_ANETHERON         = 17808,
     NPC_TOWERING_INFERNAL = 17818,
 
+    // Kaz'rogal
+    NPC_KAZROGAL          = 17888,
+
+    // Azgalor
+    NPC_AZGALOR           = 17842,
+
     // Archimonde
+    NPC_ARCHIMONDE        = 17968,
     NPC_DOOMFIRE          = 18095,
 };
 
