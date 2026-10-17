@@ -41,15 +41,13 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
     {
         Unit* skull = botAI->GetUnit(bot->GetGroup()->GetTargetIcon(RtiTargetValue::skullIndex));
-        return !IsLinkedSisterOfPleasure(skull) && FindLinkedSisterOfPleasure(botAI);
+        return !GetLinkedSisterOfPain(skull) && GetLinkedSisterOfPleasure(botAI);
     }
 
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
-        IsLinkedSisterOfPleasure(AI_VALUE2(Unit*, "find target", "sister of pleasure"));
+    return IsLinkedSisterOfPain(botAI, AI_VALUE(Unit*, "current target"));
 }
 
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()

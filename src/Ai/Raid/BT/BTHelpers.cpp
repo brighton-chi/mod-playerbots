@@ -266,28 +266,60 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
 } // end anonymous namespace (Trash)
 
-bool IsLinkedSisterOfPleasure(Unit* unit)
+Unit* GetLinkedSisterOfPain(Unit* pleasure)
 {
-    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) || !unit->IsAlive())
-        return false;
+    if (!pleasure || pleasure->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PLEASURE) ||
+        !pleasure->IsAlive())
+    {
+        return nullptr;
+    }
 
-    Aura* bonds = unit->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
+    Aura* bonds = pleasure->GetAura(Id(BtSpells::SPELL_SHARED_BONDS));
     Unit* pain = bonds ? bonds->GetCaster() : nullptr;
-    return pain && pain->IsAlive();
+    return pain && pain->IsAlive() ? pain : nullptr;
 }
 
-Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
+GuidVector FindLinkedSisterOfPleasureGuids(PlayerbotAI* botAI)
 {
     std::list<Creature*> sisters;
     botAI->GetBot()->GetCreatureListWithEntryInGrid(
         sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
+
+    GuidVector pleasures;
     for (Creature* sister : sisters)
     {
-        if (IsLinkedSisterOfPleasure(sister))
-            return sister;
+        if (GetLinkedSisterOfPain(sister))
+            pleasures.push_back(sister->GetGUID());
+    }
+
+    return pleasures;
+}
+
+Unit* GetLinkedSisterOfPleasure(PlayerbotAI* botAI)
+{
+    auto const& pleasures =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("linked sisters of pleasure")->RefGet();
+    for (ObjectGuid const& guid : pleasures)
+    {
+        Unit* pleasure = botAI->GetUnit(guid);
+        if (GetLinkedSisterOfPain(pleasure))
+            return pleasure;
     }
 
     return nullptr;
+}
+
+bool IsLinkedSisterOfPain(PlayerbotAI* botAI, Unit* pain)
+{
+    if (!pain || pain->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
+        return false;
+
+    auto const& pleasures =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("linked sisters of pleasure")->RefGet();
+    return std::any_of(
+        pleasures.begin(), pleasures.end(),
+        [botAI, pain](ObjectGuid const& guid)
+        { return GetLinkedSisterOfPain(botAI->GetUnit(guid)) == pain; });
 }
 
 GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)

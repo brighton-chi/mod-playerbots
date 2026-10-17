@@ -225,12 +225,17 @@ inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30 * IN_MILLISECONDS;
 inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 
-// Searched by entry around the marking bot, so it finds her without line of sight.
+// Searched by entry around the bot, so a Sister of Pleasure is found without line of sight.
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 LINKED_SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
-// A living Sister of Pleasure carrying Shared Bonds from a living Sister of Pain.
-bool IsLinkedSisterOfPleasure(Unit* unit);
-Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+// The living Sister of Pain whose Shared Bonds a living Sister of Pleasure carries; null for any
+// other unit.
+Unit* GetLinkedSisterOfPain(Unit* pleasure);
+GuidVector FindLinkedSisterOfPleasureGuids(PlayerbotAI* botAI);
+// From "linked sisters of pleasure", each re-checked, since the value is up to 1 s old.
+Unit* GetLinkedSisterOfPleasure(PlayerbotAI* botAI);
+bool IsLinkedSisterOfPain(PlayerbotAI* botAI, Unit* pain);
 GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
 // True for a Shadowmoon Reaver while magic would build Chaotic Charge on her: from the start of
 // Spell Absorption until it ends, from the margin before her earliest recast, and before her
