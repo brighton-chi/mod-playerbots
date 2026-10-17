@@ -31,8 +31,7 @@ public:
 class SunwellRemoveAuraAction : public Action
 {
 public:
-    SunwellRemoveAuraAction(PlayerbotAI* botAI)
-        : Action(botAI, "sunwell remove aura") {}
+    SunwellRemoveAuraAction(PlayerbotAI* botAI) : Action(botAI, "sunwell remove aura") {}
     bool Execute(Event event) override;
 };
 
@@ -448,7 +447,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(Unit* currentTarget, bool& shouldDropTarget);
+    Unit* ResolveMuruDpsTarget(Unit* currentTarget);
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
