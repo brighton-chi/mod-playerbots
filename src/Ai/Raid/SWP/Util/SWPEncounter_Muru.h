@@ -10,6 +10,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPShared.h"
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -101,10 +102,6 @@ inline Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f
 inline Position const MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
 inline Position const MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
 
-extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
-    muruVoidSentinelTankAssignments;
-
 bool IsMuruPhaseActive(Unit* muru);
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(
@@ -131,6 +128,20 @@ ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
+
+// Shared encounter state
+
+// Darkness is cleared mid-fight each time it expires, so it is optional rather than the whole
+// entry being erased.
+struct MuruEncounterState
+{
+    std::optional<MuruDarknessState> darkness;
+    std::unordered_map<ObjectGuid, uint8> voidSentinelTankAssignments;
+};
+
+MuruEncounterState& MuruState(uint32 instanceId);
+MuruEncounterState* FindMuruState(uint32 instanceId);
+bool MuruResetInstance(uint32 instanceId);
 
 }
 

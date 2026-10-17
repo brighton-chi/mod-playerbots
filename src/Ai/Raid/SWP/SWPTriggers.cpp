@@ -261,9 +261,8 @@ bool FelmystGroundPhaseShouldBeTankedTrigger::IsActiveInEncounter()
 
     if (felmyst->IsFlying())
     {
-        auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
-        if (stateItr != felmystEncounterStates.end())
-            stateItr->second.encapsulateOccurredThisGroundPhase = false;
+        if (FelmystEncounterState* state = FindFelmystState(bot->GetInstanceId()))
+            state->encapsulateOccurredThisGroundPhase = false;
 
         return false;
     }
@@ -282,9 +281,8 @@ bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActiveInEncounter()
 
     if (felmyst->IsFlying())
     {
-        auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
-        if (stateItr != felmystEncounterStates.end())
-            stateItr->second.encapsulateOccurredThisGroundPhase = false;
+        if (FelmystEncounterState* state = FindFelmystState(bot->GetInstanceId()))
+            state->encapsulateOccurredThisGroundPhase = false;
 
         return false;
     }
@@ -314,9 +312,8 @@ bool FelmystMeleeShouldStayTogetherTrigger::IsActiveInEncounter()
 
     if (felmyst->IsFlying())
     {
-        auto const stateItr = felmystEncounterStates.find(bot->GetInstanceId());
-        if (stateItr != felmystEncounterStates.end())
-            stateItr->second.encapsulateOccurredThisGroundPhase = false;
+        if (FelmystEncounterState* state = FindFelmystState(bot->GetInstanceId()))
+            state->encapsulateOccurredThisGroundPhase = false;
 
         return false;
     }
@@ -448,8 +445,8 @@ bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return false;
 
-    auto const itr = eredarTwinsTankAssignments.find(bot->GetInstanceId());
-    if (itr != eredarTwinsTankAssignments.end() && itr->second.announcementMs)
+    EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
+    if (state && state->tankAssignment && state->tankAssignment->announcementMs)
         return false;
 
     return AI_VALUE2(Unit*, "find target", "grand warlock alythess") ||
@@ -744,8 +741,8 @@ bool KiljaedenShouldCoordinateOrbUseTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
         return false;
 
-    auto const stateItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
-    if (stateItr != kiljaedenEncounterStates.end() && stateItr->second.dragonOrbAnnouncementMs)
+    KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
+    if (state && state->dragonOrbAnnouncementMs)
         return false;
 
     if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) < HAND_SEARCH_RADIUS)

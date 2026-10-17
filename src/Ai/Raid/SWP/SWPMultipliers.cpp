@@ -261,11 +261,11 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValueInEncounter(Action
     if (!PlayerbotAI::IsAssistTank(bot))
         return 1.0f;
 
-    auto const stateItr = kalecgosEncounterStates.find(bot->GetInstanceId());
-    if (stateItr == kalecgosEncounterStates.end() || !stateItr->second.encounterStartMs)
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    if (!state || !state->encounterStartMs)
         return 1.0f;
 
-    return getMSTimeDiff(stateItr->second.encounterStartMs, getMSTime()) <
+    return getMSTimeDiff(state->encounterStartMs, getMSTime()) <
         KALECGOS_PULL_THREAT_SUPPRESSION_MS ? 0.0f : 1.0f;
 }
 
@@ -401,9 +401,8 @@ float FelmystWaitForLandingDpsMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    auto const stateItr = felmystEncounterStates.find(felmyst->GetInstanceId());
-    return stateItr != felmystEncounterStates.end() &&
-        stateItr->second.landingDpsWaitStartMs ? 0.0f : 1.0f;
+    FelmystEncounterState const* state = FindFelmystState(felmyst->GetInstanceId());
+    return state && state->landingDpsWaitStartMs ? 0.0f : 1.0f;
 }
 
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValueInEncounter(Action* action)
@@ -547,11 +546,12 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
-    auto const it = eredarTwinsDpsHoldStartMs.find(bot->GetInstanceId());
-    if (it == eredarTwinsDpsHoldStartMs.end())
+    EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
+    if (!state || !state->dpsHoldStartMs)
         return 0.0f;
 
-    return getMSTimeDiff(it->second, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS ? 0.0f : 1.0f;
+    return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) <
+        EREDAR_TWINS_DPS_HOLD_MS ? 0.0f : 1.0f;
 }
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)

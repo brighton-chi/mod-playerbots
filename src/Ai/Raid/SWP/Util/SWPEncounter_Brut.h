@@ -31,18 +31,6 @@ enum class BrutallusRangedBurnState : uint8
     ReturningToNormalPosition
 };
 
-struct BrutallusEncounterState
-{
-    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
-    std::unordered_map<ObjectGuid, uint8> meleeAssignments;
-    std::unordered_map<ObjectGuid, uint8> rangedBurnPadAssignments;
-    std::unordered_map<ObjectGuid, BrutallusRangedBurnState> rangedBurnStates;
-    uint32 rangedAssignmentRebuildMs = 0;
-    uint32 meleeAssignmentRebuildMs = 0;
-};
-
-extern std::unordered_map<uint32, BrutallusEncounterState> brutallusEncounterStates;
-
 struct BrutallusMeleeRingLayout
 {
     float radius;
@@ -109,6 +97,22 @@ bool TryGetBrutallusLaneTraversalPosition(
     float currentX, float currentY, Position& position);
 bool ReleaseBrutallusBurnPad(Player* bot);
 bool HasBrutallusBurn(Player* bot);
+
+// Shared encounter state
+
+struct BrutallusEncounterState
+{
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    std::unordered_map<ObjectGuid, uint8> meleeAssignments;
+    std::unordered_map<ObjectGuid, uint8> rangedBurnPadAssignments;
+    std::unordered_map<ObjectGuid, BrutallusRangedBurnState> rangedBurnStates;
+    uint32 rangedAssignmentRebuildMs = 0;
+    uint32 meleeAssignmentRebuildMs = 0;
+};
+
+BrutallusEncounterState& BrutallusState(uint32 instanceId);
+BrutallusEncounterState* FindBrutallusState(uint32 instanceId);
+bool BrutallusResetInstance(uint32 instanceId);
 
 }
 

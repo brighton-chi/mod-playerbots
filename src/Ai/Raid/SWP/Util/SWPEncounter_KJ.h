@@ -43,16 +43,6 @@ struct KiljaedenDarknessShieldState
     uint32 lastDarknessCastMsLeft = 0;
 };
 
-struct KiljaedenEncounterState
-{
-    std::vector<KiljaedenArmageddon> armageddons;
-    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
-    std::unordered_map<ObjectGuid, uint8> rangedArmageddonAssignments;
-    uint32 dragonOrbAnnouncementMs = 0;
-    uint32 rangedAssignmentRebuildMs = 0;
-    uint32 rangedArmageddonRebuildMs = 0;
-};
-
 inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
     Id(SwpObjects::GO_DRAGON_ORB_1),
     Id(SwpObjects::GO_DRAGON_ORB_2),
@@ -121,12 +111,6 @@ inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.82
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
 inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
 
-extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
-    kiljaedenHandControlClaims;
-extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
-extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
-
 GuidVector FindKiljaedenHandGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
 bool IsKiljaedenHandControlClaimed(Unit* hand);
@@ -149,6 +133,25 @@ Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 s
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
 bool HasStaleRootFlag(Player* bot);
 bool ReleaseStaleRootFlag(Player* bot);
+
+// Shared encounter state
+
+struct KiljaedenEncounterState
+{
+    std::vector<KiljaedenArmageddon> armageddons;
+    std::unordered_map<ObjectGuid, uint8> rangedAssignments;
+    std::unordered_map<ObjectGuid, uint8> rangedArmageddonAssignments;
+    std::unordered_map<ObjectGuid, uint32> handControlClaims;
+    std::unordered_set<ObjectGuid> dragonOrbUsers;
+    std::unordered_set<ObjectGuid> trackedArmageddonTargets;
+    uint32 dragonOrbAnnouncementMs = 0;
+    uint32 rangedAssignmentRebuildMs = 0;
+    uint32 rangedArmageddonRebuildMs = 0;
+};
+
+KiljaedenEncounterState& KiljaedenState(uint32 instanceId);
+KiljaedenEncounterState* FindKiljaedenState(uint32 instanceId);
+bool KiljaedenResetInstance(uint32 instanceId);
 
 }
 

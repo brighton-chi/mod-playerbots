@@ -96,22 +96,6 @@ struct FogSafeThreshold
     bool safeSideIsNorth;  // true = safe side has higher X (north), false = lower X (south)
 };
 
-struct FelmystEncounterState
-{
-    IncomingEncapsulateState incomingEncapsulate;
-    bool encapsulateOccurredThisGroundPhase = false;
-    std::unordered_map<ObjectGuid, uint8> demonicVaporRegionIndices;
-    uint8 demonicVaporUsedRegionMask = 0;
-    uint8 demonicVaporFirstRegionIndex = 0;
-    FogOfCorruptionState fogOfCorruption;
-    FogPassState fogPass;
-    uint32 landingDpsWaitStartMs = 0;
-    uint32 landingTouchdownMs = 0;
-    ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
-};
-
-extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
-
 struct FelmystDemonicVaporGuids
 {
     GuidVector heads;
@@ -256,6 +240,26 @@ bool DidEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);
 Player* GetFelmystFlightLeader(Player* player);
+
+// Shared encounter state
+
+struct FelmystEncounterState
+{
+    IncomingEncapsulateState incomingEncapsulate;
+    bool encapsulateOccurredThisGroundPhase = false;
+    std::unordered_map<ObjectGuid, uint8> demonicVaporRegionIndices;
+    uint8 demonicVaporUsedRegionMask = 0;
+    uint8 demonicVaporFirstRegionIndex = 0;
+    FogOfCorruptionState fogOfCorruption;
+    FogPassState fogPass;
+    uint32 landingDpsWaitStartMs = 0;
+    uint32 landingTouchdownMs = 0;
+    ObjectGuid flightLeaderGuid = ObjectGuid::Empty;
+};
+
+FelmystEncounterState& FelmystState(uint32 instanceId);
+FelmystEncounterState* FindFelmystState(uint32 instanceId);
+bool FelmystResetInstance(uint32 instanceId);
 
 }
 
