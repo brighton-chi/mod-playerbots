@@ -17,6 +17,7 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "ThreatManager.h"
 #include "WarriorActions.h"
 #include "ZAActions.h"
 #include "ZAHelpers.h"
@@ -45,6 +46,13 @@ bool IsHazardousMovement(Action* action)
         dynamic_cast<CastDisengageAction*>(action);
 }
 
+bool IsZulAmanBoss(uint32 entry)
+{
+    return entry == Id(ZaNpcs::NPC_AKILZON) || entry == Id(ZaNpcs::NPC_NALORAKK) ||
+        entry == Id(ZaNpcs::NPC_JANALAI) || entry == Id(ZaNpcs::NPC_HALAZZI) ||
+        entry == Id(ZaNpcs::NPC_HEX_LORD_MALACRASS) || entry == Id(ZaNpcs::NPC_ZULJIN);
+}
+
 }
 
 // Shared
@@ -58,15 +66,12 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* boss = nullptr;
-    static constexpr std::array zulAmanBosses = {
-        "zul'jin", "hex lord malacrass", "halazzi", "jan'alai", "nalorakk", "akil'zon",
-    };
-
-    for (char const* name : zulAmanBosses)
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
-        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+        Unit* unit = ref->GetOwner();
+        if (unit && IsZulAmanBoss(unit->GetEntry()))
         {
-            boss = target;
+            boss = unit;
             break;
         }
     }
@@ -252,11 +257,11 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<AkilzonMoveToEyeOfTheStormAction*>(action))
         return 1.0f;
 
-    auto it = akilzonStormTimer.find(bot->GetInstanceId());
-    if (it == akilzonStormTimer.end())
+    std::optional<uint32> const& stormTimer = ZaState(bot->GetInstanceId()).akilzonStormTimer;
+    if (!stormTimer)
         return 1.0f;
 
-    return IsInStormWindow(it->second) ? 0.0f : 1.0f;
+    return IsInStormWindow(*stormTimer) ? 0.0f : 1.0f;
 }
 
 // Nalorakk <Bear Avatar>
