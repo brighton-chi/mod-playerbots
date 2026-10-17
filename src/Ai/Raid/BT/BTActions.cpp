@@ -110,15 +110,26 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= eastFlameGuid.erase(instanceId) > 0;
     reset |= illidanInfections.erase(instanceId) > 0;
 
-    if (!AI_VALUE2(bool, "combat", "self target"))
+    // Only a dead or vanished Reaver's timing goes, so a pack still being fought keeps its own.
+    auto const reaversIt = shadowmoonReaverAbsorptionStart.find(instanceId);
+    if (reaversIt != shadowmoonReaverAbsorptionStart.end())
     {
-        reset |= shadowmoonReaverAbsorptionStart.erase(instanceId) > 0;
-        reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
-            Id(BtNpcs::NPC_SISTER_OF_PLEASURE),
-            Id(BtNpcs::NPC_ASHTONGUE_CHANNELER),
-            Id(BtNpcs::NPC_ASHTONGUE_SORCERER),
-        });
+        reset |= std::erase_if(
+            reaversIt->second,
+            [this](auto const& entry)
+            {
+                Unit* reaver = ObjectAccessor::GetUnit(*bot, entry.first);
+                return !reaver || !reaver->IsAlive();
+            }) > 0;
+
+        if (reaversIt->second.empty())
+            shadowmoonReaverAbsorptionStart.erase(reaversIt);
     }
+
+    reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
+        Id(BtNpcs::NPC_ASHTONGUE_CHANNELER),
+        Id(BtNpcs::NPC_ASHTONGUE_SORCERER),
+    });
 
     return reset;
 }
