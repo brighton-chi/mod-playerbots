@@ -251,7 +251,8 @@ float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* a
     if (bossEntry == Id(ZaNpcs::NPC_ZULJIN))
         return boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 
-    return bossEntry == Id(ZaNpcs::NPC_JANALAI) || bossEntry == Id(ZaNpcs::NPC_AKILZON) ? 0.0f : 1.0f;
+    return bossEntry == Id(ZaNpcs::NPC_JANALAI) || bossEntry == Id(ZaNpcs::NPC_AKILZON) ?
+        0.0f : 1.0f;
 }
 
 // Akil'zon <Eagle Avatar>
