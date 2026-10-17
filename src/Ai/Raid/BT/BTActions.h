@@ -94,9 +94,11 @@ public:
 
 private:
     bool RestoreReactState(Guardian* pet);
+    bool CommandPetAttack(Guardian* pet, Unit* target);
 
     ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    // Each summon is a new pet with a new GUID, so a stance saved for an earlier pet is dropped.
+    ObjectGuid _passivePet;
 };
 
 // High Warlord Naj'entus

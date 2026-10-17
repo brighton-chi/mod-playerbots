@@ -199,14 +199,15 @@ bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
 
 // Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
 // attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
-// may attack them otherwise.
+// is sent onto them otherwise.
 bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
     if (!pet)
         return false;
 
-    if (context->GetValue<GuidVector>("shadowmoon reavers")->RefGet().empty())
+    auto const& reavers = context->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    if (reavers.empty())
         return RestoreReactState(pet);
 
     Unit* target = FindPetTargetOtherThanReaver(botAI);
@@ -216,7 +217,7 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
             return false;
 
         _previousReactState = pet->GetReactState();
-        _setPassive = true;
+        _passivePet = pet->GetGUID();
         pet->AttackStop();
         pet->InterruptNonMeleeSpells(false);
         pet->SetReactState(REACT_PASSIVE);
@@ -232,12 +233,56 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 
     bool const restored = RestoreReactState(pet);
     Unit* victim = pet->GetVictim();
-    if (!target || !victim || !victim->IsAlive() ||
-        victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
+    if ((!victim || !victim->IsAlive()) && !pet->HasReactState(REACT_PASSIVE))
     {
+        // Idle, as after waiting passive: sent to the other target, else to a Reaver now that
+        // all are safe, the owner's target first.
+        if (target)
+            return CommandPetAttack(pet, target);
+
+        auto const canAttackReaver = [pet](Unit* unit)
+        {
+            return unit && unit->IsAlive() &&
+                unit->GetEntry() == Id(BtNpcs::NPC_SHADOWMOON_REAVER) &&
+                pet->IsValidAttackTarget(unit);
+        };
+
+        Unit* ownerTarget = AI_VALUE(Unit*, "current target");
+        if (canAttackReaver(ownerTarget))
+            return CommandPetAttack(pet, ownerTarget);
+
+        for (ObjectGuid const& guid : reavers)
+        {
+            Unit* reaver = botAI->GetUnit(guid);
+            if (canAttackReaver(reaver))
+                return CommandPetAttack(pet, reaver);
+        }
+
         return restored;
     }
 
+    if (!target || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
+        return restored;
+
+    return CommandPetAttack(pet, target);
+}
+
+bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
+{
+    if (_passivePet.IsEmpty())
+        return false;
+
+    bool const isSamePet = pet->GetGUID() == _passivePet;
+    _passivePet.Clear();
+    if (!isSamePet)
+        return false;
+
+    pet->SetReactState(_previousReactState);
+    return true;
+}
+
+bool ShadowmoonReaverControlCasterPetAction::CommandPetAttack(Guardian* pet, Unit* target)
+{
     pet->AttackStop();
     pet->InterruptNonMeleeSpells(false);
     pet->ClearUnitState(UNIT_STATE_FOLLOW);
@@ -252,16 +297,6 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
     }
 
     pet->AI()->AttackStart(target);
-    return true;
-}
-
-bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
-{
-    if (!_setPassive)
-        return false;
-
-    pet->SetReactState(_previousReactState);
-    _setPassive = false;
     return true;
 }
 
