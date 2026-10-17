@@ -24,6 +24,7 @@
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "ThreatManager.h"
 #include "Timer.h"
 #include "WipeAction.h"
 
@@ -76,20 +77,32 @@ float SunwellControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "entropius"))
-        return 1.0f;
-
-    static constexpr std::array swpBosses = {
-        "kil'jaeden", "m'uru", "grand warlock alythess", "brutallus", "kalecgos",
-    };
-
-    for (char const* name : swpBosses)
+    bool isHeldBoss = false;
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
-        if (AI_VALUE2(Unit*, "find target", name))
-            return 0.0f;
+        Unit* unit = ref->GetOwner();
+        if (!unit)
+            continue;
+
+        switch (unit->GetEntry())
+        {
+            case Id(SwpNpcs::NPC_ENTROPIUS):
+                return 1.0f;
+
+            case Id(SwpNpcs::NPC_KALECGOS_DRAGON):
+            case Id(SwpNpcs::NPC_BRUTALLUS):
+            case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+            case Id(SwpNpcs::NPC_MURU):
+            case Id(SwpNpcs::NPC_KILJAEDEN):
+                isHeldBoss = true;
+                break;
+
+            default:
+                break;
+        }
     }
 
-    return 1.0f;
+    return isHeldBoss ? 0.0f : 1.0f;
 }
 
 float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
@@ -116,14 +129,72 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         }
     }
 
+    Unit* hand = nullptr;
+    Unit* kiljaeden = nullptr;
+    Unit* muru = nullptr;
+    Unit* entropius = nullptr;
+    Unit* alythess = nullptr;
+    Unit* sacrolash = nullptr;
+    Unit* felmyst = nullptr;
+    Unit* brutallus = nullptr;
+    Unit* kalecgos = nullptr;
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Unit* unit = ref->GetOwner();
+        if (!unit)
+            continue;
+
+        switch (unit->GetEntry())
+        {
+            case Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER):
+                hand = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_KILJAEDEN):
+                kiljaeden = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_MURU):
+                muru = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_ENTROPIUS):
+                entropius = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+                alythess = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_LADY_SACROLASH):
+                sacrolash = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_FELMYST):
+                felmyst = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_BRUTALLUS):
+                brutallus = unit;
+                break;
+
+            case Id(SwpNpcs::NPC_KALECGOS_DRAGON):
+                kalecgos = unit;
+                break;
+
+            default:
+                break;
+        }
+    }
+
     // Kil'jaeden is summoned only when the last Hand dies.
-    if (AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+    if (hand)
         return 0.0f;
 
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action));
 
-    if (Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden"))
+    if (kiljaeden)
     {
         if (kiljaeden->GetHealthPct() <= KILJAEDEN_PHASE5_HP_THRESHOLD)
             return 1.0f;
@@ -134,9 +205,8 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
     }
 
-    if (Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru"))
+    if (muru)
     {
-        Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
         if (entropius && entropius->GetHealthPct() < BOSS_ENGAGED_HEALTH_PCT)
             return 1.0f;
 
@@ -147,14 +217,13 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
     }
 
-    if (AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (alythess)
     {
-        Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
         return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ?
             0.0f : 1.0f;
     }
 
-    if (Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst"))
+    if (felmyst)
     {
         if (felmyst->IsFlying())
             return 0.0f;
@@ -162,10 +231,10 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
     }
 
-    if (Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus"))
+    if (brutallus)
         return brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "kalecgos")) // Use cooldowns against Sathrovarr only.
+    if (kalecgos) // Use cooldowns against Sathrovarr only.
         return IsInSpectralRealm(bot) ? 1.0f : 0.0f;
 
     return 1.0f;

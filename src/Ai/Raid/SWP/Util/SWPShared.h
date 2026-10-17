@@ -103,12 +103,16 @@ enum class SwpNpcs : uint32
     NPC_KALECGOS_DRAGON          = 24850,
     NPC_KALECGOS_HUMANOID        = 24891,
 
+    // Brutallus
+    NPC_BRUTALLUS                = 24882,
+
     // Felmyst
     NPC_FELMYST                  = 25038,
     NPC_DEMONIC_VAPOR            = 25265, // The vapor "head" that chases a player
     NPC_DEMONIC_VAPOR_TRAIL      = 25267,
 
     // Eredar Twins
+    NPC_LADY_SACROLASH           = 25165,
     NPC_GRAND_WARLOCK_ALYTHESS   = 25166,
 
     // M'uru
@@ -123,6 +127,7 @@ enum class SwpNpcs : uint32
     NPC_SINGULARITY              = 25855,
 
     // Kil'jaeden <The Deceiver>
+    NPC_KILJAEDEN                = 25315,
     NPC_SHIELD_ORB               = 25502,
     NPC_HAND_OF_THE_DECEIVER     = 25588,
     NPC_POWER_OF_THE_BLUE_FLIGHT = 25653,
