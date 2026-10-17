@@ -11,6 +11,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <optional>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -224,9 +225,6 @@ inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30 * IN_MILLISECONDS;
 inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>>
-    shadowmoonReaverAbsorptionStart;
-
 // Searched by entry around the marking bot, so it finds her without line of sight.
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
 
@@ -239,6 +237,9 @@ GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
 // first one.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit);
 bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI);
+// Reavers are trash, so this runs on every reset and drops only a dead or vanished Reaver's
+// timing; a pack still being fought keeps its own.
+bool PruneShadowmoonReaverAbsorptionStarts(Player* bot);
 ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo);
 // Imps, water elementals, succubi and felhunters, whose attacks build Chaotic Charge.
 bool IsChargeBuildingPet(Unit* unit);
@@ -264,8 +265,6 @@ inline constexpr float NAJENTUS_HURL_SPINE_APPROACH_MARGIN = 2.0f;
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
 // Impales can overlap (every 20 s, 30 s stun), so one entry per impaled player.
-extern std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
-extern std::unordered_map<uint32, ObjectGuid> najentusSpineThrower;
 
 bool IsNajentusImpaled(Player* player);
 // An impaled group member with no living remover assigned, for the mechanic tracker to assign.
@@ -472,7 +471,6 @@ inline std::array const ZEREVOR_TANK_POSITIONS = {
     // Position{ 679.657f, 356.482f, 271.699f },
 };
 
-extern std::unordered_map<uint32, uint32> councilDpsWaitTimer;
 inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
@@ -731,17 +729,6 @@ inline std::array const W_GLAIVE_TANK_POSITIONS = {
     Position{ 690.889f, 324.277f, 354.204f },
 };
 
-extern std::unordered_map<uint32, IllidanPhase> illidanLastPhase;
-// The phase before the current one, so Phase 5 straight from Demon Form shows as a reset.
-extern std::unordered_map<uint32, IllidanPhase> illidanPreviousPhase;
-extern std::unordered_map<uint32, uint32> illidanPhaseStartTime;
-extern std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
-extern std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
-extern std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-// Each infected player's infection, kept until the debuff is gone or the phase changes.
-extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, IllidanInfection>>
-    illidanInfections;
-
 IllidanPhase GetIllidanPhase(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
@@ -838,6 +825,28 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 GameObject* FindNearestCageTrap(PlayerbotAI* botAI);
+
+// Shared encounter state
+
+struct BtInstanceState
+{
+    std::optional<std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
+    std::optional<ObjectGuid> najentusSpineThrower;
+    std::optional<uint32> councilDpsWaitTimer;
+    std::optional<IllidanPhase> illidanLastPhase;
+    // The phase before the current one, so Phase 5 straight from Demon Form shows as a reset.
+    std::optional<IllidanPhase> illidanPreviousPhase;
+    std::optional<uint32> illidanPhaseStartTime;
+    std::optional<uint32> illidanFlamePhaseStartTime;
+    std::optional<ObjectGuid> eastFlameGuid;
+    std::optional<ObjectGuid> westFlameGuid;
+    // Each infected player's infection, kept until the debuff is gone or the phase changes.
+    std::optional<std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
+};
+
+BtInstanceState& BtState(uint32 instanceId);
+BtInstanceState* FindBtState(uint32 instanceId);
+bool BtResetInstance(uint32 instanceId);
 
 }
 

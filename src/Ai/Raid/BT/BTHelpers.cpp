@@ -23,6 +23,7 @@
 #include <cmath>
 #include <limits>
 #include <list>
+#include <mutex>
 #include <tuple>
 
 using namespace EncounterHelpers;
@@ -32,6 +33,10 @@ namespace BtHelpers
 
 namespace
 {
+
+std::mutex btStateMutex;
+std::unordered_map<uint32, BtInstanceState> btStates;
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> reaverAbsorptionStarts;
 
 Player* GetCachedPlayer(PlayerbotAI* botAI, char const* value)
 {
@@ -175,8 +180,6 @@ Position GetBotPointInRectangle(
 
 // Trash
 
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> shadowmoonReaverAbsorptionStart;
-
 namespace
 {
 
@@ -315,17 +318,18 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 
     ObjectGuid const guid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();
+    std::lock_guard lock(btStateMutex);
     if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
         // Reconstructed from the aura, so every caller stamps the same start.
         uint32 const elapsed =
             static_cast<uint32>(absorption->GetMaxDuration() - absorption->GetDuration());
-        shadowmoonReaverAbsorptionStart[instanceId][guid] = getMSTime() - elapsed;
+        reaverAbsorptionStarts[instanceId][guid] = getMSTime() - elapsed;
         return true;
     }
 
-    auto const instanceIt = shadowmoonReaverAbsorptionStart.find(instanceId);
-    if (instanceIt == shadowmoonReaverAbsorptionStart.end())
+    auto const instanceIt = reaverAbsorptionStarts.find(instanceId);
+    if (instanceIt == reaverAbsorptionStarts.end())
         return true;
 
     auto const it = instanceIt->second.find(guid);
@@ -348,6 +352,27 @@ bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI)
     }
 
     return false;
+}
+
+bool PruneShadowmoonReaverAbsorptionStarts(Player* bot)
+{
+    std::lock_guard lock(btStateMutex);
+    auto const reaversIt = reaverAbsorptionStarts.find(bot->GetInstanceId());
+    if (reaversIt == reaverAbsorptionStarts.end())
+        return false;
+
+    bool const pruned = std::erase_if(
+        reaversIt->second,
+        [bot](auto const& entry)
+        {
+            Unit* reaver = ObjectAccessor::GetUnit(*bot, entry.first);
+            return !reaver || !reaver->IsAlive();
+        }) > 0;
+
+    if (reaversIt->second.empty())
+        reaverAbsorptionStarts.erase(reaversIt);
+
+    return pruned;
 }
 
 ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo)
@@ -405,9 +430,6 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
 
 // High Warlord Naj'entus
 
-std::unordered_map<uint32, std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
-std::unordered_map<uint32, ObjectGuid> najentusSpineThrower;
-
 namespace // High Warlord Naj'entus
 {
 
@@ -425,6 +447,12 @@ bool CanThrowNajentusSpine(Player* bot)
         bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
+std::vector<NajentusSpineAssignment> const* FindNajentusSpineAssignments(uint32 instanceId)
+{
+    BtInstanceState const* state = FindBtState(instanceId);
+    return state && state->najentusSpineAssignments ? &*state->najentusSpineAssignments : nullptr;
+}
+
 } // end anonymous namespace (High Warlord Naj'entus)
 
 bool IsNajentusImpaled(Player* player)
@@ -439,7 +467,7 @@ Player* FindNajentusUnassignedImpaledPlayer(Player* bot)
     if (!group)
         return nullptr;
 
-    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
+    auto const* assignments = FindNajentusSpineAssignments(bot->GetInstanceId());
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -447,9 +475,9 @@ Player* FindNajentusUnassignedImpaledPlayer(Player* bot)
             continue;
 
         bool assigned = false;
-        if (it != najentusSpineAssignments.end())
+        if (assignments)
         {
-            for (NajentusSpineAssignment const& assignment : it->second)
+            for (NajentusSpineAssignment const& assignment : *assignments)
             {
                 if (assignment.impaled == member->GetGUID() &&
                     IsValidSpineRemover(bot, assignment.remover))
@@ -473,7 +501,7 @@ Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
     if (!group || !impaled)
         return nullptr;
 
-    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
+    auto const* assignments = FindNajentusSpineAssignments(bot->GetInstanceId());
 
     Player* remover = nullptr;
     float closestDist = std::numeric_limits<float>::max();
@@ -487,8 +515,8 @@ Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
             continue;
         }
 
-        if (it != najentusSpineAssignments.end() &&
-            std::any_of(it->second.begin(), it->second.end(),
+        if (assignments &&
+            std::any_of(assignments->begin(), assignments->end(),
                         [member](NajentusSpineAssignment const& assignment)
                         { return assignment.remover == member->GetGUID(); }))
         {
@@ -508,11 +536,11 @@ Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
 
 Player* GetNajentusImpaledPlayerToFree(Player* bot)
 {
-    auto const it = najentusSpineAssignments.find(bot->GetInstanceId());
-    if (it == najentusSpineAssignments.end())
+    auto const* assignments = FindNajentusSpineAssignments(bot->GetInstanceId());
+    if (!assignments)
         return nullptr;
 
-    for (NajentusSpineAssignment const& assignment : it->second)
+    for (NajentusSpineAssignment const& assignment : *assignments)
     {
         if (assignment.remover != bot->GetGUID())
             continue;
@@ -526,17 +554,17 @@ Player* GetNajentusImpaledPlayerToFree(Player* bot)
 
 bool IsNajentusSpineThrower(Player* bot)
 {
-    auto const it = najentusSpineThrower.find(bot->GetInstanceId());
-    return it != najentusSpineThrower.end() && it->second == bot->GetGUID();
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state && state->najentusSpineThrower == bot->GetGUID();
 }
 
 Player* GetNajentusSpineThrower(Player* bot)
 {
-    auto const it = najentusSpineThrower.find(bot->GetInstanceId());
-    if (it == najentusSpineThrower.end())
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    if (!state || !state->najentusSpineThrower)
         return nullptr;
 
-    Player* thrower = ObjectAccessor::GetPlayer(*bot, it->second);
+    Player* thrower = ObjectAccessor::GetPlayer(*bot, *state->najentusSpineThrower);
     return CanThrowNajentusSpine(thrower) ? thrower : nullptr;
 }
 
@@ -1099,8 +1127,6 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 
 // Illidari Council
 
-std::unordered_map<uint32, uint32> councilDpsWaitTimer;
-
 // (1) First priority is an assistant Mage (real player or bot)
 // (2) If no assistant Mage, then look for any Mage bot
 ObjectGuid FindZerevorMageTankGuid(Player* bot)
@@ -1408,13 +1434,16 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 
 // Illidan Stormrage <The Betrayer>
 
-std::unordered_map<uint32, IllidanPhase> illidanLastPhase;
-std::unordered_map<uint32, IllidanPhase> illidanPreviousPhase;
-std::unordered_map<uint32, uint32> illidanPhaseStartTime;
-std::unordered_map<uint32, uint32> illidanFlamePhaseStartTime;
-std::unordered_map<uint32, ObjectGuid> eastFlameGuid;
-std::unordered_map<uint32, ObjectGuid> westFlameGuid;
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
+namespace // Illidan Stormrage
+{
+
+std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId)
+{
+    BtInstanceState const* state = FindBtState(instanceId);
+    return state && state->illidanInfections ? &*state->illidanInfections : nullptr;
+}
+
+} // end anonymous namespace (Illidan Stormrage)
 
 IllidanPhase GetIllidanPhase(Unit* illidan)
 {
@@ -1471,30 +1500,29 @@ bool IsIllidanSpeechInProgress(Player* bot)
 
 bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs)
 {
-    auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
-    return it == illidanPhaseStartTime.end() ||
-        getMSTimeDiff(it->second, getMSTime()) < durationMs;
+    BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+    return !state || !state->illidanPhaseStartTime ||
+        getMSTimeDiff(*state->illidanPhaseStartTime, getMSTime()) < durationMs;
 }
 
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase)
 {
-    uint32 const instanceId = illidan.GetInstanceId();
-    auto const recorded = illidanLastPhase.find(instanceId);
-    if (recorded == illidanLastPhase.end())
+    BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+    if (!state || !state->illidanLastPhase)
         return IllidanPhase::None;
 
-    if (recorded->second != phase)
-        return recorded->second;
+    if (*state->illidanLastPhase != phase)
+        return *state->illidanLastPhase;
 
-    auto const previous = illidanPreviousPhase.find(instanceId);
-    return previous != illidanPreviousPhase.end() ? previous->second : IllidanPhase::None;
+    return state->illidanPreviousPhase.value_or(IllidanPhase::None);
 }
 
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
-    auto const it = illidanPhaseStartTime.find(illidan.GetInstanceId());
-    return it != illidanPhaseStartTime.end() &&
-        getMSTimeDiff(it->second, getMSTime()) >= ILLIDAN_DEMON_FORM_DURATION_MS - durationMs;
+    BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+    return state && state->illidanPhaseStartTime &&
+        getMSTimeDiff(*state->illidanPhaseStartTime, getMSTime()) >=
+        ILLIDAN_DEMON_FORM_DURATION_MS - durationMs;
 }
 
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
@@ -1505,8 +1533,8 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     // The tracker stamps a new phase's start on its next tick, and until then the start time is
     // the old phase's, so a change it hasn't recorded yet counts as a phase just started.
-    auto const recorded = illidanLastPhase.find(illidan->GetInstanceId());
-    bool const isUnrecorded = recorded == illidanLastPhase.end() || recorded->second != phase;
+    BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
+    bool const isUnrecorded = !state || state->illidanLastPhase != phase;
     if (phase == IllidanPhase::Demon)
     {
         if (illidan->GetHealthPct() <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
@@ -1718,16 +1746,15 @@ Position GetIllidanRecordedInfectionPosition(
 {
     IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(illidan, phase);
     Player* bot = botAI->GetBot();
-    auto const it = illidanInfections.find(bot->GetInstanceId());
-    if (it != illidanInfections.end())
+    if (auto const* infections = FindIllidanInfections(bot->GetInstanceId()))
     {
         // Entries from the phase before are kept while he flies.
         bool const isFlying = phase == IllidanPhase::Flying;
-        auto const own = it->second.find(bot->GetGUID());
-        if (own != it->second.end() && (isFlying || own->second.phase == infectionPhase))
+        auto const own = infections->find(bot->GetGUID());
+        if (own != infections->end() && (isFlying || own->second.phase == infectionPhase))
             return own->second.infectionPosition;
 
-        for (auto const& [player, infection] : it->second)
+        for (auto const& [player, infection] : *infections)
         {
             if (infection.hunter == bot->GetGUID() &&
                 (isFlying || infection.phase == infectionPhase))
@@ -1745,20 +1772,20 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     Unit* eastFlame = nullptr;
     Unit* westFlame = nullptr;
 
-    uint32 const instanceId = bot->GetMap()->GetInstanceId();
+    BtInstanceState const* state = FindBtState(bot->GetMap()->GetInstanceId());
 
-    if (eastFlameGuid.find(instanceId) != eastFlameGuid.end())
+    if (state && state->eastFlameGuid)
     {
-        if (Unit* unit = ObjectAccessor::GetUnit(*bot, eastFlameGuid[instanceId]))
+        if (Unit* unit = ObjectAccessor::GetUnit(*bot, *state->eastFlameGuid))
         {
             if (unit->IsAlive())
                 eastFlame = unit;
         }
     }
 
-    if (westFlameGuid.find(instanceId) != westFlameGuid.end())
+    if (state && state->westFlameGuid)
     {
-        if (Unit* unit = ObjectAccessor::GetUnit(*bot, westFlameGuid[instanceId]))
+        if (Unit* unit = ObjectAccessor::GetUnit(*bot, *state->westFlameGuid))
         {
             if (unit->IsAlive())
                 westFlame = unit;
@@ -1795,9 +1822,11 @@ Unit* GetAssignedFlameOfAzzinoth(Player* bot)
         return ownFlame;
 
     // An unrecorded own Flame hasn't spawned yet; a recorded one is dead.
-    auto const& ownFlameGuid = isEastTank ? eastFlameGuid : westFlameGuid;
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    bool const isOwnFlameRecorded =
+        state && (isEastTank ? state->eastFlameGuid : state->westFlameGuid).has_value();
     Unit* otherFlame = isEastTank ? westFlame : eastFlame;
-    if (!otherFlame || !ownFlameGuid.contains(bot->GetInstanceId()))
+    if (!otherFlame || !isOwnFlameRecorded)
         return nullptr;
 
     Player* otherTank = FindFlameOfAzzinothTank(bot, !isEastTank);
@@ -1886,11 +1915,11 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
         return false;
     }
 
-    auto const it = illidanInfections.find(bot->GetInstanceId());
-    if (it == illidanInfections.end())
+    auto const* infections = FindIllidanInfections(bot->GetInstanceId());
+    if (!infections)
         return false;
 
-    for (auto const& [infected, infection] : it->second)
+    for (auto const& [infected, infection] : *infections)
     {
         if (infection.hunter == bot->GetGUID())
             return true;
@@ -1902,11 +1931,11 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    auto const it = illidanInfections.find(bot->GetInstanceId());
-    if (it == illidanInfections.end())
+    auto const* infections = FindIllidanInfections(bot->GetInstanceId());
+    if (!infections)
         return false;
 
-    if (HasParasiticShadowfiend(bot) && it->second.contains(bot->GetGUID()))
+    if (HasParasiticShadowfiend(bot) && infections->contains(bot->GetGUID()))
         return true;
 
     return IsIllidanTrapHunterOnDuty(botAI);
@@ -2384,6 +2413,38 @@ GameObject* FindNearestCageTrap(PlayerbotAI* botAI)
     }
 
     return nearestTrap;
+}
+
+// Shared encounter state
+
+BtInstanceState& BtState(uint32 instanceId)
+{
+    std::lock_guard lock(btStateMutex);
+    return btStates[instanceId];
+}
+
+BtInstanceState* FindBtState(uint32 instanceId)
+{
+    std::lock_guard lock(btStateMutex);
+    auto it = btStates.find(instanceId);
+    return it != btStates.end() ? &it->second : nullptr;
+}
+
+bool BtResetInstance(uint32 instanceId)
+{
+    std::lock_guard lock(btStateMutex);
+    auto it = btStates.find(instanceId);
+    if (it == btStates.end())
+        return false;
+
+    BtInstanceState const& state = it->second;
+    bool const wasSet = state.najentusSpineAssignments || state.najentusSpineThrower ||
+        state.councilDpsWaitTimer || state.illidanLastPhase || state.illidanPreviousPhase ||
+        state.illidanPhaseStartTime || state.illidanFlamePhaseStartTime || state.eastFlameGuid ||
+        state.westFlameGuid || state.illidanInfections;
+
+    btStates.erase(it);
+    return wasSet;
 }
 
 }

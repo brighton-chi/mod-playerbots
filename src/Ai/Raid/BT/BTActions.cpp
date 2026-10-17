@@ -97,34 +97,8 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return reset;
 
-    uint32 const instanceId = bot->GetInstanceId();
-
-    reset |= najentusSpineAssignments.erase(instanceId) > 0;
-    reset |= najentusSpineThrower.erase(instanceId) > 0;
-    reset |= councilDpsWaitTimer.erase(instanceId) > 0;
-    reset |= illidanPhaseStartTime.erase(instanceId) > 0;
-    reset |= illidanFlamePhaseStartTime.erase(instanceId) > 0;
-    reset |= illidanLastPhase.erase(instanceId) > 0;
-    reset |= illidanPreviousPhase.erase(instanceId) > 0;
-    reset |= westFlameGuid.erase(instanceId) > 0;
-    reset |= eastFlameGuid.erase(instanceId) > 0;
-    reset |= illidanInfections.erase(instanceId) > 0;
-
-    // Only a dead or vanished Reaver's timing goes, so a pack still being fought keeps its own.
-    auto const reaversIt = shadowmoonReaverAbsorptionStart.find(instanceId);
-    if (reaversIt != shadowmoonReaverAbsorptionStart.end())
-    {
-        reset |= std::erase_if(
-            reaversIt->second,
-            [this](auto const& entry)
-            {
-                Unit* reaver = ObjectAccessor::GetUnit(*bot, entry.first);
-                return !reaver || !reaver->IsAlive();
-            }) > 0;
-
-        if (reaversIt->second.empty())
-            shadowmoonReaverAbsorptionStart.erase(reaversIt);
-    }
+    reset |= BtResetInstance(bot->GetInstanceId());
+    reset |= PruneShadowmoonReaverAbsorptionStarts(bot);
 
     reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
         Id(BtNpcs::NPC_ASHTONGUE_CHANNELER),
@@ -318,8 +292,10 @@ bool HighWarlordNajentusAssignSpineRemoverAction::Execute(Event /*event*/)
         return false;
 
     // Drop entries for impales that have ended, and any earlier one for this impaled player.
+    std::optional<std::vector<NajentusSpineAssignment>>& assignmentsField =
+        BtState(bot->GetInstanceId()).najentusSpineAssignments;
     std::vector<NajentusSpineAssignment>& assignments =
-        najentusSpineAssignments[bot->GetInstanceId()];
+        assignmentsField ? *assignmentsField : assignmentsField.emplace();
     std::erase_if(assignments,
         [this, impaled](NajentusSpineAssignment const& assignment)
         {
@@ -387,7 +363,7 @@ bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
     if (!thrower)
         return false;
 
-    najentusSpineThrower[bot->GetInstanceId()] = thrower->GetGUID();
+    BtState(bot->GetInstanceId()).najentusSpineThrower = thrower->GetGUID();
     return true;
 }
 
@@ -1844,7 +1820,8 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
     if (!gathios)
         return false;
 
-    return councilDpsWaitTimer.try_emplace(gathios->GetMap()->GetInstanceId(), getMSTime()).second;
+    return EmplaceIfUnset(
+        BtState(gathios->GetMap()->GetInstanceId()).councilDpsWaitTimer, getMSTime());
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -1999,8 +1976,8 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         return Attack(illidan);
     }
 
-    auto const it = illidanPhaseStartTime.find(illidan->GetInstanceId());
-    uint32 const phaseStartTime = it != illidanPhaseStartTime.end() ? it->second : 0;
+    BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
+    uint32 const phaseStartTime = state ? state->illidanPhaseStartTime.value_or(0) : 0;
     if (phaseStartTime != _phaseStartTime)
     {
         _phaseStartTime = phaseStartTime;
@@ -2190,8 +2167,9 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
-    uint32 const instanceId = bot->GetInstanceId();
-    auto& infections = illidanInfections[instanceId];
+    std::optional<std::unordered_map<ObjectGuid, IllidanInfection>>& infectionsField =
+        BtState(bot->GetInstanceId()).illidanInfections;
+    auto& infections = infectionsField ? *infectionsField : infectionsField.emplace();
     std::erase_if(
         infections,
         [&infected, infectionPhase, hasInfectionPosition](auto const& entry)
@@ -2228,7 +2206,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     }
 
     if (infections.empty())
-        illidanInfections.erase(instanceId);
+        infectionsField.reset();
 
     return false;
 }
@@ -2291,8 +2269,9 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     {
         // An unrecorded Flame hasn't spawned yet, so the tank waits by its glaive.
         bool const isEast = IsEastFlameOfAzzinothTank(bot);
-        auto const& flameGuid = isEast ? eastFlameGuid : westFlameGuid;
-        bool const isRecorded = flameGuid.contains(bot->GetInstanceId());
+        BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+        bool const isRecorded =
+            state && (isEast ? state->eastFlameGuid : state->westFlameGuid).has_value();
         Position position;
         if (isEast && isRecorded)
             position = ILLIDAN_E_GRATE_POSITION;
@@ -2952,28 +2931,28 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     bool updated = false;
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    auto const lastPhaseIt = illidanLastPhase.find(instanceId);
-    bool const isFirstPhase = lastPhaseIt == illidanLastPhase.end();
-    IllidanPhase const lastPhase = isFirstPhase ? IllidanPhase::None : lastPhaseIt->second;
+    BtInstanceState& state = BtState(instanceId);
+    bool const isFirstPhase = !state.illidanLastPhase;
+    IllidanPhase const lastPhase = state.illidanLastPhase.value_or(IllidanPhase::None);
     bool const phaseChanged = isFirstPhase || lastPhase != phase;
-    illidanLastPhase[instanceId] = phase;
+    state.illidanLastPhase = phase;
 
     if (phaseChanged)
     {
-        illidanPreviousPhase[instanceId] = lastPhase;
+        state.illidanPreviousPhase = lastPhase;
         if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
             phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev)
         {
-            illidanPhaseStartTime[instanceId] = now;
+            state.illidanPhaseStartTime = now;
             updated = true;
         }
         else if (phase == IllidanPhase::Flying)
         {
-            if (illidanPhaseStartTime.erase(instanceId) > 0)
+            if (ResetIfSet(state.illidanPhaseStartTime))
                 updated = true;
         }
 
-        if (phase != IllidanPhase::Flying && illidanFlamePhaseStartTime.erase(instanceId) > 0)
+        if (phase != IllidanPhase::Flying && ResetIfSet(state.illidanFlamePhaseStartTime))
             updated = true;
     }
 
@@ -2981,7 +2960,7 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     {
         // Each Flame is recorded as it spawns, so its tank can take it at once; the West one comes
         // about 0.7 s before the East one. The head-start hold counts from the first.
-        if (!eastFlameGuid.contains(instanceId) || !westFlameGuid.contains(instanceId))
+        if (!state.eastFlameGuid || !state.westFlameGuid)
         {
             std::list<Creature*> flames;
             bot->GetCreatureListWithEntryInGrid(
@@ -2994,10 +2973,10 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
                 bool const isEast = flame->GetExactDist2d(ILLIDAN_E_GLAIVE_WAITING_POSITION) <
                     flame->GetExactDist2d(ILLIDAN_W_GLAIVE_WAITING_POSITION);
-                auto& flameGuid = isEast ? eastFlameGuid : westFlameGuid;
-                if (flameGuid.try_emplace(instanceId, flame->GetGUID()).second)
+                auto& flameGuid = isEast ? state.eastFlameGuid : state.westFlameGuid;
+                if (EmplaceIfUnset(flameGuid, flame->GetGUID()))
                 {
-                    illidanFlamePhaseStartTime.try_emplace(instanceId, now);
+                    EmplaceIfUnset(state.illidanFlamePhaseStartTime, now);
                     updated = true;
                 }
             }
@@ -3005,9 +2984,9 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     }
     else
     {
-        if (eastFlameGuid.erase(instanceId) > 0)
+        if (ResetIfSet(state.eastFlameGuid))
             updated = true;
-        if (westFlameGuid.erase(instanceId) > 0)
+        if (ResetIfSet(state.westFlameGuid))
             updated = true;
     }
 

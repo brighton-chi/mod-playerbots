@@ -763,9 +763,9 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
-    auto it = councilDpsWaitTimer.find(bot->GetInstanceId());
-    if (it == councilDpsWaitTimer.end() ||
-        getMSTimeDiff(it->second, getMSTime()) >= COUNCIL_DPS_WAIT_MS)
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    if (!state || !state->councilDpsWaitTimer ||
+        getMSTimeDiff(*state->councilDpsWaitTimer, getMSTime()) >= COUNCIL_DPS_WAIT_MS)
     {
         return 1.0f;
     }
@@ -1070,9 +1070,9 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
     {
         constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
-        auto const it = illidanFlamePhaseStartTime.find(illidan->GetInstanceId());
-        bool const inWindow = it != illidanFlamePhaseStartTime.end() &&
-            getMSTimeDiff(it->second, getMSTime()) < flamePhaseDpsWaitMs;
+        BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
+        bool const inWindow = state && state->illidanFlamePhaseStartTime &&
+            getMSTimeDiff(*state->illidanFlamePhaseStartTime, getMSTime()) < flamePhaseDpsWaitMs;
 
         if (!inWindow || IsFlameOfAzzinothTank(bot))
             return 1.0f;

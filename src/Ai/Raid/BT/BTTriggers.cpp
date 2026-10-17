@@ -656,11 +656,12 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     IllidanPhase const phase = GetIllidanPhase(illidan);
     IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
-    auto const it = illidanInfections.find(bot->GetInstanceId());
-    bool const hasInfections = it != illidanInfections.end();
-    if (hasInfections)
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    auto const* infections =
+        state && state->illidanInfections ? &*state->illidanInfections : nullptr;
+    if (infections)
     {
-        for (auto const& [player, infection] : it->second)
+        for (auto const& [player, infection] : *infections)
         {
             if (std::find(infected.begin(), infected.end(), player) == infected.end())
                 return true;
@@ -678,7 +679,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 
     for (ObjectGuid const& guid : infected)
     {
-        if (!hasInfections || !it->second.contains(guid))
+        if (!infections || !infections->contains(guid))
             return true;
     }
 
