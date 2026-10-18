@@ -368,7 +368,8 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_X = 406.8f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_X = 564.0f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_Y = 327.9f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
-inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 80.0f;
+// Reaches every channeler from anywhere in his room, so every bot gets the same kill order.
+inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 

@@ -360,6 +360,10 @@ float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action
     if (!dynamic_cast<DropTargetAction*>(action))
         return 1.0f;
 
+    // Only melee dps walk back into sight; anyone else drops the target and picks another.
+    if (!PlayerbotAI::IsDps(bot) || !PlayerbotAI::IsMelee(bot))
+        return 1.0f;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive())
         return 1.0f;
