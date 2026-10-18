@@ -59,6 +59,18 @@ private:
     bool const _allTanks;
 };
 
+// Used for High Warlord Naj'entus, Supremus, and Illidari Council.
+class BlackTempleSpreadRangedAction : public MovementAction
+{
+public:
+    BlackTempleSpreadRangedAction(PlayerbotAI* botAI, std::string const& name, float distance)
+        : MovementAction(botAI, name), _distance(distance) {}
+    bool Execute(Event event) override;
+
+private:
+    float const _distance;
+};
+
 // Used for Reliquary of Souls and Illidari Council.
 class BlackTempleCastSpellReflectionAction : public Action
 {
@@ -102,14 +114,6 @@ private:
 };
 
 // High Warlord Naj'entus
-
-class HighWarlordNajentusDisperseRangedAction : public MovementAction
-{
-public:
-    HighWarlordNajentusDisperseRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "high warlord naj'entus disperse ranged") {}
-    bool Execute(Event event) override;
-};
 
 class HighWarlordNajentusAssignSpineRemoverAction : public Action
 {
@@ -172,14 +176,6 @@ private:
 };
 
 // Supremus
-
-class SupremusDisperseRangedAction : public MovementAction
-{
-public:
-    SupremusDisperseRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "supremus disperse ranged") {}
-    bool Execute(Event event) override;
-};
 
 class SupremusKiteBossAction : public MovementAction
 {
@@ -499,14 +495,6 @@ private:
     bool ShouldAttackMalande(Unit* malande, Unit* gathios, Unit* zerevor) const;
 };
 
-class IllidariCouncilDisperseRangedAction : public MovementAction
-{
-public:
-    IllidariCouncilDisperseRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidari council disperse ranged") {}
-    bool Execute(Event event) override;
-};
-
 class IllidariCouncilCommandPetTargetAction : public AttackAction
 {
 public:
@@ -694,11 +682,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidanStormrageDisperseRangedAction : public MovementAction
+class IllidanStormrageSpreadRangedAction : public MovementAction
 {
 public:
-    IllidanStormrageDisperseRangedAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage disperse ranged") {}
+    IllidanStormrageSpreadRangedAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage spread ranged") {}
     bool Execute(Event event) override;
 
 private:

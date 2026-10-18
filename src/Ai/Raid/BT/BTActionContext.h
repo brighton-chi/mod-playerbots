@@ -36,8 +36,8 @@ public:
         creators["high warlord naj'entus tanks position boss"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_tanks_position_boss;
 
-        creators["high warlord naj'entus disperse ranged"] =
-            &RaidBlackTempleActionContext::high_warlord_najentus_disperse_ranged;
+        creators["high warlord naj'entus spread ranged"] =
+            &RaidBlackTempleActionContext::high_warlord_najentus_spread_ranged;
 
         creators["high warlord naj'entus assign spine remover"] =
             &RaidBlackTempleActionContext::high_warlord_najentus_assign_spine_remover;
@@ -55,8 +55,8 @@ public:
         creators["supremus misdirect to main tank"] =
             &RaidBlackTempleActionContext::supremus_misdirect_to_main_tank;
 
-        creators["supremus disperse ranged"] =
-            &RaidBlackTempleActionContext::supremus_disperse_ranged;
+        creators["supremus spread ranged"] =
+            &RaidBlackTempleActionContext::supremus_spread_ranged;
 
         creators["supremus kite boss"] = &RaidBlackTempleActionContext::supremus_kite_boss;
 
@@ -165,8 +165,8 @@ public:
         creators["illidari council position mage tank healer"] =
             &RaidBlackTempleActionContext::illidari_council_position_mage_tank_healer;
 
-        creators["illidari council disperse ranged"] =
-            &RaidBlackTempleActionContext::illidari_council_disperse_ranged;
+        creators["illidari council spread ranged"] =
+            &RaidBlackTempleActionContext::illidari_council_spread_ranged;
 
         creators["illidari council command pet target"] =
             &RaidBlackTempleActionContext::illidari_council_command_pet_target;
@@ -220,8 +220,8 @@ public:
         creators["illidan stormrage stop shooting"] =
             &RaidBlackTempleActionContext::illidan_stormrage_stop_shooting;
 
-        creators["illidan stormrage disperse ranged"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_disperse_ranged;
+        creators["illidan stormrage spread ranged"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_spread_ranged;
 
         creators["illidan stormrage reach shadow demon"] =
             &RaidBlackTempleActionContext::illidan_stormrage_reach_shadow_demon;
@@ -281,9 +281,11 @@ private:
             botAI, "high warlord naj'entus tanks position boss", "high warlord naj'entus",
             BtHelpers::NAJENTUS_TANK_POSITION);
     }
-    static Action* high_warlord_najentus_disperse_ranged(PlayerbotAI* botAI)
+    static Action* high_warlord_najentus_spread_ranged(PlayerbotAI* botAI)
     {
-        return new HighWarlordNajentusDisperseRangedAction(botAI);
+        return new BlackTempleSpreadRangedAction(
+            botAI, "high warlord naj'entus spread ranged",
+            BtHelpers::NAJENTUS_RANGED_SPREAD_DISTANCE);
     }
     static Action* high_warlord_najentus_assign_spine_remover(PlayerbotAI* botAI)
     {
@@ -308,9 +310,10 @@ private:
         return new BlackTempleMisdirectToMainTankAction(
             botAI, "supremus misdirect to main tank", "supremus");
     }
-    static Action* supremus_disperse_ranged(PlayerbotAI* botAI)
+    static Action* supremus_spread_ranged(PlayerbotAI* botAI)
     {
-        return new SupremusDisperseRangedAction(botAI);
+        return new BlackTempleSpreadRangedAction(
+            botAI, "supremus spread ranged", BtHelpers::SUPREMUS_RANGED_SPREAD_DISTANCE);
     }
     static Action* supremus_kite_boss(PlayerbotAI* botAI)
     {
@@ -472,9 +475,10 @@ private:
     {
         return new IllidariCouncilPositionMageTankHealerAction(botAI);
     }
-    static Action* illidari_council_disperse_ranged(PlayerbotAI* botAI)
+    static Action* illidari_council_spread_ranged(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilDisperseRangedAction(botAI);
+        return new BlackTempleSpreadRangedAction(
+            botAI, "illidari council spread ranged", BtHelpers::COUNCIL_RANGED_SPREAD_DISTANCE);
     }
     static Action* illidari_council_command_pet_target(PlayerbotAI* botAI)
     {
@@ -546,9 +550,9 @@ private:
     {
         return new IllidanStormrageStopShootingAction(botAI);
     }
-    static Action* illidan_stormrage_disperse_ranged(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_spread_ranged(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageDisperseRangedAction(botAI);
+        return new IllidanStormrageSpreadRangedAction(botAI);
     }
     static Action* illidan_stormrage_reach_shadow_demon(PlayerbotAI* botAI)
     {

@@ -155,6 +155,12 @@ bool BlackTemplePositionBossAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+bool BlackTempleSpreadRangedAction::Execute(Event /*event*/)
+{
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
+    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), _distance);
+}
+
 bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 {
     return botAI->CanCastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot) &&
@@ -302,13 +308,6 @@ bool ShadowmoonReaverControlCasterPetAction::CommandPetAttack(Guardian* pet, Uni
 
 // High Warlord Naj'entus
 
-bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
-    return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), NAJENTUS_RANGED_SPREAD_DISTANCE);
-}
-
 bool HighWarlordNajentusAssignSpineRemoverAction::Execute(Event /*event*/)
 {
     Player* impaled = FindNajentusUnassignedImpaledPlayer(bot);
@@ -430,13 +429,6 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 }
 
 // Supremus
-
-bool SupremusDisperseRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, SUPREMUS_RANGED_SPREAD_DISTANCE);
-    return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), SUPREMUS_RANGED_SPREAD_DISTANCE);
-}
 
 namespace // Supremus
 {
@@ -1750,13 +1742,6 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
         false);
 }
 
-bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
-{
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, COUNCIL_RANGED_SPREAD_DISTANCE);
-    return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), COUNCIL_RANGED_SPREAD_DISTANCE);
-}
-
 bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -2599,7 +2584,7 @@ bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
     return true;
 }
 
-bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
+bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
 {
     if (HasParasiticShadowfiend(bot))
         return false;
@@ -2639,7 +2624,7 @@ bool IllidanStormrageDisperseRangedAction::Execute(Event /*event*/)
 }
 
 // Phase 4: healers in the healer slots and ranged DPS in theirs, each by roster.
-bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(
+bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     Unit const& illidan, Position& position)
 {
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
@@ -2663,7 +2648,7 @@ bool IllidanStormrageDisperseRangedAction::FindDemonFormSlot(
 }
 
 // Short steps toward the Demon, so the bot stops once in reach, never into Aura of Dread or near
-// Shadow Blast round his victim. Disperse ranged brings it back once the Demon is dead.
+// Shadow Blast round his victim. Spread ranged brings it back once the Demon is dead.
 bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

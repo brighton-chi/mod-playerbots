@@ -37,7 +37,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("high warlord naj'entus tanks position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus ranged should spread",
-        { NextAction("high warlord naj'entus disperse ranged", ACTION_RAID + 1) }));
+        { NextAction("high warlord naj'entus spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("high warlord naj'entus impaled player needs remover",
         { NextAction("high warlord naj'entus assign spine remover", ACTION_EMERGENCY + 10) }));
@@ -56,7 +56,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("supremus misdirect to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("supremus ranged should spread",
-        { NextAction("supremus disperse ranged", ACTION_RAID + 1) }));
+        { NextAction("supremus spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("supremus fixated on bot",
         { NextAction("supremus kite boss", ACTION_EMERGENCY + 7) }));
@@ -172,7 +172,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council ranged should spread",
-        { NextAction("illidari council disperse ranged", ACTION_RAID + 2) }));
+        { NextAction("illidari council spread ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidari council pet should switch target",
         { NextAction("illidari council command pet target", ACTION_RAID + 3) }));
@@ -235,7 +235,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidan stormrage stop shooting", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage ranged should spread",
-        { NextAction("illidan stormrage disperse ranged", ACTION_RAID + 2) }));
+        { NextAction("illidan stormrage spread ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage ranged should reach shadow demon",
         { NextAction("illidan stormrage reach shadow demon", ACTION_RAID + 2) }));
