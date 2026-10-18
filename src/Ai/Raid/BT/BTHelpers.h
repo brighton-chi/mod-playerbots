@@ -47,6 +47,7 @@ enum class BtSpells : uint32
 
     // Supremus
     SPELL_SNARE_SELF                = 41922,
+    SPELL_VOLCANIC_ERUPTION         = 40276,
     SPELL_VOLCANIC_GEYSER           = 42055,
     SPELL_MOLTEN_FLAME_PATCH        = 40253, // the patches' dynamic objects
 
@@ -116,6 +117,12 @@ enum class BtSpells : uint32
     // Mage
     SPELL_COUNTERSPELL              =  2139,
     SPELL_SPELLSTEAL                = 30449,
+
+    // Paladin
+    SPELL_DIVINE_SHIELD             =   642,
+
+    // Priest
+    SPELL_DISPERSION                = 47585,
 
     // Shaman
     SPELL_WIND_SHEAR                = 57994,
@@ -331,12 +338,12 @@ inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
 bool IsSupremusKitePhase(Unit* supremus);
 // Fixates fall every 10s from the start of the kite phase. Snare Self's apply time is in whole
-// seconds, so this can run up to 1s long.
+// seconds, as is the game time it is read against, so this can run up to 2s long.
 float GetSupremusFixateTimeRemaining(Unit* supremus);
 float GetSupremusCatchDistance(Player* bot, Unit* supremus);
 // Whether he would reach the bot before the fixate ends if it stood still.
 bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus);
-// Erupting from its 1s cast until Volcanic Geyser ends, about 19s of its full 30s duration.
+// Erupting while Volcanic Geyser lasts: the first 18s of its 30s, from the moment it appears.
 bool IsSupremusVolcanoErupting(Unit* volcano);
 // Molten Flame only in the kite phase; in the tank phase stock avoid aoe handles it.
 std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI);
@@ -348,6 +355,8 @@ bool IsInSupremusHazard(
 float GetLineLengthInSupremusHazards(
     std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
     SupremusHazardZone zone);
+// With Divine Shield or Dispersion a bot may walk through fire, but not stop in it.
+bool CanWalkThroughSupremusFire(Player* bot);
 // The target and range stock reach would use; true when its straight walk into range passes
 // through a hazard's safe zone.
 bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range);

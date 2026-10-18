@@ -507,8 +507,12 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     if (!supremus)
         return false;
 
+    // Only its own last step holds the kite; a fire walk begun before the fixate gives way.
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
-    if (IsWaitingForLastMove(priority))
+    LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+    if (lastMove.msTime != _lastStepTime)
+        lastMove.Set(nullptr);
+    else if (IsWaitingForLastMove(priority))
         return false;
 
     float const timeRemaining = GetSupremusFixateTimeRemaining(supremus);
@@ -592,10 +596,16 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
             continue;
         }
 
+        if (!MoveTo(
+                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true,
+                false))
+        {
+            return false;
+        }
+
         _lastAngle = plan.angle;
-        _lastStepTime = getMSTime();
-        return MoveTo(
-            BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
+        _lastStepTime = lastMove.msTime;
+        return true;
     }
 
     return false;
@@ -656,6 +666,10 @@ float SupremusKiteBossAction::SimulateChase(
 
 bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
     if (!IsInSupremusHazard(
             hazards, bot->GetPositionX(), bot->GetPositionY(), SupremusHazardZone::Safe))
@@ -683,11 +697,11 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         BT_MAP_ID, destination.GetPositionX(), destination.GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, priority, true, false);
 }
 
-// The nearest position a yard clear of every hazard's safe zone that the bot can run to in a s
-// traight line. A bot not yet burning takes only a route that stays out of every damage zone, and
+// The nearest position a yard clear of every hazard's safe zone that the bot can run to in a
+// straight line. A bot not yet burning takes only a route that stays out of every damage zone, and
 // otherwise holds: walled in, running through fire is worse than waiting at its edge. A burning bot
 // takes the route with the least ground under fire, then the nearest.
 bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
@@ -821,10 +835,13 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
         if (!CanTakeStepTowards(bot, x, y, SUPREMUS_REACH_STEP_DISTANCE, stepX, stepY, stepZ))
             return false;
 
+        // Only a turned step commits to a side; walking straight leaves the next turn free.
         if (turns > 0)
+        {
             _lastSide = side;
+            _lastStepTime = getMSTime();
+        }
 
-        _lastStepTime = getMSTime();
         return MoveTo(
             BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
     };

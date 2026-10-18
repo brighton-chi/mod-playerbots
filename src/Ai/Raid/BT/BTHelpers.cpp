@@ -668,9 +668,7 @@ bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus)
 
 bool IsSupremusVolcanoErupting(Unit* volcano)
 {
-    return volcano && volcano->IsAlive() &&
-        (volcano->HasAura(Id(BtSpells::SPELL_VOLCANIC_GEYSER)) ||
-         volcano->HasUnitState(UNIT_STATE_CASTING));
+    return volcano && volcano->IsAlive() && volcano->HasAura(Id(BtSpells::SPELL_VOLCANIC_GEYSER));
 }
 
 std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
@@ -760,11 +758,27 @@ float GetLineLengthInSupremusHazards(
     return total;
 }
 
+bool CanWalkThroughSupremusFire(Player* bot)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_PALADIN:
+            return bot->HasAura(Id(BtSpells::SPELL_DIVINE_SHIELD));
+        case CLASS_PRIEST:
+            return bot->HasAura(Id(BtSpells::SPELL_DISPERSION));
+        default:
+            return false;
+    }
+}
+
 bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range)
 {
     Player* bot = botAI->GetBot();
     target = nullptr;
     range = 0.0f;
+
+    if (CanWalkThroughSupremusFire(bot))
+        return false;
 
     // Stock reach doesn't break a channel either.
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))

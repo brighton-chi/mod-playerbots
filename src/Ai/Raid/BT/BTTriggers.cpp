@@ -168,6 +168,9 @@ bool SupremusNearFireTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
         return false;
 
+    if (bot->isMoving() && CanWalkThroughSupremusFire(bot))
+        return false;
+
     return IsInSupremusHazard(
         GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
         SupremusHazardZone::Safe);

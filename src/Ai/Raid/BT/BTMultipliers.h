@@ -102,8 +102,8 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Stock avoid aoe flees one patch at a time and can't see volcanoes; in the kite phase the fire
-// avoidance sees both. In the tank phase it handles Molten Flame again.
+// Stock avoid aoe flees one hazard at a time, and a volcano only once within 15 yd of it; in the
+// kite phase the fire avoidance sees them all. In the tank phase it handles Molten Flame again.
 class SupremusDisableAvoidAoeInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

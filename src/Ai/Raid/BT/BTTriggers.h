@@ -39,8 +39,8 @@ public:
 };
 
 // A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
-// High Warlord Naj'entus, Supremus, Teron Gorefiend, Mother Shahraz and the Illidari Council (on
-// Gathios).
+// High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil, Mother Shahraz and the
+// Illidari Council (on Gathios).
 class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:

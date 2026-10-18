@@ -12,6 +12,50 @@
 
 using namespace BtHelpers;
 
+// A volcano erupts the moment it appears, on Supremus's target. A bot mid-cast where it will burn
+// drops the cast so it can run, since no action runs until a cast bar ends.
+class SupremusVolcanicEruptionSpellListenerScript : public AllSpellScript
+{
+public:
+    SupremusVolcanicEruptionSpellListenerScript()
+        : AllSpellScript("SupremusVolcanicEruptionSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!caster || spellInfo->Id != Id(BtSpells::SPELL_VOLCANIC_ERUPTION))
+            return;
+
+        Unit* target = spell->m_targets.GetUnitTarget();
+        if (!target)
+            return;
+
+        Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() ||
+                player->GetExactDist2d(target) >= SUPREMUS_VOLCANO_HAZARD_RADIUS)
+            {
+                continue;
+            }
+
+            Spell* ownCast = player->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+            if (!ownCast || ownCast->getState() != SPELL_STATE_PREPARING ||
+                ownCast->GetCastTimeRemaining() <= 0)
+            {
+                continue;
+            }
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("blacktemple", BOT_STATE_COMBAT))
+                continue;
+
+            botAI->RequestSpellInterrupt();
+        }
+    }
+};
+
 // A mage mid-cast when Essence of Desire raises Rune Shield drops the cast so it can steal the
 // shield. Interrupting a preparing cast also cancels its global cooldown.
 class ReliquaryOfSoulsRuneShieldSpellListenerScript : public AllSpellScript
@@ -147,6 +191,7 @@ private:
 
 void AddSC_BlackTempleBotScripts()
 {
+    new SupremusVolcanicEruptionSpellListenerScript();
     new ReliquaryOfSoulsRuneShieldSpellListenerScript();
     new IllidariCouncilCircleOfHealingSpellListenerScript();
 }

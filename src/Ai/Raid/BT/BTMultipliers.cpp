@@ -318,7 +318,8 @@ float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action*
         return 1.0f;
     }
 
-    if (dynamic_cast<SupremusKiteBossAction*>(action))
+    // Attack doesn't move the bot, and a fixated bot that dropped its target needs it to pick one.
+    if (dynamic_cast<SupremusKiteBossAction*>(action) || dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
