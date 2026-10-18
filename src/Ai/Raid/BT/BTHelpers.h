@@ -414,9 +414,9 @@ inline constexpr float GURTOGG_RANGED_HALF_WIDTH = 5.0f;
 inline constexpr float GURTOGG_RANGED_HALF_DEPTH = 2.0f;
 // Groups swap this long after a Bloodboil lands, not as it lands.
 inline constexpr int32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
-// Arcing Smash during Fel Rage reaches about 11.5 yd from him, and he stays within about 8 yd of
-// the Fel Rage target, so the cleave can't reach past about 10 yd from that player. Everyone else
-// in front of him steps off his line to that player to keep this far away.
+// Arcing Smash during Fel Rage reaches 11.5 yd from him, and he stays within about 14 yd of the
+// Fel Rage target, so the cleave can't reach past about 14 yd from that player. Everyone else in
+// front of him steps off his line to that player to keep this far away.
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_DISTANCE = 15.0f;
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_MARGIN = 1.0f;
 // Melee without Fel Rage stand this far behind him during it, opposite the Fel Rage target. A bot
@@ -437,7 +437,8 @@ inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 Position const& GetGurtoggBloodboilPosition(Player* bot);
 // The player he is fixed on during Fel Rage, or nullptr outside it.
 Unit* GetGurtoggFelRageTarget(Unit* gurtogg);
-Position GetGurtoggFelRageMeleePosition(Player* bot, Unit* gurtogg, Unit* felRageTarget);
+Position GetGurtoggFelRageMeleePosition(
+    Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
 // 0 with fewer than two tanks on his threat list.
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
 

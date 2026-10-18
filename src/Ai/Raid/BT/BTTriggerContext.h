@@ -374,13 +374,13 @@ private:
     {
         return new GurtoggBloodboilShouldPositionForBloodboilTrigger(botAI);
     }
-    static Trigger* gurtogg_bloodboil_ranged_should_avoid_frontal_cone(PlayerbotAI* botAI)
-    {
-        return new GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger(botAI);
-    }
     static Trigger* gurtogg_bloodboil_melee_should_stay_behind(PlayerbotAI* botAI)
     {
         return new GurtoggBloodboilMeleeShouldStayBehindTrigger(botAI);
+    }
+    static Trigger* gurtogg_bloodboil_ranged_should_avoid_frontal_cone(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger(botAI);
     }
     static Trigger* gurtogg_bloodboil_fel_rage_on_bot(PlayerbotAI* botAI)
     {

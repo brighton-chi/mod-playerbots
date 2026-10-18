@@ -377,13 +377,13 @@ private:
     {
         return new GurtoggBloodboilRotateRangedGroupsAction(botAI);
     }
-    static Action* gurtogg_bloodboil_ranged_move_out_of_frontal_cone(PlayerbotAI* botAI)
-    {
-        return new GurtoggBloodboilRangedMoveOutOfFrontalConeAction(botAI);
-    }
     static Action* gurtogg_bloodboil_melee_move_behind(PlayerbotAI* botAI)
     {
         return new GurtoggBloodboilMeleeMoveBehindAction(botAI);
+    }
+    static Action* gurtogg_bloodboil_ranged_move_out_of_frontal_cone(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilRangedMoveOutOfFrontalConeAction(botAI);
     }
     static Action* gurtogg_bloodboil_lead_boss_to_tank_position(PlayerbotAI* botAI)
     {

@@ -1081,17 +1081,18 @@ Position const& GetGurtoggBloodboilPosition(Player* bot)
 // The Fel Rage target taunts him onto itself, so it is his victim.
 Unit* GetGurtoggFelRageTarget(Unit* gurtogg)
 {
-    if (!gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
+    if (!gurtogg || !gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return nullptr;
 
     Unit* victim = gurtogg->GetVictim();
     return victim && victim->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) ? victim : nullptr;
 }
 
-Position GetGurtoggFelRageMeleePosition(Player* bot, Unit* gurtogg, Unit* felRageTarget)
+Position GetGurtoggFelRageMeleePosition(
+    Player* bot, Unit const& gurtogg, Unit const& felRageTarget)
 {
-    float const axisAngle = gurtogg->GetAngle(felRageTarget);
-    float relativeAngle = Position::NormalizeOrientation(gurtogg->GetAngle(bot) - axisAngle);
+    float const axisAngle = gurtogg.GetAngle(&felRageTarget);
+    float relativeAngle = Position::NormalizeOrientation(gurtogg.GetAngle(bot) - axisAngle);
     if (relativeAngle > M_PI)
         relativeAngle -= 2.0f * M_PI;
 
@@ -1103,8 +1104,8 @@ Position GetGurtoggFelRageMeleePosition(Player* bot, Unit* gurtogg, Unit* felRag
     }
 
     return Position(
-        gurtogg->GetPositionX() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::cos(angle),
-        gurtogg->GetPositionY() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::sin(angle),
+        gurtogg.GetPositionX() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::cos(angle),
+        gurtogg.GetPositionY() + GURTOGG_FEL_RAGE_MELEE_DISTANCE * std::sin(angle),
         bot->GetPositionZ());
 }
 

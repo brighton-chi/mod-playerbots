@@ -439,12 +439,11 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
 float GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier::GetValueInEncounter(
     Action* action)
 {
-    if (!IsTauntAction(bot, action) &&
-        !dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
-        !dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action))
-    {
+    bool const isMisdirect = bot->getClass() == CLASS_HUNTER &&
+        (dynamic_cast<CastMisdirectionOnMainTankAction*>(action) ||
+         dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action));
+    if (!isMisdirect && !IsTauntAction(bot, action))
         return 1.0f;
-    }
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     return gurtogg && gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)) ? 0.0f : 1.0f;
@@ -487,15 +486,17 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
     if (!gurtogg)
         return 1.0f;
 
-    if (action->GetTarget() != gurtogg && AI_VALUE(Unit*, "current target") != gurtogg)
+    if (AI_VALUE(Unit*, "current target") != gurtogg && action->GetTarget() != gurtogg)
         return 1.0f;
 
     float const secondTankThreat = AI_VALUE(float, "gurtogg bloodboil second tank threat");
     if (secondTankThreat <= 0.0f)
         return 1.0f;
 
-    return gurtogg->GetThreatMgr().GetThreat(bot) >= secondTankThreat * GURTOGG_THREAT_HOLD_RATIO ?
-        0.0f : 1.0f;
+    if (gurtogg->GetThreatMgr().GetThreat(bot) < secondTankThreat * GURTOGG_THREAT_HOLD_RATIO)
+        return 1.0f;
+
+    return dynamic_cast<CastHealingSpellAction*>(action) ? 1.0f : GetDpsHoldValue(bot, action);
 }
 
 // Reliquary of Souls

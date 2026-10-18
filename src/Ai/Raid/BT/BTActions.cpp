@@ -1159,7 +1159,7 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
     if (!felRageTarget)
         return false;
 
-    Position const position = GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget);
+    Position const position = GetGurtoggFelRageMeleePosition(bot, *gurtogg, *felRageTarget);
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED);

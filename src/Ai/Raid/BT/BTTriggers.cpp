@@ -274,7 +274,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
     if (!felRageTarget)
         return false;
 
-    return bot->GetExactDist2d(GetGurtoggFelRageMeleePosition(bot, gurtogg, felRageTarget)) >
+    return bot->GetExactDist2d(GetGurtoggFelRageMeleePosition(bot, *gurtogg, *felRageTarget)) >
         GURTOGG_FEL_RAGE_MELEE_TOLERANCE;
 }
 
