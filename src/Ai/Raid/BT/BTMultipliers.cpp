@@ -415,21 +415,6 @@ float TeronGorefiendSpiritsAttackShadowyConstructsMultiplier::GetValueInEncounte
     return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }
 
-float TeronGorefiendDisableAttackingConstructsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!PlayerbotAI::IsRangedDps(bot))
-        return 1.0f;
-
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    if (!castSpellAction || castSpellAction->getThreatType() != Action::ActionThreatType::Aoe)
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "teron gorefiend") ? 0.0f : 1.0f;
-}
-
 // Gurtogg Bloodboil
 
 float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* action)

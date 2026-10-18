@@ -960,6 +960,9 @@ GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI)
 
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 {
+    if (!spirit || !target)
+        return false;
+
     static constexpr std::array spiritSpells = {
         Id(BtSpells::SPELL_SPIRIT_STRIKE),
         Id(BtSpells::SPELL_SPIRIT_LANCE),

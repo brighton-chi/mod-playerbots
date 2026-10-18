@@ -160,16 +160,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class TeronGorefiendDisableAttackingConstructsMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    TeronGorefiendDisableAttackingConstructsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "teron gorefiend disable attacking constructs") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Gurtogg Bloodboil
 
 class GurtoggBloodboilControlMovementMultiplier : public BlackTempleEncounterMultiplier

@@ -1004,19 +1004,17 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
         if (victim && CastVengefulSpiritSpell(spirit, victim, Id(BtSpells::SPELL_SPIRIT_SHIELD)))
             return true;
 
-        constexpr float spiritStrikeRange = 5.0f;
-        float const currentDistance = spirit->GetDistance2d(gorefiend);
         bool moving = false;
-        if (currentDistance > spiritStrikeRange)
+        if (!spirit->IsWithinMeleeRange(gorefiend))
         {
-            float const moveDistance = currentDistance - spiritStrikeRange;
+            float const distance = spirit->GetExactDist2d(gorefiend);
+            float const moveDistance = distance - gorefiend->GetCombatReach();
             float const dX = gorefiend->GetPositionX() - spirit->GetPositionX();
             float const dY = gorefiend->GetPositionY() - spirit->GetPositionY();
 
             spirit->GetMotionMaster()->MovePoint(
-                0, spirit->GetPositionX() + dX / currentDistance * moveDistance,
-                spirit->GetPositionY() + dY / currentDistance * moveDistance,
-                spirit->GetPositionZ());
+                0, spirit->GetPositionX() + dX / distance * moveDistance,
+                spirit->GetPositionY() + dY / distance * moveDistance, spirit->GetPositionZ());
 
             moving = true;
         }
