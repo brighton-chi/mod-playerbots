@@ -350,14 +350,13 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 
     bool const atSpine = bot->GetExactDist2d(spineGo) <= 3.0f;
 
-    // One reaction delay per spine. If already in range, delay between 1 and 2s to click. If not
-    // yet in range, delay between 2 and 3s to move and click immediately when in range.
+    // One reaction delay of 1 to 2 s per spine, before clicking or walking to it.
     if (spineGo->GetGUID() != _spineGuid)
     {
         _spineGuid = spineGo->GetGUID();
         _usedSpine = false;
         _reactionStartTime = getMSTime();
-        _reactionDelay = atSpine ? urand(1000, 2000) : urand(2000, 3000);
+        _reactionDelay = urand(1000, 2000);
     }
 
     if (_usedSpine || GetMSTimeDiffToNow(_reactionStartTime) < _reactionDelay)
