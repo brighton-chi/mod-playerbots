@@ -49,7 +49,8 @@ void PlayerbotTextMgr::LoadBotTexts()
             text[0] = fields[1].Get<std::string>();
             uint8 sayType = fields[2].Get<uint8>();
             uint8 replyType = fields[3].Get<uint8>();
-            for (uint8 i = 1; i < TOTAL_LOCALES; ++i)
+            constexpr uint8 textColumns = 8;
+            for (uint8 i = 1; i <= textColumns; ++i)
             {
                 text[i] = fields[i + 3].Get<std::string>();
             }
