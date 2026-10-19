@@ -1036,8 +1036,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     }
 
     return CastVengefulSpiritSpell(
-        spirit, GetLanceTarget(gorefiend, constructs), Id(BtSpells::SPELL_SPIRIT_LANCE)) ||
-        moving;
+        spirit, GetLanceTarget(gorefiend, constructs), Id(BtSpells::SPELL_SPIRIT_LANCE)) || moving;
 }
 
 // A grid search from Teron, not the bot's own targets: the bot is the possessing body, left
@@ -1490,9 +1489,6 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
         {
             hunters.push_back(member);
         }
-
-        if (hunters.size() >= 4)
-            break;
     }
 
     int8 hunterIndex = -1;
@@ -1509,7 +1505,7 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
 
     Unit* councilTarget = nullptr;
     Player* tankTarget = nullptr;
-    if (hunterIndex == 0)
+    if (hunterIndex == 0 || hunterIndex >= 4)
     {
         councilTarget = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
         tankTarget = GetZerevorMageTank(botAI);
@@ -1911,9 +1907,6 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
         {
             hunters.push_back(member);
         }
-
-        if (hunters.size() >= 2)
-            break;
     }
 
     int8 hunterIndex = -1;
@@ -1929,40 +1922,24 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
         return false;
 
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    if (!eastFlame || !westFlame || eastFlame == westFlame)
-        return false;
-
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-    if (!firstAssistTank || !secondAssistTank)
-        return false;
-
-    if (hunters.size() == 1)
+    if (!eastFlame || !westFlame || eastFlame == westFlame ||
+        eastFlame->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
     {
-        return eastFlame->GetHealthPct() >= 99.0f &&
-            MisdirectTargetToTank(botAI, eastFlame, secondAssistTank);
+        return false;
     }
 
-    Player* tankTarget = nullptr;
-    Unit* flame = nullptr;
+    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
+    if (!secondAssistTank)
+        return false;
 
     if (hunterIndex == 0)
-    {
-        tankTarget = secondAssistTank;
-        flame = eastFlame;
-    }
-    else if (hunterIndex == 1)
-    {
-        tankTarget = firstAssistTank;
-        flame = westFlame;
-    }
-    else
+        return MisdirectTargetToTank(botAI, eastFlame, secondAssistTank);
+
+    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
+    if (!firstAssistTank)
         return false;
 
-    if (!tankTarget || !tankTarget->IsAlive() || flame->GetHealthPct() < 90.0f)
-        return false;
-
-    return MisdirectTargetToTank(botAI, flame, tankTarget);
+    return MisdirectTargetToTank(botAI, westFlame, firstAssistTank);
 }
 
 // Its Steady Shot would be damage on him while nobody may damage him.
