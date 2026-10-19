@@ -330,7 +330,7 @@ void AppendSisterOfPainExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     if (PlayerbotAI::IsTank(bot))
         return;
 
-    if (Unit* pain = GetSkullSisterOfPain(bot))
+    if (Unit* pain = GetSkulledSisterOfPain(bot))
         exclusions.insert(pain->GetGUID());
 }
 

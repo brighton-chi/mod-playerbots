@@ -38,14 +38,14 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
-        return !GetSkullSisterOfPain(bot) && FindLinkedSisterOfPleasure(botAI);
+        return !GetSkulledSisterOfPain(bot) && FindLinkedSisterOfPleasure(botAI);
 
     if (PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* target = AI_VALUE(Unit*, "current target");
     return target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
-        GetSkullSisterOfPain(bot) == target;
+        GetSkulledSisterOfPain(bot) == target;
 }
 
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
@@ -157,10 +157,12 @@ bool SupremusFixatedOnBotTrigger::IsActiveInEncounter()
         return false;
 
     // The kite multiplier holds every other mover, fire avoidance included.
-    return CanSupremusCatchStandingBot(bot, supremus) ||
-        IsInSupremusHazard(
-            GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
-            SupremusHazardZone::Safe);
+    if (CanSupremusCatchStandingBot(bot, supremus))
+        return true;
+
+    return IsInSupremusHazard(
+        GetSupremusHazards(botAI), bot->GetPositionX(), bot->GetPositionY(),
+        SupremusHazardZone::Safe);
 }
 
 bool SupremusNearFireTrigger::IsActiveInEncounter()
@@ -190,7 +192,10 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 
 bool ShadeOfAkamaShouldPrioritizeChannelersTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsDps(bot) && PlayerbotAI::IsMelee(bot) && GetShadeOfAkamaKillTarget(botAI);
+    if (!PlayerbotAI::IsDps(bot) || !PlayerbotAI::IsMelee(bot))
+        return false;
+
+    return GetShadeOfAkamaKillTarget(botAI);
 }
 
 // Teron Gorefiend
@@ -217,8 +222,7 @@ bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
         return false;
 
     // Once the bolt is launched, nothing cancels it.
-    Spell* spell =
-        gorefiend->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
+    Spell* spell = gorefiend->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
     return spell && spell->getState() == SPELL_STATE_PREPARING &&
         spell->m_targets.GetUnitTarget() == bot;
 }
@@ -395,8 +399,7 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
         return false;
 
     Unit* victim = shahraz->GetVictim();
-    return !victim ||
-        victim->GetExactDist2d(SHAHRAZ_TANK_POSITION) > SHAHRAZ_POSITIONED_DISTANCE;
+    return !victim || victim->GetExactDist2d(SHAHRAZ_TANK_POSITION) > SHAHRAZ_POSITIONED_DISTANCE;
 }
 
 bool MotherShahrazRangedShouldPositionUnderPillarTrigger::IsActiveInEncounter()
@@ -656,6 +659,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
     auto const* infections =
         state && state->illidanInfections ? &*state->illidanInfections : nullptr;
+
     if (infections)
     {
         for (auto const& [player, infection] : *infections)
@@ -728,6 +732,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     Unit* victim = pet->GetVictim();
     uint32 const victimEntry = victim && victim->IsAlive() ? victim->GetEntry() : 0;
     bool const isNearNewShadowfiend = IsNearNewParasiticShadowfiend(botAI);
+
     if (victimEntry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
         return isNearNewShadowfiend;
 

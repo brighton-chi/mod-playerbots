@@ -241,7 +241,7 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 // The Sister of Pain linked to the skulled Sister of Pleasure. The skull is read by GUID, so a
 // Pleasure out of sight still counts.
-Unit* GetSkullSisterOfPain(Player* bot);
+Unit* GetSkulledSisterOfPain(Player* bot);
 GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
 // True for a Shadowmoon Reaver while magic would build Chaotic Charge on her: from the start of
 // Spell Absorption until it ends, from the margin before her earliest recast, and before her

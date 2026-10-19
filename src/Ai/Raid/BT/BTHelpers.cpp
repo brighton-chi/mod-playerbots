@@ -294,7 +294,7 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
     return nullptr;
 }
 
-Unit* GetSkullSisterOfPain(Player* bot)
+Unit* GetSkulledSisterOfPain(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -324,11 +324,8 @@ GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)
 
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 {
-    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) ||
-        !unit->IsAlive())
-    {
+    if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) || !unit->IsAlive())
         return false;
-    }
 
     ObjectGuid const guid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();

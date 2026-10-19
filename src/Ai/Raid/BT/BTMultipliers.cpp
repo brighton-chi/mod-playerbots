@@ -611,7 +611,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
             return 1.0f;
 
-        // The main tank will attempt to Shield Bash Malande, despite not being in range, which
+        // The main tank attempts to Shield Bash Malande, despite not being in range, which
         // permanently switches its target to Malande. The issue needs a fix in CastSpell to
         // restore the old selection following a failed cast, but this is a bandaid for now.
         if (dynamic_cast<CastShieldBashOnEnemyHealerAction*>(action))
@@ -694,8 +694,8 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
-    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action) &&
-        action->getThreatType() != Action::ActionThreatType::Aoe)
+    if (action->getThreatType() != Action::ActionThreatType::Aoe &&
+        !dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action))
     {
         return 1.0f;
     }
@@ -851,9 +851,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
         if (phase == IllidanPhase::Demon || PlayerbotAI::IsRangedDps(bot))
             return 0.0f;
 
-        bool const isGrounded = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-            phase == IllidanPhase::Maiev;
-        return isGrounded && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
+        return (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+            phase == IllidanPhase::Maiev) && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
     }
 
     // Secondary DoTs (CastDebuffSpellOnAttackerAction)
@@ -906,10 +905,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         }
 
         // While he is on someone else on the ground, the tank's own logic takes him back.
-        bool const isGround = phase == IllidanPhase::Initial ||
-            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev;
-        if (isGround && illidan->GetVictim() != bot)
+        if ((phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+             phase == IllidanPhase::Maiev) && illidan->GetVictim() != bot)
+        {
             return 1.0f;
+        }
 
         // In Demon Form it chases a Shadow Demon with the melee until it walks in.
         bool const canChaseDemon = phase == IllidanPhase::Demon &&
