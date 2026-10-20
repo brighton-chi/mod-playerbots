@@ -19,8 +19,7 @@ class ShadowmoonReaversValue : public CalculatedValue<GuidVector>
 public:
     ShadowmoonReaversValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shadowmoon reavers",
-              BtHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
+              botAI, "shadowmoon reavers", BtHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadowmoonReaverGuids(botAI); }
@@ -50,8 +49,7 @@ class ShadeOfAkamaAddsValue : public CalculatedValue<GuidVector>
 public:
     ShadeOfAkamaAddsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shade of akama adds",
-              BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
+              botAI, "shade of akama adds", BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadeOfAkamaAddGuids(botAI); }
@@ -64,8 +62,7 @@ class ShadowyConstructsValue : public CalculatedValue<GuidVector>
 public:
     ShadowyConstructsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shadowy constructs",
-              BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
+              botAI, "shadowy constructs", BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadowyConstructGuids(botAI); }
