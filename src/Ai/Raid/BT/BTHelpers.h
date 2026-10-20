@@ -465,11 +465,16 @@ inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
 // Wide enough for an off-tank on her victim to take over without melee backing off.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
+inline constexpr float SHAHRAZ_RANGED_POSITION_TOLERANCE = 1.0f;
+inline constexpr float SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT = 90.0f;
 inline constexpr float SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE = 5.0f;
 
 inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.826f };
 inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
 inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
+
+// Melee dps wait at the ranged position while this is true.
+bool IsShahrazBeingPositioned(Unit* shahraz);
 
 // Illidari Council
 

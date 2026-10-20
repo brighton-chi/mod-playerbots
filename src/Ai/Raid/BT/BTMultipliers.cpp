@@ -584,6 +584,18 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    // Gap closers are casts, so the melee dps wait's own move doesn't hold them.
+    bool const isReach = dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action);
+    if (isReach)
+    {
+        if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
+            return 1.0f;
+
+        return IsShahrazBeingPositioned(AI_VALUE2(Unit*, "find target", "mother shahraz")) ?
+            0.0f : 1.0f;
+    }
+
     if (!dynamic_cast<CombatFormationMoveAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
 

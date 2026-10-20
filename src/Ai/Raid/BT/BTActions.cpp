@@ -1373,6 +1373,9 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
+    if (bot->GetExactDist2d(position) <= SHAHRAZ_RANGED_POSITION_TOLERANCE)
+        return false;
+
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
@@ -1383,7 +1386,7 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
-    if (bot->GetExactDist2d(position) <= 1.0f)
+    if (bot->GetExactDist2d(position) <= SHAHRAZ_RANGED_POSITION_TOLERANCE)
         return false;
 
     return MoveTo(
@@ -1397,32 +1400,19 @@ bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
     if (attractedPlayers.size() < 2)
         return false;
 
-    float centerX = 0.0f, centerY = 0.0f;
-    for (Player* member : attractedPlayers)
-    {
-        centerX += member->GetPositionX();
-        centerY += member->GetPositionY();
-    }
-    centerX /= attractedPlayers.size();
-    centerY /= attractedPlayers.size();
-
     auto const botIt = std::find(attractedPlayers.begin(), attractedPlayers.end(), bot);
     if (botIt == attractedPlayers.end())
         return false;
 
-    // They all land on one position, so each takes its own heading by index, then keeps away
-    // from the others as they part.
-    float spreadAngle;
-    constexpr float minCenterDistance = 1.0f;
-    if (bot->GetExactDist2d(centerX, centerY) > minCenterDistance)
-    {
-        spreadAngle = bot->GetAngle(centerX, centerY) + static_cast<float>(M_PI);
-    }
-    else
-    {
-        spreadAngle = 2.0f * static_cast<float>(M_PI) *
-            std::distance(attractedPlayers.begin(), botIt) / attractedPlayers.size();
-    }
+    // Holders run away from the ranged position, in GUID order: with two, one to each side; with
+    // three, the first straight away and the other two to each side.
+    auto const index = std::distance(attractedPlayers.begin(), botIt);
+    constexpr float quarterTurn = static_cast<float>(M_PI) / 2.0f;
+    float spreadAngle = SHAHRAZ_RANGED_POSITION.GetAngle(bot);
+    if (attractedPlayers.size() == 2)
+        spreadAngle += index ? -quarterTurn : quarterTurn;
+    else if (index)
+        spreadAngle += index == 1 ? quarterTurn : -quarterTurn;
 
     // Straight on first, then alternately left and right out to 90 degrees, so a bot against a
     // wall slides along it.

@@ -1083,6 +1083,17 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
     return PlayerbotAI::IsRanged(bot) && bot->GetExactDist2d(suffering) < SUFFERING_RANGED_DISTANCE;
 }
 
+// Mother Shahraz
+
+bool IsShahrazBeingPositioned(Unit* shahraz)
+{
+    if (!shahraz || shahraz->GetHealthPct() < SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT)
+        return false;
+
+    Unit* victim = shahraz->GetVictim();
+    return !victim || victim->GetExactDist2d(SHAHRAZ_TANK_POSITION) > SHAHRAZ_POSITIONED_DISTANCE;
+}
+
 // Illidari Council
 
 // (1) First priority is an assistant Mage (real player or bot)

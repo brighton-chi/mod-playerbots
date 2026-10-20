@@ -393,13 +393,7 @@ bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
-    constexpr float meleeEngageHealthPct = 90.0f;
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
-    if (!shahraz || shahraz->GetHealthPct() < meleeEngageHealthPct)
-        return false;
-
-    Unit* victim = shahraz->GetVictim();
-    return !victim || victim->GetExactDist2d(SHAHRAZ_TANK_POSITION) > SHAHRAZ_POSITIONED_DISTANCE;
+    return IsShahrazBeingPositioned(AI_VALUE2(Unit*, "find target", "mother shahraz"));
 }
 
 bool MotherShahrazRangedShouldPositionUnderPillarTrigger::IsActiveInEncounter()
