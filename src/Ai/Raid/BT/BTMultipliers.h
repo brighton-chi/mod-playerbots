@@ -241,6 +241,20 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Stock Spell Reflection fires on any cast at the tank, so it would go on Spirit Shock, which
+// can't be reflected; the raid's own reflect still answers Deaden.
+class ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "reliquary of souls save spell reflection for deaden") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Mother Shahraz
 
 class MotherShahrazControlMovementMultiplier : public BlackTempleEncounterMultiplier

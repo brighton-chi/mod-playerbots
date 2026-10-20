@@ -331,11 +331,11 @@ public:
 
 // Reliquary of Souls
 
-class ReliquaryOfSoulsMisdirectToMainTankAction : public AttackAction
+class ReliquaryOfSoulsMisdirectToMainTankAction : public Action
 {
 public:
     ReliquaryOfSoulsMisdirectToMainTankAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "reliquary of souls misdirect to main tank") {}
+        : Action(botAI, "reliquary of souls misdirect to main tank") {}
     bool Execute(Event event) override;
 };
 

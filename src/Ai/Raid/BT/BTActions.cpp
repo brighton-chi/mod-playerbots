@@ -1197,7 +1197,7 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
         return false;
 
     Player* mainTank = GetGroupMainTank(bot);
-    if (!mainTank)
+    if (!mainTank || !mainTank->IsAlive())
         return false;
 
     Unit* target = desire ? desire : anger;
@@ -1274,10 +1274,10 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
         }
         case CLASS_PALADIN:
         {
-            for (char const* spell : { "avenging wrath", "consecration" })
+            if (botAI->CanCastSpell("avenging wrath", bot) &&
+                botAI->CastSpell("avenging wrath", bot))
             {
-                if (botAI->CanCastSpell(spell, bot) && botAI->CastSpell(spell, bot))
-                    return true;
+                return true;
             }
 
             for (char const* spell :

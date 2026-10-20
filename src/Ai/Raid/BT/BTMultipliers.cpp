@@ -563,6 +563,20 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     return elapsed < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
 }
 
+float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (bot->getClass() != CLASS_WARRIOR)
+        return 1.0f;
+
+    if (!dynamic_cast<CastSpellReflectionAction*>(action))
+        return 1.0f;
+
+    return AI_VALUE2(Unit*, "find target", "essence of desire") ? 0.0f : 1.0f;
+}
+
 // Mother Shahraz
 
 float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action)
