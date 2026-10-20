@@ -1230,9 +1230,9 @@ bool CanInterruptCircleOfHealing(Unit* malande)
     if (!malande)
         return false;
 
-    Spell* spell = malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_CIRCLE_OF_HEALING));
-    return spell && spell->getState() == SPELL_STATE_PREPARING &&
-        spell->GetCastTime() - spell->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
+    Spell* circle = malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_CIRCLE_OF_HEALING));
+    return circle && circle->getState() == SPELL_STATE_PREPARING &&
+        circle->GetCastTime() - circle->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
 // Zerevor has at most one Blizzard and one Flamestrike down at a time.

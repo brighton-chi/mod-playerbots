@@ -394,8 +394,8 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
 {
-    Aura* aura = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
-    if (!aura || aura->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
+    Aura* shadow = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
+    if (!shadow || shadow->GetDuration() > GOREFIEND_SHADOW_OF_DEATH_MOVE_MS)
         return 1.0f;
 
     if (dynamic_cast<TeronGorefiendMoveToCornerToDieAction*>(action))
@@ -425,7 +425,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         IsRepositionAction(bot, action);
-    // The Fel Rage target only walks him to the tank position.
+    // The Fel Rage moves only to bring the boss to the tank position.
     bool const isFelRageTargetMove = bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) &&
         dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<BlackTemplePositionBossAction*>(action);
@@ -624,12 +624,12 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         }
     }
 
-    bool const isStockMove =
-        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action);
     bool const isAoeThreat = IsAoeThreatAction(bot, action);
-
-    if (!isStockMove && !isAoeThreat && !IsTauntAction(bot, action))
+    if (!isAoeThreat && !IsTauntAction(bot, action) && !dynamic_cast<AvoidAoeAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
+    {
         return 1.0f;
+    }
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");

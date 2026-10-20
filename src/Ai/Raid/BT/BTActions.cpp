@@ -2170,6 +2170,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>>& infectionsField =
         BtState(bot->GetInstanceId()).illidanInfections;
+
     auto& infections = infectionsField ? *infectionsField : infectionsField.emplace();
     std::erase_if(
         infections,
@@ -2250,13 +2251,13 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
         return false;
 
     // Ice already round the infection position that outlasts the debuff needs no new trap.
-    Aura const* debuff = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1));
-    if (!debuff)
-        debuff = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
+    Aura const* parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1));
+    if (!parasite)
+        parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 
-    int32 const debuffMs = debuff ? debuff->GetDuration() : 0;
+    int32 const parasiteMs = parasite ? parasite->GetDuration() : 0;
     bool const isCovered =
-        IsFrostTrapPatchAt(bot, infectionPosition, debuffMs + ILLIDAN_FROST_TRAP_SLOW_MS);
+        IsFrostTrapPatchAt(bot, infectionPosition, parasiteMs + ILLIDAN_FROST_TRAP_SLOW_MS);
     hunter = isCovered ? ObjectGuid::Empty : candidate;
     return true;
 }

@@ -222,15 +222,15 @@ bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
         return false;
 
     // Once the bolt is launched, nothing cancels it.
-    Spell* spell = gorefiend->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
-    return spell && spell->getState() == SPELL_STATE_PREPARING &&
-        spell->m_targets.GetUnitTarget() == bot;
+    Spell* shadow = gorefiend->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
+    return shadow && shadow->getState() == SPELL_STATE_PREPARING &&
+        shadow->m_targets.GetUnitTarget() == bot;
 }
 
 bool TeronGorefiendShouldPositionForVengefulSpiritTrigger::IsActiveInEncounter()
 {
-    Aura* aura = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
-    return aura && aura->GetDuration() <= GOREFIEND_SHADOW_OF_DEATH_MOVE_MS;
+    Aura* shadow = bot->GetAura(Id(BtSpells::SPELL_SHADOW_OF_DEATH));
+    return shadow && shadow->GetDuration() <= GOREFIEND_SHADOW_OF_DEATH_MOVE_MS;
 }
 
 bool TeronGorefiendTransformedIntoVengefulSpiritTrigger::IsActiveInEncounter()
