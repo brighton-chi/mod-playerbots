@@ -61,8 +61,7 @@ public:
         creators["supremus fixated on bot"] =
             &RaidBlackTempleTriggerContext::supremus_fixated_on_bot;
 
-        creators["supremus near fire"] =
-            &RaidBlackTempleTriggerContext::supremus_near_fire;
+        creators["supremus near fire"] = &RaidBlackTempleTriggerContext::supremus_near_fire;
 
         creators["supremus reach blocked by fire"] =
             &RaidBlackTempleTriggerContext::supremus_reach_blocked_by_fire;

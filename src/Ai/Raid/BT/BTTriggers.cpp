@@ -469,11 +469,14 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
     if (!malande)
         return false;
 
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    if (!gathios || !zerevor)
+        return false;
+
     if (PlayerbotAI::IsRanged(bot) &&
         !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
-        !IsMalandeInCouncilPatch(
-            malande, AI_VALUE2(Unit*, "find target", "gathios the shatterer"),
-            AI_VALUE2(Unit*, "find target", "high nethermancer zerevor")))
+        !IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
         return false;
     }

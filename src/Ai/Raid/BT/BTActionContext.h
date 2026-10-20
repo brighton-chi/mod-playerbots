@@ -55,8 +55,7 @@ public:
         creators["supremus misdirect to main tank"] =
             &RaidBlackTempleActionContext::supremus_misdirect_to_main_tank;
 
-        creators["supremus spread ranged"] =
-            &RaidBlackTempleActionContext::supremus_spread_ranged;
+        creators["supremus spread ranged"] = &RaidBlackTempleActionContext::supremus_spread_ranged;
 
         creators["supremus kite boss"] = &RaidBlackTempleActionContext::supremus_kite_boss;
 

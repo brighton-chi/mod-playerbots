@@ -2014,7 +2014,7 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
     if (!group || slotCount == 0)
         return -1;
 
-    ObjectGuid const mainTank = PlayerbotAI::GetMainTankGuid(group);
+    ObjectGuid const mainTank = PlayerbotAI::GetMainTankGuid(group); // Why do we need to get the main tank guid for this one?
     AiObjectContext* context = botAI->GetAiObjectContext();
     ObjectGuid const warlockTankGuid = inDemonForm ?
         context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get() : ObjectGuid::Empty;
@@ -2097,7 +2097,7 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
 
         if (PlayerbotAI::IsTank(member))
             tanks.push_back(guid);
-        else if (!PlayerbotAI::IsHeal(member) && PlayerbotAI::IsMelee(member))
+        else if (PlayerbotAI::IsMelee(member))
             meleeDps.push_back(guid);
     }
 

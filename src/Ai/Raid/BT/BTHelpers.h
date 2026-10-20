@@ -454,7 +454,7 @@ inline constexpr float SUFFERING_MELEE_DISTANCE = 10.0f;
 inline constexpr float SUFFERING_MELEE_MIN_DISTANCE = 9.0f;
 inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 // Other dispellers wait this long into each Rune Shield, so a mage steals it when one can.
-inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2000;
+inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 
 bool IsSufferingFixateTank(Player* bot);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
@@ -705,19 +705,19 @@ inline constexpr float ILLIDAN_PICKUP_POSITION_ANGLE = 30.0f * static_cast<float
 inline constexpr float ILLIDAN_STEP_IN_POSITION_DISTANCE = 9.0f;
 
 // World trigger 22515.
-inline Position const ILLIDAN_GRATE_CENTRE = { 676.021f, 305.455f, 353.582f };
+inline Position const ILLIDAN_GRATE_CENTRE =           { 676.021f, 305.455f, 353.582f };
 // He kneels here and stands here for his speech.
-inline Position const ILLIDAN_SPEECH_POSITION = { 705.732f, 304.988f, 353.925f };
+inline Position const ILLIDAN_SPEECH_POSITION =        { 705.732f, 304.988f, 353.925f };
 // The Main Tank waits this far north of the centre at the pull, so he stops on the ring.
-inline Position const ILLIDAN_PULL_TANK_POSITION = { 691.521f, 305.455f, 353.790f };
+inline Position const ILLIDAN_PULL_TANK_POSITION =     { 691.521f, 305.455f, 353.790f };
 // While he lands, everyone else waits 22 yd south of the centre and the Main Tank 6 yd south of
 // the landing point, in his way if he runs at them after the threat reset.
-inline Position const ILLIDAN_LANDING_TANK_POSITION = { 670.648f, 304.761f, 353.920f };
+inline Position const ILLIDAN_LANDING_TANK_POSITION =  { 670.648f, 304.761f, 353.920f };
 inline Position const ILLIDAN_LANDING_STACK_POSITION = { 654.021f, 305.455f, 353.790f };
-inline Position const ILLIDAN_LANDING_POSITION = { 676.648f, 304.761f, 354.189f };
-inline Position const ILLIDAN_N_GRATE_POSITION = { 682.100f, 306.000f, 353.192f };
-inline Position const ILLIDAN_E_GRATE_POSITION = { 673.500f, 298.500f, 353.192f };
-inline Position const ILLIDAN_W_GRATE_POSITION = { 672.400f, 312.500f, 353.192f };
+inline Position const ILLIDAN_LANDING_POSITION =       { 676.648f, 304.761f, 354.189f };
+inline Position const ILLIDAN_N_GRATE_POSITION =       { 682.100f, 306.000f, 353.192f };
+inline Position const ILLIDAN_E_GRATE_POSITION =       { 673.500f, 298.500f, 353.192f };
+inline Position const ILLIDAN_W_GRATE_POSITION =       { 672.400f, 312.500f, 353.192f };
 inline std::array const GRATE_POSITIONS = {
     ILLIDAN_N_GRATE_POSITION,
     ILLIDAN_E_GRATE_POSITION,
