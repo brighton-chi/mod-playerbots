@@ -1844,24 +1844,28 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 // he runs in. Everyone else waits on the grate.
 bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
 {
-    bool const isMainTank = PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
-    Position position = ILLIDAN_GRATE_CENTRE;
-    if (isMainTank)
-        position = ILLIDAN_PULL_TANK_POSITION;
+    if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
+    {
+        return MoveInside(
+            BT_MAP_ID, ILLIDAN_GRATE_CENTRE.GetPositionX(), ILLIDAN_GRATE_CENTRE.GetPositionY(),
+            ILLIDAN_GRATE_CENTRE.GetPositionZ(), ILLIDAN_POSITION_TOLERANCE,
+            MovementPriority::MOVEMENT_COMBAT);
+    }
 
+    Position const& position = ILLIDAN_PULL_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        Creature* illidan = isMainTank ? bot->FindNearestCreature(
-            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS) : nullptr;
+        Creature* illidan = bot->FindNearestCreature(
+            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
         if (illidan && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
             bot->SetFacingTo(bot->GetAngle(illidan));
 
         return false;
     }
 
-    return MoveInside(
+    return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        ILLIDAN_POSITION_TOLERANCE, MovementPriority::MOVEMENT_COMBAT);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
@@ -2175,7 +2179,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
             IllidanInfection infection;
             infection.phase = infectionPhase;
             infection.infectionPosition = infections.empty() ?
-                GetIllidanInfectionPosition(*illidan, infectionPhase) :
+                GetIllidanInfectionPosition(*illidan) :
                 infections.begin()->second.infectionPosition;
             infections.emplace(guid, infection);
         }

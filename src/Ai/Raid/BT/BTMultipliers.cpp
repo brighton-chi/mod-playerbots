@@ -1025,8 +1025,13 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
 
         if (isMove)
         {
-            if (dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action))
+            // Assign target priority is an AttackAction; its trigger gives the Main Tank a Shadow
+            // Demon only until the walk-in.
+            if (dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action) ||
+                dynamic_cast<IllidanStormrageAssignTargetPriorityAction*>(action))
+            {
                 return 1.0f;
+            }
 
             bool const isChase = dynamic_cast<ReachTargetAction*>(action) ||
                 dynamic_cast<SetBehindTargetAction*>(action);

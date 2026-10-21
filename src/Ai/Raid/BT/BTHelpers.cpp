@@ -1803,19 +1803,11 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     return layout;
 }
 
-Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
+Position GetIllidanInfectionPosition(Unit const& illidan)
 {
-    if (phase == IllidanPhase::Demon)
-    {
-        float const inwardAngle = illidan.GetAngle(&ILLIDAN_GRATE_CENTRE);
-        return GetDemonFormPoint(
-            illidan, inwardAngle, ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE,
-            ILLIDAN_DEMON_INFECTION_POSITION_ANGLE);
-    }
-
-    return GetRingPoint(
-        GetGrateAngle(illidan) + ILLIDAN_INFECTION_POSITION_ANGLE,
-        ILLIDAN_INFECTION_POSITION_DISTANCE);
+    return GetDemonFormPoint(
+        illidan, illidan.GetAngle(&ILLIDAN_GRATE_CENTRE), ILLIDAN_INFECTION_POSITION_DISTANCE,
+        ILLIDAN_INFECTION_POSITION_ANGLE);
 }
 
 IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase)
@@ -1852,7 +1844,7 @@ Position GetIllidanRecordedInfectionPosition(
         }
     }
 
-    return GetIllidanInfectionPosition(illidan, infectionPhase);
+    return GetIllidanInfectionPosition(illidan);
 }
 
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)

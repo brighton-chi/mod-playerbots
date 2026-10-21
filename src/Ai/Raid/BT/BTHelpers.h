@@ -690,13 +690,12 @@ inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
 inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
-// Shadowfiend infection positions. Phases 1, 3 and 5: from the grate centre, counterclockwise of
-// his bearing. Phase 4: from him, behind the ranged DPS, beside the healers and in front of melee.
-inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 27.0f;
-inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE = 90.0f * static_cast<float>(M_PI) / 180.0f;
-inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE = 39.6f;
-inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_ANGLE =
-    -16.0f * static_cast<float>(M_PI) / 180.0f;
+// Shadowfiend infection position, from him as Phase 4 places are, in every phase: across the grate
+// clockwise of him, out of Draw Soul's cone in a ring step, about 20 yd from the grate centre and
+// inward of the Flame Crash zones on the Main Tank's ring; in Phase 4 between ranged DPS and melee.
+inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 40.0f;
+inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
+    -25.0f * static_cast<float>(M_PI) / 180.0f;
 
 // Phase 4, from him and off his inward line, positive toward the warlock tank's side. His reach is
 // 1.5 in Demon Form, so a 30 yd spell reaches 33 yd on him: the warlock tank stands 2 yd inside.
@@ -782,12 +781,10 @@ Position GetRingPoint(float angle, float radius);
 Position GetIllidanSettlePosition(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
-// Where an infection position is recorded: from the grate centre in Phases 1, 3 and 5, from him
-// in Demon Form.
-Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase);
-// The phase whose infection position applies: the Demon Form transform counts as the phase before
-// it, so an infection from Phase 3 or 5 keeps its position and its Shadowfiends don't come out on
-// a walk across the raid. The death scene counts as the phase before it too.
+// Where an infection position is recorded, from where he stands now.
+Position GetIllidanInfectionPosition(Unit const& illidan);
+// The phase whose infection position applies: the Demon Form transform and the death scene count
+// as the phase before them, so an infection from that phase keeps its position through them.
 IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase);
 // The infection position recorded for the bot's own infection, else for the infection it traps for,
 // else where one would be recorded now.
