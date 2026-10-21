@@ -237,9 +237,6 @@ public:
         creators["illidan stormrage assign target priority"] =
             &RaidBlackTempleActionContext::illidan_stormrage_assign_target_priority;
 
-        creators["illidan stormrage use cage trap"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_use_cage_trap;
-
         creators["illidan stormrage manage dps timers"] =
             &RaidBlackTempleActionContext::illidan_stormrage_manage_dps_timers;
 
@@ -572,10 +569,6 @@ private:
     static Action* illidan_stormrage_assign_target_priority(PlayerbotAI* botAI)
     {
         return new IllidanStormrageAssignTargetPriorityAction(botAI);
-    }
-    static Action* illidan_stormrage_use_cage_trap(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageUseCageTrapAction(botAI);
     }
     static Action* illidan_stormrage_manage_dps_timers(PlayerbotAI* botAI)
     {

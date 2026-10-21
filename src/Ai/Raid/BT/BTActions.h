@@ -744,14 +744,6 @@ private:
     Unit* FindShadowfiendForRanged();
 };
 
-class IllidanStormrageUseCageTrapAction : public MovementAction
-{
-public:
-    IllidanStormrageUseCageTrapAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage use cage trap") {}
-    bool Execute(Event event) override;
-};
-
 class IllidanStormrageManageDpsTimersAction : public Action
 {
 public:

@@ -253,9 +253,6 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage should assign target priority",
         { NextAction("illidan stormrage assign target priority", ACTION_EMERGENCY + 1) }));
 
-    // triggers.push_back(new TriggerNode("illidan stormrage maiev placed cage trap",
-    //     { NextAction("illidan stormrage use cage trap", ACTION_EMERGENCY + 1) }));
-
     triggers.push_back(new TriggerNode("illidan stormrage should manage dps timers",
         { NextAction("illidan stormrage manage dps timers", ACTION_EMERGENCY + 11) }));
 

@@ -740,16 +740,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageMaievPlacedCageTrapTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    IllidanStormrageMaievPlacedCageTrapTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage maiev placed cage trap") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class IllidanStormrageShouldManageDpsTimersTrigger : public BlackTempleEncounterTrigger
 {
 public:

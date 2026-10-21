@@ -799,7 +799,8 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
     return !IsFlameOfAzzinothTank(bot);
 }
 
-// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use.
+// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use. Not for the Main
+// Tank or a Flame tank: an immunity loses it whatever it holds.
 bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
     bool const isPaladin = bot->getClass() == CLASS_PALADIN;
@@ -813,7 +814,7 @@ bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
     }
 
     if (isPaladin)
-        return !PlayerbotAI::IsMainTank(bot);
+        return !PlayerbotAI::IsMainTank(bot) && !IsFlameOfAzzinothTank(bot);
 
     return true;
 }
@@ -841,11 +842,11 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
 // An infected bot runs to the infection position instead.
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 {
-    if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)))
-        return false;
-
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (GetIllidanPhase(illidan) != IllidanPhase::Landing)
+        return false;
+
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
     return !HasParasiticShadowfiend(bot);
@@ -999,44 +1000,6 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 
     return phase == IllidanPhase::Demon &&
         !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
-}
-
-bool IllidanStormrageMaievPlacedCageTrapTrigger::IsActiveInEncounter()
-{
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Maiev)
-        return false;
-
-    GameObject* trap = FindNearestCageTrap(botAI);
-    if (!trap)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* closestBot = nullptr;
-    float closestDist = std::numeric_limits<float>::max();
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || illidan->GetVictim() == member ||
-            !GET_PLAYERBOT_AI(member) ||
-            (PlayerbotAI::IsTank(member) && PlayerbotAI::IsMainTank(member)))
-        {
-            continue;
-        }
-
-        float const dist = member->GetDistance(trap);
-        if (dist < closestDist)
-        {
-            closestDist = dist;
-            closestBot = member;
-        }
-    }
-
-    return closestBot == bot;
 }
 
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()

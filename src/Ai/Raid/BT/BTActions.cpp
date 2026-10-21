@@ -2903,27 +2903,6 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged()
     return distance > minDistance && distance <= maxDistance ? shadowfiend : nullptr;
 }
 
-bool IllidanStormrageUseCageTrapAction::Execute(Event /*event*/)
-{
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return false;
-
-    GameObject* trap = FindNearestCageTrap(botAI);
-    if (!trap || illidan->GetExactDist2d(trap) >= 4.0f)
-        return false;
-
-    if (bot->GetExactDist2d(trap) < 3.0f)
-    {
-        trap->Use(bot);
-        return true;
-    }
-
-    return MoveTo(
-        BT_MAP_ID, trap->GetPositionX(), trap->GetPositionY(), trap->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
 bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

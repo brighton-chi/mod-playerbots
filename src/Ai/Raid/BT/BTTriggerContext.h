@@ -241,9 +241,6 @@ public:
         creators["illidan stormrage should assign target priority"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_assign_target_priority;
 
-        creators["illidan stormrage maiev placed cage trap"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_maiev_placed_cage_trap;
-
         creators["illidan stormrage should manage dps timers"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_manage_dps_timers;
 
@@ -566,10 +563,6 @@ private:
     static Trigger* illidan_stormrage_should_assign_target_priority(PlayerbotAI* botAI)
     {
         return new IllidanStormrageShouldAssignTargetPriorityTrigger(botAI);
-    }
-    static Trigger* illidan_stormrage_maiev_placed_cage_trap(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageMaievPlacedCageTrapTrigger(botAI);
     }
     static Trigger* illidan_stormrage_should_manage_dps_timers(PlayerbotAI* botAI)
     {

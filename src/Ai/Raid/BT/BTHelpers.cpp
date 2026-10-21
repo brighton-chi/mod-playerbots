@@ -2050,7 +2050,6 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
     if (!group || slotCount == 0)
         return -1;
 
-    ObjectGuid const mainTank = PlayerbotAI::GetMainTankGuid(group); // Why do we need to get the main tank guid for this one?
     AiObjectContext* context = botAI->GetAiObjectContext();
     ObjectGuid const warlockTankGuid = inDemonForm ?
         context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get() : ObjectGuid::Empty;
@@ -2064,18 +2063,13 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
             continue;
 
         ObjectGuid const guid = member->GetGUID();
-        if (guid == mainTank || guid == warlockTankGuid)
+        if (guid == warlockTankGuid || !PlayerbotAI::IsRanged(member))
             continue;
 
-        if (PlayerbotAI::IsHeal(member))
-        {
-            if (!inDemonForm)
-                healers.push_back(guid);
-        }
-        else if (PlayerbotAI::IsRanged(member))
-        {
+        if (!PlayerbotAI::IsHeal(member))
             rangedDps.push_back(guid);
-        }
+        else if (!inDemonForm)
+            healers.push_back(guid);
     }
 
     int32 const rosterIndex = GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID());
@@ -2097,7 +2091,7 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
     {
         Player* member = ref->GetSource();
         if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
-            PlayerbotAI::IsHeal(member))
+            PlayerbotAI::IsRanged(member) && PlayerbotAI::IsHeal(member))
         {
             healers.push_back(member->GetGUID());
         }
@@ -2474,25 +2468,6 @@ bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea cons
     float const distToLine = pos.GetExactDist2d(closestX, closestY);
 
     return distToLine < area.width;
-}
-
-GameObject* FindNearestCageTrap(PlayerbotAI* botAI)
-{
-    GuidVector const& gos =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
-
-    GameObject* nearestTrap = nullptr;
-    for (ObjectGuid const& guid : gos)
-    {
-        GameObject* go = botAI->GetGameObject(guid);
-        if (go && go->isSpawned() && go->GetEntry() == Id(BtObjects::GO_CAGE_TRAP))
-        {
-            nearestTrap = go;
-            break;
-        }
-    }
-
-    return nearestTrap;
 }
 
 // Shared encounter state
