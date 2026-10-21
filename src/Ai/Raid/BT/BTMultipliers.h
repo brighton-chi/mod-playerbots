@@ -79,6 +79,21 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Tidal Shield causes bots to drop combat and flip on their non-combat engines. This multiplier
+// stops them from breaking their spread as a result (due to FollowAction) while also keeping them
+// from restarting their attack + dropping target repeatedly.
+class HighWarlordNajentusTidalShieldHoldPositionMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    HighWarlordNajentusTidalShieldHoldPositionMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "high warlord naj'entus tidal shield hold position") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Supremus
 
 class SupremusFocusOnAvoidanceInKitePhaseMultiplier : public BlackTempleEncounterMultiplier

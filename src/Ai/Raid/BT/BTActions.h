@@ -13,6 +13,7 @@
 #include "MovementActions.h"
 #include "Unit.h"
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 // Shared

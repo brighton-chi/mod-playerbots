@@ -17,7 +17,6 @@
 #include <limits>
 #include <list>
 #include <utility>
-#include <vector>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;

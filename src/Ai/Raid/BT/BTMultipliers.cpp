@@ -28,9 +28,12 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <vector>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
+
+// Shared
 
 namespace
 {
@@ -89,93 +92,7 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
-// At Illidan's landing stack a bot still picks targets and still runs off with a Shadowfiend
-// debuff.
-bool IsHeldAtIllidanLandingStack(Action* action)
-{
-    return dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<IllidanStormragePositionForLandingAction*>(action) &&
-        !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
-}
-
-// A bot waiting out a Shadowfiend debuff at the infection position chases nothing, since its run
-// there stops once it arrives. In Demon Form everyone keeps to their place; melee leave theirs only
-// to reach a Shadow Demon.
-bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
-{
-    Player* bot = botAI->GetBot();
-
-    if (!dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !IsKillingSpree(bot, action))
-    {
-        return false;
-    }
-
-    if (HasParasiticShadowfiend(bot))
-        return true;
-
-    if (phase != IllidanPhase::Demon)
-        return false;
-
-    if (!PlayerbotAI::IsMelee(bot))
-        return true;
-
-    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-    return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
-}
-
-// Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank
-// that should have him. While stunned (the transform but its last 0.48 s) he takes none, and in
-// Maiev's arrival nobody takes damage under Shadow Prison, while a heal in the gap before he
-// wakes reaches him.
-bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
-{
-    if (!dynamic_cast<CastHealingSpellAction*>(action))
-        return false;
-
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    if (phase == IllidanPhase::None)
-        return true;
-
-    if (phase == IllidanPhase::Flying || GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)
-        return false;
-
-    if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
-        return false;
-
-    Player* tank = phase == IllidanPhase::Demon ?
-        GetIllidanWarlockTank(botAI) : GetGroupMainTank(botAI->GetBot());
-    return !tank || illidan->GetThreatMgr().GetLastVictim() != tank;
-}
-
-// Summons that fight on their own, unlike pets, which the strategy can set passive.
-bool IsGuardianSummon(Player* bot, Action* action)
-{
-    switch (bot->getClass())
-    {
-        case CLASS_DEATH_KNIGHT:
-            return dynamic_cast<CastSummonGargoyleAction*>(action) ||
-                dynamic_cast<CastArmyOfTheDeadAction*>(action);
-        case CLASS_DRUID:
-            return dynamic_cast<CastForceOfNatureAction*>(action);
-        case CLASS_MAGE:
-            return dynamic_cast<CastMirrorImageAction*>(action);
-        case CLASS_PRIEST:
-            return dynamic_cast<CastShadowfiendAction*>(action);
-        case CLASS_SHAMAN:
-            return dynamic_cast<CastFeralSpiritAction*>(action) ||
-                dynamic_cast<CastFireElementalTotemAction*>(action) ||
-                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
-        default:
-            return false;
-    }
-}
-
-}
-
-// Shared
+} // end anonymous namespace (Shared)
 
 // Held for each boss's first 5%, and also through Supremus's kite phase, between Reliquary
 // essences, and on Illidan from 95% to 62% (Bloodlust all the way until 62%).
@@ -305,6 +222,21 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") ? 0.0f : 1.0f;
+}
+
+float HighWarlordNajentusTidalShieldHoldPositionMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    return najentus && najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD))? 0.0f : 1.0f;
 }
 
 // Supremus
@@ -855,6 +787,99 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 }
 
 // Illidan Stormrage <The Betrayer>
+
+namespace
+{
+
+// At Illidan's landing stack a bot still picks targets and still runs off with a Shadowfiend
+// debuff.
+bool IsHeldAtIllidanLandingStack(Action* action)
+{
+    return dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<IllidanStormragePositionForLandingAction*>(action) &&
+        !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
+}
+
+// A bot waiting out a Shadowfiend debuff at the infection position chases nothing, since its run
+// there stops once it arrives. In Demon Form everyone keeps to their place; melee leave theirs only
+// to reach a Shadow Demon.
+bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
+{
+    Player* bot = botAI->GetBot();
+
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !IsKillingSpree(bot, action))
+    {
+        return false;
+    }
+
+    if (HasParasiticShadowfiend(bot))
+        return true;
+
+    if (phase != IllidanPhase::Demon)
+        return false;
+
+    if (!PlayerbotAI::IsMelee(bot))
+        return true;
+
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
+}
+
+// Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank
+// that should have him. While stunned (the transform but its last 0.48 s) he takes none, and in
+// Maiev's arrival nobody takes damage under Shadow Prison, while a heal in the gap before he
+// wakes reaches him.
+bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
+{
+    if (!dynamic_cast<CastHealingSpellAction*>(action))
+        return false;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::None)
+        return true;
+
+    if (phase == IllidanPhase::Flying || GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None)
+        return false;
+
+    if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
+        return false;
+
+    Player* tank = phase == IllidanPhase::Demon ?
+        GetIllidanWarlockTank(botAI) : GetGroupMainTank(botAI->GetBot());
+    return !tank || illidan->GetThreatMgr().GetLastVictim() != tank;
+}
+
+// Summons that fight on their own, unlike pets, which the strategy can set passive.
+bool IsGuardianSummon(Player* bot, Action* action)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+        {
+            return dynamic_cast<CastSummonGargoyleAction*>(action) ||
+                dynamic_cast<CastArmyOfTheDeadAction*>(action);
+        }
+        case CLASS_DRUID:
+            return dynamic_cast<CastForceOfNatureAction*>(action);
+        case CLASS_MAGE:
+            return dynamic_cast<CastMirrorImageAction*>(action);
+        case CLASS_PRIEST:
+            return dynamic_cast<CastShadowfiendAction*>(action);
+        case CLASS_SHAMAN:
+        {
+            return dynamic_cast<CastFeralSpiritAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemAction*>(action) ||
+                dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
+        }
+        default:
+            return false;
+    }
+}
+
+} // end anonymous namespace (Illidan Stormrage)
 
 // While he talks, bots move only to their pull places.
 float IllidanStormrageHoldPullPositionsMultiplier::GetValue(Action* action)

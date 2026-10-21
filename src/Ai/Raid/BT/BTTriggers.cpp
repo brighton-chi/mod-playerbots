@@ -11,6 +11,8 @@
 #include "SharedDefines.h"
 #include "Spell.h"
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
