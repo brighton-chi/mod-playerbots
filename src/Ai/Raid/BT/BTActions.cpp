@@ -1561,21 +1561,25 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
     if (!malande)
         return false;
 
-    auto const castInterrupt = [&](char const* spell)
+    // CanCastSpell passes a target out of range, and the failed cast still turns the bot to her.
+    auto const castInterrupt = [&](char const* spell, bool inRange)
     {
-        return botAI->CanCastSpell(spell, malande) && botAI->CastSpell(spell, malande);
+        return inRange && botAI->CanCastSpell(spell, malande) && botAI->CastSpell(spell, malande);
     };
 
+    bool const inMeleeRange = bot->IsWithinMeleeRange(malande);
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return castInterrupt("mind freeze");
+            return castInterrupt("mind freeze", inMeleeRange);
         case CLASS_MAGE:
-            return castInterrupt("counterspell");
+            return castInterrupt(
+                "counterspell", bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE));
         case CLASS_ROGUE:
-            return castInterrupt("kick");
+            return castInterrupt("kick", inMeleeRange);
         case CLASS_SHAMAN:
-            return castInterrupt("wind shear");
+            return castInterrupt(
+                "wind shear", bot->IsWithinCombatRange(malande, WIND_SHEAR_RANGE));
         case CLASS_WARLOCK:
         {
             Pet* pet = bot->GetPet();
@@ -1583,7 +1587,8 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
             return spellLock && pet->CastSpell(malande, spellLock, false) == SPELL_CAST_OK;
         }
         case CLASS_WARRIOR:
-            return castInterrupt("pummel") || castInterrupt("shield bash");
+            return castInterrupt("pummel", inMeleeRange) ||
+                castInterrupt("shield bash", inMeleeRange);
         default:
             return false;
     }

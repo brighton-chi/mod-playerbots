@@ -174,6 +174,7 @@ enum class BtNpcs : uint32
     NPC_GATHIOS_THE_SHATTERER       = 22949,
     NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
     NPC_LADY_MALANDE                = 22951,
+    NPC_VERAS_DARKSHADOW            = 22952,
 
     // Illidan Stormrage <The Betrayer>
     NPC_ILLIDAN_STORMRAGE           = 22917,
@@ -478,8 +479,6 @@ bool IsShahrazBeingPositioned(Unit* shahraz);
 
 // Illidari Council
 
-inline constexpr float COUNCIL_FLOOR_Z_THRESHOLD = 270.000f;
-
 inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 662.977f, 296.246f, 271.688f },
     Position{ 636.238f, 283.719f, 271.629f },
@@ -500,15 +499,17 @@ inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 100.0f;
 // Bots heal out to HealDistance, 38.5 yd by default.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
-// A patch on the mage tank reaches 11.9 yd from where it stood.
+// A patch on the mage tank reaches 11.5 yd from where it stood.
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
 // Zerevor casts Arcane Explosion when anyone is within 10 yd plus both combat reaches (14.65 yd).
 inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
-// A patch reaches a player whose centre is within its radius plus both object sizes (1.9 yd).
+// A patch reaches a player whose centre is within its radius plus the player's reach (1.5 yd).
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
+inline constexpr float COUNTERSPELL_RANGE = 30.0f;
+inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
@@ -519,6 +520,9 @@ bool CanInterruptCircleOfHealing(Unit* malande);
 bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f);
 bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float margin = 0.0f);
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
+// Ranged interrupt only while her melee can't: under Blessing of Protection, or in a council
+// patch. Their interrupts are all magic, so never under Blessing of Spell Warding.
+bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor);
 bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor);
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
 bool FindMageTankHealerPosition(

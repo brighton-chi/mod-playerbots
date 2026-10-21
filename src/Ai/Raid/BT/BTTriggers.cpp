@@ -469,8 +469,7 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
         return false;
 
     if (PlayerbotAI::IsRanged(bot) &&
-        !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
-        !IsMalandeInCouncilPatch(malande, gathios, zerevor))
+        !ShouldRangedInterruptCircleOfHealing(malande, gathios, zerevor))
     {
         return false;
     }
@@ -480,17 +479,20 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) &&
-        AI_VALUE2(Unit*, "find target", "lady malande");
+    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "lady malande") &&
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return veras && !IsVerasVanished(veras);
+    if (!veras || IsVerasVanished(veras))
+        return false;
+
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 1, false);
 }
 
 bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
@@ -500,6 +502,9 @@ bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
 {
+    if (!PlayerbotAI::IsHeal(bot))
+        return false;
+
     Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     if (!zerevor)
         return false;

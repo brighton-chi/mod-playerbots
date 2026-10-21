@@ -1207,6 +1207,15 @@ bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor)
     return malande && gathios && zerevor && IsInCouncilPatch(*malande, gathios, zerevor);
 }
 
+bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor)
+{
+    if (!malande || malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING)))
+        return false;
+
+    return malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) ||
+        IsMalandeInCouncilPatch(malande, gathios, zerevor);
+}
+
 bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)
 {
     if (!zerevor)
@@ -1342,23 +1351,28 @@ bool FindMalandeTankPosition(
     return false;
 }
 
-// Any council member but the bot's own target.
+// Any council member but the bot's own target. One pass by entry over what this bot is on the
+// threat list of, where a find target per member walks the list once per name.
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 {
-    static constexpr std::array memberNames = {
-        "gathios the shatterer",
-        "high nethermancer zerevor",
-        "lady malande",
-        "veras darkshadow",
-    };
-
     Player* bot = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownTarget = AI_VALUE(Unit*, "current target");
-    for (char const* name : memberNames)
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
-        Unit* member = AI_VALUE2(Unit*, "find target", name);
-        if (member && member != ownTarget && bot->GetDistance(member) < range)
+        Unit* member = ref->GetOwner();
+        if (!member || member == ownTarget)
+            continue;
+
+        uint32 const entry = member->GetEntry();
+        if (entry != Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER) &&
+            entry != Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR) &&
+            entry != Id(BtNpcs::NPC_LADY_MALANDE) && entry != Id(BtNpcs::NPC_VERAS_DARKSHADOW))
+        {
+            continue;
+        }
+
+        if (bot->GetDistance(member) < range)
             return true;
     }
 

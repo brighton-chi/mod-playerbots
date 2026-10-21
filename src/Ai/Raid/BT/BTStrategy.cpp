@@ -307,7 +307,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Illidari Council
     multipliers.push_back(new IllidariCouncilControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableMageTankActionsMultiplier(botAI));
-    multipliers.push_back(new IllidariCouncilControlHunterActionsMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilHoldMisdirectionAndDispelsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 

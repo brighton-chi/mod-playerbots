@@ -305,17 +305,19 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class IllidariCouncilControlHunterActionsMultiplier : public BlackTempleEncounterMultiplier
+// Dampen Magic is the only buff on the council that can be dispelled, and the mage tank steals it.
+class IllidariCouncilHoldMisdirectionAndDispelsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    IllidariCouncilControlHunterActionsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "illidari council control hunter actions") {}
+    IllidariCouncilHoldMisdirectionAndDispelsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+              botAI, "illidari council hold misdirection and dispels") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Ranged interrupts are invaluable for Circle of Healing.
+// Ranged interrupts are invaluable for Circle of Healing. Melee ones wait until she is in reach.
 class IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier
     : public BlackTempleEncounterMultiplier
 {

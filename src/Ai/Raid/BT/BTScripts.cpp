@@ -121,8 +121,7 @@ public:
             return;
         }
 
-        if (!caster->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) &&
-            !IsMalandeInCouncilPatch(
+        if (!ShouldRangedInterruptCircleOfHealing(
                 caster,
                 caster->FindNearestCreature(
                     Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER), COUNCIL_MEMBER_SEARCH_RADIUS),
@@ -169,13 +168,13 @@ private:
             case CLASS_MAGE:
             {
                 interrupt = Id(BtSpells::SPELL_COUNTERSPELL);
-                range = 30.0f;
+                range = COUNTERSPELL_RANGE;
                 break;
             }
             case CLASS_SHAMAN:
             {
                 interrupt = Id(BtSpells::SPELL_WIND_SHEAR);
-                range = 25.0f;
+                range = WIND_SHEAR_RANGE;
                 break;
             }
             case CLASS_WARLOCK:

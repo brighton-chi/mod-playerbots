@@ -634,24 +634,25 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 {
     if (bot->getClass() == CLASS_WARRIOR)
     {
-        if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-            return 1.0f;
-
-        // The main tank attempts to Shield Bash Malande, despite not being in range, which
-        // permanently switches its target to Malande. The issue needs a fix in CastSpell to
-        // restore the old selection following a failed cast, but this is a bandaid for now.
-        if (dynamic_cast<CastShieldBashOnEnemyHealerAction*>(action))
-            return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+        // Judgement of Command is the only council spell it can take, and the main tank's own
+        // action reflects that.
+        if (dynamic_cast<CastSpellReflectionAction*>(action))
+            return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
 
         if (dynamic_cast<CastVigilanceAction*>(action))
         {
+            if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+                return 1.0f;
+
             Player* mageTank = GetZerevorMageTank(botAI);
             return mageTank && action->GetTarget() == mageTank ? 0.0f : 1.0f;
         }
     }
 
     bool const isAoeThreat = IsAoeThreatAction(bot, action);
-    if (!isAoeThreat && !IsTauntAction(bot, action) && !dynamic_cast<AvoidAoeAction*>(action) &&
+    bool const isTaunt = IsTauntAction(bot, action);
+    bool const isAvoidAoe = dynamic_cast<AvoidAoeAction*>(action);
+    if (!isAoeThreat && !isTaunt && !isAvoidAoe &&
         !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
@@ -671,6 +672,36 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         return IsAnotherCouncilMemberWithin(botAI, COUNCIL_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
     }
 
+    // Malande and Veras can be taunted, so their tanks may taunt back their own member.
+    if (isTaunt)
+    {
+        bool const isSingleTargetTaunt = dynamic_cast<CastTauntAction*>(action) ||
+            dynamic_cast<CastGrowlAction*>(action) ||
+            dynamic_cast<CastHandOfReckoningAction*>(action) ||
+            dynamic_cast<CastDarkCommandAction*>(action);
+        if (!isSingleTargetTaunt)
+            return 0.0f;
+
+        Unit* target = action->GetTarget();
+        if (target == malande)
+            return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ? 1.0f : 0.0f;
+
+        Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+        return target && target == veras && PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ?
+            1.0f : 0.0f;
+    }
+
+    // Only a tank holding a member keeps out of stock avoidance; any other steps out of a patch.
+    if (isAvoidAoe)
+    {
+        if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
+            return 0.0f;
+
+        Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+        return veras && !IsVerasVanished(veras) &&
+            PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ? 0.0f : 1.0f;
+    }
+
     // Tank face ignores patches, so it would walk the Malande tank back into one it just left.
     if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
@@ -685,8 +716,9 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 // to heal the mage tank.
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Action* action)
 {
+    // An attack only picks the target; the healer's reach toward it stays held.
     bool const isHealerMove = PlayerbotAI::IsHeal(bot) &&
-        dynamic_cast<MovementAction*>(action) &&
+        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action);
     bool const isHealReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
     bool const isBlockedMove =
@@ -721,7 +753,8 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
         return 1.0f;
 
     if (action->getThreatType() != Action::ActionThreatType::Aoe &&
-        !dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action))
+        !dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<CastIceBlockAction*>(action) &&
+        !dynamic_cast<CastInvisibilityAction*>(action))
     {
         return 1.0f;
     }
@@ -732,18 +765,26 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
 }
 
-float IllidariCouncilControlHunterActionsMultiplier::GetValueInEncounter(Action* action)
+float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (bot->getClass() != CLASS_HUNTER)
-        return 1.0f;
-
-    if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
-        !dynamic_cast<CastTranquilizingShotAction*>(action))
+    switch (bot->getClass())
     {
-        return 1.0f;
+        case CLASS_HUNTER:
+            if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
+                !dynamic_cast<CastTranquilizingShotAction*>(action))
+            {
+                return 1.0f;
+            }
+            break;
+        case CLASS_SHAMAN:
+            if (!dynamic_cast<CastPurgeAction*>(action))
+                return 1.0f;
+            break;
+        default:
+            return 1.0f;
     }
 
     return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
@@ -755,21 +796,36 @@ float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncou
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isMage = bot->getClass() == CLASS_MAGE;
-    bool const isShaman = bot->getClass() == CLASS_SHAMAN;
-    if (!isMage && !isShaman)
-        return 1.0f;
-
-    if (isMage && !dynamic_cast<CastCounterspellAction*>(action) &&
-        !dynamic_cast<CastCounterspellOnEnemyHealerAction*>(action))
+    switch (bot->getClass())
     {
-        return 1.0f;
-    }
+        case CLASS_MAGE:
+            if (!dynamic_cast<CastCounterspellAction*>(action) &&
+                !dynamic_cast<CastCounterspellOnEnemyHealerAction*>(action))
+            {
+                return 1.0f;
+            }
+            break;
+        case CLASS_SHAMAN:
+            if (!dynamic_cast<CastWindShearAction*>(action) &&
+                !dynamic_cast<CastWindShearOnEnemyHealerAction*>(action))
+            {
+                return 1.0f;
+            }
+            break;
+        // Their stock interrupts pick an enemy healer out to spell range, and a cast out of melee
+        // range still turns the bot to Malande.
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_ROGUE:
+        case CLASS_WARRIOR:
+        {
+            if (!dynamic_cast<CastSpellOnEnemyHealerAction*>(action))
+                return 1.0f;
 
-    if (isShaman && !dynamic_cast<CastWindShearAction*>(action) &&
-        !dynamic_cast<CastWindShearOnEnemyHealerAction*>(action))
-    {
-        return 1.0f;
+            Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+            return malande && !bot->IsWithinMeleeRange(malande) ? 0.0f : 1.0f;
+        }
+        default:
+            return 1.0f;
     }
 
     return AI_VALUE2(Unit*, "find target", "lady malande") ? 0.0f : 1.0f;
