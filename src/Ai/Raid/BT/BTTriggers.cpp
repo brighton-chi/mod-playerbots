@@ -648,9 +648,8 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
 }
 
-// The mechanic tracker records each new infection while there is a shadowfiend birthing position,
-// keeps looking for a trap hunter while none is ready, and drops an entry once its debuff is gone
-// or the shadowfiend phase changes.
+// The mechanic tracker records each new infection while there is an infection position, keeps
+// looking for a trap hunter while none is ready, and drops an entry once its debuff is gone.
 bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -663,7 +662,6 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
     auto const* infections =
@@ -676,11 +674,8 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (std::find(infected.begin(), infected.end(), player) == infected.end())
                 return true;
 
-            if (hasInfectionPosition &&
-                (infection.phase != infectionPhase || !infection.isTrapAssigned))
-            {
+            if (hasInfectionPosition && !infection.isTrapAssigned)
                 return true;
-            }
         }
     }
 

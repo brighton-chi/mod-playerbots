@@ -8,6 +8,7 @@
 #include "CellImpl.h"
 #include "DynamicObject.h"
 #include "EncounterHelpers.h"
+#include "GameObject.h"
 #include "GameTime.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -1810,38 +1811,24 @@ Position GetIllidanInfectionPosition(Unit const& illidan)
         ILLIDAN_INFECTION_POSITION_ANGLE);
 }
 
-IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase)
+Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan)
 {
-    bool const isTransform = phase == IllidanPhase::Demon &&
-        IsIllidanPhaseStartWithin(illidan, phase, ILLIDAN_DEMON_TRANSFORM_MS);
-    if (!isTransform && phase != IllidanPhase::Dying)
-        return phase;
-
-    IllidanPhase const previous = GetIllidanPhaseBefore(illidan, phase);
-    return previous != IllidanPhase::None ? previous : IllidanPhase::Grounded;
-}
-
-Position GetIllidanRecordedInfectionPosition(
-    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
-{
-    IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(illidan, phase);
     Player* bot = botAI->GetBot();
     if (auto const* infections = FindIllidanInfections(bot->GetInstanceId()))
     {
-        // Entries from the phase before are kept while he flies.
-        bool const isFlying = phase == IllidanPhase::Flying;
         auto const own = infections->find(bot->GetGUID());
-        if (own != infections->end() && (isFlying || own->second.phase == infectionPhase))
+        if (own != infections->end())
             return own->second.infectionPosition;
 
         for (auto const& [player, infection] : *infections)
         {
-            if (infection.hunter == bot->GetGUID() &&
-                (isFlying || infection.phase == infectionPhase))
-            {
+            if (infection.hunter == bot->GetGUID())
                 return infection.infectionPosition;
-            }
         }
+
+        // Before the tracker records this bot, the position it will share.
+        if (!infections->empty())
+            return infections->begin()->second.infectionPosition;
     }
 
     return GetIllidanInfectionPosition(illidan);
@@ -2021,8 +2008,22 @@ bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
     return IsIllidanTrapHunterOnDuty(botAI);
 }
 
-bool IsFrostTrapPatchAt(Player* bot, Position const& infectionPosition, int32 minDurationMs) // Why not use GetDynamicObjectPositions?
+bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs)
 {
+    // Not yet sprung, a trap is a game object rather than a patch, and it lasts 30 s.
+    std::list<GameObject*> traps;
+    bot->GetGameObjectListWithEntryInGrid(
+        traps, Id(BtObjects::GO_FROST_TRAP), ILLIDAN_ADD_SEARCH_RADIUS);
+    for (GameObject* trap : traps)
+    {
+        if (trap->isSpawned() &&
+            trap->GetExactDist2d(infectionPosition) <= ILLIDAN_FROST_TRAP_DISTANCE)
+        {
+            return true;
+        }
+    }
+
+    // A patch's remaining duration, which positions alone don't give.
     std::list<WorldObject*> objects;
     Acore::AllWorldObjectsInRange check(bot, ILLIDAN_ADD_SEARCH_RADIUS);
     Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
@@ -2178,6 +2179,9 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
 
 bool HasParasiticShadowfiend(Player* player)
 {
+    if (!player)
+        return false;
+
     return player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1)) ||
         player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 }
@@ -2228,12 +2232,20 @@ bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
     if (HasParasiticShadowfiend(bot))
         return false;
 
-    Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
-    if (!shadowfiend)
-        return false;
+    auto const& shadowfiends =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
+    for (ObjectGuid const& guid : shadowfiends)
+    {
+        Unit* shadowfiend = botAI->GetUnit(guid);
+        if (shadowfiend && shadowfiend->IsAlive() &&
+            bot->GetExactDist2d(shadowfiend) <= ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE &&
+            shadowfiend->GetHealthPct() >= ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT)
+        {
+            return true;
+        }
+    }
 
-    return bot->GetExactDist2d(shadowfiend) <= ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE &&
-        shadowfiend->GetHealthPct() >= ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT;
+    return false;
 }
 
 GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)

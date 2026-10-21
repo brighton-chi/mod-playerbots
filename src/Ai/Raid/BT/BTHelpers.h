@@ -198,6 +198,9 @@ enum class BtObjects : uint32
 {
     // High Warlord Naj'entus
     GO_NAJENTUS_SPINE               = 185584,
+
+    // Illidan Stormrage <The Betrayer>
+    GO_FROST_TRAP                   = 164639, // laid by 13809, despawns once sprung
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
@@ -598,13 +601,12 @@ struct ShadowDemon
     ObjectGuid target = ObjectGuid::Empty;
 };
 
-// One Shadowfiend infection, recorded by the mechanic tracker. The infection position is fixed for
-// the phase it was recorded in (transform counts as the phase before it), and kept while he flies.
-// Once the trap is assigned, hunter is empty if a Frost Trap patch already covered the position.
+// One Shadowfiend infection, recorded by the mechanic tracker. The infection position is fixed
+// until the debuff is gone, whatever the phase. Once the trap is assigned, hunter is empty if a
+// Frost Trap already covered the position.
 struct IllidanInfection
 {
     Position infectionPosition;
-    IllidanPhase phase = IllidanPhase::None;
     ObjectGuid hunter = ObjectGuid::Empty;
     bool isTrapAssigned = false;
 };
@@ -631,8 +633,6 @@ inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-// He turns aggressive in Demon Form this long after the transform starts.
-inline constexpr uint32 ILLIDAN_DEMON_TRANSFORM_MS = 12230;
 // The warlock tank has him to itself for the 12.23 s transform and about 2 s more.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
@@ -658,6 +658,9 @@ inline constexpr uint32 ILLIDAN_PHASE_START_MISDIRECT_MS = 3 * IN_MILLISECONDS;
 // A Frost Trap patch already on the infection position does for a new infection if it outlasts the
 // debuff by this much, the time ranged get on the slowed Shadowfiends.
 inline constexpr int32 ILLIDAN_FROST_TRAP_SLOW_MS = 5 * IN_MILLISECONDS;
+// A Frost Trap not yet sprung this close to the infection position does too: Shadowfiends spawning
+// there spring it from 3.9 yd.
+inline constexpr float ILLIDAN_FROST_TRAP_DISTANCE = 3.0f;
 
 // Tank ring: he is held 25 yd from the grate centre with the Main Tank 6 yd outward of him, so he
 // faces out and the raid stands inside.
@@ -781,13 +784,9 @@ Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
 // Where an infection position is recorded, from where he stands now.
 Position GetIllidanInfectionPosition(Unit const& illidan);
-// The phase whose infection position applies: the Demon Form transform and the death scene count
-// as the phase before them, so an infection from that phase keeps its position through them.
-IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase);
 // The infection position recorded for the bot's own infection, else for the infection it traps for,
-// else where one would be recorded now.
-Position GetIllidanRecordedInfectionPosition(
-    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
+// else the one a new infection would share, else where one would be recorded now.
+Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* bot);
 bool IsEastFlameOfAzzinothTank(Player* bot);
@@ -812,8 +811,9 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
 // Shadowfiends are out, tanks included (the raid can't move away from them in Phase 2), and its
 // trap hunter still lays the trap.
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);
-// A Frost Trap patch round infectionPosition lasting at least minDurationMs more.
-bool IsFrostTrapPatchAt(Player* bot, Position const& infectionPosition, int32 minDurationMs);
+// A Frost Trap not yet sprung at infectionPosition, or a patch round it lasting at least
+// minDurationMs more.
+bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs);
 // Slot lists are bots on the map, the dead kept, each part by GUID: ranged are healers, then
 // ranged DPS (an offheal paladin is melee); melee are melee DPS, then tanks, the Main Tank left
 // out. In Demon Form the warlock tank and the healers leave the ranged list; healers have their
@@ -831,8 +831,8 @@ bool HasParasiticShadowfiend(Player* player);
 GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
 // Shadowfiends have a combat reach of 1.0y.
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
-// No Shadowfiend debuff and a living Shadowfiend close by, as where a debuff just ended, while
-// that Shadowfiend isn't yet nearly dead.
+// No Shadowfiend debuff and a living Shadowfiend close by that isn't yet nearly dead, as where a
+// debuff just ended; any of them, since the pair spawn together and ranged focus one.
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
 // Living group members with either Shadowfiend debuff, humans included, so trap hunters trap for
 // them too.
@@ -867,7 +867,7 @@ struct BtInstanceState
     std::optional<uint32> illidanFlamePhaseStartTime;
     std::optional<ObjectGuid> eastFlameGuid;
     std::optional<ObjectGuid> westFlameGuid;
-    // Each infected player's infection, kept until the debuff is gone or the phase changes.
+    // Each infected player's infection, kept until the debuff is gone.
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
 };
 

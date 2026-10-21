@@ -381,25 +381,21 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 }
 
 // Tanks and melee never pick Illidan's Shadowfiends themselves; ranged and pets kill them, and
-// melee only finish one in their reach, from assign target priority.
-void AppendParasiticShadowfiendMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+// melee only finish one in their reach, from assign target priority. Nor him in Demon Form.
+void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
-        return;
-
-    auto const& shadowfiends =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
-    exclusions.insert(shadowfiends.begin(), shadowfiends.end());
-}
-
-void AppendIllidanDemonFormMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
+    if (!PlayerbotAI::IsMelee(bot))
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (illidan && GetIllidanPhase(illidan) == IllidanPhase::Demon)
+    if (!illidan)
+        return;
+
+    auto const& shadowfiends = context->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
+    exclusions.insert(shadowfiends.begin(), shadowfiends.end());
+
+    if (GetIllidanPhase(illidan) == IllidanPhase::Demon)
         exclusions.insert(illidan->GetGUID());
 }
 
@@ -425,6 +421,5 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
         AppendShadeOfAkamaChannelerExclusions(botAI, bot, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
-    AppendParasiticShadowfiendMeleeExclusions(botAI, exclusions);
-    AppendIllidanDemonFormMeleeExclusions(botAI, exclusions);
+    AppendIllidanMeleeExclusions(botAI, bot, exclusions);
 }

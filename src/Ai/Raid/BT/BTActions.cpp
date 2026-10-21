@@ -2119,15 +2119,15 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     }
 }
 
-// A trap hunter on duty drops Frost Trap on arrival. An infected hunter is never on duty.
+// A trap hunter on duty drops Frost Trap on arrival, holding the position through a global
+// cooldown. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
 
-    Position const position =
-        GetIllidanRecordedInfectionPosition(botAI, *illidan, GetIllidanPhase(illidan));
+    Position const position = GetIllidanRecordedInfectionPosition(botAI, *illidan);
     if (bot->GetExactDist2d(position) > ILLIDAN_POSITION_TOLERANCE)
     {
         return MoveTo(
@@ -2139,12 +2139,15 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
         return false;
 
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
-    return botAI->CanCastSpell(frostTrap, bot) && botAI->CastSpell(frostTrap, bot);
+    if (botAI->CanCastSpell(frostTrap, bot))
+        botAI->CastSpell(frostTrap, bot);
+
+    return true;
 }
 
-// The run position is fixed when an infection is recorded, so it doesn't move as he does, and the
-// trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job on. A
-// change of run-position phase records both again.
+// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
+// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
+// on. Both last until the debuff is gone, through any change of phase.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2154,7 +2157,6 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     auto const& infected = context->GetValue<GuidVector>(
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    IllidanPhase const infectionPhase = GetIllidanInfectionPositionPhase(*illidan, phase);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>>& infectionsField =
         BtState(bot->GetInstanceId()).illidanInfections;
@@ -2162,10 +2164,9 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     auto& infections = infectionsField ? *infectionsField : infectionsField.emplace();
     std::erase_if(
         infections,
-        [&infected, infectionPhase, hasInfectionPosition](auto const& entry)
+        [&infected](auto const& entry)
         {
-            return std::find(infected.begin(), infected.end(), entry.first) == infected.end() ||
-                (hasInfectionPosition && entry.second.phase != infectionPhase);
+            return std::find(infected.begin(), infected.end(), entry.first) == infected.end();
         });
 
     if (hasInfectionPosition)
@@ -2177,7 +2178,6 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             // A new infection shares the position already in use, so one trap does for both.
             IllidanInfection infection;
-            infection.phase = infectionPhase;
             infection.infectionPosition = infections.empty() ?
                 GetIllidanInfectionPosition(*illidan) :
                 infections.begin()->second.infectionPosition;
@@ -2238,14 +2238,15 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     if (candidate.IsEmpty())
         return false;
 
-    // Ice already round the infection position that outlasts the debuff needs no new trap.
+    // A trap already laid at the infection position, or ice round it that outlasts the debuff,
+    // needs no new trap.
     Aura const* parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1));
     if (!parasite)
         parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
 
     int32 const parasiteMs = parasite ? parasite->GetDuration() : 0;
     bool const isCovered =
-        IsFrostTrapPatchAt(bot, infectionPosition, parasiteMs + ILLIDAN_FROST_TRAP_SLOW_MS);
+        IsFrostTrapAt(bot, infectionPosition, parasiteMs + ILLIDAN_FROST_TRAP_SLOW_MS);
     hunter = isCovered ? ObjectGuid::Empty : candidate;
     return true;
 }
