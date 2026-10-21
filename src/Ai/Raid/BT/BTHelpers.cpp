@@ -1564,10 +1564,34 @@ bool IsIllidanSpeechInProgress(Player* bot)
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();
 }
 
-bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs)
+bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase)
+{
+    BtInstanceState& state = BtState(instanceId);
+    if (state.illidanLastPhase == phase)
+        return false;
+
+    state.illidanPreviousPhase = state.illidanLastPhase.value_or(IllidanPhase::None);
+    state.illidanLastPhase = phase;
+    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev)
+    {
+        state.illidanPhaseStartTime = getMSTime();
+    }
+    else if (phase == IllidanPhase::Flying)
+    {
+        ResetIfSet(state.illidanPhaseStartTime);
+    }
+
+    if (phase != IllidanPhase::Flying)
+        ResetIfSet(state.illidanFlamePhaseStartTime);
+
+    return true;
+}
+
+bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
-    return !state || !state->illidanPhaseStartTime ||
+    return !state || state->illidanLastPhase != phase || !state->illidanPhaseStartTime ||
         getMSTimeDiff(*state->illidanPhaseStartTime, getMSTime()) < durationMs;
 }
 
@@ -1586,7 +1610,8 @@ IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase)
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
-    return state && state->illidanPhaseStartTime &&
+    return state && state->illidanLastPhase == IllidanPhase::Demon &&
+        state->illidanPhaseStartTime &&
         getMSTimeDiff(*state->illidanPhaseStartTime, getMSTime()) >=
         ILLIDAN_DEMON_FORM_DURATION_MS - durationMs;
 }
@@ -1597,22 +1622,17 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         return IllidanDpsHold::None;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    // The tracker stamps a new phase's start on its next tick, and until then the start time is
-    // the old phase's, so a change it hasn't recorded yet counts as a phase just started.
-    BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
-    bool const isUnrecorded = !state || state->illidanLastPhase != phase;
     if (phase == IllidanPhase::Demon)
     {
-        if (illidan->GetHealthPct() <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
+        // A Phase 5 form is already under 30%, so it gets the usual windows.
+        float const healthPct = illidan->GetHealthPct();
+        if (healthPct > 30.0f && healthPct <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
             return IllidanDpsHold::DemonFormNoPush;
-
-        if (isUnrecorded)
-            return IllidanDpsHold::DemonFormStart;
 
         if (IsIllidanDemonFormEnding(*illidan, ILLIDAN_DEMON_FORM_END_HOLD_MS))
             return IllidanDpsHold::DemonFormEnd;
 
-        return IsIllidanPhaseStartWithin(*illidan, ILLIDAN_DEMON_FORM_DPS_WAIT_MS) ?
+        return IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_DEMON_FORM_DPS_WAIT_MS) ?
             IllidanDpsHold::DemonFormStart : IllidanDpsHold::DemonFormMiddle;
     }
 
@@ -1620,9 +1640,8 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
     if (phase == IllidanPhase::Maiev)
         isAfterReset = GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Demon;
 
-    bool const isStarting =
-        isUnrecorded || IsIllidanPhaseStartWithin(*illidan, ILLIDAN_RESET_DPS_WAIT_MS);
-    return isAfterReset && isStarting ? IllidanDpsHold::AfterReset : IllidanDpsHold::None;
+    return isAfterReset && IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_RESET_DPS_WAIT_MS) ?
+        IllidanDpsHold::AfterReset : IllidanDpsHold::None;
 }
 
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
@@ -1632,7 +1651,7 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
 
     IllidanDpsHold const window = GetIllidanHoldWindow(illidan);
     Player* bot = botAI->GetBot();
-    if (window == IllidanDpsHold::DemonFormStart)
+    if (window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush)
     {
         return IsIllidanWarlockTank(botAI) ? IllidanDpsHold::None : window;
     }
@@ -1802,7 +1821,7 @@ Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 IllidanPhase GetIllidanInfectionPositionPhase(Unit const& illidan, IllidanPhase phase)
 {
     bool const isTransform = phase == IllidanPhase::Demon &&
-        IsIllidanPhaseStartWithin(illidan, ILLIDAN_DEMON_TRANSFORM_MS);
+        IsIllidanPhaseStartWithin(illidan, phase, ILLIDAN_DEMON_TRANSFORM_MS);
     if (!isTransform && phase != IllidanPhase::Dying)
         return phase;
 

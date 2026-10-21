@@ -591,7 +591,7 @@ bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Maiev)
     {
-        return IsIllidanPhaseStartWithin(*illidan, ILLIDAN_PHASE_START_MISDIRECT_MS);
+        return IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_PHASE_START_MISDIRECT_MS);
     }
 
     return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon;
@@ -864,17 +864,23 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
     return window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush;
 }
 
-// Auto Shot and wands keep shooting him through a hold, since a multiplier can't end a running
-// auto-repeat.
+// Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
+// multiplier can't end a running auto-repeat or channel.
 bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
 {
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    if (!shot)
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (!shot && !channel)
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    return illidan && shot->m_targets.GetUnitTargetGUID() == illidan->GetGUID() &&
-        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None;
+    if (!illidan)
+        return false;
+
+    ObjectGuid const guid = illidan->GetGUID();
+    bool const isOnIllidan = (shot && shot->m_targets.GetUnitTargetGUID() == guid) ||
+        (channel && channel->m_targets.GetUnitTargetGUID() == guid);
+    return isOnIllidan && GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None;
 }
 
 bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -958,7 +964,7 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    if (IsIllidanPhaseStartWithin(*illidan, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
+    if (IsIllidanPhaseStartWithin(*illidan, IllidanPhase::Demon, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
         return false;
 
     return context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().size() >= 2;

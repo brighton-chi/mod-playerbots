@@ -558,7 +558,8 @@ enum class IllidanDpsHold : uint8
     DemonFormStart,  // everyone but the warlock tank
     DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
     DemonFormEnd,    // the last 3 s before the reset; everyone
-    DemonFormNoPush, // 33% or below in the form, so he leaves it above 30%; everyone
+    DemonFormNoPush, // 30 to 33% in the form, so he leaves it above 30%; everyone but the
+                     // warlock tank
 };
 
 // The Main Tank's lead in Phases 1, 3 and 5.
@@ -628,7 +629,8 @@ inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
 // At or below this he is burnt down: no hold and no stop.
 inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
-// At or below this in Demon Form nobody damages him, so he changes back above 30%.
+// At or below this, and above 30%, only the warlock tank damages him in Demon Form, so he changes
+// back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 // He turns aggressive in Demon Form this long after the transform starts.
@@ -758,12 +760,16 @@ inline std::array const W_GLAIVE_TANK_POSITIONS = {
 IllidanPhase GetIllidanPhase(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
-// The phase started less than durationMs ago; until the mechanic tracker stamps it, it has just
-// started.
-bool IsIllidanPhaseStartWithin(Unit const& illidan, uint32 durationMs);
+// Records a change of phase, the one before it and the start of a grounded phase; true if the
+// phase changed. Written by the mechanic tracker, and at the Demon Form transform by its listener.
+bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase);
+// The phase started less than durationMs ago; a change the mechanic tracker hasn't recorded yet
+// has just started.
+bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs);
 // The phase before the current one; until the tracker records a change, the last one it recorded.
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase);
-// Demon Form ends, with a threat reset, less than durationMs from now.
+// Demon Form ends, with a threat reset, less than durationMs from now; never before the tracker
+// has recorded the form.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 // The hold window that is running, before who it spares is decided.
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);

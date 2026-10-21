@@ -1916,25 +1916,15 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     if (hunterIndex == -1)
         return false;
 
+    // The first hunter takes the East Flame to its tank, the others the West Flame, each as soon
+    // as its own Flame is up, since the West one comes about 0.7 s first.
+    bool const isEast = hunterIndex == 0;
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    if (!eastFlame || !westFlame || eastFlame == westFlame ||
-        eastFlame->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
-    {
-        return false;
-    }
-
-    Player* secondAssistTank = GetGroupAssistTank(bot, 1);
-    if (!secondAssistTank)
+    Unit* flame = isEast ? eastFlame : westFlame;
+    if (!flame || flame->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
         return false;
 
-    if (hunterIndex == 0)
-        return MisdirectTargetToTank(botAI, eastFlame, secondAssistTank);
-
-    Player* firstAssistTank = GetGroupAssistTank(bot, 0);
-    if (!firstAssistTank)
-        return false;
-
-    return MisdirectTargetToTank(botAI, westFlame, firstAssistTank);
+    return MisdirectTargetToTank(botAI, flame, GetGroupAssistTank(bot, isEast ? 1 : 0));
 }
 
 // Its Steady Shot would be damage on him while nobody may damage him.
@@ -2550,11 +2540,25 @@ bool IllidanStormrageMeleeStopAttackingAction::Execute(Event /*event*/)
     return true;
 }
 
-// The target is kept: the hold keeps the shot from starting again.
+// The target is kept: the hold keeps the shot or channel from starting again.
 bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
 {
-    bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-    return true;
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return false;
+
+    bool isStopped = false;
+    for (CurrentSpellTypes const type : { CURRENT_AUTOREPEAT_SPELL, CURRENT_CHANNELED_SPELL })
+    {
+        Spell* spell = bot->GetCurrentSpell(type);
+        if (spell && spell->m_targets.GetUnitTargetGUID() == illidan->GetGUID())
+        {
+            bot->InterruptSpell(type);
+            isStopped = true;
+        }
+    }
+
+    return isStopped;
 }
 
 bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
@@ -2821,9 +2825,9 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
-// Demon Form: Shadow Demons first for everyone, healers included, but a nearly dead Shadowfiend in
-// a melee bot's reach before them; ranged also Shadowfiends; then him, except for melee and tanks,
-// who never take him in the form.
+// Demon Form: Shadow Demons first for everyone, healers included; then for melee a nearly dead
+// Shadowfiend in their reach, for ranged any Shadowfiend in their band; then him, except for melee
+// and tanks, who never take him in the form.
 std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPriorityOrder(
     Unit* illidan, IllidanPhase phase)
 {
@@ -2926,32 +2930,9 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     uint32 const now = getMSTime();
     uint32 const instanceId = illidan->GetMap()->GetInstanceId();
 
-    bool updated = false;
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    bool updated = RecordIllidanPhase(instanceId, phase);
     BtInstanceState& state = BtState(instanceId);
-    bool const isFirstPhase = !state.illidanLastPhase;
-    IllidanPhase const lastPhase = state.illidanLastPhase.value_or(IllidanPhase::None);
-    bool const phaseChanged = isFirstPhase || lastPhase != phase;
-    state.illidanLastPhase = phase;
-
-    if (phaseChanged)
-    {
-        state.illidanPreviousPhase = lastPhase;
-        if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-            phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev)
-        {
-            state.illidanPhaseStartTime = now;
-            updated = true;
-        }
-        else if (phase == IllidanPhase::Flying)
-        {
-            if (ResetIfSet(state.illidanPhaseStartTime))
-                updated = true;
-        }
-
-        if (phase != IllidanPhase::Flying && ResetIfSet(state.illidanFlamePhaseStartTime))
-            updated = true;
-    }
 
     if (phase == IllidanPhase::Flying)
     {

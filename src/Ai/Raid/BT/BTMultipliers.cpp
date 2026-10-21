@@ -127,9 +127,9 @@ bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
 }
 
 // Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank
-// that should have him. Through the transform he is stunned and takes none, and in Maiev's
-// arrival nobody takes damage under Shadow Prison, while a heal in the gap before he wakes
-// reaches him.
+// that should have him. While stunned (the transform but its last 0.48 s) he takes none, and in
+// Maiev's arrival nobody takes damage under Shadow Prison, while a heal in the gap before he
+// wakes reaches him.
 bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
 {
     if (!dynamic_cast<CastHealingSpellAction*>(action))
@@ -1105,7 +1105,8 @@ float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* 
 }
 
 // Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5 (to keep
-// them from dying in Phase 4 and to save the cooldown through Phases 1 and 2).
+// them from dying in Phase 4 and to save the cooldown through Phases 1 and 2), and not in the
+// bot's own hold, which lets Mirror Image and Army of the Dead through as buffs.
 float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsGuardianSummon(bot, action))
@@ -1116,7 +1117,10 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
         return 1.0f;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    return phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev ? 1.0f : 0.0f;
+    if (phase != IllidanPhase::Grounded && phase != IllidanPhase::Maiev)
+        return 0.0f;
+
+    return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
 }
 
 // The targeting action only picks targets and keeps melee off him during a hold itself, so it can

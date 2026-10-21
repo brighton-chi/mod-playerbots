@@ -188,9 +188,33 @@ private:
     }
 };
 
+// The mechanic tracker records phase changes on its own ticks, which wait out its cast bar, so
+// Demon Form is recorded at the transform itself and its windows count from there.
+class IllidanStormrageDemonTransformSpellListenerScript : public AllSpellScript
+{
+public:
+    IllidanStormrageDemonTransformSpellListenerScript()
+        : AllSpellScript("IllidanStormrageDemonTransformSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!caster || spellInfo->Id != Id(BtSpells::SPELL_DEMON_TRANSFORM_1) ||
+            caster->GetEntry() != Id(BtNpcs::NPC_ILLIDAN_STORMRAGE))
+        {
+            return;
+        }
+
+        // Only where the tracker already keeps state, so a raid without bots leaves none.
+        if (FindBtState(caster->GetInstanceId()))
+            RecordIllidanPhase(caster->GetInstanceId(), IllidanPhase::Demon);
+    }
+};
+
 void AddSC_BlackTempleBotScripts()
 {
     new SupremusVolcanicEruptionSpellListenerScript();
     new ReliquaryOfSoulsRuneShieldSpellListenerScript();
     new IllidariCouncilCircleOfHealingSpellListenerScript();
+    new IllidanStormrageDemonTransformSpellListenerScript();
 }
