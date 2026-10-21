@@ -304,6 +304,41 @@ float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action
         target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
 }
 
+float ShadeOfAkamaCannotTankBossMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    switch (bot->getClass())
+    {
+        case CLASS_HUNTER:
+        {
+            if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+                return 1.0f;
+            break;
+        }
+        case CLASS_DRUID:
+        case CLASS_PALADIN:
+        case CLASS_WARRIOR:
+        case CLASS_DEATH_KNIGHT:
+        {
+            if (!IsTauntAction(bot, action))
+                return 1.0f;
+            break;
+        }
+        default:
+            return 1.0f;
+    }
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return 1.0f;
+
+    return target->GetEntry() == Id(BtNpcs::NPC_SHADE_OF_AKAMA) ||
+        target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_CHANNELER) ||
+        target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
+}
+
 // Teron Gorefiend
 
 float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -705,16 +740,20 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
     switch (bot->getClass())
     {
         case CLASS_HUNTER:
+        {
             if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action) &&
                 !dynamic_cast<CastTranquilizingShotAction*>(action))
             {
                 return 1.0f;
             }
             break;
+        }
         case CLASS_SHAMAN:
+        {
             if (!dynamic_cast<CastPurgeAction*>(action))
                 return 1.0f;
             break;
+        }
         default:
             return 1.0f;
     }
@@ -891,7 +930,7 @@ float IllidanStormrageHoldPullPositionsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<IllidanStormragePositionForPullAction*>(action))
+        dynamic_cast<IllidanStormragePositionOnGrateDuringSpeechAction*>(action))
     {
         return 1.0f;
     }

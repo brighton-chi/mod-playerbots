@@ -514,11 +514,11 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormragePositionForPullAction : public MovementAction
+class IllidanStormragePositionOnGrateDuringSpeechAction : public MovementAction
 {
 public:
-    IllidanStormragePositionForPullAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage position for pull") {}
+    IllidanStormragePositionOnGrateDuringSpeechAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage position on grate during speech") {}
     bool Execute(Event event) override;
 };
 

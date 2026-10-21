@@ -194,7 +194,11 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 
 bool ShadeOfAkamaShouldPrioritizeChannelersTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsDps(bot) || !PlayerbotAI::IsMelee(bot))
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    // Shadow Priests (by proxy via dps check) and melee dps focus on Channelers (and Sorcerers).
+    if (bot->getClass() != CLASS_PRIEST && !PlayerbotAI::IsMelee(bot))
         return false;
 
     return GetShadeOfAkamaKillTarget(botAI);
@@ -575,6 +579,7 @@ bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 bool IllidanStormrageShouldPositionForPullTrigger::IsActive()
 {
+    // You are not prepared!
     return AI_VALUE(bool, "illidan stormrage speech in progress");
 }
 

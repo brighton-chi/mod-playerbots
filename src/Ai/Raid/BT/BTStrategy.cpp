@@ -9,6 +9,7 @@
 #include "BTMultipliers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include <algorithm>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
@@ -186,7 +187,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Illidan Stormrage <The Betrayer>
     triggers.push_back(new TriggerNode("illidan stormrage should position for pull",
-        { NextAction("illidan stormrage position for pull", ACTION_RAID + 1) }));
+        { NextAction("illidan stormrage position on grate during speech", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage hunter should misdirect",
         { NextAction("illidan stormrage misdirect to tanks", ACTION_RAID + 3) }));
@@ -280,6 +281,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAkamaCannotTankBossMultiplier(botAI));
 
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
@@ -322,11 +324,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 namespace
 {
 
-// Non-tanks leave the skulled Pleasure's Sister of Pain to her, since Pleasure takes the damage
-// for both.
-void AppendSisterOfPainExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+// Non-tanks leave the skulled Pleasure's Sister of Pain, since Pleasure takes the damage for both.
+void AppendSisterOfPainExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsTank(bot))
         return;
 
@@ -334,9 +334,8 @@ void AppendSisterOfPainExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         exclusions.insert(pain->GetGUID());
 }
 
-void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
         return;
 
@@ -349,14 +348,26 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-void AppendShadeOfAkamaTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee dps while
+// another add is up. This is needed so the skull doesn't affect their targeting.
+void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsTank(botAI->GetBot()))
+    if (PlayerbotAI::IsDps(bot) && (bot->getClass() == CLASS_PRIEST || PlayerbotAI::IsMelee(bot)))
         return;
 
-    auto const& adds =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shade of akama adds")->RefGet();
-    exclusions.insert(adds.begin(), adds.end());
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& adds = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    if (adds.empty())
+        return;
+
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        if (std::find(adds.begin(), adds.end(), guid) == adds.end())
+        {
+            exclusions.insert(adds.begin(), adds.end());
+            return;
+        }
+    }
 }
 
 void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -403,15 +414,15 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
 
     if (type != TargetValueExclusionType::TankTarget)
     {
-        AppendSisterOfPainExclusions(botAI, exclusions);
-        AppendShadowmoonReaverExclusions(botAI, exclusions);
+        AppendSisterOfPainExclusions(botAI, bot, exclusions);
+        AppendShadowmoonReaverExclusions(botAI, bot, exclusions);
     }
 
     if (!IsEncounterInProgress(bot, BT_MAP_ID))
         return;
 
-    if (type == TargetValueExclusionType::TankTarget)
-        AppendShadeOfAkamaTankExclusions(botAI, exclusions);
+    if (type == TargetValueExclusionType::TankTarget || type == TargetValueExclusionType::DpsTarget)
+        AppendShadeOfAkamaChannelerExclusions(botAI, bot, exclusions);
 
     AppendShadowyConstructExclusions(botAI, exclusions);
     AppendParasiticShadowfiendMeleeExclusions(botAI, exclusions);

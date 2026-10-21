@@ -151,6 +151,7 @@ enum class BtNpcs : uint32
     NPC_SUPREMUS_VOLCANO            = 23085,
 
     // Shade of Akama
+    NPC_SHADE_OF_AKAMA              = 22841,
     NPC_ASHTONGUE_CHANNELER         = 23421,
     NPC_ASHTONGUE_SORCERER          = 23215,
 

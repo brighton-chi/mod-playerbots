@@ -177,8 +177,8 @@ public:
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
         // Illidan Stormrage <The Betrayer>
-        creators["illidan stormrage position for pull"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_position_for_pull;
+        creators["illidan stormrage position on grate during speech"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_position_on_grate_during_speech;
 
         creators["illidan stormrage misdirect to tanks"] =
             &RaidBlackTempleActionContext::illidan_stormrage_misdirect_to_tanks;
@@ -490,9 +490,9 @@ private:
     }
 
     // Illidan Stormrage <The Betrayer>
-    static Action* illidan_stormrage_position_for_pull(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_position_on_grate_during_speech(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePositionForPullAction(botAI);
+        return new IllidanStormragePositionOnGrateDuringSpeechAction(botAI);
     }
     static Action* illidan_stormrage_misdirect_to_tanks(PlayerbotAI* botAI)
     {

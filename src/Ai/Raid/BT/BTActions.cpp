@@ -1842,7 +1842,7 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 
 // The Main Tank waits 15.5 yd north of the grate centre, facing him, so he stops on the ring when
 // he runs in. Everyone else waits on the grate.
-bool IllidanStormragePositionForPullAction::Execute(Event /*event*/)
+bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
     {

@@ -142,6 +142,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class ShadeOfAkamaCannotTankBossMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    ShadeOfAkamaCannotTankBossMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "shade of akama cannot tank boss") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Teron Gorefiend
 
 class TeronGorefiendControlMovementMultiplier : public BlackTempleEncounterMultiplier
