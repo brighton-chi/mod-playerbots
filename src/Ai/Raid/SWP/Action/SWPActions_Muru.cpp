@@ -550,7 +550,7 @@ bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)
     if (!berserker)
         return false;
 
-    auto const castStun = [&](char const* spell)
+    auto const castStun = [&](auto const& spell)
     {
         return botAI->CanCastSpell(spell, berserker) && botAI->CastSpell(spell, berserker);
     };
@@ -566,9 +566,9 @@ bool MuruCastStunOnBerserkerAction::Execute(Event /*event*/)
         case CLASS_WARLOCK:
             return castStun("shadowfury");
         case CLASS_WARRIOR:
-            return castStun("concussion blow") || castStun("shockwave");
+            return castStun(Id(SwpSpells::SPELL_CONCUSSION_BLOW)) || castStun("shockwave");
         default:
-            return bot->getRace() == RACE_TAUREN && castStun("war stomp");
+            return bot->getRace() == RACE_TAUREN && castStun(Id(SwpSpells::SPELL_WAR_STOMP));
     }
 }
 
@@ -578,7 +578,7 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     if (!furyMage)
         return false;
 
-    auto const castInterrupt = [&](char const* spell)
+    auto const castInterrupt = [&](auto const& spell)
     {
         return botAI->CanCastSpell(spell, furyMage) && botAI->CastSpell(spell, furyMage);
     };
@@ -586,23 +586,29 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return castInterrupt("mind freeze") || castInterrupt("strangulate");
+        {
+            return castInterrupt(Id(SwpSpells::SPELL_MIND_FREEZE)) ||
+                castInterrupt(Id(SwpSpells::SPELL_STRANGULATE));
+        }
         case CLASS_HUNTER:
-            return castInterrupt("silencing shot");
+            return castInterrupt(Id(SwpSpells::SPELL_SILENCING_SHOT));
         case CLASS_MAGE:
-            return castInterrupt("counterspell");
+            return castInterrupt(Id(SwpSpells::SPELL_COUNTERSPELL));
         case CLASS_PALADIN:
             return castInterrupt("avenger's shield");
         case CLASS_PRIEST:
-            return castInterrupt("silence");
+            return castInterrupt(Id(SwpSpells::SPELL_SILENCE));
         case CLASS_ROGUE:
-            return castInterrupt("kick");
+            return castInterrupt(Id(SwpSpells::SPELL_KICK));
         case CLASS_SHAMAN:
-            return castInterrupt("wind shear");
+            return castInterrupt(Id(SwpSpells::SPELL_WIND_SHEAR));
         case CLASS_WARLOCK:
-            return castInterrupt("spell lock");
+            return castInterrupt("spell lock"); // This can't work this way; this is a cast by the pet. NEED TO FIX.
         case CLASS_WARRIOR:
-            return castInterrupt("pummel") || castInterrupt("shield bash");
+        {
+            return castInterrupt(Id(SwpSpells::SPELL_PUMMEL)) ||
+                castInterrupt(Id(SwpSpells::SPELL_SHIELD_BASH));
+        }
         default:
             return false;
     }

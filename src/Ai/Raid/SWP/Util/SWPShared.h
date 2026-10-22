@@ -74,23 +74,43 @@ enum class SwpSpells : uint32
     SPELL_DARKNESS_OF_A_THOUSAND_SOULS = 46605,
     SPELL_SHADOW_SPIKE                 = 46680,
 
+    // Death Knight
+    SPELL_STRANGULATE                  = 47476,
+    SPELL_MIND_FREEZE                  = 47528,
+
     // Hunter
     SPELL_MISDIRECTION                 = 34477,
     SPELL_MISDIRECTION_AURA            = 35079, // the aura on the hunter
+    SPELL_SILENCING_SHOT               = 34490,
 
     // Mage
+    SPELL_COUNTERSPELL                 = 2139,
     SPELL_SPELLSTEAL                   = 30449,
+    SPELL_DEEP_FREEZE                  = 44572,
 
     // Priest
     SPELL_DISPEL_MAGIC_RANK_1          = 527,
     SPELL_SHADOWFORM                   = 15473,
+    SPELL_SILENCE                      = 15487,
     SPELL_MASS_DISPEL                  = 32375,
+
+    // Rogue
+    SPELL_KICK                         = 1766,
 
     // Shaman
     SPELL_PURGE_RANK_1                 = 370,
+    SPELL_WIND_SHEAR                   = 57994,
 
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
+
+    // Warrior
+    SPELL_SHIELD_BASH                  = 72,
+    SPELL_PUMMEL                       = 6552,
+    SPELL_CONCUSSION_BLOW              = 12809,
+
+    // Tauren
+    SPELL_WAR_STOMP                    = 20549,
 };
 
 enum class SwpNpcs : uint32
