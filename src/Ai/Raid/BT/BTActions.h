@@ -741,7 +741,7 @@ public:
 private:
     std::vector<Unit*> GetTargetsInPriorityOrder(Unit* illidan, BtHelpers::IllidanPhase phase);
     Unit* FindShadowfiendForMelee();
-    Unit* FindShadowfiendForRanged();
+    Unit* FindShadowfiendForRanged(BtHelpers::IllidanPhase phase);
 };
 
 class IllidanStormrageManageDpsTimersAction : public Action

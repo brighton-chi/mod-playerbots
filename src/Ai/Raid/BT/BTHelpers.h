@@ -536,8 +536,9 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target);
 
 // Illidan Stormrage <The Betrayer>
 
-// Fight phases 1 to 5 are Initial, Flying, Grounded, Demon and Maiev; Landing runs from the last
-// Flame's death until he is back on the ground. Dying is during the 1 HP death scene.
+// Fight phases 1 to 5 are Initial, Flying, Grounded, Demon and Maiev; Landing runs from when he
+// heads for the landing point until the threat reset makes him selectable. Dying is during the
+// 1 HP death scene.
 enum class IllidanPhase : uint8
 {
     None, // also Maiev's arrival

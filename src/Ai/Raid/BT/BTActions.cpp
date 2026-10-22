@@ -2863,7 +2863,8 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
         else
         {
             return {
-                GetShadowDemonForRangedToAttack(botAI, *bot), FindShadowfiendForRanged(), illidan,
+                GetShadowDemonForRangedToAttack(botAI, *bot), FindShadowfiendForRanged(phase),
+                illidan,
             };
         }
     }
@@ -2871,12 +2872,12 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
     {
         if (isGrounded)
         {
-            return { FindShadowfiendForRanged(), illidan };
+            return { FindShadowfiendForRanged(phase), illidan };
         }
         else if (phase == IllidanPhase::Flying)
         {
             auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-            return { FindShadowfiendForRanged(), eastFlame, westFlame };
+            return { FindShadowfiendForRanged(phase), eastFlame, westFlame };
         }
     }
     // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in
@@ -2900,13 +2901,15 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForMelee()
     return bot->IsWithinMeleeRange(shadowfiend) ? shadowfiend : nullptr;
 }
 
-Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged()
+Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged(IllidanPhase phase)
 {
     Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
     if (!shadowfiend)
         return nullptr;
 
-    constexpr float minDistance = 10.0f;
+    // While he flies, a bot infected then stays in its grate stack, and the other stacks are 8.9
+    // to 11.5 yd from its Shadowfiends.
+    float const minDistance = phase == IllidanPhase::Flying ? 5.0f : 10.0f;
     constexpr float maxDistance = 28.5f;
     float const distance = bot->GetDistance(shadowfiend);
     return distance > minDistance && distance <= maxDistance ? shadowfiend : nullptr;
