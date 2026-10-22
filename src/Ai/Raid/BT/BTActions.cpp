@@ -1601,12 +1601,12 @@ bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* m
 {
     if (bot->GetShapeshiftForm() == FORM_BERSERKERSTANCE)
     {
-        return botAI->CanCastSpell(Id(SwpSpells::SPELL_PUMMEL), malande) &&
-            botAI->CastSpell(Id(SwpSpells::SPELL_PUMMEL), malande);
+        return botAI->CanCastSpell(Id(BtSpells::SPELL_PUMMEL), malande) &&
+            botAI->CastSpell(Id(BtSpells::SPELL_PUMMEL), malande);
     }
 
-    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), malande) &&
-        botAI->CastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), malande))
+    if (botAI->CanCastSpell(Id(BtSpells::SPELL_SHIELD_BASH), malande) &&
+        botAI->CastSpell(Id(BtSpells::SPELL_SHIELD_BASH), malande))
     {
         return true;
     }
@@ -1615,15 +1615,15 @@ bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* m
         return false;
 
     constexpr uint32 pummelRageCost = 100; // 10 rage
-    uint32 const pummel = Id(SwpSpells::SPELL_PUMMEL);
+    uint32 const pummel = Id(BtSpells::SPELL_PUMMEL);
     if (!bot->HasSpell(pummel) || bot->HasSpellCooldown(pummel) ||
         bot->GetPower(POWER_RAGE) < pummelRageCost)
     {
         return false;
     }
 
-    return botAI->CanCastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot) &&
-        botAI->CastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot);
+    return botAI->CanCastSpell(Id(BtSpells::SPELL_BERSERKER_STANCE), bot) &&
+        botAI->CastSpell(Id(BtSpells::SPELL_BERSERKER_STANCE), bot);
 }
 
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
