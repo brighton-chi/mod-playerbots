@@ -81,7 +81,6 @@ float GetFuryMageInterruptReach(Player* bot)
             return WIND_SHEAR_REACH;
         case CLASS_DEATH_KNIGHT:
         case CLASS_MAGE:
-        case CLASS_PALADIN:
         case CLASS_PRIEST:
         case CLASS_WARLOCK:
             return RANGED_ABILITY_REACH;

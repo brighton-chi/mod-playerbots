@@ -587,15 +587,14 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
     {
         case CLASS_DEATH_KNIGHT:
         {
-            return castInterrupt(Id(SwpSpells::SPELL_MIND_FREEZE)) ||
+            return (bot->IsWithinMeleeRange(furyMage) &&
+                    castInterrupt(Id(SwpSpells::SPELL_MIND_FREEZE))) ||
                 castInterrupt(Id(SwpSpells::SPELL_STRANGULATE));
         }
         case CLASS_HUNTER:
             return castInterrupt(Id(SwpSpells::SPELL_SILENCING_SHOT));
         case CLASS_MAGE:
             return castInterrupt(Id(SwpSpells::SPELL_COUNTERSPELL));
-        case CLASS_PALADIN:
-            return castInterrupt("avenger's shield");
         case CLASS_PRIEST:
             return castInterrupt(Id(SwpSpells::SPELL_SILENCE));
         case CLASS_ROGUE:
@@ -603,15 +602,47 @@ bool MuruInterruptFelFireballAction::Execute(Event /*event*/)
         case CLASS_SHAMAN:
             return castInterrupt(Id(SwpSpells::SPELL_WIND_SHEAR));
         case CLASS_WARLOCK:
-            return castInterrupt("spell lock"); // This can't work this way; this is a cast by the pet. NEED TO FIX.
-        case CLASS_WARRIOR:
         {
-            return castInterrupt(Id(SwpSpells::SPELL_PUMMEL)) ||
-                castInterrupt(Id(SwpSpells::SPELL_SHIELD_BASH));
+            Pet* pet = bot->GetPet();
+            uint32 const spellLock = GetReadySpellLock(pet, furyMage);
+            return spellLock && pet->CastSpell(furyMage, spellLock, false) == SPELL_CAST_OK;
         }
+        case CLASS_WARRIOR:
+            return CastWarriorInterrupt(furyMage);
         default:
             return false;
     }
+}
+
+// Pummel requires Berserker Stance. This function makes Arms Warriors stance change, which keeps
+// 10 rage from Stance Mastery, Pummel's cost, allowing Pummel to be cast on the next tick.
+bool MuruInterruptFelFireballAction::CastWarriorInterrupt(Unit* furyMage)
+{
+    if (bot->GetShapeshiftForm() == FORM_BERSERKERSTANCE)
+    {
+        return botAI->CanCastSpell(Id(SwpSpells::SPELL_PUMMEL), furyMage) &&
+            botAI->CastSpell(Id(SwpSpells::SPELL_PUMMEL), furyMage);
+    }
+
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), furyMage) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), furyMage))
+    {
+        return true;
+    }
+
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    constexpr uint32 pummelRageCost = 100; // 10 rage
+    uint32 const pummel = Id(SwpSpells::SPELL_PUMMEL);
+    if (!bot->HasSpell(pummel) || bot->HasSpellCooldown(pummel) ||
+        bot->GetPower(POWER_RAGE) < pummelRageCost)
+    {
+        return false;
+    }
+
+    return botAI->CanCastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot);
 }
 
 bool MuruCastSpellStealOnSpellFuryAction::Execute(Event /*event*/)

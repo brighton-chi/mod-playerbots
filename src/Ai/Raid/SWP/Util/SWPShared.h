@@ -12,6 +12,7 @@
 #include "Position.h"
 #include <type_traits>
 
+class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -104,8 +105,13 @@ enum class SwpSpells : uint32
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
 
+    // Warlock (Felhunter)
+    SPELL_SPELL_LOCK_1                 = 19244,
+    SPELL_SPELL_LOCK_2                 = 19647,
+
     // Warrior
     SPELL_SHIELD_BASH                  = 72,
+    SPELL_BERSERKER_STANCE             = 2458,
     SPELL_PUMMEL                       = 6552,
     SPELL_CONCUSSION_BLOW              = 12809,
 
@@ -214,6 +220,9 @@ uint32 GetManualCastCooldown(uint32 spellId);
 uint32 GetManualCastGlobalCooldown(uint32 spellId);
 // Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
+// The Spell Lock rank a living Felhunter can cast at the target now. This is needed because
+// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
+uint32 GetReadySpellLock(Creature* pet, Unit* target);
 // One step along the bot's path to a point, stopping short of it by stopDistance. The step
 // follows the path corner-by-corner, rather than aiming at the far end of it, so a bot can move
 // around an obstacle between it and the point.
