@@ -1156,9 +1156,6 @@ float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* 
     if (!castSpellAction && !isAttackAction)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
-        return 1.0f;
-
     // An attack action that picks its target in Execute has the bot itself as its target.
     Unit* target = castSpellAction ? AI_VALUE(Unit*, "current target") : action->GetTarget();
     bool const isOnShadowfiend =
@@ -1167,6 +1164,9 @@ float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* 
         (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
 
     if (!isOnShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
         return 1.0f;
 
     return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;

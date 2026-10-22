@@ -719,8 +719,8 @@ bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
 }
 
 // Hunter and warlock pets take the Shadowfiends, which never attack pets.
-// Hunter and warlock pets in Phases 1, 3 and 5. In Demon Form every pet, passive then, once no
-// Shadow Demon is left for it.
+// Hunter and warlock pets in Phases 1, 3 and 5 and the death scene. In Demon Form every pet,
+// passive then, once no Shadow Demon is left for it.
 bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
@@ -750,7 +750,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
             return false;
     }
     else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev)
+        phase == IllidanPhase::Maiev || phase == IllidanPhase::Dying)
     {
         if ((bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK) ||
             pet->HasReactState(REACT_PASSIVE))
