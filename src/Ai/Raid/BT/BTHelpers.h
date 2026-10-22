@@ -736,26 +736,26 @@ inline std::array const GRATE_POSITIONS = {
     ILLIDAN_W_GRATE_POSITION,
 };
 
+// The Flame tanks' Blaze steps, one per Flame Blast, in order. The Flame follows its tank in, so
+// each step is walked into on a line that turns the Flame Blast cone away from the grate stacks.
 inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
 inline std::array const E_GLAIVE_TANK_POSITIONS = {
-    Position{ 683.000f, 295.000f, 354.000f },
-    Position{ 696.969f, 300.982f, 354.302f },
-    Position{ 691.112f, 287.461f, 354.363f },
-    Position{ 676.674f, 280.797f, 354.268f },
-    Position{ 664.414f, 284.834f, 354.271f },
-    Position{ 656.826f, 295.113f, 354.165f },
-    Position{ 665.000f, 304.000f, 354.000f },
+    Position{ 657.100f, 291.200f, 354.000f },
+    Position{ 658.600f, 280.700f, 354.000f },
+    Position{ 672.100f, 277.700f, 354.000f },
+    Position{ 682.600f, 279.200f, 354.000f },
+    Position{ 685.600f, 289.700f, 354.000f },
+    Position{ 669.100f, 288.200f, 354.000f },
 };
 
 inline Position const ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
 inline std::array const W_GLAIVE_TANK_POSITIONS = {
-    Position{ 697.208f, 313.475f, 354.234f },
-    Position{ 681.000f, 318.000f, 354.000f },
-    Position{ 664.000f, 307.000f, 354.000f },
-    Position{ 656.161f, 314.132f, 354.092f },
-    Position{ 665.080f, 326.905f, 354.128f },
-    Position{ 678.809f, 329.968f, 354.387f },
-    Position{ 690.889f, 324.277f, 354.204f },
+    Position{ 674.700f, 332.700f, 354.000f },
+    Position{ 685.200f, 331.200f, 354.000f },
+    Position{ 695.700f, 325.200f, 354.000f },
+    Position{ 695.700f, 311.700f, 354.000f },
+    Position{ 685.200f, 320.700f, 354.000f },
+    Position{ 668.700f, 323.700f, 354.000f },
 };
 
 IllidanPhase GetIllidanPhase(Unit* illidan);
