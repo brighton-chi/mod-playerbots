@@ -1537,7 +1537,14 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
     }
 
     if (healthPct > 65.0f)
-        return IllidanPhase::Initial;
+    {
+        // A Draw Soul cast through his liftoff heals him back over 65%, so he can land above it.
+        BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
+        bool const isPastInitial = state && state->illidanLastPhase &&
+            *state->illidanLastPhase != IllidanPhase::Initial;
+        if (!isPastInitial)
+            return IllidanPhase::Initial;
+    }
 
     if (illidan->HasAura(Id(BtSpells::SPELL_DEMON_FORM)) ||
         illidan->HasAura(Id(BtSpells::SPELL_DEMON_TRANSFORM_1)) ||
