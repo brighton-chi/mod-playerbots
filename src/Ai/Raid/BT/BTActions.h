@@ -440,6 +440,9 @@ public:
     IllidariCouncilInterruptCircleOfHealingAction(PlayerbotAI* botAI)
         : Action(botAI, "illidari council interrupt circle of healing") {}
     bool Execute(Event event) override;
+
+private:
+    bool CastWarriorInterrupt(Unit* malande);
 };
 
 class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction

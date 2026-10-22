@@ -104,6 +104,9 @@ enum class BtSpells : uint32
     SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
     SPELL_SHADOW_PRISON             = 40647, // on every player in Maiev's arrival, 30 s
 
+    // Death Knight
+    SPELL_MIND_FREEZE               = 47528,
+
     // Druid
     SPELL_TREE_OF_LIFE              = 33891,
 
@@ -124,6 +127,9 @@ enum class BtSpells : uint32
     // Priest
     SPELL_DISPERSION                = 47585,
 
+    // Rogue
+    SPELL_KICK                      =  1766,
+
     // Shaman
     SPELL_WIND_SHEAR                = 57994,
 
@@ -132,6 +138,9 @@ enum class BtSpells : uint32
     SPELL_SPELL_LOCK_2              = 19647,
 
     // Warrior
+    SPELL_SHIELD_BASH               =    72,
+    SPELL_BERSERKER_STANCE          =  2458,
+    SPELL_PUMMEL                    =  6552,
     SPELL_SPELL_REFLECTION          = 23920,
     SPELL_VIGILANCE                 = 50720,
 };

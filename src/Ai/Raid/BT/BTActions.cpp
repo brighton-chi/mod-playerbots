@@ -1561,24 +1561,27 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
         return false;
 
     // CanCastSpell passes a target out of range, and the failed cast still turns the bot to her.
-    auto const castInterrupt = [&](char const* spell, bool inRange)
+    auto const castInterrupt = [&](uint32 spellId, bool inRange)
     {
-        return inRange && botAI->CanCastSpell(spell, malande) && botAI->CastSpell(spell, malande);
+        return inRange && botAI->CanCastSpell(spellId, malande) &&
+            botAI->CastSpell(spellId, malande);
     };
 
     bool const inMeleeRange = bot->IsWithinMeleeRange(malande);
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            return castInterrupt("mind freeze", inMeleeRange);
+            return castInterrupt(Id(BtSpells::SPELL_MIND_FREEZE), inMeleeRange);
         case CLASS_MAGE:
             return castInterrupt(
-                "counterspell", bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE));
+                Id(BtSpells::SPELL_COUNTERSPELL),
+                bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE));
         case CLASS_ROGUE:
-            return castInterrupt("kick", inMeleeRange);
+            return castInterrupt(Id(BtSpells::SPELL_KICK), inMeleeRange);
         case CLASS_SHAMAN:
             return castInterrupt(
-                "wind shear", bot->IsWithinCombatRange(malande, WIND_SHEAR_RANGE));
+                Id(BtSpells::SPELL_WIND_SHEAR),
+                bot->IsWithinCombatRange(malande, WIND_SHEAR_RANGE));
         case CLASS_WARLOCK:
         {
             Pet* pet = bot->GetPet();
@@ -1586,11 +1589,41 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
             return spellLock && pet->CastSpell(malande, spellLock, false) == SPELL_CAST_OK;
         }
         case CLASS_WARRIOR:
-            return castInterrupt("pummel", inMeleeRange) ||
-                castInterrupt("shield bash", inMeleeRange);
+            return inMeleeRange && CastWarriorInterrupt(malande);
         default:
             return false;
     }
+}
+
+// Pummel requires Berserker Stance. This function makes Arms Warriors stance change, which keeps
+// 10 rage from Stance Mastery, Pummel's cost, allowing Pummel to be cast on the next tick.
+bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* malande)
+{
+    if (bot->GetShapeshiftForm() == FORM_BERSERKERSTANCE)
+    {
+        return botAI->CanCastSpell(Id(SwpSpells::SPELL_PUMMEL), malande) &&
+            botAI->CastSpell(Id(SwpSpells::SPELL_PUMMEL), malande);
+    }
+
+    if (botAI->CanCastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), malande) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_SHIELD_BASH), malande))
+    {
+        return true;
+    }
+
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    constexpr uint32 pummelRageCost = 100; // 10 rage
+    uint32 const pummel = Id(SwpSpells::SPELL_PUMMEL);
+    if (!bot->HasSpell(pummel) || bot->HasSpellCooldown(pummel) ||
+        bot->GetPower(POWER_RAGE) < pummelRageCost)
+    {
+        return false;
+    }
+
+    return botAI->CanCastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot) &&
+        botAI->CastSpell(Id(SwpSpells::SPELL_BERSERKER_STANCE), bot);
 }
 
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
