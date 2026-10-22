@@ -1670,6 +1670,14 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
     return window;
 }
 
+bool IsFlameOfAzzinothDpsHeld(Unit const& illidan)
+{
+    BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+    return state && state->illidanFlamePhaseStartTime &&
+        getMSTimeDiff(*state->illidanFlamePhaseStartTime, getMSTime()) <
+            ILLIDAN_FLAME_DPS_WAIT_MS;
+}
+
 float GetGrateAngle(Position const& position)
 {
     return ILLIDAN_GRATE_CENTRE.GetAngle(&position);
@@ -1806,9 +1814,9 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 
 Position GetIllidanInfectionPosition(Unit const& illidan)
 {
-    return GetDemonFormPoint(
-        illidan, illidan.GetAngle(&ILLIDAN_GRATE_CENTRE), ILLIDAN_INFECTION_POSITION_DISTANCE,
-        ILLIDAN_INFECTION_POSITION_ANGLE);
+    return GetRingPoint(
+        GetGrateAngle(illidan) + ILLIDAN_INFECTION_POSITION_ANGLE,
+        ILLIDAN_INFECTION_POSITION_DISTANCE);
 }
 
 Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan)
@@ -2491,6 +2499,26 @@ bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea cons
     float const distToLine = pos.GetExactDist2d(closestX, closestY);
 
     return distToLine < area.width;
+}
+
+bool IsPathInEyeBlastDangerArea(
+    Position const& from, Position const& to, EyeBlastDangerArea const& area)
+{
+    constexpr float sampleSpacing = 1.0f;
+    float const length = from.GetExactDist2d(to);
+    int32 const samples = static_cast<int32>(length / sampleSpacing) + 1;
+    for (int32 i = 0; i <= samples; ++i)
+    {
+        float const fraction = static_cast<float>(i) / samples;
+        Position const point(
+            from.GetPositionX() + (to.GetPositionX() - from.GetPositionX()) * fraction,
+            from.GetPositionY() + (to.GetPositionY() - from.GetPositionY()) * fraction,
+            from.GetPositionZ());
+        if (IsPositionInEyeBlastDangerArea(point, area))
+            return true;
+    }
+
+    return false;
 }
 
 // Shared encounter state

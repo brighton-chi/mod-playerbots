@@ -983,8 +983,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
 }
 
 // Tanks take their targets from their own actions or assign target priority, except the assist
-// tanks while he lands. Ranged DPS, melee in Phases 1, 3 and 5, and everyone in Demon Form take
-// theirs from assign target priority.
+// tanks while he lands. Ranged DPS, melee in Phases 1, 2, 3 and 5, and everyone in Demon Form
+// take theirs from assign target priority.
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
     IllidanPhase phase, Action* action, bool isTankAssist, bool isDpsAssist)
 {
@@ -996,8 +996,9 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
         if (phase == IllidanPhase::Demon || PlayerbotAI::IsRangedDps(bot))
             return 0.0f;
 
-        return (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-            phase == IllidanPhase::Maiev) && PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
+        return (phase == IllidanPhase::Initial || phase == IllidanPhase::Flying ||
+            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev) &&
+            PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
     }
 
     // Secondary DoTs (CastDebuffSpellOnAttackerAction)
@@ -1210,16 +1211,10 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (isHeal)
         return IsHeldIllidanHeal(botAI, illidan, action) ? 0.0f : 1.0f;
 
-    // The Flame tanks get 6s head start on the Flames of Azzinoth, counted from when the tracker
-    // records the first, since a Flame is in combat with nobody for its first 2 s.
+    // Damage on the Flames of Azzinoth waits for their tanks.
     if (GetIllidanPhase(illidan) == IllidanPhase::Flying)
     {
-        constexpr uint32 flamePhaseDpsWaitMs = 6 * IN_MILLISECONDS;
-        BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
-        bool const inWindow = state && state->illidanFlamePhaseStartTime &&
-            getMSTimeDiff(*state->illidanFlamePhaseStartTime, getMSTime()) < flamePhaseDpsWaitMs;
-
-        if (!inWindow || IsFlameOfAzzinothTank(bot))
+        if (!IsFlameOfAzzinothDpsHeld(*illidan) || IsFlameOfAzzinothTank(bot))
             return 1.0f;
 
         // Only damage on the Flames is held, never damage on Shadowfiends. Attacks and dots on an

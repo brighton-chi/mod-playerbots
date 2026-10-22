@@ -1977,9 +1977,11 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 }
 
 // The Main Tank holds him about 25 yd from the grate centre, 6 yd outward of him so he faces out.
-// On each Flame Crash on the tank it leads him to the ring point 35 deg counterclockwise of him,
-// once more if he stops under 25 deg on; he stops about 30 deg on, and the tank settles outward of
-// wherever he stopped. Near the centre, as after landing, it leads him straight out instead.
+// At the pull it first leads him once from due north to about 305 deg, so Phase 1's Flame Crashes
+// land clear of the Phase 2 Flame tank steps. On each Flame Crash on the tank it leads him to the
+// ring point 35 deg counterclockwise of him, once more if he stops under 25 deg on; he stops about
+// 30 deg on, and the tank settles outward of wherever he stopped. Near the centre, as after
+// landing, it leads him straight out instead.
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
@@ -2150,6 +2152,16 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
         _leadPosition = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
         _lead = IllidanTankLead::Pickup;
     }
+    // Only once the phase is stamped, since a new stamp cancels the lead in progress, and only at
+    // the pull, so a tank taking over later doesn't lead him there.
+    else if (_lead == IllidanTankLead::None && phase == IllidanPhase::Initial &&
+        _phaseStartTime && !_isOpeningLeadDone && _lastFlameCrash.IsEmpty() &&
+        IsIllidanPhaseStartWithin(illidan, phase, ILLIDAN_OPENING_LEAD_MS))
+    {
+        _isOpeningLeadDone = true;
+        _leadPosition = GetRingPoint(ILLIDAN_OPENING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
+        _lead = IllidanTankLead::Opening;
+    }
 }
 
 // A trap hunter on duty drops Frost Trap on arrival, holding the position through a global
@@ -2288,6 +2300,9 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
 // other Flame's tank is dead too, when it takes that Flame.
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
 {
+    // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
+    constexpr float eyeBlastTriggerRadius = 30.0f;
+
     Unit* flame = GetAssignedFlameOfAzzinoth(bot);
     if (!flame)
     {
@@ -2309,6 +2324,22 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         if (bot->GetExactDist2d(position) <= 0.5f)
             return false;
 
+        // With its Flame dead, it still steps out of the Eye Blast, and doesn't walk across the
+        // beam's path ahead of it.
+        if (isRecorded)
+        {
+            EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
+            if (dangerArea.width > 0.0f &&
+                bot->GetExactDist2d(dangerArea.start) <= eyeBlastTriggerRadius)
+            {
+                if (IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea))
+                    return RepositionToAvoidEyeBlast(dangerArea);
+
+                if (IsPathInEyeBlastDangerArea(bot->GetPosition(), position, dangerArea))
+                    return false;
+            }
+        }
+
         return MoveTo(
             BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
             false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -2322,9 +2353,6 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         return false;
 
     EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
-
-    // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
-    constexpr float eyeBlastTriggerRadius = 30.0f;
     if (dangerArea.width > 0.0f && bot->GetExactDist2d(dangerArea.start) <= eyeBlastTriggerRadius)
         return RepositionToAvoidEyeBlast(dangerArea);
 
@@ -2856,13 +2884,15 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     if (target == currentTarget)
         return false;
 
-    // Attack() starts the swing, which a hold can't stop, so in a hold melee only take him as
-    // target and walk in; the melee action starts the swing once the hold ends.
-    if (target == illidan && !PlayerbotAI::IsRanged(bot) &&
-        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+    // Attack() starts the swing, which a hold can't stop, so while damage on him or on the Flames
+    // is held, melee only take the target; the melee action starts the swing once the hold ends.
+    bool const isHeld = target == illidan ?
+        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None :
+        phase == IllidanPhase::Flying && IsFlameOfAzzinothDpsHeld(*illidan);
+    if (isHeld && !PlayerbotAI::IsRanged(bot))
     {
-        context->GetValue<Unit*>("current target")->Set(illidan);
-        bot->SetSelection(illidan->GetGUID());
+        context->GetValue<Unit*>("current target")->Set(target);
+        bot->SetSelection(target->GetGUID());
         botAI->ChangeEngine(BOT_STATE_COMBAT);
         return true;
     }
@@ -2918,6 +2948,16 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
     else if (isGrounded)
     {
         return { FindShadowfiendForMelee(), illidan };
+    }
+    // While he flies melee can't move, so they take the East Flame only in their reach, else the
+    // West one in their reach.
+    else if (phase == IllidanPhase::Flying)
+    {
+        auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
+        return {
+            eastFlame && bot->IsWithinMeleeRange(eastFlame) ? eastFlame : nullptr,
+            westFlame && bot->IsWithinMeleeRange(westFlame) ? westFlame : nullptr,
+        };
     }
 
     return {};

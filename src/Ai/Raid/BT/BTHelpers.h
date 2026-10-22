@@ -578,6 +578,7 @@ enum class IllidanTankLead : uint8
 {
     None,
     Pickup,    // straight out from near the grate centre
+    Opening,   // once at the pull, clockwise
     Step,      // on a Flame Crash
     StepAgain, // once, when he stopped short of the step
 };
@@ -643,6 +644,8 @@ inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+// Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks.
+inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
 // The warlock tank has him to itself for the 12.23 s transform and about 2 s more.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
@@ -691,6 +694,12 @@ inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 25.0f * static_cast<float
 inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
 inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
 inline constexpr float ILLIDAN_LANDING_LEAD_ANGLE = 0.0f;
+// Once at the pull, before the first Flame Crash, the Main Tank leads him from due north to the
+// ring point 62 deg clockwise of north; he stops about 305 deg. Phase 1's Flame Crashes then land
+// clear of the Flame tanks' steps, which they last into Phase 2.
+inline constexpr float ILLIDAN_OPENING_LEAD_ANGLE = -62.0f * static_cast<float>(M_PI) / 180.0f;
+// The lead starts only this soon after the pull; the first Flame Crash comes at 25 to 30 s.
+inline constexpr uint32 ILLIDAN_OPENING_LEAD_MS = 15 * IN_MILLISECONDS;
 // A Flame Crash this close to the Main Tank was cast on it.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
@@ -701,12 +710,12 @@ inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
 inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
-// Shadowfiend infection position, from him as Phase 4 places are, in every phase: across the grate
-// clockwise of him, out of Draw Soul's cone in a ring step, about 20 yd from the grate centre and
-// inward of the Flame Crash zones on the Main Tank's ring; in Phase 4 between ranged DPS and melee.
-inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 40.0f;
+// Shadowfiend infection position, every phase: on the Main Tank's circle, counterclockwise of him,
+// ahead of his steps, so no Flame Crash zone lies there and Draw Soul's cone in a step stops short
+// (104 deg); far enough round to stay out of Shadow Blast at the transform after a late step.
+inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
-    -25.0f * static_cast<float>(M_PI) / 180.0f;
+    135.0f * static_cast<float>(M_PI) / 180.0f;
 
 // Phase 4, from him and off his inward line, positive toward the warlock tank's side. His reach is
 // 1.5 in Demon Form, so a 30 yd spell reaches 33 yd on him: the warlock tank stands 2 yd inside.
@@ -747,6 +756,8 @@ inline std::array const GRATE_POSITIONS = {
 
 // The Flame tanks' Blaze steps, one per Flame Blast, in order. The Flame follows its tank in, so
 // each step is walked into on a line that turns the Flame Blast cone away from the grate stacks.
+// The West tank starts on its inner steps, where Phase 1's Flame Crashes can't reach, and in melee
+// reach of the grate.
 inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
 inline std::array const E_GLAIVE_TANK_POSITIONS = {
     Position{ 657.100f, 291.200f, 354.000f },
@@ -759,12 +770,12 @@ inline std::array const E_GLAIVE_TANK_POSITIONS = {
 
 inline Position const ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
 inline std::array const W_GLAIVE_TANK_POSITIONS = {
-    Position{ 674.700f, 332.700f, 354.000f },
-    Position{ 685.200f, 331.200f, 354.000f },
-    Position{ 695.700f, 325.200f, 354.000f },
     Position{ 695.700f, 311.700f, 354.000f },
     Position{ 685.200f, 320.700f, 354.000f },
     Position{ 668.700f, 323.700f, 354.000f },
+    Position{ 674.700f, 332.700f, 354.000f },
+    Position{ 685.200f, 331.200f, 354.000f },
+    Position{ 695.700f, 325.200f, 354.000f },
 };
 
 IllidanPhase GetIllidanPhase(Unit* illidan);
@@ -785,6 +796,9 @@ bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
 // The hold this bot is in, for the hold multiplier and any stop block.
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
+// Damage on the Flames of Azzinoth waits for their tanks, since a Flame is in combat with nobody
+// for its first 2 s; false before the tracker records the first Flame.
+bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
@@ -864,6 +878,9 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);
 bool IsTargetingShadowDemon(PlayerbotAI* botAI);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
+// A straight walk from one point to the other passes through the area.
+bool IsPathInEyeBlastDangerArea(
+    Position const& from, Position const& to, EyeBlastDangerArea const& area);
 
 // Shared encounter state
 

@@ -546,7 +546,7 @@ public:
     bool ResetEncounterState()
     {
         if (!_phaseStartTime && _lastFlameCrash.IsEmpty() && _leadPosition == Position() &&
-            _lead == BtHelpers::IllidanTankLead::None)
+            _lead == BtHelpers::IllidanTankLead::None && !_isOpeningLeadDone)
         {
             return false;
         }
@@ -555,6 +555,7 @@ public:
         _lastFlameCrash.Clear();
         _leadPosition = Position();
         _lead = BtHelpers::IllidanTankLead::None;
+        _isOpeningLeadDone = false;
         return true;
     }
 
@@ -567,6 +568,7 @@ private:
     ObjectGuid _lastFlameCrash;
     Position _leadPosition;
     BtHelpers::IllidanTankLead _lead = BtHelpers::IllidanTankLead::None;
+    bool _isOpeningLeadDone = false;
 };
 
 class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
