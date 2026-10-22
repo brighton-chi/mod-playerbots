@@ -843,7 +843,7 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (GetIllidanPhase(illidan) != IllidanPhase::Landing)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Landing)
         return false;
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
@@ -897,29 +897,34 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
 
-    if (phase == IllidanPhase::Demon && IsIllidanWarlockTank(botAI))
-        return false;
-
-    // While a Demon walks to the warlock tank, ranged DPS may leave their slots to reach it.
-    if (phase == IllidanPhase::Demon && !PlayerbotAI::IsHeal(bot) &&
-        GetShadowDemonWalkingToWarlockTank(botAI))
+    if (phase == IllidanPhase::Demon)
     {
-        return false;
+        if (IsIllidanWarlockTank(botAI))
+            return false;
+
+        // While a Demon walks to the warlock tank, ranged DPS may leave their slots to reach it.
+        if (!PlayerbotAI::IsHeal(bot) && GetShadowDemonWalkingToWarlockTank(botAI))
+            return false;
+
+        return true;
     }
 
     return phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Demon || phase == IllidanPhase::Maiev;
+        phase == IllidanPhase::Maiev;
 }
 
 // Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
 // wipes the raid. Healers stay to heal.
 bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsHeal(bot) || HasParasiticShadowfiend(bot))
+    if (!PlayerbotAI::IsRangedDps(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || IsIllidanWarlockTank(botAI))
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return false;
+
+    if (HasParasiticShadowfiend(bot) || IsIllidanWarlockTank(botAI))
         return false;
 
     Unit* demon = GetShadowDemonWalkingToWarlockTank(botAI);
@@ -929,18 +934,17 @@ bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
 // Melee and tanks take their Demon Form slots; the Main Tank has its own positions.
 bool IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot) || (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)))
+    if (!PlayerbotAI::IsMelee(bot))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || HasParasiticShadowfiend(bot))
         return false;
 
-    if (HasParasiticShadowfiend(bot))
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
+    return !IsTargetingShadowDemon(botAI);
 }
 
 bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
@@ -957,20 +961,24 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
 
 // Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
 // two or more are alive. They all walk toward the raid, so a Seed going off on one usually
-// catches others.
+// catches others. Not while infected, so the run comes first, nor next to fresh Shadowfiends,
+// which the explosion would turn onto the warlock.
 bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
+    if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || HasParasiticShadowfiend(bot))
         return false;
 
     if (IsIllidanPhaseStartWithin(*illidan, IllidanPhase::Demon, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
         return false;
 
-    return context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().size() >= 2;
+    if (context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().size() < 2)
+        return false;
+
+    return !IsNearNewParasiticShadowfiend(botAI);
 }
 
 // Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the

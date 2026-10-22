@@ -815,9 +815,9 @@ bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);
 // minDurationMs more.
 bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs);
 // Slot lists are bots on the map, the dead kept, each part by GUID: ranged are healers, then
-// ranged DPS (an offheal paladin is melee); melee are melee DPS, then tanks, the Main Tank left
-// out. In Demon Form the warlock tank and the healers leave the ranged list; healers have their
-// own. The index wraps round slotCount; -1 if the bot isn't in the list.
+// ranged DPS; melee are melee DPS, then tanks, the Main Tank left out. In Demon Form the warlock
+// tank and the healers leave the ranged list; healers have their own. The index wraps round
+// slotCount; -1 if the bot isn't in the list.
 int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm);
 int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount);
 int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
@@ -849,6 +849,9 @@ Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI);
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from);
 // Imps and water elementals take Demons as ranged do, other pets as melee do.
 Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);
+// The bot's current target is a Shadow Demon: in Demon Form, the one reason melee leave their
+// slots.
+bool IsTargetingShadowDemon(PlayerbotAI* botAI);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 

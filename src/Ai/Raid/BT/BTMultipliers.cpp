@@ -863,8 +863,7 @@ bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
     if (!PlayerbotAI::IsMelee(bot))
         return true;
 
-    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-    return !target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON);
+    return !IsTargetingShadowDemon(botAI);
 }
 
 // Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank

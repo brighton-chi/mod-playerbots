@@ -2064,13 +2064,18 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
             continue;
 
         ObjectGuid const guid = member->GetGUID();
-        if (guid == warlockTankGuid || !PlayerbotAI::IsRanged(member))
+        if (guid == warlockTankGuid)
             continue;
 
-        if (!PlayerbotAI::IsHeal(member))
+        if (PlayerbotAI::IsHeal(member))
+        {
+            if (!inDemonForm)
+                healers.push_back(guid);
+        }
+        else if (PlayerbotAI::IsRanged(member))
+        {
             rangedDps.push_back(guid);
-        else if (!inDemonForm)
-            healers.push_back(guid);
+        }
     }
 
     int32 const rosterIndex = GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID());
@@ -2092,7 +2097,7 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
     {
         Player* member = ref->GetSource();
         if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
-            PlayerbotAI::IsRanged(member) && PlayerbotAI::IsHeal(member))
+            PlayerbotAI::IsHeal(member))
         {
             healers.push_back(member->GetGUID());
         }
@@ -2421,6 +2426,12 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet)
     }
 
     return GetShadowDemonForMeleeToAttack(botAI, pet);
+}
+
+bool IsTargetingShadowDemon(PlayerbotAI* botAI)
+{
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    return target && target->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)

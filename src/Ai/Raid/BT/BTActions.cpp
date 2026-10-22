@@ -2749,20 +2749,28 @@ bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
         botAI->CastSpell("seed of corruption", target);
 }
 
-// The bot's usual Demon, else any Demon, each only without the bot's own Seed on it.
+// The bot's usual Demon, else any Demon, each only in reach and without the bot's own Seed on it.
+// Out of reach the cast would fail and turn the bot.
 Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
     auto const& shadowDemons =
         context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
     uint32 const seed = AI_VALUE2(uint32, "spell id", "seed of corruption");
+    float const range = botAI->GetRange("spell");
+    auto const canSeed = [this, seed, range](Unit* demon)
+    {
+        return demon && demon->IsAlive() && bot->IsWithinCombatRange(demon, range) &&
+            !demon->HasAura(seed, bot->GetGUID());
+    };
+
     Unit* usualDemon = GetShadowDemonForRangedToAttack(botAI, *bot);
-    if (usualDemon && !usualDemon->HasAura(seed, bot->GetGUID()))
+    if (canSeed(usualDemon))
         return usualDemon;
 
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
-        if (demon && demon->IsAlive() && !demon->HasAura(seed, bot->GetGUID()))
+        if (canSeed(demon))
             return demon;
     }
 
