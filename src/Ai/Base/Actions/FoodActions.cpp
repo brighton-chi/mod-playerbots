@@ -18,29 +18,25 @@ constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
 constexpr uint32 SPELL_GRACCUS_MINCE_MEAT_FRUITCAKE = 25990;
 constexpr uint32 RECOVERY_MAX_MS = 20 * IN_MILLISECONDS;
 
-uint32 RecoveryDurationMs(uint32 current, uint32 max)
-{
-    return static_cast<uint32>(RECOVERY_MAX_MS * (static_cast<float>(max - current) / max));
-}
-
 bool IsFullMana(Player* bot)
 {
     return bot->GetPower(POWER_MANA) >= bot->GetMaxPower(POWER_MANA);
 }
 
 // The cheat aura restores both health and mana, so allow bots to eat/drink until both are restored.
+// The seat time follows the larger of the two gaps.
 uint32 FoodCheatRecoveryDurationMs(Player* bot)
 {
-    uint32 durationMs = RecoveryDurationMs(bot->GetHealth(), bot->GetMaxHealth());
+    float missingShare = 1.0f - static_cast<float>(bot->GetHealth()) / bot->GetMaxHealth();
 
     if (uint32 const maxMana = bot->GetMaxPower(POWER_MANA))
     {
-        uint32 const manaMs = RecoveryDurationMs(bot->GetPower(POWER_MANA), maxMana);
-        if (manaMs > durationMs)
-            durationMs = manaMs;
+        float const manaMissing = 1.0f - static_cast<float>(bot->GetPower(POWER_MANA)) / maxMana;
+        if (manaMissing > missingShare)
+            missingShare = manaMissing;
     }
 
-    return durationMs;
+    return static_cast<uint32>(RECOVERY_MAX_MS * missingShare);
 }
 
 uint32 StartFoodCheatRecovery(Player* bot)
