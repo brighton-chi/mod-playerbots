@@ -4,7 +4,7 @@
  * or (at your option) any later version.
  */
 
-#include "NonCombatActions.h"
+#include "FoodActions.h"
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -13,23 +13,25 @@ namespace
 constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
 constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
 constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
+constexpr uint32 SPELL_GRACCUS_MINCE_MEAT_FRUITCAKE = 25990;
+// Graccu's Mince Meat Fruitcake lasts 20s, which therefore is the longest the bot should sit.
+constexpr uint32 RECOVERY_MAX_MS = 20 * IN_MILLISECONDS;
+
+uint32 RecoveryDurationMs(uint32 current, uint32 max)
+{
+    return static_cast<uint32>(RECOVERY_MAX_MS * (static_cast<float>(max - current) / max));
+}
 
 bool IsDisallowedShapeshiftForm(Player* bot)
 {
     if (bot->getClass() == CLASS_DRUID)
     {
         ShapeshiftForm form = bot->GetShapeshiftForm();
-        return form == FORM_TRAVEL || form == FORM_AQUA ||
-               form == FORM_FLIGHT || form == FORM_FLIGHT_EPIC ||
-               form == FORM_BEAR || form == FORM_DIREBEAR ||
-               form == FORM_CAT;
-    }
-    else if (bot->getClass() == CLASS_PRIEST)
-    {
-        return bot->GetShapeshiftForm() == FORM_SPIRITOFREDEMPTION;
+        return form == FORM_TRAVEL || form == FORM_AQUA || form == FORM_CAT || form == FORM_BEAR ||
+               form == FORM_DIREBEAR || form == FORM_FLIGHT || form == FORM_FLIGHT_EPIC;
     }
 
-    return false;
+    return bot->getClass() == CLASS_PRIEST && bot->GetShapeshiftForm() == FORM_SPIRITOFREDEMPTION;
 }
 }
 
@@ -37,36 +39,19 @@ bool DrinkAction::Execute(Event event)
 {
     if (botAI->HasCheat(BotCheatMask::food))
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
-        {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->GlobalCoolDown);
-            // return false;
-        }
+
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         bot->CastStop();
 
-        // float hp = bot->GetHealthPercent();
-        float mp = bot->GetPowerPct(POWER_MANA);
-        float p = mp;
-        float delay;
+        SetDuration(RecoveryDurationMs(bot->GetPower(POWER_MANA), bot->GetMaxPower(POWER_MANA)));
 
-        if (!bot->InBattleground())
-            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
-        else
-            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
-
-        SetDuration((uint32)delay);
-
-        bot->AddAura(25990, bot);
+        bot->AddAura(SPELL_GRACCUS_MINCE_MEAT_FRUITCAKE, bot);
         return true;
-        // return botAI->CastSpell(24707, bot);
     }
 
     return UseItemAction::Execute(event);
@@ -74,8 +59,7 @@ bool DrinkAction::Execute(Event event)
 
 bool DrinkAction::isUseful()
 {
-    return UseItemAction::isUseful() && AI_VALUE2(bool, "has mana", "self target") &&
-           AI_VALUE2(uint8, "mana", "self target") < 85;
+    return bot->GetPower(POWER_MANA) < bot->GetMaxPower(POWER_MANA);
 }
 
 bool DrinkAction::isPossible()
@@ -96,35 +80,18 @@ bool EatAction::Execute(Event event)
 {
     if (botAI->HasCheat(BotCheatMask::food))
     {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
         bot->ClearUnitState(UNIT_STATE_CHASE);
         bot->ClearUnitState(UNIT_STATE_FOLLOW);
 
         if (bot->isMoving())
-        {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig.GlobalCoolDown);
-            // return false;
-        }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         bot->CastStop();
 
-        float hp = bot->GetHealthPct();
-        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
-        float p = hp;
-        float delay;
+        SetDuration(RecoveryDurationMs(bot->GetHealth(), bot->GetMaxHealth()));
 
-        if (!bot->InBattleground())
-            delay = 18.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
-        else
-            delay = 12.0f * IN_MILLISECONDS * (100 - p) / 100.0f;
-
-        SetDuration((uint32)delay);
-
-        bot->AddAura(25990, bot);
+        bot->AddAura(SPELL_GRACCUS_MINCE_MEAT_FRUITCAKE, bot);
         return true;
     }
 
@@ -133,8 +100,7 @@ bool EatAction::Execute(Event event)
 
 bool EatAction::isUseful()
 {
-    return UseItemAction::isUseful() &&
-           AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.LowHealth;
+    return !bot->IsFullHealth();
 }
 
 bool EatAction::isPossible()
