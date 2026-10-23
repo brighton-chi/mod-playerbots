@@ -704,7 +704,7 @@ bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
 }
 
 // Hunter and warlock pets take the Shadowfiends, which never attack pets.
-// Hunter and warlock pets in Phases 1, 3 and 5 and the death scene. In Demon Form every pet,
+// Hunter and warlock pets in Phases 1, 2, 3 and 5 and the death scene. In Demon Form every pet,
 // passive then, once no Shadow Demon is left for it.
 bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
 {
@@ -734,11 +734,14 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
         if (GetShadowDemonForPetToAttack(botAI, *pet))
             return false;
     }
-    else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev || phase == IllidanPhase::Dying)
+    else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Flying ||
+        phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev ||
+        phase == IllidanPhase::Dying)
     {
+        // While he flies the pet stays passive, so it takes no Flame, and only the command sends
+        // it onto Shadowfiends left from Phase 1.
         if ((bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK) ||
-            pet->HasReactState(REACT_PASSIVE))
+            (phase != IllidanPhase::Flying && pet->HasReactState(REACT_PASSIVE)))
         {
             return false;
         }
@@ -784,19 +787,19 @@ bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
     return !IsFlameOfAzzinothTank(bot);
 }
 
-// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use. Not for the Main
-// Tank or a Flame tank: an immunity loses it whatever it holds.
+// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use, Dark Barrage
+// after a moment. Not for the Main Tank or a Flame tank: an immunity loses it whatever it holds.
 bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
     bool const isPaladin = bot->getClass() == CLASS_PALADIN;
     if (!isPaladin && bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_ROGUE)
         return false;
 
-    if (!bot->HasAura(Id(BtSpells::SPELL_DARK_BARRAGE)) &&
-        !bot->HasAura(Id(BtSpells::SPELL_AGONIZING_FLAMES)))
-    {
+    Aura const* darkBarrage = bot->GetAura(Id(BtSpells::SPELL_DARK_BARRAGE));
+    bool const isDarkBarrageDue =
+        darkBarrage && GetAuraElapsedMs(darkBarrage) >= ILLIDAN_DARK_BARRAGE_REACTION_MS;
+    if (!isDarkBarrageDue && !bot->HasAura(Id(BtSpells::SPELL_AGONIZING_FLAMES)))
         return false;
-    }
 
     if (isPaladin)
         return !PlayerbotAI::IsMainTank(bot) && !IsFlameOfAzzinothTank(bot);

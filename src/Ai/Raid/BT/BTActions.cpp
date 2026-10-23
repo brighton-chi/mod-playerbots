@@ -2230,8 +2230,9 @@ bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
     return true;
 }
 
-// A trap hunter on duty drops Frost Trap on arrival, holding the position through a global
-// cooldown. An infected hunter is never on duty.
+// The run is in steps, so another forced move can take over between them, as the warlock tank's
+// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
+// through a global cooldown. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2239,19 +2240,40 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
         return false;
 
     Position const position = GetIllidanRecordedInfectionPosition(botAI, *illidan);
-    if (bot->GetExactDist2d(position) > ILLIDAN_POSITION_TOLERANCE)
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (GetStepToPosition(
+            bot, position, ILLIDAN_POSITION_TOLERANCE, nullptr, moveX, moveY, backwards))
     {
         return MoveTo(
-            BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, backwards);
     }
 
     if (!IsIllidanTrapHunterOnDuty(botAI))
         return false;
 
+    return HunterSetFrostTrap();
+}
+
+// True while waiting on the global cooldown too, so the hunter holds the position.
+bool IllidanStormrageIsolateBotWithParasiteAction::HunterSetFrostTrap()
+{
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
-    if (botAI->CanCastSpell(frostTrap, bot))
-        botAI->CastSpell(frostTrap, bot);
+    if (!botAI->CanCastSpell(frostTrap, bot) || !botAI->CastSpell(frostTrap, bot))
+        return true;
+
+    // With the trap down the job is done, so a cooldown cut short (Readiness) can't send the
+    // hunter back for a second one.
+    if (auto& infections = BtState(bot->GetInstanceId()).illidanInfections)
+    {
+        for (auto& [infected, infection] : *infections)
+        {
+            if (infection.hunter == bot->GetGUID())
+                infection.hunter.Clear();
+        }
+    }
 
     return true;
 }

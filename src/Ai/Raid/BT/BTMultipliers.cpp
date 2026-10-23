@@ -28,6 +28,8 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <algorithm>
+#include <limits>
 #include <vector>
 
 using namespace BtHelpers;
@@ -1191,6 +1193,43 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
         return 0.0f;
 
     return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
+}
+
+// The infection position is about 52 yd from him, past the 30 yd at which a shaman's totems are
+// recast, so a shaman there, or walking back from it, would set totems it is about to leave. They
+// are held while it is nearer the position than its nearest totem; walking back, the old totems
+// are in range by then. Not in Demon Form, whose places may lie nearer the position.
+float IllidanStormrageHoldTotemsAtInfectionPositionMultiplier::GetValueInEncounter(
+    Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN ||
+        (!dynamic_cast<CastTotemAction*>(action) &&
+         !dynamic_cast<CastCallOfTheElementsAction*>(action)))
+    {
+        return 1.0f;
+    }
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return 1.0f;
+
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
+        phase != IllidanPhase::Maiev)
+    {
+        return 1.0f;
+    }
+
+    float nearestTotem = std::numeric_limits<float>::max();
+    for (uint8 slot = SUMMON_SLOT_TOTEM_FIRE; slot < MAX_TOTEM_SLOT; ++slot)
+    {
+        Creature* totem = bot->GetMap()->GetCreature(bot->m_SummonSlot[slot]);
+        if (totem && totem->IsAlive())
+            nearestTotem = std::min(nearestTotem, bot->GetExactDist2d(totem));
+    }
+
+    Position const infectionPosition = GetIllidanRecordedInfectionPosition(botAI, *illidan);
+    return bot->GetExactDist2d(infectionPosition) < nearestTotem ? 0.0f : 1.0f;
 }
 
 // The targeting action only picks targets and keeps melee off him during a hold itself, so it can

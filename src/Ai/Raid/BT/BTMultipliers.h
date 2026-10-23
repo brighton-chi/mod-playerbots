@@ -415,6 +415,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class IllidanStormrageHoldTotemsAtInfectionPositionMultiplier
+    : public BlackTempleEncounterMultiplier
+{
+public:
+    IllidanStormrageHoldTotemsAtInfectionPositionMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(
+            botAI, "illidan stormrage hold totems at infection position") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class IllidanStormrageWaitForDpsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

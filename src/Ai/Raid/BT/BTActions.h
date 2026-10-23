@@ -578,6 +578,9 @@ public:
     IllidanStormrageIsolateBotWithParasiteAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
     bool Execute(Event event) override;
+
+private:
+    bool HunterSetFrostTrap();
 };
 
 class IllidanStormrageTrackInfectionsAction : public Action

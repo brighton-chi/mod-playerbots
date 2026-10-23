@@ -618,7 +618,7 @@ struct ShadowDemon
 
 // One Shadowfiend infection, recorded by the mechanic tracker. The infection position is fixed
 // until the debuff is gone, whatever the phase. Once the trap is assigned, hunter is empty if a
-// Frost Trap already covered the position.
+// Frost Trap already covered the position, or once the hunter has laid its trap.
 struct IllidanInfection
 {
     Position infectionPosition;
@@ -650,6 +650,9 @@ inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 // Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks.
 inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
+// An immunity clears Dark Barrage only this long after it lands, so its beam shows first; it costs
+// one 3000 tick, the first coming at 1 s.
+inline constexpr uint32 ILLIDAN_DARK_BARRAGE_REACTION_MS = 1500;
 // The warlock tank has him to itself for the 12.23 s transform and about 2 s more.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 14 * IN_MILLISECONDS;
 // Demon Form ends, with a threat reset, this long after the transform starts.
