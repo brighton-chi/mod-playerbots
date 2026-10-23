@@ -8,7 +8,6 @@
 #include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
-#include "Log.h" // TEMP LOG (pickups), remove after testing
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -3106,61 +3105,6 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
             updated = true;
         if (ResetIfSet(state.westFlameGuid))
             updated = true;
-    }
-
-    // TEMP LOG (pickups: who causes threat first after the landing reset and Maiev's wake, and
-    // what the Main Tank swings at while he flies and lands), remove after testing
-    Player* mainTank = GetGroupMainTank(bot);
-    if (mainTank && getMSTimeDiff(_tempLogTime, now) >= 500)
-    {
-        constexpr uint32 pickupLogMs = 5 * IN_MILLISECONDS;
-        bool const isFlight = phase == IllidanPhase::Flying || phase == IllidanPhase::Landing;
-        bool const isGap = phase == IllidanPhase::None &&
-            !mainTank->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON));
-        bool const isLandingPickup = phase == IllidanPhase::Grounded &&
-            GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Landing;
-        bool const isPickup = (isLandingPickup || phase == IllidanPhase::Maiev) &&
-            IsIllidanPhaseStartWithin(*illidan, phase, pickupLogMs);
-
-        if (isFlight || isGap || isPickup)
-        {
-            _tempLogTime = now;
-            Unit* swingTarget = mainTank->GetVictim();
-            LOG_INFO(
-                "playerbots",
-                "[BT pickup] phase {} MT {} melee {} on {} ({}) {:.1f} yd, Illidan {:.1f} yd, "
-                "MT threat {:.0f}",
-                static_cast<uint32>(phase), mainTank->GetName(),
-                mainTank->HasUnitState(UNIT_STATE_MELEE_ATTACKING),
-                swingTarget ? swingTarget->GetName() : "none",
-                swingTarget ? swingTarget->GetEntry() : 0u,
-                swingTarget ? mainTank->GetExactDist(swingTarget) : 0.0f,
-                mainTank->GetExactDist(illidan),
-                illidan->GetThreatMgr().GetThreat(mainTank, true));
-        }
-
-        if (isGap || isPickup)
-        {
-            // Online state: 2 online, 1 suppressed, 0 offline.
-            std::string list;
-            size_t count = 0;
-            for (ThreatReference const* ref : illidan->GetThreatMgr().GetSortedThreatList())
-            {
-                if (count++ == 5)
-                    break;
-
-                Unit* victim = ref->GetVictim();
-                Unit* owner = victim->GetCharmerOrOwner();
-                list += victim->GetName() + (owner ? " (pet of " + owner->GetName() + ")" : "") +
-                    " " + std::to_string(static_cast<int32>(ref->GetThreat())) + " s" +
-                    std::to_string(static_cast<uint32>(ref->GetOnlineState())) + "; ";
-            }
-
-            Unit* victim = illidan->GetThreatMgr().GetLastVictim();
-            LOG_INFO(
-                "playerbots", "[BT pickup] victim {}, top: {}",
-                victim ? victim->GetName() : "none", list);
-        }
     }
 
     return updated;
