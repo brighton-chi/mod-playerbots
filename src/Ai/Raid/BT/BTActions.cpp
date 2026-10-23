@@ -236,6 +236,13 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         return true;
     }
 
+    // A cast the pet already started on a Reaver would still build its charges.
+    auto const sendPet = [pet](Unit* unit)
+    {
+        pet->InterruptNonMeleeSpells(false);
+        return CommandPetAttack(pet, unit);
+    };
+
     bool const restored = RestoreReactState(pet);
     Unit* victim = pet->GetVictim();
     if ((!victim || !victim->IsAlive()) && !pet->HasReactState(REACT_PASSIVE))
@@ -243,7 +250,7 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         // Idle, as after waiting passive: sent to the other target, else to a Reaver now that
         // all are safe, the owner's target first.
         if (target)
-            return CommandPetAttack(pet, target);
+            return sendPet(target);
 
         auto const canAttackReaver = [pet](Unit* unit)
         {
@@ -254,13 +261,13 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 
         Unit* ownerTarget = AI_VALUE(Unit*, "current target");
         if (canAttackReaver(ownerTarget))
-            return CommandPetAttack(pet, ownerTarget);
+            return sendPet(ownerTarget);
 
         for (ObjectGuid const& guid : reavers)
         {
             Unit* reaver = botAI->GetUnit(guid);
             if (canAttackReaver(reaver))
-                return CommandPetAttack(pet, reaver);
+                return sendPet(reaver);
         }
 
         return restored;
@@ -269,7 +276,7 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
     if (!target || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
         return restored;
 
-    return CommandPetAttack(pet, target);
+    return sendPet(target);
 }
 
 bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
@@ -283,25 +290,6 @@ bool ShadowmoonReaverControlCasterPetAction::RestoreReactState(Guardian* pet)
         return false;
 
     pet->SetReactState(_previousReactState);
-    return true;
-}
-
-bool ShadowmoonReaverControlCasterPetAction::CommandPetAttack(Guardian* pet, Unit* target)
-{
-    pet->AttackStop();
-    pet->InterruptNonMeleeSpells(false);
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->SetTarget(target->GetGUID());
-    if (CharmInfo* charmInfo = pet->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
     return true;
 }
 
@@ -417,7 +405,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
     if (!_throwDelay)
         _throwDelay = urand(500, 1500);
 
-    if (static_cast<uint32>(shield->GetMaxDuration() - shield->GetDuration()) < _throwDelay)
+    if (GetAuraElapsedMs(shield) < _throwDelay)
         return false;
 
     bot->CastStop();
@@ -1772,20 +1760,7 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
     if (!target || !pet->IsValidAttackTarget(target))
         return false;
 
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (CharmInfo* charmInfo = pet->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
+    return CommandPetAttack(pet, target);
 }
 
 // Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
@@ -2583,20 +2558,7 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
     if (!target || !pet->IsValidAttackTarget(target))
         return false;
 
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (CharmInfo* charmInfo = pet->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
+    return CommandPetAttack(pet, target);
 }
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)

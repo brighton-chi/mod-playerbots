@@ -22,7 +22,11 @@ public:
             botAI, "shadowmoon reavers", BtHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindShadowmoonReaverGuids(botAI); }
+    GuidVector Calculate() override
+    {
+        return BtHelpers::FindAttackerGuidsWithEntry(
+            botAI, BtHelpers::Id(BtHelpers::BtNpcs::NPC_SHADOWMOON_REAVER));
+    }
 };
 
 // Supremus
@@ -66,7 +70,11 @@ public:
             BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindShadowyConstructGuids(botAI); }
+    GuidVector Calculate() override
+    {
+        return BtHelpers::FindAttackerGuidsWithEntry(
+            botAI, BtHelpers::Id(BtHelpers::BtNpcs::NPC_SHADOWY_CONSTRUCT));
+    }
 };
 
 // Gurtogg Bloodboil

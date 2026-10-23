@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+class Aura;
 class Creature;
 class GameObject;
 class Pet;
@@ -229,6 +230,12 @@ bool GetPathStepTowardUnit(
 bool GetPathStepTowardPoint(
     Player* bot, Position const& destination, float stopDistance, float stepDistance,
     float& stepX, float& stepY);
+// Sends the pet onto the target as a player's attack command does.
+bool CommandPetAttack(Creature* pet, Unit* target);
+// Living attackers with this entry.
+GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
+// How long the aura has been up; for an aura with a fixed duration.
+uint32 GetAuraElapsedMs(Aura const* aura);
 
 // Trash
 
@@ -258,7 +265,6 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 // The Sister of Pain linked to the skulled Sister of Pleasure. The skull is read by GUID, so a
 // Pleasure out of sight still counts.
 Unit* GetSkulledSisterOfPain(Player* bot);
-GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI);
 // True for a Shadowmoon Reaver while magic would build Chaotic Charge on her: from the start of
 // Spell Absorption until it ends, from the margin before her earliest recast, and before her
 // first one.
@@ -408,7 +414,6 @@ inline constexpr float GOREFIEND_CONSTRUCT_SEARCH_RADIUS = 100.0f;
 inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
 
-GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI);
 // A triggered cast records neither its cooldown nor the global cooldown, so both come from the
 // spell data. False if the cast fails.
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
@@ -423,7 +428,7 @@ inline constexpr float GURTOGG_POSITION_TOLERANCE = 2.0f;
 inline constexpr float GURTOGG_RANGED_HALF_WIDTH = 5.0f;
 inline constexpr float GURTOGG_RANGED_HALF_DEPTH = 2.0f;
 // Groups swap this long after a Bloodboil lands, not as it lands.
-inline constexpr int32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
+inline constexpr uint32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
 // Arcing Smash during Fel Rage reaches 11.5 yd from him, and he stays within about 14 yd of the
 // Fel Rage target, so the cleave can't reach past about 14 yd from that player. Everyone else in
 // front of him steps off his line to that player to keep this far away.
@@ -435,7 +440,7 @@ inline constexpr float GURTOGG_FEL_RAGE_MELEE_DISTANCE = 5.0f;
 inline constexpr float GURTOGG_FEL_RAGE_MELEE_TOLERANCE = 2.0f;
 inline constexpr float GURTOGG_FEL_RAGE_MELEE_SIDE_ANGLE = 2.0f * static_cast<float>(M_PI) / 3.0f;
 // For this long into Fel Rage, bots behind him keep away too.
-inline constexpr int32 GURTOGG_FEL_RAGE_EARLY_AVOID_MS = 5 * IN_MILLISECONDS;
+inline constexpr uint32 GURTOGG_FEL_RAGE_EARLY_AVOID_MS = 5 * IN_MILLISECONDS;
 // Bewildering Strike hands him to the second tank, so everyone else stays below it.
 inline constexpr float GURTOGG_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr uint32 GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS = 1000;

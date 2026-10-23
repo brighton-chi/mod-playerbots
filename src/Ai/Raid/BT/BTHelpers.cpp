@@ -6,6 +6,7 @@
 
 #include "BTHelpers.h"
 #include "CellImpl.h"
+#include "CreatureAI.h"
 #include "DynamicObject.h"
 #include "EncounterHelpers.h"
 #include "GameObject.h"
@@ -174,6 +175,47 @@ bool GetPathStepTowardPoint(
     return remaining < stepDistance;
 }
 
+bool CommandPetAttack(Creature* pet, Unit* target)
+{
+    if (!pet || !target)
+        return false;
+
+    pet->ClearUnitState(UNIT_STATE_FOLLOW);
+    pet->AttackStop();
+    pet->SetTarget(target->GetGUID());
+    if (CharmInfo* charmInfo = pet->GetCharmInfo())
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    pet->AI()->AttackStart(target);
+    return true;
+}
+
+GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry)
+{
+    GuidVector guids;
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    for (ObjectGuid const& guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            guids.push_back(guid);
+    }
+
+    return guids;
+}
+
+uint32 GetAuraElapsedMs(Aura const* aura)
+{
+    return aura ? static_cast<uint32>(aura->GetMaxDuration() - aura->GetDuration()) : 0;
+}
+
 // Trash
 
 namespace
@@ -311,21 +353,6 @@ Unit* GetSkulledSisterOfPain(Player* bot)
         ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex)));
 }
 
-GuidVector FindShadowmoonReaverGuids(PlayerbotAI* botAI)
-{
-    GuidVector reavers;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == Id(BtNpcs::NPC_SHADOWMOON_REAVER))
-            reavers.push_back(guid);
-    }
-
-    return reavers;
-}
-
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 {
     if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) || !unit->IsAlive())
@@ -337,9 +364,7 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
     if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
         // Reconstructed from the aura, so every caller stamps the same start.
-        uint32 const elapsed =
-            static_cast<uint32>(absorption->GetMaxDuration() - absorption->GetDuration());
-        reaverAbsorptionStarts[instanceId][guid] = getMSTime() - elapsed;
+        reaverAbsorptionStarts[instanceId][guid] = getMSTime() - GetAuraElapsedMs(absorption);
         return true;
     }
 
@@ -866,21 +891,6 @@ Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
 
 // Teron Gorefiend
 
-GuidVector FindShadowyConstructGuids(PlayerbotAI* botAI)
-{
-    GuidVector constructs;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == Id(BtNpcs::NPC_SHADOWY_CONSTRUCT))
-            constructs.push_back(guid);
-    }
-
-    return constructs;
-}
-
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 {
     if (!spirit || !target)
@@ -965,8 +975,7 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
             if (!bloodboil)
                 continue;
 
-            int32 const elapsed = bloodboil->GetMaxDuration() - bloodboil->GetDuration();
-            if (elapsed >= GURTOGG_ROTATION_DELAY_MS)
+            if (GetAuraElapsedMs(bloodboil) >= GURTOGG_ROTATION_DELAY_MS)
                 totalRemaining += bloodboil->GetDuration();
         }
 

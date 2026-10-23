@@ -519,9 +519,7 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     if (!runeShield)
         return 1.0f;
 
-    uint32 const elapsed =
-        static_cast<uint32>(runeShield->GetMaxDuration() - runeShield->GetDuration());
-    return elapsed < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
+    return GetAuraElapsedMs(runeShield) < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
 }
 
 float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounter(Action* action)

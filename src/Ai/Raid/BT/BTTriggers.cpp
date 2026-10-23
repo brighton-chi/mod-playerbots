@@ -304,11 +304,8 @@ bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
     // Arcing Smash only hits in front of him, but he turns faster than bots can react, so at the
     // start of Fel Rage everyone near the target moves regardless of side.
     Aura* felRage = gurtogg->GetAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE));
-    if (felRage &&
-        felRage->GetMaxDuration() - felRage->GetDuration() < GURTOGG_FEL_RAGE_EARLY_AVOID_MS)
-    {
+    if (felRage && GetAuraElapsedMs(felRage) < GURTOGG_FEL_RAGE_EARLY_AVOID_MS)
         return true;
-    }
 
     return gurtogg->HasInArc(static_cast<float>(M_PI), bot);
 }
