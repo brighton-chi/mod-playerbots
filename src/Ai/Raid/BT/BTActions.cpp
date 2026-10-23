@@ -8,6 +8,7 @@
 #include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
+#include "Log.h" // TEMP LOG (pickups), remove after testing
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -1968,8 +1969,9 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
-// arrival it stands 6 yd inward of him once out of Shadow Prison; he wakes with no threat reset,
-// and the settle then takes it round him to outward.
+// arrival, once out of Shadow Prison, it waits for its swing to put it back on his threat list,
+// then stands 6 yd inward of him; he wakes with no threat reset, and the settle then takes it
+// round him to outward.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1998,6 +2000,17 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     }
     else if (phase == IllidanPhase::None)
     {
+        // He takes whoever is back on his threat list first, so with its swing on him it stays,
+        // facing him, until a swing brings it back.
+        if (bot->GetVictim() == illidan && bot->IsWithinMeleeRange(illidan) &&
+            !IsOnlineOnIllidanThreatList(*illidan, bot))
+        {
+            if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
+                bot->SetFacingTo(bot->GetAngle(illidan));
+
+            return false;
+        }
+
         float const radius = std::max(
             0.0f,
             illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
@@ -3093,6 +3106,61 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
             updated = true;
         if (ResetIfSet(state.westFlameGuid))
             updated = true;
+    }
+
+    // TEMP LOG (pickups: who causes threat first after the landing reset and Maiev's wake, and
+    // what the Main Tank swings at while he flies and lands), remove after testing
+    Player* mainTank = GetGroupMainTank(bot);
+    if (mainTank && getMSTimeDiff(_tempLogTime, now) >= 500)
+    {
+        constexpr uint32 pickupLogMs = 5 * IN_MILLISECONDS;
+        bool const isFlight = phase == IllidanPhase::Flying || phase == IllidanPhase::Landing;
+        bool const isGap = phase == IllidanPhase::None &&
+            !mainTank->HasAura(Id(BtSpells::SPELL_SHADOW_PRISON));
+        bool const isLandingPickup = phase == IllidanPhase::Grounded &&
+            GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Landing;
+        bool const isPickup = (isLandingPickup || phase == IllidanPhase::Maiev) &&
+            IsIllidanPhaseStartWithin(*illidan, phase, pickupLogMs);
+
+        if (isFlight || isGap || isPickup)
+        {
+            _tempLogTime = now;
+            Unit* swingTarget = mainTank->GetVictim();
+            LOG_INFO(
+                "playerbots",
+                "[BT pickup] phase {} MT {} melee {} on {} ({}) {:.1f} yd, Illidan {:.1f} yd, "
+                "MT threat {:.0f}",
+                static_cast<uint32>(phase), mainTank->GetName(),
+                mainTank->HasUnitState(UNIT_STATE_MELEE_ATTACKING),
+                swingTarget ? swingTarget->GetName() : "none",
+                swingTarget ? swingTarget->GetEntry() : 0u,
+                swingTarget ? mainTank->GetExactDist(swingTarget) : 0.0f,
+                mainTank->GetExactDist(illidan),
+                illidan->GetThreatMgr().GetThreat(mainTank, true));
+        }
+
+        if (isGap || isPickup)
+        {
+            // Online state: 2 online, 1 suppressed, 0 offline.
+            std::string list;
+            size_t count = 0;
+            for (ThreatReference const* ref : illidan->GetThreatMgr().GetSortedThreatList())
+            {
+                if (count++ == 5)
+                    break;
+
+                Unit* victim = ref->GetVictim();
+                Unit* owner = victim->GetCharmerOrOwner();
+                list += victim->GetName() + (owner ? " (pet of " + owner->GetName() + ")" : "") +
+                    " " + std::to_string(static_cast<int32>(ref->GetThreat())) + " s" +
+                    std::to_string(static_cast<uint32>(ref->GetOnlineState())) + "; ";
+            }
+
+            Unit* victim = illidan->GetThreatMgr().GetLastVictim();
+            LOG_INFO(
+                "playerbots", "[BT pickup] victim {}, top: {}",
+                victim ? victim->GetName() : "none", list);
+        }
     }
 
     return updated;

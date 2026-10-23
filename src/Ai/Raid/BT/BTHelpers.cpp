@@ -1694,6 +1694,17 @@ bool IsFlameOfAzzinothDpsHeld(Unit const& illidan)
             ILLIDAN_FLAME_DPS_WAIT_MS;
 }
 
+bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot)
+{
+    for (ThreatReference const* ref : illidan.GetThreatMgr().GetUnsortedThreatList())
+    {
+        if (ref->GetVictim() == bot)
+            return ref->GetOnlineState() == ThreatReference::ONLINE_STATE_ONLINE;
+    }
+
+    return false;
+}
+
 float GetGrateAngle(Position const& position)
 {
     return ILLIDAN_GRATE_CENTRE.GetAngle(&position);

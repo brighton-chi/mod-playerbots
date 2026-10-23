@@ -940,8 +940,19 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     }
 
     IllidanPhase phase = GetIllidanPhase(illidan);
+    // In Maiev's arrival the Main Tank keeps him as its target, so its swing brings it back onto
+    // his threat list, out of Shadow Prison's suppression, before he wakes; only its ring action
+    // moves it, so nothing chasing its target pulls it off its place.
     if (phase == IllidanPhase::None)
-        return 1.0f;
+    {
+        bool const isDrop = dynamic_cast<DropTargetAction*>(action);
+        bool const isMove = dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action);
+        if (!isDrop && !isMove)
+            return 1.0f;
+
+        return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+    }
 
     // In the death scene only an infected bot is held, so nothing pulls it off its infection
     // position.

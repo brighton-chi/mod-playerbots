@@ -756,6 +756,10 @@ public:
     IllidanStormrageManageDpsTimersAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage manage dps timers") {}
     bool Execute(Event event) override;
+
+private:
+    // TEMP LOG (pickups), remove after testing
+    uint32 _tempLogTime = 0;
 };
 
 class IllidanStormrageClearHazardsAction : public Action

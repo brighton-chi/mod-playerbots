@@ -810,6 +810,9 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
 // Damage on the Flames of Azzinoth waits for their tanks, since a Flame is in combat with nobody
 // for its first 2 s; false before the tracker records the first Flame.
 bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
+// The bot's entry on his threat list is online, not suppressed: after Shadow Prison only threat
+// the bot causes brings it back.
+bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
