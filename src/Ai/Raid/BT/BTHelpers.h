@@ -564,8 +564,7 @@ enum class IllidanPhase : uint8
 enum class IllidanDpsHold : uint8
 {
     None,
-    AfterReset,      // Phase 1 and Phase 3 starts, and Phase 5 straight from Demon Form;
-                     // everyone but the Main Tank
+    AfterReset,      // Phase 1, 3 and 5 starts; everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
     DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
     DemonFormEnd,    // the last 3 s before the reset; everyone
@@ -680,8 +679,13 @@ inline constexpr float ILLIDAN_FROST_TRAP_DISTANCE = 3.0f;
 inline constexpr float ILLIDAN_RING_RADIUS = 25.0f;
 inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 // Once free of Shadow Prison, for the 2.83 s before he wakes, the Main Tank stands this far
-// inward of him: between him and the raid, and nearer him than the melee.
-inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 3.0f;
+// inward of him: between him and the raid, and clear of his backing off.
+inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 6.0f;
+// He walks back from a victim this close to his centre (both collision radii), checked every 2 to
+// 6 s. A Main Tank whose straight walk would pass this close goes round him on the settle circle
+// instead, a leg at a time, each leg 5.2 yd from his centre.
+inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
+inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
 // runs up close behind a walking tank and stops about 30 deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
@@ -891,7 +895,8 @@ struct BtInstanceState
     std::optional<uint32> najentusSpineThrowTime;
     std::optional<uint32> councilDpsWaitTimer;
     std::optional<IllidanPhase> illidanLastPhase;
-    // The phase before the current one, so Phase 5 straight from Demon Form shows as a reset.
+    // The phase before the current one, so the Main Tank's pickup can tell a Phase 3 start after
+    // the landing.
     std::optional<IllidanPhase> illidanPreviousPhase;
     std::optional<uint32> illidanPhaseStartTime;
     std::optional<uint32> illidanFlamePhaseStartTime;

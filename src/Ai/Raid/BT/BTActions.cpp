@@ -1985,7 +1985,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
-// arrival it stands just inward of him once out of Shadow Prison; he wakes with no threat reset,
+// arrival it stands 6 yd inward of him once out of Shadow Prison; he wakes with no threat reset,
 // and the settle then takes it round him to outward.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
@@ -2029,6 +2029,14 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     else if (illidan->GetVictim() != bot || !FindRingPosition(*illidan, phase, position))
     {
         return false;
+    }
+
+    // He backs off only with a victim and free to move: not while he flies or lands, in Maiev's
+    // arrival, or rooted in Demon Form.
+    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev)
+    {
+        RouteRoundIllidan(*illidan, position);
     }
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
@@ -2162,6 +2170,41 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
         _leadPosition = GetRingPoint(ILLIDAN_OPENING_LEAD_ANGLE, ILLIDAN_RING_RADIUS);
         _lead = IllidanTankLead::Opening;
     }
+}
+
+// While a straight walk to the position would pass too close to his centre, the next leg goes
+// round him on the settle circle, on the side the position is nearer.
+void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
+    Unit const& illidan, Position& position)
+{
+    if (illidan.GetExactDist2d(bot) < ILLIDAN_BACK_OFF_DISTANCE ||
+        illidan.GetExactDist2d(position) < ILLIDAN_BACK_OFF_DISTANCE)
+    {
+        return;
+    }
+
+    float const dx = position.GetPositionX() - bot->GetPositionX();
+    float const dy = position.GetPositionY() - bot->GetPositionY();
+    float const lengthSq = dx * dx + dy * dy;
+    if (lengthSq < 0.01f)
+        return;
+
+    float const toIllidanX = illidan.GetPositionX() - bot->GetPositionX();
+    float const toIllidanY = illidan.GetPositionY() - bot->GetPositionY();
+    float const along = std::clamp((toIllidanX * dx + toIllidanY * dy) / lengthSq, 0.0f, 1.0f);
+    float const closest = illidan.GetExactDist2d(
+        bot->GetPositionX() + along * dx, bot->GetPositionY() + along * dy);
+    if (closest >= ILLIDAN_BACK_OFF_DISTANCE)
+        return;
+
+    float const botAngle = illidan.GetAngle(bot);
+    float const turn = Position::NormalizeOrientation(illidan.GetAngle(&position) - botAngle);
+    float const step = turn <= static_cast<float>(M_PI) ?
+        ILLIDAN_ROUND_STEP_ANGLE : -ILLIDAN_ROUND_STEP_ANGLE;
+    float const angle = botAngle + step;
+    position.Relocate(
+        illidan.GetPositionX() + ILLIDAN_TANK_OFFSET * std::cos(angle),
+        illidan.GetPositionY() + ILLIDAN_TANK_OFFSET * std::sin(angle), bot->GetPositionZ());
 }
 
 // A trap hunter on duty drops Frost Trap on arrival, holding the position through a global
@@ -2636,7 +2679,8 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
         return false;
 
     // Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
-    // first, the warlock tank in the one nearest its Demon Form position.
+    // first, the warlock tank in the one nearest its Demon Form position, and ranged DPS no
+    // farther than their spell reach of him.
     IllidanPhase const phase = GetIllidanPhase(illidan);
     Position position;
     if (phase == IllidanPhase::Demon)
@@ -2655,6 +2699,24 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
             return false;
 
         position = GetGrateSlot(static_cast<size_t>(slot));
+
+        // Past the point stock reach spell walks to, it and this action would take turns moving
+        // the bot.
+        if (!PlayerbotAI::IsHeal(bot))
+        {
+            float const reach =
+                botAI->GetRange("spell") + bot->GetCombatReach() + illidan->GetCombatReach();
+            float const distance = illidan->GetExactDist2d(position);
+            if (distance > reach)
+            {
+                float const scale = reach / distance;
+                float const x = illidan->GetPositionX() +
+                    (position.GetPositionX() - illidan->GetPositionX()) * scale;
+                float const y = illidan->GetPositionY() +
+                    (position.GetPositionY() - illidan->GetPositionY()) * scale;
+                position.Relocate(x, y, position.GetPositionZ());
+            }
+        }
     }
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)

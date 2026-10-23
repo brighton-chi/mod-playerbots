@@ -1644,9 +1644,10 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
             IllidanDpsHold::DemonFormStart : IllidanDpsHold::DemonFormMiddle;
     }
 
-    bool isAfterReset = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded;
-    if (phase == IllidanPhase::Maiev)
-        isAfterReset = GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Demon;
+    // Phase 5 has no threat reset at Maiev's arrival, but Shadow Prison's immunity leaves everyone
+    // suppressed on his threat list, so the first to cause threat after it takes him.
+    bool const isAfterReset = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev;
 
     return isAfterReset && IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_RESET_DPS_WAIT_MS) ?
         IllidanDpsHold::AfterReset : IllidanDpsHold::None;
