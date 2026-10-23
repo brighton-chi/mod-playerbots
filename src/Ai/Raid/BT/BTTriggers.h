@@ -193,11 +193,12 @@ protected:
 
 // Shade of Akama
 
-class ShadeOfAkamaShouldPrioritizeChannelersTrigger : public BlackTempleEncounterTrigger
+class ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ShadeOfAkamaShouldPrioritizeChannelersTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "shade of akama should prioritize channelers") {}
+    ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "shade of akama should attack channelers and sorcerers") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -376,11 +377,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MotherShahrazTanksArePositioningBossTrigger : public BlackTempleEncounterTrigger
+class MotherShahrazBeingPositionedTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazTanksArePositioningBossTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "mother shahraz tanks are positioning boss") {}
+    MotherShahrazBeingPositionedTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "mother shahraz being positioned") {}
 
 protected:
     bool IsActiveInEncounter() override;

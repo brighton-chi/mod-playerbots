@@ -212,6 +212,7 @@ enum class BtObjects : uint32
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
+inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
@@ -223,6 +224,11 @@ bool IsInRectangle(
 // bot's Z. Falls back to centre when the way from centre to the point is blocked.
 Position GetBotPointInRectangle(
     Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
 
 // Trash
 
@@ -381,16 +387,10 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
 // Reaches every channeler from anywhere in his room, so every bot gets the same kill order.
 inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
-inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
 // Living, attackable channelers by GUID, then sorcerers by GUID: the kill order.
 GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY);
 
 // Teron Gorefiend
 

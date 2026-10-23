@@ -22,7 +22,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Trash
     triggers.push_back(new TriggerNode("sister of pleasure should be focused",
-        { NextAction("focus sister of pleasure", ACTION_RAID + 1) }));
+        { NextAction("sister of pleasure focus dps", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("shadowmoon reaver wand builds charges",
         { NextAction("shadowmoon reaver stop wand", ACTION_EMERGENCY + 1) }));
@@ -69,8 +69,8 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("supremus reach around fire", ACTION_RAID - 1) }));
 
     // Shade of Akama
-    triggers.push_back(new TriggerNode("shade of akama should prioritize channelers",
-        { NextAction("shade of akama melee dps prioritize channelers", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("shade of akama should attack channelers and sorcerers",
+        { NextAction("shade of akama attack channelers and sorcerers", ACTION_RAID + 1) }));
 
     // Teron Gorefiend
     triggers.push_back(new TriggerNode("teron gorefiend hunter should misdirect",
@@ -135,7 +135,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("mother shahraz should be tanked",
         { NextAction("mother shahraz tanks position boss under pillar", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("mother shahraz tanks are positioning boss",
+    triggers.push_back(new TriggerNode("mother shahraz being positioned",
         { NextAction("mother shahraz melee dps wait at safe position", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("mother shahraz ranged should position under pillar",
@@ -280,7 +280,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
 
     // Shade of Akama
-    multipliers.push_back(new ShadeOfAkamaDontDropOutOfSightTargetMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier(botAI));
     multipliers.push_back(new ShadeOfAkamaCannotTankBossMultiplier(botAI));
 
     // Teron Gorefiend
@@ -295,7 +295,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new GurtoggBloodboilHoldThreatMultiplier(botAI));
 
     // Reliquary of Souls
-    multipliers.push_back(new ReliquaryOfSoulsDontWasteHealingMultiplier(botAI));
+    multipliers.push_back(new ReliquaryOfSoulsDoNotWasteHealingMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsControlMeleeMovementMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier(botAI));
     multipliers.push_back(new ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier(botAI));
@@ -375,8 +375,9 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
-    auto const& constructs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowy constructs")->RefGet();
+    auto const& constructs = botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("teron gorefiend shadowy constructs")
+        ->RefGet();
     exclusions.insert(constructs.begin(), constructs.end());
 }
 

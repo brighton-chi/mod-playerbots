@@ -20,8 +20,8 @@ public:
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
         // Trash
-        creators["focus sister of pleasure"] =
-            &RaidBlackTempleActionContext::focus_sister_of_pleasure;
+        creators["sister of pleasure focus dps"] =
+            &RaidBlackTempleActionContext::sister_of_pleasure_focus_dps;
 
         creators["shadowmoon reaver stop wand"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_stop_wand;
@@ -66,8 +66,8 @@ public:
             &RaidBlackTempleActionContext::supremus_reach_around_fire;
 
         // Shade of Akama
-        creators["shade of akama melee dps prioritize channelers"] =
-            &RaidBlackTempleActionContext::shade_of_akama_melee_dps_prioritize_channelers;
+        creators["shade of akama attack channelers and sorcerers"] =
+            &RaidBlackTempleActionContext::shade_of_akama_attack_channelers_and_sorcerers;
 
         // Teron Gorefiend
         creators["teron gorefiend misdirect to main tank"] =
@@ -252,9 +252,9 @@ private:
     }
 
     // Trash
-    static Action* focus_sister_of_pleasure(PlayerbotAI* botAI)
+    static Action* sister_of_pleasure_focus_dps(PlayerbotAI* botAI)
     {
-        return new FocusSisterOfPleasureAction(botAI);
+        return new SisterOfPleasureFocusDpsAction(botAI);
     }
     static Action* shadowmoon_reaver_stop_wand(PlayerbotAI* botAI)
     {
@@ -325,9 +325,9 @@ private:
     }
 
     // Shade of Akama
-    static Action* shade_of_akama_melee_dps_prioritize_channelers(PlayerbotAI* botAI)
+    static Action* shade_of_akama_attack_channelers_and_sorcerers(PlayerbotAI* botAI)
     {
-        return new ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(botAI);
+        return new ShadeOfAkamaAttackChannelersAndSorcerersAction(botAI);
     }
 
     // Teron Gorefiend

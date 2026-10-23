@@ -57,12 +57,13 @@ protected:
 
 // Teron Gorefiend
 
-class ShadowyConstructsValue : public CalculatedValue<GuidVector>
+class TeronGorefiendShadowyConstructsValue : public CalculatedValue<GuidVector>
 {
 public:
-    ShadowyConstructsValue(PlayerbotAI* botAI)
+    TeronGorefiendShadowyConstructsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-            botAI, "shadowy constructs", BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
+            botAI, "teron gorefiend shadowy constructs",
+            BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadowyConstructGuids(botAI); }
@@ -184,7 +185,8 @@ public:
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus hazards"] = &RaidBlackTempleValueContext::supremus_hazards;
         creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
-        creators["shadowy constructs"] = &RaidBlackTempleValueContext::shadowy_constructs;
+        creators["teron gorefiend shadowy constructs"] =
+            &RaidBlackTempleValueContext::teron_gorefiend_shadowy_constructs;
         creators["gurtogg bloodboil second tank threat"] =
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
         creators["illidari council zerevor mage tank"] =
@@ -214,9 +216,9 @@ private:
     {
         return new ShadeOfAkamaAddsValue(botAI);
     }
-    static UntypedValue* shadowy_constructs(PlayerbotAI* botAI)
+    static UntypedValue* teron_gorefiend_shadowy_constructs(PlayerbotAI* botAI)
     {
-        return new ShadowyConstructsValue(botAI);
+        return new TeronGorefiendShadowyConstructsValue(botAI);
     }
     static UntypedValue* gurtogg_bloodboil_second_tank_threat(PlayerbotAI* botAI)
     {

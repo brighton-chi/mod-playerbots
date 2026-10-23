@@ -191,7 +191,7 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 
 // Shade of Akama
 
-bool ShadeOfAkamaShouldPrioritizeChannelersTrigger::IsActiveInEncounter()
+bool ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsDps(bot))
         return false;
@@ -393,7 +393,7 @@ bool MotherShahrazShouldBeTankedTrigger::IsActiveInEncounter()
     return !bot->HasAura(Id(BtSpells::SPELL_FATAL_ATTRACTION));
 }
 
-bool MotherShahrazTanksArePositioningBossTrigger::IsActiveInEncounter()
+bool MotherShahrazBeingPositionedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;

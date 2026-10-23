@@ -170,7 +170,7 @@ bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 
 // Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
 // health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
-bool FocusSisterOfPleasureAction::Execute(Event /*event*/)
+bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
     {
@@ -876,7 +876,7 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
 
 // Channelers stand on a platform out of sight from below, and Attack refuses a target out of
 // sight, so a bot walks the path toward its target until it can see it.
-bool ShadeOfAkamaMeleeDpsPrioritizeChannelersAction::Execute(Event /*event*/)
+bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
 {
     Unit* target = GetShadeOfAkamaKillTarget(botAI);
     if (!target)

@@ -287,7 +287,7 @@ float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* 
 
 // Shade of Akama
 
-float ShadeOfAkamaDontDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
+float ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))
         return 1.0f;
@@ -462,7 +462,7 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
 
 // Reliquary of Souls
 
-float ReliquaryOfSoulsDontWasteHealingMultiplier::GetValueInEncounter(Action* action)
+float ReliquaryOfSoulsDoNotWasteHealingMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastTreeFormAction*>(action) &&
         !dynamic_cast<CastHealingSpellAction*>(action))

@@ -83,10 +83,11 @@ public:
 
 // Trash
 
-class FocusSisterOfPleasureAction : public Action
+class SisterOfPleasureFocusDpsAction : public Action
 {
 public:
-    FocusSisterOfPleasureAction(PlayerbotAI* botAI) : Action(botAI, "focus sister of pleasure") {}
+    SisterOfPleasureFocusDpsAction(PlayerbotAI* botAI)
+        : Action(botAI, "sister of pleasure focus dps") {}
     bool Execute(Event event) override;
 };
 
@@ -257,11 +258,11 @@ private:
 
 // Shade of Akama
 
-class ShadeOfAkamaMeleeDpsPrioritizeChannelersAction : public AttackAction
+class ShadeOfAkamaAttackChannelersAndSorcerersAction : public AttackAction
 {
 public:
-    ShadeOfAkamaMeleeDpsPrioritizeChannelersAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "shade of akama melee dps prioritize channelers") {}
+    ShadeOfAkamaAttackChannelersAndSorcerersAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "shade of akama attack channelers and sorcerers") {}
     bool Execute(Event event) override;
 };
 

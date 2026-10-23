@@ -67,8 +67,8 @@ public:
             &RaidBlackTempleTriggerContext::supremus_reach_blocked_by_fire;
 
         // Shade of Akama
-        creators["shade of akama should prioritize channelers"] =
-            &RaidBlackTempleTriggerContext::shade_of_akama_should_prioritize_channelers;
+        creators["shade of akama should attack channelers and sorcerers"] =
+            &RaidBlackTempleTriggerContext::shade_of_akama_should_attack_channelers_and_sorcerers;
 
         // Teron Gorefiend
         creators["teron gorefiend hunter should misdirect"] =
@@ -131,8 +131,8 @@ public:
         creators["mother shahraz should be tanked"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_should_be_tanked;
 
-        creators["mother shahraz tanks are positioning boss"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_tanks_are_positioning_boss;
+        creators["mother shahraz being positioned"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_being_positioned;
 
         creators["mother shahraz ranged should position under pillar"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_ranged_should_position_under_pillar;
@@ -230,7 +230,8 @@ public:
             &RaidBlackTempleTriggerContext::illidan_stormrage_ranged_should_reach_shadow_demon;
 
         creators["illidan stormrage melee should stay away from demon form"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_should_stay_away_from_demon_form;
+            &RaidBlackTempleTriggerContext::
+                illidan_stormrage_melee_should_stay_away_from_demon_form;
 
         creators["illidan stormrage warlock should tank demon form"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_warlock_should_tank_demon_form;
@@ -324,9 +325,9 @@ private:
     }
 
     // Shade of Akama
-    static Trigger* shade_of_akama_should_prioritize_channelers(PlayerbotAI* botAI)
+    static Trigger* shade_of_akama_should_attack_channelers_and_sorcerers(PlayerbotAI* botAI)
     {
-        return new ShadeOfAkamaShouldPrioritizeChannelersTrigger(botAI);
+        return new ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger(botAI);
     }
 
     // Teron Gorefiend
@@ -415,9 +416,9 @@ private:
     {
         return new MotherShahrazShouldBeTankedTrigger(botAI);
     }
-    static Trigger* mother_shahraz_tanks_are_positioning_boss(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_being_positioned(PlayerbotAI* botAI)
     {
-        return new MotherShahrazTanksArePositioningBossTrigger(botAI);
+        return new MotherShahrazBeingPositionedTrigger(botAI);
     }
     static Trigger* mother_shahraz_ranged_should_position_under_pillar(PlayerbotAI* botAI)
     {
@@ -548,7 +549,7 @@ private:
     {
         return new IllidanStormrageRangedShouldReachShadowDemonTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_should_stay_away_from_demon_form(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_melee_should_stay_away_from_demon_form(PlayerbotAI* botAI)
     {
         return new IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger(botAI);
     }
