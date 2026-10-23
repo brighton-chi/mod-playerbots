@@ -470,6 +470,7 @@ inline constexpr float SUFFERING_MELEE_MIN_DISTANCE = 9.0f;
 inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 // Other dispellers wait this long into each Rune Shield, so a mage steals it when one can.
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
+inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
 bool IsSufferingFixateTank(Player* bot);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
@@ -509,6 +510,7 @@ inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 100.0f;
+inline constexpr float COUNCIL_TANK_ARRIVAL_DISTANCE = 2.0f;
 // Bots heal out to HealDistance, 38.5 yd by default.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
 // A patch on the mage tank reaches 11.5 yd from where it stood.
@@ -522,6 +524,7 @@ inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
 inline constexpr float COUNTERSPELL_RANGE = 30.0f;
 inline constexpr float WIND_SHEAR_RANGE = 25.0f;
+inline constexpr float SPELL_LOCK_RANGE = 30.0f;
 
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);

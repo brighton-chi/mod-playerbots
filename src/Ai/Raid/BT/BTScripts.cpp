@@ -70,14 +70,13 @@ public:
         if (!caster || spellInfo->Id != Id(BtSpells::SPELL_RUNE_SHIELD))
             return;
 
-        constexpr float spellstealRange = 30.0f;
         uint32 const spellsteal = Id(BtSpells::SPELL_SPELLSTEAL);
         Map::PlayerList const& players = caster->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
         {
             Player* player = it->GetSource();
             if (!player || !player->IsAlive() || player->getClass() != CLASS_MAGE ||
-                !player->IsWithinCombatRange(caster, spellstealRange))
+                !player->IsWithinCombatRange(caster, SPELLSTEAL_RANGE))
             {
                 continue;
             }

@@ -123,7 +123,7 @@ bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
     if (!najentus || !najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD)))
         return false;
 
-    return botAI->HasItemInInventory(Id(BtItems::ITEM_NAJENTUS_SPINE));
+    return bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
 // Supremus
@@ -364,15 +364,12 @@ bool ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger::IsActiveInEncounter()
         return false;
 
     Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
-    if (!desire || !desire->HasUnitState(UNIT_STATE_CASTING))
+    if (!desire)
         return false;
 
-    Spell* spell = desire->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != Id(BtSpells::SPELL_DEADEN))
-        return false;
-
-    Unit* target = spell->m_targets.GetUnitTarget();
-    return target && target->GetGUID() == bot->GetGUID();
+    Spell* deaden = desire->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_DEADEN));
+    return deaden && deaden->getState() == SPELL_STATE_PREPARING &&
+        deaden->m_targets.GetUnitTarget() == bot;
 }
 
 // Mother Shahraz
@@ -431,18 +428,12 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
         return false;
 
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios || !gathios->HasUnitState(UNIT_STATE_CASTING) ||
-        !gathios->HasAura(Id(BtSpells::SPELL_SEAL_OF_COMMAND)))
-    {
-        return false;
-    }
-
-    Spell* spell = gathios->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!spell || spell->m_spellInfo->Id != Id(BtSpells::SPELL_JUDGEMENT))
+    if (!gathios || !gathios->HasAura(Id(BtSpells::SPELL_SEAL_OF_COMMAND)))
         return false;
 
-    Unit* target = spell->m_targets.GetUnitTarget();
-    return target && target->GetGUID() == bot->GetGUID() && PlayerbotAI::IsMainTank(bot);
+    Spell* judgement = gathios->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_JUDGEMENT));
+    return judgement && judgement->getState() == SPELL_STATE_PREPARING &&
+        judgement->m_targets.GetUnitTarget() == bot && PlayerbotAI::IsMainTank(bot);
 }
 
 // Ranged DPS interrupt only while her melee can't: under Blessing of Protection, or while she

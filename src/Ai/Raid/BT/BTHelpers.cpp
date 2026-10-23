@@ -1022,8 +1022,8 @@ Position GetGurtoggFelRageMeleePosition(
 {
     float const axisAngle = gurtogg.GetAngle(&felRageTarget);
     float relativeAngle = Position::NormalizeOrientation(gurtogg.GetAngle(bot) - axisAngle);
-    if (relativeAngle > M_PI)
-        relativeAngle -= 2.0f * M_PI;
+    if (relativeAngle > static_cast<float>(M_PI))
+        relativeAngle -= 2.0f * static_cast<float>(M_PI);
 
     float angle = axisAngle + static_cast<float>(M_PI);
     if (std::fabs(relativeAngle) < static_cast<float>(M_PI_2))
@@ -1417,8 +1417,7 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
     if (!pet || !target || !pet->IsAlive() || pet->GetEntry() != NPC_FELHUNTER)
         return 0;
 
-    constexpr float spellLockRange = 30.0f;
-    if (!pet->IsWithinCombatRange(target, spellLockRange) || !pet->IsWithinLOSInMap(target))
+    if (!pet->IsWithinCombatRange(target, SPELL_LOCK_RANGE) || !pet->IsWithinLOSInMap(target))
         return 0;
 
     static constexpr std::array spellLockRanks = {

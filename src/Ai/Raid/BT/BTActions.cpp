@@ -334,15 +334,18 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (!spineGo)
         return false;
 
-    bool const atSpine = bot->GetExactDist2d(spineGo) <= 3.0f;
+    constexpr float useDistance = 3.0f;
+    bool const atSpine = bot->GetExactDist2d(spineGo) <= useDistance;
 
     // One reaction delay of 1 to 2 s per spine, before clicking or walking to it.
+    constexpr uint32 minReactionMs = 1000;
+    constexpr uint32 maxReactionMs = 2000;
     if (spineGo->GetGUID() != _spineGuid)
     {
         _spineGuid = spineGo->GetGUID();
         _usedSpine = false;
         _reactionStartTime = getMSTime();
-        _reactionDelay = urand(1000, 2000);
+        _reactionDelay = urand(minReactionMs, maxReactionMs);
     }
 
     if (_usedSpine || GetMSTimeDiffToNow(_reactionStartTime) < _reactionDelay)
@@ -402,8 +405,10 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
         return false;
 
     // Reaction delay of 0.5 to 1.5 s, counted from the shield going up.
+    constexpr uint32 minReactionMs = 500;
+    constexpr uint32 maxReactionMs = 1500;
     if (!_throwDelay)
-        _throwDelay = urand(500, 1500);
+        _throwDelay = urand(minReactionMs, maxReactionMs);
 
     if (GetAuraElapsedMs(shield) < _throwDelay)
         return false;
@@ -424,7 +429,7 @@ constexpr float NEVER_CAUGHT = std::numeric_limits<float>::max();
 
 float GetKiteHeadingAngle(uint8 index)
 {
-    return index * 2.0f * M_PI / SUPREMUS_KITE_HEADINGS;
+    return index * 2.0f * static_cast<float>(M_PI) / SUPREMUS_KITE_HEADINGS;
 }
 
 // How far along a heading from (x, y) stays inside the open area.
@@ -502,7 +507,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
 
     // Keep the way the last step went, or else start straight away from him.
     constexpr uint32 headingMemoryMs = 2000;
-    float const preferredAngle = getMSTimeDiff(_lastStepTime, getMSTime()) < headingMemoryMs ?
+    float const preferredAngle = GetMSTimeDiffToNow(_lastStepTime) < headingMemoryMs ?
         _lastAngle : supremus->GetAngle(bot);
 
     std::array<float, SUPREMUS_KITE_HEADINGS> openDistances;
@@ -543,7 +548,8 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
             if (runDistance < exitDistance)
                 continue;
 
-            float const turn = std::abs(std::remainder(angle - preferredAngle, 2.0f * M_PI));
+            float const turn =
+                std::abs(std::remainder(angle - preferredAngle, 2.0f * static_cast<float>(M_PI)));
             float const timeUntilCaught =
                 SimulateChase(supremus, timeRemaining, catchDistance, angle, runDistance);
             plans.push_back({ angle, runDistance, exitDistance, turn, timeUntilCaught });
@@ -658,7 +664,7 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
     // A bot walled in holds, and the fire around it changes slowly; the search runs up to 16
     // raycasts, so don't repeat it every tick unless the bot starts burning.
     constexpr uint32 retryDelayMs = 500;
-    if (getMSTimeDiff(_lastFailedSearchTime, getMSTime()) < retryDelayMs &&
+    if (GetMSTimeDiffToNow(_lastFailedSearchTime) < retryDelayMs &&
         !IsInSupremusHazard(
             hazards, bot->GetPositionX(), bot->GetPositionY(), SupremusHazardZone::Damage))
     {
@@ -689,7 +695,7 @@ bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
     // Two yards keeps the search to 320 position against a trail of 20 or more patches.
     constexpr float distanceStep = 2.0f;
     constexpr uint8 numAngles = 16;
-    constexpr float angleStep = 2.0f * M_PI / numAngles;
+    constexpr float angleStep = 2.0f * static_cast<float>(M_PI) / numAngles;
     constexpr float clearance = 1.0f;
     constexpr uint32 numDistances = static_cast<uint32>(maxRadius / distanceStep);
     // Positions along one heading cross the same fire, and their yards differ only by rounding,
@@ -829,7 +835,7 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     // Once sliding one way it keeps to that side, turning back if it must, which follows a
     // volcano's edge out of the notch where two meet; trying the other side first makes it dither.
     constexpr uint32 sideMemoryMs = 2000;
-    if (getMSTimeDiff(_lastStepTime, getMSTime()) < sideMemoryMs)
+    if (GetMSTimeDiffToNow(_lastStepTime) < sideMemoryMs)
     {
         int8 const side = _lastSide;
         for (uint8 i = 0; i <= turnsToBehind; ++i)
@@ -922,8 +928,8 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     size_t const botIndex = (findIt != rangedMembers.end()) ?
         std::distance(rangedMembers.begin(), findIt) : 0;
 
-    constexpr float arcSpan = 2.0f * M_PI / 5.0f;
-    constexpr float arcCenter = 6.279f;
+    constexpr float arcSpan = 2.0f * static_cast<float>(M_PI) / 5.0f;
+    constexpr float arcCenter = 0.0f; // due north
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
     constexpr float radius = 12.0f;
@@ -1005,7 +1011,8 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
     float const distanceToLead = spirit->GetExactDist2d(leadConstruct);
     if (distanceToLead > GOREFIEND_SPIRIT_AOE_DISTANCE)
     {
-        float const moveDistance = distanceToLead - GOREFIEND_SPIRIT_AOE_DISTANCE + 2.0f;
+        constexpr float aoeMargin = 2.0f;
+        float const moveDistance = distanceToLead - GOREFIEND_SPIRIT_AOE_DISTANCE + aoeMargin;
         float const dX = leadConstruct->GetPositionX() - spirit->GetPositionX();
         float const dY = leadConstruct->GetPositionY() - spirit->GetPositionY();
 
@@ -1363,7 +1370,7 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
+        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1520,8 +1527,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     if (gathios->GetVictim() != bot || !bot->IsWithinMeleeRange(gathios))
         return false;
 
-    constexpr float arrivalDist = 2.0f;
-    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[_tankStep]) <= arrivalDist &&
+    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[_tankStep]) <= COUNCIL_TANK_ARRIVAL_DISTANCE &&
         HasDangerousCouncilAura(bot))
     {
         _tankStep = (_tankStep + 1) % GATHIOS_TANK_POSITIONS.size();
@@ -1531,7 +1537,8 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GATHIOS_TANK_POSITIONS[_tankStep], arrivalDist, gathios, moveX, moveY, backwards))
+            bot, GATHIOS_TANK_POSITIONS[_tankStep], COUNCIL_TANK_ARRIVAL_DISTANCE, gathios, moveX,
+            moveY, backwards))
     {
         return false;
     }
@@ -1663,12 +1670,12 @@ bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/
     if (!mainTank)
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, mainTank->GetPosition(), arrivalDist, veras, moveX, moveY, backwards))
+            bot, mainTank->GetPosition(), COUNCIL_TANK_ARRIVAL_DISTANCE, veras, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -1702,8 +1709,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     if (zerevor->GetVictim() != bot)
         return false;
 
-    constexpr float arrivalDist = 2.0f;
-    if (bot->GetExactDist2d(ZEREVOR_TANK_POSITIONS[_tankStep]) <= arrivalDist &&
+    if (bot->GetExactDist2d(ZEREVOR_TANK_POSITIONS[_tankStep]) <= COUNCIL_TANK_ARRIVAL_DISTANCE &&
         HasDangerousCouncilAura(bot))
     {
         _tankStep = (_tankStep + 1) % ZEREVOR_TANK_POSITIONS.size();
@@ -1713,7 +1719,8 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     float moveY;
     bool backwards; // not used: the mage tank never walks backwards
     if (!GetStepToPosition(
-            bot, ZEREVOR_TANK_POSITIONS[_tankStep], arrivalDist, zerevor, moveX, moveY, backwards))
+            bot, ZEREVOR_TANK_POSITIONS[_tankStep], COUNCIL_TANK_ARRIVAL_DISTANCE, zerevor, moveX,
+            moveY, backwards))
     {
         return false;
     }

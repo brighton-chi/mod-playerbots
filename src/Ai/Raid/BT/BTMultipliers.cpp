@@ -799,7 +799,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
     if (!state || !state->councilDpsWaitTimer ||
-        getMSTimeDiff(*state->councilDpsWaitTimer, getMSTime()) >= COUNCIL_DPS_WAIT_MS)
+        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) >= COUNCIL_DPS_WAIT_MS)
     {
         return 1.0f;
     }
