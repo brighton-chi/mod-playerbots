@@ -788,9 +788,8 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     if (IsWaitingForLastMove(priority))
         return false;
 
-    Unit* target;
-    float range;
-    if (!GetSupremusReachBlockedByFire(botAI, target, range))
+    Unit* target = GetSupremusFireBlockedReachTarget(botAI);
+    if (!target)
         return false;
 
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);

@@ -794,22 +794,21 @@ bool CanWalkThroughSupremusFire(Player* bot)
     }
 }
 
-bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range)
+Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    target = nullptr;
-    range = 0.0f;
-
     if (CanWalkThroughSupremusFire(bot))
-        return false;
+        return nullptr;
 
     // Stock reach doesn't break a channel either.
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-        return false;
+        return nullptr;
 
     bool const isHealer = PlayerbotAI::IsHeal(bot);
     AiObjectContext* context = botAI->GetAiObjectContext();
-    target = context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    Unit* target =
+        context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    float range;
     if (isHealer)
         range = botAI->GetRange("heal");
     else if (PlayerbotAI::IsRanged(bot))
@@ -818,7 +817,7 @@ bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& ran
         range = sPlayerbotAIConfig.MeleeDistance;
 
     if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
-        return false;
+        return nullptr;
 
     // Where the walk in would stop: a yard inside range, on the straight line to the target.
     constexpr float rangeInset = 1.0f;
@@ -826,7 +825,7 @@ bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& ran
         range + bot->GetCombatReach() + target->GetCombatReach() - rangeInset;
     float const distance = bot->GetExactDist2d(target);
     if (distance <= stopDistance)
-        return false;
+        return nullptr;
 
     float const ratio = stopDistance / distance;
     Position const stop(
@@ -834,8 +833,9 @@ bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& ran
         target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * ratio,
         bot->GetPositionZ());
 
-    return GetLineLengthInSupremusHazards(
-        GetSupremusHazards(botAI), bot->GetPosition(), stop, SupremusHazardZone::Safe) > 0.0f;
+    float const underFire = GetLineLengthInSupremusHazards(
+        GetSupremusHazards(botAI), bot->GetPosition(), stop, SupremusHazardZone::Safe);
+    return underFire > 0.0f ? target : nullptr;
 }
 
 // Shade of Akama

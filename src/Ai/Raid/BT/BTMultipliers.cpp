@@ -272,9 +272,7 @@ float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* actio
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
         return 1.0f;
 
-    Unit* target;
-    float range;
-    return GetSupremusReachBlockedByFire(botAI, target, range) ? 0.0f : 1.0f;
+    return GetSupremusFireBlockedReachTarget(botAI) ? 0.0f : 1.0f;
 }
 
 float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)

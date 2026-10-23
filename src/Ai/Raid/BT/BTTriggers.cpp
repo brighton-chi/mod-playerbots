@@ -184,9 +184,7 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
         return false;
 
-    Unit* target;
-    float range;
-    return GetSupremusReachBlockedByFire(botAI, target, range);
+    return GetSupremusFireBlockedReachTarget(botAI);
 }
 
 // Shade of Akama

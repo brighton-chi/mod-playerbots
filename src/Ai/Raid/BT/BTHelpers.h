@@ -379,9 +379,9 @@ float GetLineLengthInSupremusHazards(
     SupremusHazardZone zone);
 // With Divine Shield or Dispersion a bot may walk through fire, but not stop in it.
 bool CanWalkThroughSupremusFire(Player* bot);
-// The target and range stock reach would use; true when its straight walk into range passes
-// through a hazard's safe zone.
-bool GetSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit*& target, float& range);
+// The target stock reach would walk to, when its straight walk into range passes through a
+// hazard's safe zone; else null.
+Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI);
 
 // Shade of Akama
 
