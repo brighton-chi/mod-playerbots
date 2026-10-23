@@ -682,16 +682,17 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 // inward of him: between him and the raid, and clear of his backing off.
 inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 6.0f;
 // He walks back from a victim this close to his centre (both collision radii), checked every 2 to
-// 6 s. A Main Tank whose straight walk would pass this close goes round him on the settle circle
-// instead, a leg at a time, each leg 5.2 yd from his centre.
+// 6 s. A Main Tank whose straight walk would pass this close goes round him instead, stepping
+// toward the settle-circle point 60 deg on, about 5 yd from his centre (at least 4.6).
 inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
 inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
-// On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him. He
-// runs up close behind a walking tank and stops about 30 deg on, back on the ring.
+// On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him,
+// backward once he is behind it. He starts once it is 9.5 yd away, catches it and stops about 25
+// deg on, back on the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
 // A cast (Draw Soul) can hold him until the tank stands at its lead position; against a standing
 // tank he stops 9.5 yd short of it, about 13 deg on. A step under this is led once more.
-inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 25.0f * static_cast<float>(M_PI) / 180.0f;
+inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 20.0f * static_cast<float>(M_PI) / 180.0f;
 // While he is this close to the grate centre, as after landing, the Main Tank leads him straight
 // out along its own bearing (due north after landing) to the lead radius; he stops 22 to 28 yd
 // out.
@@ -699,9 +700,10 @@ inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
 inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
 inline constexpr float ILLIDAN_LANDING_LEAD_ANGLE = 0.0f;
 // Once at the pull, before the first Flame Crash, the Main Tank leads him from due north to the
-// ring point 62 deg clockwise of north; he stops about 305 deg. Phase 1's Flame Crashes then land
-// clear of the Flame tanks' steps, which they last into Phase 2.
+// point 62 deg clockwise of north, 27 yd out; he stops about 302 deg. Phase 1's Flame Crashes then
+// land clear of the Flame tanks' steps, which they last into Phase 2.
 inline constexpr float ILLIDAN_OPENING_LEAD_ANGLE = -62.0f * static_cast<float>(M_PI) / 180.0f;
+inline constexpr float ILLIDAN_OPENING_LEAD_RADIUS = 27.0f;
 // The lead starts only this soon after the pull; the first Flame Crash comes at 25 to 30 s.
 inline constexpr uint32 ILLIDAN_OPENING_LEAD_MS = 15 * IN_MILLISECONDS;
 // A Flame Crash this close to the Main Tank was cast on it.
@@ -716,7 +718,7 @@ inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
 // Shadowfiend infection position, every phase: on the Main Tank's circle, counterclockwise of him,
 // ahead of his steps, so no Flame Crash zone lies there and Draw Soul's cone in a step stops short
-// (104 deg); far enough round to stay out of Shadow Blast at the transform after a late step.
+// (110 deg); far enough round to stay out of Shadow Blast at the transform after a late step.
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
