@@ -1136,7 +1136,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         BT_MAP_ID, point.GetPositionX(), point.GetPositionY(), point.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED);
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
@@ -1152,7 +1152,7 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
     Position const position = GetGurtoggFelRageMeleePosition(bot, *gurtogg, *felRageTarget);
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
@@ -1183,7 +1183,7 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, bot->GetPositionX() - step * std::sin(axisAngle),
         bot->GetPositionY() + step * std::cos(axisAngle), bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED);
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // Reliquary of Souls
@@ -1704,9 +1704,9 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     }
 
     if (zerevor->HasAura(Id(BtSpells::SPELL_DAMPEN_MAGIC)) &&
-        botAI->CanCastSpell("spellsteal", zerevor))
+        botAI->CanCastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor))
     {
-        return botAI->CastSpell("spellsteal", zerevor);
+        return botAI->CastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor);
     }
 
     if (AI_VALUE(Unit*, "current target") != zerevor)
@@ -1724,7 +1724,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    bool backwards;
+    bool backwards; // not used: the mage tank never walks backwards
     if (!GetStepToPosition(
             bot, ZEREVOR_TANK_POSITIONS[_tankStep], arrivalDist, zerevor, moveX, moveY, backwards))
     {
@@ -1733,7 +1733,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
@@ -1841,8 +1841,9 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
     Unit* malande, Unit* gathios, Unit* zerevor) const
 {
-    constexpr float zerevorClearance = 15.0f;
-    if (!malande || (zerevor && zerevor->GetExactDist2d(malande) < zerevorClearance) ||
+    if (!malande ||
+        (zerevor &&
+         zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE) ||
         IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
         return false;

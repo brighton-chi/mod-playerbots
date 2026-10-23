@@ -325,7 +325,7 @@ namespace
 {
 
 // Non-tanks leave the skulled Pleasure's Sister of Pain, since Pleasure takes the damage for both.
-void AppendSisterOfPainExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendSisterOfPainExclusions(Player* bot, GuidSet& exclusions)
 {
     if (PlayerbotAI::IsTank(bot))
         return;
@@ -410,7 +410,7 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
 
     if (type != TargetValueExclusionType::TankTarget)
     {
-        AppendSisterOfPainExclusions(botAI, bot, exclusions);
+        AppendSisterOfPainExclusions(bot, exclusions);
         AppendShadowmoonReaverExclusions(botAI, bot, exclusions);
     }
 

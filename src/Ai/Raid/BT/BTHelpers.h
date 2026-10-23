@@ -14,7 +14,6 @@
 #include <optional>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -498,8 +497,6 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
 inline std::array const ZEREVOR_TANK_POSITIONS = {
     Position{ 654.854f, 352.502f, 271.689f },
     Position{ 644.597f, 338.875f, 271.688f },
-    // Position{ 660.325f, 357.568f, 271.688f },
-    // Position{ 679.657f, 356.482f, 271.699f },
 };
 
 inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;

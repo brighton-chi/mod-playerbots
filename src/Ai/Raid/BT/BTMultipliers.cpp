@@ -236,7 +236,7 @@ float HighWarlordNajentusTidalShieldHoldPositionMultiplier::GetValueInEncounter(
     }
 
     Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
-    return najentus && najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD))? 0.0f : 1.0f;
+    return najentus && najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD)) ? 0.0f : 1.0f;
 }
 
 // Supremus
@@ -428,12 +428,6 @@ float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Act
         dynamic_cast<CastIceBlockAction*>(action) ||
         dynamic_cast<CastDivineShieldAction*>(action) ||
         dynamic_cast<CastFeintAction*>(action);
-        // dynamic_cast<CastFeignDeathAction*>(action) ||
-        // dynamic_cast<CastFadeAction*>(action) ||
-        // dynamic_cast<CastInvisibilityAction*>(action) ||
-        // dynamic_cast<CastVanishAction*>(action) ||
-        // dynamic_cast<CastCowerAction*>(action) ||
-        // dynamic_cast<CastSoulshatterAction*>(action);
 
     return dropsThreat ? 0.0f : 1.0f;
 }

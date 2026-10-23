@@ -115,8 +115,8 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!caster || caster->GetEntry() != Id(BtNpcs::NPC_LADY_MALANDE) ||
-            spellInfo->Id != Id(BtSpells::SPELL_CIRCLE_OF_HEALING))
+        if (!caster || spellInfo->Id != Id(BtSpells::SPELL_CIRCLE_OF_HEALING) ||
+            caster->GetEntry() != Id(BtNpcs::NPC_LADY_MALANDE))
         {
             return;
         }

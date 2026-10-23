@@ -488,6 +488,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilCommandPetTargetAction : public AttackAction
+{
+public:
+    IllidariCouncilCommandPetTargetAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidari council command pet target") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:
@@ -497,14 +505,6 @@ public:
 
 private:
     bool ShouldAttackMalande(Unit* malande, Unit* gathios, Unit* zerevor) const;
-};
-
-class IllidariCouncilCommandPetTargetAction : public AttackAction
-{
-public:
-    IllidariCouncilCommandPetTargetAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidari council command pet target") {}
-    bool Execute(Event event) override;
 };
 
 class IllidariCouncilManageDpsTimerAction : public Action

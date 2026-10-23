@@ -19,7 +19,7 @@ class ShadowmoonReaversValue : public CalculatedValue<GuidVector>
 public:
     ShadowmoonReaversValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shadowmoon reavers", BtHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
+            botAI, "shadowmoon reavers", BtHelpers::SHADOWMOON_REAVER_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadowmoonReaverGuids(botAI); }
@@ -33,7 +33,7 @@ class SupremusHazardsValue : public CalculatedValue<std::vector<BtHelpers::Supre
 public:
     SupremusHazardsValue(PlayerbotAI* botAI)
         : CalculatedValue<std::vector<BtHelpers::SupremusHazard>>(
-              botAI, "supremus hazards", BtHelpers::SUPREMUS_HAZARD_CACHE_INTERVAL_MS) {}
+            botAI, "supremus hazards", BtHelpers::SUPREMUS_HAZARD_CACHE_INTERVAL_MS) {}
 
 protected:
     std::vector<BtHelpers::SupremusHazard> Calculate() override
@@ -49,7 +49,7 @@ class ShadeOfAkamaAddsValue : public CalculatedValue<GuidVector>
 public:
     ShadeOfAkamaAddsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shade of akama adds", BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
+            botAI, "shade of akama adds", BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadeOfAkamaAddGuids(botAI); }
@@ -62,7 +62,7 @@ class ShadowyConstructsValue : public CalculatedValue<GuidVector>
 public:
     ShadowyConstructsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "shadowy constructs", BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
+            botAI, "shadowy constructs", BtHelpers::GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindShadowyConstructGuids(botAI); }
@@ -75,8 +75,8 @@ class GurtoggBloodboilSecondTankThreatValue : public FloatCalculatedValue
 public:
     GurtoggBloodboilSecondTankThreatValue(PlayerbotAI* botAI)
         : FloatCalculatedValue(
-              botAI, "gurtogg bloodboil second tank threat",
-              BtHelpers::GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS) {}
+            botAI, "gurtogg bloodboil second tank threat",
+            BtHelpers::GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS) {}
 
 protected:
     float Calculate() override { return BtHelpers::FindGurtoggSecondTankThreat(botAI); }
@@ -89,8 +89,8 @@ class IllidariCouncilZerevorMageTankValue : public CalculatedValue<ObjectGuid>
 public:
     IllidariCouncilZerevorMageTankValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "illidari council zerevor mage tank",
-              BtHelpers::ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS) {}
+            botAI, "illidari council zerevor mage tank",
+            BtHelpers::ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return BtHelpers::FindZerevorMageTankGuid(bot); }
@@ -103,8 +103,8 @@ class IllidanStormrageSpeechInProgressValue : public BoolCalculatedValue
 public:
     IllidanStormrageSpeechInProgressValue(PlayerbotAI* botAI)
         : BoolCalculatedValue(
-              botAI, "illidan stormrage speech in progress",
-              BtHelpers::ILLIDAN_SPEECH_CACHE_INTERVAL_MS) {}
+            botAI, "illidan stormrage speech in progress",
+            BtHelpers::ILLIDAN_SPEECH_CACHE_INTERVAL_MS) {}
 
 protected:
     bool Calculate() override { return BtHelpers::IsIllidanSpeechInProgress(bot); }
@@ -115,8 +115,8 @@ class IllidanStormrageWarlockTankValue : public CalculatedValue<ObjectGuid>
 public:
     IllidanStormrageWarlockTankValue(PlayerbotAI* botAI)
         : CalculatedValue<ObjectGuid>(
-              botAI, "illidan stormrage warlock tank",
-              BtHelpers::ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS) {}
+            botAI, "illidan stormrage warlock tank",
+            BtHelpers::ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return BtHelpers::FindIllidanWarlockTankGuid(bot); }
@@ -127,8 +127,8 @@ class IllidanStormragePlayersWithParasiticShadowfiendValue : public CalculatedVa
 public:
     IllidanStormragePlayersWithParasiticShadowfiendValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "illidan stormrage players with parasitic shadowfiend",
-              BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
+            botAI, "illidan stormrage players with parasitic shadowfiend",
+            BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override
@@ -142,8 +142,8 @@ class IllidanStormrageTrapHuntersValue : public CalculatedValue<GuidVector>
 public:
     IllidanStormrageTrapHuntersValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "illidan stormrage trap hunters",
-              BtHelpers::ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS) {}
+            botAI, "illidan stormrage trap hunters",
+            BtHelpers::ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindIllidanTrapHunterGuids(bot); }
@@ -154,8 +154,8 @@ class ParasiticShadowfiendsValue : public CalculatedValue<GuidVector>
 public:
     ParasiticShadowfiendsValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-              botAI, "parasitic shadowfiends",
-              BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
+            botAI, "parasitic shadowfiends",
+            BtHelpers::PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(botAI); }
@@ -167,7 +167,7 @@ class ShadowDemonsValue : public CalculatedValue<std::vector<BtHelpers::ShadowDe
 public:
     ShadowDemonsValue(PlayerbotAI* botAI)
         : CalculatedValue<std::vector<BtHelpers::ShadowDemon>>(
-              botAI, "shadow demons", BtHelpers::SHADOW_DEMON_CACHE_INTERVAL_MS) {}
+            botAI, "shadow demons", BtHelpers::SHADOW_DEMON_CACHE_INTERVAL_MS) {}
 
 protected:
     std::vector<BtHelpers::ShadowDemon> Calculate() override

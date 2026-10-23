@@ -112,7 +112,7 @@ class HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger : public BlackTempleEn
 public:
     HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-              botAI, "high warlord naj'entus impaled player needs remover") {}
+            botAI, "high warlord naj'entus impaled player needs remover") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -123,7 +123,7 @@ class HighWarlordNajentusImpalingSpineOnGroupMemberTrigger : public BlackTempleE
 public:
     HighWarlordNajentusImpalingSpineOnGroupMemberTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-              botAI, "high warlord naj'entus impaling spine on group member") {}
+            botAI, "high warlord naj'entus impaling spine on group member") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -240,7 +240,7 @@ class TeronGorefiendShouldPositionForVengefulSpiritTrigger : public BlackTempleE
 public:
     TeronGorefiendShouldPositionForVengefulSpiritTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-              botAI, "teron gorefiend should position for vengeful spirit") {}
+            botAI, "teron gorefiend should position for vengeful spirit") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -502,21 +502,21 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilShouldManageDpsTimerTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    IllidariCouncilShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidari council should manage dps timer") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class IllidariCouncilShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
     IllidariCouncilShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(botAI, "illidari council should assign dps priority") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class IllidariCouncilShouldManageDpsTimerTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidariCouncilShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidari council should manage dps timer") {}
 
 protected:
     bool IsActiveInEncounter() override;

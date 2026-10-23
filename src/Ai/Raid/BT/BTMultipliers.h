@@ -204,7 +204,7 @@ class GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier
 public:
     GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-              botAI, "gurtogg bloodboil no threat redirects during fel rage") {}
+            botAI, "gurtogg bloodboil no threat redirects during fel rage") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -336,7 +336,7 @@ class IllidariCouncilHoldMisdirectionAndDispelsMultiplier : public BlackTempleEn
 public:
     IllidariCouncilHoldMisdirectionAndDispelsMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-              botAI, "illidari council hold misdirection and dispels") {}
+            botAI, "illidari council hold misdirection and dispels") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -349,7 +349,7 @@ class IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier
 public:
     IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-              botAI, "illidari council save interrupts for circle of healing") {}
+            botAI, "illidari council save interrupts for circle of healing") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
