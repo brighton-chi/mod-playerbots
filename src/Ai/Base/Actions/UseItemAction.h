@@ -86,10 +86,10 @@ public:
     bool isPossible() override;
 };
 
-class UseRandomQuestItem : public UseItemAction
+class UseStartQuestItem : public UseItemAction
 {
 public:
-    UseRandomQuestItem(PlayerbotAI* botAI) : UseItemAction(botAI, "random quest item", true) {}
+    UseStartQuestItem(PlayerbotAI* botAI) : UseItemAction(botAI, "start quest item", true) {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
