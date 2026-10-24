@@ -685,7 +685,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     return IsFlameOfAzzinothTank(bot) && !IsIllidanInfectionPositionKeptInFlight(botAI);
 }
 
-bool IllidanStormragePetsDieToFireTrigger::IsActiveInEncounter()
+bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
     if (!pet || !pet->IsAlive())
@@ -769,7 +769,7 @@ bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
     return GetShadowDemonForPetToAttack(botAI, *pet);
 }
 
-bool IllidanStormrageGrateIsSafeFromFlamesTrigger::IsActiveInEncounter()
+bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
@@ -799,7 +799,10 @@ bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
         return false;
 
     if (isPaladin)
-        return !PlayerbotAI::IsMainTank(bot) && !IsFlameOfAzzinothTank(bot);
+    {
+        return !(PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) &&
+            !IsFlameOfAzzinothTank(bot);
+    }
 
     return true;
 }
@@ -960,7 +963,9 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (IsIllidanPhaseStartWithin(*illidan, IllidanPhase::Demon, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
         return false;
 
-    if (context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().size() < 2)
+    auto const& shadowDemons =
+        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    if (shadowDemons.size() < 2)
         return false;
 
     return !IsNearNewParasiticShadowfiend(botAI);

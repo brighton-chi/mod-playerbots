@@ -1998,8 +1998,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         }
 
         float const radius = std::max(
-            0.0f,
-            illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
+            0.0f, illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
         position = GetRingPoint(GetGrateAngle(*illidan), radius);
     }
     else if (phase == IllidanPhase::Demon)
@@ -2190,7 +2189,7 @@ bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
         return false;
     }
 
-    if (bot->GetExactDist2d(position) < 0.1f)
+    if (bot->GetExactDist2d(position) < ILLIDAN_MIN_SEGMENT_LENGTH)
         return false;
 
     Position const closest =
@@ -2212,7 +2211,7 @@ bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
 // The run is in steps, so another forced move can take over between them, as the warlock tank's
 // does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
 // through a global cooldown. An infected hunter is never on duty.
-bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
+bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
@@ -2237,7 +2236,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 }
 
 // True while waiting on the global cooldown too, so the hunter holds the position.
-bool IllidanStormrageIsolateBotWithParasiteAction::HunterSetFrostTrap()
+bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
 {
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
     if (!botAI->CanCastSpell(frostTrap, bot) || !botAI->CastSpell(frostTrap, bot))
@@ -2273,7 +2272,8 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>>& infectionsField =
         BtState(bot->GetInstanceId()).illidanInfections;
 
-    auto& infections = infectionsField ? *infectionsField : infectionsField.emplace();
+    EmplaceIfUnset(infectionsField, std::unordered_map<ObjectGuid, IllidanInfection>());
+    auto& infections = *infectionsField;
     std::erase_if(
         infections,
         [&infected](auto const& entry)
@@ -2308,7 +2308,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     }
 
     if (infections.empty())
-        infectionsField.reset();
+        ResetIfSet(infectionsField);
 
     return false;
 }
@@ -2352,10 +2352,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
 
     // A trap already laid at the infection position, or ice round it that outlasts the debuff,
     // needs no new trap.
-    Aura const* parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1));
-    if (!parasite)
-        parasite = infected.GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
-
+    Aura const* parasite = GetParasiticShadowfiendAura(&infected);
     int32 const parasiteMs = parasite ? parasite->GetDuration() : 0;
     bool const isCovered =
         IsFrostTrapAt(bot, infectionPosition, parasiteMs + ILLIDAN_FROST_TRAP_SLOW_MS);
@@ -2388,7 +2385,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
         else
             position = ILLIDAN_W_GLAIVE_WAITING_POSITION;
 
-        if (bot->GetExactDist2d(position) <= 0.5f)
+        constexpr float waitTolerance = 0.5f;
+        if (bot->GetExactDist2d(position) <= waitTolerance)
             return false;
 
         // With its Flame dead, it still steps out of the Eye Blast, and doesn't walk across the
@@ -2442,7 +2440,8 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         GetClosestPointOnSegment(dangerArea.start, dangerArea.end, bot->GetPosition());
 
     float const distToLine = bot->GetExactDist2d(closest);
-    float const moveDist = (dangerArea.width - distToLine) + 0.5f;
+    constexpr float sidestepMargin = 0.5f;
+    float const moveDist = (dangerArea.width - distToLine) + sidestepMargin;
     if (moveDist <= 0.0f)
         return false;
 
@@ -2458,14 +2457,13 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
     Position const safePosition(safeX, safeY, safeZ);
 
     constexpr float minGrateDistance = 10.0f;
-    bool const tooCloseToNorthGrate =
-        safePosition.GetExactDist2d(ILLIDAN_N_GRATE_POSITION) < minGrateDistance;
-    bool const tooCloseToEastGrate =
-        safePosition.GetExactDist2d(ILLIDAN_E_GRATE_POSITION) < minGrateDistance;
-    bool const tooCloseToWestGrate =
-        safePosition.GetExactDist2d(ILLIDAN_W_GRATE_POSITION) < minGrateDistance;
-
-    if (tooCloseToNorthGrate || tooCloseToEastGrate || tooCloseToWestGrate)
+    bool const isTooCloseToStack = std::any_of(
+        ILLIDAN_GRATE_POSITIONS.begin(), ILLIDAN_GRATE_POSITIONS.end(),
+        [&safePosition](Position const& stack)
+        {
+            return safePosition.GetExactDist2d(stack) < minGrateDistance;
+        });
+    if (isTooCloseToStack)
         return false;
 
     return MoveTo(
@@ -2480,16 +2478,17 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
     // The waypoints go with the Flame, which must stay near its blade.
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
-    auto const& waypoints = flame == eastFlame ? E_GLAIVE_TANK_POSITIONS : W_GLAIVE_TANK_POSITIONS;
+    auto const& waypoints =
+        flame == eastFlame ? ILLIDAN_E_GLAIVE_TANK_POSITIONS : ILLIDAN_W_GLAIVE_TANK_POSITIONS;
 
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->RefGet();
 
     // A Blaze hits players within 8 yd of its centre, exact 3D.
     constexpr float blazeRadius = 8.0f;
     constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
-    for (auto const& guid : npcs)
+    for (ObjectGuid const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetEntry() == Id(BtNpcs::NPC_BLAZE) &&
@@ -2584,8 +2583,9 @@ bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
     if (index < 0)
         return false;
 
-    Position const& position = GRATE_POSITIONS[static_cast<size_t>(index)];
-    if (bot->GetExactDist2d(position) <= 0.2f)
+    constexpr float stackTolerance = 0.2f;
+    Position const& position = ILLIDAN_GRATE_POSITIONS[static_cast<size_t>(index)];
+    if (bot->GetExactDist2d(position) <= stackTolerance)
         return false;
 
     return MoveTo(
@@ -2747,10 +2747,7 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
     if (!demon)
         return false;
 
-    constexpr float maxStep = 3.5f;
     constexpr float reachMargin = 0.5f;
-    constexpr float auraOfDreadClearance = 17.0f;
-    constexpr float shadowBlastClearance = 22.0f;
 
     float const range = botAI->GetRange("spell");
     if (bot->IsWithinCombatRange(demon, range))
@@ -2759,15 +2756,16 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
     float const reach = range + bot->GetCombatReach() + demon->GetCombatReach();
     float const distance = bot->GetExactDist2d(demon);
 
-    float const step = std::min(maxStep, std::max(distance - reach, 0.0f) + reachMargin);
+    float const step =
+        std::min(PATH_STEP_DISTANCE, std::max(distance - reach, 0.0f) + reachMargin);
     float const x =
         bot->GetPositionX() + (demon->GetPositionX() - bot->GetPositionX()) / distance * step;
     float const y =
         bot->GetPositionY() + (demon->GetPositionY() - bot->GetPositionY()) / distance * step;
 
     Unit* victim = illidan->GetVictim();
-    if (illidan->GetExactDist2d(x, y) < auraOfDreadClearance ||
-        (victim && victim->GetExactDist2d(x, y) < shadowBlastClearance))
+    if (illidan->GetExactDist2d(x, y) < ILLIDAN_AURA_OF_DREAD_CLEARANCE ||
+        (victim && victim->GetExactDist2d(x, y) < ILLIDAN_SHADOW_BLAST_CLEARANCE))
     {
         return false;
     }
@@ -2859,7 +2857,7 @@ bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
 Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
     auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet();
+        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     uint32 const seed = AI_VALUE2(uint32, "spell id", "seed of corruption");
     float const range = botAI->GetRange("spell");
     auto const canSeed = [this, seed, range](Unit* demon)
@@ -3039,7 +3037,7 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
         return false;
 
     uint32 const now = getMSTime();
-    uint32 const instanceId = illidan->GetMap()->GetInstanceId();
+    uint32 const instanceId = illidan->GetInstanceId();
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool updated = RecordIllidanPhase(instanceId, phase);
@@ -3085,8 +3083,11 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)
 {
     constexpr float hazardSearchRadius = 50.0f;
-    std::vector<uint32> const entries =
-        { Id(BtNpcs::NPC_FLAME_CRASH), Id(BtNpcs::NPC_DEMON_FIRE), Id(BtNpcs::NPC_BLAZE) };
+    std::vector<uint32> const entries = {
+        Id(BtNpcs::NPC_FLAME_CRASH),
+        Id(BtNpcs::NPC_DEMON_FIRE),
+        Id(BtNpcs::NPC_BLAZE),
+    };
     std::list<Creature*> hazards;
     bot->GetCreatureListWithEntryInGrid(hazards, entries, hazardSearchRadius);
 

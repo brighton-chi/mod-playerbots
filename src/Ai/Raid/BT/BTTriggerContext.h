@@ -196,8 +196,8 @@ public:
         creators["illidan stormrage flames of azzinoth should be tanked"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_flames_of_azzinoth_should_be_tanked;
 
-        creators["illidan stormrage pets die to fire"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_fire;
+        creators["illidan stormrage pets die to hazards"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_pets_die_to_hazards;
 
         creators["illidan stormrage pet should attack shadowfiend"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadowfiend;
@@ -205,8 +205,8 @@ public:
         creators["illidan stormrage pet should attack shadow demon"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_pet_should_attack_shadow_demon;
 
-        creators["illidan stormrage grate is safe from flames"] =
-            &RaidBlackTempleTriggerContext::illidan_stormrage_grate_is_safe_from_flames;
+        creators["illidan stormrage should position above grate"] =
+            &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_above_grate;
 
         creators["illidan stormrage immunity can clear debuff"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_can_clear_debuff;
@@ -505,9 +505,9 @@ private:
     {
         return new IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_pets_die_to_fire(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_pets_die_to_hazards(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePetsDieToFireTrigger(botAI);
+        return new IllidanStormragePetsDieToHazardsTrigger(botAI);
     }
     static Trigger* illidan_stormrage_pet_should_attack_shadowfiend(PlayerbotAI* botAI)
     {
@@ -517,9 +517,9 @@ private:
     {
         return new IllidanStormragePetShouldAttackShadowDemonTrigger(botAI);
     }
-    static Trigger* illidan_stormrage_grate_is_safe_from_flames(PlayerbotAI* botAI)
+    static Trigger* illidan_stormrage_should_position_above_grate(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageGrateIsSafeFromFlamesTrigger(botAI);
+        return new IllidanStormrageShouldPositionAboveGrateTrigger(botAI);
     }
     static Trigger* illidan_stormrage_immunity_can_clear_debuff(PlayerbotAI* botAI)
     {

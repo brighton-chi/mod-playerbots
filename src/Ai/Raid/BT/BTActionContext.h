@@ -186,8 +186,8 @@ public:
         creators["illidan stormrage main tank reposition boss"] =
             &RaidBlackTempleActionContext::illidan_stormrage_main_tank_reposition_boss;
 
-        creators["illidan stormrage isolate bot with parasite"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_parasite;
+        creators["illidan stormrage isolate bot with infection"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_isolate_bot_with_infection;
 
         creators["illidan stormrage track infections"] =
             &RaidBlackTempleActionContext::illidan_stormrage_track_infections;
@@ -502,9 +502,9 @@ private:
     {
         return new IllidanStormrageMainTankRepositionBossAction(botAI);
     }
-    static Action* illidan_stormrage_isolate_bot_with_parasite(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_isolate_bot_with_infection(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageIsolateBotWithParasiteAction(botAI);
+        return new IllidanStormrageIsolateBotWithInfectionAction(botAI);
     }
     static Action* illidan_stormrage_track_infections(PlayerbotAI* botAI)
     {

@@ -586,11 +586,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormragePetsDieToFireTrigger : public BlackTempleEncounterTrigger
+class IllidanStormragePetsDieToHazardsTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormragePetsDieToFireTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage pets die to fire") {}
+    IllidanStormragePetsDieToHazardsTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage pets die to hazards") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -616,11 +616,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageGrateIsSafeFromFlamesTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldPositionAboveGrateTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageGrateIsSafeFromFlamesTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage grate is safe from flames") {}
+    IllidanStormrageShouldPositionAboveGrateTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "illidan stormrage should position above grate") {}
 
 protected:
     bool IsActiveInEncounter() override;

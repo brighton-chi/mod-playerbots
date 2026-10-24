@@ -196,7 +196,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidan stormrage main tank reposition boss", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage parasitic shadowfiend on group member",
-        { NextAction("illidan stormrage isolate bot with parasite", ACTION_RAID + 4) }));
+        { NextAction("illidan stormrage isolate bot with infection", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage should track infections",
         { NextAction("illidan stormrage track infections", ACTION_EMERGENCY + 11) }));
@@ -205,7 +205,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction(
             "illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage pets die to fire",
+    triggers.push_back(new TriggerNode("illidan stormrage pets die to hazards",
         { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));
 
     // A pet still passive after a wipe gets its stance back.
@@ -218,7 +218,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage pet should attack shadow demon",
         { NextAction("illidan stormrage command pet attack add", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("illidan stormrage grate is safe from flames",
+    triggers.push_back(new TriggerNode("illidan stormrage should position above grate",
         { NextAction("illidan stormrage position above grate", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage immunity can clear debuff",
@@ -314,7 +314,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Illidan Stormrage <The Betrayer>
     multipliers.push_back(new IllidanStormrageHoldPullPositionsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageNearNewShadowfiendMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageHoldNearNewShadowfiendMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldTotemsAtInfectionPositionMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
@@ -394,7 +394,8 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& excl
     if (!illidan)
         return;
 
-    auto const& shadowfiends = context->GetValue<GuidVector>("parasitic shadowfiends")->RefGet();
+    auto const& shadowfiends =
+        context->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
     exclusions.insert(shadowfiends.begin(), shadowfiends.end());
 
     if (GetIllidanPhase(illidan) == IllidanPhase::Demon)

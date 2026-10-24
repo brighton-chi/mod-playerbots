@@ -135,7 +135,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
     if (illidan)
     {
-        if (illidan->GetHealthPct() <= 62.0f)
+        if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
             return 1.0f;
 
         if (bot->getClass() == CLASS_SHAMAN &&
@@ -828,7 +828,7 @@ bool IsHeldAtIllidanLandingStack(Action* action)
 {
     return dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<IllidanStormragePositionForLandingAction*>(action) &&
-        !dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action);
+        !dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action);
 }
 
 // A bot waiting out a Shadowfiend debuff at the infection position chases nothing, since its run
@@ -949,7 +949,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
         return warlockTank && action->GetTarget() == warlockTank ? 0.0f : 1.0f;
     }
 
-    IllidanPhase phase = GetIllidanPhase(illidan);
+    IllidanPhase const phase = GetIllidanPhase(illidan);
     // In Maiev's arrival the Main Tank keeps him as its target, so its swing brings it back onto
     // his threat list, out of Shadow Prison's suppression, before he wakes; only its ring action
     // moves it, so nothing chasing its target pulls it off its place.
@@ -1100,7 +1100,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
             return 1.0f;
 
         if (dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ||
-            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action))
+            dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action))
         {
             return 1.0f;
         }
@@ -1117,7 +1117,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
     if (isMove)
     {
         return dynamic_cast<IllidanStormragePositionAboveGrateAction*>(action) ||
-            dynamic_cast<IllidanStormrageIsolateBotWithParasiteAction*>(action) ? 1.0f : 0.0f;
+            dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action) ? 1.0f : 0.0f;
     }
 
     return isSpell ? 0.0f : 1.0f;
@@ -1161,7 +1161,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
 // spell or heal is cast. This is a proxy for having just birthed a Shadowfiend, which can
 // immediately infect the birther if any threat is generated. Switching targets stays free, so a
 // bot on a Shadowfiend can still turn to him.
-float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
+float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
 {
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     bool const isAttackAction = dynamic_cast<AttackAction*>(action);
@@ -1317,6 +1317,7 @@ float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Ac
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return 1.0f;
 
-    return context->GetValue<std::vector<ShadowDemon>>("shadow demons")->RefGet().empty() ?
-        1.0f : 0.0f;
+    auto const& shadowDemons =
+        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    return shadowDemons.empty() ? 1.0f : 0.0f;
 }

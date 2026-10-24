@@ -629,21 +629,28 @@ struct IllidanInfection
 };
 
 inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
-inline constexpr uint32 PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 ILLIDAN_SPEECH_CACHE_INTERVAL_MS = 1000;
-inline constexpr uint32 SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
 // From any bot on the summit, about 90 yd reaches the far edge.
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = 100.0f;
 // From his position, this takes in Akama's, 81 yd away, where the speech is started.
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = 100.0f;
 // A bot this close to its place is in it.
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 1.0f;
+// A segment shorter than this has no direction worth measuring from: a point.
+inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
 // A bot without the Shadowfiend debuff this close to a Shadowfiend is where a debuff just ended.
 inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // Below this a Shadowfiend is finished off: melee take one in their melee range, and its birther
 // acts again.
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
+// He lifts off at 65% and Maiev arrives at 30%.
+inline constexpr float ILLIDAN_PHASE_2_HEALTH_PCT = 65.0f;
+inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
+// DPS cooldowns are held from 95% down to this, and Bloodlust and Heroism from the pull.
+inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
 // At or below this he is burnt down: no hold and no stop.
 inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // At or below this, and above 30%, only the warlock tank damages him in Demon Form, so he changes
@@ -720,7 +727,10 @@ inline constexpr uint32 ILLIDAN_OPENING_LEAD_MS = 15 * IN_MILLISECONDS;
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
 // Phases 3 and 5: the centre, six at 6 yd and twelve at 12 yd, in that fill order.
-inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT = 19;
+inline constexpr size_t ILLIDAN_GRATE_INNER_SLOT_COUNT = 6;
+inline constexpr size_t ILLIDAN_GRATE_OUTER_SLOT_COUNT = 12;
+inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
+    1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT;
 inline constexpr float ILLIDAN_GRATE_INNER_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
@@ -733,6 +743,13 @@ inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
 
+// Phase 4 hazards: Aura of Dread round him and Shadow Blast round his victim, each kept clear by
+// 2 yd.
+inline constexpr float ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS = 15.0f;
+inline constexpr float ILLIDAN_AURA_OF_DREAD_CLEARANCE =
+    ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS + 2.0f;
+inline constexpr float ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS = 20.0f;
+inline constexpr float ILLIDAN_SHADOW_BLAST_CLEARANCE = ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS + 2.0f;
 // Phase 4, from him and off his inward line, positive toward the warlock tank's side. His reach is
 // 1.5 in Demon Form, so a 30 yd spell reaches 33 yd on him: the warlock tank stands 2 yd inside.
 inline constexpr float ILLIDAN_WARLOCK_POSITION_DISTANCE = 31.0f;
@@ -764,7 +781,7 @@ inline Position const ILLIDAN_LANDING_POSITION =       { 676.648f, 304.761f, 354
 inline Position const ILLIDAN_N_GRATE_POSITION =       { 682.100f, 306.000f, 353.192f };
 inline Position const ILLIDAN_E_GRATE_POSITION =       { 673.500f, 298.500f, 353.192f };
 inline Position const ILLIDAN_W_GRATE_POSITION =       { 672.400f, 312.500f, 353.192f };
-inline std::array const GRATE_POSITIONS = {
+inline std::array const ILLIDAN_GRATE_POSITIONS = {
     ILLIDAN_N_GRATE_POSITION,
     ILLIDAN_E_GRATE_POSITION,
     ILLIDAN_W_GRATE_POSITION,
@@ -775,7 +792,7 @@ inline std::array const GRATE_POSITIONS = {
 // The West tank starts on its inner steps, where Phase 1's Flame Crashes can't reach, and in melee
 // reach of the grate.
 inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
-inline std::array const E_GLAIVE_TANK_POSITIONS = {
+inline std::array const ILLIDAN_E_GLAIVE_TANK_POSITIONS = {
     Position{ 657.100f, 291.200f, 354.000f },
     Position{ 658.600f, 280.700f, 354.000f },
     Position{ 672.100f, 277.700f, 354.000f },
@@ -785,7 +802,7 @@ inline std::array const E_GLAIVE_TANK_POSITIONS = {
 };
 
 inline Position const ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
-inline std::array const W_GLAIVE_TANK_POSITIONS = {
+inline std::array const ILLIDAN_W_GLAIVE_TANK_POSITIONS = {
     Position{ 695.700f, 311.700f, 354.000f },
     Position{ 685.200f, 320.700f, 354.000f },
     Position{ 668.700f, 323.700f, 354.000f },
@@ -872,6 +889,8 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
 int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
 // While he flies: the grate stack by roster, every bot but the Flame tanks, the dead kept.
 int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI);
+// Either Shadowfiend debuff, Illidan's own (41917) first.
+Aura* GetParasiticShadowfiendAura(Player const* player);
 bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.

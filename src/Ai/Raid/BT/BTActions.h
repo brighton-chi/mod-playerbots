@@ -572,11 +572,11 @@ private:
     bool _isOpeningLeadDone = false;
 };
 
-class IllidanStormrageIsolateBotWithParasiteAction : public MovementAction
+class IllidanStormrageIsolateBotWithInfectionAction : public MovementAction
 {
 public:
-    IllidanStormrageIsolateBotWithParasiteAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "illidan stormrage isolate bot with parasite") {}
+    IllidanStormrageIsolateBotWithInfectionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidan stormrage isolate bot with infection") {}
     bool Execute(Event event) override;
 
 private:
