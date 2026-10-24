@@ -1953,8 +1953,8 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // land clear of the Phase 2 Flame tank steps. On each Flame Crash on the tank it leads him to the
 // ring point 35 deg counterclockwise of him, once more if he stops under 20 deg on; he stops about
 // 25 deg on, and the tank settles outward of wherever he stopped. Near the centre, as after
-// landing, it leads him straight out instead. In these phases every walk but that lead is stepped,
-// backward once he is behind the tank, the walk round him included.
+// landing, it leads him straight out instead. In these phases every walk is stepped, backward once
+// he is behind the tank, the walk round him included.
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
@@ -2023,13 +2023,10 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 
     // He backs off only with a victim and free to move: not while he flies or lands, in Maiev's
     // arrival, or rooted in Demon Form.
-    bool isStepped = false;
-    if (phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
-        phase == IllidanPhase::Maiev)
-    {
-        bool const isRouted = RouteRoundIllidan(*illidan, position);
-        isStepped = isRouted || _lead != IllidanTankLead::Pickup;
-    }
+    bool const isStepped = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+        phase == IllidanPhase::Maiev;
+    if (isStepped)
+        RouteRoundIllidan(*illidan, position);
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
@@ -2095,14 +2092,15 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
 {
     StartRingLead(illidan, phase);
 
-    // Where he stops depends on when the tank stops, so it isn't redirected while he moves; a
-    // stepped lead keeps stepping to its lead position.
+    // Where he stops depends on when the tank stops, so it isn't redirected while he moves; a lead
+    // keeps stepping to its lead position.
     if (illidan.isMoving())
     {
-        bool const isSteppedLead = _lead == IllidanTankLead::Opening ||
-            _lead == IllidanTankLead::Step || _lead == IllidanTankLead::StepAgain;
-        if (!isSteppedLead || bot->GetExactDist2d(_leadPosition) <= ILLIDAN_POSITION_TOLERANCE)
+        if (_lead == IllidanTankLead::None ||
+            bot->GetExactDist2d(_leadPosition) <= ILLIDAN_POSITION_TOLERANCE)
+        {
             return false;
+        }
 
         position = _leadPosition;
         return true;
@@ -2188,23 +2186,23 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
 }
 
 // While a straight walk to the position would pass too close to his centre, the next leg goes
-// round him on the settle circle, on the side the position is nearer. True if it did.
-bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
+// round him on the settle circle, on the side the position is nearer.
+void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
     Unit const& illidan, Position& position)
 {
     if (illidan.GetExactDist2d(bot) < ILLIDAN_BACK_OFF_DISTANCE ||
         illidan.GetExactDist2d(position) < ILLIDAN_BACK_OFF_DISTANCE)
     {
-        return false;
+        return;
     }
 
     if (bot->GetExactDist2d(position) < ILLIDAN_MIN_SEGMENT_LENGTH)
-        return false;
+        return;
 
     Position const closest =
         GetClosestPointOnSegment(bot->GetPosition(), position, illidan.GetPosition());
     if (illidan.GetExactDist2d(closest) >= ILLIDAN_BACK_OFF_DISTANCE)
-        return false;
+        return;
 
     float const botAngle = illidan.GetAngle(bot);
     float const turn = Position::NormalizeOrientation(illidan.GetAngle(&position) - botAngle);
@@ -2214,7 +2212,6 @@ bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
     position.Relocate(
         illidan.GetPositionX() + ILLIDAN_TANK_OFFSET * std::cos(angle),
         illidan.GetPositionY() + ILLIDAN_TANK_OFFSET * std::sin(angle), bot->GetPositionZ());
-    return true;
 }
 
 // The run is in steps, so another forced move can take over between them, as the warlock tank's

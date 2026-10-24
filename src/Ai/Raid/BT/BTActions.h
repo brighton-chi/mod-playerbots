@@ -563,7 +563,7 @@ private:
     bool FindDemonFormPosition(Unit const& illidan, Position& position);
     bool FindRingPosition(Unit const& illidan, BtHelpers::IllidanPhase phase, Position& position);
     void StartRingLead(Unit const& illidan, BtHelpers::IllidanPhase phase);
-    bool RouteRoundIllidan(Unit const& illidan, Position& position);
+    void RouteRoundIllidan(Unit const& illidan, Position& position);
 
     uint32 _phaseStartTime = 0;
     ObjectGuid _lastFlameCrash;
