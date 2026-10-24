@@ -8,6 +8,7 @@
 #include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
+#include "Log.h" // TEMP LOG (landing pickup), remove after testing
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -2006,6 +2007,14 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         if (!FindDemonFormPosition(*illidan, position))
             return false;
     }
+    // After the landing it stands and hits him until it has him, before leading him out.
+    else if (IsIllidanLandingPickupPending(botAI, illidan))
+    {
+        if (illidan->GetVictim() == bot)
+            FaceUnit(bot, illidan);
+
+        return false;
+    }
     // The tank's own logic takes him back; the ring movement is only for when he is on it.
     else if (illidan->GetVictim() != bot || !FindRingPosition(*illidan, phase, position))
     {
@@ -2530,17 +2539,16 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(Unit*
 }
 
 // Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
-// players, most pets cannot melee Illidan during Phase 4. Also run outside the encounter so a pet
-// set passive gets its stance back after a wipe.
+// players, most pets cannot melee Illidan during Phase 4. In the landing pickup a pet's attack
+// would take him from the Main Tank. Also run outside the encounter so a pet set passive gets its
+// stance back after a wipe.
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
     if (!pet)
         return false;
 
-    IllidanPhase const phase =
-        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
-    if (phase == IllidanPhase::Flying || phase == IllidanPhase::Demon)
+    if (ShouldIllidanPetsBePassive(botAI, AI_VALUE2(Unit*, "find target", "illidan stormrage")))
     {
         if (!pet->HasReactState(REACT_PASSIVE))
         {
@@ -3096,55 +3104,67 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     }
 
     // Ends the shamans' totem hold for this phase.
-    if (!state.illidanTankAggroPhase && DoTanksHaveAggro(*illidan, phase, state))
+    if (!state.illidanTankAggroPhase && DoIllidanTanksHaveAggro(botAI, *illidan, phase))
     {
         state.illidanTankAggroPhase = phase;
         updated = true;
     }
 
-    return updated;
-}
-
-// He is on the tank that should have him; while he flies, both Flames are out and each living one
-// is on a Flame tank.
-bool IllidanStormrageManageDpsTimersAction::DoTanksHaveAggro(
-    Unit const& illidan, IllidanPhase phase, BtInstanceState const& state)
-{
-    switch (phase)
+    // TEMP LOG (landing pickup: his victim and threat list through the landing, then for 3 s after
+    // the reset, and who is giving Replenishment), remove after testing
+    Player* mainTank = GetGroupMainTank(bot);
+    bool const isLanding = phase == IllidanPhase::Landing;
+    bool const isPickup = phase == IllidanPhase::Grounded &&
+        GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Landing &&
+        IsIllidanPhaseStartWithin(*illidan, phase, 3 * IN_MILLISECONDS);
+    uint32 const logIntervalMs = isLanding ? 500 : 250;
+    if (mainTank && (isLanding || isPickup) && getMSTimeDiff(_tempLogTime, now) >= logIntervalMs)
     {
-        case IllidanPhase::Flying:
-        {
-            if (!state.eastFlameGuid || !state.westFlameGuid)
-                return false;
+        _tempLogTime = now;
 
-            for (ObjectGuid const& guid : { *state.eastFlameGuid, *state.westFlameGuid })
+        // Online state: 2 online, 1 suppressed, 0 offline.
+        std::string top;
+        size_t count = 0;
+        for (ThreatReference const* ref : illidan->GetThreatMgr().GetSortedThreatList())
+        {
+            if (count++ == 5)
+                break;
+
+            Unit* unit = ref->GetVictim();
+            Unit* owner = unit->GetCharmerOrOwner();
+            top += unit->GetName() + (owner ? " (pet of " + owner->GetName() + ")" : "") + " " +
+                std::to_string(static_cast<int32>(ref->GetThreat())) + " s" +
+                std::to_string(static_cast<uint32>(ref->GetOnlineState())) + "; ";
+        }
+
+        constexpr uint32 replenishment = 57669;
+        std::string providers;
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* groupRef = group->GetFirstMember(); groupRef;
+                 groupRef = groupRef->next())
             {
-                Creature* flame = bot->GetMap()->GetCreature(guid);
-                if (!flame || !flame->IsAlive())
-                    continue;
-
-                Unit* victim = flame->GetVictim();
-                Player* tank = victim ? victim->ToPlayer() : nullptr;
-                if (!tank || !IsFlameOfAzzinothTank(tank))
-                    return false;
+                Player* member = groupRef->GetSource();
+                Aura* aura = member ? member->GetAura(replenishment) : nullptr;
+                Unit* caster = aura ? aura->GetCaster() : nullptr;
+                if (caster && providers.find(caster->GetName()) == std::string::npos)
+                    providers += caster->GetName() + " ";
             }
+        }
 
-            return true;
-        }
-        case IllidanPhase::Grounded:
-        case IllidanPhase::Maiev:
-        {
-            Player* mainTank = GetGroupMainTank(bot);
-            return mainTank && illidan.GetVictim() == mainTank;
-        }
-        case IllidanPhase::Demon:
-        {
-            Player* warlockTank = GetIllidanWarlockTank(botAI);
-            return warlockTank && illidan.GetVictim() == warlockTank;
-        }
-        default:
-            return false;
+        uint32 const sinceReset =
+            isPickup ? getMSTimeDiff(state.illidanPhaseStartTime.value_or(now), now) : 0;
+        Unit* victim = illidan->GetThreatMgr().GetLastVictim();
+        LOG_INFO(
+            "playerbots",
+            "[BT landing] phase {} +{} ms victim {} MT melee {} {:.1f} yd; top: {}"
+            "replenishment from: {}",
+            static_cast<uint32>(phase), sinceReset, victim ? victim->GetName() : "none",
+            mainTank->HasUnitState(UNIT_STATE_MELEE_ATTACKING), mainTank->GetExactDist(illidan),
+            top, providers.empty() ? "none" : providers);
     }
+
+    return updated;
 }
 
 bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)

@@ -692,9 +692,7 @@ bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    IllidanPhase const phase = GetIllidanPhase(illidan);
-    bool const shouldBePassive = phase == IllidanPhase::Flying || phase == IllidanPhase::Demon;
-    return shouldBePassive != pet->HasReactState(REACT_PASSIVE);
+    return ShouldIllidanPetsBePassive(botAI, illidan) != pet->HasReactState(REACT_PASSIVE);
 }
 
 // Hunter and warlock pets take the Shadowfiends, which never attack pets.

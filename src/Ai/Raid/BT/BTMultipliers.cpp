@@ -25,6 +25,7 @@
 #include "SpellMgr.h"
 #include "ThreatManager.h"
 #include "Timer.h"
+#include "UseItemAction.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
@@ -858,8 +859,8 @@ bool IsHeldIllidanChase(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
     return !IsTargetingShadowDemon(botAI);
 }
 
-// Healing threat reaches him from any healer, so in a hold heals wait until he is on the tank
-// that should have him. While stunned (the transform but its last 0.48 s) he takes none, and in
+// Healing threat reaches him from any healer, so in a hold heals wait until the tank that should
+// have him has aggro. While stunned (the transform but its last 0.48 s) he takes none, and in
 // Maiev's arrival nobody takes damage under Shadow Prison, while a heal in the gap before he
 // wakes reaches him.
 bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
@@ -877,9 +878,7 @@ bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
     if (illidan->HasUnitState(UNIT_STATE_CONTROLLED))
         return false;
 
-    Player* tank = phase == IllidanPhase::Demon ?
-        GetIllidanWarlockTank(botAI) : GetGroupMainTank(botAI->GetBot());
-    return !tank || illidan->GetThreatMgr().GetLastVictim() != tank;
+    return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
 }
 
 // A tank's AoE threat, or any spell whose threat type is AoE (heals report it too).
@@ -1256,12 +1255,37 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
-    if (!isHeal &&
+    // Mana potions and gems, held only in the landing pickup.
+    bool const isItem = dynamic_cast<UseItemAction*>(action);
+    if (!isHeal && !isItem &&
         (!IsDpsHoldCandidate(bot, action) ||
          dynamic_cast<IllidanStormrageAssignTargetPriorityAction*>(action)))
     {
         return 1.0f;
     }
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    if (!illidan)
+        return 1.0f;
+
+    // In the landing pickup nothing but the Main Tank causes him threat: heals, mana restores
+    // (energize threat), totems and damage alike; damage on a Shadowfiend aside.
+    if (IsIllidanLandingPickupPending(botAI, illidan))
+    {
+        if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+            return 1.0f;
+
+        bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
+            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+        Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+        bool const isOnShadowfiend = !isHeal && !isItem && target &&
+            target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) &&
+            action->getThreatType() != Action::ActionThreatType::Aoe;
+        return isOnShadowfiend ? 1.0f : 0.0f;
+    }
+
+    if (isItem)
+        return 1.0f;
 
     // Totems have their own hold, only until the tanks have aggro after each phase change.
     if (bot->getClass() == CLASS_SHAMAN &&
@@ -1270,10 +1294,6 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     {
         return 1.0f;
     }
-
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan)
-        return 1.0f;
 
     if (isHeal)
         return IsHeldIllidanHeal(botAI, illidan, action) ? 0.0f : 1.0f;

@@ -1737,6 +1737,87 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
     return !state || state->illidanTankAggroPhase != phase;
 }
 
+// A threat reset keeps the old victim at 0, so the victim alone doesn't show aggro.
+bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+{
+    auto const hasAggro = [](Unit const& creature, Player* tank)
+    {
+        ThreatManager const& threatManager = creature.GetThreatMgr();
+        return threatManager.GetLastVictim() == tank &&
+            threatManager.GetThreat(tank) >= ILLIDAN_TANK_AGGRO_THREAT;
+    };
+
+    Player* bot = botAI->GetBot();
+    switch (phase)
+    {
+        case IllidanPhase::Flying:
+        {
+            BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+            if (!state || !state->eastFlameGuid || !state->westFlameGuid)
+                return false;
+
+            for (bool const isEast : { true, false })
+            {
+                Creature* flame = illidan.GetMap()->GetCreature(
+                    isEast ? *state->eastFlameGuid : *state->westFlameGuid);
+                if (!flame || !flame->IsAlive())
+                    continue;
+
+                Player* tank = FindFlameOfAzzinothTank(bot, isEast);
+                if (!tank || !tank->IsAlive())
+                    tank = FindFlameOfAzzinothTank(bot, !isEast);
+
+                if (tank && tank->IsAlive() && !hasAggro(*flame, tank))
+                    return false;
+            }
+
+            return true;
+        }
+        case IllidanPhase::Initial:
+        case IllidanPhase::Grounded:
+        case IllidanPhase::Maiev:
+        {
+            Player* mainTank = GetGroupMainTank(bot);
+            return !mainTank || hasAggro(illidan, mainTank);
+        }
+        case IllidanPhase::Demon:
+        {
+            Player* warlockTank = GetIllidanWarlockTank(botAI);
+            return !warlockTank || hasAggro(illidan, warlockTank);
+        }
+        default:
+            return false;
+    }
+}
+
+bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan)
+{
+    if (!illidan)
+        return false;
+
+    // He touches down 3.665 s after reaching the landing point, 2.43 s before the reset; threat
+    // caused before then is wiped, but a cast begun after it can land after the reset.
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (phase == IllidanPhase::Landing)
+        return !illidan->IsLevitating();
+
+    if (phase != IllidanPhase::Grounded ||
+        GetIllidanPhaseBefore(*illidan, phase) != IllidanPhase::Landing ||
+        !IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_PICKUP_MAX_MS))
+    {
+        return false;
+    }
+
+    return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
+}
+
+bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
+{
+    IllidanPhase const phase = GetIllidanPhase(illidan);
+    return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
+        IsIllidanLandingPickupPending(botAI, illidan);
+}
+
 float GetGrateAngle(Position const& position)
 {
     return ILLIDAN_GRATE_CENTRE.GetAngle(&position);

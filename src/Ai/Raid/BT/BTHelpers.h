@@ -655,6 +655,11 @@ inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
+// A tank has aggro once it is the victim with this much threat. One heal's threat is a few
+// hundred.
+inline constexpr float ILLIDAN_TANK_AGGRO_THREAT = 2000.0f;
+// After the landing the rest of the raid waits for the Main Tank's aggro at most this long.
+inline constexpr uint32 ILLIDAN_PICKUP_MAX_MS = 3 * IN_MILLISECONDS;
 // Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks.
 inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
 // An immunity clears Dark Barrage only this long after it lands, so its beam shows first; it costs
@@ -835,10 +840,21 @@ bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
 // The bot's entry on his threat list is online, not suppressed: after Shadow Prison only threat
 // the bot causes brings it back.
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
-// From each phase change until the tanks have aggro: him on the Main Tank, or in Demon Form on the
-// warlock tank, and while he flies each Flame on a Flame tank; all through his landing and Maiev's
-// arrival; never at the pull or in the death scene. Shamans recall their totems and set none.
+// From each phase change until the tracker sees the tanks have aggro (DoIllidanTanksHaveAggro);
+// all through his landing and Maiev's arrival; never at the pull or in the death scene. Shamans
+// recall their totems and set none.
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
+// Each tank that should have a creature is its victim with ILLIDAN_TANK_AGGRO_THREAT: him the Main
+// Tank, or in Demon Form the warlock tank; while he flies each living Flame its own tank, or the
+// other one while its own is dead. A dead tank counts as having it, since nothing waits for it.
+bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
+// From his touchdown on landing, and after the threat reset until the Main Tank has aggro: the
+// tank stands and hits him, and the rest of the raid causes him no threat, since at 0 anything
+// else's first threat takes him from the tank.
+bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan);
+// While he flies and in Demon Form, and in the landing pickup, where a pet's attack would take him
+// from the Main Tank.
+bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);

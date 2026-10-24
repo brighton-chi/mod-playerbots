@@ -762,9 +762,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool DoTanksHaveAggro(
-        Unit const& illidan, BtHelpers::IllidanPhase phase,
-        BtHelpers::BtInstanceState const& state);
+    // TEMP LOG (landing pickup), remove after testing
+    uint32 _tempLogTime = 0;
 };
 
 class IllidanStormrageClearHazardsAction : public Action
