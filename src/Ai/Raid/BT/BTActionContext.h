@@ -210,6 +210,9 @@ public:
         creators["illidan stormrage cancel immunity"] =
             &RaidBlackTempleActionContext::illidan_stormrage_cancel_immunity;
 
+        creators["illidan stormrage recall totems"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_recall_totems;
+
         creators["illidan stormrage position for landing"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_for_landing;
 
@@ -533,6 +536,10 @@ private:
     static Action* illidan_stormrage_cancel_immunity(PlayerbotAI* botAI)
     {
         return new IllidanStormrageCancelImmunityAction(botAI);
+    }
+    static Action* illidan_stormrage_recall_totems(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageRecallTotemsAction(botAI);
     }
     static Action* illidan_stormrage_position_for_landing(PlayerbotAI* botAI)
     {

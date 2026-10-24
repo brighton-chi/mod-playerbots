@@ -2609,6 +2609,14 @@ bool IllidanStormrageCancelImmunityAction::Execute(Event /*event*/)
     return true;
 }
 
+// Totemic Recall can't be cast under Shadow Prison's stun, so in Maiev's arrival it comes in the
+// gap before he wakes.
+bool IllidanStormrageRecallTotemsAction::Execute(Event /*event*/)
+{
+    uint32 const spellId = Id(BtSpells::SPELL_TOTEMIC_RECALL);
+    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+}
+
 // Everyone but the Main Tank waits stacked 22 yd south of the centre, out of his way to the
 // ring.
 bool IllidanStormragePositionForLandingAction::Execute(Event /*event*/)
@@ -3075,7 +3083,56 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
         updated |= ResetIfSet(state.westFlameGuid);
     }
 
+    // Ends the shamans' totem hold for this phase.
+    if (!state.illidanTankAggroPhase && DoTanksHaveAggro(*illidan, phase, state))
+    {
+        state.illidanTankAggroPhase = phase;
+        updated = true;
+    }
+
     return updated;
+}
+
+// He is on the tank that should have him; while he flies, both Flames are out and each living one
+// is on a Flame tank.
+bool IllidanStormrageManageDpsTimersAction::DoTanksHaveAggro(
+    Unit const& illidan, IllidanPhase phase, BtInstanceState const& state)
+{
+    switch (phase)
+    {
+        case IllidanPhase::Flying:
+        {
+            if (!state.eastFlameGuid || !state.westFlameGuid)
+                return false;
+
+            for (ObjectGuid const& guid : { *state.eastFlameGuid, *state.westFlameGuid })
+            {
+                Creature* flame = bot->GetMap()->GetCreature(guid);
+                if (!flame || !flame->IsAlive())
+                    continue;
+
+                Unit* victim = flame->GetVictim();
+                Player* tank = victim ? victim->ToPlayer() : nullptr;
+                if (!tank || !IsFlameOfAzzinothTank(tank))
+                    return false;
+            }
+
+            return true;
+        }
+        case IllidanPhase::Grounded:
+        case IllidanPhase::Maiev:
+        {
+            Player* mainTank = GetGroupMainTank(bot);
+            return mainTank && illidan.GetVictim() == mainTank;
+        }
+        case IllidanPhase::Demon:
+        {
+            Player* warlockTank = GetIllidanWarlockTank(botAI);
+            return warlockTank && illidan.GetVictim() == warlockTank;
+        }
+        default:
+            return false;
+    }
 }
 
 bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)

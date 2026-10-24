@@ -1613,6 +1613,7 @@ bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase)
     if (phase != IllidanPhase::Flying)
         ResetIfSet(state.illidanFlamePhaseStartTime);
 
+    ResetIfSet(state.illidanTankAggroPhase);
     return true;
 }
 
@@ -1717,6 +1718,23 @@ bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot)
     }
 
     return false;
+}
+
+// Until the tracker records the change, the aggro it saw is the last phase's, so a new phase is
+// pending at once.
+bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
+{
+    if (phase == IllidanPhase::Landing || phase == IllidanPhase::None)
+        return true;
+
+    if (phase != IllidanPhase::Flying && phase != IllidanPhase::Grounded &&
+        phase != IllidanPhase::Demon && phase != IllidanPhase::Maiev)
+    {
+        return false;
+    }
+
+    BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
+    return !state || state->illidanTankAggroPhase != phase;
 }
 
 float GetGrateAngle(Position const& position)
@@ -2597,7 +2615,7 @@ bool BtResetInstance(uint32 instanceId)
         state.najentusSpineThrowTime || state.councilDpsWaitTimer || state.illidanLastPhase ||
         state.illidanPreviousPhase || state.illidanPhaseStartTime ||
         state.illidanFlamePhaseStartTime || state.eastFlameGuid || state.westFlameGuid ||
-        state.illidanInfections;
+        state.illidanTankAggroPhase || state.illidanInfections;
 
     btStates.erase(it);
     return wasSet;

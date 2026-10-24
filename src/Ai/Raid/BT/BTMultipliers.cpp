@@ -1202,12 +1202,13 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
     return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
 }
 
-// The infection position is about 52 yd from him, past the 30 yd at which a shaman's totems are
-// recast, so a shaman there, or walking back from it, would set totems it is about to leave. They
-// are held while it is nearer the position than its nearest totem; walking back, the old totems
-// are in range by then. Not in Demon Form, whose places may lie nearer the position.
-float IllidanStormrageHoldTotemsAtInfectionPositionMultiplier::GetValueInEncounter(
-    Action* action)
+// From each phase change until the tanks have aggro, so the totems the shaman recalled aren't set
+// again at once. Otherwise: the infection position is about 52 yd from him, past the 30 yd at
+// which a shaman's totems are recast, so a shaman there, or walking back from it, would set totems
+// it is about to leave. They are held while it is nearer the position than its nearest totem;
+// walking back, the old totems are in range by then. Not in Demon Form, whose places may lie
+// nearer the position.
+float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN ||
         (!dynamic_cast<CastTotemAction*>(action) &&
@@ -1221,6 +1222,9 @@ float IllidanStormrageHoldTotemsAtInfectionPositionMultiplier::GetValueInEncount
         return 1.0f;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
+    if (IsIllidanTankAggroPending(*illidan, phase))
+        return 0.0f;
+
     if (phase != IllidanPhase::Initial && phase != IllidanPhase::Grounded &&
         phase != IllidanPhase::Maiev)
     {
@@ -1255,6 +1259,14 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!isHeal &&
         (!IsDpsHoldCandidate(bot, action) ||
          dynamic_cast<IllidanStormrageAssignTargetPriorityAction*>(action)))
+    {
+        return 1.0f;
+    }
+
+    // Totems have their own hold, only until the tanks have aggro after each phase change.
+    if (bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastTotemAction*>(action) ||
+         dynamic_cast<CastCallOfTheElementsAction*>(action)))
     {
         return 1.0f;
     }

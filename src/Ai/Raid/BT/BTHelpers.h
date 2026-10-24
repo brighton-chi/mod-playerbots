@@ -131,6 +131,7 @@ enum class BtSpells : uint32
     SPELL_KICK                      =  1766,
 
     // Shaman
+    SPELL_TOTEMIC_RECALL            = 36936,
     SPELL_WIND_SHEAR                = 57994,
 
     // Warlock (Felhunter)
@@ -837,6 +838,10 @@ bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
 // The bot's entry on his threat list is online, not suppressed: after Shadow Prison only threat
 // the bot causes brings it back.
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
+// From each phase change until the tanks have aggro: him on the Main Tank, or in Demon Form on the
+// warlock tank, and while he flies each Flame on a Flame tank; all through his landing and Maiev's
+// arrival; never at the pull or in the death scene. Shamans recall their totems and set none.
+bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
@@ -943,6 +948,8 @@ struct BtInstanceState
     std::optional<uint32> illidanFlamePhaseStartTime;
     std::optional<ObjectGuid> eastFlameGuid;
     std::optional<ObjectGuid> westFlameGuid;
+    // The phase in which the tracker has seen the tanks take aggro, cleared at each phase change.
+    std::optional<IllidanPhase> illidanTankAggroPhase;
     // Each infected player's infection, kept until the debuff is gone.
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
 };

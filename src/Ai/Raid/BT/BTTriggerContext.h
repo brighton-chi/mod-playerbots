@@ -214,6 +214,10 @@ public:
         creators["illidan stormrage immunity no longer needed"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_immunity_no_longer_needed;
 
+        creators["illidan stormrage shaman has totems before tanks have aggro"] =
+            &RaidBlackTempleTriggerContext::
+                illidan_stormrage_shaman_has_totems_before_tanks_have_aggro;
+
         creators["illidan stormrage should position for landing"] =
             &RaidBlackTempleTriggerContext::illidan_stormrage_should_position_for_landing;
 
@@ -528,6 +532,10 @@ private:
     static Trigger* illidan_stormrage_immunity_no_longer_needed(PlayerbotAI* botAI)
     {
         return new IllidanStormrageImmunityNoLongerNeededTrigger(botAI);
+    }
+    static Trigger* illidan_stormrage_shaman_has_totems_before_tanks_have_aggro(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger(botAI);
     }
     static Trigger* illidan_stormrage_should_position_for_landing(PlayerbotAI* botAI)
     {

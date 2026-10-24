@@ -227,6 +227,10 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidan stormrage immunity no longer needed",
         { NextAction("illidan stormrage cancel immunity", ACTION_EMERGENCY + 6) }));
 
+    triggers.push_back(new TriggerNode(
+        "illidan stormrage shaman has totems before tanks have aggro",
+        { NextAction("illidan stormrage recall totems", ACTION_RAID + 5) }));
+
     triggers.push_back(new TriggerNode("illidan stormrage should position for landing",
         { NextAction("illidan stormrage position for landing", ACTION_RAID + 2) }));
 
@@ -316,7 +320,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidanStormrageControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldNearNewShadowfiendMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageHoldGuardianSummonsMultiplier(botAI));
-    multipliers.push_back(new IllidanStormrageHoldTotemsAtInfectionPositionMultiplier(botAI));
+    multipliers.push_back(new IllidanStormrageHoldTotemsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageWaitForDpsMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableTankSoulshatterMultiplier(botAI));
     multipliers.push_back(new IllidanStormrageDisableAoeOnShadowDemonsMultiplier(botAI));

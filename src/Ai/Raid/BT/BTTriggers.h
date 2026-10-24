@@ -646,6 +646,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger
+    : public BlackTempleEncounterTrigger
+{
+public:
+    IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage shaman has totems before tanks have aggro") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidanStormrageShouldPositionForLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:

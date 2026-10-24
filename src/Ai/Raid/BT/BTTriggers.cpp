@@ -827,6 +827,24 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
     return AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
+// Totems set for the last phase would take a Flame in its first 2 s, or be back on his threat
+// list before the tank, so they come up at each phase change.
+bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    bool hasTotem = false;
+    for (uint8 slot = SUMMON_SLOT_TOTEM_FIRE; slot < MAX_TOTEM_SLOT; ++slot)
+        hasTotem = hasTotem || !bot->m_SummonSlot[slot].IsEmpty();
+
+    if (!hasTotem)
+        return false;
+
+    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return illidan && IsIllidanTankAggroPending(*illidan, GetIllidanPhase(illidan));
+}
+
 // An infected bot runs to the infection position instead.
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 {

@@ -663,6 +663,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidanStormrageRecallTotemsAction : public Action
+{
+public:
+    IllidanStormrageRecallTotemsAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage recall totems") {}
+    bool Execute(Event event) override;
+};
+
 class IllidanStormragePositionForLandingAction : public MovementAction
 {
 public:
@@ -754,6 +762,11 @@ public:
     IllidanStormrageManageDpsTimersAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage manage dps timers") {}
     bool Execute(Event event) override;
+
+private:
+    bool DoTanksHaveAggro(
+        Unit const& illidan, BtHelpers::IllidanPhase phase,
+        BtHelpers::BtInstanceState const& state);
 };
 
 class IllidanStormrageClearHazardsAction : public Action
