@@ -1767,6 +1767,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     // warlock and the far end of the ranged DPS, and are filled nearest him first.
     constexpr std::array rangedRows = { 25.2f, 31.0f };
     constexpr std::array healerRows = { 36.8f, 42.6f };
+    static_assert(rangedRows.size() == healerRows.size());
     constexpr std::array meleeRows = { 48.4f, 54.2f, 60.0f };
     constexpr float rangedHighAngle = 40.0f * degree;
     constexpr float healerHighAngle = 60.0f * degree;

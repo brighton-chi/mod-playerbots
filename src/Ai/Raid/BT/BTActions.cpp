@@ -3025,7 +3025,7 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged(Illid
     // While he flies, a bot infected then stays in its grate stack, and the other stacks are 8.9
     // to 11.5 yd from its Shadowfiends.
     float const minDistance = phase == IllidanPhase::Flying ? 5.0f : 10.0f;
-    constexpr float maxDistance = 28.5f;
+    float const maxDistance = botAI->GetRange("spell");
     float const distance = bot->GetDistance(shadowfiend);
     return distance > minDistance && distance <= maxDistance ? shadowfiend : nullptr;
 }
@@ -3071,10 +3071,8 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     }
     else
     {
-        if (ResetIfSet(state.eastFlameGuid))
-            updated = true;
-        if (ResetIfSet(state.westFlameGuid))
-            updated = true;
+        updated |= ResetIfSet(state.eastFlameGuid);
+        updated |= ResetIfSet(state.westFlameGuid);
     }
 
     return updated;

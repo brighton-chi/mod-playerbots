@@ -1228,12 +1228,20 @@ float IllidanStormrageHoldTotemsAtInfectionPositionMultiplier::GetValueInEncount
     }
 
     float nearestTotem = std::numeric_limits<float>::max();
+    bool hasTotem = false;
     for (uint8 slot = SUMMON_SLOT_TOTEM_FIRE; slot < MAX_TOTEM_SLOT; ++slot)
     {
         Creature* totem = bot->GetMap()->GetCreature(bot->m_SummonSlot[slot]);
         if (totem && totem->IsAlive())
+        {
             nearestTotem = std::min(nearestTotem, bot->GetExactDist2d(totem));
+            hasTotem = true;
+        }
     }
+
+    // With none up, only its run to the position and its wait there are held.
+    if (!hasTotem)
+        return HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
 
     Position const infectionPosition = GetIllidanRecordedInfectionPosition(botAI, *illidan);
     return bot->GetExactDist2d(infectionPosition) < nearestTotem ? 0.0f : 1.0f;
