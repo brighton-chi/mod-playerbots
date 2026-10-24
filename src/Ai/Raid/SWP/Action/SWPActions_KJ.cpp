@@ -547,7 +547,9 @@ bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
         if (!HasKiljaedenDragonAura(bot))
             return false;
 
-        bot->RemoveAura(Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+        bot->RemoveOwnedAura(
+            Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+
         return true;
     }
 
