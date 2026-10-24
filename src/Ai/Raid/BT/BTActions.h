@@ -597,11 +597,6 @@ private:
         ObjectGuid& hunter);
 };
 
-namespace BtHelpers
-{
-    struct EyeBlastDangerArea;
-}
-
 class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
 {
 public:

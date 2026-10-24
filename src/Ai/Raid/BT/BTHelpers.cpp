@@ -216,6 +216,12 @@ uint32 GetAuraElapsedMs(Aura const* aura)
     return aura ? static_cast<uint32>(aura->GetMaxDuration() - aura->GetDuration()) : 0;
 }
 
+void FaceUnit(Player* bot, Unit* unit)
+{
+    if (unit && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, unit))
+        bot->SetFacingTo(bot->GetAngle(unit));
+}
+
 // Trash
 
 namespace
@@ -1439,12 +1445,6 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 namespace // Illidan Stormrage
 {
 
-std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId)
-{
-    BtInstanceState const* state = FindBtState(instanceId);
-    return state && state->illidanInfections ? &*state->illidanInfections : nullptr;
-}
-
 // A point distance yd from Illidan and angle off the line from him through the grate centre,
 // positive toward the warlock tank's side.
 Position GetDemonFormPoint(
@@ -1486,16 +1486,22 @@ std::vector<std::pair<float, Position>> GetDemonFormRow(
     return row;
 }
 
-// The place of guid in first and then second, each sorted by GUID; -1 if in neither.
+// The place of guid in first and then second, each sorted by GUID, wrapped round slotCount (not
+// 0); -1 if in neither.
 int32 GetIllidanRosterIndex(
-    std::vector<ObjectGuid> first, std::vector<ObjectGuid> second, ObjectGuid guid)
+    std::vector<ObjectGuid> first, std::vector<ObjectGuid> second, ObjectGuid guid,
+    size_t slotCount)
 {
     std::sort(first.begin(), first.end());
     std::sort(second.begin(), second.end());
     first.insert(first.end(), second.begin(), second.end());
 
     auto const it = std::find(first.begin(), first.end(), guid);
-    return it == first.end() ? -1 : static_cast<int32>(std::distance(first.begin(), it));
+    if (it == first.end())
+        return -1;
+
+    size_t const index = static_cast<size_t>(std::distance(first.begin(), it));
+    return static_cast<int32>(index % slotCount);
 }
 
 // Dead or alive; null if no group member has the job (an offline tank among them).
@@ -1519,6 +1525,12 @@ Player* FindFlameOfAzzinothTank(Player* bot, bool isEast)
 }
 
 } // end anonymous namespace (Illidan Stormrage)
+
+std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId)
+{
+    BtInstanceState const* state = FindBtState(instanceId);
+    return state && state->illidanInfections ? &*state->illidanInfections : nullptr;
+}
 
 IllidanPhase GetIllidanPhase(Unit* illidan)
 {
@@ -2113,11 +2125,7 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
         }
     }
 
-    int32 const rosterIndex = GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID());
-    if (rosterIndex < 0)
-        return -1;
-
-    return static_cast<int32>(static_cast<size_t>(rosterIndex) % slotCount);
+    return GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID(), slotCount);
 }
 
 int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
@@ -2138,11 +2146,7 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
         }
     }
 
-    int32 const rosterIndex = GetIllidanRosterIndex(healers, {}, bot->GetGUID());
-    if (rosterIndex < 0)
-        return -1;
-
-    return static_cast<int32>(static_cast<size_t>(rosterIndex) % slotCount);
+    return GetIllidanRosterIndex(healers, {}, bot->GetGUID(), slotCount);
 }
 
 int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
@@ -2172,11 +2176,7 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
             meleeDps.push_back(guid);
     }
 
-    int32 const rosterIndex = GetIllidanRosterIndex(meleeDps, tanks, bot->GetGUID());
-    if (rosterIndex < 0)
-        return -1;
-
-    return static_cast<int32>(static_cast<size_t>(rosterIndex) % slotCount);
+    return GetIllidanRosterIndex(meleeDps, tanks, bot->GetGUID(), slotCount);
 }
 
 int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
@@ -2215,6 +2215,27 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
     int32 const warlockIndex =
         GetIllidanRangedIndex(warlockTankAI, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
     return warlockIndex < 0 ? index : warlockIndex;
+}
+
+int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    Group* group = bot->GetGroup();
+    if (!group)
+        return -1;
+
+    std::vector<ObjectGuid> bots;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
+            !IsFlameOfAzzinothTank(member))
+        {
+            bots.push_back(member->GetGUID());
+        }
+    }
+
+    return GetIllidanRosterIndex(bots, {}, bot->GetGUID(), GRATE_POSITIONS.size());
 }
 
 bool HasParasiticShadowfiend(Player* player)
@@ -2469,6 +2490,24 @@ bool IsTargetingShadowDemon(PlayerbotAI* botAI)
     return target && target->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
+Position GetClosestPointOnSegment(
+    Position const& start, Position const& end, Position const& point)
+{
+    float const dx = end.GetPositionX() - start.GetPositionX();
+    float const dy = end.GetPositionY() - start.GetPositionY();
+    float const lengthSq = dx * dx + dy * dy;
+    if (lengthSq <= 0.0f)
+        return start;
+
+    float const along = std::clamp(
+        ((point.GetPositionX() - start.GetPositionX()) * dx +
+         (point.GetPositionY() - start.GetPositionY()) * dy) / lengthSq,
+        0.0f, 1.0f);
+    return Position(
+        start.GetPositionX() + along * dx, start.GetPositionY() + along * dy,
+        start.GetPositionZ());
+}
+
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
 {
     constexpr float searchRadius = 100.0f;
@@ -2507,25 +2546,11 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
 
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area)
 {
-    float const dx = area.end.GetPositionX() - area.start.GetPositionX();
-    float const dy = area.end.GetPositionY() - area.start.GetPositionY();
-    float const length =
-        area.start.GetExactDist2d(area.end.GetPositionX(), area.end.GetPositionY());
-
-    if (length < 0.1f)
+    if (area.start.GetExactDist2d(area.end) < 0.1f)
         return false;
 
-    float const projectionFactor = ((pos.GetPositionX() - area.start.GetPositionX()) * dx +
-        (pos.GetPositionY() - area.start.GetPositionY()) * dy) / (length * length);
-
-    float const clampedProjectionFactor = std::clamp(projectionFactor, 0.0f, 1.0f);
-
-    float const closestX = area.start.GetPositionX() + clampedProjectionFactor * dx;
-    float const closestY = area.start.GetPositionY() + clampedProjectionFactor * dy;
-
-    float const distToLine = pos.GetExactDist2d(closestX, closestY);
-
-    return distToLine < area.width;
+    Position const closest = GetClosestPointOnSegment(area.start, area.end, pos);
+    return pos.GetExactDist2d(closest) < area.width;
 }
 
 bool IsPathInEyeBlastDangerArea(

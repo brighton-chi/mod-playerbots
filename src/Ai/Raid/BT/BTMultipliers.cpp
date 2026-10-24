@@ -882,6 +882,14 @@ bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
     return !tank || illidan->GetThreatMgr().GetLastVictim() != tank;
 }
 
+// A tank's AoE threat, or any spell whose threat type is AoE (heals report it too).
+bool IsIllidanAoeAction(Player* bot, Action* action)
+{
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    return IsAoeThreatAction(bot, action) ||
+        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
+}
+
 // Summons that fight on their own, unlike pets, which the strategy can set passive.
 bool IsGuardianSummon(Player* bot, Action* action)
 {
@@ -1164,8 +1172,7 @@ float IllidanStormrageNearNewShadowfiendMultiplier::GetValueInEncounter(Action* 
     Unit* target = castSpellAction ? AI_VALUE(Unit*, "current target") : action->GetTarget();
     bool const isOnShadowfiend =
         target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-    bool const isAoeSpell = IsAoeThreatAction(bot, action) ||
-        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
+    bool const isAoeSpell = IsIllidanAoeAction(bot, action);
 
     if (!isOnShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
@@ -1303,10 +1310,7 @@ float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Ac
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
-    bool const isAoe = IsAoeThreatAction(bot, action) ||
-        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
-    if (!isAoe)
+    if (!IsIllidanAoeAction(bot, action))
         return 1.0f;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");

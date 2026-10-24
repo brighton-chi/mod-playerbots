@@ -236,6 +236,8 @@ bool CommandPetAttack(Creature* pet, Unit* target);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
 // How long the aura has been up; for an aura with a fixed duration.
 uint32 GetAuraElapsedMs(Aura const* aura);
+// Turns the bot to the unit unless it is already in the bot's front 90 deg.
+void FaceUnit(Player* bot, Unit* unit);
 
 // Trash
 
@@ -792,6 +794,8 @@ inline std::array const W_GLAIVE_TANK_POSITIONS = {
     Position{ 695.700f, 325.200f, 354.000f },
 };
 
+// The recorded infections, read-only; null before the tracker records any.
+std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId);
 IllidanPhase GetIllidanPhase(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
@@ -866,6 +870,8 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
 // slot nearest its Demon Form position, so its walk at the transform is short, and whoever had that
 // slot takes the warlock tank's.
 int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
+// While he flies: the grate stack by roster, every bot but the Flame tanks, the dead kept.
+int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI);
 bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.
@@ -893,6 +899,9 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);
 // The bot's current target is a Shadow Demon: in Demon Form, the one reason melee leave their
 // slots.
 bool IsTargetingShadowDemon(PlayerbotAI* botAI);
+// The point of the segment from start to end nearest to point, in 2D, at start's Z.
+Position GetClosestPointOnSegment(
+    Position const& start, Position const& end, Position const& point);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
 // A straight walk from one point to the other passes through the area.

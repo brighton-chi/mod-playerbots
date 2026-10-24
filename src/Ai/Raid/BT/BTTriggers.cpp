@@ -648,10 +648,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
         "illidan stormrage players with parasitic shadowfiend")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    auto const* infections =
-        state && state->illidanInfections ? &*state->illidanInfections : nullptr;
-
+    auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (infections)
     {
         for (auto const& [player, infection] : *infections)

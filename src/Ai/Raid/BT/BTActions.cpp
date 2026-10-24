@@ -1343,9 +1343,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     float const distToTankPosition = bot->GetExactDist2d(tankPosition);
     if (distToTankPosition <= SHAHRAZ_TANK_POSITION_TOLERANCE)
     {
-        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, shahraz))
-            bot->SetFacingTo(bot->GetAngle(shahraz));
-
+        FaceUnit(bot, shahraz);
         return false;
     }
 
@@ -1872,9 +1870,7 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     {
         Creature* illidan = bot->FindNearestCreature(
             Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
-        if (illidan && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
-            bot->SetFacingTo(bot->GetAngle(illidan));
-
+        FaceUnit(bot, illidan);
         return false;
     }
 
@@ -1911,32 +1907,25 @@ bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
 
 bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* group)
 {
-    std::vector<Player*> hunters;
+    GuidVector hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
-            hunters.push_back(member);
+            hunters.push_back(member->GetGUID());
         }
     }
 
-    int8 hunterIndex = -1;
-    for (size_t i = 0; i < hunters.size(); ++i)
-    {
-        if (hunters[i] == bot)
-        {
-            hunterIndex = static_cast<int8>(i);
-            break;
-        }
-    }
-    if (hunterIndex == -1)
+    std::sort(hunters.begin(), hunters.end());
+    auto const it = std::find(hunters.begin(), hunters.end(), bot->GetGUID());
+    if (it == hunters.end())
         return false;
 
-    // The first hunter takes the East Flame to its tank, the others the West Flame, each as soon
-    // as its own Flame is up, since the West one comes about 0.7 s first.
-    bool const isEast = hunterIndex == 0;
+    // The first hunter by GUID takes the East Flame to its tank, the others the West Flame, each
+    // as soon as its own Flame is up, since the West one comes about 0.7 s first.
+    bool const isEast = it == hunters.begin();
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
     Unit* flame = isEast ? eastFlame : westFlame;
     if (!flame || flame->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
@@ -2004,9 +1993,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         if (bot->GetVictim() == illidan && bot->IsWithinMeleeRange(illidan) &&
             !IsOnlineOnIllidanThreatList(*illidan, bot))
         {
-            if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
-                bot->SetFacingTo(bot->GetAngle(illidan));
-
+            FaceUnit(bot, illidan);
             return false;
         }
 
@@ -2038,9 +2025,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
-            bot->SetFacingTo(bot->GetAngle(illidan));
-
+        FaceUnit(bot, illidan);
         return false;
     }
 
@@ -2205,18 +2190,12 @@ bool IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
         return false;
     }
 
-    float const dx = position.GetPositionX() - bot->GetPositionX();
-    float const dy = position.GetPositionY() - bot->GetPositionY();
-    float const lengthSq = dx * dx + dy * dy;
-    if (lengthSq < 0.01f)
+    if (bot->GetExactDist2d(position) < 0.1f)
         return false;
 
-    float const toIllidanX = illidan.GetPositionX() - bot->GetPositionX();
-    float const toIllidanY = illidan.GetPositionY() - bot->GetPositionY();
-    float const along = std::clamp((toIllidanX * dx + toIllidanY * dy) / lengthSq, 0.0f, 1.0f);
-    float const closest = illidan.GetExactDist2d(
-        bot->GetPositionX() + along * dx, bot->GetPositionY() + along * dy);
-    if (closest >= ILLIDAN_BACK_OFF_DISTANCE)
+    Position const closest =
+        GetClosestPointOnSegment(bot->GetPosition(), position, illidan.GetPosition());
+    if (illidan.GetExactDist2d(closest) >= ILLIDAN_BACK_OFF_DISTANCE)
         return false;
 
     float const botAngle = illidan.GetAngle(bot);
@@ -2459,21 +2438,16 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
 
     float const px = bot->GetPositionX();
     float const py = bot->GetPositionY();
-    float const sx = dangerArea.start.GetPositionX();
-    float const sy = dangerArea.start.GetPositionY();
+    Position const closest =
+        GetClosestPointOnSegment(dangerArea.start, dangerArea.end, bot->GetPosition());
 
-    float const projection = std::clamp(
-        ((px - sx) * dx + (py - sy) * dy) / (length * length), 0.0f, 1.0f);
-    float const closestX = sx + projection * dx;
-    float const closestY = sy + projection * dy;
-
-    float const distToLine = bot->GetExactDist2d(closestX, closestY);
+    float const distToLine = bot->GetExactDist2d(closest);
     float const moveDist = (dangerArea.width - distToLine) + 0.5f;
     if (moveDist <= 0.0f)
         return false;
 
-    float const rawDirX = px - closestX;
-    float const rawDirY = py - closestY;
+    float const rawDirX = px - closest.GetPositionX();
+    float const rawDirY = py - closest.GetPositionY();
     float const rawDirLength = std::sqrt(rawDirX * rawDirX + rawDirY * rawDirY);
     float const dirX = rawDirLength == 0.0f ? -(dy / length) : rawDirX / rawDirLength;
     float const dirY = rawDirLength == 0.0f ? dx / length : rawDirY / rawDirLength;
@@ -2511,12 +2485,15 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->Get();
 
+    // A Blaze hits players within 8 yd of its centre, exact 3D.
+    constexpr float blazeRadius = 8.0f;
+    constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
     for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetEntry() == Id(BtNpcs::NPC_BLAZE) &&
-            bot->GetDistance2d(unit) <= 8.0f)
+            bot->GetExactDist(unit) <= blazeRadius + blazeMargin)
         {
             blazeNearby = true;
             break;
@@ -2603,36 +2580,11 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    int32 const index = GetIllidanGrateStackIndex(botAI);
+    if (index < 0)
         return false;
 
-    std::vector<Player*> bots;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
-            !IsFlameOfAzzinothTank(member))
-        {
-            bots.push_back(member);
-        }
-    }
-
-    if (bots.empty())
-        return false;
-
-    std::sort(bots.begin(), bots.end(),
-        [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
-
-    auto const it = std::find(bots.begin(), bots.end(), bot);
-    if (it == bots.end())
-        return false;
-
-    auto const& gratePositions = GRATE_POSITIONS;
-    size_t const botIndex = std::distance(bots.begin(), it);
-    uint8 const index = botIndex % gratePositions.size();
-
-    Position const& position = gratePositions[index];
+    Position const& position = GRATE_POSITIONS[static_cast<size_t>(index)];
     if (bot->GetExactDist2d(position) <= 0.2f)
         return false;
 
@@ -2841,9 +2793,7 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
     Position const& position = layout.meleeSlots[static_cast<size_t>(slot)];
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        if (!bot->HasInArc(static_cast<float>(M_PI) / 2.0f, illidan))
-            bot->SetFacingTo(bot->GetAngle(illidan));
-
+        FaceUnit(bot, illidan);
         return false;
     }
 
