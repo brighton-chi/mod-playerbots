@@ -326,8 +326,7 @@ class ReliquaryOfSoulsShouldPositionForSufferingTrigger : public BlackTempleEnco
 {
 public:
     ReliquaryOfSoulsShouldPositionForSufferingTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(
-            botAI, "reliquary of souls should position for suffering") {}
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls should position for suffering") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -387,12 +386,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MotherShahrazRangedShouldPositionUnderPillarTrigger : public BlackTempleEncounterTrigger
+class MotherShahrazRangedShouldPositionUnderStatueTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    MotherShahrazRangedShouldPositionUnderPillarTrigger(PlayerbotAI* botAI)
+    MotherShahrazRangedShouldPositionUnderStatueTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "mother shahraz ranged should position under pillar") {}
+            botAI, "mother shahraz ranged should position under statue") {}
 
 protected:
     bool IsActiveInEncounter() override;

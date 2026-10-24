@@ -99,8 +99,8 @@ enum class BtSpells : uint32
     SPELL_DEMON_FORM                = 40506,
     SPELL_DARK_BARRAGE              = 40585,
     SPELL_AGONIZING_FLAMES          = 40932,
-    SPELL_PARASITIC_SHADOWFIEND_1   = 41917, // cast by Illidan (primary infection)
-    SPELL_PARASITIC_SHADOWFIEND_2   = 41914, // cast by Shadowfiend on contact (secondary infection)
+    SPELL_PARASITIC_SHADOWFIEND_PRI = 41917, // primary infection, cast by Illidan
+    SPELL_PARASITIC_SHADOWFIEND_SEC = 41914, // secondary infection, from a Shadowfiend's hit
     SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
     SPELL_SHADOW_PRISON             = 40647, // on every player in Maiev's arrival, 30 s
 
@@ -553,34 +553,31 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target);
 
 // Illidan Stormrage <The Betrayer>
 
-// Fight phases 1 to 5 are Initial, Flying, Grounded, Demon and Maiev; Landing runs from when he
-// heads for the landing point until the threat reset makes him selectable. Dying is during the
-// 1 HP death scene.
 enum class IllidanPhase : uint8
 {
-    None, // also Maiev's arrival
-    Initial,
-    Flying,
-    Landing,
-    Grounded,
-    Demon,
-    Maiev,
-    Dying,
+    None, // also Maiev's arrival scene
+    Initial, // "phase 1"
+    Flying, // "phase 2"
+    Landing, // transition from Illidan flying to his landing point until he is again selectable
+    Grounded, // "phase 3"
+    Demon, // "phase 4"
+    Maiev, // "phase 5"
+    Dying, // the 1 HP death scene
 };
 
 // Damage on him is held after each threat reset, so the tank that should have him acts first.
 enum class IllidanDpsHold : uint8
 {
     None,
-    AfterReset,      // Phase 1, 3 and 5 starts; everyone but the Main Tank
+    AfterReset,      // Phase 1, 3, and 5 starts; everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
     DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
-    DemonFormEnd,    // the last 3 s before the reset; everyone
+    DemonFormEnd,    // the last 3s before the reset; everyone
     DemonFormNoPush, // 30 to 33% in the form, so he leaves it above 30%; everyone but the
                      // warlock tank
 };
 
-// The Main Tank's lead in Phases 1, 3 and 5.
+// The Main Tank's lead in Phases 1, 3, and 5.
 enum class IllidanTankLead : uint8
 {
     None,
@@ -874,6 +871,9 @@ bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
 // Assigned to an infection whose debuff is still on, with Frost Trap ready, and not infected.
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
+// Never runs to the infection position, so its Shadowfiends come out where it stands: his victim,
+// the Main Tank, or the warlock tank in Demon Form.
+bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player);
 // While he flies, a bot infected before he took off waits at the infection position until its
 // Shadowfiends are out, tanks included (the raid can't move away from them in Phase 2), and its
 // trap hunter still lays the trap.
@@ -895,7 +895,7 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
 // While he flies: the grate stack by roster, every bot but the Flame tanks, the dead kept.
 int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI);
 // Either Shadowfiend debuff, Illidan's own (41917) first.
-Aura* GetParasiticShadowfiendAura(Player const* player);
+Aura* GetParasiticShadowfiendAura(Player* player);
 bool HasParasiticShadowfiend(Player* player);
 // An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
 // aggressive 2.4 s after spawning.
@@ -911,12 +911,12 @@ GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot);
 // An entry search, so it doesn't rely on the Demons being in attackers (unchecked); each Demon's
 // target is the group member or pet carrying its Paralyze.
 std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
-// For ranged and healers: a Demon walking to the warlock tank first, then the one nearest its
+// For ranged and healers: a Demon moving to the warlock tank first, then the one nearest its
 // target, ties going to the one nearest `from`; idle Demons last.
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from);
-Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI);
-// For melee: the Demon nearest `from`, one still walking to a target before an idle one. Never one
-// walking to the warlock tank, which stays inside Aura of Dread or Shadow Blast all the way.
+Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI);
+// For melee: the Demon nearest `from`, one still moving to a target before an idle one. Never one
+// moving to the warlock tank, which stays inside Aura of Dread or Shadow Blast all the way.
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from);
 // Imps and water elementals take Demons as ranged do, other pets as melee do.
 Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);

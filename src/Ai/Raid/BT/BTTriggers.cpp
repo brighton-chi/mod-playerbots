@@ -393,7 +393,7 @@ bool MotherShahrazBeingPositionedTrigger::IsActiveInEncounter()
     return IsShahrazBeingPositioned(AI_VALUE2(Unit*, "find target", "mother shahraz"));
 }
 
-bool MotherShahrazRangedShouldPositionUnderPillarTrigger::IsActiveInEncounter()
+bool MotherShahrazRangedShouldPositionUnderStatueTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -627,10 +627,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == IllidanPhase::Flying)
         return IsIllidanInfectionPositionKeptInFlight(botAI);
 
-    if (phase == IllidanPhase::Demon && IsIllidanWarlockTank(botAI))
-        return false;
-
-    return !PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot);
+    return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
 }
 
 // The mechanic tracker records each new infection while there is an infection position, keeps
@@ -909,7 +906,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
             return false;
 
         // While a Demon walks to the warlock tank, ranged DPS may leave their slots to reach it.
-        if (!PlayerbotAI::IsHeal(bot) && GetShadowDemonWalkingToWarlockTank(botAI))
+        if (!PlayerbotAI::IsHeal(bot) && GetShadowDemonMovingToWarlockTank(botAI))
             return false;
 
         return true;
@@ -933,7 +930,7 @@ bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
     if (HasParasiticShadowfiend(bot) || IsIllidanWarlockTank(botAI))
         return false;
 
-    Unit* demon = GetShadowDemonWalkingToWarlockTank(botAI);
+    Unit* demon = GetShadowDemonMovingToWarlockTank(botAI);
     return demon && !bot->IsWithinCombatRange(demon, botAI->GetRange("spell"));
 }
 

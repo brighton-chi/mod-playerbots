@@ -77,9 +77,9 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     Action* flameTankAction =
-        context->GetAction("illidan stormrage assist tanks handle flames of azzinoth");
+        context->GetAction("illidan stormrage assist tanks handle flames");
     if (flameTankAction &&
-        static_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(
+        static_cast<IllidanStormrageAssistTanksHandleFlamesAction*>(
             flameTankAction)->ResetTankStep())
     {
         reset = true;
@@ -970,7 +970,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*event*/)
+bool TeronGorefiendDestroyShadowyConstructsAction::Execute(Event /*event*/)
 {
     Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
     if (!gorefiend)
@@ -1034,7 +1034,7 @@ bool TeronGorefiendControlAndDestroyShadowyConstructsAction::Execute(Event /*eve
 
 // A grid search from Teron, not the bot's own targets: the bot is the possessing body, left
 // where Shadow of Death sent it, and its target lists keep only units it can see.
-std::vector<Unit*> TeronGorefiendControlAndDestroyShadowyConstructsAction::GetConstructs(
+std::vector<Unit*> TeronGorefiendDestroyShadowyConstructsAction::GetConstructs(
     Unit* gorefiend) const
 {
     std::list<Creature*> creatures;
@@ -1052,7 +1052,7 @@ std::vector<Unit*> TeronGorefiendControlAndDestroyShadowyConstructsAction::GetCo
 }
 
 // The construct nearest Teron leads the way to the raid.
-Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLeadConstruct(
+Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLeadConstruct(
     Unit* gorefiend, std::vector<Unit*> const& constructs) const
 {
     Unit* leadConstruct = nullptr;
@@ -1073,7 +1073,7 @@ Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLeadConstruct(
 // Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping the
 // rest together. With none chained, Lance goes round them, keeping its 9 s slow on each and
 // wearing them down evenly: of those within one Lance of the highest health, the nearest Teron.
-Unit* TeronGorefiendControlAndDestroyShadowyConstructsAction::GetLanceTarget(
+Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLanceTarget(
     Unit* gorefiend, std::vector<Unit*> const& constructs) const
 {
     Unit* lanceTarget = nullptr;
@@ -1374,7 +1374,7 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 
 // This doesn't matter for bots since they don't take fall damage, and it's actually easier
 // to tank her closer to her starting position, but I want to simulate a player strategy
-bool MotherShahrazPositionRangedUnderPillarAction::Execute(Event /*event*/)
+bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
     if (bot->GetExactDist2d(position) <= SHAHRAZ_RANGED_POSITION_TOLERANCE)
@@ -2290,20 +2290,32 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             // A new infection shares the position already in use, so one trap does for both.
             IllidanInfection infection;
-            infection.infectionPosition = infections.empty() ?
-                GetIllidanInfectionPosition(*illidan) :
-                infections.begin()->second.infectionPosition;
+            if (infections.empty())
+                infection.infectionPosition = GetIllidanInfectionPosition(*illidan);
+            else
+                infection.infectionPosition = infections.begin()->second.infectionPosition;
+
             infections.emplace(guid, infection);
         }
 
         for (auto& [guid, infection] : infections)
         {
+            if (infection.isTrapAssigned)
+                continue;
+
+            // Only for his own casts, so Shadowfiends spreading among the raid don't send hunters
+            // back and forth.
             Player* player = ObjectAccessor::FindPlayer(guid);
-            if (!infection.isTrapAssigned && player &&
-                FindTrapHunter(*player, infection.infectionPosition, infections, infection.hunter))
-            {
+            if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
+                continue;
+
+            // Not for a bot that doesn't run, whose Shadowfiends come out where it stands; tried
+            // again each tick, so one that starts its run later gets a hunter then.
+            if (IsExemptFromIllidanInfectionRun(botAI, illidan, player))
+                continue;
+
+            if (FindTrapHunter(*player, infection.infectionPosition, infections, infection.hunter))
                 infection.isTrapAssigned = true;
-            }
         }
     }
 
@@ -2318,7 +2330,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 // Shadowfiends come out on the trap and springing it engages them onto the hunter who laid it.
 // False while none is ready, so the infection is tried again next tick.
 bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
-    Player const& infected, Position const& infectionPosition,
+    Player& infected, Position const& infectionPosition,
     std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
 {
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
@@ -2362,7 +2374,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
 
 // Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
 // other Flame's tank is dead too, when it takes that Flame.
-bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*event*/)
+bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
 {
     // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
     constexpr float eyeBlastTriggerRadius = 30.0f;
@@ -2424,7 +2436,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
     return RepositionToAvoidBlaze(flame);
 }
 
-bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidEyeBlast(
+bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
     EyeBlastDangerArea const& dangerArea)
 {
     if (!IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea))
@@ -2471,7 +2483,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidE
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidBlaze(Unit* flame)
+bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(Unit* flame)
 {
     if (flame->GetVictim() != bot || !bot->IsWithinMeleeRange(flame))
         return false;
@@ -2751,7 +2763,7 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    Unit* demon = GetShadowDemonWalkingToWarlockTank(botAI);
+    Unit* demon = GetShadowDemonMovingToWarlockTank(botAI);
     if (!demon)
         return false;
 

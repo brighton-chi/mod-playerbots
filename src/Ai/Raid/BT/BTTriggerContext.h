@@ -134,8 +134,8 @@ public:
         creators["mother shahraz being positioned"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_being_positioned;
 
-        creators["mother shahraz ranged should position under pillar"] =
-            &RaidBlackTempleTriggerContext::mother_shahraz_ranged_should_position_under_pillar;
+        creators["mother shahraz ranged should position under statue"] =
+            &RaidBlackTempleTriggerContext::mother_shahraz_ranged_should_position_under_statue;
 
         creators["mother shahraz fatal attraction"] =
             &RaidBlackTempleTriggerContext::mother_shahraz_fatal_attraction;
@@ -424,9 +424,9 @@ private:
     {
         return new MotherShahrazBeingPositionedTrigger(botAI);
     }
-    static Trigger* mother_shahraz_ranged_should_position_under_pillar(PlayerbotAI* botAI)
+    static Trigger* mother_shahraz_ranged_should_position_under_statue(PlayerbotAI* botAI)
     {
-        return new MotherShahrazRangedShouldPositionUnderPillarTrigger(botAI);
+        return new MotherShahrazRangedShouldPositionUnderStatueTrigger(botAI);
     }
     static Trigger* mother_shahraz_fatal_attraction(PlayerbotAI* botAI)
     {

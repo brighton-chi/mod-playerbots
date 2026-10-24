@@ -85,8 +85,8 @@ public:
         creators["teron gorefiend move to corner to die"] =
             &RaidBlackTempleActionContext::teron_gorefiend_move_to_corner_to_die;
 
-        creators["teron gorefiend control and destroy shadowy constructs"] =
-            &RaidBlackTempleActionContext::teron_gorefiend_control_and_destroy_shadowy_constructs;
+        creators["teron gorefiend destroy shadowy constructs"] =
+            &RaidBlackTempleActionContext::teron_gorefiend_destroy_shadowy_constructs;
 
         // Gurtogg Bloodboil
         creators["gurtogg bloodboil misdirect to main tank"] =
@@ -133,8 +133,8 @@ public:
         creators["mother shahraz melee dps wait at safe position"] =
             &RaidBlackTempleActionContext::mother_shahraz_melee_dps_wait_at_safe_position;
 
-        creators["mother shahraz position ranged under pillar"] =
-            &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_pillar;
+        creators["mother shahraz position ranged under statue"] =
+            &RaidBlackTempleActionContext::mother_shahraz_position_ranged_under_statue;
 
         creators["mother shahraz break fatal attraction"] =
             &RaidBlackTempleActionContext::mother_shahraz_break_fatal_attraction;
@@ -192,8 +192,8 @@ public:
         creators["illidan stormrage track infections"] =
             &RaidBlackTempleActionContext::illidan_stormrage_track_infections;
 
-        creators["illidan stormrage assist tanks handle flames of azzinoth"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames_of_azzinoth;
+        creators["illidan stormrage assist tanks handle flames"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_assist_tanks_handle_flames;
 
         creators["illidan stormrage control pet aggression"] =
             &RaidBlackTempleActionContext::illidan_stormrage_control_pet_aggression;
@@ -357,9 +357,9 @@ private:
     {
         return new TeronGorefiendMoveToCornerToDieAction(botAI);
     }
-    static Action* teron_gorefiend_control_and_destroy_shadowy_constructs(PlayerbotAI* botAI)
+    static Action* teron_gorefiend_destroy_shadowy_constructs(PlayerbotAI* botAI)
     {
-        return new TeronGorefiendControlAndDestroyShadowyConstructsAction(botAI);
+        return new TeronGorefiendDestroyShadowyConstructsAction(botAI);
     }
 
     // Gurtogg Bloodboil
@@ -431,9 +431,9 @@ private:
     {
         return new MotherShahrazMeleeDpsWaitAtSafePositionAction(botAI);
     }
-    static Action* mother_shahraz_position_ranged_under_pillar(PlayerbotAI* botAI)
+    static Action* mother_shahraz_position_ranged_under_statue(PlayerbotAI* botAI)
     {
-        return new MotherShahrazPositionRangedUnderPillarAction(botAI);
+        return new MotherShahrazPositionRangedUnderStatueAction(botAI);
     }
     static Action* mother_shahraz_break_fatal_attraction(PlayerbotAI* botAI)
     {
@@ -513,9 +513,9 @@ private:
     {
         return new IllidanStormrageTrackInfectionsAction(botAI);
     }
-    static Action* illidan_stormrage_assist_tanks_handle_flames_of_azzinoth(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_assist_tanks_handle_flames(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(botAI);
+        return new IllidanStormrageAssistTanksHandleFlamesAction(botAI);
     }
     static Action* illidan_stormrage_control_pet_aggression(PlayerbotAI* botAI)
     {

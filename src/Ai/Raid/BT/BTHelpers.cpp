@@ -2050,6 +2050,21 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
     return false;
 }
 
+bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player)
+{
+    if (!illidan || !player)
+        return false;
+
+    if (illidan->GetVictim() == player ||
+        (PlayerbotAI::IsTank(player) && PlayerbotAI::IsMainTank(player)))
+    {
+        return true;
+    }
+
+    return GetIllidanPhase(illidan) == IllidanPhase::Demon &&
+        GetIllidanWarlockTank(botAI) == player;
+}
+
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2246,15 +2261,15 @@ int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI)
     return GetIllidanRosterIndex(bots, {}, bot->GetGUID(), ILLIDAN_GRATE_POSITIONS.size());
 }
 
-Aura* GetParasiticShadowfiendAura(Player const* player)
+Aura* GetParasiticShadowfiendAura(Player* player)
 {
     if (!player)
         return nullptr;
 
-    if (Aura* aura = player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_1)))
+    if (Aura* aura = player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
         return aura;
 
-    return player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_2));
+    return player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_SEC));
 }
 
 bool HasParasiticShadowfiend(Player* player)
@@ -2431,7 +2446,7 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
     return best;
 }
 
-Unit* GetShadowDemonWalkingToWarlockTank(PlayerbotAI* botAI)
+Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
 {
     AiObjectContext* context = botAI->GetAiObjectContext();
     ObjectGuid const warlockTank =

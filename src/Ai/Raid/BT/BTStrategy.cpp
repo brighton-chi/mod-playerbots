@@ -89,8 +89,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("teron gorefiend move to corner to die", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("teron gorefiend transformed into vengeful spirit",
-        { NextAction(
-            "teron gorefiend control and destroy shadowy constructs", ACTION_EMERGENCY + 10) }));
+        { NextAction("teron gorefiend destroy shadowy constructs", ACTION_EMERGENCY + 10) }));
 
     // Gurtogg Bloodboil
     triggers.push_back(new TriggerNode("gurtogg bloodboil hunter should misdirect",
@@ -138,12 +137,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("mother shahraz being positioned",
         { NextAction("mother shahraz melee dps wait at safe position", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("mother shahraz ranged should position under pillar",
-        { NextAction("mother shahraz position ranged under pillar", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("mother shahraz ranged should position under statue",
+        { NextAction("mother shahraz position ranged under statue", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("mother shahraz fatal attraction",
-        { NextAction(
-            "mother shahraz break fatal attraction", ACTION_EMERGENCY + 10) }));
+        { NextAction("mother shahraz break fatal attraction", ACTION_EMERGENCY + 10) }));
 
     // Illidari Council
     triggers.push_back(new TriggerNode("illidari council hunter should misdirect",
@@ -157,15 +155,13 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "illidari council main tank reflect judgement of command", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council malande casts circle of healing",
-        { NextAction(
-            "illidari council interrupt circle of healing", ACTION_EMERGENCY + 8) }));
+        { NextAction("illidari council interrupt circle of healing", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("illidari council malande should be tanked",
         { NextAction("illidari council first assist tank focus malande", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council veras should be tanked",
-        { NextAction(
-            "illidari council second assist tank position veras", ACTION_RAID + 1) }));
+        { NextAction("illidari council second assist tank position veras", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council zerevor should be tanked by mage",
         { NextAction("illidari council mage tank position zerevor", ACTION_EMERGENCY + 6) }));
@@ -202,8 +198,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("illidan stormrage track infections", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage flames of azzinoth should be tanked",
-        { NextAction(
-            "illidan stormrage assist tanks handle flames of azzinoth", ACTION_EMERGENCY + 1) }));
+        { NextAction("illidan stormrage assist tanks handle flames", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidan stormrage pets die to hazards",
         { NextAction("illidan stormrage control pet aggression", ACTION_RAID + 4) }));

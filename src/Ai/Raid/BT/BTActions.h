@@ -291,11 +291,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TeronGorefiendControlAndDestroyShadowyConstructsAction : public MovementAction
+class TeronGorefiendDestroyShadowyConstructsAction : public MovementAction
 {
 public:
-    TeronGorefiendControlAndDestroyShadowyConstructsAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "teron gorefiend control and destroy shadowy constructs") {}
+    TeronGorefiendDestroyShadowyConstructsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "teron gorefiend destroy shadowy constructs") {}
     bool Execute(Event event) override;
 
 private:
@@ -386,11 +386,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class MotherShahrazPositionRangedUnderPillarAction : public MovementAction
+class MotherShahrazPositionRangedUnderStatueAction : public MovementAction
 {
 public:
-    MotherShahrazPositionRangedUnderPillarAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "mother shahraz position ranged under pillar") {}
+    MotherShahrazPositionRangedUnderStatueAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mother shahraz position ranged under statue") {}
     bool Execute(Event event) override;
 };
 
@@ -592,16 +592,16 @@ public:
 
 private:
     bool FindTrapHunter(
-        Player const& infected, Position const& infectionPosition,
+        Player& infected, Position const& infectionPosition,
         std::unordered_map<ObjectGuid, BtHelpers::IllidanInfection> const& infections,
         ObjectGuid& hunter);
 };
 
-class IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction : public AttackAction
+class IllidanStormrageAssistTanksHandleFlamesAction : public AttackAction
 {
 public:
-    IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "illidan stormrage assist tanks handle flames of azzinoth") {}
+    IllidanStormrageAssistTanksHandleFlamesAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "illidan stormrage assist tanks handle flames") {}
     bool Execute(Event event) override;
     bool ResetTankStep()
     {
@@ -722,8 +722,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// A movement action, not an attack, so the hold multiplier leaves it alone: it holds its own
-// casts.
 class IllidanStormrageWarlockTankHandleDemonFormAction : public MovementAction
 {
 public:

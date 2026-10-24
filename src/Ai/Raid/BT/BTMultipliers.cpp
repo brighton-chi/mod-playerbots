@@ -376,7 +376,7 @@ float TeronGorefiendSpiritsAttackShadowyConstructsMultiplier::GetValueInEncounte
     if (!bot->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return 1.0f;
 
-    if (dynamic_cast<TeronGorefiendControlAndDestroyShadowyConstructsAction*>(action))
+    if (dynamic_cast<TeronGorefiendDestroyShadowyConstructsAction*>(action))
         return 1.0f;
 
     return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
@@ -1099,7 +1099,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         if (!isMove)
             return 1.0f;
 
-        if (dynamic_cast<IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction*>(action) ||
+        if (dynamic_cast<IllidanStormrageAssistTanksHandleFlamesAction*>(action) ||
             dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action))
         {
             return 1.0f;
