@@ -3153,14 +3153,13 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
 bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)
 {
-    constexpr float hazardSearchRadius = 50.0f;
     std::vector<uint32> const entries = {
         Id(BtNpcs::NPC_FLAME_CRASH),
         Id(BtNpcs::NPC_DEMON_FIRE),
         Id(BtNpcs::NPC_BLAZE),
     };
     std::list<Creature*> hazards;
-    bot->GetCreatureListWithEntryInGrid(hazards, entries, hazardSearchRadius);
+    bot->GetCreatureListWithEntryInGrid(hazards, entries, ILLIDAN_ADD_SEARCH_RADIUS);
 
     bool isCleared = false;
     for (Creature* creature : hazards)
