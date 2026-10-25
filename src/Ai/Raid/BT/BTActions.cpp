@@ -1954,7 +1954,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // ring point 35 deg counterclockwise of him, once more if he stops under 20 deg on; he stops about
 // 25 deg on, and the tank settles outward of wherever he stopped. Near the centre, as after
 // landing, it leads him straight out instead. In these phases every walk is stepped, backward once
-// he is behind the tank, the walk round him included.
+// he is behind the tank, the walk round him included, and it walks only once it has aggro.
 // While he lands the tank waits between the landing point and the raid's stack, then leads him
 // north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
 // the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
@@ -1979,7 +1979,14 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     if (phaseStartTime != _phaseStartTime)
     {
         _phaseStartTime = phaseStartTime;
-        _lead = IllidanTankLead::None;
+        // A ring step that Demon Form or Maiev's arrival cuts short is finished after it, so the
+        // tank doesn't settle back on the live Flame Crash that started it.
+        IllidanPhase const before = GetIllidanPhaseBefore(*illidan, phase);
+        bool const isStep = _lead == IllidanTankLead::Step || _lead == IllidanTankLead::StepAgain;
+        bool const keepsStep = isStep && (phase == IllidanPhase::Demon ||
+            before == IllidanPhase::Demon || before == IllidanPhase::None);
+        if (!keepsStep)
+            _lead = IllidanTankLead::None;
     }
 
     Position position;
@@ -2007,12 +2014,10 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         if (!FindDemonFormPosition(*illidan, position))
             return false;
     }
-    // After the landing it stands and hits him until it has him, before leading him out.
-    else if (IsIllidanLandingPickupPending(botAI, illidan))
+    // It moves him only once it has aggro, as after a threat reset; until then it stands and hits.
+    else if (illidan->GetVictim() == bot && !DoIllidanTanksHaveAggro(botAI, *illidan, phase))
     {
-        if (illidan->GetVictim() == bot)
-            FaceUnit(bot, illidan);
-
+        FaceUnit(bot, illidan);
         return false;
     }
     // The tank's own logic takes him back; the ring movement is only for when he is on it.
