@@ -2564,9 +2564,9 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
 }
 
 // Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
-// players, most pets cannot melee Illidan during Phase 4. In the landing pickup a pet's attack
-// would take him from the Main Tank. Also run outside the encounter so a pet set passive gets its
-// stance back after a wipe.
+// players, most pets cannot melee Illidan during Phase 4. In the pickup after the landing or Demon
+// Form a pet's attack would take him from the Main Tank. Also run outside the encounter so a pet
+// set passive gets its stance back after a wipe.
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();

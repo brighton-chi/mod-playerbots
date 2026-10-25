@@ -660,7 +660,8 @@ inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 // A tank has aggro once it is the victim with this much threat. One heal's threat is a few
 // hundred.
 inline constexpr float ILLIDAN_TANK_AGGRO_THREAT = 2000.0f;
-// After the landing the rest of the raid waits for the Main Tank's aggro at most this long.
+// After the landing's or Demon Form's threat reset the rest of the raid waits for the Main Tank's
+// aggro at most this long.
 inline constexpr uint32 ILLIDAN_PICKUP_MAX_MS = 3 * IN_MILLISECONDS;
 // Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks.
 inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
@@ -850,16 +851,18 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
 // Tank, or in Demon Form the warlock tank; while he flies each living Flame its own tank, or the
 // other one while its own is dead. A dead tank counts as having it, since nothing waits for it.
 bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
-// From his touchdown on landing, and after the threat reset until the Main Tank has aggro: the
-// tank stands and hits him, and the rest of the raid causes him no threat, since at 0 anything
-// else's first threat takes him from the tank.
-bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan);
-// While he flies and in Demon Form, and in the landing pickup, where a pet's attack would take him
-// from the Main Tank.
+// From his touchdown on landing, and after the landing's or Demon Form's threat reset until the
+// Main Tank has aggro: the tank stands and hits him, and the rest of the raid causes him no
+// threat, since at 0 anything else's first threat takes him from the tank.
+bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan);
+// Single-target damage on a Shadowfiend or a Shadow Demon, which the pickup lets through.
+bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe);
+// While he flies and in Demon Form, and in the pickup, where a pet's attack would take him from
+// the Main Tank.
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
-// In the landing pickup a channel begun before the hold still gives him threat after the reset
+// In the pickup a channel begun before the hold still gives him threat after the reset
 // (Evocation's and Hymn of Hope's mana, Tranquility's heals, a Blizzard), so everyone but the Main
-// Tank stops theirs; single-target damage on a Shadowfiend aside.
+// Tank stops theirs; single-target damage on an add aside.
 bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);

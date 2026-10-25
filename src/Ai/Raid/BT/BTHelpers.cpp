@@ -1790,7 +1790,7 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
     }
 }
 
-bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan)
+bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
 {
     if (!illidan)
         return false;
@@ -1801,8 +1801,11 @@ bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan)
     if (phase == IllidanPhase::Landing)
         return !illidan->IsLevitating();
 
-    if (phase != IllidanPhase::Grounded ||
-        GetIllidanPhaseBefore(*illidan, phase) != IllidanPhase::Landing ||
+    if (phase != IllidanPhase::Grounded && phase != IllidanPhase::Maiev)
+        return false;
+
+    IllidanPhase const before = GetIllidanPhaseBefore(*illidan, phase);
+    if ((before != IllidanPhase::Landing && before != IllidanPhase::Demon) ||
         !IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_PICKUP_MAX_MS))
     {
         return false;
@@ -1811,27 +1814,33 @@ bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan)
     return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
 }
 
+bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe)
+{
+    if (!target || isAoe)
+        return false;
+
+    uint32 const entry = target->GetEntry();
+    return entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) || entry == Id(BtNpcs::NPC_SHADOW_DEMON);
+}
+
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
 {
     IllidanPhase const phase = GetIllidanPhase(illidan);
     return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
-        IsIllidanLandingPickupPending(botAI, illidan);
+        IsIllidanPickupPending(botAI, illidan);
 }
 
 bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel)
 {
-    if (!IsIllidanLandingPickupPending(botAI, illidan))
+    if (!IsIllidanPickupPending(botAI, illidan))
         return false;
 
     Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* target = channel.m_targets.GetUnitTarget();
-    bool const isOnShadowfiend = target &&
-        target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) &&
-        !channel.GetSpellInfo()->IsAffectingArea();
-    return !isOnShadowfiend;
+    return !IsIllidanPickupExemptTarget(
+        channel.m_targets.GetUnitTarget(), channel.GetSpellInfo()->IsAffectingArea());
 }
 
 float GetGrateAngle(Position const& position)

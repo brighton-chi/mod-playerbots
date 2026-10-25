@@ -869,7 +869,7 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
 }
 
 // Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
-// multiplier can't end a running auto-repeat or channel; in the landing pickup, so do any
+// multiplier can't end a running auto-repeat or channel; in the pickup, so do any
 // channel's heals or mana.
 bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
 {

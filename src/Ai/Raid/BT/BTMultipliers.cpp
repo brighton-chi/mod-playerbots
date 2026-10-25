@@ -1277,7 +1277,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
-    // Mana potions and gems, held only in the landing pickup.
+    // Mana potions and gems, held only in the pickup.
     bool const isItem = dynamic_cast<UseItemAction*>(action);
     if (!isHeal && !isItem &&
         (!IsDpsHoldCandidate(bot, action) ||
@@ -1290,20 +1290,21 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!illidan)
         return 1.0f;
 
-    // In the landing pickup nothing but the Main Tank causes him threat: heals, mana restores
-    // (energize threat), totems and damage alike; damage on a Shadowfiend aside.
-    if (IsIllidanLandingPickupPending(botAI, illidan))
+    // In the pickup nothing but the Main Tank causes him threat: heals, mana restores (energize
+    // threat), totems and damage alike; damage on an add aside.
+    if (IsIllidanPickupPending(botAI, illidan))
     {
         if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
             return 1.0f;
 
+        if (isHeal || isItem)
+            return 0.0f;
+
         bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
             dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
         Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
-        bool const isOnShadowfiend = !isHeal && !isItem && target &&
-            target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) &&
-            action->getThreatType() != Action::ActionThreatType::Aoe;
-        return isOnShadowfiend ? 1.0f : 0.0f;
+        bool const isAoe = action->getThreatType() == Action::ActionThreatType::Aoe;
+        return IsIllidanPickupExemptTarget(target, isAoe) ? 1.0f : 0.0f;
     }
 
     if (isItem)
