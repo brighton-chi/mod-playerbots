@@ -1979,9 +1979,15 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     {
         _phaseStartTime = phaseStartTime;
         // A ring step that Demon Form or Maiev's arrival cuts short is finished after it, so the
-        // tank doesn't settle back on the live Flame Crash that started it.
+        // tank doesn't settle back on the live Flame Crash that started it. Not one nearly done:
+        // its lead point is too close to lead him on, and walking there takes the tank into him.
         IllidanPhase const before = GetIllidanPhaseBefore(*illidan, phase);
-        bool const isStep = _lead == IllidanTankLead::Step || _lead == IllidanTankLead::StepAgain;
+        float const shortfall = Position::NormalizeOrientation(
+            GetGrateAngle(_leadPosition) - GetGrateAngle(*illidan));
+        bool const isStep =
+            (_lead == IllidanTankLead::Step || _lead == IllidanTankLead::StepAgain) &&
+            shortfall > ILLIDAN_RING_LEAD_ANGLE - ILLIDAN_RING_SHORT_STEP_ANGLE &&
+            shortfall < static_cast<float>(M_PI);
         bool const keepsStep = isStep && (phase == IllidanPhase::Demon ||
             before == IllidanPhase::Demon || before == IllidanPhase::None);
         if (!keepsStep)
