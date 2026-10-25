@@ -3002,9 +3002,9 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
-// Demon Form: Shadow Demons first for everyone, healers included; then for melee a nearly dead
-// Shadowfiend in their reach, for ranged any Shadowfiend in their band; then him, except for melee
-// and tanks, who never take him in the form.
+// Demon Form: Shadow Demons first, and healers only those; then for melee a nearly dead
+// Shadowfiend in their reach, for ranged DPS any Shadowfiend in their band, not for the warlock
+// tank; then him for ranged DPS and the warlock tank.
 std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPriorityOrder(
     Unit* illidan, IllidanPhase phase)
 {

@@ -382,7 +382,8 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 }
 
 // Tanks and melee never pick Illidan's Shadowfiends themselves; ranged and pets kill them, and
-// melee only finish one in their reach, from assign target priority. Nor him in Demon Form.
+// melee only finish one in their reach, from assign target priority. Nor, in Demon Form, him or
+// the Shadow Demon walking to the warlock tank.
 void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -397,8 +398,12 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& excl
         context->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
     exclusions.insert(shadowfiends.begin(), shadowfiends.end());
 
-    if (GetIllidanPhase(illidan) == IllidanPhase::Demon)
-        exclusions.insert(illidan->GetGUID());
+    if (GetIllidanPhase(illidan) != IllidanPhase::Demon)
+        return;
+
+    exclusions.insert(illidan->GetGUID());
+    if (Unit* demon = GetShadowDemonMovingToWarlockTank(botAI))
+        exclusions.insert(demon->GetGUID());
 }
 
 } // end anonymous namespace
