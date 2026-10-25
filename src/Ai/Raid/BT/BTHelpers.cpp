@@ -1818,6 +1818,22 @@ bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
         IsIllidanLandingPickupPending(botAI, illidan);
 }
 
+bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel)
+{
+    if (!IsIllidanLandingPickupPending(botAI, illidan))
+        return false;
+
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* target = channel.m_targets.GetUnitTarget();
+    bool const isOnShadowfiend = target &&
+        target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) &&
+        !channel.GetSpellInfo()->IsAffectingArea();
+    return !isOnShadowfiend;
+}
+
 float GetGrateAngle(Position const& position)
 {
     return ILLIDAN_GRATE_CENTRE.GetAngle(&position);

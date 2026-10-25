@@ -2693,6 +2693,13 @@ bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
         return false;
 
     bool isStopped = false;
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (channel && IsIllidanPickupChannelHeld(botAI, illidan, *channel))
+    {
+        bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
+        isStopped = true;
+    }
+
     for (CurrentSpellTypes const type : { CURRENT_AUTOREPEAT_SPELL, CURRENT_CHANNELED_SPELL })
     {
         Spell* spell = bot->GetCurrentSpell(type);

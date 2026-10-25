@@ -869,7 +869,8 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
 }
 
 // Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
-// multiplier can't end a running auto-repeat or channel.
+// multiplier can't end a running auto-repeat or channel; in the landing pickup, so do any
+// channel's heals or mana.
 bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
 {
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
@@ -880,6 +881,9 @@ bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
     if (!illidan)
         return false;
+
+    if (channel && IsIllidanPickupChannelHeld(botAI, illidan, *channel))
+        return true;
 
     ObjectGuid const guid = illidan->GetGUID();
     bool const isOnIllidan = (shot && shot->m_targets.GetUnitTargetGUID() == guid) ||

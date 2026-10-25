@@ -23,6 +23,7 @@ class GameObject;
 class Pet;
 class Player;
 class PlayerbotAI;
+class Spell;
 class SpellInfo;
 class Unit;
 
@@ -856,6 +857,10 @@ bool IsIllidanLandingPickupPending(PlayerbotAI* botAI, Unit* illidan);
 // While he flies and in Demon Form, and in the landing pickup, where a pet's attack would take him
 // from the Main Tank.
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
+// In the landing pickup a channel begun before the hold still gives him threat after the reset
+// (Evocation's and Hymn of Hope's mana, Tranquility's heals, a Blizzard), so everyone but the Main
+// Tank stops theirs; single-target damage on a Shadowfiend aside.
+bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel);
 // The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
