@@ -8,7 +8,6 @@
 #include "BTHelpers.h"
 #include "CreatureAI.h"
 #include "EncounterHelpers.h"
-#include "Log.h" // TEMP LOG (landing pickup), remove after testing
 #include "PetDefines.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -3110,60 +3109,6 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     {
         state.illidanTankAggroPhase = phase;
         updated = true;
-    }
-
-    // TEMP LOG (landing pickup: his victim and threat list through the landing, then for 3 s after
-    // the reset, and who is giving Replenishment), remove after testing
-    Player* mainTank = GetGroupMainTank(bot);
-    bool const isLanding = phase == IllidanPhase::Landing;
-    bool const isPickup = phase == IllidanPhase::Grounded &&
-        GetIllidanPhaseBefore(*illidan, phase) == IllidanPhase::Landing &&
-        IsIllidanPhaseStartWithin(*illidan, phase, 3 * IN_MILLISECONDS);
-    uint32 const logIntervalMs = isLanding ? 500 : 250;
-    if (mainTank && (isLanding || isPickup) && getMSTimeDiff(_tempLogTime, now) >= logIntervalMs)
-    {
-        _tempLogTime = now;
-
-        // Online state: 2 online, 1 suppressed, 0 offline.
-        std::string top;
-        size_t count = 0;
-        for (ThreatReference const* ref : illidan->GetThreatMgr().GetSortedThreatList())
-        {
-            if (count++ == 5)
-                break;
-
-            Unit* unit = ref->GetVictim();
-            Unit* owner = unit->GetCharmerOrOwner();
-            top += unit->GetName() + (owner ? " (pet of " + owner->GetName() + ")" : "") + " " +
-                std::to_string(static_cast<int32>(ref->GetThreat())) + " s" +
-                std::to_string(static_cast<uint32>(ref->GetOnlineState())) + "; ";
-        }
-
-        constexpr uint32 replenishment = 57669;
-        std::string providers;
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* groupRef = group->GetFirstMember(); groupRef;
-                 groupRef = groupRef->next())
-            {
-                Player* member = groupRef->GetSource();
-                Aura* aura = member ? member->GetAura(replenishment) : nullptr;
-                Unit* caster = aura ? aura->GetCaster() : nullptr;
-                if (caster && providers.find(caster->GetName()) == std::string::npos)
-                    providers += caster->GetName() + " ";
-            }
-        }
-
-        uint32 const sinceReset =
-            isPickup ? getMSTimeDiff(state.illidanPhaseStartTime.value_or(now), now) : 0;
-        Unit* victim = illidan->GetThreatMgr().GetLastVictim();
-        LOG_INFO(
-            "playerbots",
-            "[BT landing] phase {} +{} ms victim {} MT melee {} {:.1f} yd; top: {}"
-            "replenishment from: {}",
-            static_cast<uint32>(phase), sinceReset, victim ? victim->GetName() : "none",
-            mainTank->HasUnitState(UNIT_STATE_MELEE_ATTACKING), mainTank->GetExactDist(illidan),
-            top, providers.empty() ? "none" : providers);
     }
 
     return updated;
