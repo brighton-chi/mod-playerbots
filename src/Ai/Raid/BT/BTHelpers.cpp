@@ -2676,8 +2676,7 @@ EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot)
     if (startPos.GetExactDist2d(endPos) < ILLIDAN_MIN_SEGMENT_LENGTH)
         return {};
 
-    constexpr float eyeBlastWidth = 9.0f;
-    return { startPos, endPos, eyeBlastWidth };
+    return { startPos, endPos, ILLIDAN_EYE_BLAST_CLEARANCE };
 }
 
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area)

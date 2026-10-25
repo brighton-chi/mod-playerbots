@@ -2474,8 +2474,6 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
     float const distToLine = bot->GetExactDist2d(closest);
     constexpr float sidestepMargin = 0.5f;
     float const moveDist = (dangerArea.width - distToLine) + sidestepMargin;
-    if (moveDist <= 0.0f)
-        return false;
 
     float const rawDirX = px - closest.GetPositionX();
     float const rawDirY = py - closest.GetPositionY();
@@ -2501,12 +2499,12 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
     Position safePosition(px + dirX * moveDist, py + dirY * moveDist, safeZ);
     if (isTooCloseToStack(safePosition))
     {
-        constexpr float headRadius = 6.0f;
         constexpr float crossingClearance = 7.0f;
         float const crossDist = distToLine + dangerArea.width + sidestepMargin;
         Position const otherSide(px - dirX * crossDist, py - dirY * crossDist, safeZ);
         if (!isTooCloseToStack(otherSide) &&
-            closest.GetExactDist2d(dangerArea.start) >= headRadius + crossingClearance)
+            closest.GetExactDist2d(dangerArea.start) >=
+                ILLIDAN_EYE_BLAST_HAZARD_RADIUS + crossingClearance)
         {
             safePosition = otherSide;
         }

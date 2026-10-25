@@ -749,6 +749,10 @@ inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
 
+// Phase 2: Eye Blast's head hits within this of its centre; its path ahead is kept clear by 3 yd.
+inline constexpr float ILLIDAN_EYE_BLAST_HAZARD_RADIUS = 6.0f;
+inline constexpr float ILLIDAN_EYE_BLAST_CLEARANCE = ILLIDAN_EYE_BLAST_HAZARD_RADIUS + 3.0f;
+
 // Phase 4 hazards: Aura of Dread round him and Shadow Blast round his victim, each kept clear by
 // 2 yd.
 inline constexpr float ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS = 15.0f;
