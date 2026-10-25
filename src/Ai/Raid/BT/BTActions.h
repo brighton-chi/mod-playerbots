@@ -614,7 +614,8 @@ public:
 
 private:
     bool RepositionToAvoidEyeBlast(BtHelpers::EyeBlastDangerArea const& dangerArea);
-    bool RepositionToAvoidBlaze(Unit* flame);
+    // While the beam's head is near, dangerArea is its path ahead, which the steps keep out of.
+    bool RepositionToAvoidBlaze(Unit* flame, BtHelpers::EyeBlastDangerArea const* dangerArea);
 
     uint8 _tankStep = 0;
 };

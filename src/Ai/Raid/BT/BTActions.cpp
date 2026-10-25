@@ -2386,12 +2386,11 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
 // other Flame's tank is dead too, when it takes that Flame.
 bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
 {
-    // Only consider the eye blast if its trigger NPC is within 30 yards of the tank
-    constexpr float eyeBlastTriggerRadius = 30.0f;
-
     Unit* flame = GetAssignedFlameOfAzzinoth(bot);
     if (!flame)
     {
+        // Its walk to the grate is one long move, which a hold can't stop once it has started.
+        constexpr float eyeBlastTriggerRadius = 30.0f;
         // An unrecorded Flame hasn't spawned yet, so the tank waits by its glaive.
         bool const isEast = IsEastFlameOfAzzinothTank(bot);
         BtInstanceState const* state = FindBtState(bot->GetInstanceId());
@@ -2439,11 +2438,16 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
     if (flame->GetVictim() != bot)
         return false;
 
+    // Once the beam's head is this close, the tank steps out of its path ahead and takes no Blaze
+    // step into it: soon enough to step out, or across, before the head arrives.
+    constexpr float eyeBlastReactRadius = 18.0f;
     EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
-    if (dangerArea.width > 0.0f && bot->GetExactDist2d(dangerArea.start) <= eyeBlastTriggerRadius)
+    bool const isHeadNear =
+        dangerArea.width > 0.0f && bot->GetExactDist2d(dangerArea.start) <= eyeBlastReactRadius;
+    if (isHeadNear && IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea))
         return RepositionToAvoidEyeBlast(dangerArea);
 
-    return RepositionToAvoidBlaze(flame);
+    return RepositionToAvoidBlaze(flame, isHeadNear ? &dangerArea : nullptr);
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
@@ -2473,27 +2477,42 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
     float const dirX = rawDirLength == 0.0f ? -(dy / length) : rawDirX / rawDirLength;
     float const dirY = rawDirLength == 0.0f ? dx / length : rawDirY / rawDirLength;
 
-    float const safeX = px + dirX * moveDist;
-    float const safeY = py + dirY * moveDist;
-    float const safeZ = bot->GetPositionZ();
-    Position const safePosition(safeX, safeY, safeZ);
-
     constexpr float minGrateDistance = 10.0f;
-    bool const isTooCloseToStack = std::any_of(
-        ILLIDAN_GRATE_POSITIONS.begin(), ILLIDAN_GRATE_POSITIONS.end(),
-        [&safePosition](Position const& stack)
+    auto const isTooCloseToStack = [](Position const& position)
+    {
+        return std::any_of(
+            ILLIDAN_GRATE_POSITIONS.begin(), ILLIDAN_GRATE_POSITIONS.end(),
+            [&position](Position const& stack)
+            {
+                return position.GetExactDist2d(stack) < minGrateDistance;
+            });
+    };
+
+    // Out on the bot's side, else across the line while the head is far enough off to cross ahead
+    // of it, else out on its side anyway: near a stack the Flame's cone may reach it, but the head
+    // kills.
+    float const safeZ = bot->GetPositionZ();
+    Position safePosition(px + dirX * moveDist, py + dirY * moveDist, safeZ);
+    if (isTooCloseToStack(safePosition))
+    {
+        constexpr float headRadius = 6.0f;
+        constexpr float crossingClearance = 7.0f;
+        float const crossDist = distToLine + dangerArea.width + sidestepMargin;
+        Position const otherSide(px - dirX * crossDist, py - dirY * crossDist, safeZ);
+        if (!isTooCloseToStack(otherSide) &&
+            closest.GetExactDist2d(dangerArea.start) >= headRadius + crossingClearance)
         {
-            return safePosition.GetExactDist2d(stack) < minGrateDistance;
-        });
-    if (isTooCloseToStack)
-        return false;
+            safePosition = otherSide;
+        }
+    }
 
     return MoveTo(
-        BT_MAP_ID, safeX, safeY, safeZ, false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        BT_MAP_ID, safePosition.GetPositionX(), safePosition.GetPositionY(), safeZ, false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(Unit* flame)
+bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
+    Unit* flame, EyeBlastDangerArea const* dangerArea)
 {
     if (flame->GetVictim() != bot || !bot->IsWithinMeleeRange(flame))
         return false;
@@ -2533,6 +2552,11 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(Unit*
     {
         return false;
     }
+
+    // A step into the head's path ahead waits until the head has passed it.
+    Position const stepPosition(moveX, moveY, bot->GetPositionZ());
+    if (dangerArea && IsPathInEyeBlastDangerArea(bot->GetPosition(), stepPosition, *dangerArea))
+        return false;
 
     return MoveTo(
         BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
