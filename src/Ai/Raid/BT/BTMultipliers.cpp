@@ -22,6 +22,7 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "Spell.h"
 #include "SpellMgr.h"
 #include "ThreatManager.h"
 #include "Timer.h"
@@ -916,6 +917,18 @@ bool IsGuardianSummon(Player* bot, Action* action)
     }
 }
 
+// His Shadow Blast is being cast at the bot. It lands round wherever the bot stands as the cast
+// ends, and Demon Form's end doesn't stop the last one.
+bool IsIllidanShadowBlastOnBot(Unit* illidan, Player* bot)
+{
+    if (!illidan)
+        return false;
+
+    Spell const* spell = illidan->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    return spell && spell->m_spellInfo->Id == Id(BtSpells::SPELL_SHADOW_BLAST) &&
+        spell->m_targets.GetUnitTargetGUID() == bot->GetGUID();
+}
+
 } // end anonymous namespace (Illidan Stormrage)
 
 // While he talks, bots move only to their pull places.
@@ -971,6 +984,15 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
             dynamic_cast<CombatFormationMoveAction*>(action) ||
             IsHeldIllidanChase(botAI, action, phase);
         return isHeldMove && HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
+    }
+
+    // He finishes the Shadow Blast he was casting when Demon Form ended, and it lands round its
+    // target as the cast ends, so that bot stands still until then rather than take it into the
+    // raid.
+    if (phase != IllidanPhase::Demon && dynamic_cast<MovementAction*>(action) &&
+        IsIllidanShadowBlastOnBot(illidan, bot))
+    {
+        return 0.0f;
     }
 
     // Unselectable while he flies and lands, he is an invalid target, and dropping him would take

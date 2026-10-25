@@ -103,6 +103,7 @@ enum class BtSpells : uint32
     SPELL_PARASITIC_SHADOWFIEND_SEC = 41914, // secondary infection, from a Shadowfiend's hit
     SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
     SPELL_SHADOW_PRISON             = 40647, // on every player in Maiev's arrival, 30 s
+    SPELL_SHADOW_BLAST              = 41078, // Demon Form, 20 yd round his victim as the cast ends
 
     // Death Knight
     SPELL_MIND_FREEZE               = 47528,
