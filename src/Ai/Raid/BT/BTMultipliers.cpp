@@ -964,9 +964,16 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     IllidanPhase const phase = GetIllidanPhase(illidan);
     // In Maiev's arrival the Main Tank keeps him as its target, so its swing brings it back onto
     // his threat list, out of Shadow Prison's suppression, before he wakes; only its ring action
-    // moves it, so nothing chasing its target pulls it off its place.
+    // moves it, so nothing chasing its target pulls it off its place. Everyone else has dropped
+    // him and left the combat engine, where nothing should walk them to the master in the gap.
     if (phase == IllidanPhase::None)
     {
+        bool const isFormationMove = dynamic_cast<FollowAction*>(action) ||
+            (dynamic_cast<CombatFormationMoveAction*>(action) &&
+             !dynamic_cast<SetBehindTargetAction*>(action));
+        if (isFormationMove)
+            return 0.0f;
+
         bool const isDrop = dynamic_cast<DropTargetAction*>(action);
         bool const isMove = dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action);
