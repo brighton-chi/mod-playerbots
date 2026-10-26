@@ -962,25 +962,19 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     }
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
-    // In Maiev's arrival the Main Tank keeps him as its target, so its swing brings it back onto
-    // his threat list, out of Shadow Prison's suppression, before he wakes; only its ring action
-    // moves it, so nothing chasing its target pulls it off its place. Everyone else has dropped
-    // him and left the combat engine, where nothing should walk them to the master in the gap.
+    // In Maiev's arrival nobody moves but the Main Tank, by its ring action alone. It keeps him as
+    // its target, so its swing brings it back onto his threat list, out of Shadow Prison's
+    // suppression, before he wakes.
     if (phase == IllidanPhase::None)
     {
-        bool const isFormationMove = dynamic_cast<FollowAction*>(action) ||
-            (dynamic_cast<CombatFormationMoveAction*>(action) &&
-             !dynamic_cast<SetBehindTargetAction*>(action));
-        if (isFormationMove)
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action))
+        {
             return 0.0f;
+        }
 
-        bool const isDrop = dynamic_cast<DropTargetAction*>(action);
-        bool const isMove = dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<IllidanStormrageMainTankRepositionBossAction*>(action);
-        if (!isDrop && !isMove)
-            return 1.0f;
-
-        return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+        return dynamic_cast<DropTargetAction*>(action) && PlayerbotAI::IsTank(bot) &&
+            PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
     }
 
     // In the death scene only an infected bot is held, so nothing pulls it off its infection
