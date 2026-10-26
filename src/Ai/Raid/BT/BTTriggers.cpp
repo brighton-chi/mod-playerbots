@@ -624,8 +624,8 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == IllidanPhase::None)
         return false;
 
-    if (phase == IllidanPhase::Flying)
-        return IsIllidanInfectionPositionKeptInFlight(botAI);
+    if (phase == IllidanPhase::Flying && !IsIllidanInfectionPositionKeptInFlight(botAI))
+        return false;
 
     return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
 }
@@ -653,8 +653,21 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (std::find(infected.begin(), infected.end(), player) == infected.end())
                 return true;
 
-            if (hasInfectionPosition && !infection.isTrapAssigned)
+            if (!hasInfectionPosition)
+                continue;
+
+            if (!infection.isTrapAssigned)
                 return true;
+
+            if (infection.hunter.IsEmpty())
+                continue;
+
+            // Its bot has stopped running, so the hunter is freed.
+            if (IsExemptFromIllidanInfectionRun(
+                    botAI, illidan, ObjectAccessor::FindPlayer(player)))
+            {
+                return true;
+            }
         }
     }
 

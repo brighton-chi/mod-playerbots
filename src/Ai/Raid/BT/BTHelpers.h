@@ -905,7 +905,7 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
 bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player);
 // While he flies, a bot infected before he took off waits at the infection position until its
 // Shadowfiends are out, tanks included (the raid can't move away from them in Phase 2), and its
-// trap hunter still lays the trap.
+// trap hunter still lays the trap. The Main Tank, which never runs, waits where it stands.
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);
 // A Frost Trap not yet sprung at infectionPosition, or a patch round it lasting at least
 // minDurationMs more.

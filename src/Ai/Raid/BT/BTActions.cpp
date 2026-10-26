@@ -2274,7 +2274,8 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
 
 // The infection position is fixed when an infection is recorded, so it doesn't move as he does,
 // and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
-// on. Both last until the debuff is gone, through any change of phase.
+// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
+// its bot stops running, as the warlock tank does at the transform.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2316,12 +2317,19 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
         for (auto& [guid, infection] : infections)
         {
+            Player* player = ObjectAccessor::FindPlayer(guid);
+            if (!infection.hunter.IsEmpty() &&
+                IsExemptFromIllidanInfectionRun(botAI, illidan, player))
+            {
+                infection.hunter.Clear();
+                infection.isTrapAssigned = false;
+            }
+
             if (infection.isTrapAssigned)
                 continue;
 
             // Only for his own casts, so Shadowfiends spreading among the raid don't send hunters
             // back and forth.
-            Player* player = ObjectAccessor::FindPlayer(guid);
             if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
                 continue;
 
