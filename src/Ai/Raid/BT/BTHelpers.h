@@ -651,8 +651,6 @@ inline constexpr float ILLIDAN_PHASE_2_HEALTH_PCT = 65.0f;
 inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
 // DPS cooldowns are held from 95% down to this, and Bloodlust and Heroism from the pull.
 inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
-// At or below this he is burnt down: no hold and no stop.
-inline constexpr float ILLIDAN_BURN_HEALTH_PCT = 5.0f;
 // At or below this, and above 30%, only the warlock tank damages him in Demon Form, so he changes
 // back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;

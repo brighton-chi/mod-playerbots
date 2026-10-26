@@ -1647,7 +1647,7 @@ bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
 {
-    if (!illidan || illidan->GetHealthPct() <= ILLIDAN_BURN_HEALTH_PCT)
+    if (!illidan)
         return IllidanDpsHold::None;
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
