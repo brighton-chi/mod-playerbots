@@ -546,6 +546,7 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
+// The Main Tank waits at its pull position, facing him; everyone else waits on the grate.
 class IllidanStormragePositionOnGrateDuringSpeechAction : public MovementAction
 {
 public:
@@ -554,6 +555,9 @@ public:
     bool Execute(Event event) override;
 };
 
+// Hunter bots misdirect him onto the Main Tank at each Phase 1, 3 and 5 start, and onto the
+// warlock tank in Demon Form. While he flies, the first hunter bot by GUID takes the East Flame
+// to its tank, and the others the West Flame.
 class IllidanStormrageMisdirectToTanksAction : public Action
 {
 public:
@@ -566,6 +570,10 @@ private:
     bool TryMisdirectToWarlockTank(Unit* illidan);
 };
 
+// The Main Tank places him through the core's chase rules. He starts after his victim once it is
+// 9.5 yd from his centre, runs right up behind it while it walks, stops as soon as it stops, and
+// faces it. A walk that ends within 9.5 yd of him only turns him. So where the tank stops sets
+// where he stands, and which side of him it stands on sets which way he faces.
 class IllidanStormrageMainTankRepositionBossAction : public AttackAction
 {
 public:
@@ -601,6 +609,9 @@ private:
     bool _isOpeningLeadDone = false;
 };
 
+// The run is in steps, so another forced move can take over between them, as the warlock tank's
+// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
+// through a global cooldown. An infected hunter is never on duty.
 class IllidanStormrageIsolateBotWithInfectionAction : public MovementAction
 {
 public:
@@ -612,6 +623,10 @@ private:
     bool HunterSetFrostTrap();
 };
 
+// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
+// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
+// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
+// its bot stops running, as the warlock tank does at the transform.
 class IllidanStormrageTrackInfectionsAction : public Action
 {
 public:
@@ -626,6 +641,8 @@ private:
         ObjectGuid& hunter);
 };
 
+// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
+// other Flame's tank is dead too, when it takes that Flame.
 class IllidanStormrageAssistTanksHandleFlamesAction : public AttackAction
 {
 public:
@@ -649,6 +666,9 @@ private:
     uint8 _tankStep = 0;
 };
 
+// Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
+// players, most pets cannot melee Illidan during Phase 4. In the pickup after the landing or Demon
+// Form a pet's attack would take him from the Main Tank.
 class IllidanStormrageControlPetAggressionAction : public Action
 {
 public:
@@ -661,6 +681,8 @@ private:
     bool _setPassive = false;
 };
 
+// Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
+// carries out too. While its owner has just birthed Shadowfiends, the pet is called off them.
 class IllidanStormrageCommandPetAttackAddAction : public Action
 {
 public:
@@ -693,6 +715,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Totemic Recall can't be cast under Shadow Prison's stun, so in Maiev's arrival it comes in the
+// gap before he wakes.
 class IllidanStormrageRecallTotemsAction : public Action
 {
 public:
@@ -701,6 +725,7 @@ public:
     bool Execute(Event event) override;
 };
 
+// Everyone but the Main Tank waits at the landing stack, out of his way to the ring.
 class IllidanStormragePositionForLandingAction : public MovementAction
 {
 public:
@@ -717,6 +742,7 @@ public:
     bool Execute(Event event) override;
 };
 
+// The target is kept: the hold keeps the shot or channel from starting again.
 class IllidanStormrageStopShootingAction : public Action
 {
 public:
@@ -725,6 +751,10 @@ public:
     bool Execute(Event event) override;
 };
 
+// Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
+// first, the warlock tank in the one nearest its Demon Form position, and ranged DPS no farther
+// than their spell reach of him. Phase 4: healers and ranged DPS each in their own slots, by
+// roster.
 class IllidanStormrageSpreadRangedAction : public MovementAction
 {
 public:
@@ -736,6 +766,8 @@ private:
     bool FindDemonFormSlot(Unit const& illidan, Position& position);
 };
 
+// Short steps toward the Demon, so the bot stops once in reach, never into Aura of Dread or near
+// Shadow Blast round his victim. Spread ranged brings it back once the Demon is dead.
 class IllidanStormrageReachShadowDemonAction : public MovementAction
 {
 public:
@@ -744,6 +776,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Melee and tanks but the Main Tank, which has its own positions, wait in their Demon Form slots,
+// facing him, and leave them only for a Shadow Demon.
 class IllidanStormrageMeleeStayAwayFromDemonFormAction : public MovementAction
 {
 public:
@@ -752,6 +786,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// The warlock tank holds him from its position with Shadow Ward and Searing Pain, Life Tapping
+// between Searing Pains.
 class IllidanStormrageWarlockTankHandleDemonFormAction : public MovementAction
 {
 public:
@@ -760,6 +796,7 @@ public:
     bool Execute(Event event) override;
 };
 
+// A channel would hold the first Seed back; Life Tap comes between Seeds.
 class IllidanStormrageSeedShadowDemonsAction : public Action
 {
 public:

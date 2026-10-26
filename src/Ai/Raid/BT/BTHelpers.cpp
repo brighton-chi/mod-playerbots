@@ -1707,8 +1707,6 @@ bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot)
     return false;
 }
 
-// Until the tracker records the change, the aggro it saw is the last phase's, so a new phase is
-// pending at once.
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
 {
     if (phase == IllidanPhase::Landing || phase == IllidanPhase::None)
@@ -1724,7 +1722,6 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
     return !state || state->illidanTankAggroPhase != phase;
 }
 
-// A threat reset keeps the old victim at 0, so the victim alone doesn't show aggro.
 bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
 {
     auto const hasAggro = [](Unit const& creature, Player* tank)

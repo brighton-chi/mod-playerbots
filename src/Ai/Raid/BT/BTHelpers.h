@@ -628,9 +628,8 @@ struct ShadowDemon
     ObjectGuid target = ObjectGuid::Empty;
 };
 
-// One Shadowfiend infection, recorded by the mechanic tracker. The infection position is fixed
-// until the debuff is gone, whatever the phase. Once the trap is assigned, hunter is empty if a
-// Frost Trap already covered the position, or once the hunter has laid its trap.
+// One Shadowfiend infection, recorded by the mechanic tracker. Once the trap is assigned, hunter is
+// empty if a Frost Trap already covered the position, or once the hunter has laid its trap.
 struct IllidanInfection
 {
     Position infectionPosition;
@@ -647,9 +646,7 @@ inline constexpr uint32 ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = 100.0f;
 // From his position, this takes in Akama's, 81 yd away, where the speech is started.
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = 100.0f;
-// A bot this close to its place is in it.
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 1.0f;
-// A segment shorter than this has no direction worth measuring from: a point.
 inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
 // A bot without the Shadowfiend debuff this close to a Shadowfiend is where a debuff just ended.
 inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
@@ -665,13 +662,14 @@ inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
 // back above 30%.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
 inline constexpr uint32 ILLIDAN_RESET_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
-// A tank has aggro once it is the victim with this much threat. One heal's threat is a few
-// hundred.
+// A tank has aggro once it is the victim with this much threat: a threat reset leaves the old
+// victim in place at 0. One heal's threat is a few hundred.
 inline constexpr float ILLIDAN_TANK_AGGRO_THREAT = 2000.0f;
 // After the landing's or Demon Form's threat reset the rest of the raid waits for the Main Tank's
 // aggro at most this long.
 inline constexpr uint32 ILLIDAN_PICKUP_MAX_MS = 3 * IN_MILLISECONDS;
-// Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks.
+// Damage on the Flames of Azzinoth waits this long from the first Flame's record, for their tanks:
+// a Flame is in combat with nobody for its first 2 s.
 inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
 // An immunity clears Dark Barrage only this long after it lands, so its beam shows first; it costs
 // one 3000 tick, the first coming at 1 s.
@@ -714,7 +712,8 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 6.0f;
 // He walks back from a victim this close to his centre (both collision radii), checked every 2 to
 // 6 s. A Main Tank whose straight walk would pass this close goes round him instead, stepping
-// toward the settle-circle point 60 deg on, about 5 yd from his centre (at least 4.6).
+// toward the settle-circle point 60 deg on, on the side nearer its position, about 5 yd from his
+// centre.
 inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
 inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him,
@@ -789,7 +788,8 @@ inline constexpr float ILLIDAN_STEP_IN_POSITION_DISTANCE = 9.0f;
 inline Position const ILLIDAN_GRATE_CENTRE =           { 676.021f, 305.455f, 353.582f };
 // He kneels here and stands here for his speech.
 inline Position const ILLIDAN_SPEECH_POSITION =        { 705.732f, 304.988f, 353.925f };
-// The Main Tank waits this far north of the centre at the pull, so he stops on the ring.
+// The Main Tank waits here at the pull, 15.5 yd north of the centre, so he stops on the ring when
+// he runs in.
 inline Position const ILLIDAN_PULL_TANK_POSITION =     { 691.521f, 305.455f, 353.790f };
 // While he lands, everyone else waits 22 yd south of the centre and the Main Tank 6 yd south of
 // the landing point, in his way if he runs at them after the threat reset.
@@ -834,30 +834,24 @@ std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(ui
 IllidanPhase GetIllidanPhase(Unit* illidan);
 // He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
-// Records a change of phase, the one before it and the start of a grounded phase; true if the
-// phase changed. Written by the mechanic tracker, and at the Demon Form transform by its listener.
+// Written by the mechanic tracker, and at the Demon Form transform by its listener; true if the
+// phase changed.
 bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase);
-// The phase started less than durationMs ago; a change the mechanic tracker hasn't recorded yet
-// has just started.
+// A phase change the mechanic tracker hasn't recorded yet counts as just started.
 bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs);
-// The phase before the current one; until the tracker records a change, the last one it recorded.
+// Until the tracker records the change, the last phase it recorded.
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase);
-// Demon Form ends, with a threat reset, less than durationMs from now; never before the tracker
-// has recorded the form.
+// Never true before the tracker has recorded the form.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
 // The hold window that is running, before who it spares is decided.
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
-// The hold this bot is in, for the hold multiplier and any stop block.
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
-// Damage on the Flames of Azzinoth waits for their tanks, since a Flame is in combat with nobody
-// for its first 2 s; false before the tracker records the first Flame.
 bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
 // The bot's entry on his threat list is online, not suppressed: after Shadow Prison only threat
 // the bot causes brings it back.
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
-// From each phase change until the tracker sees the tanks have aggro (DoIllidanTanksHaveAggro);
-// all through his landing and Maiev's arrival; never at the pull or in the death scene. Shamans
-// recall their totems and set none.
+// From each phase change until the tracker sees the tanks have aggro, and all through his landing
+// and Maiev's arrival; never at the pull or in the death scene.
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
 // Each tank that should have a creature is its victim with ILLIDAN_TANK_AGGRO_THREAT: him the Main
 // Tank, or in Demon Form the warlock tank; while he flies each living Flame its own tank, or the
@@ -965,7 +959,6 @@ Position GetClosestPointOnSegment(
     Position const& start, Position const& end, Position const& point);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
 bool IsPositionInEyeBlastDangerArea(Position const& pos, EyeBlastDangerArea const& area);
-// A straight walk from one point to the other passes through the area.
 bool IsPathInEyeBlastDangerArea(
     Position const& from, Position const& to, EyeBlastDangerArea const& area);
 
@@ -978,8 +971,6 @@ struct BtInstanceState
     std::optional<uint32> najentusSpineThrowTime;
     std::optional<uint32> councilDpsWaitTimer;
     std::optional<IllidanPhase> illidanLastPhase;
-    // The phase before the current one, so the Main Tank's pickup can tell a Phase 3 start after
-    // the landing.
     std::optional<IllidanPhase> illidanPreviousPhase;
     std::optional<uint32> illidanPhaseStartTime;
     std::optional<uint32> illidanFlamePhaseStartTime;

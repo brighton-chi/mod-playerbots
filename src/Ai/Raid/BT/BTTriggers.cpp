@@ -559,8 +559,6 @@ bool IllidanStormrageShouldPositionForPullTrigger::IsActive()
     return AI_VALUE(bool, "illidan stormrage speech in progress");
 }
 
-// Hunters misdirect onto the Main Tank at each Phase 1, 3 and 5 start, the Flame tanks in Phase 2
-// and the warlock tank in Demon Form.
 bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -600,8 +598,6 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsMainTank(bot);
 }
 
-// An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
-// Frost Trap. The Main Tank never runs, and the warlock tank not in Demon Form.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
@@ -621,8 +617,6 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
 }
 
-// The mechanic tracker records each new infection while there is an infection position, keeps
-// looking for a trap hunter while none is ready, and drops an entry once its debuff is gone.
 bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -699,9 +693,6 @@ bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
     return ShouldIllidanPetsBePassive(botAI, illidan) != pet->HasReactState(REACT_PASSIVE);
 }
 
-// Hunter and warlock pets take the Shadowfiends, which never attack pets.
-// Hunter and warlock pets in Phases 1, 2, 3 and 5 and the death scene. In Demon Form every pet,
-// passive then, once no Shadow Demon is left for it.
 bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
@@ -750,7 +741,6 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     return GetNearestParasiticShadowfiend(botAI, *pet);
 }
 
-// Every pet, passive in Demon Form, is sent onto a Shadow Demon and kept on it until it dies.
 bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
@@ -783,8 +773,6 @@ bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
     return !IsFlameOfAzzinothTank(bot);
 }
 
-// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use, Dark Barrage
-// after a moment. Not for the Main Tank or a Flame tank: an immunity loses it whatever it holds.
 bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
     bool const isPaladin = bot->getClass() == CLASS_PALADIN;
@@ -806,7 +794,6 @@ bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
     return true;
 }
 
-// Below half health, the immunity may be holding off something else, so it is kept.
 bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_MAGE &&
@@ -819,6 +806,7 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
     if (!spellId || !bot->HasAura(spellId))
         return false;
 
+    // Below half health, the immunity may be holding off something else, so it is kept.
     constexpr float keepImmunityHealthPct = 50.0f;
     if (bot->GetHealthPct() <= keepImmunityHealthPct)
         return false;
@@ -826,8 +814,6 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
     return AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
-// Totems set for the last phase would take a Flame in its first 2 s, or be back on his threat
-// list before the tank, so they come up at each phase change.
 bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -844,7 +830,6 @@ bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncou
     return illidan && IsIllidanTankAggroPending(*illidan, GetIllidanPhase(illidan));
 }
 
-// An infected bot runs to the infection position instead.
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -857,8 +842,6 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
     return !HasParasiticShadowfiend(bot);
 }
 
-// At the transform, and at 33% or below in Demon Form, melee and tanks still on him end their
-// auto-attack: in his melee range they would only need 110% of the warlock tank's threat.
 bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -872,9 +855,6 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
     return window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush;
 }
 
-// Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
-// multiplier can't end a running auto-repeat or channel; in the pickup, so do any
-// channel's heals or mana.
 bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
 {
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
@@ -922,8 +902,6 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
         phase == IllidanPhase::Maiev;
 }
 
-// Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
-// wipes the raid. Healers stay to heal.
 bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRangedDps(bot))
@@ -940,7 +918,6 @@ bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
     return demon && !bot->IsWithinCombatRange(demon, botAI->GetRange("spell"));
 }
 
-// Melee and tanks take their Demon Form slots; the Main Tank has its own positions.
 bool IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -968,10 +945,6 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsIllidanWarlockTank(botAI);
 }
 
-// Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
-// two or more are alive. They all walk toward the raid, so a Seed going off on one usually
-// catches others. Not while infected, so the run comes first, nor next to fresh Shadowfiends,
-// which the explosion would turn onto the warlock.
 bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -992,9 +965,6 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     return !IsNearNewParasiticShadowfiend(botAI);
 }
 
-// Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
-// assist tanks have the Flames. The Main Tank joins them on Shadow Demons in Demon Form until its
-// walk-in. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1027,8 +997,6 @@ bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
-// Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
-// without doing this.
 bool IllidanStormrageShouldClearHazardsBeforeLandingTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))

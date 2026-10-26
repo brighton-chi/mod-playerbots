@@ -372,7 +372,8 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
-// Not gated on the encounter, which starts as the speech ends.
+// While he talks, bots move only to their pull places. Not gated on the encounter, which starts as
+// the speech ends.
 class IllidanStormrageHoldPullPositionsMultiplier : public Multiplier
 {
 public:
@@ -399,6 +400,10 @@ private:
     float GetNonTankMovementValue(BtHelpers::IllidanPhase phase, Action* action);
 };
 
+// If near a Shadowfiend that is not low on health, nothing goes onto a Shadowfiend and no AoE
+// spell or heal is cast. This is a proxy for having just birthed a Shadowfiend, which can
+// immediately infect the birther if any threat is generated. Switching targets stays free, so a
+// bot on a Shadowfiend can still turn to him.
 class IllidanStormrageHoldNearNewShadowfiendMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -409,6 +414,9 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5 (to keep
+// them from dying in Phase 4 and to save the cooldown through Phases 1 and 2), and not in the
+// bot's own hold, which lets Mirror Image and Army of the Dead through as buffs.
 class IllidanStormrageHoldGuardianSummonsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -419,6 +427,10 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Shamans set no totems from each phase change until the tanks have aggro, so the ones they
+// recalled aren't set again at once. In Phases 1, 3 and 5 they also set none while nearer the
+// infection position than their nearest totem: it lies about 52 yd from him, past the 30 yd at
+// which totems are recast.
 class IllidanStormrageHoldTotemsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -449,6 +461,8 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// While Shadow Demons are up, the only area damage is the warlocks' Seed of Corruption on them,
+// which has its own action.
 class IllidanStormrageDisableAoeOnShadowDemonsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

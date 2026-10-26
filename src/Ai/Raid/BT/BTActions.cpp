@@ -1798,8 +1798,6 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 
 // Illidan Stormrage <The Betrayer>
 
-// The Main Tank waits 15.5 yd north of the grate centre, facing him, so he stops on the ring when
-// he runs in. Everyone else waits on the grate.
 bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
@@ -1868,8 +1866,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     if (it == hunters.end())
         return false;
 
-    // The first hunter by GUID takes the East Flame to its tank, the others the West Flame, each
-    // as soon as its own Flame is up, since the West one comes about 0.7 s first.
+    // Each hunter goes as soon as its own Flame is up; the West one comes about 0.7 s first.
     bool const isEast = it == hunters.begin();
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
     Unit* flame = isEast ? eastFlame : westFlame;
@@ -1892,19 +1889,6 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
 }
 
-// The Main Tank holds him about 25 yd from the grate centre, 6 yd outward of him so he faces out.
-// At the pull it first leads him once from due north to about 302 deg, so Phase 1's Flame Crashes
-// land clear of the Phase 2 Flame tank steps. On each Flame Crash on the tank it leads him to the
-// ring point 35 deg counterclockwise of him, once more if he stops under 20 deg on; he stops about
-// 25 deg on, and the tank settles outward of wherever he stopped. Near the centre, as after
-// landing, it leads him straight out instead. In these phases every walk is stepped, backward once
-// he is behind the tank, the walk round him included, and it walks only once it has aggro.
-// While he lands the tank waits between the landing point and the raid's stack, then leads him
-// north, so Phase 3 starts due north. In Demon Form it waits beside the melee, then 10 s before
-// the end walks to the pickup position in front of the raid to take him at the reset. In Maiev's
-// arrival, once out of Shadow Prison, it waits for its swing to put it back on his threat list,
-// then stands 6 yd inward of him; he wakes with no threat reset, and the settle then takes it
-// round him to outward.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1942,6 +1926,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     Position position;
     if (phase == IllidanPhase::Landing)
     {
+        // In his way if he runs at the raid after the threat reset.
         position = ILLIDAN_LANDING_TANK_POSITION;
     }
     else if (phase == IllidanPhase::None)
@@ -1955,6 +1940,8 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             return false;
         }
 
+        // Then inward of him. He wakes with no threat reset, and the settle takes the tank round
+        // him to outward.
         float const radius = std::max(
             0.0f, illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
         position = GetRingPoint(GetGrateAngle(*illidan), radius);
@@ -2001,6 +1988,9 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
+    // A step away from him in his melee range is walked backward, so the tank keeps facing him:
+    // hits from behind can't be dodged, parried or blocked. Walking backward is slower, so he
+    // catches the tank sooner and a ring step is shorter.
     float moveX;
     float moveY;
     bool backwards;
@@ -2067,7 +2057,6 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
     }
 
     bool const isLeading = _lead != IllidanTankLead::None;
-    // How far round the ring he stopped short of the lead position; an overshoot reads ~360.
     float const shortfall = _lead == IllidanTankLead::Step ?
         Position::NormalizeOrientation(GetGrateAngle(_leadPosition) - GetGrateAngle(illidan)) :
         0.0f;
@@ -2081,6 +2070,8 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
         // to the lead point once it ends, so the tank waits there for him.
         return false;
     }
+    // If a cast held him until the tank stood at the lead position, he stops 9.5 yd short of it,
+    // so a short step is led once more.
     else if (shortfall > ILLIDAN_RING_LEAD_ANGLE - ILLIDAN_RING_SHORT_STEP_ANGLE &&
         shortfall < static_cast<float>(M_PI))
     {
@@ -2089,6 +2080,8 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
         _lead = IllidanTankLead::StepAgain;
         position = _leadPosition;
     }
+    // Then it settles outward of wherever he stopped. From within 9.5 yd that only turns him, so he
+    // faces out of the room, and Draw Soul's cone with him.
     else
     {
         _lead = IllidanTankLead::None;
@@ -2101,6 +2094,8 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
 void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     Unit const& illidan, IllidanPhase phase)
 {
+    // A Flame Crash on the tank: it walks to a ring point ahead of him, and he chases it out of the
+    // fire and stops where it stops, back on the ring.
     // The newest one (GUIDs only grow), so a Flame Crash landing on an older one still counts.
     std::list<Creature*> flameCrashes;
     bot->GetCreatureListWithEntryInGrid(
@@ -2126,15 +2121,17 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     else if (_lead == IllidanTankLead::None &&
         illidan.GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
     {
-        // After landing the tank is on the raid's side of him, so it leads him north, away from
-        // them.
+        // Near the grate centre it walks straight out, and he follows it to the ring. After landing
+        // the tank is on the raid's side of him, so it leads him north, away from them.
         bool const isAfterLanding = GetIllidanPhaseBefore(illidan, phase) == IllidanPhase::Landing;
         float const leadAngle = isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
         _leadPosition = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
         _lead = IllidanTankLead::Pickup;
     }
-    // Only once the phase is stamped, since a new stamp cancels the lead in progress, and only at
-    // the pull, so a tank taking over later doesn't lead him there.
+    // The opening lead moves him clockwise off the pull's due north, so Phase 1's Flame Crashes
+    // land clear of the Flame tanks' steps. Only once the phase is stamped, since a new stamp
+    // cancels the lead in progress, and only at the pull, so a tank taking over later doesn't lead
+    // him there.
     else if (_lead == IllidanTankLead::None && phase == IllidanPhase::Initial &&
         _phaseStartTime && !_isOpeningLeadDone && _lastFlameCrash.IsEmpty() &&
         IsIllidanPhaseStartWithin(illidan, phase, ILLIDAN_OPENING_LEAD_MS))
@@ -2145,8 +2142,8 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     }
 }
 
-// While a straight walk to the position would pass too close to his centre, the next leg goes
-// round him on the settle circle, on the side the position is nearer.
+// He backs away from a victim standing inside him, so a walk that would pass through him goes
+// round him instead.
 void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
     Unit const& illidan, Position& position)
 {
@@ -2174,9 +2171,6 @@ void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
         illidan.GetPositionY() + ILLIDAN_TANK_OFFSET * std::sin(angle), bot->GetPositionZ());
 }
 
-// The run is in steps, so another forced move can take over between them, as the warlock tank's
-// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
-// through a global cooldown. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2222,10 +2216,6 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
     return true;
 }
 
-// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
-// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
-// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
-// its bot stops running, as the warlock tank does at the transform.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2346,14 +2336,13 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     return true;
 }
 
-// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
-// other Flame's tank is dead too, when it takes that Flame.
 bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
 {
     Unit* flame = GetAssignedFlameOfAzzinoth(bot);
     if (!flame)
     {
-        // Its walk to the grate is one long move, which a hold can't stop once it has started.
+        // Its walk to the grate is one long move, which a hold can't stop once it has started, so
+        // it looks out for the beam from farther off than a Blaze step does.
         constexpr float eyeBlastTriggerRadius = 30.0f;
         // An unrecorded Flame hasn't spawned yet, so the tank waits by its glaive.
         bool const isEast = IsEastFlameOfAzzinothTank(bot);
@@ -2525,10 +2514,6 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
-// players, most pets cannot melee Illidan during Phase 4. In the pickup after the landing or Demon
-// Form a pet's attack would take him from the Main Tank. Also run outside the encounter so a pet
-// set passive gets its stance back after a wipe.
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
@@ -2554,8 +2539,6 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
-// Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
-// carries out too. While its owner has just birthed Shadowfiends, the pet is called off them.
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
@@ -2616,16 +2599,12 @@ bool IllidanStormrageCancelImmunityAction::Execute(Event /*event*/)
     return true;
 }
 
-// Totemic Recall can't be cast under Shadow Prison's stun, so in Maiev's arrival it comes in the
-// gap before he wakes.
 bool IllidanStormrageRecallTotemsAction::Execute(Event /*event*/)
 {
     uint32 const spellId = Id(BtSpells::SPELL_TOTEMIC_RECALL);
     return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
-// Everyone but the Main Tank waits stacked 22 yd south of the centre, out of his way to the
-// ring.
 bool IllidanStormragePositionForLandingAction::Execute(Event /*event*/)
 {
     Position const& position = ILLIDAN_LANDING_STACK_POSITION;
@@ -2647,7 +2626,6 @@ bool IllidanStormrageMeleeStopAttackingAction::Execute(Event /*event*/)
     return true;
 }
 
-// The target is kept: the hold keeps the shot or channel from starting again.
 bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2684,9 +2662,6 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    // Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
-    // first, the warlock tank in the one nearest its Demon Form position, and ranged DPS no
-    // farther than their spell reach of him.
     IllidanPhase const phase = GetIllidanPhase(illidan);
     Position position;
     if (phase == IllidanPhase::Demon)
@@ -2733,7 +2708,6 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Phase 4: healers in the healer slots and ranged DPS in theirs, each by roster.
 bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     Unit const& illidan, Position& position)
 {
@@ -2757,8 +2731,6 @@ bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     return true;
 }
 
-// Short steps toward the Demon, so the bot stops once in reach, never into Aura of Dread or near
-// Shadow Blast round his victim. Spread ranged brings it back once the Demon is dead.
 bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2797,8 +2769,6 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// Melee and tanks wait in their Demon Form slots, facing him, and leave them only for a Shadow
-// Demon.
 bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2822,8 +2792,6 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
-// The warlock tank holds him from its position with Shadow Ward and Searing Pain, Life Tapping
-// between Searing Pains.
 bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2857,7 +2825,6 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
         botAI->CastSpell("searing pain", illidan);
 }
 
-// A channel would hold the first Seed back; Life Tap comes between Seeds.
 bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
 {
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
@@ -2964,9 +2931,6 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     return Attack(target);
 }
 
-// Demon Form: Shadow Demons first, and healers only those; then for melee a nearly dead
-// Shadowfiend in their reach, for ranged DPS any Shadowfiend in their band, not for the warlock
-// tank; then him for ranged DPS and the warlock tank.
 std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPriorityOrder(
     Unit* illidan, IllidanPhase phase)
 {
@@ -3067,8 +3031,8 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     if (phase == IllidanPhase::Flying)
     {
-        // Each Flame is recorded as it spawns, so its tank can take it at once; the West one comes
-        // about 0.7 s before the East one. The head-start hold counts from the first.
+        // The West Flame comes about 0.7 s before the East one; the Flame hold counts from the
+        // first.
         if (!state.eastFlameGuid || !state.westFlameGuid)
         {
             std::list<Creature*> flames;
@@ -3097,7 +3061,6 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
         updated |= ResetIfSet(state.westFlameGuid);
     }
 
-    // Ends the shamans' totem hold for this phase.
     if (!state.illidanTankAggroPhase && DoIllidanTanksHaveAggro(botAI, *illidan, phase))
     {
         state.illidanTankAggroPhase = phase;

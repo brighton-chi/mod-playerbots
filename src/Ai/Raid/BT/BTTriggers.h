@@ -560,6 +560,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
+// Frost Trap. The Main Tank and his victim never run, nor the warlock tank in Demon Form.
 class IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -571,6 +573,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// The mechanic tracker records each new infection while there is an infection position, keeps
+// looking for a trap hunter while none is ready, and drops an entry once its debuff is gone.
 class IllidanStormrageShouldTrackInfectionsTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -602,6 +606,9 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Hunter and warlock pets take the Shadowfiends, which never attack pets, in Phases 1, 2, 3 and 5
+// and the death scene. In Demon Form every pet does, passive then, once no Shadow Demon is left
+// for it.
 class IllidanStormragePetShouldAttackShadowfiendTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -612,6 +619,7 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Every pet, passive in Demon Form, is sent onto a Shadow Demon and kept on it until it dies.
 class IllidanStormragePetShouldAttackShadowDemonTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -632,6 +640,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use, Dark Barrage
+// after a moment. Not for the Main Tank or a Flame tank: an immunity loses it whatever it holds.
 class IllidanStormrageImmunityCanClearDebuffTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -652,6 +662,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Totems set for the last phase would take a Flame in its first 2 s, or be back on his threat
+// list before the tank, so they come up at each phase change.
 class IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger
     : public BlackTempleEncounterTrigger
 {
@@ -664,6 +676,7 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// An infected bot runs to the infection position instead.
 class IllidanStormrageShouldPositionForLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -675,6 +688,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// At the transform, and at 33% or below in Demon Form, melee and tanks still on him end their
+// auto-attack: in his melee range they would only need 110% of the warlock tank's threat.
 class IllidanStormrageMeleeShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -685,6 +700,9 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
+// multiplier can't end a running auto-repeat or channel; in the pickup, so do any channel's heals
+// or mana.
 class IllidanStormrageShouldStopShootingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -705,6 +723,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
+// wipes the raid. Healers stay to heal.
 class IllidanStormrageRangedShouldReachShadowDemonTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -737,6 +757,10 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
+// two or more are alive. They all walk toward the raid, so a Seed going off on one usually
+// catches others. Not while infected, so the run comes first, nor next to fresh Shadowfiends,
+// which the explosion would turn onto the warlock.
 class IllidanStormrageWarlockShouldSeedShadowDemonsTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -749,6 +773,9 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
+// assist tanks have the Flames. The Main Tank joins them on Shadow Demons in Demon Form until its
+// walk-in. Healers take Shadow Demons as targets in Demon Form.
 class IllidanStormrageShouldAssignTargetPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -769,6 +796,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
+// without doing this.
 class IllidanStormrageShouldClearHazardsBeforeLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:

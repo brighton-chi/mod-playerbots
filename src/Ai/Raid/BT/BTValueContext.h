@@ -169,7 +169,6 @@ protected:
     GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(botAI); }
 };
 
-// Read only in Demon Form, so the search runs only then.
 class IllidanStormrageShadowDemonsValue
     : public CalculatedValue<std::vector<BtHelpers::ShadowDemon>>
 {
