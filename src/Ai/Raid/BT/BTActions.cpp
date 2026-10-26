@@ -2033,9 +2033,9 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 
     // He backs off only with a victim and free to move: not while he flies or lands, in Maiev's
     // arrival, or rooted in Demon Form.
-    bool const isStepped = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
+    bool const canBackOff = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Maiev;
-    if (isStepped)
+    if (canBackOff)
         RouteRoundIllidan(*illidan, position);
 
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
@@ -2044,6 +2044,11 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
+    // In Demon Form the walk to the wait position steps too, so a chase onto the next Shadow Demon
+    // can take over from it.
+    bool const isStepped = canBackOff ||
+        (phase == IllidanPhase::Demon &&
+         !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS));
     if (!isStepped)
     {
         return MoveTo(
