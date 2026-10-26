@@ -30,6 +30,8 @@ protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 };
 
+// Held for each boss's first 5%, and also through Supremus's kite phase, between Reliquary
+// essences, and on Illidan from 95% to 62% (Bloodlust all the way until 62%).
 class BlackTempleDelayDpsCooldownsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -246,6 +248,8 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Tank face, set behind and disperse move tanks and melee around Suffering, which can carry
+// them nearer to her than the tanks.
 class ReliquaryOfSoulsControlMeleeMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

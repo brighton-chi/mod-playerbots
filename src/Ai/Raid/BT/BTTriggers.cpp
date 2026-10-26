@@ -34,8 +34,6 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 
 // Trash
 
-// The mechanic tracker marks a linked Sister of Pleasure. Other non-tanks on her Sister of Pain
-// drop Pain while the two are linked.
 bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -137,8 +135,8 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!supremus || IsSupremusKitePhase(supremus))
         return false;
 
-    // FleePosition's step goes any way and doesn't see fire, so hold while one could carry the bot
-    // into a volcano's safe zone. Outside the kite phase the hazards are volcanoes alone.
+    // The spread step can go any way and doesn't see fire, so it waits while one step could carry
+    // the bot into a volcano's safe zone.
     float const fleeStep =
         std::min(SUPREMUS_RANGED_SPREAD_DISTANCE + 1.0f, sPlayerbotAIConfig.FleeDistance);
     if (IsInSupremusHazard(
@@ -213,8 +211,6 @@ bool TeronGorefiendRangedShouldPositionOnBalconyTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
-// Feign Death and Vanish cancel his cast. Ice Block and Divine Shield don't help: Shadow of Death
-// pierces invulnerability in AC.
 bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE)
@@ -436,9 +432,6 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
         judgement->m_targets.GetUnitTarget() == bot && PlayerbotAI::IsMainTank(bot);
 }
 
-// Ranged DPS interrupt only while her melee can't: under Blessing of Protection, or while she
-// stands in a Zerevor patch or Gathios's Consecration. Paladins, priests and hunters have nothing
-// she isn't immune to.
 bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_HUNTER ||
@@ -533,8 +526,6 @@ bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     return target && pet->GetVictim() != target;
 }
 
-// Every bot but the main tank, the Malande tank and the mage tank, and the Veras tank only while
-// Veras is vanished.
 bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))

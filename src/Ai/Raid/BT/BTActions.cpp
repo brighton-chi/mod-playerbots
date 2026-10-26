@@ -168,8 +168,6 @@ bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 
 // Trash
 
-// Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
-// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain.
 bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
 {
     if (IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -178,7 +176,6 @@ bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
         return pleasure && MarkTargetWithSkull(bot, pleasure);
     }
 
-    // Everyone else drops Sister of Pain, and the DPS target then picks the skull.
     Unit* pain = AI_VALUE(Unit*, "current target");
     if (!pain || pain->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
         return false;
@@ -202,9 +199,6 @@ bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
     return true;
 }
 
-// Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
-// attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
-// is sent onto them otherwise.
 bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -247,8 +241,6 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
     Unit* victim = pet->GetVictim();
     if ((!victim || !victim->IsAlive()) && !pet->HasReactState(REACT_PASSIVE))
     {
-        // Idle, as after waiting passive: sent to the other target, else to a Reaver now that
-        // all are safe, the owner's target first.
         if (target)
             return sendPet(target);
 
@@ -301,7 +293,6 @@ bool HighWarlordNajentusAssignSpineRemoverAction::Execute(Event /*event*/)
     if (!impaled)
         return false;
 
-    // Drop entries for impales that have ended, and any earlier one for this impaled player.
     std::optional<std::vector<NajentusSpineAssignment>>& assignmentsField =
         BtState(bot->GetInstanceId()).najentusSpineAssignments;
     std::vector<NajentusSpineAssignment>& assignments =
@@ -432,7 +423,6 @@ float GetKiteHeadingAngle(uint8 index)
     return index * 2.0f * static_cast<float>(M_PI) / SUPREMUS_KITE_HEADINGS;
 }
 
-// How far along a heading from (x, y) stays inside the open area.
 float GetKiteBoundaryDistance(float x, float y, float angle)
 {
     float const dx = std::cos(angle);
@@ -448,12 +438,9 @@ float GetKiteBoundaryDistance(float x, float y, float angle)
     else if (dy < 0.0f)
         distance = std::min(distance, (SUPREMUS_BOUNDARY_MIN_Y - y) / dy);
 
-    // Negative only for a heading that leads further out from outside the area.
     return std::max(0.0f, distance);
 }
 
-// Along a heading from (x, y): how far to the first hazard's safe zone that (x, y) is outside of,
-// and how far until clear of every one it is inside (0 if none).
 void GetFireCrossing(
     std::vector<SupremusHazard> const& hazards, float x, float y, float angle,
     float& entryDistance, float& exitDistance)
@@ -465,7 +452,6 @@ void GetFireCrossing(
     exitDistance = 0.0f;
     for (SupremusHazard const& hazard : hazards)
     {
-        // The heading crosses the circle where t^2 + 2 * along * t + outside = 0.
         float const offsetX = x - hazard.position.GetPositionX();
         float const offsetY = y - hazard.position.GetPositionY();
         float const along = offsetX * dx + offsetY * dy;
@@ -481,16 +467,14 @@ void GetFireCrossing(
 
 } // end anonymous namespace (Supremus)
 
-// Re-planned every step. Each heading runs until a wall, the open area's edge or fire stops it,
-// and is scored by when he would reach the bot. Fire is ignored only when that is the one way to
-// stay out of his reach.
 bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus)
         return false;
 
-    // Only its own last step holds the kite; a fire walk begun before the fixate gives way.
+    // Wait only for the kite's own last step. Any other move, such as a walk out of fire begun
+    // before the fixate, is cleared so the kite can step at once.
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
     LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
     if (lastMove.msTime != _lastStepTime)
@@ -505,7 +489,6 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
         bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_SAFE_DISTANCE);
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
 
-    // Keep the way the last step went, or else start straight away from him.
     constexpr uint32 headingMemoryMs = 2000;
     float const preferredAngle = GetMSTimeDiffToNow(_lastStepTime) < headingMemoryMs ?
         _lastAngle : supremus->GetAngle(bot);
@@ -519,8 +502,6 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
             GetKiteBoundaryDistance(bot->GetPositionX(), bot->GetPositionY(), angle));
     }
 
-    // He one-shots what he reaches, so a heading he reaches only delays it. Headings he never
-    // reaches go by the quickest way out of fire, then the smallest turn.
     auto const isBetter = [](KitePlan const& a, KitePlan const& b)
     {
         if (a.timeUntilCaught != b.timeUntilCaught)
@@ -544,7 +525,6 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
                 fire, bot->GetPositionX(), bot->GetPositionY(), angle, entryDistance,
                 exitDistance);
             float const runDistance = std::min(openDistances[i], entryDistance);
-            // Stopping short of leaving the fire the bot stands in is no way out.
             if (runDistance < exitDistance)
                 continue;
 
@@ -611,9 +591,6 @@ float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDis
     return bot->GetExactDist2d(x, y);
 }
 
-// Seconds until he reaches the bot, or NEVER_CAUGHT if not before the fixate ends. He runs straight
-// at wherever the bot is; the bot runs the heading, then stands. In game he has to path around
-// whatever stopped the bot, so this errs toward his catching it.
 float SupremusKiteBossAction::SimulateChase(
     Unit* supremus, float timeRemaining, float catchDistance, float angle, float runDistance)
 {
@@ -661,8 +638,6 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
         return false;
     }
 
-    // A bot walled in holds, and the fire around it changes slowly; the search runs up to 16
-    // raycasts, so don't repeat it every tick unless the bot starts burning.
     constexpr uint32 retryDelayMs = 500;
     if (GetMSTimeDiffToNow(_lastFailedSearchTime) < retryDelayMs &&
         !IsInSupremusHazard(
@@ -684,22 +659,15 @@ bool SupremusMoveAwayFromFireAction::Execute(Event /*event*/)
         false, false, false, false, priority, true, false);
 }
 
-// The nearest position a yard clear of every hazard's safe zone that the bot can run to in a
-// straight line. A bot not yet burning takes only a route that stays out of every damage zone, and
-// otherwise holds: walled in, running through fire is worse than waiting at its edge. A burning bot
-// takes the route with the least ground under fire, then the nearest.
 bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
     std::vector<SupremusHazard> const& hazards, Position& destination)
 {
     constexpr float maxRadius = 40.0f;
-    // Two yards keeps the search to 320 position against a trail of 20 or more patches.
     constexpr float distanceStep = 2.0f;
     constexpr uint8 numAngles = 16;
     constexpr float angleStep = 2.0f * static_cast<float>(M_PI) / numAngles;
     constexpr float clearance = 1.0f;
     constexpr uint32 numDistances = static_cast<uint32>(maxRadius / distanceStep);
-    // Positions along one heading cross the same fire, and their yards differ only by rounding,
-    // which picked one at random up to 40 yd out; 0.5 yd buckets keep the nearest first among them.
     constexpr float underFireBucket = 0.5f;
     constexpr uint8 maxStraightChecks = 16;
 
@@ -722,7 +690,6 @@ bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
             Position const candidate(x, y, start.GetPositionZ());
             float const underFire = GetLineLengthInSupremusHazards(
                 hazards, start, candidate, SupremusHazardZone::Damage);
-            // Rings run nearest first, so the first clear route is the nearest.
             if (underFire <= 0.0f)
             {
                 if (straightChecks++ >= maxStraightChecks)
@@ -763,12 +730,10 @@ bool SupremusMoveAwayFromFireAction::FindSafestNearbyPosition(
         }
     }
 
-    // Better to run the least fiery route unchecked than to stand burning.
     destination = burningRoutes.front().second;
     return true;
 }
 
-// Without this, a position behind wreckage or a wall sends MoveTo pathing the long way round.
 bool SupremusMoveAwayFromFireAction::CanRunStraightTo(Position const& destination)
 {
     float x = destination.GetPositionX();
@@ -786,8 +751,6 @@ bool SupremusMoveAwayFromFireAction::CanRunStraightTo(Position const& destinatio
         truncationTolerance;
 }
 
-// Steps toward the target, turning as little as it must to keep each step clear of fire, which
-// slides the bot round a volcano or a trail in its way. With nothing clear it holds.
 bool SupremusReachAroundFireAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -804,8 +767,6 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
 
     auto const tryStep = [&](uint8 turns, int8 side)
     {
-        // Between two clear ends, a 3.5 yd step cuts at most 0.25 yd into a safe zone, still well
-        // short of the damage zone (0.75 yd for a patch, 2.75 for a volcano).
         float const angle = aim + side * turns * turnStep;
         float const x = bot->GetPositionX() + SUPREMUS_REACH_STEP_DISTANCE * std::cos(angle);
         float const y = bot->GetPositionY() + SUPREMUS_REACH_STEP_DISTANCE * std::sin(angle);
@@ -818,7 +779,6 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
         if (!CanTakeStepTowards(bot, x, y, SUPREMUS_REACH_STEP_DISTANCE, stepX, stepY, stepZ))
             return false;
 
-        // Only a turned step commits to a side; walking straight leaves the next turn free.
         if (turns > 0)
         {
             _lastSide = side;
@@ -832,8 +792,6 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     constexpr uint8 turnsToSquare = 8;
     constexpr uint8 turnsToBehind = 16;
 
-    // Once sliding one way it keeps to that side, turning back if it must, which follows a
-    // volcano's edge out of the notch where two meet; trying the other side first makes it dither.
     constexpr uint32 sideMemoryMs = 2000;
     if (GetMSTimeDiffToNow(_lastStepTime) < sideMemoryMs)
     {
@@ -867,8 +825,6 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
 
 // Shade of Akama
 
-// Channelers stand on a platform out of sight from below, and Attack refuses a target out of
-// sight, so a bot walks the path toward its target until it can see it.
 bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
 {
     Unit* target = GetShadeOfAkamaKillTarget(botAI);
@@ -1149,8 +1105,6 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
-// of a walking target isn't pushed along in front of it.
 bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
@@ -1395,8 +1349,6 @@ bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
     if (botIt == attractedPlayers.end())
         return false;
 
-    // Holders run away from the ranged position, in GUID order: with two, one to each side; with
-    // three, the first straight away and the other two to each side.
     auto const index = std::distance(attractedPlayers.begin(), botIt);
     constexpr float quarterTurn = static_cast<float>(M_PI) / 2.0f;
     float spreadAngle = SHAHRAZ_RANGED_POSITION.GetAngle(bot);
@@ -1405,8 +1357,6 @@ bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
     else if (index)
         spreadAngle += index == 1 ? quarterTurn : -quarterTurn;
 
-    // Straight on first, then alternately left and right out to 90 degrees, so a bot against a
-    // wall slides along it.
     constexpr uint8 numCandidates = 9;
     constexpr float angleStep = static_cast<float>(M_PI) / 8.0f;
     for (uint8 i = 0; i < numCandidates; ++i)
@@ -1627,7 +1577,6 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != malande)
         return Attack(malande);
 
-    // Leaves a council patch only for a position from which it can still hit her; otherwise stay.
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (!HasDangerousCouncilAura(bot) || !bot->IsWithinMeleeRange(malande) ||
         IsWaitingForLastMove(priority))
@@ -1767,10 +1716,6 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
     return CommandPetAttack(pet, target);
 }
 
-// Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
-// knights and Enhancement shamans stay, since Mind Freeze and Wind Shear still land. All of them
-// leave her while she stands in a Zerevor patch or Gathios's Consecration. Casters take Gathios,
-// and the mage tank's healer Zerevor. Everyone skips a member immune to their damage.
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
     Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");

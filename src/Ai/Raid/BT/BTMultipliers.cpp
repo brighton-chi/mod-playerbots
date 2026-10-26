@@ -98,8 +98,6 @@ float GetDpsHoldValue(Player* bot, Action* action)
 
 } // end anonymous namespace (Shared)
 
-// Held for each boss's first 5%, and also through Supremus's kite phase, between Reliquary
-// essences, and on Illidan from 95% to 62% (Bloodlust all the way until 62%).
 float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -108,8 +106,6 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    // One pass by entry over what this bot is on the threat list of, where a find target per boss
-    // name walks the list once per name.
     Unit* illidan = nullptr;
     Unit* supremus = nullptr;
     Unit* essence = nullptr;
@@ -483,8 +479,6 @@ float ReliquaryOfSoulsDoNotWasteHealingMultiplier::GetValueInEncounter(Action* a
     return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
 }
 
-// Tank face, set behind and disperse move tanks and melee around Suffering, which can carry
-// them nearer to her than the tanks.
 float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)

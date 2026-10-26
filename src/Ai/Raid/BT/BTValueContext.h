@@ -31,7 +31,6 @@ protected:
 
 // Supremus
 
-// Positions, not units, so nothing dangles when a volcano despawns.
 class SupremusHazardsValue : public CalculatedValue<std::vector<BtHelpers::SupremusHazard>>
 {
 public:

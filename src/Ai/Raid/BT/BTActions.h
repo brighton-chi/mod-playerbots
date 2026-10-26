@@ -83,6 +83,9 @@ public:
 
 // Trash
 
+// Damage on the Sister of Pleasure is split evenly with her Sister of Pain, and they have equal
+// health, so killing Pleasure kills both without anyone hitting Pain through Shell of Pain. The
+// mechanic tracker skulls Pleasure, and every other non-tank drops Pain.
 class SisterOfPleasureFocusDpsAction : public Action
 {
 public:
@@ -99,6 +102,9 @@ public:
     bool Execute(Event event) override;
 };
 
+// Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
+// attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
+// is sent onto them otherwise.
 class ShadowmoonReaverControlCasterPetAction : public Action
 {
 public:
@@ -178,6 +184,9 @@ private:
 
 // Supremus
 
+// Each step, the fixated bot takes the heading he would take longest to catch it on, stopped by
+// walls, the open area's edge or fire. It runs through fire only when that is the one way to stay
+// out of his reach.
 class SupremusKiteBossAction : public MovementAction
 {
 public:
@@ -211,6 +220,9 @@ private:
     uint32 _lastStepTime = 0;
 };
 
+// Runs straight to the nearest point a yard clear of the fire. A bot not yet burning takes only a
+// route that stays out of the fire, and otherwise waits at its edge; a burning bot takes the route
+// with the least fire on it.
 class SupremusMoveAwayFromFireAction : public MovementAction
 {
 public:
@@ -234,6 +246,8 @@ private:
     uint32 _lastFailedSearchTime = 0;
 };
 
+// Steps toward the target, turning as little as it must to keep each step clear of fire, so the
+// bot slides round a volcano or a trail in its way. With nothing clear it waits.
 class SupremusReachAroundFireAction : public MovementAction
 {
 public:
@@ -257,6 +271,8 @@ private:
 
 // Shade of Akama
 
+// Channelers stand on a platform out of sight from below, and Attack refuses a target out of
+// sight, so a bot walks the path toward its target until it can see it.
 class ShadeOfAkamaAttackChannelersAndSorcerersAction : public AttackAction
 {
 public:
@@ -322,6 +338,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
+// of a walking target isn't pushed along in front of it.
 class GurtoggBloodboilRangedMoveOutOfFrontalConeAction : public MovementAction
 {
 public:
@@ -394,6 +412,8 @@ public:
     bool Execute(Event event) override;
 };
 
+// Holders run away from the ranged position, in GUID order: with two, one to each side; with
+// three, the first straight away and the other two to each side.
 class MotherShahrazBreakFatalAttractionAction : public MovementAction
 {
 public:
@@ -407,6 +427,9 @@ private:
 
 // Illidari Council
 
+// Hunter bots in group order: the first, and any after the fourth, misdirect Zerevor to the mage
+// tank; the second Malande to the first assist tank; the third Gathios to the main tank; the
+// fourth Veras to the second assist tank.
 class IllidariCouncilMisdirectToTanksAction : public Action
 {
 public:
@@ -445,6 +468,8 @@ private:
     bool CastWarriorInterrupt(Unit* malande);
 };
 
+// Leaves a council patch only for a position from which it can still hit Malande; otherwise it
+// stays.
 class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction
 {
 public:
@@ -496,6 +521,10 @@ public:
     bool Execute(Event event) override;
 };
 
+// Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
+// knights and Enhancement shamans stay, since Mind Freeze and Wind Shear still land. All of them
+// leave her while she stands in a Zerevor patch or Gathios's Consecration. Casters take Gathios,
+// and the mage tank's healer Zerevor. Everyone skips a member immune to their damage.
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:

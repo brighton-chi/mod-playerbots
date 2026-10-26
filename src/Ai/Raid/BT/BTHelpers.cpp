@@ -478,7 +478,6 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
 namespace // High Warlord Naj'entus
 {
 
-// A remover counts while it is alive, on the map and free to move.
 bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
 {
     Player* player = ObjectAccessor::GetPlayer(*bot, remover);
@@ -718,7 +717,6 @@ std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
         }
     }
 
-    // In the tank phase stock avoid aoe handles Molten Flame; it sidesteps, keeping bots near.
     Unit* supremus =
         botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "supremus")->Get();
     if (!IsSupremusKitePhase(supremus))
@@ -767,7 +765,6 @@ float GetLineLengthInSupremusHazards(
     float total = 0.0f;
     for (SupremusHazard const& hazard : hazards)
     {
-        // The line crosses the circle where t^2 + 2 * along * t + outside = 0.
         float const radius = GetSupremusHazardRadius(hazard, zone);
         float const offsetX = from.GetPositionX() - hazard.position.GetPositionX();
         float const offsetY = from.GetPositionY() - hazard.position.GetPositionY();
@@ -962,8 +959,6 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 }
 
 // The group hit longest ago soaks next: the lowest mean Bloodboil time left, ties to the first.
-// Just after a cast, that group's debuffs run out before the next one. Debuffs younger than the
-// rotation delay count as none, so the group just hit stays the soakers until then.
 GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 {
     std::vector<std::vector<Player*>> const groups = GetGurtoggRangedRotationGroups(bot);
@@ -1013,7 +1008,6 @@ Position const& GetGurtoggBloodboilPosition(Player* bot)
     return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
 }
 
-// The Fel Rage target taunts him onto itself, so it is his victim.
 Unit* GetGurtoggFelRageTarget(Unit* gurtogg)
 {
     if (!gurtogg || !gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
@@ -1112,8 +1106,6 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
-// (1) First priority is an assistant Mage (real player or bot)
-// (2) If no assistant Mage, then look for any Mage bot
 ObjectGuid FindZerevorMageTankGuid(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -1184,7 +1176,6 @@ bool CanInterruptCircleOfHealing(Unit* malande)
         circle->GetCastTime() - circle->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
-// Zerevor has at most one Blizzard and one Flamestrike down at a time.
 bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin)
 {
     if (!zerevor)
@@ -1217,7 +1208,6 @@ bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float
     return IsInZerevorPatch(zerevor, point, margin);
 }
 
-// Gathios's Consecration reaches Malande only at the pull, while he is beside her on the dais.
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor)
 {
     return malande && gathios && zerevor && IsInCouncilPatch(*malande, gathios, zerevor);
@@ -1241,8 +1231,6 @@ bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)
     return mageTank && zerevor->GetVictim() == mageTank;
 }
 
-// Within heal range of the mage tank, clear of a patch on it, of Arcane Explosion, and of any
-// patch down.
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor)
 {
     if (!mageTank || !zerevor)
@@ -1273,8 +1261,6 @@ bool CanWalkStraightTo(Player* bot, Position const& point)
 
 } // end anonymous namespace (Illidari Council)
 
-// The nearest safe point on two rings round the mage tank that the bot can walk to in a straight
-// line and that has line of sight to the mage tank.
 bool FindMageTankHealerPosition(
     Player* bot, Player* mageTank, Unit* zerevor, Position& destination)
 {
@@ -1321,8 +1307,6 @@ bool FindMageTankHealerPosition(
     return false;
 }
 
-// The nearest point within melee range of Malande, clear of every council patch, that the bot can
-// walk to in a straight line.
 bool FindMalandeTankPosition(
     Player* bot, Unit* malande, Unit* gathios, Unit* zerevor, Position& destination)
 {
@@ -1367,8 +1351,6 @@ bool FindMalandeTankPosition(
     return false;
 }
 
-// Any council member but the bot's own target. One pass by entry over what this bot is on the
-// threat list of, where a find target per member walks the list once per name.
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 {
     Player* bot = botAI->GetBot();
@@ -1395,8 +1377,6 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     return false;
 }
 
-// Felhunters stay on Malande for Spell Lock; other pets follow their master's target, or go to
-// Gathios while the master has none.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!pet)
@@ -1417,7 +1397,6 @@ Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
     return target && target->IsAlive() ? target : gathios;
 }
 
-// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
 uint32 GetReadySpellLock(Creature* pet, Unit* target)
 {
     if (!pet || !target || !pet->IsAlive() || pet->GetEntry() != NPC_FELHUNTER)

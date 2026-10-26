@@ -57,8 +57,8 @@ private:
 
 // Trash
 
-// Not gated on an encounter, so throttled to once per second. A skull is a raid leader's call,
-// and the Sister of Pain's first Shell of Pain is 20 s away.
+// Not gated on an encounter, so checked once a second. The first Shell of Pain comes 20 to 30 s
+// into the pull.
 class SisterOfPleasureShouldBeFocusedTrigger : public Trigger
 {
 public:
@@ -226,6 +226,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Feign Death and Vanish cancel his cast. Ice Block and Divine Shield don't help: Shadow of Death
+// pierces invulnerability in AC.
 class TeronGorefiendCastsShadowOfDeathTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -430,6 +432,9 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Ranged DPS interrupt only while her melee can't: under Blessing of Protection, or while she
+// stands in a Zerevor patch or Gathios's Consecration. Paladins, priests and hunters have nothing
+// she isn't immune to.
 class IllidariCouncilMalandeCastsCircleOfHealingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -502,6 +507,8 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+// Every bot but the main tank, the Malande tank and the mage tank, and the Veras tank only while
+// Veras is vanished.
 class IllidariCouncilShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
