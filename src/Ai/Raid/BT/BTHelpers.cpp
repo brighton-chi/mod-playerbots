@@ -1112,7 +1112,8 @@ ObjectGuid FindZerevorMageTankGuid(Player* bot)
     if (!group)
         return ObjectGuid::Empty;
 
-    Player* fallbackMage = nullptr;
+    Player* highestHpBotMage = nullptr;
+    uint32 highestHp = 0;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -1126,11 +1127,18 @@ ObjectGuid FindZerevorMageTankGuid(Player* bot)
         if (group->IsAssistant(member->GetGUID()))
             return member->GetGUID();
 
-        if (!fallbackMage && GET_PLAYERBOT_AI(member))
-            fallbackMage = member;
+        if (!GET_PLAYERBOT_AI(member))
+            continue;
+
+        uint32 const hp = member->GetMaxHealth();
+        if (!highestHpBotMage || hp > highestHp)
+        {
+            highestHpBotMage = member;
+            highestHp = hp;
+        }
     }
 
-    return fallbackMage ? fallbackMage->GetGUID() : ObjectGuid::Empty;
+    return highestHpBotMage ? highestHpBotMage->GetGUID() : ObjectGuid::Empty;
 }
 
 Player* GetZerevorMageTank(PlayerbotAI* botAI)

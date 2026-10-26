@@ -528,7 +528,7 @@ inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 inline constexpr float SPELL_LOCK_RANGE = 30.0f;
 
 // (1) First priority is an assistant Mage (real player or bot)
-// (2) If no assistant Mage, then look for any Mage bot
+// (2) If no assistant Mage, then the Mage bot with the highest max health
 ObjectGuid FindZerevorMageTankGuid(Player* bot);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool IsZerevorMageTank(PlayerbotAI* botAI);
