@@ -5,6 +5,7 @@
  */
 
 #include "EncounterHelpers.h"
+#include "AiFactory.h"
 #include "CellImpl.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -16,7 +17,9 @@
 #include "HunterActions.h"
 #include "InstanceScript.h"
 #include "MageActions.h"
+#include "ObjectAccessor.h"
 #include "PaladinActions.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "RtiTargetValue.h"
@@ -26,6 +29,9 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <map>
+#include <string>
+#include <tuple>
 
 namespace EncounterHelpers
 {
@@ -573,6 +579,224 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         default:
             return false;
     }
+}
+
+// Class roles
+
+namespace
+{
+
+constexpr ClassRoleText CLASS_ROLE_ASSISTANT_TEXT = {
+    "class_role_assistant",
+    "%name is the best-geared %class with the assistant flag and is the %role.",
+};
+constexpr ClassRoleText CLASS_ROLE_PREFERRED_SPEC_BOT_TEXT = {
+    "class_role_preferred_spec_bot",
+    "%name is the best-geared %specclass bot and is the %role. Give a %class the assistant flag "
+    "to choose someone else.",
+};
+constexpr ClassRoleText CLASS_ROLE_BOT_TEXT = {
+    "class_role_bot",
+    "%name is the best-geared %class bot and is the %role. Give a %class the assistant flag to "
+    "choose someone else.",
+};
+constexpr ClassRoleText CLASS_ROLE_NONE_TEXT = {
+    "class_role_none",
+    "No %class is present to be the %role.",
+};
+constexpr ClassRoleText CLASS_ROLE_HANDOVER_TEXT = {
+    "class_role_handover",
+    "%name takes over as the %role.",
+};
+
+std::string GetClassRoleText(
+    ClassRoleText const& text, std::map<std::string, std::string> const& placeholders = {})
+{
+    return PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        text.name, text.defaultText, placeholders);
+}
+
+ClassRoleText const& GetClassRoleHolderText(ClassRoleSource source)
+{
+    switch (source)
+    {
+        case ClassRoleSource::Assistant:
+            return CLASS_ROLE_ASSISTANT_TEXT;
+        case ClassRoleSource::PreferredSpecBot:
+            return CLASS_ROLE_PREFERRED_SPEC_BOT_TEXT;
+        case ClassRoleSource::Bot:
+            return CLASS_ROLE_BOT_TEXT;
+        default:
+            return CLASS_ROLE_NONE_TEXT;
+    }
+}
+
+bool SayClassRoleHolder(
+    PlayerbotAI* botAI, ClassRole const& role, ClassRoleHolder const& holder, bool isHandover)
+{
+    std::map<std::string, std::string> placeholders = {
+        { "%role", GetClassRoleText(role.role) },
+        { "%class", GetClassRoleText(role.candidate) },
+    };
+
+    if (role.preferredSpec)
+        placeholders["%specclass"] = GetClassRoleText(role.preferredCandidate);
+
+    if (!holder.guid.IsEmpty())
+    {
+        Player* player = ObjectAccessor::GetPlayer(*botAI->GetBot(), holder.guid);
+        if (!player)
+            return false;
+
+        placeholders["%name"] = player->GetName();
+    }
+
+    ClassRoleText const& text =
+        isHandover ? CLASS_ROLE_HANDOVER_TEXT : GetClassRoleHolderText(holder.source);
+    return botAI->SayToRaid(GetClassRoleText(text, placeholders));
+}
+
+} // end anonymous namespace (Class roles)
+
+ClassRoleHolder FindClassRoleHolder(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
+{
+    Group* group = botAI->GetBot()->GetGroup();
+    if (!group)
+        return {};
+
+    ClassRoleHolder best;
+    uint32 bestGearScore = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetMapId() != mapId || !member->IsAlive() ||
+            member->getClass() != role.playerClass)
+        {
+            continue;
+        }
+
+        ObjectGuid const guid = member->GetGUID();
+        bool const isAssistant = group->IsAssistant(guid);
+        if (!isAssistant && !GET_PLAYERBOT_AI(member))
+            continue;
+
+        std::optional<uint8> spec;
+        if (role.requiredSpec || role.preferredSpec)
+            spec = AiFactory::GetPlayerSpecTab(member);
+
+        if (role.requiredSpec && spec != role.requiredSpec)
+            continue;
+
+        ClassRoleSource source = ClassRoleSource::Bot;
+        if (isAssistant)
+            source = ClassRoleSource::Assistant;
+        else if (role.preferredSpec && spec == role.preferredSpec)
+            source = ClassRoleSource::PreferredSpecBot;
+
+        auto const rank = std::tuple(source, botAI->GetEquipGearScore(member));
+        auto const bestRank = std::tuple(best.source, bestGearScore);
+        if (rank > bestRank || (rank == bestRank && guid < best.guid))
+        {
+            best = { guid, source };
+            bestGearScore = std::get<1>(rank);
+        }
+    }
+
+    return best;
+}
+
+bool UpdateClassRoleAssignments(
+    PlayerbotAI* botAI, uint32 mapId, std::initializer_list<ClassRoleSlot> slots)
+{
+    Player* bot = botAI->GetBot();
+    bool const isInEncounter = IsEncounterInProgress(bot, mapId);
+    bool changed = false;
+    for (ClassRoleSlot const& slot : slots)
+    {
+        std::optional<ClassRoleHolder>& holder = slot.assignment.holder;
+        if (isInEncounter && GetClassRoleHolder(bot, slot.assignment))
+            continue;
+
+        ClassRoleHolder const next = FindClassRoleHolder(botAI, mapId, slot.role);
+        if (holder == next)
+            continue;
+
+        bool const isHandover = isInEncounter && holder && !next.guid.IsEmpty();
+        holder = next;
+        changed = true;
+
+        if (isHandover && SayClassRoleHolder(botAI, slot.role, next, true))
+            slot.assignment.announced = next;
+    }
+
+    return changed;
+}
+
+bool UpdateClassRoleAnnouncement(
+    PlayerbotAI* botAI, uint32 bossEntry, Position const& bossSpawn, float announceDistance,
+    float rearmDistance, std::initializer_list<ClassRoleSlot> slots,
+    std::optional<uint32> blockerEntry)
+{
+    Player* bot = botAI->GetBot();
+    float const distance = bot->GetExactDist2d(bossSpawn);
+    if (distance > rearmDistance)
+    {
+        bool reset = false;
+        for (ClassRoleSlot const& slot : slots)
+            reset |= ResetIfSet(slot.assignment.announced);
+
+        return reset;
+    }
+
+    if (distance > announceDistance)
+        return false;
+
+    auto const isUnannounced = [](ClassRoleSlot const& slot)
+    {
+        return slot.assignment.holder && slot.assignment.holder != slot.assignment.announced;
+    };
+
+    if (std::ranges::none_of(slots, isUnannounced))
+        return false;
+
+    // The checks above keep these grid searches to the rare tick with something to announce.
+    if (blockerEntry && bot->FindNearestCreature(*blockerEntry, rearmDistance))
+        return false;
+
+    if (!bot->FindNearestCreature(bossEntry, rearmDistance))
+        return false;
+
+    for (ClassRoleSlot const& slot : slots)
+    {
+        if (!isUnannounced(slot))
+            continue;
+
+        slot.assignment.announced = slot.assignment.holder;
+        SayClassRoleHolder(botAI, slot.role, *slot.assignment.holder, false);
+    }
+
+    return true;
+}
+
+Player* GetClassRoleHolder(Player* bot, ClassRoleAssignment const& assignment)
+{
+    ObjectGuid const guid = GetClassRoleHolderGuid(assignment);
+    if (guid.IsEmpty())
+        return nullptr;
+
+    Player* holder = ObjectAccessor::GetPlayer(*bot, guid);
+    return holder && holder->IsAlive() ? holder : nullptr;
+}
+
+ObjectGuid GetClassRoleHolderGuid(ClassRoleAssignment const& assignment)
+{
+    return assignment.holder ? assignment.holder->guid : ObjectGuid::Empty;
+}
+
+bool IsClassRoleHolder(Player* bot, ClassRoleAssignment const& assignment)
+{
+    ObjectGuid const guid = GetClassRoleHolderGuid(assignment);
+    return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 
 }

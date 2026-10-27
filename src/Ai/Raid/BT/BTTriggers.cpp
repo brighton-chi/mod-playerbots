@@ -23,6 +23,11 @@ bool BlackTempleNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, BT_MAP_ID);
 }
 
+bool BlackTempleClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, BT_MAP_ID);
+}
+
 bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)

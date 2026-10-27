@@ -107,6 +107,11 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool BlackTempleAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateBtClassRoles(botAI);
+}
+
 bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
@@ -1796,6 +1801,12 @@ bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
         BtState(gathios->GetMap()->GetInstanceId()).councilDpsWaitTimer, getMSTime());
 }
 
+bool IllidariCouncilAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
+        UpdateIllidariCouncilClassRoleAnnouncement(botAI);
+}
+
 // Illidan Stormrage <The Betrayer>
 
 bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
@@ -3091,4 +3102,15 @@ bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)
     }
 
     return isCleared;
+}
+
+bool IllidanStormrageAnnounceClassRolesAction::Execute(Event /*event*/)
+{
+    if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
+        return false;
+
+    if (bot->GetPositionZ() < ILLIDAN_STAIRWELL_Z)
+        return false;
+
+    return UpdateIllidanClassRoleAnnouncement(botAI);
 }

@@ -19,6 +19,9 @@ public:
         creators["black temple no encounter in progress"] =
             &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
+        creators["black temple class roles should be assigned"] =
+            &RaidBlackTempleTriggerContext::black_temple_class_roles_should_be_assigned;
+
         // Trash
         creators["sister of pleasure should be focused"] =
             &RaidBlackTempleTriggerContext::sister_of_pleasure_should_be_focused;
@@ -258,6 +261,11 @@ private:
     static Trigger* black_temple_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new BlackTempleNoEncounterInProgressTrigger(botAI);
+    }
+
+    static Trigger* black_temple_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new BlackTempleClassRolesShouldBeAssignedTrigger(botAI);
     }
 
     // Trash

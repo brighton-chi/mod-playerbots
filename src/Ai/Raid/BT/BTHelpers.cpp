@@ -40,12 +40,19 @@ namespace
 std::mutex btStateMutex;
 std::unordered_map<uint32, BtInstanceState> btStates;
 
-Player* GetCachedPlayer(PlayerbotAI* botAI, char const* value)
-{
-    Unit* unit = botAI->GetUnit(botAI->GetAiObjectContext()->GetValue<ObjectGuid>(value)->Get());
-    Player* player = unit ? unit->ToPlayer() : nullptr;
-    return player && player->IsAlive() ? player : nullptr;
-}
+constexpr ClassRole ZEREVOR_MAGE_TANK_ROLE = {
+    .playerClass = CLASS_MAGE,
+    .role = { "class_role_zerevor_mage_tank", "Zerevor mage tank" },
+    .candidate = { "class_role_class_mage", "Mage" },
+};
+
+constexpr ClassRole ILLIDAN_WARLOCK_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_illidan_warlock_tank", "Illidan warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
 
 } // end anonymous namespace (Shared)
 
@@ -1106,50 +1113,31 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
-ObjectGuid FindZerevorMageTankGuid(Player* bot)
+bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return ObjectGuid::Empty;
-
-    Player* highestHpBotMage = nullptr;
-    uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
-            member->getClass() != CLASS_MAGE)
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-            return member->GetGUID();
-
-        if (!GET_PLAYERBOT_AI(member))
-            continue;
-
-        uint32 const hp = member->GetMaxHealth();
-        if (!highestHpBotMage || hp > highestHp)
-        {
-            highestHpBotMage = member;
-            highestHp = hp;
-        }
-    }
-
-    return highestHpBotMage ? highestHpBotMage->GetGUID() : ObjectGuid::Empty;
+    BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR), ZEREVOR_SPAWN_POSITION,
+        COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE, COUNCIL_CLASS_ROLE_REARM_DISTANCE, {
+            { ZEREVOR_MAGE_TANK_ROLE, state.zerevorMageTank },
+        });
 }
 
 Player* GetZerevorMageTank(PlayerbotAI* botAI)
 {
-    return GetCachedPlayer(botAI, "illidari council zerevor mage tank");
+    Player* bot = botAI->GetBot();
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state ? GetClassRoleHolder(bot, state->zerevorMageTank) : nullptr;
 }
 
 bool IsZerevorMageTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    return bot->getClass() == CLASS_MAGE && GetZerevorMageTank(botAI) == bot;
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state && IsClassRoleHolder(bot, state->zerevorMageTank);
 }
 
 bool HasDangerousCouncilAura(Player* bot)
@@ -2045,44 +2033,38 @@ Unit* GetAssignedFlameOfAzzinoth(Player* bot)
     return !otherTank || !otherTank->IsAlive() ? otherFlame : nullptr;
 }
 
-ObjectGuid FindIllidanWarlockTankGuid(Player* bot)
+bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return ObjectGuid::Empty;
+    BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
+    // He spawns right above the Illidari Council, so nothing is said for him while Zerevor lives.
+    return UpdateClassRoleAnnouncement(
+        botAI, Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_POSITION,
+        ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE, ILLIDAN_CLASS_ROLE_REARM_DISTANCE, {
+            { ILLIDAN_WARLOCK_TANK_ROLE, state.illidanWarlockTank },
+        }, Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR));
+}
 
-    ObjectGuid assistantWarlock;
-    ObjectGuid botWarlock;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || member->getClass() != CLASS_WARLOCK)
-            continue;
-
-        ObjectGuid const guid = member->GetGUID();
-        if (group->IsAssistant(guid))
-        {
-            if (assistantWarlock.IsEmpty() || guid < assistantWarlock)
-                assistantWarlock = guid;
-        }
-        else if (GET_PLAYERBOT_AI(member) && (botWarlock.IsEmpty() || guid < botWarlock))
-        {
-            botWarlock = guid;
-        }
-    }
-
-    return assistantWarlock.IsEmpty() ? botWarlock : assistantWarlock;
+ObjectGuid GetIllidanWarlockTankGuid(Player* bot)
+{
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state ? GetClassRoleHolderGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
 }
 
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
 {
-    return GetCachedPlayer(botAI, "illidan stormrage warlock tank");
+    Player* bot = botAI->GetBot();
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state ? GetClassRoleHolder(bot, state->illidanWarlockTank) : nullptr;
 }
 
 bool IsIllidanWarlockTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    return bot->getClass() == CLASS_WARLOCK && GetIllidanWarlockTank(botAI) == bot;
+    if (bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state && IsClassRoleHolder(bot, state->illidanWarlockTank);
 }
 
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)
@@ -2211,9 +2193,8 @@ int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonFo
     if (!group || slotCount == 0)
         return -1;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    ObjectGuid const warlockTankGuid = inDemonForm ?
-        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get() : ObjectGuid::Empty;
+    ObjectGuid const warlockTankGuid =
+        inDemonForm ? GetIllidanWarlockTankGuid(bot) : ObjectGuid::Empty;
 
     std::vector<ObjectGuid> healers;
     std::vector<ObjectGuid> rangedDps;
@@ -2503,8 +2484,7 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
     AiObjectContext* context = botAI->GetAiObjectContext();
     auto const& shadowDemons =
         context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
-    ObjectGuid const warlockTank =
-        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get();
+    ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
 
     Unit* best = nullptr;
     std::tuple<uint32, uint32, float> bestKey = {
@@ -2538,12 +2518,11 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
 
 Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    ObjectGuid const warlockTank =
-        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get();
+    ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
     if (warlockTank.IsEmpty())
         return nullptr;
 
+    AiObjectContext* context = botAI->GetAiObjectContext();
     auto const& shadowDemons =
         context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
@@ -2565,8 +2544,7 @@ Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
     // Demons spawn 5 yd from him and walk out toward the raid, so melee running in from their
     // slots meet one well outside Aura of Dread's 15 yd even if they leave immediately.
     AiObjectContext* context = botAI->GetAiObjectContext();
-    ObjectGuid const warlockTank =
-        context->GetValue<ObjectGuid>("illidan stormrage warlock tank")->Get();
+    ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
     Unit* nearest = nullptr;
     std::pair<bool, float> nearestKey = { true, std::numeric_limits<float>::max() };
     auto const& shadowDemons =
@@ -2694,6 +2672,15 @@ bool IsPathInEyeBlastDangerArea(
 
 // Shared encounter state
 
+bool UpdateBtClassRoles(PlayerbotAI* botAI)
+{
+    BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, BT_MAP_ID, {
+        { ZEREVOR_MAGE_TANK_ROLE, state.zerevorMageTank },
+        { ILLIDAN_WARLOCK_TANK_ROLE, state.illidanWarlockTank },
+    });
+}
+
 BtInstanceState& BtState(uint32 instanceId)
 {
     std::lock_guard lock(btStateMutex);
@@ -2714,14 +2701,18 @@ bool BtResetInstance(uint32 instanceId)
     if (it == btStates.end())
         return false;
 
-    BtInstanceState const& state = it->second;
+    BtInstanceState& state = it->second;
     bool const wasSet = state.najentusSpineAssignments || state.najentusSpineThrower ||
         state.najentusSpineThrowTime || state.councilDpsWaitTimer || state.illidanLastPhase ||
         state.illidanPreviousPhase || state.illidanPhaseStartTime ||
         state.illidanFlamePhaseStartTime || state.eastFlameGuid || state.westFlameGuid ||
         state.illidanTankAggroPhase || state.illidanInfections;
 
-    btStates.erase(it);
+    // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
+    state = {
+        .zerevorMageTank = state.zerevorMageTank,
+        .illidanWarlockTank = state.illidanWarlockTank,
+    };
     return wasSet;
 }
 

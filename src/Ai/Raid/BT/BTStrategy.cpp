@@ -18,7 +18,12 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("black temple no encounter in progress",
-        { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 10) }));
+        { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 10),
+          NextAction("illidari council announce class roles", ACTION_EMERGENCY + 8),
+          NextAction("illidan stormrage announce class roles", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("black temple class roles should be assigned",
+        { NextAction("black temple assign class roles", ACTION_EMERGENCY + 9) }));
 
     // Trash
     triggers.push_back(new TriggerNode("sister of pleasure should be focused",

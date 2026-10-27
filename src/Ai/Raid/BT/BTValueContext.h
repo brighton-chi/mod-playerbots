@@ -90,20 +90,6 @@ protected:
     float Calculate() override { return BtHelpers::FindGurtoggSecondTankThreat(botAI); }
 };
 
-// Illidari Council
-
-class IllidariCouncilZerevorMageTankValue : public CalculatedValue<ObjectGuid>
-{
-public:
-    IllidariCouncilZerevorMageTankValue(PlayerbotAI* botAI)
-        : CalculatedValue<ObjectGuid>(
-            botAI, "illidari council zerevor mage tank",
-            BtHelpers::ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS) {}
-
-protected:
-    ObjectGuid Calculate() override { return BtHelpers::FindZerevorMageTankGuid(bot); }
-};
-
 // Illidan Stormrage <The Betrayer>
 
 class IllidanStormrageSpeechInProgressValue : public BoolCalculatedValue
@@ -116,18 +102,6 @@ public:
 
 protected:
     bool Calculate() override { return BtHelpers::IsIllidanSpeechInProgress(bot); }
-};
-
-class IllidanStormrageWarlockTankValue : public CalculatedValue<ObjectGuid>
-{
-public:
-    IllidanStormrageWarlockTankValue(PlayerbotAI* botAI)
-        : CalculatedValue<ObjectGuid>(
-            botAI, "illidan stormrage warlock tank",
-            BtHelpers::ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS) {}
-
-protected:
-    ObjectGuid Calculate() override { return BtHelpers::FindIllidanWarlockTankGuid(bot); }
 };
 
 class IllidanStormragePlayersWithParasiticShadowfiendValue : public CalculatedValue<GuidVector>
@@ -197,12 +171,8 @@ public:
             &RaidBlackTempleValueContext::teron_gorefiend_shadowy_constructs;
         creators["gurtogg bloodboil second tank threat"] =
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
-        creators["illidari council zerevor mage tank"] =
-            &RaidBlackTempleValueContext::illidari_council_zerevor_mage_tank;
         creators["illidan stormrage speech in progress"] =
             &RaidBlackTempleValueContext::illidan_stormrage_speech_in_progress;
-        creators["illidan stormrage warlock tank"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_warlock_tank;
         creators["illidan stormrage players with parasitic shadowfiend"] =
             &RaidBlackTempleValueContext::illidan_stormrage_players_with_parasitic_shadowfiend;
         creators["illidan stormrage trap hunters"] =
@@ -234,17 +204,9 @@ private:
     {
         return new GurtoggBloodboilSecondTankThreatValue(botAI);
     }
-    static UntypedValue* illidari_council_zerevor_mage_tank(PlayerbotAI* botAI)
-    {
-        return new IllidariCouncilZerevorMageTankValue(botAI);
-    }
     static UntypedValue* illidan_stormrage_speech_in_progress(PlayerbotAI* botAI)
     {
         return new IllidanStormrageSpeechInProgressValue(botAI);
-    }
-    static UntypedValue* illidan_stormrage_warlock_tank(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageWarlockTankValue(botAI);
     }
     static UntypedValue* illidan_stormrage_players_with_parasitic_shadowfiend(PlayerbotAI* botAI)
     {

@@ -26,6 +26,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class BlackTempleAssignClassRolesAction : public Action
+{
+public:
+    BlackTempleAssignClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "black temple assign class roles") {}
+    bool Execute(Event event) override;
+};
+
 // Used for High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil and Mother
 // Shahraz.
 class BlackTempleMisdirectToMainTankAction : public Action
@@ -544,6 +552,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilAnnounceClassRolesAction : public Action
+{
+public:
+    IllidariCouncilAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidari council announce class roles") {}
+    bool Execute(Event event) override;
+};
+
 // Illidan Stormrage <The Betrayer>
 
 // The Main Tank waits at its pull position, facing him; everyone else waits on the grate.
@@ -834,6 +850,14 @@ class IllidanStormrageClearHazardsAction : public Action
 public:
     IllidanStormrageClearHazardsAction(PlayerbotAI* botAI)
         : Action(botAI, "illidan stormrage clear hazards") {}
+    bool Execute(Event event) override;
+};
+
+class IllidanStormrageAnnounceClassRolesAction : public Action
+{
+public:
+    IllidanStormrageAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidan stormrage announce class roles") {}
     bool Execute(Event event) override;
 };
 

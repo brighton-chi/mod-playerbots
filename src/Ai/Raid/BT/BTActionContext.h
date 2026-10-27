@@ -19,6 +19,9 @@ public:
         creators["black temple reset encounter states"] =
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
+        creators["black temple assign class roles"] =
+            &RaidBlackTempleActionContext::black_temple_assign_class_roles;
+
         // Trash
         creators["sister of pleasure focus dps"] =
             &RaidBlackTempleActionContext::sister_of_pleasure_focus_dps;
@@ -176,6 +179,9 @@ public:
         creators["illidari council manage dps timer"] =
             &RaidBlackTempleActionContext::illidari_council_manage_dps_timer;
 
+        creators["illidari council announce class roles"] =
+            &RaidBlackTempleActionContext::illidari_council_announce_class_roles;
+
         // Illidan Stormrage <The Betrayer>
         creators["illidan stormrage position on grate during speech"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_on_grate_during_speech;
@@ -245,6 +251,9 @@ public:
 
         creators["illidan stormrage clear hazards"] =
             &RaidBlackTempleActionContext::illidan_stormrage_clear_hazards;
+
+        creators["illidan stormrage announce class roles"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_announce_class_roles;
     }
 
 private:
@@ -252,6 +261,10 @@ private:
     static Action* black_temple_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new BlackTempleResetEncounterStatesAction(botAI);
+    }
+    static Action* black_temple_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new BlackTempleAssignClassRolesAction(botAI);
     }
 
     // Trash
@@ -491,6 +504,10 @@ private:
     {
         return new IllidariCouncilManageDpsTimerAction(botAI);
     }
+    static Action* illidari_council_announce_class_roles(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilAnnounceClassRolesAction(botAI);
+    }
 
     // Illidan Stormrage <The Betrayer>
     static Action* illidan_stormrage_position_on_grate_during_speech(PlayerbotAI* botAI)
@@ -584,6 +601,10 @@ private:
     static Action* illidan_stormrage_clear_hazards(PlayerbotAI* botAI)
     {
         return new IllidanStormrageClearHazardsAction(botAI);
+    }
+    static Action* illidan_stormrage_announce_class_roles(PlayerbotAI* botAI)
+    {
+        return new IllidanStormrageAnnounceClassRolesAction(botAI);
     }
 };
 

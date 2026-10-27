@@ -38,6 +38,15 @@ public:
     bool IsActive() override;
 };
 
+// In and out of encounters: the roles are re-ranked out of one and passed on in one.
+class BlackTempleClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    BlackTempleClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "black temple class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 // A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
 // High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil, Mother Shahraz and the
 // Illidari Council (on Gathios).

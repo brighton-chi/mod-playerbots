@@ -8,6 +8,7 @@
 #define PLAYERBOTS_BTHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
@@ -501,12 +502,16 @@ inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 655.571f, 261.377f, 271.687f },
     Position{ 673.789f, 274.139f, 271.689f },
 };
+inline Position const ZEREVOR_SPAWN_POSITION = { 700.792f, 307.192f, 277.526f };
 inline std::array const ZEREVOR_TANK_POSITIONS = {
     Position{ 654.854f, 352.502f, 271.689f },
     Position{ 644.597f, 338.875f, 271.688f },
 };
 
-inline constexpr uint32 ZEREVOR_MAGE_TANK_CACHE_INTERVAL_MS = 1000;
+// 125 yards extends to the outer entrance to the Council's room.
+inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
+// 175 yards extends to the top of the steps leading to the courtyard outside the Council's room.
+inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
@@ -527,9 +532,7 @@ inline constexpr float COUNTERSPELL_RANGE = 30.0f;
 inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 inline constexpr float SPELL_LOCK_RANGE = 30.0f;
 
-// (1) First priority is an assistant Mage (real player or bot)
-// (2) If no assistant Mage, then the Mage bot with the highest max health
-ObjectGuid FindZerevorMageTankGuid(Player* bot);
+bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
@@ -637,7 +640,12 @@ struct IllidanInfection
     bool isTrapAssigned = false;
 };
 
-inline constexpr uint32 ILLIDAN_WARLOCK_TANK_CACHE_INTERVAL_MS = 1000;
+// The raid has to get closer than 100 yards to Illidan to talk to Akama.
+inline constexpr float ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
+// The height of the second landings of the double stairs leading to the Temple summit.
+inline constexpr float ILLIDAN_STAIRWELL_Z = 341.0f;
+// 175 yards rearm distance matches the Council's because Illidan's XY position is nearly identical.
+inline constexpr float ILLIDAN_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 inline constexpr uint32 ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 ILLIDAN_SPEECH_CACHE_INTERVAL_MS = 1000;
@@ -889,9 +897,9 @@ bool IsFlameOfAzzinothTank(Player* bot);
 // The living Flame this bot tanks: its own, else the other one once its own is dead and that
 // Flame's tank is dead too.
 Unit* GetAssignedFlameOfAzzinoth(Player* bot);
-// The warlock tank is an assistant warlock (player or bot), else the warlock bot with the lowest
-// GUID; dead or alive, for the whole fight, since losing it wipes the raid anyway.
-ObjectGuid FindIllidanWarlockTankGuid(Player* bot);
+// The Illidan warlock tank is a Warlock, preferring Demonology.
+bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI);
+ObjectGuid GetIllidanWarlockTankGuid(Player* bot);
 // Null while the warlock tank is dead.
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool IsIllidanWarlockTank(PlayerbotAI* botAI);
@@ -980,8 +988,11 @@ struct BtInstanceState
     std::optional<IllidanPhase> illidanTankAggroPhase;
     // Each infected player's infection, kept until the debuff is gone.
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
+    EncounterHelpers::ClassRoleAssignment zerevorMageTank;
+    EncounterHelpers::ClassRoleAssignment illidanWarlockTank;
 };
 
+bool UpdateBtClassRoles(PlayerbotAI* botAI);
 BtInstanceState& BtState(uint32 instanceId);
 BtInstanceState* FindBtState(uint32 instanceId);
 bool BtResetInstance(uint32 instanceId);
