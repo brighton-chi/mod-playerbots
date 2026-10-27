@@ -2040,12 +2040,12 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
 
 bool IsWestFlameOfAzzinothTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_WEST_FLAME_TANK_INDEX);
 }
 
 bool IsEastFlameOfAzzinothTank(Player* bot)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 1);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_EAST_FLAME_TANK_INDEX);
 }
 
 bool IsFlameOfAzzinothTank(Player* bot)

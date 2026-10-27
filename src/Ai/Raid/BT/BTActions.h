@@ -541,7 +541,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool ShouldAttackMalande(Unit* malande, Unit* gathios, Unit* zerevor) const;
+    bool ShouldAttackMalande(Unit* malande, Unit* gathios, Unit* zerevor);
 };
 
 class IllidariCouncilManageDpsTimerAction : public Action
@@ -572,8 +572,8 @@ public:
 };
 
 // Hunter bots misdirect him onto the Main Tank at each Phase 1, 3 and 5 start, and onto the
-// warlock tank in Demon Form. While he flies, the first hunter bot by GUID takes the East Flame
-// to its tank, and the others the West Flame.
+// warlock tank in Demon Form. While he flies, the second hunter bot by GUID takes the West Flame
+// to its tank, and the first and any others the East Flame.
 class IllidanStormrageMisdirectToTanksAction : public Action
 {
 public:

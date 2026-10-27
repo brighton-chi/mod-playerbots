@@ -588,8 +588,8 @@ float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDis
     if (z <= INVALID_HEIGHT)
         z = bot->GetPositionZ();
 
-    // With failOnCollision off, a blocked run is clamped at the contact point and still returns
-    // true. A false return requires the full move to be completable.
+    // With failOnCollision off, a run that hits something is cut short there and still returns
+    // true. False means a bad point (no navmesh path or no ground), so the heading gets 0 yd.
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, false, false))
         return 0.0f;
 
@@ -1779,11 +1779,12 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 }
 
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
-    Unit* malande, Unit* gathios, Unit* zerevor) const
+    Unit* malande, Unit* gathios, Unit* zerevor)
 {
-    if (!malande ||
-        (zerevor &&
-         zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE) ||
+    if (!malande || !gathios || !zerevor)
+        return false;
+
+    if (zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE ||
         IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
         return false;
@@ -1889,21 +1890,21 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
         return false;
 
     // Each hunter goes as soon as its own Flame is up; the West one comes about 0.7 s first.
-    bool const isEast = it == hunters.begin();
+    // The second hunter by GUID covers West; the first and any others cover East.
+    auto const hunterIndex = std::distance(hunters.begin(), it);
+    bool const isEast = hunterIndex != 1;
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
     Unit* flame = isEast ? eastFlame : westFlame;
     if (!flame || flame->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
         return false;
 
-    return MisdirectTargetToTank(botAI, flame, GetGroupAssistTank(bot, isEast ? 1 : 0));
+    uint8 const flameTankIndex = isEast ?
+        ILLIDAN_EAST_FLAME_TANK_INDEX : ILLIDAN_WEST_FLAME_TANK_INDEX;
+    return MisdirectTargetToTank(botAI, flame, GetGroupAssistTank(bot, flameTankIndex));
 }
 
-// Its Steady Shot would be damage on him while nobody may damage him.
 bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* illidan)
 {
-    if (!illidan)
-        return false;
-
     IllidanDpsHold const window = GetIllidanHoldWindow(illidan);
     if (window == IllidanDpsHold::DemonFormEnd || window == IllidanDpsHold::DemonFormNoPush)
         return false;
@@ -1948,7 +1949,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
     Position position;
     if (phase == IllidanPhase::Landing)
     {
-        // In his way if he runs at the raid after the threat reset.
+        // Wait between Illidan and the raid to pick him up after phase 2.
         position = ILLIDAN_LANDING_TANK_POSITION;
     }
     else if (phase == IllidanPhase::None)

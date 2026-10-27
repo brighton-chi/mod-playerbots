@@ -556,8 +556,8 @@ struct IllidariCouncilMembers
     Unit* veras = nullptr;
 };
 
-// An entry search, not find target: a bot back from the dead isn't on the members' threat lists
-// until it casts on an ally in combat or fights one of them. Only members in combat count.
+// An entry search, not find target, since a bot back from the dead isn't yet on the members'
+// threat lists. Only members in combat count.
 IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot);
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
@@ -849,6 +849,11 @@ inline std::array const ILLIDAN_GRATE_POSITIONS = {
     ILLIDAN_W_GRATE_POSITION,
 };
 
+// Assist tank indices for the Flames of Azzinoth, as GetGroupAssistTank and IsAssistTankOfIndex
+// number them.
+inline constexpr uint8 ILLIDAN_WEST_FLAME_TANK_INDEX = 0;
+inline constexpr uint8 ILLIDAN_EAST_FLAME_TANK_INDEX = 1;
+
 // The Flame tanks' Blaze steps, one per Flame Blast, in order. The Flame follows its tank in, so
 // each step is walked into on a line that turns the Flame Blast cone away from the grate stacks.
 // The West tank starts on its inner steps, where Phase 1's Flame Crashes can't reach, and in melee
@@ -933,7 +938,6 @@ bool IsFlameOfAzzinothTank(Player* bot);
 // The living Flame this bot tanks: its own, else the other one once its own is dead and that
 // Flame's tank is dead too.
 Unit* GetAssignedFlameOfAzzinoth(Player* bot);
-// The Illidan warlock tank is a Warlock, preferring Demonology.
 bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI);
 ObjectGuid GetIllidanWarlockTankGuid(Player* bot);
 // Null while the warlock tank is dead.
