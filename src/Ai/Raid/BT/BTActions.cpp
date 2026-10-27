@@ -14,8 +14,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <iterator>
 #include <limits>
 #include <list>
+#include <optional>
 #include <utility>
 
 using namespace BtHelpers;
@@ -63,14 +65,16 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
     }
 
     Action* gathiosTankAction = context->GetAction("illidari council main tank position gathios");
-    if (gathiosTankAction && static_cast<IllidariCouncilMainTankPositionGathiosAction*>(
+    if (gathiosTankAction &&
+        static_cast<IllidariCouncilMainTankPositionGathiosAction*>(
             gathiosTankAction)->ResetTankStep())
     {
         reset = true;
     }
 
     Action* zerevorTankAction = context->GetAction("illidari council mage tank position zerevor");
-    if (zerevorTankAction && static_cast<IllidariCouncilMageTankPositionZerevorAction*>(
+    if (zerevorTankAction &&
+        static_cast<IllidariCouncilMageTankPositionZerevorAction*>(
             zerevorTankAction)->ResetTankStep())
     {
         reset = true;
@@ -235,7 +239,6 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         return true;
     }
 
-    // A cast the pet already started on a Reaver would still build its charges.
     auto const sendPet = [pet](Unit* unit)
     {
         pet->InterruptNonMeleeSpells(false);
@@ -323,7 +326,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     if (!impaled)
         return false;
 
-    // The spine is summoned where the impaled player stands.
+    // The spine is summoned where the impaled player stands so this distance can be minimal.
     constexpr float searchRadius = 5.0f;
     GameObject* spineGo = impaled->FindNearestGameObject(
         Id(BtObjects::GO_NAJENTUS_SPINE), searchRadius, true);
@@ -333,7 +336,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
     constexpr float useDistance = 3.0f;
     bool const atSpine = bot->GetExactDist2d(spineGo) <= useDistance;
 
-    // One reaction delay of 1 to 2 s per spine, before clicking or walking to it.
+    // For realism, a reaction delay of 1 to 2s per spine, before clicking or walking to it.
     constexpr uint32 minReactionMs = 1000;
     constexpr uint32 maxReactionMs = 2000;
     if (spineGo->GetGUID() != _spineGuid)
@@ -400,7 +403,7 @@ bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
     if (!shield || !spine)
         return false;
 
-    // Reaction delay of 0.5 to 1.5 s, counted from the shield going up.
+    // For realism, a reaction delay of 0.5 to 1.5s, counted from the shield going up.
     constexpr uint32 minReactionMs = 500;
     constexpr uint32 maxReactionMs = 1500;
     if (!_throwDelay)
@@ -478,8 +481,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     if (!supremus)
         return false;
 
-    // Wait only for the kite's own last step. Any other move, such as a walk out of fire begun
-    // before the fixate, is cleared so the kite can step at once.
+    // Wait only for the kite's own last step. Any other move is cleared immediately.
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
     LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
     if (lastMove.msTime != _lastStepTime)
@@ -489,7 +491,6 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
 
     float const timeRemaining = GetSupremusFixateTimeRemaining(supremus);
     float const catchDistance = GetSupremusCatchDistance(bot, supremus);
-    // At least a volcano's width, so a bot standing in one sees the way out.
     float const probeDistance = std::max(
         bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_SAFE_DISTANCE);
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
@@ -566,8 +567,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
         }
 
         if (!MoveTo(
-                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true,
-                false))
+                BT_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false))
         {
             return false;
         }
@@ -588,8 +588,8 @@ float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDis
     if (z <= INVALID_HEIGHT)
         z = bot->GetPositionZ();
 
-    // With failOnCollision off, a blocked run is cut short at the contact point and still returns
-    // true. A false return leaves the point uncut, so it counts as no room at all.
+    // With failOnCollision off, a blocked run is clamped at the contact point and still returns
+    // true. A false return requires the full move to be completable.
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, false, false))
         return 0.0f;
 
@@ -839,7 +839,6 @@ bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
     if (IsMechanicTrackerBot(bot, BT_MAP_ID) && MarkTargetWithSkull(bot, target))
         return true;
 
-    // Shadow Priests and melee dps focus on Channelers and Sorcerers.
     if (!PlayerbotAI::IsDps(bot) || (bot->getClass() != CLASS_PRIEST && !PlayerbotAI::IsMelee(bot)))
         return false;
 
@@ -894,7 +893,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
         std::distance(rangedMembers.begin(), findIt) : 0;
 
     constexpr float arcSpan = 2.0f * static_cast<float>(M_PI) / 5.0f;
-    constexpr float arcCenter = 0.0f; // due north
+    constexpr float arcCenter = 0.0f; // due North
     constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
     constexpr float radius = 12.0f;
@@ -997,8 +996,9 @@ bool TeronGorefiendDestroyShadowyConstructsAction::Execute(Event /*event*/)
         spirit, GetLanceTarget(gorefiend, constructs), Id(BtSpells::SPELL_SPIRIT_LANCE)) || moving;
 }
 
-// A grid search from Teron, not the bot's own targets: the bot is the possessing body, left
-// where Shadow of Death sent it, and its target lists keep only units it can see.
+// A grid search is used because when a player controls the spirit, its body stays alive where the
+// spirit spawned. The player does not have LoS to Teron from the corner, so a standard 'attackers'
+// search, which is centered on the player and not the spirit, loses constructs near Teron.
 std::vector<Unit*> TeronGorefiendDestroyShadowyConstructsAction::GetConstructs(
     Unit* gorefiend) const
 {
@@ -1016,7 +1016,6 @@ std::vector<Unit*> TeronGorefiendDestroyShadowyConstructsAction::GetConstructs(
     return constructs;
 }
 
-// The construct nearest Teron leads the way to the raid.
 Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLeadConstruct(
     Unit* gorefiend, std::vector<Unit*> const& constructs) const
 {
@@ -1035,9 +1034,10 @@ Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLeadConstruct(
     return leadConstruct;
 }
 
-// Lance breaks Chains, so it frees the chained construct farthest from Teron first, keeping the
-// rest together. With none chained, Lance goes round them, keeping its 9 s slow on each and
-// wearing them down evenly: of those within one Lance of the highest health, the nearest Teron.
+// The goal is to keep the constructs bunched up and take them down together. Lance breaks Chains,
+// so while any are chained, Lance frees the one farthest from Teron. Otherwise, Lance targets the
+// construct nearest Teron among those within one Lance of damage (6175) of the highest HP. This
+// spreads Lance's 9s slow across the constructs.
 Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLanceTarget(
     Unit* gorefiend, std::vector<Unit*> const& constructs) const
 {
@@ -1157,7 +1157,6 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
         return false;
 
     Unit* target = desire ? desire : anger;
-
     return target->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT &&
         MisdirectTargetToTank(botAI, target, mainTank);
 }
@@ -1184,7 +1183,6 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
     return RangedMoveAwayFromBoss(suffering);
 }
 
-// Straight in or out along her line to the bot, so nobody crosses nearer to her than the tanks.
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::MoveToDistanceFromSuffering(
     Unit* suffering, float distance)
 {
@@ -1219,8 +1217,7 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
             if (bot->HasAura(Id(BtSpells::SPELL_TREE_OF_LIFE)))
             {
                 bot->RemoveOwnedAura(
-                    Id(BtSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0,
-                    AURA_REMOVE_BY_CANCEL);
+                    Id(BtSpells::SPELL_TREE_OF_LIFE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
             }
 
             if (botAI->CanCastSpell("barkskin", bot) && botAI->CastSpell("barkskin", bot))
@@ -1289,7 +1286,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     if (!victim)
         return false;
 
-    // Saber Lash is split between her victim and the two closest to it.
+    // Saber Lash is split between Shahraz's victim and the two closest to it.
     if (victim != bot)
     {
         if (bot->GetExactDist2d(victim) <= SHAHRAZ_OFF_TANK_DISTANCE)
@@ -1313,7 +1310,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     if (!bot->IsWithinMeleeRange(shahraz))
         return false;
 
-    // Within this distance of the tank position, the bot is past the statue.
+    // Within this distance of the tank position, the bot is considered past the statue.
     float const finalLegDistance =
         transitionPosition.GetExactDist2d(tankPosition) + SHAHRAZ_TANK_POSITION_TOLERANCE;
     Position const& position = distToTankPosition <= finalLegDistance ?
@@ -1335,8 +1332,9 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// This doesn't matter for bots since they don't take fall damage, and it's actually easier
-// to tank her closer to her starting position, but I want to simulate a player strategy
+// The standard strategy is to stand under something that keeps you from flying too high from
+// Sinister Beam to limit fall damage. In the case of bots, collision does not work properly, and
+// they do not take fall damage, so the positioning is just for simulation.
 bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
@@ -1511,7 +1509,8 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
     if (!malande)
         return false;
 
-    // CanCastSpell passes a target out of range, and the failed cast still turns the bot to her.
+    // CanCastSpell does not reject targets that are out of range. The cast fails at CastSpell, and
+    // a failed cast still turns the bot toward its target. Hence, we do an upfront range check.
     auto const castInterrupt = [&](uint32 spellId, bool inRange)
     {
         return inRange && botAI->CanCastSpell(spellId, malande) &&
@@ -1524,15 +1523,19 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
         case CLASS_DEATH_KNIGHT:
             return castInterrupt(Id(BtSpells::SPELL_MIND_FREEZE), inMeleeRange);
         case CLASS_MAGE:
+        {
             return castInterrupt(
                 Id(BtSpells::SPELL_COUNTERSPELL),
                 bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE));
+        }
         case CLASS_ROGUE:
             return castInterrupt(Id(BtSpells::SPELL_KICK), inMeleeRange);
         case CLASS_SHAMAN:
+        {
             return castInterrupt(
                 Id(BtSpells::SPELL_WIND_SHEAR),
                 bot->IsWithinCombatRange(malande, WIND_SHEAR_RANGE));
+        }
         case CLASS_WARLOCK:
         {
             Pet* pet = bot->GetPet();
@@ -1546,8 +1549,8 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
     }
 }
 
-// Pummel requires Berserker Stance. This function makes Arms Warriors stance change, which keeps
-// 10 rage from Stance Mastery, Pummel's cost, allowing Pummel to be cast on the next tick.
+// Pummel requires Berserker Stance. This makes Arms Warriors stance change, which keeps 10 rage
+// from Stance Mastery (Pummel's cost), allowing Pummel to be cast on the next tick.
 bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* malande)
 {
     if (bot->GetShapeshiftForm() == FORM_BERSERKERSTANCE)
@@ -1673,7 +1676,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    bool backwards; // not used: the mage tank never walks backwards
+    bool backwards; // not used: the mage tank never moves backwards
     if (!GetStepToPosition(
             bot, ZEREVOR_TANK_POSITIONS[_tankStep], COUNCIL_TANK_ARRIVAL_DISTANCE, zerevor, moveX,
             moveY, backwards))
@@ -1711,8 +1714,8 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
-        false);
+        BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+        priority, true, false);
 }
 
 bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
@@ -1727,9 +1730,6 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
     if (IsVerasVanished(veras))
         veras = nullptr;
@@ -1738,6 +1738,9 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     uint32 const immunity = isCaster ? Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING) :
         Id(BtSpells::SPELL_BLESSING_OF_PROTECTION);
 
+    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
     Unit* target = nullptr;
     if (zerevor && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
     {

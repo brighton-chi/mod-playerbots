@@ -194,6 +194,12 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 
 bool ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger::IsActiveInEncounter()
 {
+    bool const isMeleeDps = PlayerbotAI::IsDps(bot) && PlayerbotAI::IsMelee(bot);
+    bool const isShadowPriest =
+        bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
+    if (!isMeleeDps && !isShadowPriest && !IsMechanicTrackerBot(bot, BT_MAP_ID))
+        return false;
+
     return GetShadeOfAkamaKillTarget(botAI);
 }
 
