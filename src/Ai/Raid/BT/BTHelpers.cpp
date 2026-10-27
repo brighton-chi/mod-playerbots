@@ -2696,10 +2696,10 @@ bool BtResetInstance(uint32 instanceId)
         state.illidanTankAggroPhase || state.illidanInfections;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
-    state = {
-        .zerevorMageTank = state.zerevorMageTank,
-        .illidanWarlockTank = state.illidanWarlockTank,
-    };
+    BtInstanceState kept;
+    kept.zerevorMageTank = state.zerevorMageTank;
+    kept.illidanWarlockTank = state.illidanWarlockTank;
+    state = std::move(kept);
     return wasSet;
 }
 
