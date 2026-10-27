@@ -836,8 +836,12 @@ bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    if (MarkTargetWithSkull(bot, target))
+    if (IsMechanicTrackerBot(bot, BT_MAP_ID) && MarkTargetWithSkull(bot, target))
         return true;
+
+    // Shadow Priests and melee dps focus on Channelers and Sorcerers.
+    if (!PlayerbotAI::IsDps(bot) || (bot->getClass() != CLASS_PRIEST && !PlayerbotAI::IsMelee(bot)))
+        return false;
 
     if (!bot->IsWithinLOSInMap(target))
     {

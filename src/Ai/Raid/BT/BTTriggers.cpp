@@ -194,13 +194,6 @@ bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 
 bool ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsDps(bot))
-        return false;
-
-    // Shadow Priests (by proxy via dps check) and melee dps focus on Channelers (and Sorcerers).
-    if (bot->getClass() != CLASS_PRIEST && !PlayerbotAI::IsMelee(bot))
-        return false;
-
     return GetShadeOfAkamaKillTarget(botAI);
 }
 
