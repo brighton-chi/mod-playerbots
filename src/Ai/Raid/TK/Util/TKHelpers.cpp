@@ -342,20 +342,6 @@ Creature* GetLegendaryWeaponByState(PlayerbotAI* botAI, uint32 weaponEntry, bool
     return nullptr;
 }
 
-constexpr ClassRole CAPERNIAN_TANK_ROLE = {
-    .playerClass = CLASS_WARLOCK,
-    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
-    .role = { "class_role_capernian_warlock_tank", "Capernian warlock tank" },
-    .candidate = { "class_role_class_warlock", "Warlock" },
-    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
-};
-
-constexpr ClassRole SANGUINAR_DEBUFF_HUNTER_ROLE = {
-    .playerClass = CLASS_HUNTER,
-    .role = { "class_role_sanguinar_debuff_hunter", "Sanguinar debuff hunter" },
-    .candidate = { "class_role_class_hunter", "Hunter" },
-};
-
 } // end anonymous namespace (Kael'thas Sunstrider)
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas)

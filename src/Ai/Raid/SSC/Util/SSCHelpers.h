@@ -11,7 +11,9 @@
 #include "EncounterHelpers.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
 #include <limits>
 #include <optional>
@@ -20,7 +22,6 @@
 
 class Creature;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace SscHelpers
@@ -269,6 +270,19 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target);
 
 // Leotheras the Blind
 
+inline constexpr EncounterHelpers::ClassRole LEOTHERAS_WARLOCK_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_leotheras_warlock_tank", "Leotheras warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+// 100 yards takes the raid to just around the column near the entrance to Leo's chamber.
+inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
+// 150 yards is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
+// Karathress's spawn point.
+inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
+
 inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
@@ -286,11 +300,6 @@ inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
-// 100 yards takes the raid to just around the column near the entrance to Leo's chamber.
-inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
-// 150 yards is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
-// Karathress's spawn point.
-inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 

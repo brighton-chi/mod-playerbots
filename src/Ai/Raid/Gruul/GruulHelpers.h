@@ -10,12 +10,13 @@
 #include "Common.h"
 #include "EncounterHelpers.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <type_traits>
 #include <vector>
 
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace GruulHelpers
@@ -66,6 +67,22 @@ inline constexpr uint32 GRUUL_MAP_ID = 565;
 // Ogre combat reaches:
 // (1) Maulgar = 3.5y, (2) Olm = 2.2y, (3) Blindeye = 3.525y, (4) Krosh = 2y, (5) Kiggler = 3.3y
 
+inline constexpr EncounterHelpers::ClassRole KROSH_MAGE_TANK_ROLE = {
+    .playerClass = CLASS_MAGE,
+    .role = { "class_role_krosh_mage_tank", "Krosh mage tank" },
+    .candidate = { "class_role_class_mage", "Mage" },
+};
+inline constexpr EncounterHelpers::ClassRole KIGGLER_MOONKIN_TANK_ROLE = {
+    .playerClass = CLASS_DRUID,
+    .requiredSpec = DRUID_TAB_BALANCE,
+    .role = { "class_role_kiggler_moonkin_tank", "Kiggler moonkin tank" },
+    .candidate = { "class_role_class_balance_druid", "Balance Druid" },
+};
+// 90 yards is about the distance from Maulgar to where the hallway opens into the council room.
+inline constexpr float MAULGAR_CLASS_ROLE_ANNOUNCE_DISTANCE = 90.0f;
+// 150 yards is short of the instance portal and Gruul's room.
+inline constexpr float MAULGAR_CLASS_ROLE_REARM_DISTANCE = 150.0f;
+
 // Hold cooldowns until Blindeye is at this percent health. Also the gate for on-pull Misdirects.
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_HAZARD_RADIUS = 30.0f;
@@ -83,10 +100,6 @@ inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZAR
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
-// 90 yards is about the distance from Maulgar to where the hallway opens into the council room.
-inline constexpr float MAULGAR_CLASS_ROLE_ANNOUNCE_DISTANCE = 90.0f;
-// 150 yards is short of the instance portal and Gruul's room.
-inline constexpr float MAULGAR_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
 inline Position const MAULGAR_SPAWN_POSITION = { 145.786f, 190.979f, -11.542f };
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };

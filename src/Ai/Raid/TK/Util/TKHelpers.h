@@ -10,7 +10,9 @@
 #include "Common.h"
 #include "EncounterHelpers.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
 #include <optional>
 #include <type_traits>
@@ -20,7 +22,6 @@
 class Creature;
 class Item;
 class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace TkHelpers
@@ -240,10 +241,23 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 // 125 yards is about the exact distance from Kael to the entrances to his room.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
+inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
+
+inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_capernian_warlock_tank", "Capernian warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
+inline constexpr EncounterHelpers::ClassRole SANGUINAR_DEBUFF_HUNTER_ROLE = {
+    .playerClass = CLASS_HUNTER,
+    .role = { "class_role_sanguinar_debuff_hunter", "Sanguinar debuff hunter" },
+    .candidate = { "class_role_class_hunter", "Hunter" },
+};
 inline constexpr float KAELTHAS_CLASS_ROLE_ANNOUNCE_DISTANCE = KAELTHAS_ROOM_SEARCH_DISTANCE;
 // 200 yards extends to the tops of the ramps leading to Kael's room's entrances.
 inline constexpr float KAELTHAS_CLASS_ROLE_REARM_DISTANCE = 200.0f;

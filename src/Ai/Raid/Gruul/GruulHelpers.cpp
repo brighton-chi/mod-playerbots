@@ -47,24 +47,6 @@ bool IsBlindeyeTank(Player* bot)
     return PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
 }
 
-namespace
-{
-
-constexpr ClassRole KROSH_MAGE_TANK_ROLE = {
-    .playerClass = CLASS_MAGE,
-    .role = { "class_role_krosh_mage_tank", "Krosh mage tank" },
-    .candidate = { "class_role_class_mage", "Mage" },
-};
-
-constexpr ClassRole KIGGLER_MOONKIN_TANK_ROLE = {
-    .playerClass = CLASS_DRUID,
-    .requiredSpec = DRUID_TAB_BALANCE,
-    .role = { "class_role_kiggler_moonkin_tank", "Kiggler moonkin tank" },
-    .candidate = { "class_role_class_balance_druid", "Balance Druid" },
-};
-
-} // end anonymous namespace (High King Maulgar)
-
 bool UpdateGruulClassRoles(PlayerbotAI* botAI)
 {
     GruulInstanceState& state = GruulState(botAI->GetBot()->GetInstanceId());

@@ -10,7 +10,9 @@
 #include "Common.h"
 #include "EncounterHelpers.h"
 #include "ObjectGuid.h"
+#include "PlayerbotAI.h"
 #include "Position.h"
+#include "SharedDefines.h"
 #include <array>
 #include <optional>
 #include <type_traits>
@@ -23,7 +25,6 @@ class Creature;
 class GameObject;
 class Pet;
 class Player;
-class PlayerbotAI;
 class Spell;
 class SpellInfo;
 class Unit;
@@ -496,22 +497,16 @@ bool IsShahrazBeingPositioned(Unit* shahraz);
 
 // Illidari Council
 
-inline std::array const GATHIOS_TANK_POSITIONS = {
-    Position{ 662.977f, 296.246f, 271.688f },
-    Position{ 636.238f, 283.719f, 271.629f },
-    Position{ 655.571f, 261.377f, 271.687f },
-    Position{ 673.789f, 274.139f, 271.689f },
+inline constexpr EncounterHelpers::ClassRole ZEREVOR_MAGE_TANK_ROLE = {
+    .playerClass = CLASS_MAGE,
+    .role = { "class_role_zerevor_mage_tank", "Zerevor mage tank" },
+    .candidate = { "class_role_class_mage", "Mage" },
 };
-inline Position const ZEREVOR_SPAWN_POSITION = { 700.792f, 307.192f, 277.526f };
-inline std::array const ZEREVOR_TANK_POSITIONS = {
-    Position{ 654.854f, 352.502f, 271.689f },
-    Position{ 644.597f, 338.875f, 271.688f },
-};
-
 // 125 yards extends to the outer entrance to the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
 // 175 yards extends to the top of the steps leading to the courtyard outside the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
+
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
@@ -531,6 +526,18 @@ inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
 inline constexpr float COUNTERSPELL_RANGE = 30.0f;
 inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 inline constexpr float SPELL_LOCK_RANGE = 30.0f;
+
+inline std::array const GATHIOS_TANK_POSITIONS = {
+    Position{ 662.977f, 296.246f, 271.688f },
+    Position{ 636.238f, 283.719f, 271.629f },
+    Position{ 655.571f, 261.377f, 271.687f },
+    Position{ 673.789f, 274.139f, 271.689f },
+};
+inline Position const ZEREVOR_SPAWN_POSITION = { 700.792f, 307.192f, 277.526f };
+inline std::array const ZEREVOR_TANK_POSITIONS = {
+    Position{ 654.854f, 352.502f, 271.689f },
+    Position{ 644.597f, 338.875f, 271.688f },
+};
 
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
@@ -640,12 +647,20 @@ struct IllidanInfection
     bool isTrapAssigned = false;
 };
 
+inline constexpr EncounterHelpers::ClassRole ILLIDAN_WARLOCK_TANK_ROLE = {
+    .playerClass = CLASS_WARLOCK,
+    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
+    .role = { "class_role_illidan_warlock_tank", "Illidan warlock tank" },
+    .candidate = { "class_role_class_warlock", "Warlock" },
+    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
+};
 // The raid has to get closer than 100 yards to Illidan to talk to Akama.
 inline constexpr float ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
 // The height of the second landings of the double stairs leading to the Temple summit.
 inline constexpr float ILLIDAN_STAIRWELL_Z = 341.0f;
 // 175 yards rearm distance matches the Council's because Illidan's XY position is nearly identical.
 inline constexpr float ILLIDAN_CLASS_ROLE_REARM_DISTANCE = 175.0f;
+
 inline constexpr uint32 ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 ILLIDAN_SPEECH_CACHE_INTERVAL_MS = 1000;

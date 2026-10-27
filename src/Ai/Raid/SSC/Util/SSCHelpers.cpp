@@ -678,19 +678,6 @@ Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI)
     return nullptr;
 }
 
-namespace // Leotheras
-{
-
-constexpr ClassRole LEOTHERAS_WARLOCK_TANK_ROLE = {
-    .playerClass = CLASS_WARLOCK,
-    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
-    .role = { "class_role_leotheras_warlock_tank", "Leotheras warlock tank" },
-    .candidate = { "class_role_class_warlock", "Warlock" },
-    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
-};
-
-} // end anonymous namespace (Leotheras)
-
 bool UpdateSscClassRoles(PlayerbotAI* botAI)
 {
     SscInstanceState& state = SscState(botAI->GetBot()->GetInstanceId());

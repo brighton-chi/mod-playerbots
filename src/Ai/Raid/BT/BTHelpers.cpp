@@ -40,20 +40,6 @@ namespace
 std::mutex btStateMutex;
 std::unordered_map<uint32, BtInstanceState> btStates;
 
-constexpr ClassRole ZEREVOR_MAGE_TANK_ROLE = {
-    .playerClass = CLASS_MAGE,
-    .role = { "class_role_zerevor_mage_tank", "Zerevor mage tank" },
-    .candidate = { "class_role_class_mage", "Mage" },
-};
-
-constexpr ClassRole ILLIDAN_WARLOCK_TANK_ROLE = {
-    .playerClass = CLASS_WARLOCK,
-    .preferredSpec = WARLOCK_TAB_DEMONOLOGY,
-    .role = { "class_role_illidan_warlock_tank", "Illidan warlock tank" },
-    .candidate = { "class_role_class_warlock", "Warlock" },
-    .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
-};
-
 } // end anonymous namespace (Shared)
 
 // Shared
