@@ -616,23 +616,23 @@ std::string GetClassRoleText(
         text.name, text.defaultText, placeholders);
 }
 
-ClassRoleText const& GetClassRoleHolderText(ClassRoleSource source)
+ClassRoleText const& GetClassRoleChoiceText(ClassRoleChoiceReason reason)
 {
-    switch (source)
+    switch (reason)
     {
-        case ClassRoleSource::Assistant:
+        case ClassRoleChoiceReason::Assistant:
             return CLASS_ROLE_ASSISTANT_TEXT;
-        case ClassRoleSource::PreferredSpecBot:
+        case ClassRoleChoiceReason::PreferredSpecBot:
             return CLASS_ROLE_PREFERRED_SPEC_BOT_TEXT;
-        case ClassRoleSource::Bot:
+        case ClassRoleChoiceReason::Bot:
             return CLASS_ROLE_BOT_TEXT;
         default:
             return CLASS_ROLE_NONE_TEXT;
     }
 }
 
-bool SayClassRoleHolder(
-    PlayerbotAI* botAI, ClassRole const& role, ClassRoleHolder const& holder, bool isHandover)
+bool SayClassRoleChoice(
+    PlayerbotAI* botAI, ClassRole const& role, ClassRoleChoice const& choice, bool isHandover)
 {
     std::map<std::string, std::string> placeholders = {
         { "%role", GetClassRoleText(role.role) },
@@ -642,9 +642,9 @@ bool SayClassRoleHolder(
     if (role.preferredSpec)
         placeholders["%specclass"] = GetClassRoleText(role.preferredCandidate);
 
-    if (!holder.guid.IsEmpty())
+    if (!choice.guid.IsEmpty())
     {
-        Player* player = ObjectAccessor::GetPlayer(*botAI->GetBot(), holder.guid);
+        Player* player = ObjectAccessor::GetPlayer(*botAI->GetBot(), choice.guid);
         if (!player)
             return false;
 
@@ -652,19 +652,19 @@ bool SayClassRoleHolder(
     }
 
     ClassRoleText const& text =
-        isHandover ? CLASS_ROLE_HANDOVER_TEXT : GetClassRoleHolderText(holder.source);
+        isHandover ? CLASS_ROLE_HANDOVER_TEXT : GetClassRoleChoiceText(choice.reason);
     return botAI->SayToRaid(GetClassRoleText(text, placeholders));
 }
 
 } // end anonymous namespace (Class roles)
 
-ClassRoleHolder FindClassRoleHolder(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
+ClassRoleChoice FindClassRoleChoice(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
 {
     Group* group = botAI->GetBot()->GetGroup();
     if (!group)
         return {};
 
-    ClassRoleHolder best;
+    ClassRoleChoice best;
     uint32 bestGearScore = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -687,17 +687,17 @@ ClassRoleHolder FindClassRoleHolder(PlayerbotAI* botAI, uint32 mapId, ClassRole 
         if (role.requiredSpec && spec != role.requiredSpec)
             continue;
 
-        ClassRoleSource source = ClassRoleSource::Bot;
+        ClassRoleChoiceReason reason = ClassRoleChoiceReason::Bot;
         if (isAssistant)
-            source = ClassRoleSource::Assistant;
+            reason = ClassRoleChoiceReason::Assistant;
         else if (role.preferredSpec && spec == role.preferredSpec)
-            source = ClassRoleSource::PreferredSpecBot;
+            reason = ClassRoleChoiceReason::PreferredSpecBot;
 
-        auto const rank = std::tuple(source, botAI->GetEquipGearScore(member));
-        auto const bestRank = std::tuple(best.source, bestGearScore);
+        auto const rank = std::tuple(reason, botAI->GetEquipGearScore(member));
+        auto const bestRank = std::tuple(best.reason, bestGearScore);
         if (rank > bestRank || (rank == bestRank && guid < best.guid))
         {
-            best = { guid, source };
+            best = { guid, reason };
             bestGearScore = std::get<1>(rank);
         }
     }
@@ -713,20 +713,20 @@ bool UpdateClassRoleAssignments(
     bool changed = false;
     for (ClassRoleSlot const& slot : slots)
     {
-        std::optional<ClassRoleHolder>& holder = slot.assignment.holder;
-        if (isInEncounter && GetClassRoleHolder(bot, slot.assignment))
+        std::optional<ClassRoleChoice>& choice = slot.assignment.choice;
+        if (isInEncounter && GetClassRolePlayer(bot, slot.assignment))
             continue;
 
-        ClassRoleHolder const next = FindClassRoleHolder(botAI, mapId, slot.role);
-        if (holder == next)
+        ClassRoleChoice const next = FindClassRoleChoice(botAI, mapId, slot.role);
+        if (choice == next)
             continue;
 
-        bool const isHandover = isInEncounter && holder && !next.guid.IsEmpty();
-        holder = next;
+        bool const isHandover = isInEncounter && choice && !next.guid.IsEmpty();
+        choice = next;
         changed = true;
 
-        if (isHandover && SayClassRoleHolder(botAI, slot.role, next, true))
-            slot.assignment.announced = next;
+        if (isHandover && SayClassRoleChoice(botAI, slot.role, next, true))
+            slot.assignment.announcedChoice = next;
     }
 
     return changed;
@@ -743,7 +743,7 @@ bool UpdateClassRoleAnnouncement(
     {
         bool reset = false;
         for (ClassRoleSlot const& slot : slots)
-            reset |= ResetIfSet(slot.assignment.announced);
+            reset |= ResetIfSet(slot.assignment.announcedChoice);
 
         return reset;
     }
@@ -753,7 +753,8 @@ bool UpdateClassRoleAnnouncement(
 
     auto const isUnannounced = [](ClassRoleSlot const& slot)
     {
-        return slot.assignment.holder && slot.assignment.holder != slot.assignment.announced;
+        return slot.assignment.choice &&
+            slot.assignment.choice != slot.assignment.announcedChoice;
     };
 
     if (std::ranges::none_of(slots, isUnannounced))
@@ -771,31 +772,31 @@ bool UpdateClassRoleAnnouncement(
         if (!isUnannounced(slot))
             continue;
 
-        slot.assignment.announced = slot.assignment.holder;
-        SayClassRoleHolder(botAI, slot.role, *slot.assignment.holder, false);
+        slot.assignment.announcedChoice = slot.assignment.choice;
+        SayClassRoleChoice(botAI, slot.role, *slot.assignment.choice, false);
     }
 
     return true;
 }
 
-Player* GetClassRoleHolder(Player* bot, ClassRoleAssignment const& assignment)
+Player* GetClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
 {
-    ObjectGuid const guid = GetClassRoleHolderGuid(assignment);
+    ObjectGuid const guid = GetClassRolePlayerGuid(assignment);
     if (guid.IsEmpty())
         return nullptr;
 
-    Player* holder = ObjectAccessor::GetPlayer(*bot, guid);
-    return holder && holder->IsAlive() ? holder : nullptr;
+    Player* player = ObjectAccessor::GetPlayer(*bot, guid);
+    return player && player->IsAlive() ? player : nullptr;
 }
 
-ObjectGuid GetClassRoleHolderGuid(ClassRoleAssignment const& assignment)
+ObjectGuid GetClassRolePlayerGuid(ClassRoleAssignment const& assignment)
 {
-    return assignment.holder ? assignment.holder->guid : ObjectGuid::Empty;
+    return assignment.choice ? assignment.choice->guid : ObjectGuid::Empty;
 }
 
-bool IsClassRoleHolder(Player* bot, ClassRoleAssignment const& assignment)
+bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
 {
-    ObjectGuid const guid = GetClassRoleHolderGuid(assignment);
+    ObjectGuid const guid = GetClassRolePlayerGuid(assignment);
     return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 

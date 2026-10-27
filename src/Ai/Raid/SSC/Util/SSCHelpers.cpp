@@ -699,7 +699,7 @@ bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI)
 Player* GetLeotherasWarlockTank(Player* bot)
 {
     SscInstanceState const* state = FindSscState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->leotherasWarlockTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->leotherasWarlockTank) : nullptr;
 }
 
 bool IsLeotherasWarlockTank(Player* bot)
@@ -708,7 +708,7 @@ bool IsLeotherasWarlockTank(Player* bot)
         return false;
 
     SscInstanceState const* state = FindSscState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->leotherasWarlockTank);
+    return state && IsClassRolePlayer(bot, state->leotherasWarlockTank);
 }
 
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras)

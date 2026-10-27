@@ -71,7 +71,7 @@ Player* GetKroshMageTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->kroshMageTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->kroshMageTank) : nullptr;
 }
 
 bool IsKroshMageTank(PlayerbotAI* botAI)
@@ -81,14 +81,14 @@ bool IsKroshMageTank(PlayerbotAI* botAI)
         return false;
 
     GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->kroshMageTank);
+    return state && IsClassRolePlayer(bot, state->kroshMageTank);
 }
 
 Player* GetKigglerMoonkinTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->kigglerMoonkinTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->kigglerMoonkinTank) : nullptr;
 }
 
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
@@ -98,7 +98,7 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
         return false;
 
     GruulInstanceState const* state = FindGruulState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->kigglerMoonkinTank);
+    return state && IsClassRolePlayer(bot, state->kigglerMoonkinTank);
 }
 
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot)

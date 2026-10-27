@@ -1113,7 +1113,7 @@ Player* GetZerevorMageTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->zerevorMageTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->zerevorMageTank) : nullptr;
 }
 
 bool IsZerevorMageTank(PlayerbotAI* botAI)
@@ -1123,7 +1123,7 @@ bool IsZerevorMageTank(PlayerbotAI* botAI)
         return false;
 
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->zerevorMageTank);
+    return state && IsClassRolePlayer(bot, state->zerevorMageTank);
 }
 
 bool HasDangerousCouncilAura(Player* bot)
@@ -2033,14 +2033,14 @@ bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
 ObjectGuid GetIllidanWarlockTankGuid(Player* bot)
 {
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state ? GetClassRoleHolderGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
+    return state ? GetClassRolePlayerGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
 }
 
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->illidanWarlockTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->illidanWarlockTank) : nullptr;
 }
 
 bool IsIllidanWarlockTank(PlayerbotAI* botAI)
@@ -2050,7 +2050,7 @@ bool IsIllidanWarlockTank(PlayerbotAI* botAI)
         return false;
 
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->illidanWarlockTank);
+    return state && IsClassRolePlayer(bot, state->illidanWarlockTank);
 }
 
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)

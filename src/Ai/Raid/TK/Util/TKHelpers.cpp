@@ -385,7 +385,7 @@ bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI)
 Player* GetCapernianTank(Player* bot)
 {
     TkInstanceState const* state = FindTkState(bot->GetInstanceId());
-    return state ? GetClassRoleHolder(bot, state->capernianTank) : nullptr;
+    return state ? GetClassRolePlayer(bot, state->capernianTank) : nullptr;
 }
 
 bool IsCapernianTank(Player* bot)
@@ -394,7 +394,7 @@ bool IsCapernianTank(Player* bot)
         return false;
 
     TkInstanceState const* state = FindTkState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->capernianTank);
+    return state && IsClassRolePlayer(bot, state->capernianTank);
 }
 
 bool IsSanguinarDebuffHunter(Player* bot)
@@ -403,7 +403,7 @@ bool IsSanguinarDebuffHunter(Player* bot)
         return false;
 
     TkInstanceState const* state = FindTkState(bot->GetInstanceId());
-    return state && IsClassRoleHolder(bot, state->sanguinarDebuffHunter);
+    return state && IsClassRolePlayer(bot, state->sanguinarDebuffHunter);
 }
 
 GuidVector FindLegendaryWeaponGuids(Player* bot)
