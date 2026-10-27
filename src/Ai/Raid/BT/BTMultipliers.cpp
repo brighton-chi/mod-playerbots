@@ -577,7 +577,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetValueInEncounter(
 {
     bool const inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
-        return inCombat && AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+        return inCombat && GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 
     if (PlayerbotAI::IsTank(bot))
         return inCombat ? GetTankValue(action) : 1.0f;
@@ -592,11 +592,11 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         // Judgement of Command is the only council spell it can take, and the main tank's own
         // action reflects that.
         if (dynamic_cast<CastSpellReflectionAction*>(action))
-            return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+            return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 
         if (dynamic_cast<CastVigilanceAction*>(action))
         {
-            if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+            if (!GetIllidariCouncilMembers(botAI).gathios)
                 return 1.0f;
 
             Player* mageTank = GetZerevorMageTank(botAI);
@@ -613,9 +613,10 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         return 1.0f;
     }
 
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    Unit* gathios = members.gathios;
+    Unit* zerevor = members.zerevor;
+    Unit* malande = members.malande;
     if (!gathios || !zerevor || !malande)
         return 1.0f;
 
@@ -641,9 +642,8 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         if (target == malande)
             return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ? 1.0f : 0.0f;
 
-        Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-        return target && target == veras && PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ?
-            1.0f : 0.0f;
+        return target && target == members.veras &&
+            PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ? 1.0f : 0.0f;
     }
 
     // Only a tank holding a member keeps out of stock avoidance; any other steps out of a patch.
@@ -652,8 +652,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
             return 0.0f;
 
-        Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-        return veras && !IsVerasVanished(veras) &&
+        return members.veras && !IsVerasVanished(members.veras) &&
             PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ? 0.0f : 1.0f;
     }
 
@@ -684,10 +683,11 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Acti
     if (!isHealerMove && !isHealReach && !isBlockedMove)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    if (!members.gathios)
         return 1.0f;
 
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* zerevor = members.zerevor;
     bool const isMageTankHealer = PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
     if (isHealerMove && isMageTankHealer && IsZerevorOnMageTank(botAI, zerevor))
         return 0.0f;
@@ -717,7 +717,7 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     if (!IsZerevorMageTank(botAI))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "high nethermancer zerevor") ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(botAI).zerevor ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(Action* action)
@@ -746,7 +746,7 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
             return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "gathios the shatterer") ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncounter(
@@ -780,14 +780,14 @@ float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncou
             if (!dynamic_cast<CastSpellOnEnemyHealerAction*>(action))
                 return 1.0f;
 
-            Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+            Unit* malande = GetIllidariCouncilMembers(botAI).malande;
             return malande && !bot->IsWithinMeleeRange(malande) ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "lady malande") ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(botAI).malande ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)

@@ -1100,6 +1100,65 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
+IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot)
+{
+    static std::vector<uint32> const entries = {
+        Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER),
+        Id(BtNpcs::NPC_LADY_MALANDE),
+        Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR),
+        Id(BtNpcs::NPC_VERAS_DARKSHADOW),
+    };
+
+    IllidariCouncilMemberGuids guids;
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(creatures, entries, COUNCIL_MEMBER_SEARCH_RADIUS);
+    for (Creature* creature : creatures)
+    {
+        if (!creature->IsAlive() || !creature->IsInCombat())
+            continue;
+
+        switch (static_cast<BtNpcs>(creature->GetEntry()))
+        {
+            case BtNpcs::NPC_GATHIOS_THE_SHATTERER:
+                guids.gathios = creature->GetGUID();
+                break;
+            case BtNpcs::NPC_LADY_MALANDE:
+                guids.malande = creature->GetGUID();
+                break;
+            case BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR:
+                guids.zerevor = creature->GetGUID();
+                break;
+            case BtNpcs::NPC_VERAS_DARKSHADOW:
+                guids.veras = creature->GetGUID();
+                break;
+            default:
+                break;
+        }
+    }
+
+    return guids;
+}
+
+IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
+{
+    IllidariCouncilMemberGuids const& guids = botAI->GetAiObjectContext()
+        ->GetValue<IllidariCouncilMemberGuids>("illidari council members")
+        ->RefGet();
+
+    auto const getMember = [botAI](ObjectGuid guid) -> Unit*
+    {
+        Unit* unit = guid.IsEmpty() ? nullptr : botAI->GetUnit(guid);
+        return unit && unit->IsAlive() ? unit : nullptr;
+    };
+
+    return {
+        getMember(guids.gathios),
+        getMember(guids.malande),
+        getMember(guids.zerevor),
+        getMember(guids.veras),
+    };
+}
+
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)
 {
     BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
@@ -1365,19 +1424,16 @@ Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
     if (!pet)
         return nullptr;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    if (!gathios)
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    if (!members.gathios)
         return nullptr;
 
-    if (pet->GetEntry() == NPC_FELHUNTER)
-    {
-        if (Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande"))
-            return malande;
-    }
+    if (pet->GetEntry() == NPC_FELHUNTER && members.malande)
+        return members.malande;
 
+    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* target = AI_VALUE(Unit*, "current target");
-    return target && target->IsAlive() ? target : gathios;
+    return target && target->IsAlive() ? target : members.gathios;
 }
 
 uint32 GetReadySpellLock(Creature* pet, Unit* target)

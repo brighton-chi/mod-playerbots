@@ -90,6 +90,22 @@ protected:
     float Calculate() override { return BtHelpers::FindGurtoggSecondTankThreat(botAI); }
 };
 
+// Illidari Council
+
+class IllidariCouncilMembersValue : public CalculatedValue<BtHelpers::IllidariCouncilMemberGuids>
+{
+public:
+    IllidariCouncilMembersValue(PlayerbotAI* botAI)
+        : CalculatedValue<BtHelpers::IllidariCouncilMemberGuids>(
+            botAI, "illidari council members", BtHelpers::COUNCIL_MEMBER_CACHE_INTERVAL_MS) {}
+
+protected:
+    BtHelpers::IllidariCouncilMemberGuids Calculate() override
+    {
+        return BtHelpers::FindIllidariCouncilMemberGuids(bot);
+    }
+};
+
 // Illidan Stormrage <The Betrayer>
 
 class IllidanStormrageSpeechInProgressValue : public BoolCalculatedValue
@@ -171,6 +187,8 @@ public:
             &RaidBlackTempleValueContext::teron_gorefiend_shadowy_constructs;
         creators["gurtogg bloodboil second tank threat"] =
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
+        creators["illidari council members"] =
+            &RaidBlackTempleValueContext::illidari_council_members;
         creators["illidan stormrage speech in progress"] =
             &RaidBlackTempleValueContext::illidan_stormrage_speech_in_progress;
         creators["illidan stormrage players with parasitic shadowfiend"] =
@@ -203,6 +221,10 @@ private:
     static UntypedValue* gurtogg_bloodboil_second_tank_threat(PlayerbotAI* botAI)
     {
         return new GurtoggBloodboilSecondTankThreatValue(botAI);
+    }
+    static UntypedValue* illidari_council_members(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilMembersValue(botAI);
     }
     static UntypedValue* illidan_stormrage_speech_in_progress(PlayerbotAI* botAI)
     {

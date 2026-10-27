@@ -511,6 +511,7 @@ inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 COUNCIL_MEMBER_CACHE_INTERVAL_MS = 1000;
 inline constexpr float COUNCIL_TANK_ARRIVAL_DISTANCE = 2.0f;
 // Bots heal out to HealDistance, 38.5 yd by default.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
@@ -539,6 +540,26 @@ inline std::array const ZEREVOR_TANK_POSITIONS = {
     Position{ 644.597f, 338.875f, 271.688f },
 };
 
+struct IllidariCouncilMemberGuids
+{
+    ObjectGuid gathios;
+    ObjectGuid malande;
+    ObjectGuid zerevor;
+    ObjectGuid veras;
+};
+
+struct IllidariCouncilMembers
+{
+    Unit* gathios = nullptr;
+    Unit* malande = nullptr;
+    Unit* zerevor = nullptr;
+    Unit* veras = nullptr;
+};
+
+// An entry search, not find target: a bot back from the dead isn't on the members' threat lists
+// until it casts on an ally in combat or fights one of them. Only members in combat count.
+IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot);
+IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);
 bool IsZerevorMageTank(PlayerbotAI* botAI);

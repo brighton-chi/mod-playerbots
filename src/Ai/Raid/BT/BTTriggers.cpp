@@ -416,7 +416,7 @@ bool IllidariCouncilGathiosShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    if (!GetIllidariCouncilMembers(botAI).gathios)
         return false;
 
     return PlayerbotAI::IsMainTank(bot);
@@ -427,7 +427,7 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
     if (!gathios || !gathios->HasAura(Id(BtSpells::SPELL_SEAL_OF_COMMAND)))
         return false;
 
@@ -447,27 +447,22 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsDps(bot) || IsZerevorMageTank(botAI))
         return false;
 
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-    if (!malande)
-        return false;
-
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    if (!gathios || !zerevor)
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    if (!members.malande || !members.gathios || !members.zerevor)
         return false;
 
     if (PlayerbotAI::IsRanged(bot) &&
-        !ShouldRangedInterruptCircleOfHealing(malande, gathios, zerevor))
+        !ShouldRangedInterruptCircleOfHealing(members.malande, members.gathios, members.zerevor))
     {
         return false;
     }
 
-    return CanInterruptCircleOfHealing(malande);
+    return CanInterruptCircleOfHealing(members.malande);
 }
 
 bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "lady malande") &&
+    return PlayerbotAI::IsTank(bot) && GetIllidariCouncilMembers(botAI).malande &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
 }
 
@@ -476,7 +471,7 @@ bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    Unit* veras = GetIllidariCouncilMembers(botAI).veras;
     if (!veras || IsVerasVanished(veras))
         return false;
 
@@ -485,7 +480,7 @@ bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
 {
-    return IsZerevorMageTank(botAI) && AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    return IsZerevorMageTank(botAI) && GetIllidariCouncilMembers(botAI).zerevor;
 }
 
 bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
@@ -493,7 +488,7 @@ bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsHeal(bot))
         return false;
 
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
     if (!zerevor)
         return false;
 
@@ -510,7 +505,7 @@ bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high nethermancer zerevor"))
+    if (!GetIllidariCouncilMembers(botAI).zerevor)
         return false;
 
     if (IsZerevorMageTank(botAI) || PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
@@ -532,7 +527,8 @@ bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    if (!members.gathios)
         return false;
 
     if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
@@ -545,14 +541,12 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
         return true;
 
-    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
-    return !veras || IsVerasVanished(veras);
+    return !members.veras || IsVerasVanished(members.veras);
 }
 
 bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) && GetIllidariCouncilMembers(botAI).gathios;
 }
 
 // Illidan Stormrage <The Betrayer>

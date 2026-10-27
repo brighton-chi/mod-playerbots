@@ -1441,26 +1441,27 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == -1)
         return false;
 
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
     Unit* councilTarget = nullptr;
     Player* tankTarget = nullptr;
     if (hunterIndex == 0 || hunterIndex >= 4)
     {
-        councilTarget = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+        councilTarget = members.zerevor;
         tankTarget = GetZerevorMageTank(botAI);
     }
     else if (hunterIndex == 1)
     {
-        councilTarget = AI_VALUE2(Unit*, "find target", "lady malande");
+        councilTarget = members.malande;
         tankTarget = GetGroupAssistTank(bot, 0);
     }
     else if (hunterIndex == 2)
     {
-        councilTarget = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+        councilTarget = members.gathios;
         tankTarget = GetGroupMainTank(bot);
     }
     else if (hunterIndex == 3)
     {
-        councilTarget = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+        councilTarget = members.veras;
         tankTarget = GetGroupAssistTank(bot, 1);
     }
 
@@ -1472,7 +1473,7 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
 
 bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
     if (!gathios)
         return false;
 
@@ -1505,7 +1506,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 
 bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
 {
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    Unit* malande = GetIllidariCouncilMembers(botAI).malande;
     if (!malande)
         return false;
 
@@ -1582,7 +1583,8 @@ bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* m
 
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 {
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    Unit* malande = members.malande;
     if (!malande)
         return false;
 
@@ -1596,16 +1598,17 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
         return false;
     }
 
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
-    if (!gathios || !zerevor)
+    if (!members.gathios || !members.zerevor)
         return false;
 
-    if (!IsInCouncilPatch(bot->GetPosition(), gathios, zerevor, COUNCIL_PATCH_MARGIN))
+    if (!IsInCouncilPatch(
+            bot->GetPosition(), members.gathios, members.zerevor, COUNCIL_PATCH_MARGIN))
+    {
         return false;
+    }
 
     Position destination;
-    if (!FindMalandeTankPosition(bot, malande, gathios, zerevor, destination))
+    if (!FindMalandeTankPosition(bot, malande, members.gathios, members.zerevor, destination))
         return false;
 
     return MoveTo(
@@ -1615,7 +1618,7 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 
 bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/)
 {
-    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    Unit* veras = GetIllidariCouncilMembers(botAI).veras;
     if (!veras)
         return false;
 
@@ -1646,7 +1649,7 @@ bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/
 
 bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 {
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
     if (!zerevor)
         return false;
 
@@ -1696,7 +1699,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
         return false;
 
     Player* mageTank = GetZerevorMageTank(botAI);
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
     if (!mageTank || !zerevor)
         return false;
 
@@ -1730,7 +1733,8 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
-    Unit* veras = AI_VALUE2(Unit*, "find target", "veras darkshadow");
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    Unit* veras = members.veras;
     if (IsVerasVanished(veras))
         veras = nullptr;
 
@@ -1738,9 +1742,9 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     uint32 const immunity = isCaster ? Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING) :
         Id(BtSpells::SPELL_BLESSING_OF_PROTECTION);
 
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
-    Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
-    Unit* zerevor = AI_VALUE2(Unit*, "find target", "high nethermancer zerevor");
+    Unit* gathios = members.gathios;
+    Unit* malande = members.malande;
+    Unit* zerevor = members.zerevor;
     Unit* target = nullptr;
     if (zerevor && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
     {
@@ -1800,7 +1804,7 @@ bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
 
 bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 {
-    Unit* gathios = AI_VALUE2(Unit*, "find target", "gathios the shatterer");
+    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
     if (!gathios)
         return false;
 
