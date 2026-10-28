@@ -73,7 +73,7 @@ inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 30.0f;
 inline constexpr float MURU_HOLDING_POSITION_RADIUS = 25.0f;
 // Targeting is based on the nearest mob; this buffer is to keep targets sticky.
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
-// Radius of Shadow Bolt Volley (46082), which is centred on the enslaved Void Spawn.
+// Radius of Shadow Bolt Volley (46082), which is centered on the enslaved Void Spawn.
 inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 // Shadow Pulse (46087) is a 10y AoE centered on the Void Sentinel, pulsed every 3s by 46086. Melee
 // end up ~4y from their target, and there's also some variability from the tanking moving adds.
