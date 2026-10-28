@@ -18,6 +18,7 @@
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "PaladinActions.h"
+#include "PlayerbotAIConfig.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
@@ -272,18 +273,29 @@ float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action*
     return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
 }
 
+// If reaching a target would mean walking through fire, hold that standard reach. The encounter's
+// reach around fire action walks around it instead, to the party member to heal for a healer and to
+// the current target for everyone else; a blocked reach it does not route does not run.
 float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* action)
 {
-    bool const isHealerReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
-    bool const isDpsReach =
-        dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
-    if (PlayerbotAI::IsHeal(bot) ? !isHealerReach : !isDpsReach)
+    bool const isHealReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
+    bool const isSpellReach = dynamic_cast<ReachSpellAction*>(action);
+    bool const isMeleeReach = dynamic_cast<ReachMeleeAction*>(action);
+    if (!isHealReach && !isSpellReach && !isMeleeReach)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "supremus"))
         return 1.0f;
 
-    return GetSupremusFireBlockedReachTarget(botAI) ? 0.0f : 1.0f;
+    float range;
+    if (isHealReach)
+        range = botAI->GetRange("heal");
+    else if (isSpellReach)
+        range = botAI->GetRange("spell");
+    else
+        range = sPlayerbotAIConfig.MeleeDistance;
+
+    return IsSupremusReachBlockedByFire(botAI, action->GetTarget(), range) ? 0.0f : 1.0f;
 }
 
 float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)

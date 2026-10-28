@@ -791,16 +791,39 @@ bool CanWalkThroughSupremusFire(Player* bot)
     }
 }
 
+bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit const* target, float range)
+{
+    Player* bot = botAI->GetBot();
+    // Divine Shield and Dispersion let the bot walk through fire, and stock reach doesn't break a
+    // channel either.
+    if (CanWalkThroughSupremusFire(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
+        return false;
+
+    // Where the walk in would stop: a yard inside range, on the straight line to the target.
+    constexpr float rangeInset = 1.0f;
+    float const stopDistance =
+        range + bot->GetCombatReach() + target->GetCombatReach() - rangeInset;
+    float const distance = bot->GetExactDist2d(target);
+    if (distance <= stopDistance)
+        return false;
+
+    float const ratio = stopDistance / distance;
+    Position const stop(
+        target->GetPositionX() + (bot->GetPositionX() - target->GetPositionX()) * ratio,
+        target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * ratio,
+        bot->GetPositionZ());
+
+    float const underFire = GetLineLengthInSupremusHazards(
+        GetSupremusHazards(botAI), bot->GetPosition(), stop, SupremusHazardZone::Safe);
+    return underFire > 0.0f;
+}
+
 Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    if (CanWalkThroughSupremusFire(bot))
-        return nullptr;
-
-    // Stock reach doesn't break a channel either.
-    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-        return nullptr;
-
     bool const isHealer = PlayerbotAI::IsHeal(bot);
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* target =
@@ -813,26 +836,7 @@ Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
     else
         range = sPlayerbotAIConfig.MeleeDistance;
 
-    if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
-        return nullptr;
-
-    // Where the walk in would stop: a yard inside range, on the straight line to the target.
-    constexpr float rangeInset = 1.0f;
-    float const stopDistance =
-        range + bot->GetCombatReach() + target->GetCombatReach() - rangeInset;
-    float const distance = bot->GetExactDist2d(target);
-    if (distance <= stopDistance)
-        return nullptr;
-
-    float const ratio = stopDistance / distance;
-    Position const stop(
-        target->GetPositionX() + (bot->GetPositionX() - target->GetPositionX()) * ratio,
-        target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * ratio,
-        bot->GetPositionZ());
-
-    float const underFire = GetLineLengthInSupremusHazards(
-        GetSupremusHazards(botAI), bot->GetPosition(), stop, SupremusHazardZone::Safe);
-    return underFire > 0.0f ? target : nullptr;
+    return IsSupremusReachBlockedByFire(botAI, target, range) ? target : nullptr;
 }
 
 // Shade of Akama
