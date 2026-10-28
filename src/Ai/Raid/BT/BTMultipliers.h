@@ -50,6 +50,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class BlackTempleNoThreatRedirectsMultiplier : public BlackTempleEncounterMultiplier
+{
+public:
+    BlackTempleNoThreatRedirectsMultiplier(PlayerbotAI* botAI)
+        : BlackTempleEncounterMultiplier(botAI, "black temple no threat redirects") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Trash
 
 class ShadowmoonReaverHoldChargeBuildingSpellsMultiplier : public Multiplier
@@ -131,16 +141,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class ShadeOfAkamaCannotTankBossMultiplier : public BlackTempleEncounterMultiplier
-{
-public:
-    ShadeOfAkamaCannotTankBossMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(botAI, "shade of akama cannot tank boss") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 // Teron Gorefiend
 
 class TeronGorefiendControlMovementMultiplier : public BlackTempleEncounterMultiplier
@@ -181,18 +181,6 @@ class GurtoggBloodboilControlMovementMultiplier : public BlackTempleEncounterMul
 public:
     GurtoggBloodboilControlMovementMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(botAI, "gurtogg bloodboil control movement") {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier
-    : public BlackTempleEncounterMultiplier
-{
-public:
-    GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-            botAI, "gurtogg bloodboil no threat redirects during fel rage") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

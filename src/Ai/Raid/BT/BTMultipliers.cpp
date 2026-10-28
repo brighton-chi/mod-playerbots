@@ -184,6 +184,34 @@ float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* acti
         AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
 }
 
+// Shade of Akama and its Channelers and Sorcerers are not tankable, and Fel Rage fixes Gurtogg on
+// its target, so either way, a taunt or Misdirection is useless.
+float BlackTempleNoThreatRedirectsMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isMisdirect = bot->getClass() == CLASS_HUNTER &&
+        (dynamic_cast<CastMisdirectionOnMainTankAction*>(action) ||
+         dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action));
+    if (!isMisdirect && !IsTauntAction(bot, action))
+        return 1.0f;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return 1.0f;
+
+    uint32 const entry = target->GetEntry();
+    if (entry == Id(BtNpcs::NPC_SHADE_OF_AKAMA) ||
+        entry == Id(BtNpcs::NPC_ASHTONGUE_CHANNELER) ||
+        entry == Id(BtNpcs::NPC_ASHTONGUE_SORCERER))
+    {
+        return 0.0f;
+    }
+
+    if (entry != Id(BtNpcs::NPC_GURTOGG_BLOODBOIL))
+        return 1.0f;
+
+    return target->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)) ? 0.0f : 1.0f;
+}
+
 // Trash
 
 float ShadowmoonReaverHoldChargeBuildingSpellsMultiplier::GetValue(Action* action)
@@ -327,41 +355,6 @@ float ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier::GetValueInEncounter(Actio
         target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
 }
 
-float ShadeOfAkamaCannotTankBossMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    switch (bot->getClass())
-    {
-        case CLASS_HUNTER:
-        {
-            if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-                return 1.0f;
-            break;
-        }
-        case CLASS_DRUID:
-        case CLASS_PALADIN:
-        case CLASS_WARRIOR:
-        case CLASS_DEATH_KNIGHT:
-        {
-            if (!IsTauntAction(bot, action))
-                return 1.0f;
-            break;
-        }
-        default:
-            return 1.0f;
-    }
-
-    Unit* target = AI_VALUE(Unit*, "current target");
-    if (!target || !target->IsAlive())
-        return 1.0f;
-
-    return target->GetEntry() == Id(BtNpcs::NPC_SHADE_OF_AKAMA) ||
-        target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_CHANNELER) ||
-        target->GetEntry() == Id(BtNpcs::NPC_ASHTONGUE_SORCERER) ? 0.0f : 1.0f;
-}
-
 // Teron Gorefiend
 
 float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -424,20 +417,6 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
-}
-
-// Fel Rage fixes him on its target, so tanks don't taunt and hunters don't misdirect until it ends.
-float GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier::GetValueInEncounter(
-    Action* action)
-{
-    bool const isMisdirect = bot->getClass() == CLASS_HUNTER &&
-        (dynamic_cast<CastMisdirectionOnMainTankAction*>(action) ||
-         dynamic_cast<BlackTempleMisdirectToMainTankAction*>(action));
-    if (!isMisdirect && !IsTauntAction(bot, action))
-        return 1.0f;
-
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
-    return gurtogg && gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)) ? 0.0f : 1.0f;
 }
 
 float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Action* action)

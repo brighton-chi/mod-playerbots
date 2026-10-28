@@ -270,6 +270,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Shared
     multipliers.push_back(new BlackTempleDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new BlackTempleDisableKillingSpreeMultiplier(botAI));
+    multipliers.push_back(new BlackTempleNoThreatRedirectsMultiplier(botAI));
 
     // Trash
     multipliers.push_back(new ShadowmoonReaverHoldChargeBuildingSpellsMultiplier(botAI));
@@ -285,7 +286,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier(botAI));
-    multipliers.push_back(new ShadeOfAkamaCannotTankBossMultiplier(botAI));
 
     // Teron Gorefiend
     multipliers.push_back(new TeronGorefiendControlMovementMultiplier(botAI));
@@ -294,7 +294,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 
     // Gurtogg Bloodboil
     multipliers.push_back(new GurtoggBloodboilControlMovementMultiplier(botAI));
-    multipliers.push_back(new GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier(botAI));
     multipliers.push_back(new GurtoggBloodboilFelRageTargetHoldsAggroMultiplier(botAI));
     multipliers.push_back(new GurtoggBloodboilHoldThreatMultiplier(botAI));
 
