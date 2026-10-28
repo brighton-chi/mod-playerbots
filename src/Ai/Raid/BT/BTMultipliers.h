@@ -108,8 +108,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Stock avoid aoe flees one hazard at a time, and a volcano only once within 15 yd of it; in the
-// kite phase the fire avoidance sees them all. In the tank phase it handles Molten Flame again.
 class SupremusDisableAvoidAoeInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -122,7 +120,6 @@ protected:
 
 // Shade of Akama
 
-// Walking up to the platform can lose sight of the target, which would otherwise drop it.
 class ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -189,7 +186,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Fel Rage fixes him on its target, so tanks don't taunt and hunters don't misdirect until it ends.
 class GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier
     : public BlackTempleEncounterMultiplier
 {

@@ -298,6 +298,7 @@ float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* actio
     return IsSupremusReachBlockedByFire(botAI, action->GetTarget(), range) ? 0.0f : 1.0f;
 }
 
+// Standard avoid aoe is for Molten Flame in the tank phase; otherwise, rely on encounter avoidance.
 float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<AvoidAoeAction*>(action))
@@ -308,12 +309,13 @@ float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* 
 
 // Shade of Akama
 
+// The platform where Shade starts is out of LoS of bots next to it, causing melee to drop their
+// targets on the way up.
 float ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))
         return 1.0f;
 
-    // Only melee dps walk back into sight; anyone else drops the target and picks another.
     if (!PlayerbotAI::IsDps(bot) || !PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
@@ -424,6 +426,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
 }
 
+// Fel Rage fixes him on its target, so tanks don't taunt and hunters don't misdirect until it ends.
 float GurtoggBloodboilNoThreatRedirectsDuringFelRageMultiplier::GetValueInEncounter(
     Action* action)
 {
