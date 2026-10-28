@@ -788,9 +788,9 @@ Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
 
 // Teron Gorefiend
 
-// The server does not check or record cooldowns for spells cast by creatures from scripts. The
-// same applies for the GCD if the cast is "triggered" (the third argument of CastSpell). Thus,
-// both are applied here from spell data. False if the cast fails.
+// A creature casting from a script records no spell cooldown, and no global cooldown either if the
+// cast is triggered (the third argument of CastSpell, passed as true below). Both are therefore
+// applied here from the spell data. False if the cast fails.
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 {
     if (!spirit || !target)
@@ -828,6 +828,10 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 namespace
 {
 
+// Bloodboil hits the 5 farthest players and stacks. To handle it, 15 ranged bots are divided into 3
+// groups that rotate so that the debuff falls off a group by the time it is up to soak again. The
+// Fel Rage target is excluded because Gurtogg's rage ends 2s before the target's aura does, and
+// until it does, the target is held at the tank position, too close to be one of the 5 farthest.
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 {
     std::vector<std::vector<Player*>> groups(GURTOGG_ROTATION_GROUP_COUNT);
@@ -904,7 +908,6 @@ Position const& GetGurtoggBloodboilPosition(Player* bot)
     return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
 }
 
-// His victim while Fel Rage is up, if that victim is the Fel Rage target; null outside Fel Rage.
 Player* GetGurtoggFelRageTarget(Unit* gurtogg)
 {
     if (!gurtogg || !gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
@@ -974,7 +977,8 @@ float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
     return secondThreat;
 }
 
-// The rectangle is a space in which bots can be given a randomized (by GUID) position.
+// The rectangle is a space in which bots can be given a randomized (by GUID) position. There are
+// two rectangles drawn, one for the 5 Bloodboil soakers and the other for other ranged bots.
 bool IsInGurtoggRectangle(
     Position const& point, Position const& centre, Position const& facing, float halfWidth,
     float halfDepth)
@@ -987,16 +991,14 @@ bool IsInGurtoggRectangle(
     return std::fabs(depth) <= halfDepth && std::fabs(width) <= halfWidth;
 }
 
-// This function actually assigns the position. This "assign a random position inside a rectangle"
-// approach is way overbaked for executing the strategy, but the result is sort of a proof of
-// concept of randomization in positioning that could be used to create realism.
+// This function actually assigns the position. The rectangle approach is way overbaked for
+// executing the strategy, but the result is intended to create realism by making bot positioning
+// seem more random and natural (within required bounds).
 Position GetBotPointInGurtoggRectangle(
     Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth)
 {
-    // Keeps points off the edge, so a bot that arrives counts as inside.
     constexpr float edgeInset = 0.5f;
 
-    // splitmix64 on the GUID: two independent values in [-1, 1].
     uint64 hash = bot->GetGUID().GetRawValue() + 0x9E3779B97F4A7C15ULL;
     hash = (hash ^ (hash >> 30)) * 0xBF58476D1CE4E5B9ULL;
     hash = (hash ^ (hash >> 27)) * 0x94D049BB133111EBULL;
@@ -1055,8 +1057,6 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
-// An entry search, not find target: a bot back from the dead isn't on their threat lists yet. Only
-// members in combat count.
 IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot)
 {
     static std::vector<uint32> const entries = {
@@ -1174,7 +1174,8 @@ bool CanInterruptCircleOfHealing(Unit* malande)
         circle->GetCastTime() - circle->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
 
-// Zerevor has at most one Blizzard and one Flamestrike down at a time.
+// Blizzard and Flamestrike are each on a 40s timer, 20s apart, and a patch lasts 12s, so only one
+// of them is ever down at a time.
 bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin)
 {
     if (!zerevor)
@@ -1207,14 +1208,13 @@ bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float
     return IsInZerevorPatch(zerevor, point, margin);
 }
 
-// Gathios's Consecration reaches Malande only at the pull, while he stands beside her.
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor)
 {
     return malande && gathios && zerevor && IsInCouncilPatch(*malande, gathios, zerevor);
 }
 
-// Interrupt her from range only while her melee can't reach: under Blessing of Protection, or standing
-// in a council patch. Interrupts are magic, so never under Blessing of Spell Warding.
+// Ranged interrupt only when melee is unable to (when Malande is under Blessing of Protection
+// or is standing in a hazard patch).
 bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor)
 {
     if (!malande || malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING)))
@@ -1233,8 +1233,7 @@ bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor)
     return mageTank && zerevor->GetVictim() == mageTank;
 }
 
-// Within heal range of the mage tank, clear of a patch on it, of Arcane Explosion, and of any
-// patch down.
+// Within heal range of the mage tank, clear of Arcane Explosion, and not standing in a patch.
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor)
 {
     if (!mageTank || !zerevor)
@@ -1251,8 +1250,10 @@ bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit*
 namespace
 {
 
-// A blocked ray stops at the obstacle and still counts as success, so a point that comes back short
-// is a miss.
+// A blocked ray stops at the obstacle and still counts as success, so a point that returns short
+// means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
+// tank healer, Malande tank) and need it clear of the council patches, so a candidate that clamps
+// short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
 bool CanWalkStraightTo(Player* bot, Position const& point)
 {
     constexpr float clampTolerance = 0.5f;
@@ -1383,8 +1384,8 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     return false;
 }
 
-// Felhunters stay on Malande for Spell Lock; other pets take their master's target, or Gathios when
-// the master has none.
+// Felhunters stay on Malande for Spell Lock; other pets attack their master's target, or Gathios
+// when the master has none.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!pet)
@@ -1402,7 +1403,7 @@ Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
     return target && target->IsAlive() ? target : members.gathios;
 }
 
-// CanCastSpell accepts any spell a pet knows without checking range or cooldown.
+// CanCastSpell accepts any spell a pet knows without checking range or cooldown, so check manually.
 uint32 GetReadySpellLock(Creature* pet, Unit* target)
 {
     if (!pet || !target || !pet->IsAlive() || pet->GetEntry() != NPC_FELHUNTER)

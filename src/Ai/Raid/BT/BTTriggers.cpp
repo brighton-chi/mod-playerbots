@@ -457,8 +457,6 @@ bool IllidariCouncilMalandeCastingCircleOfHealingTrigger::IsActiveInEncounter()
     if (!members.malande || !members.gathios || !members.zerevor)
         return false;
 
-    // Ranged interrupt only when melee is unable to (when Malande is under Blessing of Protection
-    // or is standing in a hazard patch).
     if (PlayerbotAI::IsRanged(bot) &&
         !ShouldRangedInterruptCircleOfHealing(members.malande, members.gathios, members.zerevor))
     {
