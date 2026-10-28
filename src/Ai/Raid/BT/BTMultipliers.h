@@ -134,8 +134,7 @@ class ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier : public BlackTempleEncoun
 {
 public:
     ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-            botAI, "shade of akama do not drop out of sight target") {}
+        : BlackTempleEncounterMultiplier(botAI, "shade of akama do not drop out of sight target") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -186,7 +185,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// The Fel Rage target keeps him for all of Fel Rage, so it uses nothing that drops its threat.
 class GurtoggBloodboilFelRageTargetHoldsAggroMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -197,8 +195,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Non-tanks other than healers hold below the second tank's threat. No hold under Insignificance,
-// when no one gains threat.
 class GurtoggBloodboilHoldThreatMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -221,8 +217,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Tank face, set behind and disperse move tanks and melee around Suffering, which can carry
-// them nearer to her than the tanks.
 class ReliquaryOfSoulsControlMeleeMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -233,7 +227,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Lets a mage steal Rune Shield before a Purge or Tranquilizing Shot removes it.
 class ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -244,10 +237,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Stock Spell Reflection fires on any cast at the tank, so it would go on Spirit Shock, which
-// can't be reflected; the raid's own reflect still answers Deaden.
-class ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier
-    : public BlackTempleEncounterMultiplier
+class ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
     ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier(PlayerbotAI* botAI)
@@ -274,8 +264,7 @@ class MotherShahrazFatalAttractionRunAwayMultiplier : public BlackTempleEncounte
 {
 public:
     MotherShahrazFatalAttractionRunAwayMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-            botAI, "mother shahraz fatal attraction run away") {}
+        : BlackTempleEncounterMultiplier(botAI, "mother shahraz fatal attraction run away") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -296,6 +285,7 @@ protected:
 private:
     float GetTankValue(Action* action);
     float GetNonTankValue(Action* action);
+    float GetHealerValue(Action* action);
 };
 
 class IllidariCouncilDisableMageTankActionsMultiplier : public BlackTempleEncounterMultiplier
@@ -308,7 +298,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Dampen Magic is the only buff on the council that can be dispelled, and the mage tank steals it.
 class IllidariCouncilHoldMisdirectionAndDispelsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -320,7 +309,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Ranged interrupts are invaluable for Circle of Healing. Melee ones wait until she is in reach.
 class IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier
     : public BlackTempleEncounterMultiplier
 {

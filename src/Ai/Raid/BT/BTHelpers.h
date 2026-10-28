@@ -454,6 +454,7 @@ inline Position const GURTOGG_TANK_POSITION   = { 735.987f, 272.451f, 63.554f };
 inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
 inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 
+bool IsGurtoggFelRageTarget(Player* bot);
 Position const& GetGurtoggBloodboilPosition(Player* bot);
 // The Fel Rage target taunts him onto itself, so it is his victim; null outside Fel Rage.
 Unit* GetGurtoggFelRageTarget(Unit* gurtogg);

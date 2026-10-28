@@ -262,7 +262,7 @@ bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
     if (!gurtogg || gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return false;
 
-    return !bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
+    return !IsGurtoggFelRageTarget(bot);
 }
 
 bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
@@ -274,7 +274,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
     if (!gurtogg)
         return false;
 
-    if (bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+    if (IsGurtoggFelRageTarget(bot))
         return false;
 
     Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
@@ -288,7 +288,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
 // Melee go behind him instead.
 bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsMelee(bot) || bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+    if (PlayerbotAI::IsMelee(bot) || IsGurtoggFelRageTarget(bot))
         return false;
 
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
@@ -310,7 +310,7 @@ bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
 
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) &&
+    return IsGurtoggFelRageTarget(bot) &&
         bot->GetExactDist2d(GURTOGG_TANK_POSITION) > GURTOGG_POSITION_TOLERANCE;
 }
 

@@ -943,7 +943,7 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
         Player* member = ref->GetSource();
         if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
             !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member) ||
-            member->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+            IsGurtoggFelRageTarget(member))
         {
             continue;
         }
@@ -998,6 +998,11 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 
 } // end anonymous namespace (Gurtogg Bloodboil)
 
+bool IsGurtoggFelRageTarget(Player* bot)
+{
+    return bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
+}
+
 Position const& GetGurtoggBloodboilPosition(Player* bot)
 {
     GuidVector const soakers = FindGurtoggBloodboilSoakerGuids(bot);
@@ -1012,7 +1017,7 @@ Unit* GetGurtoggFelRageTarget(Unit* gurtogg)
         return nullptr;
 
     Unit* victim = gurtogg->GetVictim();
-    return victim && victim->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) ? victim : nullptr;
+    return victim && IsGurtoggFelRageTarget(victim) ? victim : nullptr;
 }
 
 Position GetGurtoggFelRageMeleePosition(

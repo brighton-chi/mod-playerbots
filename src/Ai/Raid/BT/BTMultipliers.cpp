@@ -402,31 +402,39 @@ float TeronGorefiendSpiritsAttackShadowyConstructsMultiplier::GetValueInEncounte
 
 float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    bool const isFormationMove = dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action);
-    bool const isFollowOrFlee =
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action);
-    // The Fel Rage moves only to bring the boss to the tank position.
-    bool const isFelRageTargetMove = bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)) &&
-        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<BlackTemplePositionBossAction*>(action);
+    if (IsGurtoggFelRageTarget(bot))
+    {
+        // The Fel Rage target moves only to bring the boss to the tank position.
+        if (!dynamic_cast<MovementAction*>(action))
+            return 1.0f;
 
-    if (!isFormationMove && !isFollowOrFlee && !isFelRageTargetMove)
-        return 1.0f;
+        if (dynamic_cast<AttackAction*>(action))
+            return 1.0f;
+    }
+    else
+    {
+        if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
+            !dynamic_cast<FollowAction*>(action) &&
+            !dynamic_cast<FleeAction*>(action) && !IsRepositionAction(bot, action))
+        {
+            return 1.0f;
+        }
+
+        if (dynamic_cast<SetBehindTargetAction*>(action))
+            return 1.0f;
+    }
 
     return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
 }
 
+// Gurtogg is fixated on the Fel Rage target, so it should not use threat drop abilities.
 float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE)))
+    if (!IsGurtoggFelRageTarget(bot))
         return 1.0f;
 
-    // Feign Death, Fade, Invisibility, Vanish, Cower and Soulshatter are left out: their class
-    // strategies use them on "medium threat", which needs two attackers on the bot, and he is
-    // alone.
+    // Feign Death, Fade, Invisibility, Vanish, Cower and Soulshatter are left out: their trigger
+    // is "medium threat", which needs two attackers on the bot, and Gurtogg has no adds.
     bool const dropsThreat =
         dynamic_cast<CastIceBlockAction*>(action) ||
         dynamic_cast<CastDivineShieldAction*>(action) ||
@@ -435,6 +443,8 @@ float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Act
     return dropsThreat ? 0.0f : 1.0f;
 }
 
+// Non-tanks other than healers hold below the second tank's threat due to threat drops. Do not
+// apply the multiplier during the Fel Rage phase (when bots cannot gain threat).
 float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -484,6 +494,8 @@ float ReliquaryOfSoulsDoNotWasteHealingMultiplier::GetValueInEncounter(Action* a
     return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
 }
 
+// Tank face, set behind, and disperse move melee around Suffering, which can mess with the
+// tailored actions to keep tanks closest to the boss to ensure they are the fixated targets.
 float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -523,6 +535,8 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     return GetAuraElapsedMs(runeShield) < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
 }
 
+// Spell Reflection triggers from any cast at the tank, so it would be blown on on Spirit Shock,
+// which can't be reflected. Rely on BlackTempleCastSpellReflectionAction for Deaden instead.
 float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -544,10 +558,9 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    // Gap closers are casts, so the melee dps wait's own move doesn't hold them.
-    bool const isReach = dynamic_cast<ReachTargetAction*>(action) ||
+    bool const isReachAction = dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
-    if (isReach)
+    if (isReachAction)
     {
         if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
             return 1.0f;
@@ -594,8 +607,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 {
     if (bot->getClass() == CLASS_WARRIOR)
     {
-        // Judgement of Command is the only council spell it can take, and the main tank's own
-        // action reflects that.
+        // Save Spell Reflection for Judgement of Command via BlackTempleCastSpellReflectionAction.
         if (dynamic_cast<CastSpellReflectionAction*>(action))
             return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 
@@ -603,7 +615,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         {
             if (!GetIllidariCouncilMembers(botAI).gathios)
                 return 1.0f;
-
+            // Do not siphon aggro from the mage tank.
             Player* mageTank = GetZerevorMageTank(botAI);
             return mageTank && action->GetTarget() == mageTank ? 0.0f : 1.0f;
         }
@@ -633,7 +645,8 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         return IsAnotherCouncilMemberWithin(botAI, COUNCIL_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
     }
 
-    // Malande and Veras can be taunted, so their tanks may taunt back their own member.
+    // Malande and Veras can be taunted, so their tanks may taunt back their own member, though
+    // I'm not sure if this is Blizzlike.
     if (isTaunt)
     {
         bool const isSingleTargetTaunt = dynamic_cast<CastTauntAction*>(action) ||
@@ -651,7 +664,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
             PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ? 1.0f : 0.0f;
     }
 
-    // Only a tank holding a member keeps out of stock avoidance; any other steps out of a patch.
+    // The council tanks handle hazards via encounter actions.
     if (isAvoidAoe)
     {
         if (PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
@@ -661,7 +674,9 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
             PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ? 0.0f : 1.0f;
     }
 
-    // Tank face ignores patches, so it would walk the Malande tank back into one it just left.
+    // The Malande tank is the only one without a planned position, so it is allowed to tank face.
+    // Tank face arcs around Malande, so while she stands in a patch it moves the tank back into it,
+    // undoing the Focus Malande action's step out.
     if (dynamic_cast<TankFaceAction*>(action) && PlayerbotAI::IsAssistTankOfIndex(bot, 0, false))
     {
         float const reach = bot->GetMeleeRange(malande) + COUNCIL_PATCH_MARGIN;
@@ -671,40 +686,49 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
     return 0.0f;
 }
 
-// While Zerevor is on the mage tank, its healer moves only by its own action. No one else reaches
-// to heal the mage tank.
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Action* action)
 {
-    // An attack only picks the target; the healer's reach toward it stays held.
-    bool const isHealerMove = PlayerbotAI::IsHeal(bot) &&
-        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action);
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    if (!dynamic_cast<CombatFormationMoveAction*>(action) && !IsRepositionAction(bot, action) &&
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
+    {
+        // Healers are subject to stricter rules.
+        return PlayerbotAI::IsHeal(bot) ? GetHealerValue(action) : 1.0f;
+    }
+
+    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+}
+
+// The mage tank's healer moves only by its own positioning action when Zerevor is on the mage tank,
+// and no other healer attempts to reach the mage tank to heal it.
+float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Action* action)
+{
     bool const isHealReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
-    bool const isBlockedMove =
-        (dynamic_cast<CombatFormationMoveAction*>(action) &&
-         !dynamic_cast<SetBehindTargetAction*>(action)) ||
-        dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action);
-    if (!isHealerMove && !isHealReach && !isBlockedMove)
+    bool const isHealerMove = dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<IllidariCouncilPositionMageTankHealerAction*>(action);
+    if (!isHealReach && !isHealerMove)
         return 1.0f;
 
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
-    if (!members.gathios)
+    if (!members.zerevor)
         return 1.0f;
 
-    Unit* zerevor = members.zerevor;
     bool const isMageTankHealer = PlayerbotAI::IsAssistHealOfIndex(bot, 0, true);
-    if (isHealerMove && isMageTankHealer && IsZerevorOnMageTank(botAI, zerevor))
-        return 0.0f;
 
-    if (isHealReach && !isMageTankHealer && zerevor)
+    if (isHealReach && !isMageTankHealer)
     {
         Player* mageTank = GetZerevorMageTank(botAI);
         if (mageTank && AI_VALUE(Unit*, "party member to heal") == mageTank)
             return 0.0f;
     }
 
-    return isBlockedMove ? 0.0f : 1.0f;
+    if (isHealerMove)
+        return isMageTankHealer && IsZerevorOnMageTank(botAI, members.zerevor) ? 0.0f : 1.0f;
+
+    return 1.0f;
 }
 
 float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Action* action)
@@ -725,6 +749,7 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
     return GetIllidariCouncilMembers(botAI).zerevor ? 0.0f : 1.0f;
 }
 
+// Dampen Magic is the only buff on the council that can be dispelled, and the mage tank steals it.
 float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -754,6 +779,7 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
     return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 }
 
+// Ranged interrupts are invaluable for Circle of Healing. Melee ones wait until she is in reach.
 float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncounter(
     Action* action)
 {
