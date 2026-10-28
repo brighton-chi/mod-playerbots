@@ -30,8 +30,6 @@ protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 };
 
-// Held for each boss's first 5%, and also through Supremus's kite phase, between Reliquary
-// essences, and on Illidan from 95% to 62% (Bloodlust all the way until 62%).
 class BlackTempleDelayDpsCooldownsMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -42,9 +40,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
-// rogue by bounding radius, so it takes the rogue well out of the fight.
-// Essence of Suffering targets the closest player, and Killing Spree makes the Rogue the closest.
 class BlackTempleDisableKillingSpreeMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
@@ -57,7 +52,6 @@ protected:
 
 // Trash
 
-// Not gated on an encounter: Reavers are trash.
 class ShadowmoonReaverHoldChargeBuildingSpellsMultiplier : public Multiplier
 {
 public:
@@ -81,11 +75,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Tidal Shield causes bots to drop combat and flip on their non-combat engines. This multiplier
-// stops them from breaking their spread as a result (due to FollowAction) while also keeping them
-// from restarting their attack + dropping target repeatedly.
-class HighWarlordNajentusTidalShieldHoldPositionMultiplier
-    : public BlackTempleEncounterMultiplier
+class HighWarlordNajentusTidalShieldHoldPositionMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
     HighWarlordNajentusTidalShieldHoldPositionMultiplier(PlayerbotAI* botAI)
@@ -108,7 +98,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Stock reach walks a straight line, so it gives way while that line passes through fire.
 class SupremusDoNotReachThroughFireMultiplier : public BlackTempleEncounterMultiplier
 {
 public:

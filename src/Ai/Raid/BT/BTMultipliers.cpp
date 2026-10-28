@@ -59,7 +59,7 @@ bool IsReliquaryEssence(uint32 entry)
         entry == Id(BtNpcs::NPC_ESSENCE_OF_DESIRE) || entry == Id(BtNpcs::NPC_ESSENCE_OF_ANGER);
 }
 
-// The bosses whose DPS cooldowns are held only for their first 5%.
+// Illidan, Supremus, and Reliquary also have DPS holds at pull but have additional conditions too.
 bool IsBlackTempleBossHeldAtPull(uint32 entry)
 {
     return entry == Id(BtNpcs::NPC_HIGH_WARLORD_NAJENTUS) ||
@@ -75,13 +75,13 @@ bool IsDpsHoldCandidate(Player* bot, Action* action)
     if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
         return false;
 
-    // AttackAction for healers only keeps them in their combat engine; their damage, wands
+    // AttackAction for healers is only to keep them in their combat engine. Their damage, wands
     // included, comes from CastSpellAction.
     return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
 }
 
-// Buffs, cures, protection and resurrection go through a dps hold. Totems don't, since some are
-// offensive.
+// Buffs, cures, protection, and resurrection are allowed during a DPS hold. Totems are not because
+// some are offensive, and I don't think it's worth getting granular about which to allow.
 float GetDpsHoldValue(Player* bot, Action* action)
 {
     if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
@@ -98,6 +98,8 @@ float GetDpsHoldValue(Player* bot, Action* action)
 
 } // end anonymous namespace (Shared)
 
+// Held for each boss's first 5% (excluding Shade of Akama and Illidan), and also through Supremus's
+// kite phase and between Reliquary essences. See below for Illidan's rules.
 float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -122,7 +124,8 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
             illidan = unit;
         else if (entry == Id(BtNpcs::NPC_RELIQUARY_OF_THE_LOST))
             isReliquary = true;
-        // An essence walking home at 1 health stays on the threat lists.
+        // After being defeated, an Essence stays on threat lists while it returns to the Reliquary
+        // with 1 HP. This check prevents cooldowns from being released during such period.
         else if (IsReliquaryEssence(entry) && !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
             essence = unit;
         else if (entry == Id(BtNpcs::NPC_SUPREMUS))
@@ -133,6 +136,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
     if (illidan)
     {
+        // At 62%, Bloodlust and all cooldowns are permanently freed.
         if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
             return 1.0f;
 
@@ -143,6 +147,8 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
             return 0.0f;
         }
 
+        // Above 95%, cooldowns other than Bloodlust can be used, then disable them until 62% (i.e.,
+        // get one use in and then save until phase 3, when cooldown should be back up).
         return illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
     }
     else if (isReliquary)
@@ -162,6 +168,9 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
     return 1.0f;
 }
 
+// Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
+// rogue by bounding radius, so it takes the rogue well out of the fight.
+// Essence of Suffering targets the closest player, and Killing Spree makes the rogue the closest.
 float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -186,7 +195,7 @@ float ShadowmoonReaverHoldChargeBuildingSpellsMultiplier::GetValue(Action* actio
     if (reavers.empty())
         return 1.0f;
 
-    // Summons whose own casts build charges, held for the whole pull.
+    // Summons whose own casts build charges must be held for the whole pull.
     if (dynamic_cast<CastMirrorImageAction*>(action) ||
         dynamic_cast<CastSummonGargoyleAction*>(action) ||
         dynamic_cast<CastSearingTotemAction*>(action) ||
@@ -224,6 +233,8 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
     return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") ? 0.0f : 1.0f;
 }
 
+// Tidal Shield makes Naj'entus invalid, causing bots to drop combat. Stop them from breaking their
+// spread (due to FollowAction) and from alternating attack/drop target repeatedly.
 float HighWarlordNajentusTidalShieldHoldPositionMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_COMBAT)
