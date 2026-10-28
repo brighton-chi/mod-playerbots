@@ -245,24 +245,14 @@ inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 // Searched by entry around the marking bot, so it finds her without line of sight.
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
 
-// The living Sister of Pain whose Shared Bonds a living Sister of Pleasure carries; null for any
-// other unit.
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
-// The Sister of Pain linked to the skulled Sister of Pleasure.
 Unit* GetSkulledSisterOfPain(Player* bot);
-// True for a Shadowmoon Reaver while magic would build Chaotic Charge on her: from the start of
-// Spell Absorption until it ends, from the margin before her earliest recast, and before her
-// first one.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit);
 bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI);
-// Reavers are trash, so this runs on every reset and drops only a dead or vanished Reaver's
-// timing; a pack still being fought keeps its own.
 bool PruneShadowmoonReaverAbsorptionStarts(Player* bot);
 ChaoticChargeReach GetChaoticChargeReach(SpellInfo const* spellInfo);
-// Imps, water elementals, succubi and felhunters, whose attacks build Chaotic Charge.
 bool IsChargeBuildingPet(Unit* unit);
-// Where to send such a pet instead of a Reaver: the owner's target, else any other attacker.
 Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI);
 
 // High Warlord Naj'entus
@@ -287,15 +277,11 @@ inline constexpr uint32 NAJENTUS_HURL_SPINE_FLIGHT_MS = 2 * IN_MILLISECONDS;
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
 bool IsNajentusImpaled(Player* player);
-// An impaled group member with no living remover assigned, for the mechanic tracker to assign.
 Player* FindNajentusUnassignedImpaledPlayer(Player* bot);
-// The nearest living non-tank bot to the impaled player that isn't impaled or already a remover.
 Player* FindNajentusSpineRemover(Player* bot, Player* impaled);
 Player* GetNajentusImpaledPlayerToFree(Player* bot);
 bool IsNajentusSpineThrower(Player* bot);
-// The assigned thrower while it can still throw: alive, on the map, not impaled, holding a spine.
 Player* GetNajentusSpineThrower(Player* bot);
-// The bot holding a spine nearest Naj'entus that can throw it.
 Player* FindNajentusSpineThrower(Player* bot, Unit* najentus);
 bool IsNajentusSpineInFlight(Player* bot);
 
@@ -350,9 +336,7 @@ bool IsSupremusKitePhase(Unit* supremus);
 float GetSupremusFixateTimeRemaining(Unit* supremus);
 float GetSupremusCatchDistance(Player* bot, Unit* supremus);
 bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus);
-// Erupting while Volcanic Geyser lasts: the first 18s of its 30s, from the moment it appears.
 bool IsSupremusVolcanoErupting(Unit* volcano);
-// Molten Flame only in the kite phase; in the tank phase stock avoid aoe handles it.
 std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI);
 std::vector<SupremusHazard> const& GetSupremusHazards(PlayerbotAI* botAI);
 bool IsInSupremusHazard(
@@ -361,12 +345,8 @@ bool IsInSupremusHazard(
 float GetLineLengthInSupremusHazards(
     std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
     SupremusHazardZone zone);
-// With Divine Shield or Dispersion a bot may walk through fire, but not stop in it.
 bool CanWalkThroughSupremusFire(Player* bot);
-// Whether the straight walk to reach target, stopping at range, crosses a hazard's safe zone.
 bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit const* target, float range);
-// The target of the reach fire blocks, for the bot to walk around to: the party member to heal for a
-// healer, else its current target. A healer routes no attack reach.
 Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI);
 
 // Shade of Akama
@@ -380,7 +360,6 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
 inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 
-// Living, attackable channelers by GUID, then sorcerers by GUID: the kill order.
 GuidVector FindShadeOfAkamaAddGuids(PlayerbotAI* botAI);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
 
@@ -400,8 +379,6 @@ inline constexpr float GOREFIEND_CONSTRUCT_SEARCH_RADIUS = 100.0f;
 inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
 inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
 
-// A triggered cast records neither its cooldown nor the global cooldown, so both come from the
-// spell data. False if the cast fails.
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 
 // Gurtogg Bloodboil
@@ -436,19 +413,14 @@ inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
 inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 
 Position const& GetGurtoggBloodboilPosition(Player* bot);
-// The Fel Rage target taunts him onto itself, so it is his victim; null outside Fel Rage.
 Player* GetGurtoggFelRageTarget(Unit* gurtogg);
 bool IsGurtoggFelRageTarget(Player* player);
 Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
-// 0 with fewer than two tanks on his threat list.
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
-// A rectangle around centre whose depth runs toward facing and whose width runs across it.
 bool IsInGurtoggRectangle(
     Position const& point, Position const& centre, Position const& facing, float halfWidth,
     float halfDepth);
-// This bot's own point in that rectangle, the same every call and spread between bots, at the
-// bot's Z. Falls back to centre when the way from centre to the point is blocked.
 Position GetBotPointInGurtoggRectangle(
     Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
 
@@ -484,7 +456,6 @@ inline Position const SHAHRAZ_TANK_POSITION       = { 960.438f, 178.989f, 192.82
 inline Position const SHAHRAZ_TRANSITION_POSITION = { 951.327f, 179.550f, 192.550f };
 inline Position const SHAHRAZ_RANGED_POSITION     = { 935.267f, 175.459f, 192.821f };
 
-// Melee dps wait at the ranged position while this is true.
 bool IsShahrazBeingPositioned(Unit* shahraz);
 
 // Illidari Council
@@ -548,8 +519,6 @@ struct IllidariCouncilMembers
     Unit* veras = nullptr;
 };
 
-// An entry search, not find target, since a bot back from the dead isn't yet on the members'
-// threat lists. Only members in combat count.
 IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot);
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
@@ -558,32 +527,18 @@ bool IsZerevorMageTank(PlayerbotAI* botAI);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
-// Zerevor has at most one Blizzard and one Flamestrike down at a time.
 bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f);
 bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float margin = 0.0f);
-// Gathios's Consecration reaches Malande only at the pull, while he is beside her on the dais.
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
-// Ranged interrupt only while her melee can't: under Blessing of Protection, or in a council
-// patch. Their interrupts are all magic, so never under Blessing of Spell Warding.
 bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor);
 bool IsZerevorOnMageTank(PlayerbotAI* botAI, Unit* zerevor);
-// Within heal range of the mage tank, clear of a patch on it, of Arcane Explosion, and of any
-// patch down.
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
-// The nearest safe point on two rings round the mage tank that the bot can walk to in a straight
-// line and that has line of sight to the mage tank.
 bool FindMageTankHealerPosition(
     Player* bot, Player* mageTank, Unit* zerevor, Position& destination);
-// The nearest point within melee range of Malande, clear of every council patch, that the bot can
-// walk to in a straight line.
 bool FindMalandeTankPosition(
     Player* bot, Unit* malande, Unit* gathios, Unit* zerevor, Position& destination);
-// Any council member but the bot's own target.
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
-// Felhunters stay on Malande for Spell Lock; other pets follow their master's target, or go to
-// Gathios while the master has none.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet);
-// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
 uint32 GetReadySpellLock(Creature* pet, Unit* target);
 
 // Illidan Stormrage <The Betrayer>
@@ -870,131 +825,62 @@ inline std::array const ILLIDAN_W_GLAIVE_TANK_POSITIONS = {
     Position{ 695.700f, 325.200f, 354.000f },
 };
 
-// The recorded infections, read-only; null before the tracker records any.
 std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId);
 IllidanPhase GetIllidanPhase(Unit* illidan);
-// He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot);
-// Written by the mechanic tracker, and at the Demon Form transform by its listener; true if the
-// phase changed.
 bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase);
-// A phase change the mechanic tracker hasn't recorded yet counts as just started.
 bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs);
-// Until the tracker records the change, the last phase it recorded.
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase);
-// Never true before the tracker has recorded the form.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs);
-// The hold window that is running, before who it spares is decided.
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
 IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan);
 bool IsFlameOfAzzinothDpsHeld(Unit const& illidan);
-// The bot's entry on his threat list is online, not suppressed: after Shadow Prison only threat
-// the bot causes brings it back.
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
-// From each phase change until the tracker sees the tanks have aggro, and all through his landing
-// and Maiev's arrival; never at the pull or in the death scene.
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
-// Each tank that should have a creature is its victim with ILLIDAN_TANK_AGGRO_THREAT: him the Main
-// Tank, or in Demon Form the warlock tank; while he flies each living Flame its own tank, or the
-// other one while its own is dead. A dead tank counts as having it, since nothing waits for it.
 bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
-// From his touchdown on landing, and after the landing's or Demon Form's threat reset until the
-// Main Tank has aggro: the tank stands and hits him, and the rest of the raid causes him no
-// threat, since at 0 anything else's first threat takes him from the tank.
 bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan);
-// Single-target damage on a Shadowfiend or a Shadow Demon, which the pickup lets through.
 bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe);
-// While he flies and in Demon Form, and in the pickup, where a pet's attack would take him from
-// the Main Tank.
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
-// In the pickup a channel begun before the hold still gives him threat after the reset
-// (Evocation's and Hymn of Hope's mana, Tranquility's heals, a Blizzard), so everyone but the Main
-// Tank stops theirs; single-target damage on an add aside.
 bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel);
-// The game angle of a point seen from the grate centre: 0 north, rising counterclockwise.
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
-// 6 yd outward of him. A tank walking there from within 9.5 yd only turns him to face out.
 Position GetIllidanSettlePosition(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
-// Where an infection position is recorded, from where he stands now.
 Position GetIllidanInfectionPosition(Unit const& illidan);
-// The infection position recorded for the bot's own infection, else for the infection it traps for,
-// else the one a new infection would share, else where one would be recorded now.
 Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* bot);
 bool IsEastFlameOfAzzinothTank(Player* bot);
 bool IsFlameOfAzzinothTank(Player* bot);
-// The living Flame this bot tanks: its own, else the other one once its own is dead and that
-// Flame's tank is dead too.
 Unit* GetAssignedFlameOfAzzinoth(Player* bot);
 bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI);
 ObjectGuid GetIllidanWarlockTankGuid(Player* bot);
-// Null while the warlock tank is dead.
 Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool IsIllidanWarlockTank(PlayerbotAI* botAI);
-// For the Illidan actions that outrank the stock Life Tap, which waits until a spell is
-// unaffordable.
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
-// The trap hunters in the order they take infections: hunter bots by GUID, dead or alive.
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
-// Assigned to an infection whose debuff is still on, with Frost Trap ready, and not infected.
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
-// Never runs to the infection position, so its Shadowfiends come out where it stands: his victim,
-// the Main Tank, or the warlock tank in Demon Form.
 bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player);
-// While he flies, a bot infected before he took off waits at the infection position until its
-// Shadowfiends are out, tanks included (the raid can't move away from them in Phase 2), and its
-// trap hunter still lays the trap. The Main Tank, which never runs, waits where it stands.
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);
-// A Frost Trap not yet sprung at infectionPosition, or a patch round it lasting at least
-// minDurationMs more.
 bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs);
-// Slot lists are bots on the map, the dead kept, each part by GUID: ranged are healers, then
-// ranged DPS; melee are melee DPS, then tanks, the Main Tank left out. In Demon Form the warlock
-// tank and the healers leave the ranged list; healers have their own. The index wraps round
-// slotCount; -1 if the bot isn't in the list.
 int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm);
 int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount);
 int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount);
-// Phases 3 and 5: the grate slot by roster, except that the warlock tank (a living bot) takes the
-// slot nearest its Demon Form position, so its walk at the transform is short, and whoever had that
-// slot takes the warlock tank's.
 int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan);
-// While he flies: the grate stack by roster, every bot but the Flame tanks, the dead kept.
 int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI);
-// Either Shadowfiend debuff, Illidan's own (41917) first.
 Aura* GetParasiticShadowfiendAura(Player* player);
 bool HasParasiticShadowfiend(Player* player);
-// An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
-// aggressive 2.4 s after spawning.
 GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI);
-// Shadowfiends have a combat reach of 1.0y.
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
-// No Shadowfiend debuff and a living Shadowfiend close by that isn't yet nearly dead, as where a
-// debuff just ended; any of them, since the pair spawn together and ranged focus one.
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
-// Living group members with either Shadowfiend debuff, humans included, so trap hunters trap for
-// them too.
 GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot);
-// An entry search, so it doesn't rely on the Demons being in attackers (unchecked); each Demon's
-// target is the group member or pet carrying its Paralyze.
 std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI);
-// For ranged and healers: a Demon moving to the warlock tank first, then the one nearest its
-// target, ties going to the one nearest `from`; idle Demons last.
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from);
 Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI);
-// For melee: the Demon nearest `from`, one still moving to a target before an idle one. Never one
-// moving to the warlock tank, which stays inside Aura of Dread or Shadow Blast all the way.
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from);
-// Imps and water elementals take Demons as ranged do, other pets as melee do.
 Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet);
-// The bot's current target is a Shadow Demon: in Demon Form, the one reason melee leave their
-// slots.
 bool IsTargetingShadowDemon(PlayerbotAI* botAI);
-// The point of the segment from start to end nearest to point, in 2D, at start's Z.
 Position GetClosestPointOnSegment(
     Position const& start, Position const& end, Position const& point);
 EyeBlastDangerArea GetEyeBlastDangerArea(Player* bot);
