@@ -52,7 +52,7 @@ enum class BtSpells : uint32
     SPELL_SNARE_SELF                = 41922,
     SPELL_VOLCANIC_ERUPTION         = 40276,
     SPELL_VOLCANIC_GEYSER           = 42055,
-    SPELL_MOLTEN_FLAME_PATCH        = 40253, // the patches' dynamic objects
+    SPELL_MOLTEN_FLAME_PATCH        = 40253,
 
     // Teron Gorefiend
     SPELL_SHADOW_OF_DEATH           = 40251,
@@ -65,7 +65,7 @@ enum class BtSpells : uint32
     SPELL_SPIRIT_SHIELD             = 40322,
 
     // Gurtogg Bloodboil
-    SPELL_BOSS_FEL_RAGE             = 40594, // Is dropped for the final 2s of phase 2
+    SPELL_BOSS_FEL_RAGE             = 40594, // Dropped for the final 2s of phase 2
     SPELL_PLAYER_FEL_RAGE           = 40604, // Lasts the entirety of phase 2 (30s)
     SPELL_INSIGNIFICANCE            = 40618,
     SPELL_BLOODBOIL                 = 42005,
@@ -103,10 +103,10 @@ enum class BtSpells : uint32
     SPELL_DARK_BARRAGE              = 40585,
     SPELL_AGONIZING_FLAMES          = 40932,
     SPELL_PARASITIC_SHADOWFIEND_PRI = 41917, // primary infection, cast by Illidan
-    SPELL_PARASITIC_SHADOWFIEND_SEC = 41914, // secondary infection, from a Shadowfiend's hit
-    SPELL_PARALYZE                  = 41083, // cast by a Shadow Demon on the unit it walks to
-    SPELL_SHADOW_PRISON             = 40647, // on every player in Maiev's arrival, 30 s
-    SPELL_SHADOW_BLAST              = 41078, // Demon Form, 20 yd round his victim as the cast ends
+    SPELL_PARASITIC_SHADOWFIEND_SEC = 41914, // secondary infection, from a Shadowfiend
+    SPELL_PARALYZE                  = 41083,
+    SPELL_SHADOW_PRISON             = 40647,
+    SPELL_SHADOW_BLAST              = 41078,
 
     // Death Knight
     SPELL_MIND_FREEZE               = 47528,
@@ -117,7 +117,7 @@ enum class BtSpells : uint32
     // Hunter
     SPELL_FEIGN_DEATH               =  5384,
     SPELL_FROST_TRAP                = 13809,
-    SPELL_FROST_TRAP_AURA           = 13810, // the slowing patch, laid once the trap is sprung
+    SPELL_FROST_TRAP_AURA           = 13810,
     SPELL_MISDIRECTION              = 34477,
     SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
 
@@ -214,26 +214,20 @@ enum class BtObjects : uint32
     GO_NAJENTUS_SPINE               = 185584,
 
     // Hunter
-    GO_FROST_TRAP                   = 164639, // laid by 13809, despawns once sprung
+    GO_FROST_TRAP                   = 164639, // dropped by 13809, despawns once sprung
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
-// Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-// Sends the pet onto the target as a player's attack command does.
 bool CommandPetAttack(Creature* pet, Unit* target);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
-// How long the aura has been up; for an aura with a fixed duration.
 uint32 GetAuraElapsedMs(Aura const* aura);
-// Turns the bot to the unit unless it is already in the bot's front 90 deg.
 void FaceUnit(Player* bot, Unit* unit);
 
 // Trash
 
-// Where a spell would build Chaotic Charge on a Shadowmoon Reaver: on its target, or on anyone in
-// its area.
 enum class ChaoticChargeReach : uint8
 {
     None,

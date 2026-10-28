@@ -99,6 +99,7 @@ uint32 GetAuraElapsedMs(Aura const* aura)
     return aura ? static_cast<uint32>(aura->GetMaxDuration() - aura->GetDuration()) : 0;
 }
 
+// Turn the bot to the unit unless it is already in the bot's front 90 degrees
 void FaceUnit(Player* bot, Unit* unit)
 {
     if (unit && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, unit))
@@ -119,10 +120,9 @@ bool IsMagicDamageSpell(SpellInfo const* spellInfo)
          spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE);
 }
 
-// Walks the spell and the spells it triggers. Spell Absorption's charge proc ignores triggered
-// spells unless they carry NOT_A_PROC, and ignores periodic ticks. A dummy effect on enemies counts
-// whatever its flags, because a script picks the spell that follows it (Death Coil, Holy Shock,
-// Penance, Starfall).
+// Check a spell and the spells it triggers. Spell Absorption's charge proc ignores triggered spells
+// without NOT_A_PROC and DoT ticks, but counts a dummy effect that can hit an enemy, because a
+// script casts the real spell after it (e.g. Holy Shock, which heals or damages by target).
 bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 depth, bool& area)
 {
     constexpr uint8 maxDepth = 3;
@@ -600,9 +600,9 @@ std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
         }
     }
 
-    Unit* supremus =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "supremus")->Get();
-    if (!IsSupremusKitePhase(supremus))
+    AiObjectContext context = botAI->GetAiObjectContext();
+    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    if (!supremus || !IsSupremusKitePhase(supremus))
         return hazards;
 
     for (Position const& patch : GetDynamicObjectPositions(
@@ -618,8 +618,7 @@ std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
 std::vector<SupremusHazard> const& GetSupremusHazards(PlayerbotAI* botAI)
 {
     return botAI->GetAiObjectContext()
-        ->GetValue<std::vector<SupremusHazard>>("supremus hazards")
-        ->RefGet();
+        ->GetValue<std::vector<SupremusHazard>>("supremus hazards")->RefGet();
 }
 
 bool IsInSupremusHazard(
@@ -683,15 +682,14 @@ bool CanWalkThroughSupremusFire(Player* bot)
 bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit const* target, float range)
 {
     Player* bot = botAI->GetBot();
-    // Divine Shield and Dispersion let the bot walk through fire, and stock reach doesn't break a
-    // channel either.
+    // Standard reach doesn't break channels, so I took the same path with this custom reach method.
     if (CanWalkThroughSupremusFire(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         return false;
 
     if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
         return false;
 
-    // Where the walk in would stop: a yard inside range, on the straight line to the target.
+    // Custom reach takes the bot to 1 yd inside range, on the straight line to the target.
     constexpr float rangeInset = 1.0f;
     float const stopDistance =
         range + bot->GetCombatReach() + target->GetCombatReach() - rangeInset;
@@ -818,7 +816,6 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 namespace
 {
 
-// Ranged bots in group order, the Fel Rage target left out.
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 {
     std::vector<std::vector<Player*>> groups(GURTOGG_ROTATION_GROUP_COUNT);
@@ -845,7 +842,7 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     return groups;
 }
 
-// The group hit longest ago soaks next: the lowest mean Bloodboil time left, ties to the first.
+// The group hit longest ago, determined by the lowest mean Bloodboil time left, soaks next.
 GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 {
     std::vector<std::vector<Player*>> const groups = GetGurtoggRangedRotationGroups(bot);
@@ -932,8 +929,8 @@ Position GetGurtoggFelRageMeleePosition(
 
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
 {
-    Unit* gurtogg =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "gurtogg bloodboil")->Get();
+    AiObjectContext context = botAI->GetAiObjectContext();
+    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
         return 0.0f;
 
@@ -1086,8 +1083,7 @@ IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot)
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
 {
     IllidariCouncilMemberGuids const& guids = botAI->GetAiObjectContext()
-        ->GetValue<IllidariCouncilMemberGuids>("illidari council members")
-        ->RefGet();
+        ->GetValue<IllidariCouncilMemberGuids>("illidari council members")->RefGet();
 
     auto const getMember = [botAI](ObjectGuid guid) -> Unit*
     {
@@ -1233,7 +1229,8 @@ bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit*
 namespace
 {
 
-// A blocked navmesh raycast cuts the point short and still returns true, so a moved point is a miss.
+// A blocked ray stops at the obstacle and still counts as success, so a point that comes back short
+// is a miss.
 bool CanWalkStraightTo(Player* bot, Position const& point)
 {
     constexpr float clampTolerance = 0.5f;
@@ -1313,6 +1310,7 @@ bool FindMalandeTankPosition(
             Position const point(
                 malande->GetPositionX() + radius * std::cos(angle),
                 malande->GetPositionY() + radius * std::sin(angle), bot->GetPositionZ());
+
             if (!IsInCouncilPatch(point, gathios, zerevor, COUNCIL_PATCH_MARGIN))
                 candidates.push_back(point);
         }
