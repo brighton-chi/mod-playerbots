@@ -851,7 +851,7 @@ bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
         constexpr float stopDistance = 5.0f;
         float stepX;
         float stepY;
-        if (!GetPathStepTowardUnit(bot, target, stopDistance, stepX, stepY))
+        if (!GetPathStepTowardUnit(bot, target, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         return MoveTo(
@@ -1706,8 +1706,11 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardUnit(bot, mageTank, MAGE_TANK_HEALER_MIN_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardUnit(
+            bot, mageTank, MAGE_TANK_HEALER_MIN_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     return MoveTo(
         BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,

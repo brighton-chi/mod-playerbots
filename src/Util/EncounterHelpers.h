@@ -34,6 +34,15 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId);
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
     float& stepX, float& stepY, float& stepZ);
+// One step along the bot's path to a point, stopping short of it by stopDistance. The step follows
+// the path corner-by-corner, rather than aiming at the far end of it, so a bot can move around an
+// obstacle between it and the point.
+bool GetPathStepTowardPoint(
+    Player* bot, Position const& destination, float stopDistance, float stepDistance,
+    float& stepX, float& stepY);
+// The same, toward a unit's position.
+bool GetPathStepTowardUnit(
+    Player* bot, Unit* target, float stopDistance, float stepDistance, float& stepX, float& stepY);
 bool GetStepToPosition(
     Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
     float& stepY, bool& backwards);

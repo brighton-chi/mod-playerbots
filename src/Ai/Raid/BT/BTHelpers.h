@@ -222,11 +222,6 @@ inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-bool GetPathStepTowardUnit(
-    Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
-bool GetPathStepTowardPoint(
-    Player* bot, Position const& destination, float stopDistance, float stepDistance,
-    float& stepX, float& stepY);
 // Sends the pet onto the target as a player's attack command does.
 bool CommandPetAttack(Creature* pet, Unit* target);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
