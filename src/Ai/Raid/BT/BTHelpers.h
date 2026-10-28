@@ -307,7 +307,7 @@ inline constexpr float SUPREMUS_HAZARD_SEARCH_RADIUS = 60.0f;
 inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
-// Volcanic Geyser hits within 15 yd of the volcano's centre. The extra 3 yd covers movers that
+// Volcanic Geyser hits within 15 yd of the volcano's center. The extra 3 yd covers movers that
 // don't check for fire, for the tick or two before avoidance turns them back.
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
 inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
@@ -317,7 +317,7 @@ inline constexpr float SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE =
     SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS + 1.0f;
 // He fixates a new target every 10 s from the start of the kite phase.
 inline constexpr int64 SUPREMUS_FIXATE_INTERVAL_SECONDS = 10;
-// Kept beyond his melee range, which is about 27 yd from his centre: his combat reach is 24.
+// Kept beyond his melee range, which is about 27 yd from his center: his combat reach is 24.
 inline constexpr float SUPREMUS_KITE_SAFETY_MARGIN = 3.0f;
 inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 3.5f;
 inline constexpr uint8 SUPREMUS_KITE_HEADINGS = 16;
@@ -419,10 +419,10 @@ Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
 bool IsInGurtoggRectangle(
-    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    Position const& point, Position const& center, Position const& facing, float halfWidth,
     float halfDepth);
 Position GetBotPointInGurtoggRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
+    Player* bot, Position const& center, Position const& facing, float halfWidth, float halfDepth);
 
 // Reliquary of Souls
 
@@ -482,7 +482,7 @@ inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
 // Zerevor casts Arcane Explosion when anyone is within 10 yd plus both combat reaches (14.65 yd).
 inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
-// A patch reaches a player whose centre is within its radius plus the player's reach (1.5 yd).
+// A patch reaches a player whose center is within its radius plus the player's reach (1.5 yd).
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
@@ -571,7 +571,7 @@ enum class IllidanDpsHold : uint8
 enum class IllidanTankLead : uint8
 {
     None,
-    Pickup,    // straight out from near the grate centre
+    Pickup,    // straight out from near the grate center
     Opening,   // once at the pull, clockwise
     Step,      // on a Flame Crash
     StepAgain, // once, when he stopped short of the step
@@ -585,7 +585,7 @@ struct EyeBlastDangerArea
 };
 
 // Phase 4 places, from where Demon Form roots him and the line from him through the grate
-// centre. Ranged DPS slots are in spell reach of him and healer slots behind them, each filled
+// center. Ranged DPS slots are in spell reach of him and healer slots behind them, each filled
 // from the warlock's side.
 struct DemonFormLayout
 {
@@ -694,17 +694,17 @@ inline constexpr int32 ILLIDAN_FROST_TRAP_SLOW_MS = 5 * IN_MILLISECONDS;
 // there spring it from 3.9 yd.
 inline constexpr float ILLIDAN_FROST_TRAP_DISTANCE = 3.0f;
 
-// Tank ring: he is held 25 yd from the grate centre with the Main Tank 6 yd outward of him, so he
+// Tank ring: he is held 25 yd from the grate center with the Main Tank 6 yd outward of him, so he
 // faces out and the raid stands inside.
 inline constexpr float ILLIDAN_RING_RADIUS = 25.0f;
 inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 // Once free of Shadow Prison, for the 2.83 s before he wakes, the Main Tank stands this far
 // inward of him: between him and the raid, and clear of his backing off.
 inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 6.0f;
-// He walks back from a victim this close to his centre (both collision radii), checked every 2 to
+// He walks back from a victim this close to his center (both collision radii), checked every 2 to
 // 6 s. A Main Tank whose straight walk would pass this close goes round him instead, stepping
 // toward the settle-circle point 60 deg on, on the side nearer its position, about 5 yd from his
-// centre.
+// center.
 inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
 inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
 // On each Flame Crash the Main Tank walks to the ring point this far counterclockwise of him,
@@ -714,7 +714,7 @@ inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI
 // A cast (Draw Soul) can hold him until the tank stands at its lead position; against a standing
 // tank he stops 9.5 yd short of it, about 13 deg on. A step under this is led once more.
 inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 20.0f * static_cast<float>(M_PI) / 180.0f;
-// While he is this close to the grate centre, as after landing, the Main Tank leads him straight
+// While he is this close to the grate center, as after landing, the Main Tank leads him straight
 // out along its own bearing (due north after landing) to the lead radius; he stops 22 to 28 yd
 // out.
 inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
@@ -730,7 +730,7 @@ inline constexpr uint32 ILLIDAN_OPENING_LEAD_MS = 15 * IN_MILLISECONDS;
 // A Flame Crash this close to the Main Tank was cast on it.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
-// Phases 3 and 5: the centre, six at 6 yd and twelve at 12 yd, in that fill order.
+// Phases 3 and 5: the center, six at 6 yd and twelve at 12 yd, in that fill order.
 inline constexpr size_t ILLIDAN_GRATE_INNER_SLOT_COUNT = 6;
 inline constexpr size_t ILLIDAN_GRATE_OUTER_SLOT_COUNT = 12;
 inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
@@ -747,7 +747,7 @@ inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
 
-// Phase 2: Eye Blast's head hits within this of its centre; its path ahead is kept clear by 3 yd.
+// Phase 2: Eye Blast's head hits within this of its center; its path ahead is kept clear by 3 yd.
 inline constexpr float ILLIDAN_EYE_BLAST_HAZARD_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_EYE_BLAST_CLEARANCE = ILLIDAN_EYE_BLAST_HAZARD_RADIUS + 3.0f;
 
@@ -776,13 +776,13 @@ inline constexpr float ILLIDAN_PICKUP_POSITION_ANGLE = 30.0f * static_cast<float
 inline constexpr float ILLIDAN_STEP_IN_POSITION_DISTANCE = 9.0f;
 
 // World trigger 22515.
-inline Position const ILLIDAN_GRATE_CENTRE =           { 676.021f, 305.455f, 353.582f };
+inline Position const ILLIDAN_GRATE_CENTER =           { 676.021f, 305.455f, 353.582f };
 // He kneels here and stands here for his speech.
 inline Position const ILLIDAN_SPEECH_POSITION =        { 705.732f, 304.988f, 353.925f };
-// The Main Tank waits here at the pull, 15.5 yd north of the centre, so he stops on the ring when
+// The Main Tank waits here at the pull, 15.5 yd north of the center, so he stops on the ring when
 // he runs in.
 inline Position const ILLIDAN_PULL_TANK_POSITION =     { 691.521f, 305.455f, 353.790f };
-// While he lands, everyone else waits 22 yd south of the centre and the Main Tank 6 yd south of
+// While he lands, everyone else waits 22 yd south of the center and the Main Tank 6 yd south of
 // the landing point, in his way if he runs at them after the threat reset.
 inline Position const ILLIDAN_LANDING_TANK_POSITION =  { 670.648f, 304.761f, 353.920f };
 inline Position const ILLIDAN_LANDING_STACK_POSITION = { 654.021f, 305.455f, 353.790f };

@@ -302,8 +302,7 @@ class IllidariCouncilHoldMisdirectionAndDispelsMultiplier : public BlackTempleEn
 {
 public:
     IllidariCouncilHoldMisdirectionAndDispelsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-            botAI, "illidari council hold misdirection and dispels") {}
+        : BlackTempleEncounterMultiplier(botAI, "illidari council hold misdirection and dispels") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -411,8 +410,7 @@ class IllidanStormrageDisableAoeOnShadowDemonsMultiplier : public BlackTempleEnc
 {
 public:
     IllidanStormrageDisableAoeOnShadowDemonsMultiplier(PlayerbotAI* botAI)
-        : BlackTempleEncounterMultiplier(
-            botAI, "illidan stormrage disable aoe on shadow demons") {}
+        : BlackTempleEncounterMultiplier(botAI, "illidan stormrage disable aoe on shadow demons") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

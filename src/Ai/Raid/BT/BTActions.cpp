@@ -1081,16 +1081,16 @@ Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLanceTarget(
 
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
-    Position const& centre = GetGurtoggBloodboilPosition(bot);
+    Position const& center = GetGurtoggBloodboilPosition(bot);
     if (IsInGurtoggRectangle(
-            bot->GetPosition(), centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH,
+            bot->GetPosition(), center, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH,
             GURTOGG_RANGED_HALF_DEPTH))
     {
         return false;
     }
 
     Position const point = GetBotPointInGurtoggRectangle(
-        bot, centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH, GURTOGG_RANGED_HALF_DEPTH);
+        bot, center, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH, GURTOGG_RANGED_HALF_DEPTH);
 
     bot->CastStop();
     return MoveTo(
@@ -1827,8 +1827,8 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
     {
         return MoveInside(
-            BT_MAP_ID, ILLIDAN_GRATE_CENTRE.GetPositionX(), ILLIDAN_GRATE_CENTRE.GetPositionY(),
-            ILLIDAN_GRATE_CENTRE.GetPositionZ(), ILLIDAN_POSITION_TOLERANCE,
+            BT_MAP_ID, ILLIDAN_GRATE_CENTER.GetPositionX(), ILLIDAN_GRATE_CENTER.GetPositionY(),
+            ILLIDAN_GRATE_CENTER.GetPositionZ(), ILLIDAN_POSITION_TOLERANCE,
             MovementPriority::MOVEMENT_COMBAT);
     }
 
@@ -1917,7 +1917,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 }
 
 // The Main Tank places him through the core's chase rules. He starts after his victim once it is
-// 9.5 yd from his centre, runs right up behind it while it walks, stops as soon as it stops, and
+// 9.5 yd from his center, runs right up behind it while it walks, stops as soon as it stops, and
 // faces it. A walk that ends within 9.5 yd of him only turns him. So where the tank stops sets
 // where he stands, and which side of him it stands on sets which way he faces.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
@@ -1974,7 +1974,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         // Then inward of him. He wakes with no threat reset, and the settle takes the tank round
         // him to outward.
         float const radius = std::max(
-            0.0f, illidan->GetExactDist2d(ILLIDAN_GRATE_CENTRE) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
+            0.0f, illidan->GetExactDist2d(ILLIDAN_GRATE_CENTER) - ILLIDAN_MAIEV_SCENE_TANK_OFFSET);
         position = GetRingPoint(GetGrateAngle(*illidan), radius);
     }
     else if (phase == IllidanPhase::Demon)
@@ -2150,9 +2150,9 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
         _lead = IllidanTankLead::Step;
     }
     else if (_lead == IllidanTankLead::None &&
-        illidan.GetExactDist2d(ILLIDAN_GRATE_CENTRE) < ILLIDAN_PICKUP_DISTANCE)
+        illidan.GetExactDist2d(ILLIDAN_GRATE_CENTER) < ILLIDAN_PICKUP_DISTANCE)
     {
-        // Near the grate centre it walks straight out, and he follows it to the ring. After landing
+        // Near the grate center it walks straight out, and he follows it to the ring. After landing
         // the tank is on the raid's side of him, so it leads him north, away from them.
         bool const isAfterLanding = GetIllidanPhaseBefore(illidan, phase) == IllidanPhase::Landing;
         float const leadAngle = isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
@@ -2516,7 +2516,7 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->RefGet();
 
-    // A Blaze hits players within 8 yd of its centre, exact 3D.
+    // A Blaze hits players within 8 yd of its center, exact 3D.
     constexpr float blazeRadius = 8.0f;
     constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
@@ -2718,7 +2718,7 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
     }
     else if (phase == IllidanPhase::Initial)
     {
-        position = ILLIDAN_GRATE_CENTRE;
+        position = ILLIDAN_GRATE_CENTER;
     }
     else
     {

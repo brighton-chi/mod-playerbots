@@ -739,7 +739,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Phase 1: stacked on the grate centre. Phases 3 and 5: in the grate slots by roster, healers
+// Phase 1: stacked on the grate center. Phases 3 and 5: in the grate slots by roster, healers
 // first, the warlock tank in the one nearest its Demon Form position, and ranged DPS no farther
 // than their spell reach of him. Phase 4: healers and ranged DPS each in their own slots, by
 // roster.

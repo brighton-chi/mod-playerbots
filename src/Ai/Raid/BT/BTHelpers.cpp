@@ -979,12 +979,12 @@ float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
 // The rectangle is a space in which bots can be given a randomized (by GUID) position. There are
 // two rectangles drawn, one for the 5 Bloodboil soakers and the other for other ranged bots.
 bool IsInGurtoggRectangle(
-    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    Position const& point, Position const& center, Position const& facing, float halfWidth,
     float halfDepth)
 {
-    float const angle = centre.GetAngle(&facing);
-    float const dX = point.GetPositionX() - centre.GetPositionX();
-    float const dY = point.GetPositionY() - centre.GetPositionY();
+    float const angle = center.GetAngle(&facing);
+    float const dX = point.GetPositionX() - center.GetPositionX();
+    float const dY = point.GetPositionY() - center.GetPositionY();
     float const depth = dX * std::cos(angle) + dY * std::sin(angle);
     float const width = -dX * std::sin(angle) + dY * std::cos(angle);
     return std::fabs(depth) <= halfDepth && std::fabs(width) <= halfWidth;
@@ -994,7 +994,7 @@ bool IsInGurtoggRectangle(
 // executing the strategy, but the result is intended to create realism by making bot positioning
 // seem more random and natural (within required bounds).
 Position GetBotPointInGurtoggRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth)
+    Player* bot, Position const& center, Position const& facing, float halfWidth, float halfDepth)
 {
     constexpr float edgeInset = 0.5f;
 
@@ -1005,17 +1005,17 @@ Position GetBotPointInGurtoggRectangle(
     float const widthFraction = static_cast<float>(hash & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
     float const depthFraction = static_cast<float>((hash >> 32) & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
 
-    float const angle = centre.GetAngle(&facing);
+    float const angle = center.GetAngle(&facing);
     float const width = widthFraction * std::max(halfWidth - edgeInset, 0.0f);
     float const depth = depthFraction * std::max(halfDepth - edgeInset, 0.0f);
-    float x = centre.GetPositionX() + depth * std::cos(angle) - width * std::sin(angle);
-    float y = centre.GetPositionY() + depth * std::sin(angle) + width * std::cos(angle);
+    float x = center.GetPositionX() + depth * std::cos(angle) - width * std::sin(angle);
+    float y = center.GetPositionY() + depth * std::sin(angle) + width * std::cos(angle);
     float z = bot->GetPositionZ();
 
     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ(), x, y, z))
+            bot, center.GetPositionX(), center.GetPositionY(), bot->GetPositionZ(), x, y, z))
     {
-        return Position(centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ());
+        return Position(center.GetPositionX(), center.GetPositionY(), bot->GetPositionZ());
     }
 
     return Position(x, y, bot->GetPositionZ());
@@ -1430,25 +1430,24 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 namespace // Illidan Stormrage
 {
 
-// A point distance yd from Illidan and angle off the line from him through the grate centre,
+// A point distance yd from Illidan and angle off the line from him through the grate center,
 // positive toward the warlock tank's side.
-Position GetDemonFormPoint(
-    Position const& illidan, float inwardAngle, float distance, float angle)
+Position GetDemonFormPoint(Position const& illidan, float distance, float angle)
 {
-    float const bearing = inwardAngle - angle;
+    float const bearing = illidan.GetAngle(&ILLIDAN_GRATE_CENTER) - angle;
     return Position(
         illidan.GetPositionX() + distance * std::cos(bearing),
         illidan.GetPositionY() + distance * std::sin(bearing), illidan.GetPositionZ());
 }
 
 // One row of Demon Form slots 6 yd apart, from highAngle down, each with its angle. Kept only
-// clear of Shadow Blast round the warlock position and within 36 yd of the grate centre.
+// clear of Shadow Blast round the warlock position and within 36 yd of the grate center.
 std::vector<std::pair<float, Position>> GetDemonFormRow(
-    Position const& illidan, float inwardAngle, Position const& warlockTankPosition, float distance,
-    float highAngle, float lowAngle, bool halfStepIn)
+    Position const& illidan, Position const& warlockTankPosition, float distance, float highAngle,
+    float lowAngle, bool halfStepIn)
 {
     constexpr float slotSpacing = 6.0f;
-    constexpr float maxCentreDistance = 36.0f;
+    constexpr float maxCenterDistance = 36.0f;
 
     float const step = slotSpacing / distance;
     float const firstAngle = halfStepIn ? highAngle - step / 2.0f : highAngle;
@@ -1458,9 +1457,9 @@ std::vector<std::pair<float, Position>> GetDemonFormRow(
     for (int32 i = 0; i < count; ++i)
     {
         float const angle = firstAngle - i * step;
-        Position const point = GetDemonFormPoint(illidan, inwardAngle, distance, angle);
+        Position const point = GetDemonFormPoint(illidan, distance, angle);
         if (point.GetExactDist2d(warlockTankPosition) >= ILLIDAN_SHADOW_BLAST_CLEARANCE &&
-            ILLIDAN_GRATE_CENTRE.GetExactDist2d(point) <= maxCentreDistance)
+            ILLIDAN_GRATE_CENTER.GetExactDist2d(point) <= maxCenterDistance)
         {
             row.emplace_back(angle, point);
         }
@@ -1812,7 +1811,8 @@ bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
     return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
 }
 
-// Single-target damage on a Shadowfiend or a Shadow Demon, which the pickup lets through.
+// Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times; DPS holds
+// apply only to Illidan himself.
 bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe)
 {
     if (!target || isAoe)
@@ -1822,8 +1822,7 @@ bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe)
     return entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) || entry == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
-// While he flies, in Demon Form, and in the pickup, where a pet's attack would pull him off the Main
-// Tank.
+// In these scenarios, attacking pets are at especially high risk of stripping aggro from the tank.
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
 {
     IllidanPhase const phase = GetIllidanPhase(illidan);
@@ -1831,9 +1830,10 @@ bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
         IsIllidanPickupPending(botAI, illidan);
 }
 
-// In the pickup, a channel begun before the hold still gives him threat after the reset (Evocation's and
-// Hymn of Hope's mana, Tranquility's heals, a Blizzard), so everyone but the Main Tank drops it;
-// single-target damage on an add aside.
+// After a threat reset, a channel cast before the hold continues to build threat. This often
+// results in Illidan immediately killing the channeler before the main tank can pick him up. The
+// main culprit is Evocation. So everybody other than the main tank should cancel a channel (other
+// than single-target damage on an add).
 bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel)
 {
     if (!IsIllidanPickupPending(botAI, illidan))
@@ -1847,24 +1847,24 @@ bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& 
         channel.m_targets.GetUnitTarget(), channel.GetSpellInfo()->IsAffectingArea());
 }
 
-// The point's angle from the grate centre: 0 north, rising counterclockwise.
+// The point's angle from the grate center: 0 north, increasing counterclockwise.
 float GetGrateAngle(Position const& position)
 {
-    return ILLIDAN_GRATE_CENTRE.GetAngle(&position);
+    return ILLIDAN_GRATE_CENTER.GetAngle(&position);
 }
 
 Position GetRingPoint(float angle, float radius)
 {
     return Position(
-        ILLIDAN_GRATE_CENTRE.GetPositionX() + radius * std::cos(angle),
-        ILLIDAN_GRATE_CENTRE.GetPositionY() + radius * std::sin(angle),
-        ILLIDAN_GRATE_CENTRE.GetPositionZ());
+        ILLIDAN_GRATE_CENTER.GetPositionX() + radius * std::cos(angle),
+        ILLIDAN_GRATE_CENTER.GetPositionY() + radius * std::sin(angle),
+        ILLIDAN_GRATE_CENTER.GetPositionZ());
 }
 
 // Six yards outward of him; a tank walking there from within 9.5 yd only turns him to face out.
 Position GetIllidanSettlePosition(Unit const& illidan)
 {
-    float const radius = ILLIDAN_GRATE_CENTRE.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;
+    float const radius = ILLIDAN_GRATE_CENTER.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;
     return GetRingPoint(GetGrateAngle(illidan), radius);
 }
 
@@ -1874,7 +1874,7 @@ Position GetGrateSlot(size_t index)
 
     size_t const slot = index % ILLIDAN_RANGED_SLOT_COUNT;
     if (slot == 0)
-        return ILLIDAN_GRATE_CENTRE;
+        return ILLIDAN_GRATE_CENTER;
 
     if (slot <= ILLIDAN_GRATE_INNER_SLOT_COUNT)
     {
@@ -1893,7 +1893,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
     // Ranged DPS rows are inside 31 yd, in spell reach of him, and healer rows behind them; both
-    // are filled from the warlock's side. Melee rows lie behind the healers, centred between the
+    // are filled from the warlock's side. Melee rows lie behind the healers, centerd between the
     // warlock and the far end of the ranged DPS, and are filled nearest him first.
     constexpr std::array rangedRows = { 25.2f, 31.0f };
     constexpr std::array healerRows = { 36.8f, 42.6f };
@@ -1903,20 +1903,18 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     constexpr float healerHighAngle = 60.0f * degree;
     constexpr float lowAngle = -90.0f * degree;
     constexpr float meleeHalfArc = 40.0f * degree;
-    // Heals reach 43 yd centre to centre.
+    // Heals reach 43 yd center to center.
     constexpr float healReach = 41.0f;
-
-    float const inwardAngle = illidan.GetAngle(&ILLIDAN_GRATE_CENTRE);
 
     DemonFormLayout layout;
     layout.warlockTankPosition = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_WARLOCK_POSITION_DISTANCE, ILLIDAN_WARLOCK_POSITION_ANGLE);
+        illidan, ILLIDAN_WARLOCK_POSITION_DISTANCE, ILLIDAN_WARLOCK_POSITION_ANGLE);
     layout.mainTankWaitPosition = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_MAIN_TANK_WAIT_DISTANCE, ILLIDAN_MAIN_TANK_WAIT_ANGLE);
+        illidan, ILLIDAN_MAIN_TANK_WAIT_DISTANCE, ILLIDAN_MAIN_TANK_WAIT_ANGLE);
     layout.mainTankPickupPosition = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_PICKUP_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
+        illidan, ILLIDAN_PICKUP_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
     layout.mainTankStepInPosition = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_STEP_IN_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
+        illidan, ILLIDAN_STEP_IN_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
 
     auto const fromWarlockSide =
         [](std::pair<float, Position> const& a, std::pair<float, Position> const& b)
@@ -1929,13 +1927,13 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     for (size_t i = 0; i < rangedRows.size(); ++i)
     {
         std::vector<std::pair<float, Position>> const rangedRow = GetDemonFormRow(
-            illidan, inwardAngle, layout.warlockTankPosition, rangedRows[i], rangedHighAngle,
-            lowAngle, i % 2 == 1);
+            illidan, layout.warlockTankPosition, rangedRows[i], rangedHighAngle, lowAngle,
+            i % 2 == 1);
         ranged.insert(ranged.end(), rangedRow.begin(), rangedRow.end());
 
         std::vector<std::pair<float, Position>> const healerRow = GetDemonFormRow(
-            illidan, inwardAngle, layout.warlockTankPosition, healerRows[i], healerHighAngle,
-            lowAngle, i % 2 == 1);
+            illidan, layout.warlockTankPosition, healerRows[i], healerHighAngle, lowAngle,
+            i % 2 == 1);
         healers.insert(healers.end(), healerRow.begin(), healerRow.end());
     }
 
@@ -1959,19 +1957,18 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         }
     }
 
-    float const meleeCentreAngle = (ILLIDAN_WARLOCK_POSITION_ANGLE + ranged.back().first) / 2.0f;
+    float const meleeCenterAngle = (ILLIDAN_WARLOCK_POSITION_ANGLE + ranged.back().first) / 2.0f;
     for (size_t i = 0; i < meleeRows.size(); ++i)
     {
         std::vector<std::pair<float, Position>> row = GetDemonFormRow(
-            illidan, inwardAngle, layout.warlockTankPosition, meleeRows[i],
-            meleeCentreAngle + meleeHalfArc, meleeCentreAngle - meleeHalfArc, i % 2 == 1);
+            illidan, layout.warlockTankPosition, meleeRows[i], meleeCenterAngle + meleeHalfArc,
+            meleeCenterAngle - meleeHalfArc, i % 2 == 1);
         std::stable_sort(
             row.begin(), row.end(),
-            [meleeCentreAngle](
+            [meleeCenterAngle](
                 std::pair<float, Position> const& a, std::pair<float, Position> const& b)
             {
-                return std::abs(a.first - meleeCentreAngle) <
-                    std::abs(b.first - meleeCentreAngle);
+                return std::abs(a.first - meleeCenterAngle) < std::abs(b.first - meleeCenterAngle);
             });
 
         for (std::pair<float, Position> const& slot : row)
@@ -2335,9 +2332,8 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
     if (!warlockTankAI)
         return index;
 
-    float const inwardAngle = illidan.GetAngle(&ILLIDAN_GRATE_CENTRE);
     Position const warlockTankPosition = GetDemonFormPoint(
-        illidan, inwardAngle, ILLIDAN_WARLOCK_POSITION_DISTANCE, ILLIDAN_WARLOCK_POSITION_ANGLE);
+        illidan, ILLIDAN_WARLOCK_POSITION_DISTANCE, ILLIDAN_WARLOCK_POSITION_ANGLE);
     int32 warlockSlot = 0;
     float nearestDistance = std::numeric_limits<float>::max();
     for (size_t i = 0; i < ILLIDAN_RANGED_SLOT_COUNT; ++i)
