@@ -344,12 +344,12 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
             bot->IsValidAttackTarget(unit);
     };
 
-    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* currentTarget = AI_VALUE(Unit*, "current target");
     if (isAllowed(currentTarget))
         return currentTarget;
 
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
+    auto const& attackers = context->GetValue<GuidVector>("attackers")->RefGet();
     for (ObjectGuid const& guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -606,7 +606,7 @@ std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
         }
     }
 
-    AiObjectContext context = botAI->GetAiObjectContext();
+    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
     if (!supremus || !IsSupremusKitePhase(supremus))
         return hazards;
@@ -721,9 +721,8 @@ Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     bool const isHealer = PlayerbotAI::IsHeal(bot);
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* target =
-        context->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    Unit* target = botAI->GetAiObjectContext()
+        ->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
     float range;
     if (isHealer)
         range = botAI->GetRange("heal");
@@ -945,7 +944,7 @@ Position GetGurtoggFelRageMeleePosition(
 
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
 {
-    AiObjectContext context = botAI->GetAiObjectContext();
+    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg)
         return 0.0f;
@@ -2422,8 +2421,7 @@ GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI)
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit)
 {
     auto const& shadowfiends = botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")
-        ->RefGet();
+        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
 
     Unit* nearest = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
@@ -2453,8 +2451,7 @@ bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
         return false;
 
     auto const& shadowfiends = botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")
-        ->RefGet();
+        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
     for (ObjectGuid const& guid : shadowfiends)
     {
         Unit* shadowfiend = botAI->GetUnit(guid);
@@ -2534,24 +2531,22 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
     return shadowDemons;
 }
 
-// For ranged and healers: a Demon moving to the warlock tank first, then the one nearest its target,
-// ties going to the one nearest from; idle Demons last.
+// Ranged prioritize a Shadow Demon fixated on the Warlock Tank, then the moving Shadow Demon that
+// is closest to its target, and finally any that are idle.
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
 {
-    // A Demon walks 4 yd/s, so a yard is a quarter second.
+    // A Demon moves 4 yd/s, so 1 yd is a quarter second of movement.
     constexpr float targetDistanceStep = 1.0f;
     constexpr uint32 walkingToWarlock = 0;
     constexpr uint32 walking = 1;
     constexpr uint32 idle = 2;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    auto const& shadowDemons = botAI->GetAiObjectContext()
+        ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
 
     Unit* best = nullptr;
-    std::tuple<uint32, uint32, float> bestKey = {
-        std::numeric_limits<uint32>::max(), 0, 0.0f };
+    std::tuple<uint32, uint32, float> bestKey = { std::numeric_limits<uint32>::max(), 0, 0.0f };
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
@@ -2585,9 +2580,8 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
     if (warlockTank.IsEmpty())
         return nullptr;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    auto const& shadowDemons = botAI->GetAiObjectContext()
+        ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
         if (shadowDemon.target != warlockTank)
@@ -2602,18 +2596,18 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
     return nullptr;
 }
 
-// For melee: the Demon nearest from, one still moving to a target before an idle one. Never one moving
-// to the warlock tank, which stays inside Aura of Dread or Shadow Blast all the way.
+// Melee attack the closest Shadow Demon that is moving to a paralyzed target, but never one on the
+// Warlock tank (impossible for melee to attack it without getting hit by Shadow Blast).
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
 {
-    // Demons spawn 5 yd from him and walk out toward the raid, so melee running in from their
-    // slots meet one well outside Aura of Dread's 15 yd even if they leave immediately.
-    AiObjectContext* context = botAI->GetAiObjectContext();
+    // Demons spawn 5 yd from Illidan, but the melee safe positions are far away enough from Illidan
+    // that melee will reach a Demon outside Aura of Dread's 15 yd range even if they move in to
+    // attack as soon as the Demons spawn.
     ObjectGuid const warlockTank = GetIllidanWarlockTankGuid(botAI->GetBot());
     Unit* nearest = nullptr;
     std::pair<bool, float> nearestKey = { true, std::numeric_limits<float>::max() };
-    auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    auto const& shadowDemons = botAI->GetAiObjectContext()
+        ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
         Unit* demon = botAI->GetUnit(shadowDemon.demon);
@@ -2637,7 +2631,6 @@ Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
     return nearest;
 }
 
-// Imps and water elementals pick targets as ranged do; other pets as melee do.
 Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet)
 {
     uint32 const entry = pet.GetEntry();
@@ -2650,14 +2643,13 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet)
     return GetShadowDemonForMeleeToAttack(botAI, pet);
 }
 
-// The bot's current target is a Shadow Demon: in Demon Form, the one reason melee leave their slots.
+// Melee leaves its safe position during Demon form only if its current target is a Shadow Demon.
 bool IsTargetingShadowDemon(PlayerbotAI* botAI)
 {
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     return target && target->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
-// The point on the segment nearest to point, in 2D, at start's Z.
 Position GetClosestPointOnSegment(
     Position const& start, Position const& end, Position const& point)
 {
