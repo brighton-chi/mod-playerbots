@@ -213,7 +213,7 @@ enum class BtObjects : uint32
     // High Warlord Naj'entus
     GO_NAJENTUS_SPINE               = 185584,
 
-    // Illidan Stormrage <The Betrayer>
+    // Hunter
     GO_FROST_TRAP                   = 164639, // laid by 13809, despawns once sprung
 };
 
@@ -222,14 +222,6 @@ inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 
 // Misdirects onto the tank, then spends it with Steady Shot on the target.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-// A rectangle around centre whose depth runs toward facing and whose width runs across it.
-bool IsInRectangle(
-    Position const& point, Position const& centre, Position const& facing, float halfWidth,
-    float halfDepth);
-// This bot's own point in that rectangle, the same every call and spread between bots, at the
-// bot's Z. Falls back to centre when the way from centre to the point is blocked.
-Position GetBotPointInRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY);
 bool GetPathStepTowardPoint(
@@ -454,14 +446,22 @@ inline Position const GURTOGG_TANK_POSITION   = { 735.987f, 272.451f, 63.554f };
 inline Position const GURTOGG_RANGED_POSITION = { 762.265f, 277.183f, 63.781f };
 inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 
-bool IsGurtoggFelRageTarget(Player* bot);
 Position const& GetGurtoggBloodboilPosition(Player* bot);
 // The Fel Rage target taunts him onto itself, so it is his victim; null outside Fel Rage.
-Unit* GetGurtoggFelRageTarget(Unit* gurtogg);
+Player* GetGurtoggFelRageTarget(Unit* gurtogg);
+bool IsGurtoggFelRageTarget(Player* player);
 Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
 // 0 with fewer than two tanks on his threat list.
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI);
+// A rectangle around centre whose depth runs toward facing and whose width runs across it.
+bool IsInGurtoggRectangle(
+    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth);
+// This bot's own point in that rectangle, the same every call and spread between bots, at the
+// bot's Z. Falls back to centre when the way from centre to the point is blocked.
+Position GetBotPointInGurtoggRectangle(
+    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth);
 
 // Reliquary of Souls
 

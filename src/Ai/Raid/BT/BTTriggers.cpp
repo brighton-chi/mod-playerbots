@@ -28,6 +28,8 @@ bool BlackTempleClassRolesShouldBeAssignedTrigger::IsActive()
     return IsMechanicTrackerBot(bot, BT_MAP_ID);
 }
 
+// Misdirect immediately after the pull. Used for High Warlord Naj'entus, Supremus, Teron Gorefiend,
+// Gurtogg Bloodboil, Mother Shahraz, and the Illidari Council (on Gathios).
 bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -52,6 +54,7 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
         GetSkulledSisterOfPain(bot) == target;
 }
 
+// Wands keep shooting once started, so a multiplier alone can't stop wanding.
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
 {
     Spell* wand = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
@@ -61,6 +64,7 @@ bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
     return IsShadowmoonReaverUnsafeForMagic(wand->m_targets.GetUnitTarget());
 }
 
+// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
 bool ShadowmoonReaverShouldControlCasterPetTrigger::IsActive()
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -140,8 +144,8 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!supremus || IsSupremusKitePhase(supremus))
         return false;
 
-    // The spread step can go any way and doesn't see fire, so it waits while one step could carry
-    // the bot into a volcano's safe zone.
+    // The spread step flees from the nearest player without considering hazards, so the trigger
+    // returns false if one step (plus 1 yd of slack) could put the bot inside a hazard.
     float const fleeStep =
         std::min(SUPREMUS_RANGED_SPREAD_DISTANCE + 1.0f, sPlayerbotAIConfig.FleeDistance);
     if (IsInSupremusHazard(
@@ -160,7 +164,6 @@ bool SupremusFixatedOnBotTrigger::IsActiveInEncounter()
     if (!supremus || supremus->GetVictim() != bot || !IsSupremusKitePhase(supremus))
         return false;
 
-    // The kite multiplier holds every other mover, fire avoidance included.
     if (CanSupremusCatchStandingBot(bot, supremus))
         return true;
 
@@ -197,6 +200,7 @@ bool ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger::IsActiveInEncounter(
     bool const isMeleeDps = PlayerbotAI::IsDps(bot) && PlayerbotAI::IsMelee(bot);
     bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
+    // The mechanic tracker is included solely to mark, as its role is indeterminate.
     if (!isMeleeDps && !isShadowPriest && !IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
@@ -215,6 +219,8 @@ bool TeronGorefiendRangedShouldPositionOnBalconyTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "teron gorefiend");
 }
 
+// Feign Death and Vanish cancel the Shadow of Death cast. It is Blizzlike for Ice Block and Divine
+// Shield to block the cast, but Shadow of Death pierces their invulnerability in AC.
 bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE)
@@ -257,7 +263,7 @@ bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    // He doesn't cast Bloodboil during Fel Rage.
+    // Bloodboil is not cast during Fel Rage.
     Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
     if (!gurtogg || gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return false;
@@ -277,7 +283,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
     if (IsGurtoggFelRageTarget(bot))
         return false;
 
-    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    Player* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
     if (!felRageTarget)
         return false;
 
@@ -285,7 +291,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
         GURTOGG_FEL_RAGE_MELEE_TOLERANCE;
 }
 
-// Melee go behind him instead.
+// Melee go behind Gurtogg instead.
 bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsMelee(bot) || IsGurtoggFelRageTarget(bot))
@@ -295,12 +301,12 @@ bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
     if (!gurtogg)
         return false;
 
-    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    Player* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
     if (!felRageTarget || bot->GetExactDist2d(felRageTarget) >= GURTOGG_FEL_RAGE_AVOID_DISTANCE)
         return false;
 
-    // Arcing Smash only hits in front of him, but he turns faster than bots can react, so at the
-    // start of Fel Rage everyone near the target moves regardless of side.
+    // Arcing Smash only hits in front of Gurtogg, but he turns faster than bots can react, so at
+    // the start of Fel Rage, everyone near the target moves away.
     Aura* felRage = gurtogg->GetAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE));
     if (felRage && GetAuraElapsedMs(felRage) < GURTOGG_FEL_RAGE_EARLY_AVOID_MS)
         return true;
@@ -341,7 +347,7 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsHeal(bot))
         return false;
 
-    // Discipline priests keep shielding.
+    // Aura of Suffering (-100% healing) does not affect Power World: Shield.
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
@@ -358,7 +364,7 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActiveInEncounter()
     return desire && desire->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD));
 }
 
-bool ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger::IsActiveInEncounter()
+bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
@@ -422,7 +428,7 @@ bool IllidariCouncilGathiosShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsMainTank(bot);
 }
 
-bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
+bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
@@ -436,7 +442,7 @@ bool IllidariCouncilGathiosCastsJudgementOfCommandTrigger::IsActiveInEncounter()
         judgement->m_targets.GetUnitTarget() == bot && PlayerbotAI::IsMainTank(bot);
 }
 
-bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
+bool IllidariCouncilMalandeCastingCircleOfHealingTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() == CLASS_DRUID || bot->getClass() == CLASS_HUNTER ||
         bot->getClass() == CLASS_PALADIN || bot->getClass() == CLASS_PRIEST)
@@ -451,6 +457,8 @@ bool IllidariCouncilMalandeCastsCircleOfHealingTrigger::IsActiveInEncounter()
     if (!members.malande || !members.gathios || !members.zerevor)
         return false;
 
+    // Ranged interrupt only when melee is unable to (when Malande is under Blessing of Protection
+    // or is standing in a hazard patch).
     if (PlayerbotAI::IsRanged(bot) &&
         !ShouldRangedInterruptCircleOfHealing(members.malande, members.gathios, members.zerevor))
     {
@@ -538,6 +546,7 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return false;
     }
 
+    // The Veras tank is included in the DPS assignment action when Veras is vanished.
     if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, false))
         return true;
 
@@ -551,6 +560,7 @@ bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 // Illidan Stormrage <The Betrayer>
 
+// Not gated on the encounter, which starts as the speech ends, so throttled to once per second.
 bool IllidanStormrageShouldPositionForPullTrigger::IsActive()
 {
     // You are not prepared!
@@ -596,6 +606,8 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsMainTank(bot);
 }
 
+// An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
+// Frost Trap. The Main Tank and his victim never run, nor the warlock tank in Demon Form.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
@@ -615,6 +627,8 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
 }
 
+// The mechanic tracker records each new infection while there is an infection position, keeps
+// looking for a trap hunter while none is ready, and drops an entry once its debuff is gone.
 bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
@@ -691,6 +705,9 @@ bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
     return ShouldIllidanPetsBePassive(botAI, illidan) != pet->HasReactState(REACT_PASSIVE);
 }
 
+// Hunter and warlock pets take the Shadowfiends, which never attack pets, in Phases 1, 2, 3 and 5
+// and the death scene. In Demon Form every pet does, passive then, once no Shadow Demon is left
+// for it.
 bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
@@ -739,6 +756,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     return GetNearestParasiticShadowfiend(botAI, *pet);
 }
 
+// Every pet, passive in Demon Form, is sent onto a Shadow Demon and kept on it until it dies.
 bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
@@ -771,6 +789,8 @@ bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
     return !IsFlameOfAzzinothTank(bot);
 }
 
+// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use, Dark Barrage
+// after a moment. Not for the Main Tank or a Flame tank: an immunity loses it whatever it holds.
 bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
     bool const isPaladin = bot->getClass() == CLASS_PALADIN;
@@ -812,6 +832,8 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
     return AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
+// Totems set for the last phase would take a Flame in its first 2 s, or be back on his threat
+// list before the tank, so they come up at each phase change.
 bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -837,9 +859,12 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
+    // An infected bot runs to the infection position instead.
     return !HasParasiticShadowfiend(bot);
 }
 
+// At the transform, and at 33% or below in Demon Form, melee and tanks still on him end their
+// auto-attack: in his melee range they would only need 110% of the warlock tank's threat.
 bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
@@ -853,6 +878,9 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
     return window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush;
 }
 
+// Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
+// multiplier can't end a running auto-repeat or channel; in the pickup, so do any channel's heals
+// or mana.
 bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
 {
     Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
@@ -900,6 +928,8 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
         phase == IllidanPhase::Maiev;
 }
 
+// Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
+// wipes the raid. Healers stay to heal.
 bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRangedDps(bot))
@@ -943,6 +973,10 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     return IsIllidanWarlockTank(botAI);
 }
 
+// Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
+// two or more are alive. They all walk toward the raid, so a Seed going off on one usually
+// catches others. Not while infected, so the run comes first, nor next to fresh Shadowfiends,
+// which the explosion would turn onto the warlock.
 bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_WARLOCK)
@@ -963,6 +997,9 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     return !IsNearNewParasiticShadowfiend(botAI);
 }
 
+// Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
+// assist tanks have the Flames. The Main Tank joins them on Shadow Demons in Demon Form until its
+// walk-in. Healers take Shadow Demons as targets in Demon Form.
 bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -995,6 +1032,8 @@ bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
         AI_VALUE2(Unit*, "find target", "illidan stormrage");
 }
 
+// Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
+// without doing this.
 bool IllidanStormrageShouldClearHazardsBeforeLandingTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))

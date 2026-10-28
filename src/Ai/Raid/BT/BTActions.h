@@ -529,10 +529,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Rogues and warriors take Malande for interrupts, leaving her under Blessing of Protection; death
-// knights and Enhancement shamans stay, since Mind Freeze and Wind Shear still land. All of them
-// leave her while she stands in a Zerevor patch or Gathios's Consecration. Casters take Gathios,
-// and the mage tank's healer Zerevor. Everyone skips a member immune to their damage.
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:
@@ -562,7 +558,6 @@ public:
 
 // Illidan Stormrage <The Betrayer>
 
-// The Main Tank waits at its pull position, facing him; everyone else waits on the grate.
 class IllidanStormragePositionOnGrateDuringSpeechAction : public MovementAction
 {
 public:
@@ -571,9 +566,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Hunter bots misdirect him onto the Main Tank at each Phase 1, 3 and 5 start, and onto the
-// warlock tank in Demon Form. While he flies, the second hunter bot by GUID takes the West Flame
-// to its tank, and the first and any others the East Flame.
 class IllidanStormrageMisdirectToTanksAction : public Action
 {
 public:
@@ -586,10 +578,6 @@ private:
     bool TryMisdirectToWarlockTank(Unit* illidan);
 };
 
-// The Main Tank places him through the core's chase rules. He starts after his victim once it is
-// 9.5 yd from his centre, runs right up behind it while it walks, stops as soon as it stops, and
-// faces it. A walk that ends within 9.5 yd of him only turns him. So where the tank stops sets
-// where he stands, and which side of him it stands on sets which way he faces.
 class IllidanStormrageMainTankRepositionBossAction : public AttackAction
 {
 public:
@@ -625,9 +613,6 @@ private:
     bool _isOpeningLeadDone = false;
 };
 
-// The run is in steps, so another forced move can take over between them, as the warlock tank's
-// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
-// through a global cooldown. An infected hunter is never on duty.
 class IllidanStormrageIsolateBotWithInfectionAction : public MovementAction
 {
 public:
@@ -639,10 +624,6 @@ private:
     bool HunterSetFrostTrap();
 };
 
-// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
-// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
-// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
-// its bot stops running, as the warlock tank does at the transform.
 class IllidanStormrageTrackInfectionsAction : public Action
 {
 public:
@@ -657,8 +638,6 @@ private:
         ObjectGuid& hunter);
 };
 
-// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
-// other Flame's tank is dead too, when it takes that Flame.
 class IllidanStormrageAssistTanksHandleFlamesAction : public AttackAction
 {
 public:
@@ -682,9 +661,6 @@ private:
     uint8 _tankStep = 0;
 };
 
-// Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
-// players, most pets cannot melee Illidan during Phase 4. In the pickup after the landing or Demon
-// Form a pet's attack would take him from the Main Tank.
 class IllidanStormrageControlPetAggressionAction : public Action
 {
 public:
@@ -697,8 +673,6 @@ private:
     bool _setPassive = false;
 };
 
-// Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
-// carries out too. While its owner has just birthed Shadowfiends, the pet is called off them.
 class IllidanStormrageCommandPetAttackAddAction : public Action
 {
 public:
@@ -731,8 +705,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Totemic Recall can't be cast under Shadow Prison's stun, so in Maiev's arrival it comes in the
-// gap before he wakes.
 class IllidanStormrageRecallTotemsAction : public Action
 {
 public:

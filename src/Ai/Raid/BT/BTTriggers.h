@@ -46,9 +46,6 @@ public:
     bool IsActive() override;
 };
 
-// A Hunter while the named boss is untouched, so Misdirection goes out on the pull. Used for
-// High Warlord Naj'entus, Supremus, Teron Gorefiend, Gurtogg Bloodboil, Mother Shahraz and the
-// Illidari Council (on Gathios).
 class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -65,8 +62,8 @@ private:
 
 // Trash
 
-// Not gated on an encounter, so checked once a second. The first Shell of Pain comes 20 to 30 s
-// into the pull.
+// The throttle compensates for this trigger not being encounter gated. The first Shell of Pain is
+// applied 20-30s into the pull.
 class SisterOfPleasureShouldBeFocusedTrigger : public Trigger
 {
 public:
@@ -75,7 +72,6 @@ public:
     bool IsActive() override;
 };
 
-// A wand keeps shooting once started, so a multiplier can't stop it.
 class ShadowmoonReaverWandBuildsChargesTrigger : public Trigger
 {
 public:
@@ -84,7 +80,6 @@ public:
     bool IsActive() override;
 };
 
-// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
 class ShadowmoonReaverShouldControlCasterPetTrigger : public Trigger
 {
 public:
@@ -234,8 +229,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Feign Death and Vanish cancel his cast. Ice Block and Divine Shield don't help: Shadow of Death
-// pierces invulnerability in AC.
 class TeronGorefiendCastsShadowOfDeathTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -364,11 +357,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger : public BlackTempleEncounterTrigger
+class ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "reliquary of souls essence of desire casts deaden") {}
+    ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(botAI, "reliquary of souls essence of desire casting deaden") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -429,26 +422,23 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidariCouncilGathiosCastsJudgementOfCommandTrigger : public BlackTempleEncounterTrigger
+class IllidariCouncilGathiosCastingJudgementOfCommandTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilGathiosCastsJudgementOfCommandTrigger(PlayerbotAI* botAI)
+    IllidariCouncilGathiosCastingJudgementOfCommandTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "illidari council gathios casts judgement of command") {}
+            botAI, "illidari council gathios casting judgement of command") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-// Ranged DPS interrupt only while her melee can't: under Blessing of Protection, or while she
-// stands in a Zerevor patch or Gathios's Consecration. Paladins, priests and hunters have nothing
-// she isn't immune to.
-class IllidariCouncilMalandeCastsCircleOfHealingTrigger : public BlackTempleEncounterTrigger
+class IllidariCouncilMalandeCastingCircleOfHealingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidariCouncilMalandeCastsCircleOfHealingTrigger(PlayerbotAI* botAI)
+    IllidariCouncilMalandeCastingCircleOfHealingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "illidari council malande casts circle of healing") {}
+            botAI, "illidari council malande casting circle of healing") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -515,8 +505,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Every bot but the main tank, the Malande tank and the mage tank, and the Veras tank only while
-// Veras is vanished.
 class IllidariCouncilShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -539,7 +527,6 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
-// Not gated on the encounter, which starts as the speech ends, so throttled to once per second.
 class IllidanStormrageShouldPositionForPullTrigger : public Trigger
 {
 public:
@@ -568,8 +555,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
-// Frost Trap. The Main Tank and his victim never run, nor the warlock tank in Demon Form.
 class IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -581,8 +566,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// The mechanic tracker records each new infection while there is an infection position, keeps
-// looking for a trap hunter while none is ready, and drops an entry once its debuff is gone.
 class IllidanStormrageShouldTrackInfectionsTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -614,9 +597,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Hunter and warlock pets take the Shadowfiends, which never attack pets, in Phases 1, 2, 3 and 5
-// and the death scene. In Demon Form every pet does, passive then, once no Shadow Demon is left
-// for it.
 class IllidanStormragePetShouldAttackShadowfiendTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -627,7 +607,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Every pet, passive in Demon Form, is sent onto a Shadow Demon and kept on it until it dies.
 class IllidanStormragePetShouldAttackShadowDemonTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -648,8 +627,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Ice Block, Divine Shield and Cloak of Shadows each clear both debuffs on use, Dark Barrage
-// after a moment. Not for the Main Tank or a Flame tank: an immunity loses it whatever it holds.
 class IllidanStormrageImmunityCanClearDebuffTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -670,8 +647,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Totems set for the last phase would take a Flame in its first 2 s, or be back on his threat
-// list before the tank, so they come up at each phase change.
 class IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger
     : public BlackTempleEncounterTrigger
 {
@@ -684,7 +659,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// An infected bot runs to the infection position instead.
 class IllidanStormrageShouldPositionForLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -696,8 +670,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// At the transform, and at 33% or below in Demon Form, melee and tanks still on him end their
-// auto-attack: in his melee range they would only need 110% of the warlock tank's threat.
 class IllidanStormrageMeleeShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -708,9 +680,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Auto Shot, wands and channels (Drain Soul, Mind Flay) keep hitting him through a hold, since a
-// multiplier can't end a running auto-repeat or channel; in the pickup, so do any channel's heals
-// or mana.
 class IllidanStormrageShouldStopShootingTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -731,8 +700,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Ranged DPS walk into spell reach of a Shadow Demon walking to the warlock tank, whose death
-// wipes the raid. Healers stay to heal.
 class IllidanStormrageRangedShouldReachShadowDemonTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -765,25 +732,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Every warlock, the warlock tank included, casts Seed of Corruption on the Shadow Demons while
-// two or more are alive. They all walk toward the raid, so a Seed going off on one usually
-// catches others. Not while infected, so the run comes first, nor next to fresh Shadowfiends,
-// which the explosion would turn onto the warlock.
 class IllidanStormrageWarlockShouldSeedShadowDemonsTrigger : public BlackTempleEncounterTrigger
 {
 public:
     IllidanStormrageWarlockShouldSeedShadowDemonsTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(botAI, "illidan stormrage warlock should seed shadow demons")
-    {
-    }
+        : BlackTempleEncounterTrigger(
+            botAI, "illidan stormrage warlock should seed shadow demons") {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-// Tanks other than the Main Tank join the melee in Phases 1, 3, 4 and 5; while he flies the
-// assist tanks have the Flames. The Main Tank joins them on Shadow Demons in Demon Form until its
-// walk-in. Healers take Shadow Demons as targets in Demon Form.
 class IllidanStormrageShouldAssignTargetPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:
@@ -804,8 +763,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-// Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
-// without doing this.
 class IllidanStormrageShouldClearHazardsBeforeLandingTrigger : public BlackTempleEncounterTrigger
 {
 public:

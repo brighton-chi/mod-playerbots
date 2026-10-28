@@ -779,9 +779,9 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
     return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
 }
 
-// Ranged interrupts are invaluable for Circle of Healing. Melee ones wait until she is in reach.
-float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncounter(
-    Action* action)
+// Ranged interrupts are saved for Circle of Healing. Melee ones are gated by a range check
+// because otherwise cast failed due to being out of range still turns the bot toward its target.
+float IllidariCouncilManageInterruptsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -789,21 +789,29 @@ float IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier::GetValueInEncou
     switch (bot->getClass())
     {
         case CLASS_MAGE:
+        {
             if (!dynamic_cast<CastCounterspellAction*>(action) &&
                 !dynamic_cast<CastCounterspellOnEnemyHealerAction*>(action))
             {
                 return 1.0f;
             }
             break;
+        }
         case CLASS_SHAMAN:
+        {
             if (!dynamic_cast<CastWindShearAction*>(action) &&
                 !dynamic_cast<CastWindShearOnEnemyHealerAction*>(action))
             {
                 return 1.0f;
             }
             break;
-        // Their stock interrupts pick an enemy healer out to spell range, and a cast out of melee
-        // range still turns the bot to Malande.
+        }
+        case CLASS_WARLOCK:
+        {
+            if (!dynamic_cast<CastSpellLockAction*>(action))
+                return 1.0f;
+            break;
+        }
         case CLASS_DEATH_KNIGHT:
         case CLASS_ROGUE:
         case CLASS_WARRIOR:
@@ -849,7 +857,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 namespace
 {
 
-// At Illidan's landing stack a bot still picks targets and still runs off with a Shadowfiend
+// At Illidan's landing stack, a bot still picks targets and still runs off with a Shadowfiend
 // debuff.
 bool IsHeldAtIllidanLandingStack(Action* action)
 {
@@ -956,6 +964,8 @@ bool IsIllidanShadowBlastOnBot(Unit* illidan, Player* bot)
 
 } // end anonymous namespace (Illidan Stormrage)
 
+// During Illidan's speech, bots move only to their pull places. Not gated on the encounter, which
+// starts as the speech ends.
 float IllidanStormrageHoldPullPositionsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_COMBAT || bot->GetMapId() != BT_MAP_ID)
@@ -1200,6 +1210,9 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     return IsHeldIllidanChase(botAI, action, phase) ? 0.0f : 1.0f;
 }
 
+// If near a Shadowfiend that is not low on health, don't attack it or cast any AoE spell or any
+// heal. This is a proxy for having just birthed a Shadowfiend, which can immediately infect the
+// birther if any threat is generated. Switching targets is fine.
 float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
 {
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
@@ -1222,6 +1235,9 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
     return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;
 }
 
+// Guardians can't be set passive like pets, so they are summoned only in Phases 3 and 5 (to keep
+// them from dying in Phase 4 and to save the cooldown through Phases 1 and 2), and not during any
+// dps hold, which otherwise lets Mirror Image and Army of the Dead through as buffs.
 float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsGuardianSummon(bot, action))
@@ -1238,6 +1254,10 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
     return GetIllidanDpsHold(botAI, illidan) == IllidanDpsHold::None ? 1.0f : 0.0f;
 }
 
+// Shamans set no totems from each phase change until the tanks have aggro, so the ones they
+// recalled aren't set again at once. In Phases 1, 3 and 5 they also set none while nearer the
+// infection position than their nearest totem: it lies about 52 yd from him, past the 30 yd at
+// which totems are recast.
 float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN ||
@@ -1284,8 +1304,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
 float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
-    // Mana potions and gems, held only in the pickup.
-    bool const isItem = dynamic_cast<UseItemAction*>(action);
+    bool const isItem = dynamic_cast<UseItemAction*>(action); // for mana potions and gems
     // The targeting action keeps melee off him in a hold itself, so it can still switch a bot from
     // him to an add.
     if (!isHeal && !isItem &&
@@ -1319,7 +1338,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (isItem)
         return 1.0f;
 
-    // Totems have their own hold, only until the tanks have aggro after each phase change.
+    // Delegate any totem hold to IllidanStormrageHoldTotemsMultiplier.
     if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastTotemAction*>(action) ||
          dynamic_cast<CastCallOfTheElementsAction*>(action)))
@@ -1372,6 +1391,7 @@ float IllidanStormrageDisableTankSoulshatterMultiplier::GetValueInEncounter(Acti
     return IsIllidanWarlockTank(botAI) ? 0.0f : 1.0f;
 }
 
+// While Shadow Demons are up, the only AoE allowed is Seed of Corruption, which has its own action.
 float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Action* action)
 {
     // Heals report AoE threat too.

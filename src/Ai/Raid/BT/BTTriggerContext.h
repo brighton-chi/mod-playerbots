@@ -124,8 +124,8 @@ public:
         creators["reliquary of souls essence of desire has rune shield"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_has_rune_shield;
 
-        creators["reliquary of souls essence of desire casts deaden"] =
-            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casts_deaden;
+        creators["reliquary of souls essence of desire casting deaden"] =
+            &RaidBlackTempleTriggerContext::reliquary_of_souls_essence_of_desire_casting_deaden;
 
         // Mother Shahraz
         creators["mother shahraz hunter should misdirect"] =
@@ -150,11 +150,11 @@ public:
         creators["illidari council gathios should be tanked"] =
             &RaidBlackTempleTriggerContext::illidari_council_gathios_should_be_tanked;
 
-        creators["illidari council gathios casts judgement of command"] =
-            &RaidBlackTempleTriggerContext::illidari_council_gathios_casts_judgement_of_command;
+        creators["illidari council gathios casting judgement of command"] =
+            &RaidBlackTempleTriggerContext::illidari_council_gathios_casting_judgement_of_command;
 
-        creators["illidari council malande casts circle of healing"] =
-            &RaidBlackTempleTriggerContext::illidari_council_malande_casts_circle_of_healing;
+        creators["illidari council malande casting circle of healing"] =
+            &RaidBlackTempleTriggerContext::illidari_council_malande_casting_circle_of_healing;
 
         creators["illidari council malande should be tanked"] =
             &RaidBlackTempleTriggerContext::illidari_council_malande_should_be_tanked;
@@ -413,9 +413,9 @@ private:
     {
         return new ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger(botAI);
     }
-    static Trigger* reliquary_of_souls_essence_of_desire_casts_deaden(PlayerbotAI* botAI)
+    static Trigger* reliquary_of_souls_essence_of_desire_casting_deaden(PlayerbotAI* botAI)
     {
-        return new ReliquaryOfSoulsEssenceOfDesireCastsDeadenTrigger(botAI);
+        return new ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger(botAI);
     }
 
     // Mother Shahraz
@@ -451,13 +451,13 @@ private:
     {
         return new IllidariCouncilGathiosShouldBeTankedTrigger(botAI);
     }
-    static Trigger* illidari_council_gathios_casts_judgement_of_command(PlayerbotAI* botAI)
+    static Trigger* illidari_council_gathios_casting_judgement_of_command(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilGathiosCastsJudgementOfCommandTrigger(botAI);
+        return new IllidariCouncilGathiosCastingJudgementOfCommandTrigger(botAI);
     }
-    static Trigger* illidari_council_malande_casts_circle_of_healing(PlayerbotAI* botAI)
+    static Trigger* illidari_council_malande_casting_circle_of_healing(PlayerbotAI* botAI)
     {
-        return new IllidariCouncilMalandeCastsCircleOfHealingTrigger(botAI);
+        return new IllidariCouncilMalandeCastingCircleOfHealingTrigger(botAI);
     }
     static Trigger* illidari_council_malande_should_be_tanked(PlayerbotAI* botAI)
     {

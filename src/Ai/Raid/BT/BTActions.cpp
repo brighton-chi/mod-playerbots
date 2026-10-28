@@ -171,8 +171,8 @@ bool BlackTempleSpreadRangedAction::Execute(Event /*event*/)
 
 bool BlackTempleCastSpellReflectionAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot) &&
-        botAI->CastSpell(Id(BtSpells::SPELL_SPELL_REFLECTION), bot);
+    uint32 const spellId = Id(BtSpells::SPELL_SPELL_REFLECTION);
+    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
 }
 
 // Trash
@@ -915,8 +915,8 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 {
     if (bot->getClass() == CLASS_HUNTER)
     {
-        return botAI->CanCastSpell(Id(BtSpells::SPELL_FEIGN_DEATH), bot) &&
-            botAI->CastSpell(Id(BtSpells::SPELL_FEIGN_DEATH), bot);
+        uint32 const feignDeath = Id(BtSpells::SPELL_FEIGN_DEATH);
+        return botAI->CanCastSpell(feignDeath, bot) && botAI->CastSpell(feignDeath, bot);
     }
 
     return botAI->CanCastSpell("vanish", bot) && botAI->CastSpell("vanish", bot);
@@ -1082,14 +1082,14 @@ Unit* TeronGorefiendDestroyShadowyConstructsAction::GetLanceTarget(
 bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 {
     Position const& centre = GetGurtoggBloodboilPosition(bot);
-    if (IsInRectangle(
+    if (IsInGurtoggRectangle(
             bot->GetPosition(), centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH,
             GURTOGG_RANGED_HALF_DEPTH))
     {
         return false;
     }
 
-    Position const point = GetBotPointInRectangle(
+    Position const point = GetBotPointInGurtoggRectangle(
         bot, centre, GURTOGG_TANK_POSITION, GURTOGG_RANGED_HALF_WIDTH, GURTOGG_RANGED_HALF_DEPTH);
 
     bot->CastStop();
@@ -1104,7 +1104,7 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
     if (!gurtogg)
         return false;
 
-    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    Player* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
     if (!felRageTarget)
         return false;
 
@@ -1120,7 +1120,7 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
     if (!gurtogg)
         return false;
 
-    Unit* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
+    Player* felRageTarget = GetGurtoggFelRageTarget(gurtogg);
     if (!felRageTarget)
         return false;
 
@@ -1265,10 +1265,8 @@ bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
     if (!desire)
         return false;
 
-    if (!botAI->CanCastSpell(Id(BtSpells::SPELL_SPELLSTEAL), desire))
-        return false;
-
-    return botAI->CastSpell(Id(BtSpells::SPELL_SPELLSTEAL), desire);
+    uint32 const spellSteal = Id(BtSpells::SPELL_SPELLSTEAL);
+    return botAI->CanCastSpell(spellSteal, desire) && botAI->CastSpell(spellSteal, desire);
 }
 
 // Mother Shahraz
@@ -1554,31 +1552,26 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
 // from Stance Mastery (Pummel's cost), allowing Pummel to be cast on the next tick.
 bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* malande)
 {
+    uint32 const pummel = Id(BtSpells::SPELL_PUMMEL);
     if (bot->GetShapeshiftForm() == FORM_BERSERKERSTANCE)
-    {
-        return botAI->CanCastSpell(Id(BtSpells::SPELL_PUMMEL), malande) &&
-            botAI->CastSpell(Id(BtSpells::SPELL_PUMMEL), malande);
-    }
+        return botAI->CanCastSpell(pummel, malande) && botAI->CastSpell(pummel, malande);
 
-    if (botAI->CanCastSpell(Id(BtSpells::SPELL_SHIELD_BASH), malande) &&
-        botAI->CastSpell(Id(BtSpells::SPELL_SHIELD_BASH), malande))
-    {
+    uint32 const shieldBash = Id(BtSpells::SPELL_SHIELD_BASH);
+    if (botAI->CanCastSpell(shieldBash, malande) && botAI->CastSpell(shieldBash, malande))
         return true;
-    }
 
     if (PlayerbotAI::IsTank(bot))
         return false;
 
     constexpr uint32 pummelRageCost = 100; // 10 rage
-    uint32 const pummel = Id(BtSpells::SPELL_PUMMEL);
     if (!bot->HasSpell(pummel) || bot->HasSpellCooldown(pummel) ||
         bot->GetPower(POWER_RAGE) < pummelRageCost)
     {
         return false;
     }
 
-    return botAI->CanCastSpell(Id(BtSpells::SPELL_BERSERKER_STANCE), bot) &&
-        botAI->CastSpell(Id(BtSpells::SPELL_BERSERKER_STANCE), bot);
+    uint32 const berserkerStance = Id(BtSpells::SPELL_BERSERKER_STANCE);
+    return botAI->CanCastSpell(berserkerStance, bot) && botAI->CastSpell(berserkerStance, bot);
 }
 
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
@@ -1752,6 +1745,8 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     }
     else if (isCaster)
     {
+        // Casters prefer Gathios because Veras has spell resistance. But switch off any target that
+        // becomes temporarily immune.
         if (gathios && !gathios->HasAura(immunity))
             target = gathios;
         else if (veras && !veras->HasAura(immunity))
@@ -1761,8 +1756,13 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     }
     else if (ShouldAttackMalande(malande, gathios, zerevor))
     {
+        // Rogues, warriors, DKs, and enhancement shamans attack Malande for interrupt duty. Rogues
+        // and Warriors switch off when she has Blessing of Protection; DKs and shamans stay since
+        // their interrupts still work. Everybody switches off when she is in a hazard patch.
         target = malande;
     }
+    // Remainder: Hunters, cats, retribution paladins, and unassigned bears and paladin tanks.
+    // Attack Veras if present and not immune. Otherwise, attack Gathios.
     else if (veras && !veras->HasAura(immunity))
     {
         target = veras;
@@ -1781,9 +1781,6 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
     Unit* malande, Unit* gathios, Unit* zerevor)
 {
-    if (!malande || !gathios || !zerevor)
-        return false;
-
     if (zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE ||
         IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
@@ -1821,6 +1818,7 @@ bool IllidariCouncilAnnounceClassRolesAction::Execute(Event /*event*/)
 
 // Illidan Stormrage <The Betrayer>
 
+// The Main Tank waits at its pull position, facing him; everyone else waits on the grate.
 bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
@@ -1845,6 +1843,9 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
+// Hunter bots misdirect him onto the Main Tank at each Phase 1, 3 and 5 start, and onto the
+// warlock tank in Demon Form. While he flies, the second hunter bot by GUID takes the West Flame
+// to its tank, and the first and any others the East Flame.
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -1912,6 +1913,10 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
 }
 
+// The Main Tank places him through the core's chase rules. He starts after his victim once it is
+// 9.5 yd from his centre, runs right up behind it while it walks, stops as soon as it stops, and
+// faces it. A walk that ends within 9.5 yd of him only turns him. So where the tank stops sets
+// where he stands, and which side of him it stands on sets which way he faces.
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2194,6 +2199,9 @@ void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
         illidan.GetPositionY() + ILLIDAN_TANK_OFFSET * std::sin(angle), bot->GetPositionZ());
 }
 
+// The run is in steps, so another forced move can take over between them, as the warlock tank's
+// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
+// through a global cooldown. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2239,6 +2247,10 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
     return true;
 }
 
+// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
+// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
+// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
+// its bot stops running, as the warlock tank does at the transform.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2359,6 +2371,8 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     return true;
 }
 
+// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
+// other Flame's tank is dead too, when it takes that Flame.
 bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
 {
     Unit* flame = GetAssignedFlameOfAzzinoth(bot);
@@ -2537,6 +2551,9 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+// Pets grab aggro right away during Phase 2 and wipe the raid if not put on passive. And just like
+// players, most pets cannot melee Illidan during Phase 4. In the pickup after the landing or Demon
+// Form a pet's attack would take him from the Main Tank.
 bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
@@ -2562,6 +2579,8 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     return false;
 }
 
+// Shadow Demons first in Demon Form, then Shadowfiends. A commanded attack, which a passive pet
+// carries out too. While its owner has just birthed Shadowfiends, the pet is called off them.
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
@@ -2622,10 +2641,12 @@ bool IllidanStormrageCancelImmunityAction::Execute(Event /*event*/)
     return true;
 }
 
+// Totemic Recall can't be cast under Shadow Prison's stun, so in Maiev's arrival it comes in the
+// gap before he wakes.
 bool IllidanStormrageRecallTotemsAction::Execute(Event /*event*/)
 {
-    uint32 const spellId = Id(BtSpells::SPELL_TOTEMIC_RECALL);
-    return botAI->CanCastSpell(spellId, bot) && botAI->CastSpell(spellId, bot);
+    uint32 const totemicRecall = Id(BtSpells::SPELL_TOTEMIC_RECALL);
+    return botAI->CanCastSpell(totemicRecall, bot) && botAI->CastSpell(totemicRecall, bot);
 }
 
 bool IllidanStormragePositionForLandingAction::Execute(Event /*event*/)

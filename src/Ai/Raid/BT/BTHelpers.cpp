@@ -59,48 +59,6 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
-bool IsInRectangle(
-    Position const& point, Position const& centre, Position const& facing, float halfWidth,
-    float halfDepth)
-{
-    float const angle = centre.GetAngle(&facing);
-    float const dX = point.GetPositionX() - centre.GetPositionX();
-    float const dY = point.GetPositionY() - centre.GetPositionY();
-    float const depth = dX * std::cos(angle) + dY * std::sin(angle);
-    float const width = -dX * std::sin(angle) + dY * std::cos(angle);
-    return std::fabs(depth) <= halfDepth && std::fabs(width) <= halfWidth;
-}
-
-Position GetBotPointInRectangle(
-    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth)
-{
-    // Keeps points off the edge, so a bot that arrives counts as inside.
-    constexpr float edgeInset = 0.5f;
-
-    // splitmix64 on the GUID: two independent values in [-1, 1].
-    uint64 hash = bot->GetGUID().GetRawValue() + 0x9E3779B97F4A7C15ULL;
-    hash = (hash ^ (hash >> 30)) * 0xBF58476D1CE4E5B9ULL;
-    hash = (hash ^ (hash >> 27)) * 0x94D049BB133111EBULL;
-    hash ^= hash >> 31;
-    float const widthFraction = static_cast<float>(hash & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
-    float const depthFraction = static_cast<float>((hash >> 16) & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
-
-    float const angle = centre.GetAngle(&facing);
-    float const width = widthFraction * std::max(halfWidth - edgeInset, 0.0f);
-    float const depth = depthFraction * std::max(halfDepth - edgeInset, 0.0f);
-    float x = centre.GetPositionX() + depth * std::cos(angle) - width * std::sin(angle);
-    float y = centre.GetPositionY() + depth * std::sin(angle) + width * std::cos(angle);
-    float z = bot->GetPositionZ();
-
-    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ(), x, y, z))
-    {
-        return Position(centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ());
-    }
-
-    return Position(x, y, bot->GetPositionZ());
-}
-
 bool GetPathStepTowardUnit(
     Player* bot, Unit* target, float stopDistance, float& stepX, float& stepY)
 {
@@ -998,11 +956,6 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
 
 } // end anonymous namespace (Gurtogg Bloodboil)
 
-bool IsGurtoggFelRageTarget(Player* bot)
-{
-    return bot->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
-}
-
 Position const& GetGurtoggBloodboilPosition(Player* bot)
 {
     GuidVector const soakers = FindGurtoggBloodboilSoakerGuids(bot);
@@ -1011,13 +964,18 @@ Position const& GetGurtoggBloodboilPosition(Player* bot)
     return isSoaker ? GURTOGG_SOAKER_POSITION : GURTOGG_RANGED_POSITION;
 }
 
-Unit* GetGurtoggFelRageTarget(Unit* gurtogg)
+Player* GetGurtoggFelRageTarget(Unit* gurtogg)
 {
     if (!gurtogg || !gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return nullptr;
 
-    Unit* victim = gurtogg->GetVictim();
+    Player* victim = gurtogg->GetVictim() ? gurtogg->GetVictim()->ToPlayer() : nullptr;
     return victim && IsGurtoggFelRageTarget(victim) ? victim : nullptr;
+}
+
+bool IsGurtoggFelRageTarget(Player* player)
+{
+    return player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 }
 
 Position GetGurtoggFelRageMeleePosition(
@@ -1073,6 +1031,52 @@ float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
     }
 
     return secondThreat;
+}
+
+// The rectangle is a space in which bots can be given a randomized (by GUID) position.
+bool IsInGurtoggRectangle(
+    Position const& point, Position const& centre, Position const& facing, float halfWidth,
+    float halfDepth)
+{
+    float const angle = centre.GetAngle(&facing);
+    float const dX = point.GetPositionX() - centre.GetPositionX();
+    float const dY = point.GetPositionY() - centre.GetPositionY();
+    float const depth = dX * std::cos(angle) + dY * std::sin(angle);
+    float const width = -dX * std::sin(angle) + dY * std::cos(angle);
+    return std::fabs(depth) <= halfDepth && std::fabs(width) <= halfWidth;
+}
+
+// This function actually assigns the position. This "assign a random position inside a rectangle"
+// approach is way overbaked for executing the strategy, but the result is sort of a proof of
+// concept of randomization in positioning that could be used to create realism.
+Position GetBotPointInGurtoggRectangle(
+    Player* bot, Position const& centre, Position const& facing, float halfWidth, float halfDepth)
+{
+    // Keeps points off the edge, so a bot that arrives counts as inside.
+    constexpr float edgeInset = 0.5f;
+
+    // splitmix64 on the GUID: two independent values in [-1, 1].
+    uint64 hash = bot->GetGUID().GetRawValue() + 0x9E3779B97F4A7C15ULL;
+    hash = (hash ^ (hash >> 30)) * 0xBF58476D1CE4E5B9ULL;
+    hash = (hash ^ (hash >> 27)) * 0x94D049BB133111EBULL;
+    hash ^= hash >> 31;
+    float const widthFraction = static_cast<float>(hash & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
+    float const depthFraction = static_cast<float>((hash >> 16) & 0xFFFF) / 0xFFFF * 2.0f - 1.0f;
+
+    float const angle = centre.GetAngle(&facing);
+    float const width = widthFraction * std::max(halfWidth - edgeInset, 0.0f);
+    float const depth = depthFraction * std::max(halfDepth - edgeInset, 0.0f);
+    float x = centre.GetPositionX() + depth * std::cos(angle) - width * std::sin(angle);
+    float y = centre.GetPositionY() + depth * std::sin(angle) + width * std::cos(angle);
+    float z = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ(), x, y, z))
+    {
+        return Position(centre.GetPositionX(), centre.GetPositionY(), bot->GetPositionZ());
+    }
+
+    return Position(x, y, bot->GetPositionZ());
 }
 
 // Reliquary of Souls

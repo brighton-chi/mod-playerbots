@@ -122,14 +122,14 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("reliquary of souls should position for suffering",
         { NextAction("reliquary of souls adjust distance from suffering", ACTION_RAID + 2) }));
 
-    // Below the stock party dispels, so Soul Drain is dispelled first.
+    // Priority is below standard party dispels to ensure that Soul Drain is dispelled.
     triggers.push_back(new TriggerNode("reliquary of souls healers should attack suffering",
         { NextAction("reliquary of souls healers dps suffering", ACTION_INTERRUPT - 1) }));
 
     triggers.push_back(new TriggerNode("reliquary of souls essence of desire has rune shield",
         { NextAction("reliquary of souls spellsteal rune shield", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("reliquary of souls essence of desire casts deaden",
+    triggers.push_back(new TriggerNode("reliquary of souls essence of desire casting deaden",
         { NextAction("reliquary of souls spell reflect deaden", ACTION_EMERGENCY + 6) }));
 
     // Mother Shahraz
@@ -155,11 +155,11 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council gathios should be tanked",
         { NextAction("illidari council main tank position gathios", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("illidari council gathios casts judgement of command",
+    triggers.push_back(new TriggerNode("illidari council gathios casting judgement of command",
         { NextAction(
             "illidari council main tank reflect judgement of command", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("illidari council malande casts circle of healing",
+    triggers.push_back(new TriggerNode("illidari council malande casting circle of healing",
         { NextAction("illidari council interrupt circle of healing", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("illidari council malande should be tanked",
@@ -311,7 +311,7 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new IllidariCouncilControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilDisableMageTankActionsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilHoldMisdirectionAndDispelsMultiplier(botAI));
-    multipliers.push_back(new IllidariCouncilSaveInterruptsForCircleOfHealingMultiplier(botAI));
+    multipliers.push_back(new IllidariCouncilManageInterruptsMultiplier(botAI));
     multipliers.push_back(new IllidariCouncilWaitForDpsMultiplier(botAI));
 
     // Illidan Stormrage <The Betrayer>
@@ -328,7 +328,6 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
 namespace
 {
 
-// Non-tanks leave the skulled Pleasure's Sister of Pain, since Pleasure takes the damage for both.
 void AppendSisterOfPainExclusions(Player* bot, GuidSet& exclusions)
 {
     if (PlayerbotAI::IsTank(bot))
@@ -353,7 +352,7 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
 }
 
 // Tanks and ranged other than shadow priests leave channelers and sorcerers to melee dps while
-// another add is up. This is needed so the skull doesn't affect their targeting.
+// another add is up. The exclusion ensures the skull doesn't affect targeting.
 void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
     if (PlayerbotAI::IsDps(bot) && (bot->getClass() == CLASS_PRIEST || PlayerbotAI::IsMelee(bot)))
@@ -374,20 +373,17 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, Guid
     }
 }
 
+// Shadowy Constructs cannot be damaged by anyone other than the Spirit of Vengeance.
 void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
     auto const& constructs = botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("teron gorefiend shadowy constructs")
-        ->RefGet();
+        ->GetValue<GuidVector>("teron gorefiend shadowy constructs")->RefGet();
     exclusions.insert(constructs.begin(), constructs.end());
 }
 
-// Tanks and melee never pick Illidan's Shadowfiends themselves; ranged and pets kill them, and
-// melee only finish one in their reach, from assign target priority. Nor, in Demon Form, him or
-// the Shadow Demon walking to the warlock tank.
 void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(bot))
