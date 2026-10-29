@@ -1740,6 +1740,9 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     Unit* gathios = members.gathios;
     Unit* malande = members.malande;
     Unit* zerevor = members.zerevor;
+    if (!gathios || !malande || !zerevor)
+        return false;
+
     Unit* target = nullptr;
     if (zerevor && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
     {
