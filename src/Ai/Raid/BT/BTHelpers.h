@@ -492,6 +492,8 @@ inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
 // A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach,
 // and we add another yard for good measure.
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
+// Manual delay to interrupt a Circle of Healing cast in progress.
+inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
 // A ranged interrupter casting at the same time that Malande is casting Circle of Healing will stop
 // its cast if it would end with less than this time left on Circle of Healing's cast.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
@@ -641,62 +643,21 @@ inline constexpr uint32 ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
 
 inline constexpr float ILLIDAN_PHASE_2_HEALTH_PCT = 65.0f;
 inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
+inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 1.0f;
 inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
-// No Shadowfiend debuff, yet a live Shadowfiend this close, is treated as the Shadowfiend having
-// just been born. Acting can re-infect the bot. Used to hold AoE, heals, and pets.
-inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
-// Below 50% HP, a Shadowfiend is considered to have built aggro on a target, reducing the risk of
-// immediately infecting an adjacent bot, and thus the birther can act again and melee can attack it
-// if it moves into melee range.
-inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
-inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
-// Between 30% to 33% HP in Demon Form, only the warlock tank damages Illidan. Pushing him into
-// phase 5 while in Demon Form is very bad because he will return to humanoid form without a threat
-// wipe and will proceed to kill the warlock tank and then other ranged from phase 4 threat.
-inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
+
+// Phases 1, 3, and 5
+
 // After a humanoid phase start with a threat reset, the main tank gets up to 3s to grab Illidan.
 // Everyone else is held, except hunters misdirect onto the main tank.
 inline constexpr uint32 ILLIDAN_MAIN_TANK_PICKUP_MS = 3 * IN_MILLISECONDS;
-// Threat resets do not reset the victim. Thus, rather than considering the tank to have aggro when
+// Threat resets do not drop the victim. Thus, rather than considering the tank to have aggro when
 // it is the victim, require the tank to have built at least a bit of threat. This is most relevant
 // for the phase 2 to 3 transition, as Illidan keeps the main tank as its victim from phase 1.
 inline constexpr float ILLIDAN_TANK_AGGRO_THREAT = 2000.0f;
-// Hold on the Flames of Azzinoth this long from the first Flame's spawn. This is especially
-// important for the first 2s after a Flame spawns because it is passive during that time. More time
-// is given here than for main tank phases because the Flame tanks need a bunch of fire resistance
-// and probably cannot generate as much threat as a result.
-inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
-// The imposed delay for bots to remove Dark Barrage to allow for some realism. This does cause bots
-// to take one tick of damage (3000).
-inline constexpr uint32 ILLIDAN_DARK_BARRAGE_REACTION_MS = 1500;
-// Only the warlock tank attacks Illidan during the 12.23s transform to Demon Form.
-inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 13 * IN_MILLISECONDS;
-// Demon Form ends, with a threat reset, this long after the transform starts (active for 60s).
-inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
-// Everyone stops attack Illidan 3s before the end of Demon Phase.
-inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
-// The main tank moves closer to Illidan 10s before the end of phase 4 to prepare for the phase 3/5
-// pickup. The walk is about 44 yards. There is no Flame Burst possible within the final 14s of
-// phase 4, and Shadow Demons are cleared by then, so this should be safe.
-inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
-// For the last 1.3s of phase 4, the main tank moves in to 8 yd of Illidan to be in melee range as
-// soon as he transforms back. This does cause the main tank to eat one Aura of Dread tick.
-inline constexpr uint32 ILLIDAN_MAIN_TANK_STEP_IN_MS = 1300;
-// Shadow Demons appear this long after the Demon Form transformation starts (30s into the active
-// portion of phase 4).
-inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
-// When the Seed of Corruption and/or warlock tank Searing Pain action is active, use Life Tap when
-// below 20% mana and above 50% HP to ensure enough mana to cast the applicable spell.
-inline constexpr float ILLIDAN_LIFE_TAP_MANA_PCT = 20.0f;
-inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
-// A sprung trap at the infection position covers an infection if it outlasts the debuff by 5s. This
-// essentially is the minimum acceptable duration of the slow on the Shadowfiends (design choice).
-inline constexpr int32 ILLIDAN_FROST_TRAP_SLOW_MS = 5 * IN_MILLISECONDS;
-// A Frost Trap not yet sprung that is 3 yd from the infection position is considered to cover it.
-inline constexpr float ILLIDAN_FROST_TRAP_DISTANCE = 3.0f;
 // The tank ring has a radius of 25 yd from the grate center and is where Illidan is positioned
 // throughout the encounter (moving around the ring to avoid Flame Crashes).
 inline constexpr float ILLIDAN_RING_RADIUS = 25.0f;
@@ -737,66 +698,120 @@ inline constexpr float ILLIDAN_LANDING_LEAD_ANGLE = 0.0f;
 // the Flame tanking loops in phase 2 to be clear of residual Flame Crashes, which last for 2 min.
 inline constexpr float ILLIDAN_OPENING_LEAD_ANGLE = -62.0f * static_cast<float>(M_PI) / 180.0f;
 inline constexpr float ILLIDAN_OPENING_LEAD_RADIUS = 27.0f;
-// Generous: This duration stands for the pull still being in progress. The lead should be done well
-// in advance, and the first Flame Crash is not cast until 25 to 30s in.
+// A generous duration that stands for the pull still being in progress. The lead should be done
+// well in advance, and the first Flame Crash is not cast until 25 to 30s in.
 inline constexpr uint32 ILLIDAN_OPENING_LEAD_MS = 15 * IN_MILLISECONDS;
 // A Flame Crash this close to the main tank is considered cast on it, triggering a ring move.
 inline constexpr float ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE = 9.0f;
 
-// Phases 3 and 5: the center, six positions at 6 yd radius and twelve at 12 yd, in that fill order.
+// Non-main-tank positioning
+
+// Phases 3 and 5: 6 ranged positions at 6 yd radius and 12 at 12 yd, in that fill order.
 inline constexpr size_t ILLIDAN_GRATE_INNER_SLOT_COUNT = 6;
 inline constexpr size_t ILLIDAN_GRATE_OUTER_SLOT_COUNT = 12;
-inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
-    1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT;
 inline constexpr float ILLIDAN_GRATE_INNER_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
-// Phase 4 positions designated for healers and melee.
+inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
+    1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT; // phases 3, 4, and 5
+// Phase 4: 8 healer positions (of the 19 ranged total) and 15 melee positions, filling from
+// the Warlock tank's side.
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
 inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
-// Shadowfiend infection position, every phase: on the Main Tank's circle, counterclockwise of him,
-// ahead of his steps, so no Flame Crash zone lies there and Draw Soul's cone in a step stops short
-// (110 deg); far enough round to stay out of Shadow Blast at the transform after a late step.
+// Shadowfiends
+
+// A sprung trap at the infection position covers an infection if it outlasts the debuff by 5s. This
+// essentially is the minimum acceptable duration of the slow on the Shadowfiends (design choice).
+inline constexpr int32 ILLIDAN_FROST_TRAP_SLOW_MS = 5 * IN_MILLISECONDS;
+// A Frost Trap not yet sprung that is 3 yd from the infection position is considered to cover it.
+inline constexpr float ILLIDAN_FROST_TRAP_DISTANCE = 3.0f;
+// No Shadowfiend debuff, yet a live Shadowfiend this close, is treated as the Shadowfiend having
+// just been born. Acting can re-infect the bot. Used to hold AoE, heals, and pets.
+inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
+// Below 50% HP, a Shadowfiend is considered to have built aggro on a target, reducing the risk of
+// immediately infecting an adjacent bot, and thus the birther can act again and melee can attack it
+// if it moves into melee range.
+inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
+// Shadowfiend infection position: on the tank ring, counterclockwise of Illidan and far enough
+// ahead (110°) not to be in range of Draw Soul cast tangentially along the ring. Also far enough
+// to be out of Shadow Blast range for a bot waiting due to a residual infection from phase 3/5.
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
 
-// Phase 2: Eye Blast's head hits within this of its center; its path ahead is kept clear by 3 yd.
+// Phase 2
+
+// Assist tank indices for the Flames of Azzinoth, as GetGroupAssistTank() and IsAssistTankOfIndex()
+// number them.
+inline constexpr uint8 ILLIDAN_WEST_FLAME_TANK_INDEX = 0;
+inline constexpr uint8 ILLIDAN_EAST_FLAME_TANK_INDEX = 1;
+// The Eye Blast beam's radius, which bots keep clear of by an extra 3 yd.
 inline constexpr float ILLIDAN_EYE_BLAST_HAZARD_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_EYE_BLAST_CLEARANCE = ILLIDAN_EYE_BLAST_HAZARD_RADIUS + 3.0f;
+// Hold on the Flames of Azzinoth this long from the first Flame's spawn. This is especially
+// important for the first 2s after a Flame spawns because it is passive during that time. More time
+// is given here than for main tank phases because the Flame tanks need a bunch of fire resistance
+// and probably cannot generate as much threat as a result.
+inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
+// The imposed delay for bots to remove Dark Barrage to allow for some realism. This does cause bots
+// to take one tick of damage (3000).
+inline constexpr uint32 ILLIDAN_DARK_BARRAGE_REACTION_MS = 1500;
 
-// Phase 4 hazards: Aura of Dread around Illidan and Shadow Blast round his victim, each kept clear
-// by 2 yd.
+// Phase 4
+
+// Demon Form ends, with a threat reset, this long after the transform starts (active for 60s).
+inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
+// Shadow Demons appear this long after the Demon Form transformation starts (30s into the active
+// portion of phase 4).
+inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
+// Only the warlock tank attacks Illidan during the 12.23s transform to Demon Form.
+inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 13 * IN_MILLISECONDS;
+// Everyone stops attack Illidan 3s before the end of Demon Phase.
+inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
+// Between 30% to 33% HP in Demon Form, only the warlock tank damages Illidan. Pushing him into
+// phase 5 while in Demon Form is very bad because he will return to humanoid form without a threat
+// wipe and will proceed to kill the warlock tank and then other ranged from phase 4 threat.
+inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;
+
 inline constexpr float ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS = 15.0f;
 inline constexpr float ILLIDAN_AURA_OF_DREAD_CLEARANCE =
     ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS + 2.0f;
 inline constexpr float ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS = 20.0f;
 inline constexpr float ILLIDAN_SHADOW_BLAST_CLEARANCE = ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS + 2.0f;
-// Phase 4, from him and off his inward line, positive toward the warlock tank's side. His reach is
-// 1.5 in Demon Form, so a 30 yd spell reaches 33 yd on him: the warlock tank stands 2 yd inside.
+
+// When the Seed of Corruption and/or warlock tank Searing Pain action is active, use Life Tap when
+// below 20% mana and above 50% HP to ensure enough mana to cast the applicable spell.
+inline constexpr float ILLIDAN_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
+// The warlock tank's phase 4 position, 31 yd from Illidan and off his inward line. His reach is
+// only 1.5 yd in Demon Form, so a standard 30 yd spell (like Searing Pain) has a 33 yd range.
 inline constexpr float ILLIDAN_WARLOCK_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_WARLOCK_POSITION_ANGLE = 75.0f * static_cast<float>(M_PI) / 180.0f;
-// The Main Tank waits beside the melee, on the first melee row one slot past a group of seven
-// (5 melee DPS and 2 tanks) on the side away from the warlock tank, so the raid can kill a Shadow
-// Demon walking to it.
+
+// The main tank waits beside other melee, on the first melee row one slot past a group of seven
+// (5 melee DPS and 2 tanks) on the side away from the warlock tank.
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
 inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
-// At the end, walk straight to the pickup position in front of the raid, just outside Aura of Dread
-// and 22.5 yd from the warlock tank (Shadow Blast 20), then step in on the same bearing to 9 yd,
-// 25.4 yd from the warlock tank. At the reset any threat beats his old victim's 0, Replenishment
-// and HoT ticks included, so the tank must hit first.
+// 10s before the end of phase 4, the main tank moves to the pickup position in front of the raid,
+// just outside Aura of Dread and 22.5 yd from the warlock tank, to prepare for the phase 3/5
+// pickup. The walk is about 44 yards. There is no Flame Burst possible within the final 14s of
+// phase 4, and Shadow Demons are cleared by then, so this should be safe.
+inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
 inline constexpr float ILLIDAN_PICKUP_POSITION_DISTANCE = 17.0f;
 inline constexpr float ILLIDAN_PICKUP_POSITION_ANGLE = 30.0f * static_cast<float>(M_PI) / 180.0f;
+// For the last 1.3s of phase 4, the main tank moves in on the same bearing to 9 yd from Illidan to
+// be in melee range as soon as he transforms back. This does eat one Aura of Dread tick.
+inline constexpr uint32 ILLIDAN_MAIN_TANK_STEP_IN_MS = 1300;
 inline constexpr float ILLIDAN_STEP_IN_POSITION_DISTANCE = 9.0f;
 
-// World trigger 22515.
+// The actual position of an NPC_WORLD_TRIGGER (22515).
 inline Position const ILLIDAN_GRATE_CENTER =           { 676.021f, 305.455f, 353.582f };
 // Illidan's starting position where he kneels, holding the Skull of Gul'dan, then stands to chat.
 inline Position const ILLIDAN_SPEECH_POSITION =        { 705.732f, 304.988f, 353.925f };
 // The main tank waits here at the pull, 15.5 yd north of the center.
 inline Position const ILLIDAN_PULL_TANK_POSITION =     { 691.521f, 305.455f, 353.790f };
-// While he lands, everyone else waits 22 yd south of the center and the Main Tank 6 yd south of
-// the landing point, in his way if he runs at them after the threat reset.
+// As Illidan lands, everyone waits south of the landing position (6 yd away for the main tank and
+// 22 yd away for everybody else).
 inline Position const ILLIDAN_LANDING_TANK_POSITION =  { 670.648f, 304.761f, 353.920f };
 inline Position const ILLIDAN_LANDING_STACK_POSITION = { 654.021f, 305.455f, 353.790f };
 inline Position const ILLIDAN_LANDING_POSITION =       { 676.648f, 304.761f, 354.189f };
@@ -809,15 +824,8 @@ inline std::array const ILLIDAN_GRATE_POSITIONS = {
     ILLIDAN_W_GRATE_POSITION,
 };
 
-// Assist tank indices for the Flames of Azzinoth, as GetGroupAssistTank and IsAssistTankOfIndex
-// number them.
-inline constexpr uint8 ILLIDAN_WEST_FLAME_TANK_INDEX = 0;
-inline constexpr uint8 ILLIDAN_EAST_FLAME_TANK_INDEX = 1;
-
 // The Flame tanks' Blaze steps, one per Flame Blast, in order. The Flame follows its tank in, so
 // each step is walked into on a line that turns the Flame Blast cone away from the grate stacks.
-// The West tank starts on its inner steps, where Phase 1's Flame Crashes can't reach, and in melee
-// reach of the grate.
 inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
 inline std::array const ILLIDAN_E_GLAIVE_TANK_POSITIONS = {
     Position{ 657.100f, 291.200f, 354.000f },
@@ -827,7 +835,9 @@ inline std::array const ILLIDAN_E_GLAIVE_TANK_POSITIONS = {
     Position{ 685.600f, 289.700f, 354.000f },
     Position{ 669.100f, 288.200f, 354.000f },
 };
-
+// The West tank starts on its inner steps to allow maximum time for phase 1 Flame Crashes to
+// despawn and to ensure maximum time in range of the West stack position (so melee there can hit
+// the West Flame).
 inline Position const ILLIDAN_W_GLAIVE_WAITING_POSITION = { 676.102f, 316.305f, 353.192f };
 inline std::array const ILLIDAN_W_GLAIVE_TANK_POSITIONS = {
     Position{ 695.700f, 311.700f, 354.000f },
