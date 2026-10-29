@@ -1970,27 +1970,13 @@ Position GetIllidanInfectionPosition(Unit const& illidan)
         ILLIDAN_INFECTION_POSITION_DISTANCE);
 }
 
-// The infection position recorded for the bot's own infection, else for the one it traps for, else the
-// one a new infection would share, else where one would be recorded now.
+// Every recorded infection shares one position, fixed when the first was recorded. If none are
+// recorded, this returns the position an infection would be recorded at now.
 Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan)
 {
-    Player* bot = botAI->GetBot();
-    if (auto const* infections = FindIllidanInfections(bot->GetInstanceId()))
-    {
-        auto const own = infections->find(bot->GetGUID());
-        if (own != infections->end())
-            return own->second.infectionPosition;
-
-        for (auto const& [player, infection] : *infections)
-        {
-            if (infection.hunter == bot->GetGUID())
-                return infection.infectionPosition;
-        }
-
-        // Before the tracker records this bot, the position it will share.
-        if (!infections->empty())
-            return infections->begin()->second.infectionPosition;
-    }
+    auto const* infections = FindIllidanInfections(botAI->GetBot()->GetInstanceId());
+    if (infections && !infections->empty())
+        return infections->begin()->second.infectionPosition;
 
     return GetIllidanInfectionPosition(illidan);
 }
@@ -2025,8 +2011,6 @@ bool IsFlameOfAzzinothTank(Player* bot)
     return IsEastFlameOfAzzinothTank(bot) || IsWestFlameOfAzzinothTank(bot);
 }
 
-// The living Flame this bot tanks: its own, else the other once its own is dead and that Flame's tank
-// is dead too.
 Unit* GetAssignedFlameOfAzzinoth(Player* bot)
 {
     bool const isEastTank = IsEastFlameOfAzzinothTank(bot);
@@ -2038,7 +2022,6 @@ Unit* GetAssignedFlameOfAzzinoth(Player* bot)
     if (ownFlame)
         return ownFlame;
 
-    // An unrecorded own Flame hasn't spawned yet; a recorded one is dead.
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
     bool const isOwnFlameRecorded =
         state && (isEastTank ? state->eastFlameGuid : state->westFlameGuid).has_value();
@@ -2053,7 +2036,8 @@ Unit* GetAssignedFlameOfAzzinoth(Player* bot)
 bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
 {
     BtInstanceState& state = BtState(botAI->GetBot()->GetInstanceId());
-    // He spawns right above the Illidari Council, so nothing is said for him while Zerevor lives.
+    // Illidan spawns right above the Illidari Council, so no announcement is made while Zerevor is
+    // still alive (could be any council member used for the check).
     return UpdateClassRoleAnnouncement(
         botAI, Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_POSITION,
         ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE, ILLIDAN_CLASS_ROLE_REARM_DISTANCE, {
@@ -2084,7 +2068,6 @@ bool IsIllidanWarlockTank(PlayerbotAI* botAI)
     return state && IsClassRolePlayer(bot, state->illidanWarlockTank);
 }
 
-// For the Illidan actions that outrank stock Life Tap, which waits until a spell is unaffordable.
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2140,8 +2123,8 @@ bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
     return false;
 }
 
-// Never runs to the infection position, so its Shadowfiends come out where it stands: his victim, the
-// Main Tank, or the warlock tank in Demon Form.
+// The bots that never run to the infection position (so Shadowfiends spawn where they stand):
+// Illidan's victim, the main tank, and the warlock tank in Demon Form.
 bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player)
 {
     if (!illidan || !player)
@@ -2157,9 +2140,10 @@ bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* 
         GetIllidanWarlockTank(botAI) == player;
 }
 
-// A bot infected before he took off waits at the infection position until its Shadowfiends are out,
-// tanks included (the raid can't move away from them in Phase 2), and its trap hunter still lays the
-// trap. The Main Tank, which never runs, waits where it stands.
+// A bot infected in phase 1 that still has the debuff when phase 2 starts will stay at the
+// infection position until its Shadowfiends spawn, and the trap hunter will still drop the trap.
+// Exception: The main tank will wait out the spawn at its position at takeoff since it never
+// would have gone to the infection position in the first place.
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2175,7 +2159,6 @@ bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI)
 
 bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDurationMs)
 {
-    // Not yet sprung, a trap is a game object rather than a patch, and it lasts 30 s.
     std::list<GameObject*> traps;
     bot->GetGameObjectListWithEntryInGrid(
         traps, Id(BtObjects::GO_FROST_TRAP), ILLIDAN_ADD_SEARCH_RADIUS);
@@ -2188,7 +2171,6 @@ bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDura
         }
     }
 
-    // A patch's remaining duration, which positions alone don't give.
     std::list<WorldObject*> objects;
     Acore::AllWorldObjectsInRange check(bot, ILLIDAN_ADD_SEARCH_RADIUS);
     Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
@@ -2209,9 +2191,8 @@ bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDura
     return false;
 }
 
-// Slot lists are bots on the map, dead kept, each part by GUID: ranged are healers then ranged DPS;
-// melee are melee DPS then tanks, the Main Tank left out. In Demon Form the warlock tank and the
-// healers leave the ranged list. The index wraps round slotCount; -1 if the bot isn't listed.
+// The index wraps round slotCount, so in the unlikely event that there are more bots than available
+// slots, they start stacking up.
 int32 GetIllidanRangedIndex(PlayerbotAI* botAI, size_t slotCount, bool inDemonForm)
 {
     Player* bot = botAI->GetBot();
@@ -2299,9 +2280,9 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
     return GetIllidanRosterIndex(meleeDps, tanks, bot->GetGUID(), slotCount);
 }
 
-// Phases 3 and 5: the grate slot by roster, except the warlock tank takes the slot nearest its Demon
-// Form position so its walk at the transform is short, and whoever held that slot takes the warlock
-// tank's.
+// Phases 3 and 5: the grate slot by roster, except the bot indexed to the slot that is closest to
+// the warlock tank's Demon Form position (measured as of the start of the phase) swaps slots with
+// the warlock tank to facilitate a shorter move by the warlock tank to its phase 4 position.
 int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
 {
     constexpr bool inDemonForm = false;
@@ -2360,7 +2341,6 @@ int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI)
     return GetIllidanRosterIndex(bots, {}, bot->GetGUID(), ILLIDAN_GRATE_POSITIONS.size());
 }
 
-// Either Shadowfiend debuff, Illidan's own (41917) first.
 Aura* GetParasiticShadowfiendAura(Player* player)
 {
     if (!player)
@@ -2377,8 +2357,8 @@ bool HasParasiticShadowfiend(Player* player)
     return GetParasiticShadowfiendAura(player);
 }
 
-// An entry search, since a Shadowfiend is out of combat, and so not in attackers, until it turns
-// aggressive 2.4 s after spawning.
+// Shadowfiends spawn defensive and turn aggressive and join zone combat 2.4s later. Until then,
+// they attack only a unit that attacks them.
 GuidVector FindParasiticShadowfiendGuids(PlayerbotAI* botAI)
 {
     std::list<Creature*> creatures;
@@ -2420,8 +2400,8 @@ Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit)
     return nearest;
 }
 
-// No Shadowfiend debuff and a living, not nearly dead Shadowfiend close by, as where a debuff just
-// ended; any of them, since the pair spawn together and ranged focus one.
+// A bot with no Shadowfiend debuff and a Shadowfiend with >50% HP close by is considered at risk
+// of being infected if it generates threat on the Shadowfiend.
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2444,8 +2424,8 @@ bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
     return false;
 }
 
-// Living group members with either Shadowfiend debuff, humans included, so trap hunters trap for them
-// too.
+// Living group members with either Shadowfiend debuff, humans included. Thus, trap hunters will
+// trap for humans also--make sure to follow the hunter to the active infection position!
 GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -2463,8 +2443,7 @@ GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
     return infected;
 }
 
-// An entry search, so it doesn't rely on the Demons being in attackers; each Demon's target is the
-// group member or pet carrying its Paralyze.
+// Each Shadow Demon's only target is the player it has paralyzed.
 std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2486,23 +2465,17 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID)
+        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive())
             continue;
 
-        for (Unit* unit : { static_cast<Unit*>(member), static_cast<Unit*>(member->GetPet()) })
+        Aura const* paralyze = member->GetAura(Id(BtSpells::SPELL_PARALYZE));
+        if (!paralyze)
+            continue;
+
+        for (ShadowDemon& shadowDemon : shadowDemons)
         {
-            if (!unit || !unit->IsAlive())
-                continue;
-
-            Aura const* paralyze = unit->GetAura(Id(BtSpells::SPELL_PARALYZE));
-            if (!paralyze)
-                continue;
-
-            for (ShadowDemon& shadowDemon : shadowDemons)
-            {
-                if (shadowDemon.demon == paralyze->GetCasterGUID())
-                    shadowDemon.target = unit->GetGUID();
-            }
+            if (shadowDemon.demon == paralyze->GetCasterGUID())
+                shadowDemon.target = member->GetGUID();
         }
     }
 
@@ -2575,7 +2548,7 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
 }
 
 // Melee attack the closest Shadow Demon that is moving to a paralyzed target, but never one on the
-// Warlock tank (impossible for melee to attack it without getting hit by Shadow Blast).
+// Warlock tank (it is impossible for melee to attack it without being in Shadow Blast's radius).
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
 {
     // Demons spawn 5 yd from Illidan, but the melee safe positions are far away enough from Illidan
