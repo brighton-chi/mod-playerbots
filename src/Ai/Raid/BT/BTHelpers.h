@@ -228,6 +228,12 @@ void FaceUnit(Player* bot, Unit* unit);
 
 // Trash
 
+inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
+
+Unit* GetLinkedSisterOfPain(Unit* pleasure);
+Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+Unit* GetSkulledSisterOfPain(Player* bot);
+
 enum class ChaoticChargeReach : uint8
 {
     None,
@@ -235,19 +241,13 @@ enum class ChaoticChargeReach : uint8
     Area,
 };
 
-// Spell Absorption lasts 15 s and is recast 30 to 40 s after the last one began. Magic is held
-// from the margin before the earliest recast, for casts and channels still landing.
+// Spell Absorption lasts 15s and is recast 30 to 40s after the last one began. Magic is held
+// starting 5s before the earliest possible recast to avoid pending casts and channels from landing.
 inline constexpr uint32 REAVER_ABSORPTION_DURATION_MS = 15 * IN_MILLISECONDS;
 inline constexpr uint32 REAVER_ABSORPTION_MIN_RECAST_MS = 30 * IN_MILLISECONDS;
 inline constexpr uint32 REAVER_MAGIC_MARGIN_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 SHADOWMOON_REAVER_CACHE_INTERVAL_MS = 1000;
 
-// Searched by entry around the marking bot, so it finds her without line of sight.
-inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
-
-Unit* GetLinkedSisterOfPain(Unit* pleasure);
-Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
-Unit* GetSkulledSisterOfPain(Player* bot);
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit);
 bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI);
 bool PruneShadowmoonReaverAbsorptionStarts(Player* bot);
@@ -257,7 +257,7 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI);
 
 // High Warlord Naj'entus
 
-// Impales can overlap (every 20 s, 30 s stun), so one entry per impaled player.
+// Impales can overlap (every 20s, 30s stun), so use one entry per impaled player.
 struct NajentusSpineAssignment
 {
     ObjectGuid impaled;
@@ -265,13 +265,14 @@ struct NajentusSpineAssignment
 };
 
 // Needle Spine Explosion hits allies within 6 yd of each player struck.
-inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = 7.0f;
-// Hurl Spine (39948) range, counted beyond both combat reaches as Spell::CheckRange does.
+inline constexpr float NAJENTUS_NEEDLE_SPINE_SPLASH_RANGE = 6.0f;
+inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = NAJENTUS_NEEDLE_SPINE_SPLASH_RANGE + 1.0f;
+// Hurl Spine (39948) counts both combat reaches.
 inline constexpr float NAJENTUS_HURL_SPINE_RANGE = 25.0f;
-// How far inside that range a thrower walking in stops.
+// How far inside Hurl Spine range that a thrower moves to before throwing.
 inline constexpr float NAJENTUS_HURL_SPINE_APPROACH_MARGIN = 2.0f;
-// A spine flies up to 1.25 s and breaks the shield on landing, and the throw is a queued packet,
-// so no spine is thrown this long after the last one.
+// A spine flies up to 1.25s and breaks the shield on impact, and the throw is a queued packet,
+// so no spine is thrown within 2s after the last one to avoid wasting them.
 inline constexpr uint32 NAJENTUS_HURL_SPINE_FLIGHT_MS = 2 * IN_MILLISECONDS;
 
 inline Position const NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
@@ -287,7 +288,7 @@ bool IsNajentusSpineInFlight(Player* bot);
 
 // Supremus
 
-// Ground fire: an erupting volcano or a Molten Flame patch.
+// Ground fire: an erupting volcano or a Molten Flame trail.
 struct SupremusHazard
 {
     Position position;
@@ -301,32 +302,23 @@ enum class SupremusHazardZone
     Safe,
 };
 
-// Avoidance picks positions up to 40 yd out, and a volcano's safe zone reaches 18 yd from its
-// center.
 inline constexpr float SUPREMUS_HAZARD_SEARCH_RADIUS = 60.0f;
 inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
-// Volcanic Geyser hits within 15 yd of the volcano's center. The extra 3 yd covers movers that
-// don't check for fire, for the tick or two before avoidance turns them back.
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
 inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
-// A Molten Flame patch hits within 5 yd plus the victim's combat reach, 6.5 yd for a player.
-inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f;
+inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f; // 5 yd + victim's combat reach
 inline constexpr float SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE =
     SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS + 1.0f;
-// He fixates a new target every 10 s from the start of the kite phase.
+// Supremus fixates on a new target every 10s from the start of the kite phase.
 inline constexpr int64 SUPREMUS_FIXATE_INTERVAL_SECONDS = 10;
-// Kept beyond his melee range, which is about 27 yd from his center: his combat reach is 24.
+// The safety margin is added to Supremus's melee range, which is ~27 yd (combat reach of 24 yd).
 inline constexpr float SUPREMUS_KITE_SAFETY_MARGIN = 3.0f;
-inline constexpr float SUPREMUS_KITE_STEP_DISTANCE = 3.5f;
 inline constexpr uint8 SUPREMUS_KITE_HEADINGS = 16;
-// A step between two points outside a hazard's safe zone cuts at most 0.25 yd into it, well short
-// of the damage zone.
-inline constexpr float SUPREMUS_REACH_STEP_DISTANCE = 3.5f;
 // The Y boundaries run from the top of the ramp leading up into the temple to just before reaching
 // the vestibule inside the courtyard gate. The X boundaries are pretty close to spanning the entire
-// width of the courtyard
+// width of the courtyard.
 inline constexpr float SUPREMUS_BOUNDARY_MIN_X = 587.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 820.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;

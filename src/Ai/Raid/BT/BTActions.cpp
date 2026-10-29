@@ -561,7 +561,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
         float stepY;
         float stepZ;
         if (!CanTakeStepTowards(
-                bot, targetX, targetY, SUPREMUS_KITE_STEP_DISTANCE, stepX, stepY, stepZ))
+                bot, targetX, targetY, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
         {
             continue;
         }
@@ -773,15 +773,15 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     auto const tryStep = [&](uint8 turns, int8 side)
     {
         float const angle = aim + side * turns * turnStep;
-        float const x = bot->GetPositionX() + SUPREMUS_REACH_STEP_DISTANCE * std::cos(angle);
-        float const y = bot->GetPositionY() + SUPREMUS_REACH_STEP_DISTANCE * std::sin(angle);
+        float const x = bot->GetPositionX() + PATH_STEP_DISTANCE * std::cos(angle);
+        float const y = bot->GetPositionY() + PATH_STEP_DISTANCE * std::sin(angle);
         if (IsInSupremusHazard(hazards, x, y, SupremusHazardZone::Safe))
             return false;
 
         float stepX;
         float stepY;
         float stepZ;
-        if (!CanTakeStepTowards(bot, x, y, SUPREMUS_REACH_STEP_DISTANCE, stepX, stepY, stepZ))
+        if (!CanTakeStepTowards(bot, x, y, PATH_STEP_DISTANCE, stepX, stepY, stepZ))
             return false;
 
         if (turns > 0)
