@@ -1723,9 +1723,9 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
     return !state || state->illidanTankAggroPhase != phase;
 }
 
-// Each tank that should hold a creature is its victim with ILLIDAN_TANK_AGGRO_THREAT: him the Main
-// Tank, or in Demon Form the warlock tank; while he flies each living Flame its own tank, or the other
-// while its own is dead. A dead tank counts as holding it.
+// Each tank that should hold a creature must be its victim with ILLIDAN_TANK_AGGRO_THREAT.
+// Illidan: the main tank, or the warlock tank in Demon Form. While he flies, each living Flame: its
+// own tank, or the other Flame tank while its own is dead. A dead tank counts as holding it.
 bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
 {
     auto const hasAggro = [](Unit const& creature, Player* tank)
@@ -1905,7 +1905,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     layout.mainTankStepInPosition = GetDemonFormPoint(
         illidan, ILLIDAN_STEP_IN_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
 
-    // All rows are filled from the Warlock tank's side first to try to keep the raid as close
+    // All rows are filled from the warlock tank's side first to try to keep the raid as close
     // together as possible to concentrate DPS on Shadow Demons.
     auto const fromWarlockSide =
         [](std::pair<float, Position> const& a, std::pair<float, Position> const& b)
@@ -2489,7 +2489,7 @@ std::vector<ShadowDemon> FindShadowDemons(PlayerbotAI* botAI)
     return shadowDemons;
 }
 
-// Ranged prioritize a Shadow Demon fixated on the Warlock Tank, then the moving Shadow Demon that
+// Ranged prioritize a Shadow Demon fixated on the warlock tank, then the moving Shadow Demon that
 // is closest to its target, and finally any that are idle.
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
 {
@@ -2555,7 +2555,7 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
 }
 
 // Melee attack the closest Shadow Demon that is moving to a paralyzed target, but never one on the
-// Warlock tank (it is impossible for melee to attack it without being in Shadow Blast's radius).
+// warlock tank (it is impossible for melee to attack it without being in Shadow Blast's radius).
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
 {
     // Demons spawn 5 yd from Illidan, but the melee safe positions are far away enough from Illidan
@@ -2601,7 +2601,7 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet)
     return GetShadowDemonForMeleeToAttack(botAI, pet);
 }
 
-// Melee leaves its safe position during Demon form only if its current target is a Shadow Demon.
+// Melee leaves its safe position during Demon Form only if its current target is a Shadow Demon.
 bool IsTargetingShadowDemon(PlayerbotAI* botAI)
 {
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();

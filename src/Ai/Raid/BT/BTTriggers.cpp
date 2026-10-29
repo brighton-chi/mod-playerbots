@@ -347,7 +347,7 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsHeal(bot))
         return false;
 
-    // Aura of Suffering (-100% healing) does not affect Power World: Shield.
+    // Aura of Suffering (-100% healing) does not affect Power Word: Shield.
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
@@ -605,7 +605,7 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
 }
 
 // An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
-// Frost Trap. The Main Tank and Illidan's victim never run, nor the warlock tank in Demon Form.
+// Frost Trap. The main tank and Illidan's victim never run, nor the warlock tank in Demon Form.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
@@ -714,7 +714,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    // A pet's hit puts its owner on the Shadowfiend's threat list, so when the owner is net to a
+    // A pet's hit puts its owner on the Shadowfiend's threat list, so when the owner is next to a
     // newly birthed Shadowfiend, the pet needs to be called off to avoid an immediate infection.
     Unit* victim = pet->GetVictim();
     uint32 const victimEntry = victim && victim->IsAlive() ? victim->GetEntry() : 0;
@@ -785,7 +785,7 @@ bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
 }
 
 // Ice Block, Divine Shield, and Cloak of Shadows each clear Dark Barrage and Agonizing Flames.
-// Exclude the Main Tank and Flame tanks since immunity causes them to lose their tank targets.
+// Exclude the main tank and Flame tanks since immunity causes them to lose their tank targets.
 bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
 {
     bool const isPaladin = bot->getClass() == CLASS_PALADIN;

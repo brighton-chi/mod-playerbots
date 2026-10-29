@@ -711,7 +711,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Everyone but the Main Tank waits at the landing stack, out of his way to the ring.
+// Everyone but the main tank waits at the landing stack, out of his way to the ring.
 class IllidanStormragePositionForLandingAction : public MovementAction
 {
 public:
@@ -762,7 +762,7 @@ public:
     bool Execute(Event event) override;
 };
 
-// Melee and tanks but the Main Tank, which has its own positions, wait in their Demon Form slots,
+// Melee and tanks but the main tank, which has its own positions, wait in their Demon Form slots,
 // facing him, and leave them only for a Shadow Demon.
 class IllidanStormrageMeleeStayAwayFromDemonFormAction : public MovementAction
 {

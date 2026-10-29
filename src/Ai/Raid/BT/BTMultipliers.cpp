@@ -533,7 +533,7 @@ float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Act
     return GetAuraElapsedMs(runeShield) < RUNE_SHIELD_MAGE_PRIORITY_MS ? 0.0f : 1.0f;
 }
 
-// Spell Reflection triggers from any cast at the tank, so it would be blown on on Spirit Shock,
+// Spell Reflection triggers from any cast at the tank, so it would be blown on Spirit Shock,
 // which can't be reflected. Rely on BlackTempleCastSpellReflectionAction for Deaden instead.
 float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounter(Action* action)
 {
@@ -1004,7 +1004,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     }
 
     // Transforming from Demon to Humanoid phase does not end a pending Shadow Blast cast. The
-    // Warlock tank needs to stay in the Demon Form position until the cast finishes, as moving
+    // warlock tank needs to stay in the Demon Form position until the cast finishes, as moving
     // to its phase 3/5 position early would result in Shadow Blast hitting the raid.
     if (phase != IllidanPhase::Demon && dynamic_cast<MovementAction*>(action) &&
         IsIllidanShadowBlastOnBot(illidan, bot))
@@ -1226,7 +1226,7 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
 }
 
 // Shamans do not set totems during phase changes until the tanks have aggro, so the ones they
-// recalled are not set again at once. In phases 1, 3, and 5 they also set do not set totems if
+// recalled are not set again at once. In phases 1, 3, and 5 they also do not set totems if
 // they are closer to the infection position than their nearest totem. Without this multiplier,
 // Shamans will drop their totems at the infection position (and then drop them again after they
 // return to their normal position).

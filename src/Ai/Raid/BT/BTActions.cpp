@@ -1823,7 +1823,7 @@ bool IllidariCouncilAnnounceClassRolesAction::Execute(Event /*event*/)
 
 // Illidan Stormrage <The Betrayer>
 
-// The Main Tank waits at its pull position, facing Illidan. Everyone else waits on the grate.
+// The main tank waits at its pull position, facing Illidan. Everyone else waits on the grate.
 bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
 {
     if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
@@ -2210,7 +2210,7 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
     if (!botAI->CanCastSpell(frostTrap, bot) || !botAI->CastSpell(frostTrap, bot))
         return true;
 
-    // With the trap down the job is done, so a cooldown cut short (i.e., due to Readiness) does not
+    // With the trap down the job is done, so a cooldown cut short (e.g., due to Readiness) does not
     // send the hunter back to drop a second trap.
     if (auto& infections = BtState(bot->GetInstanceId()).illidanInfections)
     {
@@ -2600,7 +2600,7 @@ bool IllidanStormrageCancelImmunityAction::Execute(Event /*event*/)
 }
 
 // No actions can be taken when Shadow Prison is up, so during the Maiev arrival scene, Shamans must
-// recall in the 2.3s gap between Shadow Prison lifting and Illidan starting his attack.
+// recall in the 2.83s gap between Shadow Prison lifting and Illidan starting his attack.
 bool IllidanStormrageRecallTotemsAction::Execute(Event /*event*/)
 {
     uint32 const totemicRecall = Id(BtSpells::SPELL_TOTEMIC_RECALL);
@@ -3012,7 +3012,7 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     if (phase == IllidanPhase::Flying)
     {
-        //The Flame hold starts when the West Flame spawns, ~0.7s before the East Flame spawns.
+        // The Flame hold starts when the West Flame spawns, ~0.7s before the East Flame spawns.
         if (!state.eastFlameGuid || !state.westFlameGuid)
         {
             std::list<Creature*> flames;

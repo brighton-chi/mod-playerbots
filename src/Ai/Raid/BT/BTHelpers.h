@@ -271,7 +271,7 @@ inline constexpr float NAJENTUS_NEEDLE_SPINE_SPLASH_RANGE = 6.0f;
 inline constexpr float NAJENTUS_RANGED_SPREAD_DISTANCE = NAJENTUS_NEEDLE_SPINE_SPLASH_RANGE + 1.0f;
 // Hurl Spine (39948) counts both combat reaches.
 inline constexpr float NAJENTUS_HURL_SPINE_RANGE = 25.0f;
-// How far inside Hurl Spine range that a thrower moves to before throwing.
+// How far inside Hurl Spine range a thrower moves to before throwing.
 inline constexpr float NAJENTUS_HURL_SPINE_APPROACH_MARGIN = 2.0f;
 // A spine flies up to 1.25s and breaks the shield on impact, and the throw is a queued packet,
 // so no spine is thrown within 2s after the last one to avoid wasting them.
@@ -391,8 +391,8 @@ inline constexpr uint32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
 // ground between them and reaches at most about 9 yd from that player. Everyone else in front of
 // him steps off his line to that player to keep this far away (a generous distance).
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_DISTANCE = 15.0f;
-// The step goes 1 yd further than the trigger fires at (i.e., this is the typical trigger distance
-// being greater than action behavior to account for small rounding and imprecision).
+// The step goes 1 yd farther than the distance the trigger fires at, so small rounding and
+// imprecision don't leave the bot just inside it, firing the trigger again.
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_MARGIN = 1.0f;
 // Melee stand this far behind Gurtogg during Fel Rage, opposite the Fel Rage target. A bot in front
 // first goes to a point this far around to his side, so it doesn't cut across his front.
@@ -676,7 +676,7 @@ inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
 // tank never triggers the back step, which can cause Illidan to step past the ring and screw up the
 // positioning (including leaving some ranged out of spell range).
 inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
-// On each Flame Crash, the Main Tank walks to the ring point this far counterclockwise of Illidan.
+// On each Flame Crash, the main tank walks to the ring point this far counterclockwise of Illidan.
 // Illidan chases once the main tank gets about 9.5 yd away, and the net result is that each move
 // is about 25° counterclockwise around the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
@@ -713,8 +713,8 @@ inline constexpr float ILLIDAN_GRATE_INNER_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
     1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT; // phases 3, 4, and 5
-// Phase 4: 8 healer positions (of the 19 ranged total) and 15 melee positions, filling from
-// the Warlock tank's side.
+// Phase 4: 8 healer positions (apart from the 19 ranged DPS positions) and 15 melee positions,
+// filling from the warlock tank's side.
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
 inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
@@ -732,7 +732,7 @@ inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // immediately infecting an adjacent bot, and thus the birther can act again and melee can attack it
 // if it moves into melee range.
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
-// Shadowfiend infection position: 31 yd from the grate center (the Main Tank's circle), 135°
+// Shadowfiend infection position: 31 yd from the grate center (the main tank's circle), 135°
 // counterclockwise of Illidan, past Draw Soul's reach along the ring (110° at 31 yd). Also far
 // enough to be out of Shadow Blast range for a bot waiting out a residual phase 3/5 infection.
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
@@ -766,9 +766,9 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
 // Only the warlock tank attacks Illidan during the 12.23s transform to Demon Form.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 13 * IN_MILLISECONDS;
-// Everyone stops attack Illidan 3s before the end of Demon Phase.
+// Everyone stops attacking Illidan 3s before the end of Demon Form.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
-// Between 30% to 33% HP in Demon Form, only the warlock tank damages Illidan. Pushing him into
+// Between 30% and 33% HP in Demon Form, only the warlock tank damages Illidan. Pushing him into
 // phase 5 while in Demon Form is very bad because he will return to humanoid form without a threat
 // wipe and will proceed to kill the warlock tank and then other ranged from phase 4 threat.
 inline constexpr float ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT = 33.0f;

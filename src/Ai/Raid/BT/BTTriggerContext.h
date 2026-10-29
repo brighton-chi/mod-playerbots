@@ -15,7 +15,7 @@ class RaidBlackTempleTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidBlackTempleTriggerContext()
     {
-        // General
+        // Shared
         creators["black temple no encounter in progress"] =
             &RaidBlackTempleTriggerContext::black_temple_no_encounter_in_progress;
 
@@ -257,7 +257,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Trigger* black_temple_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new BlackTempleNoEncounterInProgressTrigger(botAI);

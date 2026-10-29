@@ -15,7 +15,7 @@ class RaidBlackTempleActionContext : public NamedObjectContext<Action>
 public:
     RaidBlackTempleActionContext()
     {
-        // General
+        // Shared
         creators["black temple reset encounter states"] =
             &RaidBlackTempleActionContext::black_temple_reset_encounter_states;
 
@@ -257,7 +257,7 @@ public:
     }
 
 private:
-    // General
+    // Shared
     static Action* black_temple_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new BlackTempleResetEncounterStatesAction(botAI);

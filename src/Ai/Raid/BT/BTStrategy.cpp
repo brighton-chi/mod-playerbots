@@ -16,7 +16,7 @@ using namespace EncounterHelpers;
 
 void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // General
+    // Shared
     triggers.push_back(new TriggerNode("black temple no encounter in progress",
         { NextAction("black temple reset encounter states", ACTION_EMERGENCY + 10),
           NextAction("illidari council announce class roles", ACTION_EMERGENCY + 8),

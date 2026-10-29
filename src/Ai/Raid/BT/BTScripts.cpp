@@ -185,7 +185,7 @@ private:
     }
 };
 
-// The mechanic tracker records phase changes on its own ticks, which like all other actions is
+// The mechanic tracker records phase changes on its own ticks, which, like all other actions, are
 // rejected while the bot is casting. Therefore, record Demon Form at the transformation and count
 // the phase from there.
 class IllidanStormrageDemonTransformSpellListenerScript : public AllSpellScript
