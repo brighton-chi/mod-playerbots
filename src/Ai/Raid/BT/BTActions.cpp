@@ -2444,8 +2444,8 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
     // When a beam is incoming, step out perpendicularly from the beam's path on the near side.
     // If the near side movement would take the tank to within 10 yd of a grate stack, then move
     // perpendicularly to the far side, provided that the far side movement would be clear of stacks
-    // and the head is still 13 yd short of the point where the tank would cross, enough time to get
-    // across. If both sides fail their conditions, move to the near side regardless. Risking fire
+    // and the head is still 13 yd short of the point where the tank would cross (enough time to get
+    // across). If both sides fail their conditions, move to the near side regardless. Risking fire
     // on a grate stack is the lesser of two evils since the beam will one-shot the tank.
     float const safeZ = bot->GetPositionZ();
     Position safePosition(px + dirX * moveDist, py + dirY * moveDist, safeZ);
@@ -2845,8 +2845,8 @@ bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
         botAI->CastSpell("seed of corruption", target);
 }
 
-// First seed the Demon the ranged target rule picks for the bot, then any Demon. Each must be in
-// spell range and not already seeded by the bot.
+// Seed of Corruption priority: (1) the Demon the ranged target rule picks for the bot, then (2) any
+// Demon. Each must be in spell range and not already seeded by the bot.
 Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
     auto const& shadowDemons =
@@ -2894,8 +2894,8 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
 
     if (!target)
     {
-        // Melee in Demon Form with nothing to hit drop their target, so they stay off him and off
-        // the Demon walking to the warlock tank.
+        // Melee in Demon Form drop target if the only available targets are a Shadow Demon on the
+        // warlock tank and/or Illidan so that dps target does not cause melee to attack them.
         if (phase != IllidanPhase::Demon || !PlayerbotAI::IsMelee(bot) ||
             (!currentTarget && !bot->GetVictim()))
         {
@@ -2911,8 +2911,6 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     if (target == currentTarget)
         return false;
 
-    // Attack() starts the swing, which a hold can't stop, so while damage on him or on the Flames
-    // is held, melee only take the target; the melee action starts the swing once the hold ends.
     bool const isHeld = target == illidan ?
         GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None :
         phase == IllidanPhase::Flying && IsFlameOfAzzinothDpsHeld(*illidan);
@@ -2963,14 +2961,11 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
             return { FindShadowfiendForRanged(phase), eastFlame, westFlame };
         }
     }
-    // Melee, assist tanks included, are on him, but first finish a nearly dead Shadowfiend in
-    // their reach.
     else if (isGrounded)
     {
         return { FindShadowfiendForMelee(), illidan };
     }
-    // While he flies melee can't move, so they take the East Flame only in their reach, else the
-    // West one in their reach.
+    // Melee stay at a grate stack in phase 2, so they attack any Flame in melee range only.
     else if (phase == IllidanPhase::Flying)
     {
         auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
@@ -2983,9 +2978,8 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
     return {};
 }
 
-// The requirements for melee to attack Shadowfiends are strict: attack only to finish one off that
-// is already in melee range. Care is required because picking up aggro on a Shadowfiend in melee
-// range results in an immediate infection.
+// Melee attack a Shadowfiend only to finish one off (<50% HP) that is in melee range. Care is
+// taken because picking up aggro on a Shadowfiend in melee range results in an immediate infection.
 Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForMelee()
 {
     Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
@@ -3022,8 +3016,7 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     if (phase == IllidanPhase::Flying)
     {
-        //The Flame hold starts from the West Flame spawning, ~0.7s before the East Flame spawns.
-        // first.
+        //The Flame hold starts when the West Flame spawns, ~0.7s before the East Flame spawns.
         if (!state.eastFlameGuid || !state.westFlameGuid)
         {
             std::list<Creature*> flames;
