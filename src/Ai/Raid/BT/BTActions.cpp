@@ -2113,9 +2113,6 @@ bool IllidanStormrageMainTankRepositionBossAction::FindRingPosition(
 void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     Unit const& illidan, IllidanPhase phase)
 {
-    // A Flame Crash on the tank: it walks to a ring point ahead of him, and he chases it out of the
-    // fire and stops where it stops, back on the ring.
-    // The newest one (GUIDs only grow), so a Flame Crash landing on an older one still counts.
     std::list<Creature*> flameCrashes;
     bot->GetCreatureListWithEntryInGrid(
         flameCrashes, Id(BtNpcs::NPC_FLAME_CRASH), ILLIDAN_FLAME_CRASH_ON_TANK_DISTANCE);
@@ -2140,17 +2137,11 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     else if (_lead == IllidanTankLead::None &&
         illidan.GetExactDist2d(ILLIDAN_GRATE_CENTER) < ILLIDAN_PICKUP_DISTANCE)
     {
-        // Near the grate center it walks straight out, and he follows it to the ring. After landing
-        // the tank is on the raid's side of him, so it leads him north, away from them.
         bool const isAfterLanding = GetIllidanPhaseBefore(illidan, phase) == IllidanPhase::Landing;
         float const leadAngle = isAfterLanding ? ILLIDAN_LANDING_LEAD_ANGLE : GetGrateAngle(*bot);
         _leadPosition = GetRingPoint(leadAngle, ILLIDAN_PICKUP_LEAD_RADIUS);
         _lead = IllidanTankLead::Pickup;
     }
-    // The opening lead moves him clockwise off the pull's due north, so Phase 1's Flame Crashes
-    // land clear of the Flame tanks' steps. Only once the phase is stamped, since a new stamp
-    // cancels the lead in progress, and only at the pull, so a tank taking over later doesn't lead
-    // him there.
     else if (_lead == IllidanTankLead::None && phase == IllidanPhase::Initial &&
         _phaseStartTime && !_isOpeningLeadDone && _lastFlameCrash.IsEmpty() &&
         IsIllidanPhaseStartWithin(illidan, phase, ILLIDAN_OPENING_LEAD_MS))
@@ -2161,8 +2152,7 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
     }
 }
 
-// He backs away from a victim standing inside him, so a walk that would pass through him goes
-// round him instead.
+// See comments to ILLIDAN_BACK_OFF_DISTANCE and ILLIDAN_ROUND_STEP_ANGLE in BTHelpers.h.
 void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
     Unit const& illidan, Position& position)
 {
@@ -2190,9 +2180,6 @@ void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
         illidan.GetPositionY() + ILLIDAN_TANK_OFFSET * std::sin(angle), bot->GetPositionZ());
 }
 
-// The run is in steps, so another forced move can take over between them, as the warlock tank's
-// does at the transform. A trap hunter on duty drops Frost Trap on arrival, holding the position
-// through a global cooldown. An infected hunter is never on duty.
 bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2217,15 +2204,14 @@ bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
     return HunterSetFrostTrap();
 }
 
-// True while waiting on the global cooldown too, so the hunter holds the position.
 bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
 {
     uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
     if (!botAI->CanCastSpell(frostTrap, bot) || !botAI->CastSpell(frostTrap, bot))
         return true;
 
-    // With the trap down the job is done, so a cooldown cut short (Readiness) can't send the
-    // hunter back for a second one.
+    // With the trap down the job is done, so a cooldown cut short (i.e., due to Readiness) does not
+    // send hte hunter back to drop a second trap.
     if (auto& infections = BtState(bot->GetInstanceId()).illidanInfections)
     {
         for (auto& [infected, infection] : *infections)
@@ -2238,10 +2224,8 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
     return true;
 }
 
-// The infection position is fixed when an infection is recorded, so it doesn't move as he does,
-// and the trap hunter once picked, so a Frost Trap coming off cooldown mid-run can't pass the job
-// on. Both last until the debuff is gone, through any change of phase, but the hunter is freed if
-// its bot stops running, as the warlock tank does at the transform.
+// The infection position is fixed when an infection is recorded, so it doesn't move with Illidan in
+// the middle of an infection, but it does move counterclockwise between infections as Illidan does.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -2271,7 +2255,6 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
             if (infections.contains(guid))
                 continue;
 
-            // A new infection shares the position already in use, so one trap does for both.
             IllidanInfection infection;
             if (infections.empty())
                 infection.infectionPosition = GetIllidanInfectionPosition(*illidan);
@@ -2294,13 +2277,11 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
             if (infection.isTrapAssigned)
                 continue;
 
-            // Only for his own casts, so Shadowfiends spreading among the raid don't send hunters
-            // back and forth.
+            // The traps are used only for primary infections. Due to the trap cooldown, it is not
+            // practical to trap for secondary infections. If all goes well, there should be none.
             if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
                 continue;
 
-            // Not for a bot that doesn't run, whose Shadowfiends come out where it stands; tried
-            // again each tick, so one that starts its run later gets a hunter then.
             if (IsExemptFromIllidanInfectionRun(botAI, illidan, player))
                 continue;
 
@@ -2315,10 +2296,6 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     return false;
 }
 
-// A hunter already sent for another infection, its trap not yet down, lays one trap for both. Else
-// the first trap hunter in order with Frost Trap ready. Never an infected hunter: its own
-// Shadowfiends come out on the trap and springing it engages them onto the hunter who laid it.
-// False while none is ready, so the infection is tried again next tick.
 bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     Player& infected, Position const& infectionPosition,
     std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
@@ -2335,6 +2312,8 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
         }
     }
 
+    // Hunters do not trap for their own infections. Springing the trap puts threat on the hunter so
+    // the Shadowfiends can immediately re-infect it.
     auto const& trapHunters =
         context->GetValue<GuidVector>("illidan stormrage trap hunters")->RefGet();
     ObjectGuid candidate;
@@ -2352,8 +2331,6 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     if (candidate.IsEmpty())
         return false;
 
-    // A trap already laid at the infection position, or ice round it that outlasts the debuff,
-    // needs no new trap.
     Aura const* parasite = GetParasiticShadowfiendAura(&infected);
     int32 const parasiteMs = parasite ? parasite->GetDuration() : 0;
     bool const isCovered =
@@ -2362,15 +2339,13 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     return true;
 }
 
-// Ranged kill the East Flame first. A tank whose Flame is dead waits on the grate, unless the
-// other Flame's tank is dead too, when it takes that Flame.
+// Kill the East Flame first. A tank whose Flame is dead moves to a grate stack, unless the East
+// Flame is killed but the West tank dies, in which case the East tank attempts to take over.
 bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
 {
     Unit* flame = GetAssignedFlameOfAzzinoth(bot);
     if (!flame)
     {
-        // Its walk to the grate is one long move, which a hold can't stop once it has started, so
-        // it looks out for the beam from farther off than a Blaze step does.
         constexpr float eyeBlastTriggerRadius = 30.0f;
         // An unrecorded Flame hasn't spawned yet, so the tank waits by its glaive.
         bool const isEast = IsEastFlameOfAzzinothTank(bot);
@@ -2391,8 +2366,8 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
         if (bot->GetExactDist2d(position) <= waitTolerance)
             return false;
 
-        // With its Flame dead, it still steps out of the Eye Blast, and doesn't walk across the
-        // beam's path ahead of it.
+        // A very rare case is that a Flame dies while an Eye Blast beam is incoming, in which case
+        // the Flame tank is held from running in front of it on its way back to the grate.
         if (isRecorded)
         {
             EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
@@ -2415,12 +2390,11 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != flame)
         return Attack(flame);
 
-    // Until it has its Flame, the tank's own logic takes it (taunt, reach).
     if (flame->GetVictim() != bot)
         return false;
 
-    // Once the beam's head is this close, the tank steps out of its path ahead and takes no Blaze
-    // step into it: soon enough to step out, or across, before the head arrives.
+    // An Eye Blast beam that is within 18 yd of the tank triggers the tank moving out of the beam's
+    // path and ignoring Blaze steps.
     constexpr float eyeBlastReactRadius = 18.0f;
     EyeBlastDangerArea const dangerArea = GetEyeBlastDangerArea(bot);
     bool const isHeadNear =
@@ -2467,9 +2441,12 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidEyeBlast(
             });
     };
 
-    // Out on the bot's side, else across the line while the head is far enough off to cross ahead
-    // of it, else out on its side anyway: near a stack the Flame's cone may reach it, but the head
-    // kills.
+    // When a beam is incoming, step out perpendicularly from the beam's path on the near side.
+    // If the near side movement would take the tank to within 10 yd of a grate stack, then move
+    // perpendicularly to the far side, provided that the far side movement would be clear of stacks
+    // and the head is still 13 yd short of the point where the tank would cross, enough time to get
+    // across. If both sides fail their conditions, move to the near side regardless. Risking fire
+    // on a grate stack is the lesser of two evils since the beam will one-shot the tank.
     float const safeZ = bot->GetPositionZ();
     Position safePosition(px + dirX * moveDist, py + dirY * moveDist, safeZ);
     if (isTooCloseToStack(safePosition))
@@ -2496,7 +2473,6 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
     if (flame->GetVictim() != bot || !bot->IsWithinMeleeRange(flame))
         return false;
 
-    // The waypoints go with the Flame, which must stay near its blade.
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
     auto const& waypoints =
         flame == eastFlame ? ILLIDAN_E_GLAIVE_TANK_POSITIONS : ILLIDAN_W_GLAIVE_TANK_POSITIONS;
@@ -2504,8 +2480,7 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
     auto const& npcs =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->RefGet();
 
-    // A Blaze hits players within 8 yd of its center, exact 3D.
-    constexpr float blazeRadius = 8.0f;
+    constexpr float blazeRadius = 8.0f; // Exact hazard radius (no reaches are added)
     constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
     for (ObjectGuid const& guid : npcs)
@@ -2532,7 +2507,6 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
         return false;
     }
 
-    // A step into the head's path ahead waits until the head has passed it.
     Position const stepPosition(moveX, moveY, bot->GetPositionZ());
     if (dangerArea && IsPathInEyeBlastDangerArea(bot->GetPosition(), stepPosition, *dangerArea))
         return false;
@@ -2713,8 +2687,6 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
 
         position = GetGrateSlot(static_cast<size_t>(slot));
 
-        // Past the point stock reach spell walks to, it and this action would take turns moving
-        // the bot.
         if (!PlayerbotAI::IsHeal(bot))
         {
             float const reach =
@@ -2873,8 +2845,8 @@ bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
         botAI->CastSpell("seed of corruption", target);
 }
 
-// The bot's usual Demon, else any Demon, each only in reach and without the bot's own Seed on it.
-// Out of reach the cast would fail and turn the bot.
+// First seed the Demon the ranged target rule picks for the bot, then any Demon. Each must be in
+// spell range and not already seeded by the bot.
 Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
     auto const& shadowDemons =
@@ -2887,9 +2859,9 @@ Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
             !demon->HasAura(seed, bot->GetGUID());
     };
 
-    Unit* usualDemon = GetShadowDemonForRangedToAttack(botAI, *bot);
-    if (canSeed(usualDemon))
-        return usualDemon;
+    Unit* assignedDemon = GetShadowDemonForRangedToAttack(botAI, *bot);
+    if (canSeed(assignedDemon))
+        return assignedDemon;
 
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
