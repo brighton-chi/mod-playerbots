@@ -1663,7 +1663,7 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
             return IllidanDpsHold::DemonFormEnd;
 
         return IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_DEMON_FORM_DPS_WAIT_MS) ?
-            IllidanDpsHold::DemonFormStart : IllidanDpsHold::DemonFormMiddle;
+            IllidanDpsHold::DemonFormStart : IllidanDpsHold::None;
     }
 
     // Phase 5 has no threat reset at Maiev's arrival, but Shadow Prison's immunity leaves everyone
@@ -1685,11 +1685,6 @@ IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
     if (window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush)
     {
         return IsIllidanWarlockTank(botAI) ? IllidanDpsHold::None : window;
-    }
-    else if (window == IllidanDpsHold::DemonFormMiddle)
-    {
-        return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ?
-            window : IllidanDpsHold::None;
     }
     else if (window == IllidanDpsHold::AfterReset)
     {

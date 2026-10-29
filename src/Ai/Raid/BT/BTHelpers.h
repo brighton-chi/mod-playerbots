@@ -569,7 +569,6 @@ enum class IllidanDpsHold : uint8
     None,
     AfterReset,      // Phase 1, 3, and 5 starts; everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
-    DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
     DemonFormEnd,    // the last 3s before Demon Form ends; everyone
     DemonFormNoPush, // 30% to 33% HP in Demon Form; everyone but the warlock tank
 };
