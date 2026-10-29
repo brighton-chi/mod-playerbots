@@ -317,7 +317,7 @@ bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
 bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
 {
     return IsGurtoggFelRageTarget(bot) &&
-        bot->GetExactDist2d(GURTOGG_TANK_POSITION) > GURTOGG_POSITION_TOLERANCE;
+        bot->GetExactDist2d(GURTOGG_TANK_POSITION) > BT_ARRIVAL_DISTANCE;
 }
 
 // Reliquary of Souls

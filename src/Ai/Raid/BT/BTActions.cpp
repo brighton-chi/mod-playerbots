@@ -155,7 +155,7 @@ bool BlackTemplePositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, _position, _arrivalDist, boss, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, _position, BT_ARRIVAL_DISTANCE, boss, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -495,7 +495,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
         bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_SAFE_DISTANCE);
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
 
-    constexpr uint32 headingMemoryMs = 2000;
+    constexpr uint32 headingMemoryMs = 2 * IN_MILLISECONDS;
     float const preferredAngle = GetMSTimeDiffToNow(_lastStepTime) < headingMemoryMs ?
         _lastAngle : supremus->GetAngle(bot);
 
@@ -797,7 +797,7 @@ bool SupremusReachAroundFireAction::Execute(Event /*event*/)
     constexpr uint8 turnsToSquare = 8;
     constexpr uint8 turnsToBehind = 16;
 
-    constexpr uint32 sideMemoryMs = 2000;
+    constexpr uint32 sideMemoryMs = 2 * IN_MILLISECONDS;
     if (GetMSTimeDiffToNow(_lastStepTime) < sideMemoryMs)
     {
         int8 const side = _lastSide;
@@ -903,7 +903,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     float const targetX = GOREFIEND_TANK_POSITION.GetPositionX() + radius * std::cos(angle);
     float const targetY = GOREFIEND_TANK_POSITION.GetPositionY() + radius * std::sin(angle);
 
-    if (bot->GetExactDist2d(targetX, targetY) <= GOREFIEND_POSITION_TOLERANCE)
+    if (bot->GetExactDist2d(targetX, targetY) <= BT_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -924,8 +924,8 @@ bool TeronGorefiendAvoidShadowOfDeathAction::Execute(Event /*event*/)
 
 bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 {
-    Position const& position = GOREFIEND_DIE_POSITION;
-    if (bot->GetExactDist2d(position) <= GOREFIEND_POSITION_TOLERANCE)
+    Position const& position = GOREFIEND_DEATH_POSITION;
+    if (bot->GetExactDist2d(position) <= BT_ARRIVAL_DISTANCE)
         return false;
 
     bot->CastStop();
@@ -1481,7 +1481,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     if (gathios->GetVictim() != bot || !bot->IsWithinMeleeRange(gathios))
         return false;
 
-    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[_tankStep]) <= COUNCIL_TANK_ARRIVAL_DISTANCE &&
+    if (bot->GetExactDist2d(GATHIOS_TANK_POSITIONS[_tankStep]) <= BT_ARRIVAL_DISTANCE &&
         HasDangerousCouncilAura(bot))
     {
         _tankStep = (_tankStep + 1) % GATHIOS_TANK_POSITIONS.size();
@@ -1491,8 +1491,8 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GATHIOS_TANK_POSITIONS[_tankStep], COUNCIL_TANK_ARRIVAL_DISTANCE, gathios, moveX,
-            moveY, backwards))
+            bot, GATHIOS_TANK_POSITIONS[_tankStep], BT_ARRIVAL_DISTANCE, gathios, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -1629,8 +1629,7 @@ bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, mainTank->GetPosition(), COUNCIL_TANK_ARRIVAL_DISTANCE, veras, moveX, moveY,
-            backwards))
+            bot, mainTank->GetPosition(), BT_ARRIVAL_DISTANCE, veras, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1664,7 +1663,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     if (zerevor->GetVictim() != bot)
         return false;
 
-    if (bot->GetExactDist2d(ZEREVOR_TANK_POSITIONS[_tankStep]) <= COUNCIL_TANK_ARRIVAL_DISTANCE &&
+    if (bot->GetExactDist2d(ZEREVOR_TANK_POSITIONS[_tankStep]) <= BT_ARRIVAL_DISTANCE &&
         HasDangerousCouncilAura(bot))
     {
         _tankStep = (_tankStep + 1) % ZEREVOR_TANK_POSITIONS.size();
@@ -1674,8 +1673,8 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     float moveY;
     bool backwards; // not used: the mage tank never moves backwards
     if (!GetStepToPosition(
-            bot, ZEREVOR_TANK_POSITIONS[_tankStep], COUNCIL_TANK_ARRIVAL_DISTANCE, zerevor, moveX,
-            moveY, backwards))
+            bot, ZEREVOR_TANK_POSITIONS[_tankStep], BT_ARRIVAL_DISTANCE, zerevor, moveX, moveY,
+            backwards))
     {
         return false;
     }

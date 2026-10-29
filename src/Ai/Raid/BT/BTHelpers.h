@@ -219,6 +219,8 @@ enum class BtObjects : uint32
 
 inline constexpr uint32 BT_MAP_ID = 564;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
+// How close to its assigned spot a bot has to stand to count as arrived.
+inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CommandPetAttack(Creature* pet, Unit* target);
@@ -343,12 +345,12 @@ Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI);
 
 // Shade of Akama
 
-// His instance boundary, so the add search runs only in his room.
+// These are the approximate boundaries of Shade of Akama's room.
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_X = 406.8f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_X = 564.0f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_Y = 327.9f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
-// Reaches every channeler from anywhere in his room, so every bot gets the same kill order.
+// 150 yd reaches every channeler from anywhere in the room, so every bot gets the same kill order.
 inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 
@@ -357,19 +359,19 @@ Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
 
 // Teron Gorefiend
 
-// The run from the balcony to the corner takes about 12.5 s.
+// The run from the balcony to a far corner takes about 12.5s.
 inline constexpr int32 GOREFIEND_SHADOW_OF_DEATH_MOVE_MS = 15 * IN_MILLISECONDS;
-inline constexpr float GOREFIEND_POSITION_TOLERANCE = 2.0f;
-// Spirit Chains and Spirit Volley hit within 12 yd of the spirit.
+// Spirit Chains and Spirit Volley hit within 12 yd of the spirit. The spirit moves to this close
+// before casting (the buffer is for reaction delay and movement of constructs).
 inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
 // Spirit Lance's lowest damage. Constructs within one Lance of the highest health count as even.
 inline constexpr uint32 GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE = 6175;
 inline constexpr uint32 GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS = 1000;
-// From his tank position, about 90 yd reaches the far corners of his room.
+// From Gorefiend's tank position, about 90 yd reaches the far corners.
 inline constexpr float GOREFIEND_CONSTRUCT_SEARCH_RADIUS = 100.0f;
 
-inline Position const GOREFIEND_TANK_POSITION = { 597.653f, 402.284f, 187.090f };
-inline Position const GOREFIEND_DIE_POSITION  = { 525.709f, 377.177f, 193.203f };
+inline Position const GOREFIEND_TANK_POSITION  = { 597.653f, 402.284f, 187.090f };
+inline Position const GOREFIEND_DEATH_POSITION = { 525.709f, 377.177f, 193.203f };
 
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 
@@ -378,25 +380,31 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 // Bloodboil hits the 5 farthest players, so 3 groups of 5 ranged rotate to soak it.
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
-inline constexpr float GURTOGG_POSITION_TOLERANCE = 2.0f;
-// Each ranged group spreads over a rectangle facing the tank position.
+// Each ranged group stands in a rectangle, with its depth axis pointing toward the tank spot.
+// Width is across that axis and, obviously, depth along it.
 inline constexpr float GURTOGG_RANGED_HALF_WIDTH = 5.0f;
 inline constexpr float GURTOGG_RANGED_HALF_DEPTH = 2.0f;
-// Groups swap this long after a Bloodboil lands, not as it lands.
+// Rotation groups wait until this long after a Bloodboil lands to swap. Mostly for realism.
 inline constexpr uint32 GURTOGG_ROTATION_DELAY_MS = 2 * IN_MILLISECONDS;
-// Arcing Smash during Fel Rage reaches 11.5 yd from him, and he stays within about 14 yd of the
-// Fel Rage target, so the cleave can't reach past about 14 yd from that player. Everyone else in
-// front of him steps off his line to that player to keep this far away.
+// During Fel Rage, Arcing Smash is a cone about 11.5 yd deep in front of Gurtogg (10 yd radius plus
+// the victim's reach). He faces the Fel Rage target and chases it to 14 yd, so the cone covers the
+// ground between them and reaches at most about 9 yd from that player. Everyone else in front of
+// him steps off his line to that player to keep this far away (a generous distance).
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_DISTANCE = 15.0f;
+// The step goes 1 yd further than the trigger fires at (i.e., this is the typical trigger distance
+// being greater than action behavior to account for small rounding and imprecision).
 inline constexpr float GURTOGG_FEL_RAGE_AVOID_MARGIN = 1.0f;
-// Melee without Fel Rage stand this far behind him during it, opposite the Fel Rage target. A bot
-// in front first goes to a point this far around to his side, so it doesn't cut across his front.
+// Melee stand this far behind Gurtogg during Fel Rage, opposite the Fel Rage target. A bot in front
+// first goes to a point this far around to his side, so it doesn't cut across his front.
 inline constexpr float GURTOGG_FEL_RAGE_MELEE_DISTANCE = 5.0f;
 inline constexpr float GURTOGG_FEL_RAGE_MELEE_TOLERANCE = 2.0f;
 inline constexpr float GURTOGG_FEL_RAGE_MELEE_SIDE_ANGLE = 2.0f * static_cast<float>(M_PI) / 3.0f;
-// For this long into Fel Rage, bots behind him keep away too.
+// For this long into Fel Rage, bots behind him keep away too, to allow the Fel Rage target to
+// reach the tank position.
 inline constexpr uint32 GURTOGG_FEL_RAGE_EARLY_AVOID_MS = 5 * IN_MILLISECONDS;
-// Bewildering Strike hands him to the second tank, so everyone else stays below it.
+// Bewildering Strike confuses his victim for 8s and switches his target to second on his threat
+// list (threat is not dropped). Everyone stays below 80% of the second highest tank's threat to
+// ensure that a tank is targeted upon Bewildering Strike.
 inline constexpr float GURTOGG_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr uint32 GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS = 1000;
 
@@ -418,16 +426,17 @@ Position GetBotPointInGurtoggRectangle(
 
 // Reliquary of Souls
 
-// Essence of Suffering fixates the nearest enemy every 5 s, so tanks above this health stand
-// nearer to her than other melee and pets (about 10 yd). She backs away from a victim within
-// about 1.4 yd and chases one beyond about 10 yd, so the tank distance stays between the two.
+// Essence of Suffering fixates the nearest enemy every 5s, so tanks above 25% HP stand closer to it
+// than other melee and pets (about 10 yd). Suffering backs away from a victim within about 1.4 yd
+// and chases one beyond about 10 yd, so the tank distance stays between the two.
 inline constexpr float SUFFERING_TANK_MIN_HEALTH_PCT = 25.0f;
 inline constexpr float SUFFERING_TANK_DISTANCE = 6.0f;
 inline constexpr float SUFFERING_TANK_MAX_DISTANCE = 7.0f;
 inline constexpr float SUFFERING_MELEE_DISTANCE = 10.0f;
 inline constexpr float SUFFERING_MELEE_MIN_DISTANCE = 9.0f;
 inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
-// Other dispellers wait this long into each Rune Shield, so a mage steals it when one can.
+// Non-mage dispellers wait this long into each Rune Shield to dispel to leave a window for mages
+// to Spellsteal.
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
@@ -437,10 +446,14 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 // Mother Shahraz
 
 inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
-// Wide enough for an off-tank on her victim to take over without melee backing off.
+// How far her victim may stand from the tank spot and still count as her being positioned for
+// purposes of melee DPS joining the fight.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
 inline constexpr float SHAHRAZ_RANGED_POSITION_TOLERANCE = 1.0f;
+// Below this HP percent, Shahraz is considered positioned regardless of whether she is at the tank
+// position. This exists so that a human tank who does not take her to the designated spot does not
+// cause melee DPS to wait out of range the whole fight.
 inline constexpr float SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT = 90.0f;
 inline constexpr float SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE = 5.0f;
 
@@ -462,22 +475,25 @@ inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
 // 175 yards extends to the top of the steps leading to the courtyard outside the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 
-inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS;
-inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
-inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
-inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 100.0f;
+inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 COUNCIL_MEMBER_CACHE_INTERVAL_MS = 1000;
-inline constexpr float COUNCIL_TANK_ARRIVAL_DISTANCE = 2.0f;
-// Bots heal out to HealDistance, 38.5 yd by default.
+inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS; // on pull
+inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
+// A minor spread is maintained by ranged when clear of hazards to avoid the next one hitting too
+// many bots at once.
+inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
+// HealDistance is 38.5 yd by default. This is the mage tank healer's manually imposed version.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
-// A patch on the mage tank reaches 11.5 yd from where it stood.
+// Far enough that a patch centered on the mage tank can't reach the healer: patches reach 11.5 yd
+// (10 yd radius plus a player's 1.5 yd reach) and this leaves another yard.
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
-// Zerevor casts Arcane Explosion when anyone is within 10 yd plus both combat reaches (14.65 yd).
+// Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd).
 inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
-// A patch reaches a player whose center is within its radius plus the player's reach (1.5 yd).
+// A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach,
+// and we add another yard for good measure.
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
-inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
-// A ranged bot whose own cast would end with less than this left on Circle of Healing drops it.
+// A ranged interrupter casting at the same time that Malande is casting Circle of Healing will stop
+// its cast if it would end with less than this time left on Circle of Healing's cast.
 inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
 inline constexpr float COUNTERSPELL_RANGE = 30.0f;
 inline constexpr float WIND_SHEAR_RANGE = 25.0f;
@@ -538,12 +554,12 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target);
 enum class IllidanPhase : uint8
 {
     None, // also Maiev's arrival scene
-    Initial, // "phase 1"
-    Flying, // "phase 2"
+    Initial, // phase 1
+    Flying, // phase 2
     Landing, // transition from Illidan flying to his landing point until he is again selectable
-    Grounded, // "phase 3"
-    Demon, // "phase 4"
-    Maiev, // "phase 5"
+    Grounded, // phase 3
+    Demon, // phase 4
+    Maiev, // phase 5
     Dying, // the 1 HP death scene
 };
 
@@ -554,9 +570,8 @@ enum class IllidanDpsHold : uint8
     AfterReset,      // Phase 1, 3, and 5 starts; everyone but the Main Tank
     DemonFormStart,  // everyone but the warlock tank
     DemonFormMiddle, // from the start hold to the end hold; the Main Tank only
-    DemonFormEnd,    // the last 3s before the reset; everyone
-    DemonFormNoPush, // 30 to 33% in the form, so he leaves it above 30%; everyone but the
-                     // warlock tank
+    DemonFormEnd,    // the last 3s before Demon Form ends; everyone
+    DemonFormNoPush, // 30% to 33% HP in Demon Form; everyone but the warlock tank
 };
 
 // The Main Tank's lead in Phases 1, 3, and 5.
@@ -576,9 +591,9 @@ struct EyeBlastDangerArea
     float width;
 };
 
-// Phase 4 places, from where Demon Form roots him and the line from him through the grate
-// center. Ranged DPS slots are in spell reach of him and healer slots behind them, each filled
-// from the warlock's side.
+// Phase 4 positions, calculated from where Demon Form roots Illidan and the line from him through
+// the grate center. Ranged DPS slots are in spell reach of him and healer slots behind them, each
+// filled from the warlock tank's side.
 struct DemonFormLayout
 {
     Position warlockTankPosition;

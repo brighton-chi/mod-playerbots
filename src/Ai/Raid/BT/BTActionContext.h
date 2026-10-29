@@ -386,7 +386,7 @@ private:
         constexpr bool allTanks = true;
         return new BlackTemplePositionBossAction(
             botAI, "gurtogg bloodboil tanks position boss", "gurtogg bloodboil",
-            BtHelpers::GURTOGG_TANK_POSITION, BtHelpers::GURTOGG_POSITION_TOLERANCE, allTanks);
+            BtHelpers::GURTOGG_TANK_POSITION, allTanks);
     }
     static Action* gurtogg_bloodboil_rotate_ranged_groups(PlayerbotAI* botAI)
     {
@@ -404,7 +404,7 @@ private:
     {
         return new BlackTemplePositionBossAction(
             botAI, "gurtogg bloodboil lead boss to tank position", "gurtogg bloodboil",
-            BtHelpers::GURTOGG_TANK_POSITION, BtHelpers::GURTOGG_POSITION_TOLERANCE);
+            BtHelpers::GURTOGG_TANK_POSITION);
     }
 
     // Reliquary of Souls

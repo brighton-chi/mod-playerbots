@@ -56,15 +56,13 @@ class BlackTemplePositionBossAction : public AttackAction
 public:
     BlackTemplePositionBossAction(
         PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
-        Position const& position, float arrivalDist = 3.0f, bool allTanks = false)
-        : AttackAction(botAI, name), _bossName(bossName), _position(position),
-          _arrivalDist(arrivalDist), _allTanks(allTanks) {}
+        Position const& position, bool allTanks = false)
+        : AttackAction(botAI, name), _bossName(bossName), _position(position), _allTanks(allTanks) {}
     bool Execute(Event event) override;
 
 private:
     std::string const _bossName;
     Position const _position;
-    float const _arrivalDist;
     bool const _allTanks;
 };
 

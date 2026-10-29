@@ -546,6 +546,11 @@ bool IsSupremusKitePhase(Unit* supremus)
     return supremus && supremus->HasAura(Id(BtSpells::SPELL_SNARE_SELF));
 }
 
+// Seconds left before Supremus fixates again, counted from the start of the kite phase. Nothing
+// records the fixate itself, so the 10s schedule is measured from the phase switch that Snare Self
+// marks. Its apply time is epoch seconds, so it is compared with GameTime::GetGameTime(), not
+// getMSTime (counts from server start) or GetAuraElapsedMs (needs a duration, and Snare Self is
+// permanent). The extra second covers the whole-second reading and errs toward caution.
 float GetSupremusFixateTimeRemaining(Unit* supremus)
 {
     if (!supremus)
@@ -1044,7 +1049,9 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 
 // Mother Shahraz
 
-// Melee dps wait at the ranged position while this is true.
+// Melee dps hold at the ranged position while this is true. The health gate ends the hold at 90%
+// whether or not her victim ever reached the tank spot, so a pull that stalls on positioning still
+// releases them.
 bool IsShahrazBeingPositioned(Unit* shahraz)
 {
     if (!shahraz || shahraz->GetHealthPct() < SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT)
@@ -1644,7 +1651,7 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Demon)
     {
-        // A Phase 5 form is already under 30%, so it gets the usual windows.
+        // A phase 5 form is already under 30%, so it gets the usual windows.
         float const healthPct = illidan->GetHealthPct();
         if (healthPct > ILLIDAN_PHASE_5_HEALTH_PCT &&
             healthPct <= ILLIDAN_DEMON_FORM_NO_PUSH_HEALTH_PCT)
