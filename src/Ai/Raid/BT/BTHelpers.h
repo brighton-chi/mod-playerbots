@@ -646,7 +646,7 @@ inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
 inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
-inline constexpr float ILLIDAN_POSITION_TOLERANCE = 1.0f;
+inline constexpr float ILLIDAN_POSITION_TOLERANCE = 0.5f;
 inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
 
 // Phases 1, 3, and 5

@@ -1884,10 +1884,8 @@ Position GetGrateSlot(size_t index)
 DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
-    // Ranged DPS rows are 25.2 and 31 yd out, in spell reach of Illidan, and healer rows 36.8 and
-    // 42.6 yd behind them. Both are filled from the warlock tank's side, highest bearing first.
-    // Melee rows are 48.4, 54.2, and 60 yd out, behind the healers, centered on the bearing midway
-    // between the warlock's and the far end of the ranged rows, and filled from that center outward.
+    // Float values for the arrays are exact 2D distances from Illidan, whose combat reach is 1.5 yd
+    // in Demon Form.
     constexpr std::array rangedRows = { 25.2f, 31.0f };
     constexpr std::array healerRows = { 36.8f, 42.6f };
     static_assert(rangedRows.size() == healerRows.size());
@@ -1896,8 +1894,6 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     constexpr float healerHighAngle = 60.0f * degree;
     constexpr float lowAngle = -90.0f * degree;
     constexpr float meleeHalfArc = 40.0f * degree;
-    // Heals reach 43 yd center to center.
-    constexpr float healReach = 41.0f;
 
     DemonFormLayout layout;
     layout.warlockTankPosition = GetDemonFormPoint(
@@ -1909,6 +1905,8 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     layout.mainTankStepInPosition = GetDemonFormPoint(
         illidan, ILLIDAN_STEP_IN_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
 
+    // All rows are filled from the Warlock tank's side first to try to keep the raid as close
+    // together as possible to concentrate DPS on Shadow Demons.
     auto const fromWarlockSide =
         [](std::pair<float, Position> const& a, std::pair<float, Position> const& b)
     {
@@ -1941,14 +1939,11 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         layout.rangedSlots.push_back(slot.second);
 
     std::stable_sort(healers.begin(), healers.end(), fromWarlockSide);
+    if (healers.size() > ILLIDAN_HEALER_SLOT_COUNT)
+        healers.resize(ILLIDAN_HEALER_SLOT_COUNT);
+
     for (std::pair<float, Position> const& slot : healers)
-    {
-        if (layout.healerSlots.size() < ILLIDAN_HEALER_SLOT_COUNT &&
-            slot.second.GetExactDist2d(layout.warlockTankPosition) <= healReach)
-        {
-            layout.healerSlots.push_back(slot.second);
-        }
-    }
+        layout.healerSlots.push_back(slot.second);
 
     float const meleeCenterAngle = (ILLIDAN_WARLOCK_POSITION_ANGLE + ranged.back().first) / 2.0f;
     for (size_t i = 0; i < meleeRows.size(); ++i)
@@ -1956,13 +1951,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         std::vector<std::pair<float, Position>> row = GetDemonFormRow(
             illidan, layout.warlockTankPosition, meleeRows[i], meleeCenterAngle + meleeHalfArc,
             meleeCenterAngle - meleeHalfArc, i % 2 == 1);
-        std::stable_sort(
-            row.begin(), row.end(),
-            [meleeCenterAngle](
-                std::pair<float, Position> const& a, std::pair<float, Position> const& b)
-            {
-                return std::abs(a.first - meleeCenterAngle) < std::abs(b.first - meleeCenterAngle);
-            });
+        std::stable_sort(row.begin(), row.end(), fromWarlockSide);
 
         for (std::pair<float, Position> const& slot : row)
         {
