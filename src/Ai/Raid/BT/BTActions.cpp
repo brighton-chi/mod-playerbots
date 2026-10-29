@@ -3037,8 +3037,9 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
     return {};
 }
 
-// Strict, since hitting a Shadowfiend draws it and its first hit infects: only the nearest one,
-// only already in melee range and only nearly dead.
+// The requirements for melee to attack Shadowfiends are strict: attack only to finish one off that
+// is already in melee range. Care is required because picking up aggro on a Shadowfiend in melee
+// range results in an immediate infection.
 Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForMelee()
 {
     Unit* shadowfiend = GetNearestParasiticShadowfiend(botAI, *bot);
@@ -3054,8 +3055,6 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged(Illid
     if (!shadowfiend)
         return nullptr;
 
-    // While he flies, a bot infected then stays in its grate stack, and the other stacks are 8.9
-    // to 11.5 yd from its Shadowfiends.
     float const minDistance = phase == IllidanPhase::Flying ? 5.0f : 10.0f;
     float const maxDistance = botAI->GetRange("spell");
     float const distance = bot->GetDistance(shadowfiend);

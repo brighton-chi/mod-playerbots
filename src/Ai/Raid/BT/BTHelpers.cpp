@@ -1671,7 +1671,7 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
     bool const isAfterReset = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Maiev;
 
-    return isAfterReset && IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_RESET_DPS_WAIT_MS) ?
+    return isAfterReset && IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_MAIN_TANK_PICKUP_MS) ?
         IllidanDpsHold::AfterReset : IllidanDpsHold::None;
 }
 
@@ -1805,7 +1805,7 @@ bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
 
     IllidanPhase const before = GetIllidanPhaseBefore(*illidan, phase);
     if ((before != IllidanPhase::Landing && before != IllidanPhase::Demon) ||
-        !IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_PICKUP_MAX_MS))
+        !IsIllidanPhaseStartWithin(*illidan, phase, ILLIDAN_MAIN_TANK_PICKUP_MS))
     {
         return false;
     }
