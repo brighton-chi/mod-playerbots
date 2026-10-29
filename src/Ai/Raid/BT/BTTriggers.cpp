@@ -992,9 +992,6 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
     if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return false;
 
-    if (PlayerbotAI::IsHeal(bot))
-        return phase == IllidanPhase::Demon;
-
     if (!PlayerbotAI::IsTank(bot))
         return true;
 

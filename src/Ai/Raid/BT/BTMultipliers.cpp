@@ -76,8 +76,6 @@ bool IsDpsHoldCandidate(Player* bot, Action* action)
     if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
         return false;
 
-    // AttackAction for healers is only to keep them in their combat engine. Their damage, wands
-    // included, comes from CastSpellAction.
     return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
 }
 
@@ -1042,12 +1040,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
 
     if (isDpsAssist)
     {
-        if (phase == IllidanPhase::Demon || PlayerbotAI::IsRangedDps(bot))
+        if (phase == IllidanPhase::Demon || PlayerbotAI::IsRanged(bot))
             return 0.0f;
 
-        return (phase == IllidanPhase::Initial || phase == IllidanPhase::Flying ||
-            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev) &&
-            PlayerbotAI::IsMelee(bot) ? 0.0f : 1.0f;
+        return phase == IllidanPhase::Initial || phase == IllidanPhase::Flying ||
+            phase == IllidanPhase::Grounded || phase == IllidanPhase::Maiev ? 0.0f : 1.0f;
     }
 
     if (action->getThreatType() == Action::ActionThreatType::None)

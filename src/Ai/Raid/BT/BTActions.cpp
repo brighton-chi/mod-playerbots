@@ -2882,14 +2882,6 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     IllidanPhase const phase = GetIllidanPhase(illidan);
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
 
-    // Heals outrank this, so a healer keeps its Demon until it dies rather than losing heal ticks
-    // to target switches.
-    if (phase == IllidanPhase::Demon && PlayerbotAI::IsHeal(bot) && currentTarget &&
-        currentTarget->IsAlive() && currentTarget->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
-    {
-        return false;
-    }
-
     Unit* target = nullptr;
     for (Unit* candidate : GetTargetsInPriorityOrder(illidan, phase))
     {
@@ -2904,8 +2896,8 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     {
         // Melee in Demon Form with nothing to hit drop their target, so they stay off him and off
         // the Demon walking to the warlock tank.
-        if (phase != IllidanPhase::Demon || PlayerbotAI::IsHeal(bot) ||
-            !PlayerbotAI::IsMelee(bot) || (!currentTarget && !bot->GetVictim()))
+        if (phase != IllidanPhase::Demon || !PlayerbotAI::IsMelee(bot) ||
+            (!currentTarget && !bot->GetVictim()))
         {
             return false;
         }
@@ -2943,11 +2935,7 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
 
     if (phase == IllidanPhase::Demon)
     {
-        if (PlayerbotAI::IsHeal(bot))
-        {
-            return { GetShadowDemonForRangedToAttack(botAI, *bot) };
-        }
-        else if (IsIllidanWarlockTank(botAI))
+        if (IsIllidanWarlockTank(botAI))
         {
             return { GetShadowDemonForRangedToAttack(botAI, *bot), illidan };
         }
