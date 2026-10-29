@@ -732,9 +732,9 @@ inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // immediately infecting an adjacent bot, and thus the birther can act again and melee can attack it
 // if it moves into melee range.
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
-// Shadowfiend infection position: on the tank ring, counterclockwise of Illidan and far enough
-// ahead (110°) not to be in range of Draw Soul cast tangentially along the ring. Also far enough
-// to be out of Shadow Blast range for a bot waiting due to a residual infection from phase 3/5.
+// Shadowfiend infection position: 31 yd from the grate center (the Main Tank's circle), 135°
+// counterclockwise of Illidan, past Draw Soul's reach along the ring (110° at 31 yd). Also far
+// enough to be out of Shadow Blast range for a bot waiting out a residual phase 3/5 infection.
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
@@ -883,6 +883,7 @@ Player* GetIllidanWarlockTank(PlayerbotAI* botAI);
 bool IsIllidanWarlockTank(PlayerbotAI* botAI);
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI);
 GuidVector FindIllidanTrapHunterGuids(Player* bot);
+bool IsIllidanTrapHunterReady(Player* hunter);
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI);
 bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player);
 bool IsIllidanInfectionPositionKeptInFlight(PlayerbotAI* botAI);

@@ -2211,7 +2211,7 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
         return true;
 
     // With the trap down the job is done, so a cooldown cut short (i.e., due to Readiness) does not
-    // send hte hunter back to drop a second trap.
+    // send the hunter back to drop a second trap.
     if (auto& infections = BtState(bot->GetInstanceId()).illidanInfections)
     {
         for (auto& [infected, infection] : *infections)
@@ -2268,7 +2268,8 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
         {
             Player* player = ObjectAccessor::FindPlayer(guid);
             if (!infection.hunter.IsEmpty() &&
-                IsExemptFromIllidanInfectionRun(botAI, illidan, player))
+                (IsExemptFromIllidanInfectionRun(botAI, illidan, player) ||
+                 !IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter))))
             {
                 infection.hunter.Clear();
                 infection.isTrapAssigned = false;
@@ -2300,12 +2301,9 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     Player& infected, Position const& infectionPosition,
     std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
 {
-    uint32 const frostTrap = Id(BtSpells::SPELL_FROST_TRAP);
     for (auto const& [player, infection] : infections)
     {
-        Player* other = ObjectAccessor::FindPlayer(infection.hunter);
-        if (other && other->IsAlive() && !other->HasSpellCooldown(frostTrap) &&
-            !HasParasiticShadowfiend(other))
+        if (IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter)))
         {
             hunter = infection.hunter;
             return true;
@@ -2319,9 +2317,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     ObjectGuid candidate;
     for (ObjectGuid const& guid : trapHunters)
     {
-        Player* trapHunter = ObjectAccessor::FindPlayer(guid);
-        if (trapHunter && trapHunter->IsAlive() && !trapHunter->HasSpellCooldown(frostTrap) &&
-            !HasParasiticShadowfiend(trapHunter))
+        if (IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(guid)))
         {
             candidate = guid;
             break;

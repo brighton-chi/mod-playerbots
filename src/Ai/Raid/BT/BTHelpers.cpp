@@ -2101,6 +2101,13 @@ GuidVector FindIllidanTrapHunterGuids(Player* bot)
     return trapHunters;
 }
 
+bool IsIllidanTrapHunterReady(Player* hunter)
+{
+    return hunter && hunter->IsAlive() &&
+        !hunter->HasSpellCooldown(Id(BtSpells::SPELL_FROST_TRAP)) &&
+        !HasParasiticShadowfiend(hunter);
+}
+
 bool IsIllidanTrapHunterOnDuty(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();

@@ -657,8 +657,12 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (infection.hunter.IsEmpty())
                 continue;
 
-            if (IsExemptFromIllidanInfectionRun(botAI, illidan, ObjectAccessor::FindPlayer(player)))
+            if (IsExemptFromIllidanInfectionRun(
+                    botAI, illidan, ObjectAccessor::FindPlayer(player)) ||
+                !IsIllidanTrapHunterReady(ObjectAccessor::FindPlayer(infection.hunter)))
+            {
                 return true;
+            }
         }
     }
 
