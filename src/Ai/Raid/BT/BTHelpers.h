@@ -340,7 +340,7 @@ float GetLineLengthInSupremusHazards(
     std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
     SupremusHazardZone zone);
 bool CanWalkThroughSupremusFire(Player* bot);
-bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit const* target, float range);
+bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit* target, float range);
 Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI);
 
 // Shade of Akama
@@ -862,7 +862,7 @@ bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot);
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase);
 bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
 bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan);
-bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe);
+bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe);
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan);
 bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel);
 float GetGrateAngle(Position const& position);

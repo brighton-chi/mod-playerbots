@@ -691,7 +691,7 @@ bool CanWalkThroughSupremusFire(Player* bot)
     }
 }
 
-bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit const* target, float range)
+bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit* target, float range)
 {
     Player* bot = botAI->GetBot();
     // Standard reach doesn't break channels, so take the same path with this custom reach method.
@@ -1437,7 +1437,7 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
 namespace // Illidan Stormrage
 {
 
-// A point distance yd from Illidan and angle off the line from him through the grate center,
+// A point `distance` yd from Illidan and `angle` off the line from him through the grate center,
 // positive toward the warlock tank's side.
 Position GetDemonFormPoint(Position const& illidan, float distance, float angle)
 {
@@ -1447,8 +1447,8 @@ Position GetDemonFormPoint(Position const& illidan, float distance, float angle)
         illidan.GetPositionY() + distance * std::sin(bearing), illidan.GetPositionZ());
 }
 
-// One row of Demon Form slots 6 yd apart, from highAngle down, each with its angle. Kept only
-// clear of Shadow Blast round the warlock position and within 36 yd of the grate center.
+// One row of Demon Form positions 6 yd apart, from highAngle down, each with its angle. All are
+// clear of Shadow Blast targeted at the warlock position and are within 36 yd of the grate center.
 std::vector<std::pair<float, Position>> GetDemonFormRow(
     Position const& illidan, Position const& warlockTankPosition, float distance, float highAngle,
     float lowAngle, bool halfStepIn)
@@ -1475,8 +1475,6 @@ std::vector<std::pair<float, Position>> GetDemonFormRow(
     return row;
 }
 
-// The place of guid in first and then second, each sorted by GUID, wrapped round slotCount (not
-// 0); -1 if in neither.
 int32 GetIllidanRosterIndex(
     std::vector<ObjectGuid> first, std::vector<ObjectGuid> second, ObjectGuid guid,
     size_t slotCount)
@@ -1493,7 +1491,6 @@ int32 GetIllidanRosterIndex(
     return static_cast<int32>(index % slotCount);
 }
 
-// Dead or alive; null if no group member has the job (an offline tank among them).
 Player* FindFlameOfAzzinothTank(Player* bot, bool isEast)
 {
     Group* group = bot->GetGroup();
@@ -1532,13 +1529,13 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
     float const healthPct = illidan->GetHealthPct();
     if (illidan->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
     {
-        // He takes no damage while flying, so below 30% he is unselectable only for Maiev's
-        // arrival.
         if (healthPct <= ILLIDAN_PHASE_5_HEALTH_PCT)
             return IllidanPhase::None;
 
         constexpr float landingPointTolerance = 0.2f;
-        float x, y, z;
+        float x;
+        float y;
+        float z;
         bool const isLanding =
             illidan->GetExactDist2d(ILLIDAN_LANDING_POSITION) < landingPointTolerance ||
             (illidan->GetMotionMaster()->GetDestination(x, y, z) &&
@@ -1549,7 +1546,9 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
 
     if (healthPct > ILLIDAN_PHASE_2_HEALTH_PCT)
     {
-        // A Draw Soul cast through his liftoff heals him back over 65%, so he can land above it.
+        // Above 65% HP is phase 1 only if the tracker has recorded nothing but phase 1. Draw Soul
+        // can be cast at liftoff, healing Illidan to over 65% for the duration of phase 2 and
+        // causing him to enter phase 3 above 65% HP.
         BtInstanceState const* state = FindBtState(illidan->GetInstanceId());
         bool const isPastInitial = state && state->illidanLastPhase &&
             *state->illidanLastPhase != IllidanPhase::Initial;
@@ -1568,7 +1567,6 @@ IllidanPhase GetIllidanPhase(Unit* illidan)
     return healthPct > ILLIDAN_PHASE_5_HEALTH_PCT ? IllidanPhase::Grounded : IllidanPhase::Maiev;
 }
 
-// He is up and talking after Akama's gossip, still immune to players and out of combat.
 bool IsIllidanSpeechInProgress(Player* bot)
 {
     if (IsEncounterInProgress(bot, BT_MAP_ID) ||
@@ -1584,8 +1582,8 @@ bool IsIllidanSpeechInProgress(Player* bot)
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();
 }
 
-// Written by the mechanic tracker, and at the Demon Form transform by its listener. True if the phase
-// changed.
+// Written by the mechanic tracker, or at the Demon Form transform by a spell listener. True if the
+// phase changed.
 bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase)
 {
     BtInstanceState& state = BtState(instanceId);
@@ -1611,7 +1609,6 @@ bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase)
     return true;
 }
 
-// A phase change the tracker hasn't recorded yet counts as just started.
 bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
@@ -1619,7 +1616,6 @@ bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 d
         GetMSTimeDiffToNow(*state->illidanPhaseStartTime) < durationMs;
 }
 
-// Until the tracker records the change, the last phase it recorded.
 IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
@@ -1632,17 +1628,16 @@ IllidanPhase GetIllidanPhaseBefore(Unit const& illidan, IllidanPhase phase)
     return state->illidanPreviousPhase.value_or(IllidanPhase::None);
 }
 
-// Never true before the tracker has recorded the form.
 bool IsIllidanDemonFormEnding(Unit const& illidan, uint32 durationMs)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
-    return state && state->illidanLastPhase == IllidanPhase::Demon &&
-        state->illidanPhaseStartTime &&
-        GetMSTimeDiffToNow(*state->illidanPhaseStartTime) >=
+    if (!state || state->illidanLastPhase != IllidanPhase::Demon)
+        return false;
+
+    return state->illidanPhaseStartTime && GetMSTimeDiffToNow(*state->illidanPhaseStartTime) >=
         ILLIDAN_DEMON_FORM_DURATION_MS - durationMs;
 }
 
-// The hold window running now, before who it spares is decided.
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
 {
     if (!illidan)
@@ -1666,8 +1661,6 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
             IllidanDpsHold::DemonFormStart : IllidanDpsHold::None;
     }
 
-    // Phase 5 has no threat reset at Maiev's arrival, but Shadow Prison's immunity leaves everyone
-    // suppressed on his threat list, so the first to cause threat after it takes him.
     bool const isAfterReset = phase == IllidanPhase::Initial || phase == IllidanPhase::Grounded ||
         phase == IllidanPhase::Maiev;
 
@@ -1702,7 +1695,6 @@ bool IsFlameOfAzzinothDpsHeld(Unit const& illidan)
         GetMSTimeDiffToNow(*state->illidanFlamePhaseStartTime) < ILLIDAN_FLAME_DPS_WAIT_MS;
 }
 
-// Online, not suppressed: after Shadow Prison only threat the bot causes itself brings it back.
 bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot)
 {
     for (ThreatReference const* ref : illidan.GetThreatMgr().GetUnsortedThreatList())
@@ -1714,8 +1706,8 @@ bool IsOnlineOnIllidanThreatList(Unit const& illidan, Player* bot)
     return false;
 }
 
-// From each phase change until the tracker sees the tanks have aggro, and all through the landing and
-// Maiev's arrival; never at the pull or in the death scene.
+// True from each phase change until the tracker sees the tanks have aggro, and through the landing
+// and Maiev's arrival, but never at the pull or in the death scene.
 bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
 {
     if (phase == IllidanPhase::Landing || phase == IllidanPhase::None)
@@ -1786,16 +1778,17 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
     }
 }
 
-// From his touchdown on landing, and after the landing's or Demon Form's threat reset until the Main
-// Tank has aggro: the tank stands and hits him, and the rest of the raid causes him no threat, since
-// at 0 anything else's first threat takes him from the tank.
 bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
 {
     if (!illidan)
         return false;
 
-    // He touches down 3.665 s after reaching the landing point, 2.43 s before the reset; threat
-    // caused before then is wiped, but a cast begun after it can land after the reset.
+    // Illidan lands 3.665s after reaching the landing point, and threat is reset 2.43s later.
+    // Spells are not held until the landing, so it is possible for a heal to start right as he
+    // lands and resolve right after the reset. I don't believe this is likely to be a problem (by
+    // the time Illidan lands, the party should be topped up or close to it such that only fast
+    // heals are being cast), but it is worth noting in case that comes up. HoTs are potentially
+    // also an issue. If need be, bots can be made to "right-click" them off with aura removal.
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Landing)
         return !illidan->IsLevitating();
@@ -1813,9 +1806,8 @@ bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
     return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
 }
 
-// Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times; DPS holds
-// apply only to Illidan himself.
-bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe)
+// Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times.
+bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe)
 {
     if (!target || isAoe)
         return false;
@@ -1824,7 +1816,6 @@ bool IsIllidanPickupExemptTarget(Unit const* target, bool isAoe)
     return entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) || entry == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
-// In these scenarios, attacking pets are at especially high risk of stripping aggro from the tank.
 bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
 {
     IllidanPhase const phase = GetIllidanPhase(illidan);
@@ -1863,7 +1854,6 @@ Position GetRingPoint(float angle, float radius)
         ILLIDAN_GRATE_CENTER.GetPositionZ());
 }
 
-// Six yards outward of him; a tank walking there from within 9.5 yd only turns him to face out.
 Position GetIllidanSettlePosition(Unit const& illidan)
 {
     float const radius = ILLIDAN_GRATE_CENTER.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;
@@ -1894,9 +1884,10 @@ Position GetGrateSlot(size_t index)
 DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
-    // Ranged DPS rows are inside 31 yd, in spell reach of him, and healer rows behind them; both
-    // are filled from the warlock's side. Melee rows lie behind the healers, centerd between the
-    // warlock and the far end of the ranged DPS, and are filled nearest him first.
+    // Ranged DPS rows are 25.2 and 31 yd out, in spell reach of Illidan, and healer rows 36.8 and
+    // 42.6 yd behind them. Both are filled from the warlock tank's side, highest bearing first.
+    // Melee rows are 48.4, 54.2, and 60 yd out, behind the healers, centered on the bearing midway
+    // between the warlock's and the far end of the ranged rows, and filled from that center outward.
     constexpr std::array rangedRows = { 25.2f, 31.0f };
     constexpr std::array healerRows = { 36.8f, 42.6f };
     static_assert(rangedRows.size() == healerRows.size());
