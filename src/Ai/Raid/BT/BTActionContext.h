@@ -58,6 +58,9 @@ public:
         creators["supremus misdirect to main tank"] =
             &RaidBlackTempleActionContext::supremus_misdirect_to_main_tank;
 
+        creators["supremus tanks position boss"] =
+            &RaidBlackTempleActionContext::supremus_tanks_position_boss;
+
         creators["supremus spread ranged"] = &RaidBlackTempleActionContext::supremus_spread_ranged;
 
         creators["supremus kite boss"] = &RaidBlackTempleActionContext::supremus_kite_boss;
@@ -322,6 +325,12 @@ private:
     {
         return new BlackTempleMisdirectToMainTankAction(
             botAI, "supremus misdirect to main tank", BtHelpers::BtBosses::DATA_SUPREMUS);
+    }
+    static Action* supremus_tanks_position_boss(PlayerbotAI* botAI)
+    {
+        return new BlackTemplePositionBossAction(
+            botAI, "supremus tanks position boss",
+            BtHelpers::BtBosses::DATA_SUPREMUS, BtHelpers::SUPREMUS_INITIAL_TANK_POSITION);
     }
     static Action* supremus_spread_ranged(PlayerbotAI* botAI)
     {

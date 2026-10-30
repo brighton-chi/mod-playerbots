@@ -61,6 +61,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("supremus hunter should misdirect",
         { NextAction("supremus misdirect to main tank", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("supremus should be pulled back by tank",
+        { NextAction("supremus tanks position boss", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("supremus ranged should spread",
         { NextAction("supremus spread ranged", ACTION_RAID + 1) }));
 
@@ -280,9 +283,9 @@ void RaidBlackTempleStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new HighWarlordNajentusTidalShieldHoldPositionMultiplier(botAI));
 
     // Supremus
-    multipliers.push_back(new SupremusFocusOnAvoidanceInKitePhaseMultiplier(botAI));
+    multipliers.push_back(new SupremusRunAwayWhenFixatedMultiplier(botAI));
     multipliers.push_back(new SupremusDoNotReachThroughFireMultiplier(botAI));
-    multipliers.push_back(new SupremusDisableAvoidAoeInKitePhaseMultiplier(botAI));
+    multipliers.push_back(new SupremusControlMovementMultiplier(botAI));
 
     // Shade of Akama
     multipliers.push_back(new ShadeOfAkamaDoNotDropOutOfSightTargetMultiplier(botAI));

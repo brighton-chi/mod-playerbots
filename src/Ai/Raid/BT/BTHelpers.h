@@ -353,6 +353,8 @@ inline constexpr float SUPREMUS_BOUNDARY_MAX_X = 820.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MIN_Y = 590.0f;
 inline constexpr float SUPREMUS_BOUNDARY_MAX_Y = 970.0f;
 
+inline Position const SUPREMUS_INITIAL_TANK_POSITION = { 700.678f, 698.270f, 71.514 };
+
 bool IsSupremusKitePhase(Unit* supremus);
 float GetSupremusFixateTimeRemaining(Unit* supremus);
 float GetSupremusCatchDistance(Player* bot, Unit* supremus);

@@ -173,6 +173,18 @@ protected:
 
 // Supremus
 
+class SupremusShouldBePulledBackByTankTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    SupremusShouldBePulledBackByTankTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "supremus should be pulled back by tank", BtHelpers::BtBosses::DATA_SUPREMUS) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+
 class SupremusRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:

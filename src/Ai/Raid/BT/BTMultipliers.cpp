@@ -288,7 +288,7 @@ float HighWarlordNajentusTidalShieldHoldPositionMultiplier::GetValueInEncounter(
 
 // Supremus
 
-float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action* action)
+float SupremusRunAwayWhenFixatedMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&
@@ -333,12 +333,22 @@ float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* actio
     return IsSupremusReachBlockedByFire(botAI, action->GetTarget(), range) ? 0.0f : 1.0f;
 }
 
-float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)
+float SupremusControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<AvoidAoeAction*>(action))
+    bool const isDisperseOrTankFace = dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action);
+    if (!isDisperseOrTankFace && !dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    return IsSupremusKitePhase(GetEncounterBoss()) ? 0.0f : 1.0f;
+    Unit* supremus = GetEncounterBoss();
+    if (!supremus)
+        return 1.0f;
+
+    if (isDisperseOrTankFace)
+        return 0.0f;
+
+    // Disable avoid aoe for all bots in the kite phase and Supremus's victim in the tank phase.
+    return IsSupremusKitePhase(supremus) || supremus->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 // Shade of Akama

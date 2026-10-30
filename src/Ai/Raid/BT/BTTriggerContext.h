@@ -58,6 +58,9 @@ public:
         creators["supremus hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::supremus_hunter_should_misdirect;
 
+        creators["supremus should be pulled back by tank"] =
+            &RaidBlackTempleTriggerContext::supremus_should_be_pulled_back_by_tank;
+
         creators["supremus ranged should spread"] =
             &RaidBlackTempleTriggerContext::supremus_ranged_should_spread;
 
@@ -319,6 +322,10 @@ private:
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
             botAI, "supremus hunter should misdirect", BtHelpers::BtBosses::DATA_SUPREMUS);
+    }
+    static Trigger* supremus_should_be_pulled_back_by_tank(PlayerbotAI* botAI)
+    {
+        return new SupremusShouldBePulledBackByTankTrigger(botAI);
     }
     static Trigger* supremus_ranged_should_spread(PlayerbotAI* botAI)
     {

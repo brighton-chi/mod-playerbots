@@ -115,13 +115,12 @@ protected:
 
 // Supremus
 
-class SupremusFocusOnAvoidanceInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
+class SupremusRunAwayWhenFixatedMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusFocusOnAvoidanceInKitePhaseMultiplier(PlayerbotAI* botAI)
+    SupremusRunAwayWhenFixatedMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-            botAI, "supremus focus on avoidance in kite phase",
-            BtHelpers::BtBosses::DATA_SUPREMUS) {}
+            botAI, "supremus run away when fixated", BtHelpers::BtBosses::DATA_SUPREMUS) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -138,13 +137,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class SupremusDisableAvoidAoeInKitePhaseMultiplier : public BlackTempleEncounterMultiplier
+class SupremusControlMovementMultiplier : public BlackTempleEncounterMultiplier
 {
 public:
-    SupremusDisableAvoidAoeInKitePhaseMultiplier(PlayerbotAI* botAI)
+    SupremusControlMovementMultiplier(PlayerbotAI* botAI)
         : BlackTempleEncounterMultiplier(
-            botAI, "supremus disable avoid aoe in kite phase",
-            BtHelpers::BtBosses::DATA_SUPREMUS) {}
+            botAI, "supremus control movement", BtHelpers::BtBosses::DATA_SUPREMUS) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

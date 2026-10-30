@@ -135,6 +135,18 @@ bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
 
 // Supremus
 
+bool SupremusShouldBePulledBackByTankTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* supremus = GetEncounterBoss();
+    if (!supremus || IsSupremusKitePhase(supremus))
+        return false;
+
+    return supremus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
+}
+
 bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))

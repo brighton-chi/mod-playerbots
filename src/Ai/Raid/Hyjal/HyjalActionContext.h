@@ -60,6 +60,7 @@ public:
 
         creators["anetheron get out of immolation"] =
             &RaidHyjalActionContext::anetheron_get_out_of_immolation;
+
         creators["anetheron assign dps priority"] =
             &RaidHyjalActionContext::anetheron_assign_dps_priority;
 
