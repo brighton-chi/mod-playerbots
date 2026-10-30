@@ -300,8 +300,8 @@ float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action*
 }
 
 // If reaching a target would mean walking through fire, hold that standard reach. The encounter's
-// reach around fire action walks around it instead, to the party member to heal for a healer and to
-// the current target for everyone else; a blocked reach it does not route does not run.
+// reach around fire action walks around it instead. A blocked reach the action doesn't route around
+// simply doesn't run.
 float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHealReach = dynamic_cast<ReachPartyMemberToHealAction*>(action);
@@ -324,7 +324,6 @@ float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* actio
     return IsSupremusReachBlockedByFire(botAI, action->GetTarget(), range) ? 0.0f : 1.0f;
 }
 
-// Standard avoid aoe is for Molten Flame in the tank phase; otherwise, rely on encounter avoidance.
 float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<AvoidAoeAction*>(action))
@@ -441,8 +440,8 @@ float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Act
     return dropsThreat ? 0.0f : 1.0f;
 }
 
-// Non-tanks other than healers hold below the second tank's threat due to threat drops. Do not
-// apply the multiplier during the Fel Rage phase (when bots cannot gain threat).
+// Non-tanks other than healers stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's threat,
+// except during Fel Rage, when bots cannot gain threat.
 float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -1182,9 +1181,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     return IsHeldIllidanReach(botAI, action, phase) ? 0.0f : 1.0f;
 }
 
-// If near a Shadowfiend that is not low on health, don't attack it or cast any AoE spell or any
-// heal. This is a proxy for having just birthed a Shadowfiend, which can immediately infect the
-// birther if any threat is generated. Switching targets is fine.
+// Near a new Shadowfiend, don't attack it, cast AoE, or heal. Switching targets is fine.
 float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Action* action)
 {
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);

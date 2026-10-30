@@ -605,7 +605,7 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
 }
 
 // An infected bot runs to the infection position, and so does a trap hunter on duty, to lay its
-// Frost Trap. The main tank and Illidan's victim never run, nor the warlock tank in Demon Form.
+// Frost Trap.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
@@ -793,8 +793,6 @@ bool IllidanStormrageImmunityCanClearDebuffTrigger::IsActiveInEncounter()
         return false;
 
     Aura const* darkBarrage = bot->GetAura(Id(BtSpells::SPELL_DARK_BARRAGE));
-    // Impose a delay for bots to react to Dark Barrage. Otherwise, they will remove it before the
-    // visual even starts.
     bool const isDarkBarrageDue =
         darkBarrage && GetAuraElapsedMs(darkBarrage) >= ILLIDAN_DARK_BARRAGE_REACTION_MS;
     if (!isDarkBarrageDue && !bot->HasAura(Id(BtSpells::SPELL_AGONIZING_FLAMES)))
@@ -859,8 +857,7 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 }
 
 // Melee stop attacking during the Demon Form transformation since they need to get away before
-// Aura of Dread becomes active. They also stop attacking when Illidan is at or below 33% HP in
-// Demon Form to avoid pushing him to phase 5 in Demon Form.
+// Aura of Dread becomes active.
 bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))

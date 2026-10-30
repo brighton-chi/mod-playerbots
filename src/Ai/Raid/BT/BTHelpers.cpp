@@ -243,8 +243,7 @@ Unit* GetSkulledSisterOfPain(Player* bot)
 }
 
 // While magic would risk giving a Reaver a Chaotic Charge: (1) during Spell Absorption, (2) before
-// the first Spell Absorption is cast, and (3) 5s inside the margin of a potential Spell Absorption
-// recast (so a cast in progress or in flight doesn't hit late and build a charge).
+// the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
 {
     if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) || !unit->IsAlive())
@@ -832,9 +831,7 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId)
 namespace
 {
 
-// Bloodboil hits the 5 farthest players and stacks. To handle it, 15 ranged bots are divided into 3
-// groups that rotate so that the debuff falls off a group by the time it is up to soak again. The
-// Fel Rage target is excluded because Gurtogg's rage ends 2s before the target's aura does, and
+// The Fel Rage target is excluded because Gurtogg's rage ends 2s before the target's aura does, and
 // until it does, the target is held at the tank position, too close to be one of the 5 farthest.
 std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
 {
@@ -1049,9 +1046,7 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 
 // Mother Shahraz
 
-// Melee dps hold at the ranged position while this is true. The health gate ends the hold at 90%
-// whether or not her victim ever reached the tank spot, so a pull that stalls on positioning still
-// releases them.
+// Melee dps hold at the ranged position while this is true.
 bool IsShahrazBeingPositioned(Unit* shahraz)
 {
     if (!shahraz || shahraz->GetHealthPct() < SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT)
@@ -1884,8 +1879,7 @@ Position GetGrateSlot(size_t index)
 DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
-    // Float values for the arrays are exact 2D distances from Illidan, whose combat reach is 1.5 yd
-    // in Demon Form.
+    // Float values for the arrays are exact 2D distances from Illidan.
     constexpr std::array rangedRows = { 25.2f, 31.0f };
     constexpr std::array healerRows = { 36.8f, 42.6f };
     static_assert(rangedRows.size() == healerRows.size());
@@ -1905,8 +1899,6 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     layout.mainTankStepInPosition = GetDemonFormPoint(
         illidan, ILLIDAN_STEP_IN_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
 
-    // All rows are filled from the warlock tank's side first to try to keep the raid as close
-    // together as possible to concentrate DPS on Shadow Demons.
     auto const fromWarlockSide =
         [](std::pair<float, Position> const& a, std::pair<float, Position> const& b)
     {
@@ -2407,8 +2399,6 @@ Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit)
     return nearest;
 }
 
-// A bot with no Shadowfiend debuff and a Shadowfiend with >50% HP close by is considered at risk
-// of being infected if it generates threat on the Shadowfiend.
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -2601,7 +2591,6 @@ Unit* GetShadowDemonForPetToAttack(PlayerbotAI* botAI, Pet const& pet)
     return GetShadowDemonForMeleeToAttack(botAI, pet);
 }
 
-// Melee leaves its safe position during Demon Form only if its current target is a Shadow Demon.
 bool IsTargetingShadowDemon(PlayerbotAI* botAI)
 {
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();

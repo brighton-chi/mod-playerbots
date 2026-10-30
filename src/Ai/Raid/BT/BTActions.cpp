@@ -1895,7 +1895,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     if (it == hunters.end())
         return false;
 
-    // Each hunter acts as soon as its own Flame is up. The West Flame spawns about 0.7s first.
+    // Each hunter acts as soon as its own Flame is up.
     auto const hunterIndex = std::distance(hunters.begin(), it);
     bool const isEast = hunterIndex != 1;
     auto const [eastFlame, westFlame] = GetFlamesOfAzzinoth(bot);
@@ -3012,7 +3012,6 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 
     if (phase == IllidanPhase::Flying)
     {
-        // The Flame hold starts when the West Flame spawns, ~0.7s before the East Flame spawns.
         if (!state.eastFlameGuid || !state.westFlameGuid)
         {
             std::list<Creature*> flames;

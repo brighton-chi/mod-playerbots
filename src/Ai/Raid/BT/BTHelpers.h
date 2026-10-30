@@ -377,7 +377,8 @@ bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
 
 // Gurtogg Bloodboil
 
-// Bloodboil hits the 5 farthest players, so 3 groups of 5 ranged rotate to soak it.
+// Bloodboil hits the 5 farthest players, and it stacks, so 3 groups of 5 ranged rotate to soak it.
+// The timing allows each group's debuff to lapse by the time its turn comes again.
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
 // Each ranged group stands in a rectangle, with its depth axis pointing toward the tank spot.
@@ -593,8 +594,9 @@ struct EyeBlastDangerArea
 };
 
 // Phase 4 positions, calculated from where Demon Form roots Illidan and the line from him through
-// the grate center. Ranged DPS slots are in spell reach of him and healer slots behind them, each
-// filled from the warlock tank's side.
+// the grate center. Ranged DPS slots are in spell reach of him and healer slots behind them. All
+// rows fill from the warlock tank's side first, to keep the raid close together and concentrate DPS
+// on Shadow Demons.
 struct DemonFormLayout
 {
     Position warlockTankPosition;
@@ -652,7 +654,7 @@ inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
 // Phases 1, 3, and 5
 
 // After a humanoid phase start with a threat reset, the main tank gets up to 3s to grab Illidan.
-// Everyone else is held, except hunters misdirect onto the main tank.
+// Hunters misdirect onto the main tank in that time.
 inline constexpr uint32 ILLIDAN_MAIN_TANK_PICKUP_MS = 3 * IN_MILLISECONDS;
 // Threat resets do not drop the victim. Thus, rather than considering the tank to have aggro when
 // it is the victim, require the tank to have built at least a bit of threat. This is most relevant
@@ -713,8 +715,7 @@ inline constexpr float ILLIDAN_GRATE_INNER_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
     1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT; // phases 3, 4, and 5
-// Phase 4: 8 healer positions (apart from the 19 ranged DPS positions) and 15 melee positions,
-// filling from the warlock tank's side.
+// Phase 4: 8 healer positions (apart from the 19 ranged DPS positions) and 15 melee positions.
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
 inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
 
@@ -748,13 +749,12 @@ inline constexpr uint8 ILLIDAN_EAST_FLAME_TANK_INDEX = 1;
 // The Eye Blast beam's radius, which bots keep clear of by an extra 3 yd.
 inline constexpr float ILLIDAN_EYE_BLAST_HAZARD_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_EYE_BLAST_CLEARANCE = ILLIDAN_EYE_BLAST_HAZARD_RADIUS + 3.0f;
-// Hold on the Flames of Azzinoth this long from the first Flame's spawn. This is especially
-// important for the first 2s after a Flame spawns because it is passive during that time. More time
-// is given here than for main tank phases because the Flame tanks need a bunch of fire resistance
-// and probably cannot generate as much threat as a result.
+// Hold DPS for this long from the West Flame spawning (~0.7s before the East). This is especially
+// important for the first 2s after spawn because the Flame is passive. The hold is longer than for
+// main tank phases because Flame tanks need lots of fire resistance, which hurts threat generation.
 inline constexpr uint32 ILLIDAN_FLAME_DPS_WAIT_MS = 6 * IN_MILLISECONDS;
-// The imposed delay for bots to remove Dark Barrage to allow for some realism. This does cause bots
-// to take one tick of damage (3000).
+// The imposed delay for bots to remove Dark Barrage, so they don't unrealistically remove it before
+// the visual appears. This does cause bots to take one tick of damage (3000).
 inline constexpr uint32 ILLIDAN_DARK_BARRAGE_REACTION_MS = 1500;
 
 // Phase 4
@@ -764,7 +764,7 @@ inline constexpr uint32 ILLIDAN_DEMON_FORM_DURATION_MS = 72230;
 // Shadow Demons appear this long after the Demon Form transformation starts (30s into the active
 // portion of phase 4).
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_SPAWN_MS = 42230;
-// Only the warlock tank attacks Illidan during the 12.23s transform to Demon Form.
+// The transform to Demon Form takes 12.23s.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_DPS_WAIT_MS = 13 * IN_MILLISECONDS;
 // Everyone stops attacking Illidan 3s before the end of Demon Form.
 inline constexpr uint32 ILLIDAN_DEMON_FORM_END_HOLD_MS = 3 * IN_MILLISECONDS;
