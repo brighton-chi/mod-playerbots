@@ -213,6 +213,7 @@ bool IsDpsCooldownAction(Player* bot, Action* action);
 // Includes both single-target and AoE taunts.
 bool IsTauntAction(Player* bot, Action* action);
 // These abilities (e.g., Avenger's Shield) can be problematic on the pull for a council-type boss.
+// Covers tanks only.
 bool IsAoeThreatAction(Player* bot, Action* action);
 
 // Miscellaneous
