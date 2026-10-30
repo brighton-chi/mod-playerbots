@@ -161,7 +161,7 @@ bool MarkTargetWithDiamond(Player* bot, Unit* target);
 bool MarkTargetWithTriangle(Player* bot, Unit* target);
 bool MarkTargetWithCross(Player* bot, Unit* target);
 bool MarkTargetWithMoon(Player* bot, Unit* target);
-// For bots to set their raid target icon to the specified icon.
+// For bots to set their RTI attack target to the specified icon.
 void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName);
 // For clearing marks outside of combat and/or encounters so bots don't Leeroy on sight.
 bool ClearTargetIcon(Player* bot, uint8 iconId);
