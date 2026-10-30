@@ -218,6 +218,33 @@ enum class BtObjects : uint32
 };
 
 inline constexpr uint32 BT_MAP_ID = 564;
+
+// DungeonEncounter.dbc encounterIndex, map 564; also each boss's ObjectData key
+enum class BtBosses : uint32
+{
+    DATA_HIGH_WARLORD_NAJENTUS      = 0,
+    DATA_SUPREMUS                   = 1,
+    DATA_SHADE_OF_AKAMA             = 2,
+    DATA_TERON_GOREFIEND            = 3,
+    DATA_GURTOGG_BLOODBOIL          = 4,
+    DATA_RELIQUARY_OF_SOULS         = 5,
+    DATA_MOTHER_SHAHRAZ             = 6,
+    DATA_ILLIDARI_COUNCIL           = 7,
+    DATA_ILLIDAN_STORMRAGE          = 8,
+};
+
+// ObjectData keys of the Council members, from black_temple.h; not in the DBC
+enum class BtCreatureData : uint32
+{
+    DATA_GATHIOS_THE_SHATTERER      = 12,
+    DATA_HIGH_NETHERMANCER_ZEREVOR  = 13,
+    DATA_LADY_MALANDE               = 14,
+    DATA_VERAS_DARKSHADOW           = 15,
+};
+
+Creature* GetBtBoss(Player* bot, BtBosses boss);
+Creature* GetBtCreature(Player* bot, BtCreatureData data);
+
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 // How close to its assigned spot a bot has to stand to count as arrived.
 inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
@@ -476,8 +503,6 @@ inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
 // 175 yd extends to the top of the steps leading to the courtyard outside the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 
-inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = 150.0f;
-inline constexpr uint32 COUNCIL_MEMBER_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS; // on pull
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 // A minor spread is maintained by ranged when clear of hazards to avoid the next one hitting too
@@ -514,14 +539,6 @@ inline std::array const ZEREVOR_TANK_POSITIONS = {
     Position{ 644.597f, 338.875f, 271.688f },
 };
 
-struct IllidariCouncilMemberGuids
-{
-    ObjectGuid gathios;
-    ObjectGuid malande;
-    ObjectGuid zerevor;
-    ObjectGuid veras;
-};
-
 struct IllidariCouncilMembers
 {
     Unit* gathios = nullptr;
@@ -530,7 +547,6 @@ struct IllidariCouncilMembers
     Unit* veras = nullptr;
 };
 
-IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot);
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(PlayerbotAI* botAI);

@@ -390,7 +390,7 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& excl
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return;
 

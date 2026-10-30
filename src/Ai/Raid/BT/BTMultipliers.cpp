@@ -60,14 +60,6 @@ bool IsReliquaryEssence(uint32 entry)
         entry == Id(BtNpcs::NPC_ESSENCE_OF_DESIRE) || entry == Id(BtNpcs::NPC_ESSENCE_OF_ANGER);
 }
 
-// Illidan, Supremus, and Reliquary also have DPS holds at pull but have additional conditions too.
-bool IsBlackTempleBossHeldAtPull(uint32 entry)
-{
-    return entry == Id(BtNpcs::NPC_HIGH_WARLORD_NAJENTUS) ||
-        entry == Id(BtNpcs::NPC_TERON_GOREFIEND) || entry == Id(BtNpcs::NPC_GURTOGG_BLOODBOIL) ||
-        entry == Id(BtNpcs::NPC_MOTHER_SHAHRAZ) || entry == Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER);
-}
-
 bool IsDpsHoldCandidate(Player* bot, Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -107,64 +99,81 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    Unit* illidan = nullptr;
-    Unit* supremus = nullptr;
-    Unit* essence = nullptr;
-    Unit* boss = nullptr;
-    bool isReliquary = false;
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    std::optional<uint32> const bossId = GetBossInProgress(bot, BT_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    switch (static_cast<BtBosses>(*bossId))
     {
-        Unit* unit = ref->GetOwner();
-        if (!unit)
-            continue;
-
-        uint32 const entry = unit->GetEntry();
-        if (entry == Id(BtNpcs::NPC_ILLIDAN_STORMRAGE))
-            illidan = unit;
-        else if (entry == Id(BtNpcs::NPC_RELIQUARY_OF_THE_LOST))
-            isReliquary = true;
-        // After being defeated, an Essence stays on threat lists while it returns to the Reliquary
-        // with 1 HP. This check prevents cooldowns from being released during such period.
-        else if (IsReliquaryEssence(entry) && !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
-            essence = unit;
-        else if (entry == Id(BtNpcs::NPC_SUPREMUS))
-            supremus = unit;
-        else if (IsBlackTempleBossHeldAtPull(entry))
-            boss = unit;
-    }
-
-    if (illidan)
-    {
-        // At 62%, Bloodlust and all cooldowns are permanently freed.
-        if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
-            return 1.0f;
-
-        if (bot->getClass() == CLASS_SHAMAN &&
-            (dynamic_cast<CastHeroismAction*>(action) ||
-             dynamic_cast<CastBloodlustAction*>(action)))
+        case BtBosses::DATA_ILLIDAN_STORMRAGE:
         {
-            return 0.0f;
+            Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
+            if (!illidan)
+                return 1.0f;
+
+            // At 62%, Bloodlust and all cooldowns are permanently freed.
+            if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
+                return 1.0f;
+
+            if (bot->getClass() == CLASS_SHAMAN &&
+                (dynamic_cast<CastHeroismAction*>(action) ||
+                 dynamic_cast<CastBloodlustAction*>(action)))
+            {
+                return 0.0f;
+            }
+
+            // Above 95%, cooldowns other than Bloodlust can be used, then disable them until 62%
+            // (i.e., get one use in and then save until phase 3, when cooldown should be back up).
+            return illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
         }
+        case BtBosses::DATA_RELIQUARY_OF_SOULS:
+        {
+            if (!GetBtBoss(bot, BtBosses::DATA_RELIQUARY_OF_SOULS))
+                return 1.0f;
 
-        // Above 95%, cooldowns other than Bloodlust can be used, then disable them until 62% (i.e.,
-        // get one use in and then save until phase 3, when cooldown should be back up).
-        return illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
-    }
-    else if (isReliquary)
-    {
-        return !essence || essence->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-    }
-    else if (supremus)
-    {
-        return IsSupremusKitePhase(supremus) ||
-            supremus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-    }
-    else if (boss)
-    {
-        return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-    }
+            Unit* essence = nullptr;
+            for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+            {
+                Unit* unit = ref->GetOwner();
+                // After being defeated, an Essence stays on threat lists while it returns to the
+                // Reliquary with 1 HP. This check prevents cooldowns from being released during
+                // such period.
+                if (unit && IsReliquaryEssence(unit->GetEntry()) &&
+                    !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+                {
+                    essence = unit;
+                    break;
+                }
+            }
 
-    return 1.0f;
+            return !essence || essence->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        case BtBosses::DATA_SUPREMUS:
+        {
+            Unit* supremus = GetBtBoss(bot, BtBosses::DATA_SUPREMUS);
+            if (!supremus)
+                return 1.0f;
+
+            return IsSupremusKitePhase(supremus) ||
+                supremus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        case BtBosses::DATA_HIGH_WARLORD_NAJENTUS:
+        case BtBosses::DATA_TERON_GOREFIEND:
+        case BtBosses::DATA_GURTOGG_BLOODBOIL:
+        case BtBosses::DATA_MOTHER_SHAHRAZ:
+        {
+            Unit* boss = GetBtBoss(bot, static_cast<BtBosses>(*bossId));
+            return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        case BtBosses::DATA_ILLIDARI_COUNCIL:
+        {
+            // Empyreal Balance shares health, so Gathios's percentage is the Council's.
+            Unit* gathios = GetBtCreature(bot, BtCreatureData::DATA_GATHIOS_THE_SHATTERER);
+            return gathios && gathios->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        default:
+            return 1.0f;
+    }
 }
 
 // Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the
@@ -179,7 +188,7 @@ float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* acti
         return 1.0f;
 
     return AI_VALUE2(Unit*, "find target", "essence of suffering") ||
-        AI_VALUE2(Unit*, "find target", "supremus") ? 0.0f : 1.0f;
+        GetBtBoss(bot, BtBosses::DATA_SUPREMUS) ? 0.0f : 1.0f;
 }
 
 // Shade of Akama and its Channelers and Sorcerers are not tankable, and Fel Rage fixes Gurtogg on
@@ -257,7 +266,7 @@ float HighWarlordNajentusDisableCombatFormationMoveMultiplier::GetValueInEncount
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "high warlord naj'entus") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 // Tidal Shield makes Naj'entus invalid, causing bots to drop combat. Stop them from breaking their
@@ -273,7 +282,7 @@ float HighWarlordNajentusTidalShieldHoldPositionMultiplier::GetValueInEncounter(
         return 1.0f;
     }
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    Unit* najentus = GetEncounterBoss();
     return najentus && najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD)) ? 0.0f : 1.0f;
 }
 
@@ -292,7 +301,7 @@ float SupremusFocusOnAvoidanceInKitePhaseMultiplier::GetValueInEncounter(Action*
     if (dynamic_cast<SupremusKiteBossAction*>(action) || dynamic_cast<AttackAction*>(action))
         return 1.0f;
 
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    Unit* supremus = GetEncounterBoss();
     if (!supremus || supremus->GetVictim() != bot)
         return 1.0f;
 
@@ -310,7 +319,7 @@ float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* actio
     if (!isHealReach && !isSpellReach && !isMeleeReach)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+    if (!GetEncounterBoss())
         return 1.0f;
 
     float range;
@@ -329,7 +338,7 @@ float SupremusDisableAvoidAoeInKitePhaseMultiplier::GetValueInEncounter(Action* 
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    return IsSupremusKitePhase(AI_VALUE2(Unit*, "find target", "supremus")) ? 0.0f : 1.0f;
+    return IsSupremusKitePhase(GetEncounterBoss()) ? 0.0f : 1.0f;
 }
 
 // Shade of Akama
@@ -369,7 +378,7 @@ float TeronGorefiendControlMovementMultiplier::GetValueInEncounter(Action* actio
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "teron gorefiend") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 float TeronGorefiendMarkedBotOnlyMoveToDieMultiplier::GetValueInEncounter(Action* action)
@@ -421,7 +430,7 @@ float GurtoggBloodboilControlMovementMultiplier::GetValueInEncounter(Action* act
             return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 // Gurtogg is fixated on the Fel Rage target, so it should not use threat drop abilities.
@@ -453,7 +462,7 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetEncounterBoss();
     if (!gurtogg)
         return 1.0f;
 
@@ -562,8 +571,7 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
         if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
             return 1.0f;
 
-        return IsShahrazBeingPositioned(AI_VALUE2(Unit*, "find target", "mother shahraz")) ?
-            0.0f : 1.0f;
+        return IsShahrazBeingPositioned(GetEncounterBoss()) ? 0.0f : 1.0f;
     }
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action) && !IsRepositionAction(bot, action))
@@ -572,7 +580,7 @@ float MotherShahrazControlMovementMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "mother shahraz") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 float MotherShahrazFatalAttractionRunAwayMultiplier::GetValueInEncounter(Action* action)
@@ -969,7 +977,7 @@ float IllidanStormrageHoldPullPositionsMultiplier::GetValue(Action* action)
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return 1.0f;
 
@@ -1197,7 +1205,7 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
     if (!isOnShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "illidan stormrage"))
+    if (!GetEncounterBoss())
         return 1.0f;
 
     return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;
@@ -1211,7 +1219,7 @@ float IllidanStormrageHoldGuardianSummonsMultiplier::GetValueInEncounter(Action*
     if (!IsGuardianSummon(bot, action))
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return 1.0f;
 
@@ -1236,7 +1244,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return 1.0f;
 
@@ -1280,7 +1288,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return 1.0f;
 
@@ -1347,7 +1355,7 @@ float IllidanStormrageDisableTankSoulshatterMultiplier::GetValueInEncounter(Acti
     if (!dynamic_cast<CastSoulshatterAction*>(action))
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return 1.0f;
 
@@ -1364,7 +1372,7 @@ float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Ac
     if (!IsIllidanAoeAction(bot, action))
         return 1.0f;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return 1.0f;
 

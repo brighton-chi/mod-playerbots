@@ -40,12 +40,12 @@ class BlackTempleMisdirectToMainTankAction : public Action
 {
 public:
     BlackTempleMisdirectToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss)
+        : Action(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    BtHelpers::BtBosses const _boss;
 };
 
 // Used for High Warlord Naj'entus, Teron Gorefiend and Gurtogg Bloodboil, including his Fel Rage
@@ -55,13 +55,13 @@ class BlackTemplePositionBossAction : public AttackAction
 {
 public:
     BlackTemplePositionBossAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss,
         Position const& position, bool allTanks = false)
-        : AttackAction(botAI, name), _bossName(bossName), _position(position), _allTanks(allTanks) {}
+        : AttackAction(botAI, name), _boss(boss), _position(position), _allTanks(allTanks) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    BtHelpers::BtBosses const _boss;
     Position const _position;
     bool const _allTanks;
 };

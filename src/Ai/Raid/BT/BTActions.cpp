@@ -118,7 +118,7 @@ bool BlackTempleAssignClassRolesAction::Execute(Event /*event*/)
 
 bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetBtBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -131,7 +131,7 @@ bool BlackTempleMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool BlackTemplePositionBossAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetBtBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -366,7 +366,7 @@ bool HighWarlordNajentusRemoveImpalingSpineAction::Execute(Event /*event*/)
 
 bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 {
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    Unit* najentus = GetBtBoss(bot, BtBosses::DATA_HIGH_WARLORD_NAJENTUS);
     if (!najentus)
         return false;
 
@@ -380,7 +380,7 @@ bool HighWarlordNajentusAssignSpineThrowerAction::Execute(Event /*event*/)
 
 bool HighWarlordNajentusThrowImpalingSpineAction::Execute(Event /*event*/)
 {
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    Unit* najentus = GetBtBoss(bot, BtBosses::DATA_HIGH_WARLORD_NAJENTUS);
     if (!najentus)
         return false;
 
@@ -477,7 +477,7 @@ void GetFireCrossing(
 
 bool SupremusKiteBossAction::Execute(Event /*event*/)
 {
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    Unit* supremus = GetBtBoss(bot, BtBosses::DATA_SUPREMUS);
     if (!supremus)
         return false;
 
@@ -936,7 +936,7 @@ bool TeronGorefiendMoveToCornerToDieAction::Execute(Event /*event*/)
 
 bool TeronGorefiendDestroyShadowyConstructsAction::Execute(Event /*event*/)
 {
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    Unit* gorefiend = GetBtBoss(bot, BtBosses::DATA_TERON_GOREFIEND);
     if (!gorefiend)
         return false;
 
@@ -1100,7 +1100,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
 
 bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
 {
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
     if (!gurtogg)
         return false;
 
@@ -1116,7 +1116,7 @@ bool GurtoggBloodboilMeleeMoveBehindAction::Execute(Event /*event*/)
 
 bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 {
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
     if (!gurtogg)
         return false;
 
@@ -1273,7 +1273,7 @@ bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 
 bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 {
-    Unit* shahraz = AI_VALUE2(Unit*, "find target", "mother shahraz");
+    Unit* shahraz = GetBtBoss(bot, BtBosses::DATA_MOTHER_SHAHRAZ);
     if (!shahraz)
         return false;
 
@@ -1837,8 +1837,8 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     Position const& position = ILLIDAN_PULL_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        Creature* illidan = bot->FindNearestCreature(
-            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
+        Creature* illidan =
+            GetInstanceCreature(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDAN_STORMRAGE));
         FaceUnit(bot, illidan);
         return false;
     }
@@ -1853,7 +1853,7 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
 // and the first and any others misdirect the East Flame (which is killed first).
 bool IllidanStormrageMisdirectToTanksAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -1922,7 +1922,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
 // proxy for the boss's position).
 bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2182,7 +2182,7 @@ void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
 
 bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2228,7 +2228,7 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
 // the middle of an infection, but it does move counterclockwise between infections as Illidan does.
 bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2520,7 +2520,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    if (ShouldIllidanPetsBePassive(botAI, AI_VALUE2(Unit*, "find target", "illidan stormrage")))
+    if (ShouldIllidanPetsBePassive(botAI, GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE)))
     {
         if (!pet->HasReactState(REACT_PASSIVE))
         {
@@ -2555,7 +2555,7 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
     }
 
     IllidanPhase const phase =
-        GetIllidanPhase(AI_VALUE2(Unit*, "find target", "illidan stormrage"));
+        GetIllidanPhase(GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE));
     Unit* target =
         phase == IllidanPhase::Demon ? GetShadowDemonForPetToAttack(botAI, *pet) : nullptr;
     if (!target && !isNearNewShadowfiend)
@@ -2630,7 +2630,7 @@ bool IllidanStormrageMeleeStopAttackingAction::Execute(Event /*event*/)
 
 bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2660,7 +2660,7 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
     if (HasParasiticShadowfiend(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2733,7 +2733,7 @@ bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
 
 bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2771,7 +2771,7 @@ bool IllidanStormrageReachShadowDemonAction::Execute(Event /*event*/)
 
 bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2794,7 +2794,7 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
 
 bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2871,7 +2871,7 @@ Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 
 bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 
@@ -2999,7 +2999,7 @@ Unit* IllidanStormrageAssignTargetPriorityAction::FindShadowfiendForRanged(Illid
 
 bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return false;
 

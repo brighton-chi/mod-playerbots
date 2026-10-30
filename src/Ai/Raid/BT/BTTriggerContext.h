@@ -286,7 +286,8 @@ private:
     static Trigger* high_warlord_najentus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "high warlord naj'entus hunter should misdirect", "high warlord naj'entus");
+            botAI, "high warlord naj'entus hunter should misdirect",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS);
     }
     static Trigger* high_warlord_najentus_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -317,7 +318,7 @@ private:
     static Trigger* supremus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "supremus hunter should misdirect", "supremus");
+            botAI, "supremus hunter should misdirect", BtHelpers::BtBosses::DATA_SUPREMUS);
     }
     static Trigger* supremus_ranged_should_spread(PlayerbotAI* botAI)
     {
@@ -346,7 +347,8 @@ private:
     static Trigger* teron_gorefiend_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "teron gorefiend hunter should misdirect", "teron gorefiend");
+            botAI, "teron gorefiend hunter should misdirect",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND);
     }
     static Trigger* teron_gorefiend_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -373,7 +375,8 @@ private:
     static Trigger* gurtogg_bloodboil_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "gurtogg bloodboil hunter should misdirect", "gurtogg bloodboil");
+            botAI, "gurtogg bloodboil hunter should misdirect",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL);
     }
     static Trigger* gurtogg_bloodboil_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -422,7 +425,8 @@ private:
     static Trigger* mother_shahraz_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "mother shahraz hunter should misdirect", "mother shahraz");
+            botAI, "mother shahraz hunter should misdirect",
+            BtHelpers::BtBosses::DATA_MOTHER_SHAHRAZ);
     }
     static Trigger* mother_shahraz_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -445,7 +449,9 @@ private:
     static Trigger* illidari_council_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new BlackTempleHunterShouldMisdirectTrigger(
-            botAI, "illidari council hunter should misdirect", "gathios the shatterer");
+            botAI, "illidari council hunter should misdirect",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL,
+            BtHelpers::BtCreatureData::DATA_GATHIOS_THE_SHATTERER);
     }
     static Trigger* illidari_council_gathios_should_be_tanked(PlayerbotAI* botAI)
     {

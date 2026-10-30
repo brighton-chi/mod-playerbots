@@ -285,13 +285,14 @@ private:
     static Action* high_warlord_najentus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new BlackTempleMisdirectToMainTankAction(
-            botAI, "high warlord naj'entus misdirect to main tank", "high warlord naj'entus");
+            botAI, "high warlord naj'entus misdirect to main tank",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS);
     }
     static Action* high_warlord_najentus_tanks_position_boss(PlayerbotAI* botAI)
     {
         return new BlackTemplePositionBossAction(
-            botAI, "high warlord naj'entus tanks position boss", "high warlord naj'entus",
-            BtHelpers::NAJENTUS_TANK_POSITION);
+            botAI, "high warlord naj'entus tanks position boss",
+            BtHelpers::BtBosses::DATA_HIGH_WARLORD_NAJENTUS, BtHelpers::NAJENTUS_TANK_POSITION);
     }
     static Action* high_warlord_najentus_spread_ranged(PlayerbotAI* botAI)
     {
@@ -320,7 +321,7 @@ private:
     static Action* supremus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new BlackTempleMisdirectToMainTankAction(
-            botAI, "supremus misdirect to main tank", "supremus");
+            botAI, "supremus misdirect to main tank", BtHelpers::BtBosses::DATA_SUPREMUS);
     }
     static Action* supremus_spread_ranged(PlayerbotAI* botAI)
     {
@@ -350,13 +351,14 @@ private:
     static Action* teron_gorefiend_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new BlackTempleMisdirectToMainTankAction(
-            botAI, "teron gorefiend misdirect to main tank", "teron gorefiend");
+            botAI, "teron gorefiend misdirect to main tank",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND);
     }
     static Action* teron_gorefiend_tanks_position_boss(PlayerbotAI* botAI)
     {
         return new BlackTemplePositionBossAction(
-            botAI, "teron gorefiend tanks position boss", "teron gorefiend",
-            BtHelpers::GOREFIEND_TANK_POSITION);
+            botAI, "teron gorefiend tanks position boss",
+            BtHelpers::BtBosses::DATA_TERON_GOREFIEND, BtHelpers::GOREFIEND_TANK_POSITION);
     }
     static Action* teron_gorefiend_position_ranged_on_balcony(PlayerbotAI* botAI)
     {
@@ -379,14 +381,16 @@ private:
     static Action* gurtogg_bloodboil_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new BlackTempleMisdirectToMainTankAction(
-            botAI, "gurtogg bloodboil misdirect to main tank", "gurtogg bloodboil");
+            botAI, "gurtogg bloodboil misdirect to main tank",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL);
     }
     static Action* gurtogg_bloodboil_tanks_position_boss(PlayerbotAI* botAI)
     {
         constexpr bool allTanks = true;
         return new BlackTemplePositionBossAction(
-            botAI, "gurtogg bloodboil tanks position boss", "gurtogg bloodboil",
-            BtHelpers::GURTOGG_TANK_POSITION, allTanks);
+            botAI, "gurtogg bloodboil tanks position boss",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL, BtHelpers::GURTOGG_TANK_POSITION,
+            allTanks);
     }
     static Action* gurtogg_bloodboil_rotate_ranged_groups(PlayerbotAI* botAI)
     {
@@ -403,8 +407,8 @@ private:
     static Action* gurtogg_bloodboil_lead_boss_to_tank_position(PlayerbotAI* botAI)
     {
         return new BlackTemplePositionBossAction(
-            botAI, "gurtogg bloodboil lead boss to tank position", "gurtogg bloodboil",
-            BtHelpers::GURTOGG_TANK_POSITION);
+            botAI, "gurtogg bloodboil lead boss to tank position",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL, BtHelpers::GURTOGG_TANK_POSITION);
     }
 
     // Reliquary of Souls
@@ -434,7 +438,8 @@ private:
     static Action* mother_shahraz_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new BlackTempleMisdirectToMainTankAction(
-            botAI, "mother shahraz misdirect to main tank", "mother shahraz");
+            botAI, "mother shahraz misdirect to main tank",
+            BtHelpers::BtBosses::DATA_MOTHER_SHAHRAZ);
     }
     static Action* mother_shahraz_tanks_position_boss_under_pillar(PlayerbotAI* botAI)
     {

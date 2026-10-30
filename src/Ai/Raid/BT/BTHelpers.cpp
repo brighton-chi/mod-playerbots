@@ -44,6 +44,16 @@ std::unordered_map<uint32, BtInstanceState> btStates;
 
 // Shared
 
+Creature* GetBtBoss(Player* bot, BtBosses boss)
+{
+    return GetInstanceBoss(bot, BT_MAP_ID, Id(boss));
+}
+
+Creature* GetBtCreature(Player* bot, BtCreatureData data)
+{
+    return GetInstanceCreature(bot, BT_MAP_ID, Id(data));
+}
+
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
     if (!target || !tank)
@@ -610,8 +620,7 @@ std::vector<SupremusHazard> FindSupremusHazards(PlayerbotAI* botAI)
         }
     }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    Unit* supremus = GetBtBoss(bot, BtBosses::DATA_SUPREMUS);
     if (!supremus || !IsSupremusKitePhase(supremus))
         return hazards;
 
@@ -946,8 +955,7 @@ Position GetGurtoggFelRageMeleePosition(
 
 float FindGurtoggSecondTankThreat(PlayerbotAI* botAI)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetBtBoss(botAI->GetBot(), BtBosses::DATA_GURTOGG_BLOODBOIL);
     if (!gurtogg)
         return 0.0f;
 
@@ -1058,61 +1066,20 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
-IllidariCouncilMemberGuids FindIllidariCouncilMemberGuids(Player* bot)
-{
-    static std::vector<uint32> const entries = {
-        Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER),
-        Id(BtNpcs::NPC_LADY_MALANDE),
-        Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR),
-        Id(BtNpcs::NPC_VERAS_DARKSHADOW),
-    };
-
-    IllidariCouncilMemberGuids guids;
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, entries, COUNCIL_MEMBER_SEARCH_RADIUS);
-    for (Creature* creature : creatures)
-    {
-        if (!creature->IsAlive() || !creature->IsInCombat())
-            continue;
-
-        switch (static_cast<BtNpcs>(creature->GetEntry()))
-        {
-            case BtNpcs::NPC_GATHIOS_THE_SHATTERER:
-                guids.gathios = creature->GetGUID();
-                break;
-            case BtNpcs::NPC_LADY_MALANDE:
-                guids.malande = creature->GetGUID();
-                break;
-            case BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR:
-                guids.zerevor = creature->GetGUID();
-                break;
-            case BtNpcs::NPC_VERAS_DARKSHADOW:
-                guids.veras = creature->GetGUID();
-                break;
-            default:
-                break;
-        }
-    }
-
-    return guids;
-}
-
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
 {
-    IllidariCouncilMemberGuids const& guids = botAI->GetAiObjectContext()
-        ->GetValue<IllidariCouncilMemberGuids>("illidari council members")->RefGet();
-
-    auto const getMember = [botAI](ObjectGuid guid) -> Unit*
+    Player* bot = botAI->GetBot();
+    auto const getMember = [bot](BtCreatureData data) -> Unit*
     {
-        Unit* unit = guid.IsEmpty() ? nullptr : botAI->GetUnit(guid);
-        return unit && unit->IsAlive() ? unit : nullptr;
+        Creature* member = GetBtCreature(bot, data);
+        return member && member->IsInCombat() ? member : nullptr;
     };
 
     return {
-        getMember(guids.gathios),
-        getMember(guids.malande),
-        getMember(guids.zerevor),
-        getMember(guids.veras),
+        getMember(BtCreatureData::DATA_GATHIOS_THE_SHATTERER),
+        getMember(BtCreatureData::DATA_LADY_MALANDE),
+        getMember(BtCreatureData::DATA_HIGH_NETHERMANCER_ZEREVOR),
+        getMember(BtCreatureData::DATA_VERAS_DARKSHADOW),
     };
 }
 
@@ -1364,21 +1331,10 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     Player* bot = botAI->GetBot();
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* ownTarget = AI_VALUE(Unit*, "current target");
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    for (Unit* member : { members.gathios, members.malande, members.zerevor, members.veras })
     {
-        Unit* member = ref->GetOwner();
-        if (!member || member == ownTarget)
-            continue;
-
-        uint32 const entry = member->GetEntry();
-        if (entry != Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER) &&
-            entry != Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR) &&
-            entry != Id(BtNpcs::NPC_LADY_MALANDE) && entry != Id(BtNpcs::NPC_VERAS_DARKSHADOW))
-        {
-            continue;
-        }
-
-        if (bot->GetDistance(member) < range)
+        if (member && member != ownTarget && bot->GetDistance(member) < range)
             return true;
     }
 
@@ -1570,8 +1526,8 @@ bool IsIllidanSpeechInProgress(Player* bot)
         return false;
     }
 
-    Creature* illidan = bot->FindNearestCreature(
-        Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
+    Creature* illidan =
+        GetInstanceCreature(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDAN_STORMRAGE));
 
     return illidan && illidan->getStandState() == UNIT_STAND_STATE_STAND &&
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();

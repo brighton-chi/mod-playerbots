@@ -35,7 +35,7 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = _target ? GetBtCreature(bot, *_target) : GetEncounterBoss();
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
@@ -80,7 +80,7 @@ bool ShadowmoonReaverShouldControlCasterPetTrigger::IsActive()
 
 bool HighWarlordNajentusShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
 }
 
 bool HighWarlordNajentusRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -88,7 +88,7 @@ bool HighWarlordNajentusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
+    if (!GetEncounterBoss())
         return false;
 
     return GetNearestPlayerInRadius(bot, NAJENTUS_RANGED_SPREAD_DISTANCE);
@@ -99,7 +99,7 @@ bool HighWarlordNajentusImpaledPlayerNeedsRemoverTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
+    if (!GetEncounterBoss())
         return false;
 
     return FindNajentusUnassignedImpaledPlayer(bot);
@@ -115,7 +115,7 @@ bool HighWarlordNajentusNeedsSpineThrowerTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "high warlord naj'entus"))
+    if (!GetEncounterBoss())
         return false;
 
     return !GetNajentusSpineThrower(bot);
@@ -126,7 +126,7 @@ bool HighWarlordNajentusHasTidalShieldTrigger::IsActiveInEncounter()
     if (!IsNajentusSpineThrower(bot) || IsNajentusSpineInFlight(bot))
         return false;
 
-    Unit* najentus = AI_VALUE2(Unit*, "find target", "high warlord naj'entus");
+    Unit* najentus = GetEncounterBoss();
     if (!najentus || !najentus->HasAura(Id(BtSpells::SPELL_TIDAL_SHIELD)))
         return false;
 
@@ -140,7 +140,7 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    Unit* supremus = GetEncounterBoss();
     if (!supremus || IsSupremusKitePhase(supremus))
         return false;
 
@@ -160,7 +160,7 @@ bool SupremusRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 bool SupremusFixatedOnBotTrigger::IsActiveInEncounter()
 {
-    Unit* supremus = AI_VALUE2(Unit*, "find target", "supremus");
+    Unit* supremus = GetEncounterBoss();
     if (!supremus || supremus->GetVictim() != bot || !IsSupremusKitePhase(supremus))
         return false;
 
@@ -174,7 +174,7 @@ bool SupremusFixatedOnBotTrigger::IsActiveInEncounter()
 
 bool SupremusNearFireTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+    if (!GetEncounterBoss())
         return false;
 
     if (bot->isMoving() && CanWalkThroughSupremusFire(bot))
@@ -187,7 +187,7 @@ bool SupremusNearFireTrigger::IsActiveInEncounter()
 
 bool SupremusReachBlockedByFireTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
+    if (!GetEncounterBoss())
         return false;
 
     return GetSupremusFireBlockedReachTarget(botAI);
@@ -211,12 +211,12 @@ bool ShadeOfAkamaShouldAttackChannelersAndSorcerersTrigger::IsActiveInEncounter(
 
 bool TeronGorefiendShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
 }
 
 bool TeronGorefiendRangedShouldPositionOnBalconyTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
 }
 
 // Feign Death and Vanish cancel the Shadow of Death cast. It is Blizzlike for Ice Block and Divine
@@ -226,7 +226,7 @@ bool TeronGorefiendCastsShadowOfDeathTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE)
         return false;
 
-    Unit* gorefiend = AI_VALUE2(Unit*, "find target", "teron gorefiend");
+    Unit* gorefiend = GetEncounterBoss();
     if (!gorefiend)
         return false;
 
@@ -254,7 +254,7 @@ bool GurtoggBloodboilShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetEncounterBoss();
     return gurtogg && !gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE));
 }
 
@@ -264,7 +264,7 @@ bool GurtoggBloodboilShouldPositionForBloodboilTrigger::IsActiveInEncounter()
         return false;
 
     // Bloodboil is not cast during Fel Rage.
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetEncounterBoss();
     if (!gurtogg || gurtogg->HasAura(Id(BtSpells::SPELL_BOSS_FEL_RAGE)))
         return false;
 
@@ -276,7 +276,7 @@ bool GurtoggBloodboilMeleeShouldStayBehindTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetEncounterBoss();
     if (!gurtogg)
         return false;
 
@@ -297,7 +297,7 @@ bool GurtoggBloodboilRangedShouldAvoidFrontalConeTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsMelee(bot) || IsGurtoggFelRageTarget(bot))
         return false;
 
-    Unit* gurtogg = AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
+    Unit* gurtogg = GetEncounterBoss();
     if (!gurtogg)
         return false;
 
@@ -385,7 +385,7 @@ bool MotherShahrazShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+    if (!GetEncounterBoss())
         return false;
 
     return !bot->HasAura(Id(BtSpells::SPELL_FATAL_ATTRACTION));
@@ -396,7 +396,7 @@ bool MotherShahrazBeingPositionedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
         return false;
 
-    return IsShahrazBeingPositioned(AI_VALUE2(Unit*, "find target", "mother shahraz"));
+    return IsShahrazBeingPositioned(GetEncounterBoss());
 }
 
 bool MotherShahrazRangedShouldPositionUnderStatueTrigger::IsActiveInEncounter()
@@ -404,7 +404,7 @@ bool MotherShahrazRangedShouldPositionUnderStatueTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "mother shahraz"))
+    if (!GetEncounterBoss())
         return false;
 
     return !bot->HasAura(Id(BtSpells::SPELL_FATAL_ATTRACTION));
@@ -570,7 +570,7 @@ bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -589,7 +589,7 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -611,7 +611,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || illidan->GetVictim() == bot)
         return false;
 
@@ -632,7 +632,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -683,7 +683,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
@@ -696,7 +696,7 @@ bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive())
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -710,7 +710,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive())
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -762,7 +762,7 @@ bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
     if (victim && victim->IsAlive() && victim->GetEntry() == Id(BtNpcs::NPC_SHADOW_DEMON))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
@@ -771,7 +771,7 @@ bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
 
 bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
@@ -825,7 +825,7 @@ bool IllidanStormrageImmunityNoLongerNeededTrigger::IsActiveInEncounter()
     if (bot->GetHealthPct() <= keepImmunityHealthPct)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    return GetEncounterBoss();
 }
 
 bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncounter()
@@ -840,13 +840,13 @@ bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncou
     if (!hasTotem)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     return illidan && IsIllidanTankAggroPending(*illidan, GetIllidanPhase(illidan));
 }
 
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Landing)
         return false;
 
@@ -863,7 +863,7 @@ bool IllidanStormrageMeleeShouldStopAttackingTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || (bot->GetVictim() != illidan && AI_VALUE(Unit*, "current target") != illidan))
         return false;
 
@@ -880,7 +880,7 @@ bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
     if (!shot && !channel)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -898,7 +898,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan)
         return false;
 
@@ -926,7 +926,7 @@ bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRangedDps(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
@@ -942,7 +942,7 @@ bool IllidanStormrageMeleeShouldStayAwayFromDemonFormTrigger::IsActiveInEncounte
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || HasParasiticShadowfiend(bot))
         return false;
 
@@ -957,7 +957,7 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
@@ -971,7 +971,7 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon || HasParasiticShadowfiend(bot))
         return false;
 
@@ -988,7 +988,7 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
 
 bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 {
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::None || phase == IllidanPhase::Dying)
         return false;
@@ -1012,7 +1012,7 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, BT_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "illidan stormrage");
+        GetEncounterBoss();
 }
 
 // Destroying hazards after phase 2 is not gated behind CheatMask. The strategy simply cannot work
@@ -1022,6 +1022,6 @@ bool IllidanStormrageShouldClearHazardsBeforeLandingTrigger::IsActiveInEncounter
     if (!IsMechanicTrackerBot(bot, BT_MAP_ID))
         return false;
 
-    Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
+    Unit* illidan = GetEncounterBoss();
     return illidan && GetIllidanPhase(illidan) == IllidanPhase::Landing;
 }
