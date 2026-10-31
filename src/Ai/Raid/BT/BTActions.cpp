@@ -6,7 +6,6 @@
 
 #include "BTActions.h"
 #include "BTHelpers.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "PetDefines.h"
 #include "Playerbots.h"

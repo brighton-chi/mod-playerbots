@@ -11,6 +11,7 @@
 #include "SharedDefines.h"
 #include "Spell.h"
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 using namespace BtHelpers;

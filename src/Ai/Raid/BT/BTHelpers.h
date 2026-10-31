@@ -14,6 +14,7 @@
 #include "Position.h"
 #include "SharedDefines.h"
 #include <array>
+#include <cmath>
 #include <optional>
 #include <type_traits>
 #include <unordered_map>

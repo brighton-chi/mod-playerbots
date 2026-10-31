@@ -11,6 +11,7 @@
 #include "NamedObjectContext.h"
 #include "ObjectGuid.h"
 #include "Value.h"
+#include <vector>
 
 // Trash
 

@@ -22,7 +22,6 @@
 #include "SpellMgr.h"
 #include "ThreatManager.h"
 #include <algorithm>
-#include <cmath>
 #include <iterator>
 #include <limits>
 #include <list>
