@@ -550,7 +550,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::AssignCubeClickers(
     // Prune dead or absent players from the existing assignment.
     for (auto it = assignment.begin(); it != assignment.end(); )
     {
-        Player* player = ObjectAccessor::FindPlayer(it->first);
+        Player* player = ObjectAccessor::GetPlayer(*bot, it->first);
         if (!player || !player->IsAlive() || player->GetMapId() != MAG_MAP_ID)
             it = assignment.erase(it);
         else
@@ -630,7 +630,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
 
     for (auto const& pair : assignment)
     {
-        Player* assigned = ObjectAccessor::FindPlayer(pair.first);
+        Player* assigned = ObjectAccessor::GetPlayer(*bot, pair.first);
         if (!assigned || !assigned->IsAlive() || assigned->GetMapId() != MAG_MAP_ID)
             return true;
     }

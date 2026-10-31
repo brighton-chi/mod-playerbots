@@ -160,7 +160,7 @@ void ResolveEredarTwinsTankAssignment(Player* bot)
 Player* GetAlythessTank(Player* bot)
 {
     ObjectGuid const guid = GetTankAssignment(bot).alythessTankGuid;
-    return guid.IsEmpty() ? nullptr : ObjectAccessor::FindPlayer(guid);
+    return guid.IsEmpty() ? nullptr : ObjectAccessor::GetPlayer(*bot, guid);
 }
 
 bool IsAlythessTank(Player* bot)
