@@ -248,7 +248,9 @@ void FaceUnit(Player* bot, Unit* unit);
 // Trash
 
 inline constexpr float SISTER_OF_PLEASURE_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
+GuidVector FindSisterOfPleasureGuids(PlayerbotAI* botAI);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 Unit* GetSkulledSisterOfPain(Player* bot);
