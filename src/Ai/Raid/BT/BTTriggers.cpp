@@ -340,17 +340,17 @@ bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE);
     if (desire && desire->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return true;
 
-    Unit* anger = AI_VALUE2(Unit*, "find target", "essence of anger");
+    Unit* anger = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_ANGER);
     return anger && anger->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING);
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         IsOutOfSufferingPosition(bot, suffering);
 }
@@ -364,7 +364,7 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
-    Unit* suffering = AI_VALUE2(Unit*, "find target", "essence of suffering");
+    Unit* suffering = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING);
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 }
 
@@ -373,7 +373,7 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_MAGE)
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE);
     return desire && desire->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD));
 }
 
@@ -382,7 +382,7 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* desire = AI_VALUE2(Unit*, "find target", "essence of desire");
+    Unit* desire = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE);
     if (!desire)
         return false;
 

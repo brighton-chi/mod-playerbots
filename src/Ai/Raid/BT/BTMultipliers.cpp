@@ -54,12 +54,6 @@ bool IsKillingSpree(Player* bot, Action* action)
     return bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action);
 }
 
-bool IsReliquaryEssence(uint32 entry)
-{
-    return entry == Id(BtNpcs::NPC_ESSENCE_OF_SUFFERING) ||
-        entry == Id(BtNpcs::NPC_ESSENCE_OF_DESIRE) || entry == Id(BtNpcs::NPC_ESSENCE_OF_ANGER);
-}
-
 bool IsDpsHoldCandidate(Player* bot, Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -132,14 +126,17 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
                 return 1.0f;
 
             Unit* essence = nullptr;
-            for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+            for (BtCreatureData data : {
+                     BtCreatureData::DATA_ESSENCE_OF_SUFFERING,
+                     BtCreatureData::DATA_ESSENCE_OF_DESIRE,
+                     BtCreatureData::DATA_ESSENCE_OF_ANGER,
+                 })
             {
-                Unit* unit = ref->GetOwner();
+                Unit* unit = GetReliquaryEssence(bot, data);
                 // After being defeated, an Essence stays on threat lists while it returns to the
                 // Reliquary with 1 HP. This check prevents cooldowns from being released during
                 // such period.
-                if (unit && IsReliquaryEssence(unit->GetEntry()) &&
-                    !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
+                if (unit && !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
                 {
                     essence = unit;
                     break;
@@ -187,7 +184,7 @@ float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* acti
     if (!IsKillingSpree(bot, action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "essence of suffering") ||
+    return GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING) ||
         GetBtBoss(bot, BtBosses::DATA_SUPREMUS) ? 0.0f : 1.0f;
 }
 
@@ -507,7 +504,7 @@ float ReliquaryOfSoulsDoNotWasteHealingMultiplier::GetValueInEncounter(Action* a
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING) ? 0.0f : 1.0f;
 }
 
 // Tank face, set behind, and disperse move melee around Suffering, which can mess with the
@@ -523,7 +520,7 @@ float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "essence of suffering") ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING) ? 0.0f : 1.0f;
 }
 
 float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Action* action)
@@ -564,7 +561,7 @@ float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounte
     if (!dynamic_cast<CastSpellReflectionAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "essence of desire") ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE) ? 0.0f : 1.0f;
 }
 
 // Mother Shahraz

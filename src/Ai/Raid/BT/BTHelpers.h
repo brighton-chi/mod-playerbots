@@ -173,9 +173,7 @@ enum class BtNpcs : uint32
     NPC_GURTOGG_BLOODBOIL           = 22948,
 
     // Reliquary of Souls
-    NPC_ESSENCE_OF_SUFFERING        = 23418,
     NPC_ESSENCE_OF_DESIRE           = 23419,
-    NPC_ESSENCE_OF_ANGER            = 23420,
 
     // Illidari Council
     NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
@@ -223,13 +221,17 @@ enum class BtBosses : uint32
     DATA_ILLIDAN_STORMRAGE          = 8,
 };
 
-// ObjectData keys of the Council members, from black_temple.h; not in the DBC
+// ObjectData keys of the Council members and the Reliquary's essences, from black_temple.h; not in
+// the DBC
 enum class BtCreatureData : uint32
 {
     DATA_GATHIOS_THE_SHATTERER      = 12,
     DATA_HIGH_NETHERMANCER_ZEREVOR  = 13,
     DATA_LADY_MALANDE               = 14,
     DATA_VERAS_DARKSHADOW           = 15,
+    DATA_ESSENCE_OF_SUFFERING       = 19,
+    DATA_ESSENCE_OF_DESIRE          = 20,
+    DATA_ESSENCE_OF_ANGER           = 21,
 };
 
 Creature* GetBtBoss(Player* bot, BtBosses boss);
@@ -462,6 +464,8 @@ inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
+// Null until the essence is in combat, about 4s after it emerges.
+Creature* GetReliquaryEssence(Player* bot, BtCreatureData essence);
 bool IsSufferingFixateTank(Player* bot);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 

@@ -1047,6 +1047,12 @@ Position GetBotPointInGurtoggRectangle(
 
 // Reliquary of Souls
 
+Creature* GetReliquaryEssence(Player* bot, BtCreatureData essence)
+{
+    Creature* creature = GetBtCreature(bot, essence);
+    return creature && creature->IsInCombat() ? creature : nullptr;
+}
+
 bool IsSufferingFixateTank(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) && bot->GetHealthPct() > SUFFERING_TANK_MIN_HEALTH_PCT;
