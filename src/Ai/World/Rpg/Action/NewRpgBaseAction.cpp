@@ -14,6 +14,7 @@
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
 #include "NewRpgInfo.h"
+#include "QuestLevelRules.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -550,7 +551,12 @@ uint32 NewRpgBaseAction::BestRewardIndex(Quest const* quest)
             ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", quest->RewardChoiceItemId[i]);
             if (usage == bestUsage || usage == ITEM_USAGE_REPLACE)
             {
-                float score = calc.CalculateItem(quest->RewardChoiceItemId[i]);
+                uint32 const itemId = quest->RewardChoiceItemId[i];
+                ItemTemplate const* rewardProto = sObjectMgr->GetItemTemplate(itemId);
+                uint8 rewardSlot = NULL_SLOT;
+                if (rewardProto)
+                    rewardSlot = botAI->FindEquipSlot(rewardProto, NULL_SLOT, true);
+                float score = calc.CalculateItem(itemId, 0, rewardSlot);
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -581,7 +587,7 @@ bool NewRpgBaseAction::IsQuestWorthDoing(Quest const* quest)
 
 bool NewRpgBaseAction::IsQuestCapableDoing(Quest const* quest)
 {
-    bool highLevelQuest = bot->GetLevel() + 3 < bot->GetQuestLevel(quest);
+    bool highLevelQuest = bot->GetLevel() + QUEST_MAX_LEVELS_ABOVE_BOT < bot->GetQuestLevel(quest);
     if (highLevelQuest)
         return false;
 
