@@ -184,7 +184,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-
 class SupremusRangedShouldSpreadTrigger : public BlackTempleEncounterTrigger
 {
 public:
