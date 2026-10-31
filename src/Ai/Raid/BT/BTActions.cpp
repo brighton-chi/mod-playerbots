@@ -272,7 +272,7 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         return restored;
     }
 
-    if (!target || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
+    if (!target || !victim || victim->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER))
         return restored;
 
     return sendPet(target);
