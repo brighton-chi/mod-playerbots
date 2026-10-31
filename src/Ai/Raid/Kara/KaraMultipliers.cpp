@@ -45,13 +45,13 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return 0.0f;
 
     if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
         AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
-        AI_VALUE2(Unit*, "find target", "roar"))
+        GetOperaActor(bot, KaraCreatureData::DATA_ROAR))
     {
         return 0.0f;
     }
@@ -70,47 +70,68 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
+    std::optional<uint32> const bossId = GetBossInProgress(bot, KARA_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    Unit* boss = nullptr;
     // Excluded: Moroes, Wizard of Oz, and Romulo and Julianne
-    static constexpr std::array karaBosses = {
-        "nightbane",
-        "prince malchezaar",
-        "netherspite",
-        "shade of aran",
-        "terestian illhoof",
-        "the curator",
-        "the big bad wolf",
-        "maiden of virtue",
-        "midnight",
-    };
-
-    for (char const* name : karaBosses)
+    switch (static_cast<KaraBosses>(*bossId))
     {
-        if (Unit* boss = AI_VALUE2(Unit*, "find target", name))
-        {
-            if (isBloodlust)
-            {
-                if (boss->GetEntry() == Id(KaraNpcs::NPC_PRINCE_MALCHEZAAR))
-                {
-                    constexpr float finalPhaseHpThreshold = 30.0f;
-                    return boss->GetHealthPct() > finalPhaseHpThreshold ? 0.0f : 1.0f;
-                }
-
-                if (boss->GetEntry() == Id(KaraNpcs::NPC_THE_CURATOR))
-                    return !boss->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)) ? 0.0f : 1.0f;
-            }
-
-            if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-                return 0.0f;
-
-            if (boss->GetEntry() == Id(KaraNpcs::NPC_NIGHTBANE))
-                return boss->GetPositionZ() > NIGHTBANE_FLIGHT_Z ? 0.0f : 1.0f;
-
-            if (boss->GetEntry() == Id(KaraNpcs::NPC_NETHERSPITE))
-                return IsBanishPhase(boss) ? 0.0f : 1.0f;
-
+        case KaraBosses::DATA_ATTUMEN:
+            boss = GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT);
+            break;
+        case KaraBosses::DATA_MAIDEN:
+            boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
+            break;
+        case KaraBosses::DATA_OPERA_PERFORMANCE:
+            boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+            break;
+        case KaraBosses::DATA_CURATOR:
+            boss = AI_VALUE2(Unit*, "find target", "the curator");
+            break;
+        case KaraBosses::DATA_TERESTIAN:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
+            break;
+        case KaraBosses::DATA_ARAN:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
+            break;
+        case KaraBosses::DATA_NETHERSPITE:
+            boss = AI_VALUE2(Unit*, "find target", "netherspite");
+            break;
+        case KaraBosses::DATA_MALCHEZAAR:
+            boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+            break;
+        case KaraBosses::DATA_NIGHTBANE:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+            break;
+        default:
             return 1.0f;
-        }
     }
+
+    if (!boss)
+        return 1.0f;
+
+    if (isBloodlust)
+    {
+        if (boss->GetEntry() == Id(KaraNpcs::NPC_PRINCE_MALCHEZAAR))
+        {
+            constexpr float finalPhaseHpThreshold = 30.0f;
+            return boss->GetHealthPct() > finalPhaseHpThreshold ? 0.0f : 1.0f;
+        }
+
+        if (boss->GetEntry() == Id(KaraNpcs::NPC_THE_CURATOR))
+            return !boss->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)) ? 0.0f : 1.0f;
+    }
+
+    if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+        return 0.0f;
+
+    if (boss->GetEntry() == Id(KaraNpcs::NPC_NIGHTBANE))
+        return boss->GetPositionZ() > NIGHTBANE_FLIGHT_Z ? 0.0f : 1.0f;
+
+    if (boss->GetEntry() == Id(KaraNpcs::NPC_NETHERSPITE))
+        return IsBanishPhase(boss) ? 0.0f : 1.0f;
 
     return 1.0f;
 }
@@ -125,7 +146,7 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "midnight") ? 0.0f : 1.0f;
+    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) ? 0.0f : 1.0f;
 }
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
@@ -150,7 +171,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
         return 1.0f;
 
     return GetAttumenMounted(bot) ? 0.0f : 1.0f;
@@ -168,7 +189,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
         return 1.0f;
 
     Unit* attumen = GetAttumenMounted(bot);
@@ -283,7 +304,7 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* a
         return 1.0f;
     }
 
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetEncounterBoss();
     if (!aran)
         return 1.0f;
 
@@ -311,7 +332,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "shade of aran"))
+    if (!GetEncounterBoss())
         return 1.0f;
 
     return IsFlameWreathActive(bot) ? 0.0f : 1.0f;
@@ -458,7 +479,7 @@ float NightbaneDisablePetsMultiplier::GetValueInEncounter(Action* action)
     if (!isTemporarySummonSpell && !dynamic_cast<PetAttackAction*>(action))
         return 1.0f;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
         return 1.0f;
 
@@ -481,7 +502,7 @@ float NightbaneWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
@@ -505,7 +526,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
@@ -530,7 +551,7 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
     if (!isReachAction && !isBlockedMovement && !dynamic_cast<FollowAction*>(action))
         return 1.0f;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
         return 1.0f;
 

@@ -136,13 +136,13 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 // Unmounted Attumen's CombatReach is 1.5 yards
 bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 {
-    Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
+    Unit* midnight = GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT);
     if (!midnight)
         return false;
 
     if (PlayerbotAI::IsAssistTank(bot))
     {
-        Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+        Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
         return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
     }
 
@@ -402,11 +402,11 @@ bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
 
 bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
+    Unit* romulo = GetOperaActor(bot, KaraCreatureData::DATA_ROMULO);
     if (!romulo)
         return false;
 
-    Unit* julianne = AI_VALUE2(Unit*, "find target", "julianne");
+    Unit* julianne = GetOperaActor(bot, KaraCreatureData::DATA_JULIANNE);
     if (!julianne)
         return false;
 
@@ -438,9 +438,9 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    for (char const* name : OZ_TARGETS)
+    for (KaraCreatureData actor : OZ_TARGETS)
     {
-        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+        if (Unit* target = GetOperaActor(bot, actor))
             return MarkTargetWithSkull(bot, target);
     }
 
@@ -449,7 +449,7 @@ bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 {
-    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
+    Unit* strawman = GetOperaActor(bot, KaraCreatureData::DATA_STRAWMAN);
     return strawman &&
         botAI->CanCastSpell("scorch", strawman) && botAI->CastSpell("scorch", strawman);
 }
@@ -498,23 +498,23 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    static constexpr std::array illhoofTargets = {
-        "demon chains", "kil'rek", "terestian illhoof", };
+    static constexpr std::array illhoofAdds = { "demon chains", "kil'rek", };
 
-    for (char const* name : illhoofTargets)
+    for (char const* name : illhoofAdds)
     {
         if (Unit* target = AI_VALUE2(Unit*, "find target", name))
             return MarkTargetWithSkull(bot, target);
     }
 
-    return false;
+    Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
+    return terestian && MarkTargetWithSkull(bot, terestian);
 }
 
 // Shade of Aran
 
 bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
 {
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
     if (!aran)
         return false;
 
@@ -561,7 +561,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
     if (!aran)
         return false;
 
@@ -1111,7 +1111,7 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
 
 bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
@@ -1215,7 +1215,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::Execute(Event /*event*/
 
 bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeSpot()
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
@@ -1340,7 +1340,7 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::StackOnRangedLeader(Pla
 
 bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
@@ -1370,7 +1370,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 // This lasts for the first 35 seconds of the flight phase, after which Nightbane begins landing
 bool NightbaneFlightPhaseStackAndMoveAction::Execute(Event /*event*/)
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
@@ -1440,7 +1440,7 @@ bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
 
 bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 

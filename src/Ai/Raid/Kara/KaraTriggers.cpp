@@ -28,13 +28,13 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
     if (AI_VALUE2(bool, "has totem", "tremor totem"))
         return false;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return true;
 
     return AI_VALUE2(Unit*, "find target", "spectral charger") ||
         AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
-        AI_VALUE2(Unit*, "find target", "roar");
+        GetOperaActor(bot, KaraCreatureData::DATA_ROAR);
 }
 
 // Trash
@@ -56,12 +56,12 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 // A Midnight threat list check will capture the entire encounter.
 bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "midnight") && !GetAttumenMounted(bot);
+    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) && !GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "midnight") && GetAttumenMounted(bot);
+    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) && GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
@@ -69,7 +69,7 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "midnight"))
+    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
         return false;
 
     return GetAttumenMounted(bot);
@@ -130,7 +130,8 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "romulo") && AI_VALUE2(Unit*, "find target", "julianne");
+    return GetOperaActor(bot, KaraCreatureData::DATA_ROMULO) &&
+        GetOperaActor(bot, KaraCreatureData::DATA_JULIANNE);
 }
 
 // The Wizard of Oz
@@ -140,9 +141,9 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    for (char const* name : OZ_TARGETS)
+    for (KaraCreatureData actor : OZ_TARGETS)
     {
-        if (AI_VALUE2(Unit*, "find target", name))
+        if (GetOperaActor(bot, actor))
             return true;
     }
 
@@ -151,7 +152,8 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
 
 bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_MAGE && AI_VALUE2(Unit*, "find target", "strawman");
+    return bot->getClass() == CLASS_MAGE &&
+        GetOperaActor(bot, KaraCreatureData::DATA_STRAWMAN);
 }
 
 // The Curator
@@ -176,21 +178,20 @@ bool TheCuratorRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "terestian illhoof");
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
 }
 
 // Shade of Aran
 
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActiveInEncounter()
 {
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetEncounterBoss();
     return aran && IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "shade of aran") && IsFlameWreathActive(bot);
+    return GetEncounterBoss() && IsFlameWreathActive(bot);
 }
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActiveInEncounter()
@@ -204,7 +205,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetEncounterBoss();
     if (!aran)
         return false;
 
@@ -309,7 +310,7 @@ bool NightbaneShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
 }
 
@@ -318,7 +319,7 @@ bool NightbaneGroundPhaseEngagedByRangedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
 }
 
@@ -327,7 +328,7 @@ bool NightbanePetsChaseFlyingBossOutOfBoundsTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+    if (!GetEncounterBoss())
         return false;
 
     Pet* pet = bot->GetPet();
@@ -336,7 +337,7 @@ bool NightbanePetsChaseFlyingBossOutOfBoundsTrigger::IsActiveInEncounter()
 
 bool NightbaneInFlightPhaseTrigger::IsActiveInEncounter()
 {
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane = GetEncounterBoss();
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
@@ -352,7 +353,7 @@ bool NightbaneInFlightPhaseTrigger::IsActiveInEncounter()
 
 bool NightbaneBotWentOutOfBoundsTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "nightbane"))
+    if (!GetEncounterBoss())
         return false;
 
     constexpr float outOfBoundsLeeway = 5.0f;
@@ -361,5 +362,5 @@ bool NightbaneBotWentOutOfBoundsTrigger::IsActiveInEncounter()
 
 bool NightbaneShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "nightbane");
+    return GetEncounterBoss();
 }

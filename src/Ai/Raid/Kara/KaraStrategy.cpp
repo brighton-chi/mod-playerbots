@@ -168,8 +168,8 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
 void RaidKarazhanStrategy::AppendTargetExclusions(
     GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
+    Unit* nightbane =
+        KaraHelpers::GetKaraBoss(botAI->GetBot(), KaraHelpers::KaraBosses::DATA_NIGHTBANE);
     if (nightbane && nightbane->GetPositionZ() > KaraHelpers::NIGHTBANE_FLIGHT_Z)
         exclusions.insert(nightbane->GetGUID());
 }

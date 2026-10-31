@@ -28,6 +28,25 @@ std::unordered_map<uint32, KaraInstanceState> karaStates;
 
 // Shared
 
+Creature* GetKaraBoss(Player* bot, KaraBosses boss)
+{
+    return GetInstanceBoss(bot, KARA_MAP_ID, Id(boss));
+}
+
+Creature* GetKaraCreature(Player* bot, KaraCreatureData data)
+{
+    return GetInstanceCreature(bot, KARA_MAP_ID, Id(data));
+}
+
+Creature* GetOperaActor(Player* bot, KaraCreatureData data)
+{
+    if (!IsBossInProgress(bot, KARA_MAP_ID, Id(KaraBosses::DATA_OPERA_PERFORMANCE)))
+        return nullptr;
+
+    Creature* actor = GetKaraCreature(bot, data);
+    return actor && !actor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ? actor : nullptr;
+}
+
 bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
 {
     for (Unit* hazard : hazards)
@@ -57,10 +76,7 @@ bool IsAranCastingArcaneExplosion(Unit* aran)
 
 bool IsFlameWreathActive(Player* bot)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    AiObjectContext* context = botAI->GetAiObjectContext();
-
-    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    Unit* aran = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
     if (!aran)
         return false;
 
