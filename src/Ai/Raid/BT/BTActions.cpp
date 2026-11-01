@@ -2185,7 +2185,8 @@ bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    Position const position = GetIllidanRecordedInfectionPosition(botAI, *illidan);
+    Position const position =
+        GetIllidanRecordedInfectionPosition(botAI, *illidan, GetIllidanPhase(illidan));
     float moveX;
     float moveY;
     bool backwards;
@@ -2256,7 +2257,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             IllidanInfection infection;
             if (infections.empty())
-                infection.infectionPosition = GetIllidanInfectionPosition(*illidan);
+                infection.infectionPosition = GetIllidanInfectionPosition(*illidan, phase);
             else
                 infection.infectionPosition = infections.begin()->second.infectionPosition;
 

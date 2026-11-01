@@ -1280,7 +1280,8 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
     if (!hasTotem)
         return HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
 
-    Position const infectionPosition = GetIllidanRecordedInfectionPosition(botAI, *illidan);
+    Position const infectionPosition =
+        GetIllidanRecordedInfectionPosition(botAI, *illidan, phase);
     return bot->GetExactDist2d(infectionPosition) < nearestTotem ? 0.0f : 1.0f;
 }
 

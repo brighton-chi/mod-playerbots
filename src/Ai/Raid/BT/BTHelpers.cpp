@@ -1931,22 +1931,31 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     return layout;
 }
 
-Position GetIllidanInfectionPosition(Unit const& illidan)
+Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 {
+    if (phase == IllidanPhase::Demon)
+    {
+        return GetDemonFormPoint(
+            illidan, ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE,
+            ILLIDAN_DEMON_INFECTION_POSITION_ANGLE);
+    }
+
     return GetRingPoint(
         GetGrateAngle(illidan) + ILLIDAN_INFECTION_POSITION_ANGLE,
         ILLIDAN_INFECTION_POSITION_DISTANCE);
 }
 
-// Every recorded infection shares one position, fixed when the first was recorded. If none are
-// recorded, this returns the position an infection would be recorded at now.
-Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan)
+// Every recorded infection shares one position, fixed when the first was recorded, so an infection
+// remaining as of a phase change keeps its position into the new phase. If none are recorded, this
+// returns the position an infection would be recorded at now.
+Position GetIllidanRecordedInfectionPosition(
+    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
 {
     auto const* infections = FindIllidanInfections(botAI->GetBot()->GetInstanceId());
     if (infections && !infections->empty())
         return infections->begin()->second.infectionPosition;
 
-    return GetIllidanInfectionPosition(illidan);
+    return GetIllidanInfectionPosition(illidan, phase);
 }
 
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)

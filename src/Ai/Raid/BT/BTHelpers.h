@@ -707,11 +707,9 @@ inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 20.0f * static_cast<float
 inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
 inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
 inline constexpr float ILLIDAN_LANDING_LEAD_ANGLE = 0.0f;
-// Once at the pull, before the first Flame Crash, the main tank leads him 62° clockwise of north
-// at 27 yd. Illidan stops about 58° clockwise, at grate angle 302. The first four Flame Crashes
-// then land at about 305°, 335°, 5°, and 35° (even at 50% damage, you are very unlikely to have
-// more than 4 and likely will not have more than 3, depending on DPS). This design is to allow
-// the Flame tanking loops in phase 2 to be clear of residual Flame Crashes, which last for 2 min.
+// At the pull, the main tank leads Illidan 62° clockwise of due north at 27 yd. This starting
+// position allows phase 1 Flame Crashes to land in positions that leave phase 2 Flame tanking loops
+// clear of residual Flame Crashes (which last for 2 min).
 inline constexpr float ILLIDAN_OPENING_LEAD_ANGLE = -62.0f * static_cast<float>(M_PI) / 180.0f;
 inline constexpr float ILLIDAN_OPENING_LEAD_RADIUS = 27.0f;
 // A generous duration that stands for the pull still being in progress. The lead should be done
@@ -747,12 +745,17 @@ inline constexpr float ILLIDAN_SHADOWFIEND_BIRTHER_DISTANCE = 8.0f;
 // immediately infecting an adjacent bot, and thus the birther can act again and melee can attack it
 // if it moves into melee range.
 inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
-// Shadowfiend infection position: 31 yd from the grate center (the main tank's circle), 135°
-// counterclockwise of Illidan, past Draw Soul's reach along the ring (110° at 31 yd). Also far
-// enough to be out of Shadow Blast range for a bot waiting out a residual phase 3/5 infection.
+// Phases 1, 3, and 5 position: on the main tank's ring, 135° counterclockwise of Illidan, past
+// Draw Soul's reach along the ring (110° at 31 yd). Also far enough to be out of Shadow Blast range
+// for a bot waiting out a residual phase 3/5 infection at the beginning of phase 4.
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
+// Phase 4 position, for secondary infections (phase 4 has no primary infections): 39.6 yd from
+// Illidan and 16° off his inward line away from the warlock tank, between ranged DPS and melee.
+inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE = 39.6f;
+inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_ANGLE =
+    -16.0f * static_cast<float>(M_PI) / 180.0f;
 
 // Phase 2
 
@@ -884,8 +887,9 @@ Position GetRingPoint(float angle, float radius);
 Position GetIllidanSettlePosition(Unit const& illidan);
 Position GetGrateSlot(size_t index);
 DemonFormLayout GetDemonFormLayout(Unit const& illidan);
-Position GetIllidanInfectionPosition(Unit const& illidan);
-Position GetIllidanRecordedInfectionPosition(PlayerbotAI* botAI, Unit const& illidan);
+Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase);
+Position GetIllidanRecordedInfectionPosition(
+    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* bot);
 bool IsEastFlameOfAzzinothTank(Player* bot);
