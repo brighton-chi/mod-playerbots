@@ -63,6 +63,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// Trash
+
+class ManaWarpSaveStunsMultiplier : public Multiplier
+{
+public:
+    ManaWarpSaveStunsMultiplier(PlayerbotAI* botAI)
+        : Multiplier(botAI, "mana warp save stuns") {}
+    float GetValue(Action* action) override;
+};
+
 // Attumen the Huntsman
 
 class AttumenTheHuntsmanDisableAutoTargetingMultiplier : public KarazhanEncounterMultiplier

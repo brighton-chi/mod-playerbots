@@ -9,6 +9,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
+#include "DruidBearActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
@@ -22,6 +23,7 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "WarlockActions.h"
 #include "WarriorActions.h"
 
 using namespace KaraHelpers;
@@ -45,18 +47,7 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
-        return 0.0f;
-
-    if (AI_VALUE2(Unit*, "find target", "spectral charger") ||
-        AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
-        GetOperaActor(bot, KaraCreatureData::DATA_ROAR))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
+    return IsKarazhanFearCasterActive(bot) ? 0.0f : 1.0f;
 }
 
 float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
@@ -134,6 +125,51 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return IsBanishPhase(boss) ? 0.0f : 1.0f;
 
     return 1.0f;
+}
+
+// Trash
+
+// Stock rotations spend these stuns on the pack (Shockwave and Shadowfury on AoE, Bash in the
+// rotation), so an assigned stunner saves its stun for the cast bar.
+float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT || !IsNearManaWarpPacks(bot))
+        return 1.0f;
+
+    bool isStun = false;
+    switch (bot->getClass())
+    {
+        case CLASS_DRUID:
+        {
+            isStun = dynamic_cast<CastBashAction*>(action) ||
+                dynamic_cast<CastBashOnEnemyHealerAction*>(action);
+            break;
+        }
+        case CLASS_PALADIN:
+        {
+            isStun = dynamic_cast<CastHammerOfJusticeAction*>(action) ||
+                dynamic_cast<CastHammerOfJusticeOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastHammerOfJusticeSnareAction*>(action);
+            break;
+        }
+        case CLASS_WARLOCK:
+            isStun = dynamic_cast<CastShadowfuryAction*>(action);
+            break;
+        case CLASS_WARRIOR:
+        {
+            isStun = dynamic_cast<CastConcussionBlowAction*>(action) ||
+                dynamic_cast<CastShockwaveAction*>(action) ||
+                dynamic_cast<CastShockwaveSnareAction*>(action);
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (!isStun && (bot->getRace() != RACE_TAUREN || !dynamic_cast<CastWarStompAction*>(action)))
+        return 1.0f;
+
+    return IsAssignedManaWarpStunner(bot) ? 0.0f : 1.0f;
 }
 
 // Attumen the Huntsman

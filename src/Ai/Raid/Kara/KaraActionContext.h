@@ -23,8 +23,14 @@ public:
             &RaidKarazhanActionContext::karazhan_set_tremor_totem;
 
         // Trash
-        creators["mana warp stun creature before warp breach"] =
-            &RaidKarazhanActionContext::mana_warp_stun_creature_before_warp_breach;
+        creators["mana warp assign stunners"] =
+            &RaidKarazhanActionContext::mana_warp_assign_stunners;
+
+        creators["mana warp stun warp breach"] =
+            &RaidKarazhanActionContext::mana_warp_stun_warp_breach;
+
+        creators["mana warp stunner hold for warp breach"] =
+            &RaidKarazhanActionContext::mana_warp_stunner_hold_for_warp_breach;
 
         // Attumen the Huntsman
         creators["attumen the huntsman handle phase one"] =
@@ -156,9 +162,17 @@ private:
     }
 
     // Trash
-    static Action* mana_warp_stun_creature_before_warp_breach(PlayerbotAI* botAI)
+    static Action* mana_warp_assign_stunners(PlayerbotAI* botAI)
     {
-        return new ManaWarpStunCreatureBeforeWarpBreachAction(botAI);
+        return new ManaWarpAssignStunnersAction(botAI);
+    }
+    static Action* mana_warp_stun_warp_breach(PlayerbotAI* botAI)
+    {
+        return new ManaWarpStunWarpBreachAction(botAI);
+    }
+    static Action* mana_warp_stunner_hold_for_warp_breach(PlayerbotAI* botAI)
+    {
+        return new ManaWarpStunnerHoldForWarpBreachAction(botAI);
     }
 
     // Attumen the Huntsman

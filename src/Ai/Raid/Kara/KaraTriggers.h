@@ -56,11 +56,27 @@ public:
 
 // Trash
 
-class ManaWarpIsAboutToExplodeTrigger : public Trigger
+class ManaWarpShouldAssignStunnersTrigger : public Trigger
 {
 public:
-    ManaWarpIsAboutToExplodeTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "mana warp is about to explode") {}
+    ManaWarpShouldAssignStunnersTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "mana warp should assign stunners", 1000) {}
+    bool IsActive() override;
+};
+
+class ManaWarpCastsWarpBreachTrigger : public Trigger
+{
+public:
+    ManaWarpCastsWarpBreachTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "mana warp casts warp breach") {}
+    bool IsActive() override;
+};
+
+class ManaWarpStunnerShouldHoldTrigger : public Trigger
+{
+public:
+    ManaWarpStunnerShouldHoldTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "mana warp stunner should hold") {}
     bool IsActive() override;
 };
 

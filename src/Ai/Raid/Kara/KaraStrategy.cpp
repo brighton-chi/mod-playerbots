@@ -21,8 +21,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("karazhan set tremor totem", ACTION_RAID) }));
 
     // Trash
-    triggers.push_back(new TriggerNode("mana warp is about to explode",
-        { NextAction("mana warp stun creature before warp breach", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("mana warp should assign stunners",
+        { NextAction("mana warp assign stunners", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("mana warp casts warp breach",
+        { NextAction("mana warp stun warp breach", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("mana warp stunner should hold",
+        { NextAction("mana warp stunner hold for warp breach", ACTION_RAID) }));
 
     // Attumen the Huntsman
     triggers.push_back(new TriggerNode("attumen the huntsman phase one active",
@@ -146,6 +152,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
 {
     multipliers.push_back(new KarazhanSetTremorTotemMultiplier(botAI));
     multipliers.push_back(new KarazhanDelayDpsCooldownsMultiplier(botAI));
+    multipliers.push_back(new ManaWarpSaveStunsMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));

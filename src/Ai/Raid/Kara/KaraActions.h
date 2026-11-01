@@ -32,11 +32,27 @@ public:
 
 // Trash
 
-class ManaWarpStunCreatureBeforeWarpBreachAction : public AttackAction
+class ManaWarpAssignStunnersAction : public Action
 {
 public:
-    ManaWarpStunCreatureBeforeWarpBreachAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "mana warp stun creature before warp breach") {}
+    ManaWarpAssignStunnersAction(PlayerbotAI* botAI)
+        : Action(botAI, "mana warp assign stunners") {}
+    bool Execute(Event event) override;
+};
+
+class ManaWarpStunWarpBreachAction : public Action
+{
+public:
+    ManaWarpStunWarpBreachAction(PlayerbotAI* botAI)
+        : Action(botAI, "mana warp stun warp breach") {}
+    bool Execute(Event event) override;
+};
+
+class ManaWarpStunnerHoldForWarpBreachAction : public MovementAction
+{
+public:
+    ManaWarpStunnerHoldForWarpBreachAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mana warp stunner hold for warp breach") {}
     bool Execute(Event event) override;
 };
 

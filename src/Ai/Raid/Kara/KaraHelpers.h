@@ -18,6 +18,7 @@
 
 class Creature;
 class Player;
+class PlayerbotAI;
 class Unit;
 
 namespace KaraHelpers
@@ -31,6 +32,9 @@ constexpr uint32 Id(T value)
 
 enum class KaraSpells : uint32
 {
+    // Trash
+    SPELL_WARP_BREACH             = 29919,
+
     // Maiden of Virtue
     SPELL_REPENTANCE              = 29511,
 
@@ -70,6 +74,7 @@ enum class KaraSpells : uint32
 enum class KaraNpcs : uint32
 {
     // Trash
+    NPC_SPECTRAL_CHARGER            = 15547,
     NPC_MANA_WARP                   = 16530,
 
     // Attumen the Huntsman
@@ -82,6 +87,9 @@ enum class KaraNpcs : uint32
     NPC_BARON_RAFE_DREUGER          = 19874,
     NPC_BARONESS_DOROTHEA_MILLSTIPE = 19875,
     NPC_LORD_ROBIN_DARIS            = 19876,
+
+    // The Big Bad Wolf
+    NPC_THE_BIG_BAD_WOLF            = 17521,
 
     // Romulo and Julianne
     NPC_ROMULO                      = 17533,
@@ -159,6 +167,41 @@ Creature* GetKaraCreature(Player* bot, KaraCreatureData data);
 Creature* GetOperaActor(Player* bot, KaraCreatureData data);
 
 bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
+
+// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf or Roar is fighting, or
+// Nightbane is on the ground.
+bool IsKarazhanFearCasterActive(Player* bot);
+
+// Trash
+
+// A stun stops Warp Breach for good if it lands during the 1 s cast; interrupts do nothing.
+// The assigned stunner reacts to the cast bar, a backup once it is half full.
+inline constexpr uint32 WARP_BREACH_REACTION_MS = 200;
+inline constexpr uint32 WARP_BREACH_BACKUP_REACTION_MS = 500;
+// From here the assigned stunner casts nothing else, keeping its global cooldown free.
+inline constexpr float MANA_WARP_STUNNER_HOLD_HEALTH_PCT = 15.0f;
+inline constexpr float HAMMER_OF_JUSTICE_RANGE = 10.0f;
+inline constexpr float SHADOWFURY_RANGE = 30.0f;
+inline constexpr float WAR_STOMP_RADIUS = 8.0f;
+// A stunner out of range walks to this far inside it; melee to 1 yd, edge to edge.
+inline constexpr float MANA_WARP_STUN_APPROACH_MARGIN = 1.0f;
+// The nine Mana Warps stand in four packs within 30 yd of this point.
+inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
+inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
+inline constexpr float MANA_WARP_SEARCH_RADIUS = 100.0f;
+
+bool IsNearManaWarpPacks(Player* bot);
+bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs);
+// Stunners: bots with Hammer of Justice, Concussion Blow, Shockwave, Bash in bear form, Shadowfury
+// or War Stomp. Rogues and cat druids need combo points on the warp, so stun only their target.
+bool CanStunManaWarpWithoutComboPoints(Player* bot);
+bool HasReadyManaWarpStun(PlayerbotAI* botAI);
+bool IsWithinManaWarpStunRange(Player* bot, Unit* warp);
+Unit* GetManaWarpToStun(PlayerbotAI* botAI);
+Unit* GetManaWarpToHoldStunFor(Player* bot);
+bool IsAssignedManaWarpStunner(Player* bot);
+bool AssignManaWarpStunners(Player* bot);
+bool PruneManaWarpStunners(Player* bot);
 
 // Attumen the Huntsman
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };

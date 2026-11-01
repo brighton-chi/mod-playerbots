@@ -23,8 +23,14 @@ public:
             &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
 
         // Trash
-        creators["mana warp is about to explode"] =
-            &RaidKarazhanTriggerContext::mana_warp_is_about_to_explode;
+        creators["mana warp should assign stunners"] =
+            &RaidKarazhanTriggerContext::mana_warp_should_assign_stunners;
+
+        creators["mana warp casts warp breach"] =
+            &RaidKarazhanTriggerContext::mana_warp_casts_warp_breach;
+
+        creators["mana warp stunner should hold"] =
+            &RaidKarazhanTriggerContext::mana_warp_stunner_should_hold;
 
         // Attumen the Huntsman
         creators["attumen the huntsman phase one active"] =
@@ -156,9 +162,17 @@ private:
     }
 
     // Trash
-    static Trigger* mana_warp_is_about_to_explode(PlayerbotAI* botAI)
+    static Trigger* mana_warp_should_assign_stunners(PlayerbotAI* botAI)
     {
-        return new ManaWarpIsAboutToExplodeTrigger(botAI);
+        return new ManaWarpShouldAssignStunnersTrigger(botAI);
+    }
+    static Trigger* mana_warp_casts_warp_breach(PlayerbotAI* botAI)
+    {
+        return new ManaWarpCastsWarpBreachTrigger(botAI);
+    }
+    static Trigger* mana_warp_stunner_should_hold(PlayerbotAI* botAI)
+    {
+        return new ManaWarpStunnerShouldHoldTrigger(botAI);
     }
 
     // Attumen the Huntsman

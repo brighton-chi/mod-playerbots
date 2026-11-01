@@ -25,29 +25,34 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    if (AI_VALUE2(bool, "has totem", "tremor totem"))
-        return false;
-
-    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
-        return true;
-
-    return AI_VALUE2(Unit*, "find target", "spectral charger") ||
-        AI_VALUE2(Unit*, "find target", "the big bad wolf") ||
-        GetOperaActor(bot, KaraCreatureData::DATA_ROAR);
+    return IsKarazhanFearCasterActive(bot) && !AI_VALUE2(bool, "has totem", "tremor totem");
 }
 
 // Trash
 
-bool ManaWarpIsAboutToExplodeTrigger::IsActive()
+bool ManaWarpShouldAssignStunnersTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER ||
-        bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST)
+    return IsNearManaWarpPacks(bot) && IsMechanicTrackerBot(bot, KARA_MAP_ID);
+}
+
+bool ManaWarpCastsWarpBreachTrigger::IsActive()
+{
+    if (bot->getRace() != RACE_TAUREN &&
+        (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER ||
+         bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
+         bot->getClass() == CLASS_SHAMAN))
     {
         return false;
     }
 
-    return AI_VALUE2(Unit*, "find target", "mana warp");
+    return GetManaWarpToStun(botAI);
+}
+
+// Tanks keep tanking; they stun on the cast bar without holding.
+bool ManaWarpStunnerShouldHoldTrigger::IsActive()
+{
+    return CanStunManaWarpWithoutComboPoints(bot) && !PlayerbotAI::IsTank(bot) &&
+        GetManaWarpToHoldStunFor(bot) && HasReadyManaWarpStun(botAI);
 }
 
 // Attumen the Huntsman

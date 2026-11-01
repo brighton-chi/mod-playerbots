@@ -79,6 +79,7 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         Id(KaraNpcs::NPC_TERESTIAN_ILLHOOF),
     });
 
+    reset |= PruneManaWarpStunners(bot);
     reset |= KaraResetInstance(instanceId);
 
     return reset;
@@ -92,42 +93,84 @@ bool KarazhanSetTremorTotemAction::Execute(Event /*event*/)
 
 // Trash
 
-bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
+// Bookkeeping only, so the tracker's tick goes on.
+bool ManaWarpAssignStunnersAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> manaWarps;
-    bot->GetCreatureListWithEntryInGrid(manaWarps, Id(KaraNpcs::NPC_MANA_WARP), searchRadius);
+    AssignManaWarpStunners(bot);
+    return false;
+}
 
-    for (Creature* manaWarp : manaWarps)
-    {
-        if (!manaWarp || !manaWarp->IsAlive() || manaWarp->GetHealthPct() > 15.0f)
-            continue;
-
-        if (!target || manaWarp->GetGUID() < target->GetGUID())
-            target = manaWarp;
-    }
-
-    if (!target)
+bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
+{
+    Unit* warp = GetManaWarpToStun(botAI);
+    if (!warp)
         return false;
 
-    static constexpr std::array spells = {
-        "bash",
-        "concussion blow",
-        "hammer of justice",
-        "kidney shot",
-        "maim",
-        "shadowfury",
-        "shockwave",
+    // CanCastSpell passes targets out of range, and a failed cast still turns the bot.
+    auto const castStun = [&](char const* spell, bool inRange)
+    {
+        return inRange && botAI->CanCastSpell(spell, warp) && botAI->CastSpell(spell, warp);
     };
 
-    for (char const* spell : spells)
+    bool const inMeleeRange = bot->IsWithinMeleeRange(warp);
+    bool stunned = false;
+    switch (bot->getClass())
     {
-        if (botAI->CanCastSpell(spell, target) && botAI->CastSpell(spell, target))
-            return true;
+        case CLASS_DRUID:
+        {
+            ShapeshiftForm const form = bot->GetShapeshiftForm();
+            if (form == FORM_BEAR || form == FORM_DIREBEAR)
+                stunned = castStun("bash", inMeleeRange);
+            else if (form == FORM_CAT)
+                stunned = castStun("maim", inMeleeRange);
+            break;
+        }
+        case CLASS_PALADIN:
+        {
+            stunned = castStun(
+                "hammer of justice", bot->IsWithinCombatRange(warp, HAMMER_OF_JUSTICE_RANGE));
+            break;
+        }
+        case CLASS_ROGUE:
+            stunned = castStun("kidney shot", inMeleeRange);
+            break;
+        case CLASS_WARLOCK:
+            stunned = castStun("shadowfury", bot->IsWithinCombatRange(warp, SHADOWFURY_RANGE));
+            break;
+        case CLASS_WARRIOR:
+        {
+            stunned = castStun("concussion blow", inMeleeRange) ||
+                castStun("shockwave", inMeleeRange);
+            break;
+        }
+        default:
+            break;
     }
 
-    return false;
+    if (stunned)
+        return true;
+
+    return bot->getRace() == RACE_TAUREN && bot->GetExactDist(warp) <= WAR_STOMP_RADIUS &&
+        botAI->CanCastSpell("war stomp", bot) && botAI->CastSpell("war stomp", bot);
+}
+
+// Holding casts nothing, so the stun is off the global cooldown when the cast bar comes.
+bool ManaWarpStunnerHoldForWarpBreachAction::Execute(Event /*event*/)
+{
+    Unit* warp = GetManaWarpToHoldStunFor(bot);
+    if (!warp)
+        return false;
+
+    if (IsWithinManaWarpStunRange(bot, warp))
+        return true;
+
+    float distance = MANA_WARP_STUN_APPROACH_MARGIN;
+    if (bot->getClass() == CLASS_PALADIN)
+        distance = HAMMER_OF_JUSTICE_RANGE - MANA_WARP_STUN_APPROACH_MARGIN;
+    else if (bot->getClass() == CLASS_WARLOCK)
+        distance = SHADOWFURY_RANGE - MANA_WARP_STUN_APPROACH_MARGIN;
+
+    return MoveTo(warp, distance, MovementPriority::MOVEMENT_COMBAT);
 }
 
 // Attumen the Huntsman
