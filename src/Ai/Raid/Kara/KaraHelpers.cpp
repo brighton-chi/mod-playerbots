@@ -6,7 +6,6 @@
 
 #include "KaraHelpers.h"
 #include "EncounterHelpers.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Spell.h"
 #include <algorithm>
@@ -25,69 +24,29 @@ namespace
 
 std::mutex karaStateMutex;
 std::unordered_map<uint32, KaraInstanceState> karaStates;
-// Per instance: Mana Warp -> its stunner (empty while no stunner is ready). Kept out of
-// KaraInstanceState, which the reset erases during trash; pruned per warp instead.
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, ObjectGuid>> manaWarpStunners;
-
-bool IsReadySpell(PlayerbotAI* botAI, char const* spell)
-{
-    uint32 const spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spell)->Get();
-    return spellId && !botAI->GetBot()->HasSpellCooldown(spellId);
-}
 
 bool IsInBearForm(Player* bot)
 {
     return bot->GetShapeshiftForm() == FORM_BEAR || bot->GetShapeshiftForm() == FORM_DIREBEAR;
 }
 
-struct ManaWarpStunnerCandidate
+bool NeedsComboPointsForManaWarpStun(Player* bot)
 {
-    Player* player = nullptr;
-    uint8 rank = 0;
-    bool ready = false;
-    uint32 assignedWarps = 0;
-};
+    return bot->getClass() == CLASS_ROGUE ||
+        (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() == FORM_CAT);
+}
 
-// Stunner bots in assignment order: DPS, then tanks, then healers, by GUID within each.
-std::vector<ManaWarpStunnerCandidate> GetManaWarpStunnerRoster(Player* bot)
+bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
 {
-    std::vector<ManaWarpStunnerCandidate> roster;
-    Group* group = bot->GetGroup();
-    if (!group)
-        return roster;
+    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
+    return breach && breach->getState() == SPELL_STATE_PREPARING &&
+        breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
+}
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
-            continue;
-
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || !memberAI->HasStrategy("karazhan", BOT_STATE_COMBAT) ||
-            !CanStunManaWarpWithoutComboPoints(member))
-        {
-            continue;
-        }
-
-        uint8 rank = 0;
-        if (PlayerbotAI::IsHeal(member))
-            rank = 2;
-        else if (PlayerbotAI::IsTank(member))
-            rank = 1;
-
-        roster.push_back({ member, rank, HasReadyManaWarpStun(memberAI) });
-    }
-
-    std::sort(roster.begin(), roster.end(),
-        [](ManaWarpStunnerCandidate const& left, ManaWarpStunnerCandidate const& right)
-        {
-            if (left.rank != right.rank)
-                return left.rank < right.rank;
-
-            return left.player->GetGUID() < right.player->GetGUID();
-        });
-
-    return roster;
+bool IsManaWarpToStun(Player* bot, Unit* unit, float reach, uint32 reactionMs)
+{
+    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_MANA_WARP) &&
+        bot->GetExactDist(unit) <= reach && IsManaWarpCastingWarpBreach(unit, reactionMs);
 }
 
 }
@@ -151,261 +110,80 @@ bool IsNearManaWarpPacks(Player* bot)
     return bot->GetExactDist(MANA_WARP_PACKS_CENTER) <= MANA_WARP_PACKS_RADIUS;
 }
 
-bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
+float GetManaWarpStunReach(Player* bot)
 {
-    if (!warp)
-        return false;
+    float reach = 0.0f;
+    switch (bot->getClass())
+    {
+        case CLASS_DRUID:
+            if (IsInBearForm(bot) || bot->GetShapeshiftForm() == FORM_CAT)
+                reach = MELEE_STUN_REACH;
+            break;
+        case CLASS_PALADIN:
+            reach = HAMMER_OF_JUSTICE_REACH;
+            break;
+        case CLASS_ROGUE:
+        case CLASS_WARRIOR:
+            reach = MELEE_STUN_REACH;
+            break;
+        case CLASS_WARLOCK:
+            reach = SHADOWFURY_REACH;
+            break;
+        default:
+            break;
+    }
 
-    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
-    return breach && breach->getState() == SPELL_STATE_PREPARING &&
-        breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
-}
-
-bool CanStunManaWarpWithoutComboPoints(Player* bot)
-{
     if (bot->getRace() == RACE_TAUREN)
-        return true;
+        reach = std::max(reach, WAR_STOMP_RADIUS);
 
-    switch (bot->getClass())
-    {
-        case CLASS_DRUID:
-            return IsInBearForm(bot);
-        case CLASS_PALADIN:
-        case CLASS_WARLOCK:
-        case CLASS_WARRIOR:
-            return true;
-        default:
-            return false;
-    }
+    return reach;
 }
 
-bool HasReadyManaWarpStun(PlayerbotAI* botAI)
+// The current target first, then any warp in reach that is casting.
+Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
 {
     Player* bot = botAI->GetBot();
-    if (bot->getRace() == RACE_TAUREN && IsReadySpell(botAI, "war stomp"))
-        return true;
-
-    switch (bot->getClass())
-    {
-        case CLASS_DRUID:
-            return IsInBearForm(bot) && IsReadySpell(botAI, "bash");
-        case CLASS_PALADIN:
-            return IsReadySpell(botAI, "hammer of justice");
-        case CLASS_WARLOCK:
-            return IsReadySpell(botAI, "shadowfury");
-        case CLASS_WARRIOR:
-            return IsReadySpell(botAI, "concussion blow") || IsReadySpell(botAI, "shockwave");
-        default:
-            return false;
-    }
-}
-
-bool IsWithinManaWarpStunRange(Player* bot, Unit* warp)
-{
-    if (!warp)
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-            return bot->IsWithinCombatRange(warp, HAMMER_OF_JUSTICE_RANGE);
-        case CLASS_WARLOCK:
-            return bot->IsWithinCombatRange(warp, SHADOWFURY_RANGE);
-        case CLASS_DRUID:
-        case CLASS_WARRIOR:
-            return bot->IsWithinMeleeRange(warp);
-        default:
-            return bot->GetExactDist(warp) <= WAR_STOMP_RADIUS;
-    }
-}
-
-// Rogues and cat druids: their own target, once casting. Stunners: an assigned warp once casting,
-// else, with no warp of their own left, any warp whose cast is half done.
-Unit* GetManaWarpToStun(PlayerbotAI* botAI)
-{
-    Player* bot = botAI->GetBot();
-    if (!IsNearManaWarpPacks(bot))
+    float const reach = GetManaWarpStunReach(bot);
+    if (reach <= 0.0f || !IsNearManaWarpPacks(bot))
         return nullptr;
 
-    if (!CanStunManaWarpWithoutComboPoints(bot))
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = context->GetValue<Unit*>("current target")->Get();
+    bool const needsComboPoints = NeedsComboPointsForManaWarpStun(bot);
+    if (IsManaWarpToStun(bot, target, reach, reactionMs) &&
+        (!needsComboPoints || bot->GetComboPoints(target)))
     {
-        Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-        if (!target || target->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) ||
-            !bot->GetComboPoints(target))
-        {
-            return nullptr;
-        }
-
-        return IsManaWarpCastingWarpBreach(target, WARP_BREACH_REACTION_MS) ? target : nullptr;
+        return target;
     }
 
-    std::lock_guard lock(karaStateMutex);
-    auto const instanceIt = manaWarpStunners.find(bot->GetInstanceId());
-    if (instanceIt == manaWarpStunners.end())
+    if (needsComboPoints)
         return nullptr;
 
-    Unit* backupWarp = nullptr;
-    bool hasOwnWarp = false;
-    for (auto const& [warpGuid, stunnerGuid] : instanceIt->second)
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* warp = ObjectAccessor::GetUnit(*bot, warpGuid);
-        if (!warp || !warp->IsAlive())
-            continue;
-
-        if (stunnerGuid == bot->GetGUID())
-        {
-            if (IsManaWarpCastingWarpBreach(warp, WARP_BREACH_REACTION_MS))
-                return warp;
-
-            hasOwnWarp = true;
-        }
-        else if (!backupWarp &&
-                 IsManaWarpCastingWarpBreach(warp, WARP_BREACH_BACKUP_REACTION_MS))
-        {
-            backupWarp = warp;
-        }
-    }
-
-    return hasOwnWarp ? nullptr : backupWarp;
-}
-
-Unit* GetManaWarpToHoldStunFor(Player* bot)
-{
-    if (!IsNearManaWarpPacks(bot))
-        return nullptr;
-
-    std::lock_guard lock(karaStateMutex);
-    auto const instanceIt = manaWarpStunners.find(bot->GetInstanceId());
-    if (instanceIt == manaWarpStunners.end())
-        return nullptr;
-
-    for (auto const& [warpGuid, stunnerGuid] : instanceIt->second)
-    {
-        if (stunnerGuid != bot->GetGUID())
-            continue;
-
-        Unit* warp = ObjectAccessor::GetUnit(*bot, warpGuid);
-        if (warp && warp->IsAlive() && warp->GetHealthPct() <= MANA_WARP_STUNNER_HOLD_HEALTH_PCT)
-            return warp;
+        Unit* attacker = botAI->GetUnit(guid);
+        if (IsManaWarpToStun(bot, attacker, reach, reactionMs))
+            return attacker;
     }
 
     return nullptr;
 }
 
-bool IsAssignedManaWarpStunner(Player* bot)
+Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI)
 {
-    if (!IsNearManaWarpPacks(bot))
-        return false;
+    Player* bot = botAI->GetBot();
+    if (GetManaWarpStunReach(bot) <= 0.0f || PlayerbotAI::IsTank(bot) || !IsNearManaWarpPacks(bot))
+        return nullptr;
 
-    std::lock_guard lock(karaStateMutex);
-    auto const instanceIt = manaWarpStunners.find(bot->GetInstanceId());
-    if (instanceIt == manaWarpStunners.end())
-        return false;
-
-    for (auto const& [warpGuid, stunnerGuid] : instanceIt->second)
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (!target || target->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !target->IsAlive() ||
+        target->GetHealthPct() > MANA_WARP_STUNNER_HOLD_HEALTH_PCT)
     {
-        if (stunnerGuid != bot->GetGUID())
-            continue;
-
-        Unit* warp = ObjectAccessor::GetUnit(*bot, warpGuid);
-        if (warp && warp->IsAlive())
-            return true;
+        return nullptr;
     }
 
-    return false;
-}
-
-// Each engaged warp, lowest GUID first, gets the ready stunner with the fewest warps, roster order
-// breaking ties. An assignment stands until its stunner dies or leaves.
-bool AssignManaWarpStunners(Player* bot)
-{
-    bool changed = PruneManaWarpStunners(bot);
-
-    std::list<Creature*> found;
-    bot->GetCreatureListWithEntryInGrid(
-        found, Id(KaraNpcs::NPC_MANA_WARP), MANA_WARP_SEARCH_RADIUS);
-
-    std::vector<Creature*> warps;
-    for (Creature* warp : found)
-    {
-        if (warp && warp->IsAlive() && warp->IsInCombat())
-            warps.push_back(warp);
-    }
-
-    if (warps.empty())
-        return changed;
-
-    std::sort(warps.begin(), warps.end(),
-        [](Creature* left, Creature* right) { return left->GetGUID() < right->GetGUID(); });
-
-    std::vector<ManaWarpStunnerCandidate> roster = GetManaWarpStunnerRoster(bot);
-
-    std::lock_guard lock(karaStateMutex);
-    auto& stunners = manaWarpStunners[bot->GetInstanceId()];
-
-    for (auto& [warpGuid, stunnerGuid] : stunners)
-    {
-        if (stunnerGuid.IsEmpty())
-            continue;
-
-        auto const stunnerIt = std::find_if(roster.begin(), roster.end(),
-            [&stunnerGuid](ManaWarpStunnerCandidate const& candidate)
-            { return candidate.player->GetGUID() == stunnerGuid; });
-
-        if (stunnerIt == roster.end())
-        {
-            stunnerGuid = ObjectGuid::Empty;
-            changed = true;
-        }
-        else
-        {
-            ++stunnerIt->assignedWarps;
-        }
-    }
-
-    for (Creature* warp : warps)
-    {
-        ObjectGuid& stunnerGuid = stunners[warp->GetGUID()];
-        if (!stunnerGuid.IsEmpty())
-            continue;
-
-        ManaWarpStunnerCandidate* best = nullptr;
-        for (ManaWarpStunnerCandidate& candidate : roster)
-        {
-            if (candidate.ready && (!best || candidate.assignedWarps < best->assignedWarps))
-                best = &candidate;
-        }
-
-        if (!best)
-            continue;
-
-        stunnerGuid = best->player->GetGUID();
-        ++best->assignedWarps;
-        changed = true;
-    }
-
-    return changed;
-}
-
-bool PruneManaWarpStunners(Player* bot)
-{
-    std::lock_guard lock(karaStateMutex);
-    auto const instanceIt = manaWarpStunners.find(bot->GetInstanceId());
-    if (instanceIt == manaWarpStunners.end())
-        return false;
-
-    bool const pruned = std::erase_if(
-        instanceIt->second,
-        [bot](auto const& entry)
-        {
-            Unit* warp = ObjectAccessor::GetUnit(*bot, entry.first);
-            return !warp || !warp->IsAlive();
-        }) > 0;
-
-    if (instanceIt->second.empty())
-        manaWarpStunners.erase(instanceIt);
-
-    return pruned;
+    // A rogue or cat druid with no combo points on it keeps building them.
+    return !NeedsComboPointsForManaWarpStun(bot) || bot->GetComboPoints(target) ? target : nullptr;
 }
 
 // Attumen the Huntsman

@@ -30,29 +30,14 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
 
 // Trash
 
-bool ManaWarpShouldAssignStunnersTrigger::IsActive()
-{
-    return IsNearManaWarpPacks(bot) && IsMechanicTrackerBot(bot, KARA_MAP_ID);
-}
-
 bool ManaWarpCastsWarpBreachTrigger::IsActive()
 {
-    if (bot->getRace() != RACE_TAUREN &&
-        (bot->getClass() == CLASS_DEATH_KNIGHT || bot->getClass() == CLASS_HUNTER ||
-         bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
-         bot->getClass() == CLASS_SHAMAN))
-    {
-        return false;
-    }
-
-    return GetManaWarpToStun(botAI);
+    return GetManaWarpToStun(botAI, WARP_BREACH_MIN_REACTION_MS);
 }
 
-// Tanks keep tanking; they stun on the cast bar without holding.
 bool ManaWarpStunnerShouldHoldTrigger::IsActive()
 {
-    return CanStunManaWarpWithoutComboPoints(bot) && !PlayerbotAI::IsTank(bot) &&
-        GetManaWarpToHoldStunFor(bot) && HasReadyManaWarpStun(botAI);
+    return GetManaWarpToHoldFor(botAI);
 }
 
 // Attumen the Huntsman

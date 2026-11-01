@@ -130,7 +130,7 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 // Trash
 
 // Stock rotations spend these stuns on the pack (Shockwave and Shadowfury on AoE, Bash in the
-// rotation), so an assigned stunner saves its stun for the cast bar.
+// rotation), so every stunner saves its stun for the cast bar.
 float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT || !IsNearManaWarpPacks(bot))
@@ -166,10 +166,10 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
             break;
     }
 
-    if (!isStun && (bot->getRace() != RACE_TAUREN || !dynamic_cast<CastWarStompAction*>(action)))
-        return 1.0f;
+    if (isStun)
+        return 0.0f;
 
-    return IsAssignedManaWarpStunner(bot) ? 0.0f : 1.0f;
+    return bot->getRace() == RACE_TAUREN && dynamic_cast<CastWarStompAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Attumen the Huntsman

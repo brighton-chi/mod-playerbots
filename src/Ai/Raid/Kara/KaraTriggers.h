@@ -56,14 +56,6 @@ public:
 
 // Trash
 
-class ManaWarpShouldAssignStunnersTrigger : public Trigger
-{
-public:
-    ManaWarpShouldAssignStunnersTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "mana warp should assign stunners", 1000) {}
-    bool IsActive() override;
-};
-
 class ManaWarpCastsWarpBreachTrigger : public Trigger
 {
 public:

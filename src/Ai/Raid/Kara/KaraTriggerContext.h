@@ -23,9 +23,6 @@ public:
             &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
 
         // Trash
-        creators["mana warp should assign stunners"] =
-            &RaidKarazhanTriggerContext::mana_warp_should_assign_stunners;
-
         creators["mana warp casts warp breach"] =
             &RaidKarazhanTriggerContext::mana_warp_casts_warp_breach;
 
@@ -162,10 +159,6 @@ private:
     }
 
     // Trash
-    static Trigger* mana_warp_should_assign_stunners(PlayerbotAI* botAI)
-    {
-        return new ManaWarpShouldAssignStunnersTrigger(botAI);
-    }
     static Trigger* mana_warp_casts_warp_breach(PlayerbotAI* botAI)
     {
         return new ManaWarpCastsWarpBreachTrigger(botAI);

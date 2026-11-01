@@ -175,33 +175,31 @@ bool IsKarazhanFearCasterActive(Player* bot);
 // Trash
 
 // A stun stops Warp Breach for good if it lands during the 1 s cast; interrupts do nothing.
-// The assigned stunner reacts to the cast bar, a backup once it is half full.
-inline constexpr uint32 WARP_BREACH_REACTION_MS = 200;
-inline constexpr uint32 WARP_BREACH_BACKUP_REACTION_MS = 500;
-// From here the assigned stunner casts nothing else, keeping its global cooldown free.
+// Each stunner waits its own delay after the cast starts, so the first stun ends that cast and the
+// others go to a warp still casting.
+inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
+inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 600;
+// From here a stunner on the warp casts nothing else, keeping its global cooldown free.
 inline constexpr float MANA_WARP_STUNNER_HOLD_HEALTH_PCT = 15.0f;
-inline constexpr float HAMMER_OF_JUSTICE_RANGE = 10.0f;
-inline constexpr float SHADOWFURY_RANGE = 30.0f;
+// Stun reaches, centre to centre
+inline constexpr float MELEE_STUN_REACH = 5.0f;
+inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
+inline constexpr float SHADOWFURY_REACH = 30.0f;
 inline constexpr float WAR_STOMP_RADIUS = 8.0f;
-// A stunner out of range walks to this far inside it; melee to 1 yd, edge to edge.
+// A stunner out of reach walks to this far inside it.
 inline constexpr float MANA_WARP_STUN_APPROACH_MARGIN = 1.0f;
 // The nine Mana Warps stand in four packs within 30 yd of this point.
 inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
 inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
-inline constexpr float MANA_WARP_SEARCH_RADIUS = 100.0f;
 
 bool IsNearManaWarpPacks(Player* bot);
-bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs);
-// Stunners: bots with Hammer of Justice, Concussion Blow, Shockwave, Bash in bear form, Shadowfury
-// or War Stomp. Rogues and cat druids need combo points on the warp, so stun only their target.
-bool CanStunManaWarpWithoutComboPoints(Player* bot);
-bool HasReadyManaWarpStun(PlayerbotAI* botAI);
-bool IsWithinManaWarpStunRange(Player* bot, Unit* warp);
-Unit* GetManaWarpToStun(PlayerbotAI* botAI);
-Unit* GetManaWarpToHoldStunFor(Player* bot);
-bool IsAssignedManaWarpStunner(Player* bot);
-bool AssignManaWarpStunners(Player* bot);
-bool PruneManaWarpStunners(Player* bot);
+// Stunners: Hammer of Justice, Concussion Blow or Shockwave, Bash, Kidney Shot, Maim, Shadowfury,
+// War Stomp. 0 for a bot with none.
+float GetManaWarpStunReach(Player* bot);
+// Rogues and cat druids stun only their target, which holds their combo points.
+Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
+// Tanks keep tanking and stun without holding.
+Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };

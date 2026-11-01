@@ -21,9 +21,6 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("karazhan set tremor totem", ACTION_RAID) }));
 
     // Trash
-    triggers.push_back(new TriggerNode("mana warp should assign stunners",
-        { NextAction("mana warp assign stunners", ACTION_EMERGENCY + 10) }));
-
     triggers.push_back(new TriggerNode("mana warp casts warp breach",
         { NextAction("mana warp stun warp breach", ACTION_EMERGENCY + 6) }));
 

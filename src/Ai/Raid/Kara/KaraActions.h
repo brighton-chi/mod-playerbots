@@ -32,20 +32,14 @@ public:
 
 // Trash
 
-class ManaWarpAssignStunnersAction : public Action
-{
-public:
-    ManaWarpAssignStunnersAction(PlayerbotAI* botAI)
-        : Action(botAI, "mana warp assign stunners") {}
-    bool Execute(Event event) override;
-};
-
 class ManaWarpStunWarpBreachAction : public Action
 {
 public:
-    ManaWarpStunWarpBreachAction(PlayerbotAI* botAI)
-        : Action(botAI, "mana warp stun warp breach") {}
+    ManaWarpStunWarpBreachAction(PlayerbotAI* botAI);
     bool Execute(Event event) override;
+
+private:
+    uint32 const _reactionMs; // drawn once per bot
 };
 
 class ManaWarpStunnerHoldForWarpBreachAction : public MovementAction

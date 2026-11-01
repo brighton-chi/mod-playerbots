@@ -9,6 +9,7 @@
 #include "KaraHelpers.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "Random.h"
 #include "RtiTargetValue.h"
 #include <algorithm>
 #include <array>
@@ -79,7 +80,6 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         Id(KaraNpcs::NPC_TERESTIAN_ILLHOOF),
     });
 
-    reset |= PruneManaWarpStunners(bot);
     reset |= KaraResetInstance(instanceId);
 
     return reset;
@@ -93,25 +93,24 @@ bool KarazhanSetTremorTotemAction::Execute(Event /*event*/)
 
 // Trash
 
-// Bookkeeping only, so the tracker's tick goes on.
-bool ManaWarpAssignStunnersAction::Execute(Event /*event*/)
-{
-    AssignManaWarpStunners(bot);
-    return false;
-}
+ManaWarpStunWarpBreachAction::ManaWarpStunWarpBreachAction(PlayerbotAI* botAI)
+    : Action(botAI, "mana warp stun warp breach"),
+      _reactionMs(urand(WARP_BREACH_MIN_REACTION_MS, WARP_BREACH_MAX_REACTION_MS)) {}
 
 bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
 {
-    Unit* warp = GetManaWarpToStun(botAI);
+    Unit* warp = GetManaWarpToStun(botAI, _reactionMs);
     if (!warp)
         return false;
 
-    // CanCastSpell passes targets out of range, and a failed cast still turns the bot.
-    auto const castStun = [&](char const* spell, bool inRange)
+    auto const castStun = [&](char const* spell)
     {
-        return inRange && botAI->CanCastSpell(spell, warp) && botAI->CastSpell(spell, warp);
+        return botAI->CanCastSpell(spell, warp) && botAI->CastSpell(spell, warp);
     };
 
+    // The warp is within the bot's stun reach, but a Tauren's reach is War Stomp's, so melee stuns
+    // still test melee range: CanCastSpell passes targets out of range, and a failed cast still
+    // turns the bot.
     bool const inMeleeRange = bot->IsWithinMeleeRange(warp);
     bool stunned = false;
     switch (bot->getClass())
@@ -120,29 +119,23 @@ bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
         {
             ShapeshiftForm const form = bot->GetShapeshiftForm();
             if (form == FORM_BEAR || form == FORM_DIREBEAR)
-                stunned = castStun("bash", inMeleeRange);
+                stunned = inMeleeRange && castStun("bash");
             else if (form == FORM_CAT)
-                stunned = castStun("maim", inMeleeRange);
+                stunned = inMeleeRange && castStun("maim");
             break;
         }
         case CLASS_PALADIN:
-        {
-            stunned = castStun(
-                "hammer of justice", bot->IsWithinCombatRange(warp, HAMMER_OF_JUSTICE_RANGE));
+            stunned = castStun("hammer of justice");
             break;
-        }
         case CLASS_ROGUE:
-            stunned = castStun("kidney shot", inMeleeRange);
+            stunned = inMeleeRange && castStun("kidney shot");
             break;
         case CLASS_WARLOCK:
-            stunned = castStun("shadowfury", bot->IsWithinCombatRange(warp, SHADOWFURY_RANGE));
+            stunned = castStun("shadowfury");
             break;
         case CLASS_WARRIOR:
-        {
-            stunned = castStun("concussion blow", inMeleeRange) ||
-                castStun("shockwave", inMeleeRange);
+            stunned = inMeleeRange && (castStun("concussion blow") || castStun("shockwave"));
             break;
-        }
         default:
             break;
     }
@@ -157,19 +150,18 @@ bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
 // Holding casts nothing, so the stun is off the global cooldown when the cast bar comes.
 bool ManaWarpStunnerHoldForWarpBreachAction::Execute(Event /*event*/)
 {
-    Unit* warp = GetManaWarpToHoldStunFor(bot);
+    Unit* warp = GetManaWarpToHoldFor(botAI);
     if (!warp)
         return false;
 
-    if (IsWithinManaWarpStunRange(bot, warp))
+    float const reach = GetManaWarpStunReach(bot);
+    if (bot->GetExactDist(warp) <= reach)
         return true;
 
-    float distance = MANA_WARP_STUN_APPROACH_MARGIN;
-    if (bot->getClass() == CLASS_PALADIN)
-        distance = HAMMER_OF_JUSTICE_RANGE - MANA_WARP_STUN_APPROACH_MARGIN;
-    else if (bot->getClass() == CLASS_WARLOCK)
-        distance = SHADOWFURY_RANGE - MANA_WARP_STUN_APPROACH_MARGIN;
-
+    // MoveTo measures edge to edge.
+    float const distance = std::max(
+        0.0f, reach - MANA_WARP_STUN_APPROACH_MARGIN - bot->GetCombatReach() -
+            warp->GetCombatReach());
     return MoveTo(warp, distance, MovementPriority::MOVEMENT_COMBAT);
 }
 

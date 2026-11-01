@@ -23,9 +23,6 @@ public:
             &RaidKarazhanActionContext::karazhan_set_tremor_totem;
 
         // Trash
-        creators["mana warp assign stunners"] =
-            &RaidKarazhanActionContext::mana_warp_assign_stunners;
-
         creators["mana warp stun warp breach"] =
             &RaidKarazhanActionContext::mana_warp_stun_warp_breach;
 
@@ -162,10 +159,6 @@ private:
     }
 
     // Trash
-    static Action* mana_warp_assign_stunners(PlayerbotAI* botAI)
-    {
-        return new ManaWarpAssignStunnersAction(botAI);
-    }
     static Action* mana_warp_stun_warp_breach(PlayerbotAI* botAI)
     {
         return new ManaWarpStunWarpBreachAction(botAI);
