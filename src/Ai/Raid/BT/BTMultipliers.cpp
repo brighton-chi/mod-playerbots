@@ -11,6 +11,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "DruidShapeshiftActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
@@ -305,8 +306,8 @@ float SupremusRunAwayWhenFixatedMultiplier::GetValueInEncounter(Action* action)
     return IsSupremusKitePhase(supremus) ? 0.0f : 1.0f;
 }
 
-// If reaching a target would mean walking through fire, hold that standard reach. The encounter's
-// reach around fire action walks around it instead. A blocked reach the action doesn't route around
+// If reaching a target would mean moving through fire, hold that standard reach. The encounter's
+// reach around fire action moves around it instead. A blocked reach the action doesn't route around
 // simply doesn't run.
 float SupremusDoNotReachThroughFireMultiplier::GetValueInEncounter(Action* action)
 {
@@ -876,14 +877,15 @@ bool IsHeldAtIllidanLandingStack(Action* action)
         !dynamic_cast<IllidanStormrageIsolateBotWithInfectionAction*>(action);
 }
 
-bool IsHeldIllidanReach(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
+bool IsHeldIllidanReach(
+    PlayerbotAI* botAI, Unit const& illidan, Action* action, IllidanPhase phase)
 {
     Player* bot = botAI->GetBot();
 
+    bool const isGapCloser =
+        dynamic_cast<CastReachTargetSpellAction*>(action) || IsKillingSpree(bot, action);
     if (!dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<SetBehindTargetAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !IsKillingSpree(bot, action))
+        !dynamic_cast<SetBehindTargetAction*>(action) && !isGapCloser)
     {
         return false;
     }
@@ -897,7 +899,13 @@ bool IsHeldIllidanReach(PlayerbotAI* botAI, Action* action, IllidanPhase phase)
     if (!PlayerbotAI::IsMelee(bot))
         return true;
 
-    return !IsTargetingShadowDemon(botAI);
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (!target || target->GetEntry() != Id(BtNpcs::NPC_SHADOW_DEMON))
+        return true;
+
+    float const releaseDistance = isGapCloser ?
+        ILLIDAN_SHADOW_DEMON_GAP_CLOSER_DISTANCE : ILLIDAN_SHADOW_DEMON_CHASE_DISTANCE;
+    return illidan.GetExactDist2d(target) < releaseDistance;
 }
 
 bool IsHeldIllidanHeal(PlayerbotAI* botAI, Unit* illidan, Action* action)
@@ -1007,13 +1015,21 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
             PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
     }
 
+    // The Shadow Demon chase hold is timed for run speed at most 15% up.
+    if (phase == IllidanPhase::Demon &&
+        (dynamic_cast<CastSprintAction*>(action) || dynamic_cast<CastDashAction*>(action) ||
+         dynamic_cast<CastSpiritWalkAction*>(action)))
+    {
+        return 0.0f;
+    }
+
     // Shadowfiends and infections do not end during the death scene, so infected bots need to
     // continue to stay away from the raid.
     if (phase == IllidanPhase::Dying)
     {
         bool const isHeldMove = dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) ||
-            IsHeldIllidanReach(botAI, action, phase);
+            IsHeldIllidanReach(botAI, *illidan, action, phase);
         return isHeldMove && HasParasiticShadowfiend(bot) ? 0.0f : 1.0f;
     }
 
@@ -1043,7 +1059,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
     if (PlayerbotAI::IsTank(bot))
         return GetTankMovementValue(illidan, phase, action);
 
-    return GetNonTankMovementValue(phase, action);
+    return GetNonTankMovementValue(illidan, phase, action);
 }
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
@@ -1094,7 +1110,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
     {
         if (!PlayerbotAI::IsMainTank(bot))
         {
-            if (IsHeldIllidanReach(botAI, action, phase))
+            if (IsHeldIllidanReach(botAI, *illidan, action, phase))
                 return 0.0f;
 
             if (phase != IllidanPhase::Landing)
@@ -1112,8 +1128,8 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
         }
 
         bool const canChaseDemon = phase == IllidanPhase::Demon &&
-            !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS) &&
-            !IsHeldIllidanReach(botAI, action, phase);
+            !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) &&
+            !IsHeldIllidanReach(botAI, *illidan, action, phase);
 
         if (isMove)
         {
@@ -1145,8 +1161,11 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
             return 1.0f;
         }
 
-        if (dynamic_cast<AvoidAoeAction*>(action) || IsHeldIllidanReach(botAI, action, phase))
+        if (dynamic_cast<AvoidAoeAction*>(action) ||
+            IsHeldIllidanReach(botAI, *illidan, action, phase))
+        {
             return 0.0f;
+        }
 
         // Flame tanks rely on standard tank assist and movement to pick up their Flame if loose.
         Unit* flame = GetAssignedFlameOfAzzinoth(bot);
@@ -1163,7 +1182,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTankMovementValu
 }
 
 float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementValue(
-    IllidanPhase phase, Action* action)
+    Unit* illidan, IllidanPhase phase, Action* action)
 {
     bool const isBlockedMove =
         (dynamic_cast<CombatFormationMoveAction*>(action) &&
@@ -1193,7 +1212,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetNonTankMovementV
     if (phase == IllidanPhase::Flying)
         return 0.0f;
 
-    return IsHeldIllidanReach(botAI, action, phase) ? 0.0f : 1.0f;
+    return IsHeldIllidanReach(botAI, *illidan, action, phase) ? 0.0f : 1.0f;
 }
 
 // Near a new Shadowfiend, don't attack it, cast AoE, or heal. Switching targets is fine.

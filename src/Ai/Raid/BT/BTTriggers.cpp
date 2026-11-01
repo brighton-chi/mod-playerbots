@@ -190,7 +190,7 @@ bool SupremusNearFireTrigger::IsActiveInEncounter()
     if (!GetEncounterBoss())
         return false;
 
-    if (bot->isMoving() && CanWalkThroughSupremusFire(bot))
+    if (bot->isMoving() && CanMoveThroughSupremusFire(bot))
         return false;
 
     return IsInSupremusHazard(
@@ -1016,7 +1016,7 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
         return true;
 
     return phase == IllidanPhase::Demon &&
-        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_WALK_IN_MS);
+        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS);
 }
 
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()

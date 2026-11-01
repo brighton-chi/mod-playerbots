@@ -362,7 +362,7 @@ bool IsInSupremusHazard(
 float GetLineLengthInSupremusHazards(
     std::vector<SupremusHazard> const& hazards, Position const& from, Position const& to,
     SupremusHazardZone zone);
-bool CanWalkThroughSupremusFire(Player* bot);
+bool CanMoveThroughSupremusFire(Player* bot);
 bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit* target, float range);
 Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI);
 
@@ -608,16 +608,15 @@ struct EyeBlastDangerArea
 };
 
 // Phase 4 positions, calculated from where Demon Form roots Illidan and the line from him through
-// the grate center. Ranged DPS slots are in spell reach of him and healer slots behind them. All
-// rows fill from the warlock tank's side first, to keep the raid close together and concentrate DPS
-// on Shadow Demons.
+// the grate center. Ranged DPS slots are in spell reach of him and healer and melee slots behind
+// them, with healer slots on the warlock tank's side. All rows fill from the warlock tank's side
+// first, to keep the raid close together and concentrate DPS on Shadow Demons.
 struct DemonFormLayout
 {
     Position warlockTankPosition;
-    Position mainTankWaitPosition;
     Position mainTankPickupPosition;
     Position mainTankStepInPosition;
-    std::vector<Position> rangedSlots;
+    std::vector<Position> rangedDpsSlots;
     std::vector<Position> healerSlots;
     std::vector<Position> meleeSlots;
 };
@@ -692,17 +691,17 @@ inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
 // tank never triggers the back step, which can cause Illidan to step past the ring and screw up the
 // positioning (including leaving some ranged out of spell range).
 inline constexpr float ILLIDAN_ROUND_STEP_ANGLE = 60.0f * static_cast<float>(M_PI) / 180.0f;
-// On each Flame Crash, the main tank walks to the ring point this far counterclockwise of Illidan.
+// On each Flame Crash, the main tank moves to the ring point this far counterclockwise of Illidan.
 // Illidan chases once the main tank gets about 9.5 yd away, and the net result is that each move
 // is about 25° counterclockwise around the ring.
 inline constexpr float ILLIDAN_RING_LEAD_ANGLE = 35.0f * static_cast<float>(M_PI) / 180.0f;
-// A cast (Draw Soul often follows a Flame Crash) can freeze him while the tank walks to the lead
+// A cast (Draw Soul often follows a Flame Crash) can freeze him while the tank moves to the lead
 // point and stops. Once the cast ends, he closes only to 9.5 yd of it, moving only about 13°
 // along the tank ring and facing incorrectly as a result. Thus, a step that moves less than the
 // correct case (recall about 25°) is a failure, and the main tank moves again.
 inline constexpr float ILLIDAN_RING_SHORT_STEP_ANGLE = 20.0f * static_cast<float>(M_PI) / 180.0f;
 // The lead that moves Illidan away from the grate center. With Illidan under 15 yd from the center
-// and no lead running, the main tank walks out to 28 yd on its own bearing (due north after a
+// and no lead running, the main tank moves out to 28 yd on its own bearing (due north after a
 // landing), and he follows to 22 to 28 yd out.
 inline constexpr float ILLIDAN_PICKUP_DISTANCE = 15.0f;
 inline constexpr float ILLIDAN_PICKUP_LEAD_RADIUS = 28.0f;
@@ -726,10 +725,11 @@ inline constexpr size_t ILLIDAN_GRATE_OUTER_SLOT_COUNT = 12;
 inline constexpr float ILLIDAN_GRATE_INNER_RADIUS = 6.0f;
 inline constexpr float ILLIDAN_GRATE_OUTER_RADIUS = 12.0f;
 inline constexpr size_t ILLIDAN_RANGED_SLOT_COUNT =
-    1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT; // phases 3, 4, and 5
-// Phase 4: 8 healer positions (apart from the 19 ranged DPS positions) and 15 melee positions.
+    1 + ILLIDAN_GRATE_INNER_SLOT_COUNT + ILLIDAN_GRATE_OUTER_SLOT_COUNT; // phases 3 and 5
+// Phase 4: 15 ranged DPS positions, 8 healer positions, and 13 melee positions.
+inline constexpr size_t ILLIDAN_DEMON_RANGED_DPS_SLOT_COUNT = 15;
 inline constexpr size_t ILLIDAN_HEALER_SLOT_COUNT = 8;
-inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 15;
+inline constexpr size_t ILLIDAN_MELEE_SLOT_COUNT = 13;
 
 // Shadowfiends
 
@@ -751,11 +751,11 @@ inline constexpr float ILLIDAN_SHADOWFIEND_FINISH_HEALTH_PCT = 50.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_INFECTION_POSITION_ANGLE =
     135.0f * static_cast<float>(M_PI) / 180.0f;
-// Phase 4 position, for secondary infections (phase 4 has no primary infections): 39.6 yd from
-// Illidan and 16° off his inward line away from the warlock tank, between ranged DPS and melee.
-inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE = 39.6f;
+// Phase 4 position, for secondary infections (phase 4 has no primary infections): 53 yd from
+// Illidan and 10° off his inward line away from the warlock tank, behind the melee.
+inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_DISTANCE = 53.0f;
 inline constexpr float ILLIDAN_DEMON_INFECTION_POSITION_ANGLE =
-    -16.0f * static_cast<float>(M_PI) / 180.0f;
+    -10.0f * static_cast<float>(M_PI) / 180.0f;
 
 // Phase 2
 
@@ -795,6 +795,12 @@ inline constexpr float ILLIDAN_AURA_OF_DREAD_CLEARANCE =
     ILLIDAN_AURA_OF_DREAD_HAZARD_RADIUS + 2.0f;
 inline constexpr float ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS = 20.0f;
 inline constexpr float ILLIDAN_SHADOW_BLAST_CLEARANCE = ILLIDAN_SHADOW_BLAST_HAZARD_RADIUS + 2.0f;
+// Melee hold their chase on a Shadow Demon until it is 10 yd from Illidan, so they meet it outside
+// Aura of Dread's clearance even at +15% run speed (Ret, Assassination, Unholy). Gap closers wait
+// until the Demon is 3 yd past that clearance. Sprint, Dash, and Spirit Walk are blocked.
+inline constexpr float ILLIDAN_SHADOW_DEMON_CHASE_DISTANCE = 10.0f;
+inline constexpr float ILLIDAN_SHADOW_DEMON_GAP_CLOSER_DISTANCE =
+    ILLIDAN_AURA_OF_DREAD_CLEARANCE + 3.0f;
 
 // When the Seed of Corruption and/or warlock tank Searing Pain action is active, use Life Tap when
 // below 20% mana and above 50% HP to ensure enough mana to cast the applicable spell.
@@ -805,15 +811,11 @@ inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
 inline constexpr float ILLIDAN_WARLOCK_POSITION_DISTANCE = 31.0f;
 inline constexpr float ILLIDAN_WARLOCK_POSITION_ANGLE = 75.0f * static_cast<float>(M_PI) / 180.0f;
 
-// The main tank waits beside other melee, on the first melee row one slot past a group of seven
-// (5 melee DPS and 2 tanks) on the side away from the warlock tank.
-inline constexpr float ILLIDAN_MAIN_TANK_WAIT_DISTANCE = 48.4f;
-inline constexpr float ILLIDAN_MAIN_TANK_WAIT_ANGLE = -35.0f * static_cast<float>(M_PI) / 180.0f;
 // 10s before the end of phase 4, the main tank moves to the pickup position in front of the raid,
 // just outside Aura of Dread and 22.5 yd from the warlock tank, to prepare for the phase 3/5
-// pickup. The walk is about 44 yards. There is no Flame Burst possible within the final 14s of
-// phase 4, and Shadow Demons are cleared by then, so this should be safe.
-inline constexpr uint32 ILLIDAN_MAIN_TANK_WALK_IN_MS = 10 * IN_MILLISECONDS;
+// pickup. The move from a melee slot is 23 to 43 yd. There is no Flame Burst possible within the
+// final 14s of phase 4, and Shadow Demons are cleared by then, so this should be safe.
+inline constexpr uint32 ILLIDAN_MAIN_TANK_MOVE_IN_MS = 10 * IN_MILLISECONDS;
 inline constexpr float ILLIDAN_PICKUP_POSITION_DISTANCE = 17.0f;
 inline constexpr float ILLIDAN_PICKUP_POSITION_ANGLE = 30.0f * static_cast<float>(M_PI) / 180.0f;
 // For the last 1.3s of phase 4, the main tank moves in on the same bearing to 9 yd from Illidan to
@@ -842,7 +844,8 @@ inline std::array const ILLIDAN_GRATE_POSITIONS = {
 };
 
 // The Flame tanks' Blaze steps, one per Flame Blast, in order. The Flame follows its tank in, so
-// each step is walked into on a line that turns the Flame Blast cone away from the grate stacks.
+// the tank moves from each step to the next on a line that turns the Flame Blast cone away from
+// the grate stacks.
 inline Position const ILLIDAN_E_GLAIVE_WAITING_POSITION = { 677.656f, 294.066f, 353.192f };
 inline std::array const ILLIDAN_E_GLAIVE_TANK_POSITIONS = {
     Position{ 657.100f, 291.200f, 354.000f },

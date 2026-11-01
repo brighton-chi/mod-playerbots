@@ -699,8 +699,8 @@ float GetLineLengthInSupremusHazards(
     return total;
 }
 
-// With Divine Shield or Dispersion up, a bot may walk through fire but not stop in it.
-bool CanWalkThroughSupremusFire(Player* bot)
+// With Divine Shield or Dispersion up, a bot may move through fire but not stop in it.
+bool CanMoveThroughSupremusFire(Player* bot)
 {
     switch (bot->getClass())
     {
@@ -717,7 +717,7 @@ bool IsSupremusReachBlockedByFire(PlayerbotAI* botAI, Unit* target, float range)
 {
     Player* bot = botAI->GetBot();
     // Standard reach doesn't break channels, so take the same path with this custom reach method.
-    if (CanWalkThroughSupremusFire(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    if (CanMoveThroughSupremusFire(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         return false;
 
     if (!target || !target->IsAlive() || bot->IsWithinCombatRange(target, range))
@@ -1242,7 +1242,7 @@ namespace
 // means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
 // tank healer, Malande tank) and need it clear of the council patches, so a candidate that clamps
 // short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
-bool CanWalkStraightTo(Player* bot, Position const& point)
+bool CanMoveStraightTo(Player* bot, Position const& point)
 {
     constexpr float clampTolerance = 0.5f;
     float x = point.GetPositionX();
@@ -1287,7 +1287,7 @@ bool FindMageTankHealerPosition(
 
     for (Position const& candidate : candidates)
     {
-        if (!CanWalkStraightTo(bot, candidate) ||
+        if (!CanMoveStraightTo(bot, candidate) ||
             !mageTank->IsWithinLOS(
                 candidate.GetPositionX(), candidate.GetPositionY(), candidate.GetPositionZ()))
         {
@@ -1336,7 +1336,7 @@ bool FindMalandeTankPosition(
 
     for (Position const& candidate : candidates)
     {
-        if (!CanWalkStraightTo(bot, candidate))
+        if (!CanMoveStraightTo(bot, candidate))
             continue;
 
         destination = candidate;
@@ -1856,20 +1856,18 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
     // Float values for the arrays are exact 2D distances from Illidan.
-    constexpr std::array rangedRows = { 25.2f, 31.0f };
-    constexpr std::array healerRows = { 36.8f, 42.6f };
-    static_assert(rangedRows.size() == healerRows.size());
-    constexpr std::array meleeRows = { 48.4f, 54.2f, 60.0f };
-    constexpr float rangedHighAngle = 40.0f * degree;
-    constexpr float healerHighAngle = 60.0f * degree;
+    // Ranged DPS, in spell reach of him.
+    constexpr std::array frontRows = { 25.2f, 31.0f };
+    // Healers, then melee, behind the ranged DPS.
+    constexpr std::array rearRows = { 36.8f, 42.6f };
+    static_assert(frontRows.size() == rearRows.size());
+    constexpr float frontHighAngle = 40.0f * degree;
+    constexpr float rearHighAngle = 60.0f * degree;
     constexpr float lowAngle = -90.0f * degree;
-    constexpr float meleeHalfArc = 40.0f * degree;
 
     DemonFormLayout layout;
     layout.warlockTankPosition = GetDemonFormPoint(
         illidan, ILLIDAN_WARLOCK_POSITION_DISTANCE, ILLIDAN_WARLOCK_POSITION_ANGLE);
-    layout.mainTankWaitPosition = GetDemonFormPoint(
-        illidan, ILLIDAN_MAIN_TANK_WAIT_DISTANCE, ILLIDAN_MAIN_TANK_WAIT_ANGLE);
     layout.mainTankPickupPosition = GetDemonFormPoint(
         illidan, ILLIDAN_PICKUP_POSITION_DISTANCE, ILLIDAN_PICKUP_POSITION_ANGLE);
     layout.mainTankStepInPosition = GetDemonFormPoint(
@@ -1881,51 +1879,35 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
         return a.first > b.first;
     };
 
-    std::vector<std::pair<float, Position>> ranged;
-    std::vector<std::pair<float, Position>> healers;
-    for (size_t i = 0; i < rangedRows.size(); ++i)
+    std::vector<std::pair<float, Position>> front;
+    std::vector<std::pair<float, Position>> rear;
+    for (size_t i = 0; i < frontRows.size(); ++i)
     {
-        std::vector<std::pair<float, Position>> const rangedRow = GetDemonFormRow(
-            illidan, layout.warlockTankPosition, rangedRows[i], rangedHighAngle, lowAngle,
+        std::vector<std::pair<float, Position>> const frontRow = GetDemonFormRow(
+            illidan, layout.warlockTankPosition, frontRows[i], frontHighAngle, lowAngle,
             i % 2 == 1);
-        ranged.insert(ranged.end(), rangedRow.begin(), rangedRow.end());
+        front.insert(front.end(), frontRow.begin(), frontRow.end());
 
-        std::vector<std::pair<float, Position>> const healerRow = GetDemonFormRow(
-            illidan, layout.warlockTankPosition, healerRows[i], healerHighAngle, lowAngle,
+        std::vector<std::pair<float, Position>> const rearRow = GetDemonFormRow(
+            illidan, layout.warlockTankPosition, rearRows[i], rearHighAngle, lowAngle,
             i % 2 == 1);
-        healers.insert(healers.end(), healerRow.begin(), healerRow.end());
+        rear.insert(rear.end(), rearRow.begin(), rearRow.end());
     }
 
-    if (ranged.empty())
-        return layout;
+    std::stable_sort(front.begin(), front.end(), fromWarlockSide);
+    if (front.size() > ILLIDAN_DEMON_RANGED_DPS_SLOT_COUNT)
+        front.resize(ILLIDAN_DEMON_RANGED_DPS_SLOT_COUNT);
 
-    std::stable_sort(ranged.begin(), ranged.end(), fromWarlockSide);
-    if (ranged.size() > ILLIDAN_RANGED_SLOT_COUNT)
-        ranged.resize(ILLIDAN_RANGED_SLOT_COUNT);
+    for (std::pair<float, Position> const& slot : front)
+        layout.rangedDpsSlots.push_back(slot.second);
 
-    for (std::pair<float, Position> const& slot : ranged)
-        layout.rangedSlots.push_back(slot.second);
-
-    std::stable_sort(healers.begin(), healers.end(), fromWarlockSide);
-    if (healers.size() > ILLIDAN_HEALER_SLOT_COUNT)
-        healers.resize(ILLIDAN_HEALER_SLOT_COUNT);
-
-    for (std::pair<float, Position> const& slot : healers)
-        layout.healerSlots.push_back(slot.second);
-
-    float const meleeCenterAngle = (ILLIDAN_WARLOCK_POSITION_ANGLE + ranged.back().first) / 2.0f;
-    for (size_t i = 0; i < meleeRows.size(); ++i)
+    std::stable_sort(rear.begin(), rear.end(), fromWarlockSide);
+    for (size_t i = 0; i < rear.size(); ++i)
     {
-        std::vector<std::pair<float, Position>> row = GetDemonFormRow(
-            illidan, layout.warlockTankPosition, meleeRows[i], meleeCenterAngle + meleeHalfArc,
-            meleeCenterAngle - meleeHalfArc, i % 2 == 1);
-        std::stable_sort(row.begin(), row.end(), fromWarlockSide);
-
-        for (std::pair<float, Position> const& slot : row)
-        {
-            if (layout.meleeSlots.size() < ILLIDAN_MELEE_SLOT_COUNT)
-                layout.meleeSlots.push_back(slot.second);
-        }
+        if (i < ILLIDAN_HEALER_SLOT_COUNT)
+            layout.healerSlots.push_back(rear[i].second);
+        else if (i < ILLIDAN_HEALER_SLOT_COUNT + ILLIDAN_MELEE_SLOT_COUNT)
+            layout.meleeSlots.push_back(rear[i].second);
     }
 
     return layout;
@@ -2234,14 +2216,13 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
     return GetIllidanRosterIndex(healers, {}, bot->GetGUID(), slotCount);
 }
 
+// Phase 4 melee slots: melee DPS first, then tanks (the main tank included), each in GUID order.
 int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
 {
     Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group || slotCount == 0)
         return -1;
-
-    ObjectGuid const mainTank = PlayerbotAI::GetMainTankGuid(group);
 
     std::vector<ObjectGuid> meleeDps;
     std::vector<ObjectGuid> tanks;
@@ -2252,9 +2233,6 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
             continue;
 
         ObjectGuid const guid = member->GetGUID();
-        if (guid == mainTank)
-            continue;
-
         if (PlayerbotAI::IsTank(member))
             tanks.push_back(guid);
         else if (PlayerbotAI::IsMelee(member))
@@ -2473,8 +2451,8 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
 {
     // A Demon moves 4 yd/s, so 1 yd is a quarter second of movement.
     constexpr float targetDistanceStep = 1.0f;
-    constexpr uint32 walkingToWarlock = 0;
-    constexpr uint32 walking = 1;
+    constexpr uint32 fixatedOnWarlock = 0;
+    constexpr uint32 moving = 1;
     constexpr uint32 idle = 2;
 
     auto const& shadowDemons = botAI->GetAiObjectContext()
@@ -2495,7 +2473,7 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
         uint32 step = 0;
         if (target && target->IsAlive())
         {
-            rank = shadowDemon.target == warlockTank ? walkingToWarlock : walking;
+            rank = shadowDemon.target == warlockTank ? fixatedOnWarlock : moving;
             step = static_cast<uint32>(demon->GetExactDist2d(target) / targetDistanceStep);
         }
 
