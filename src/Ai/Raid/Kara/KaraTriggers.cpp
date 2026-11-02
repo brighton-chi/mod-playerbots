@@ -9,6 +9,7 @@
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;
@@ -46,12 +47,12 @@ bool ManaWarpStunnerShouldHoldTrigger::IsActive()
 // A Midnight threat list check will capture the entire encounter.
 bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActiveInEncounter()
 {
-    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) && !GetAttumenMounted(bot);
+    return FindThreatTarget(bot, "midnight") && !GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActiveInEncounter()
 {
-    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) && GetAttumenMounted(bot);
+    return FindThreatTarget(bot, "midnight") && GetAttumenMounted(bot);
 }
 
 bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
@@ -59,7 +60,7 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
+    if (!FindThreatTarget(bot, "midnight"))
         return false;
 
     return GetAttumenMounted(bot);
@@ -69,14 +70,14 @@ bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
 
 bool MoroesShouldPrioritizeAddsTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && AI_VALUE2(Unit*, "find target", "moroes");
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
 }
 
 // Maiden of Virtue
 
 bool MaidenOfVirtueShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
 }
 
 bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActiveInEncounter()
@@ -84,7 +85,7 @@ bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "maiden of virtue"))
+    if (!GetEncounterBoss())
         return false;
 
     return !AI_VALUE2(bool, "has totem", "grounding totem");
@@ -92,7 +93,7 @@ bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActiveInEncounter()
 
 bool MaidenOfVirtueRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
 }
 
 // The Big Bad Wolf
@@ -102,7 +103,7 @@ bool BigBadWolfShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "the big bad wolf"))
+    if (!GetOperaActor(bot, "the big bad wolf"))
         return false;
 
     return !bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
@@ -120,8 +121,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    return GetOperaActor(bot, KaraCreatureData::DATA_ROMULO) &&
-        GetOperaActor(bot, KaraCreatureData::DATA_JULIANNE);
+    return GetOperaActor(bot, "romulo") && GetOperaActor(bot, "julianne");
 }
 
 // The Wizard of Oz
@@ -131,7 +131,7 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    for (KaraCreatureData actor : OZ_TARGETS)
+    for (char const* actor : OZ_TARGETS)
     {
         if (GetOperaActor(bot, actor))
             return true;
@@ -142,26 +142,24 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
 
 bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_MAGE &&
-        GetOperaActor(bot, KaraCreatureData::DATA_STRAWMAN);
+    return bot->getClass() == CLASS_MAGE && GetOperaActor(bot, "strawman");
 }
 
 // The Curator
 
 bool TheCuratorAstralFlareSpawnedTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "astral flare");
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && FindThreatTarget(bot, "astral flare");
 }
 
 bool TheCuratorShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "the curator");
+    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
 }
 
 bool TheCuratorRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "the curator");
+    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
 }
 
 // Terestian Illhoof
@@ -186,8 +184,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActiveInEncounter()
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) &&
-        AI_VALUE2(Unit*, "find target", "conjured elemental");
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && FindThreatTarget(bot, "conjured elemental");
 }
 
 bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
@@ -209,7 +206,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
 
 bool NetherspiteRedBeamIsActiveTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite || IsBanishPhase(netherspite))
         return false;
 
@@ -219,7 +216,7 @@ bool NetherspiteRedBeamIsActiveTrigger::IsActiveInEncounter()
 
 bool NetherspiteBlueBeamIsActiveTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite || IsBanishPhase(netherspite))
         return false;
 
@@ -229,7 +226,7 @@ bool NetherspiteBlueBeamIsActiveTrigger::IsActiveInEncounter()
 
 bool NetherspiteGreenBeamIsActiveTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite || IsBanishPhase(netherspite))
         return false;
 
@@ -239,7 +236,7 @@ bool NetherspiteGreenBeamIsActiveTrigger::IsActiveInEncounter()
 
 bool NetherspiteBotIsNotBeamBlockerTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite || IsBanishPhase(netherspite))
         return false;
 
@@ -249,13 +246,13 @@ bool NetherspiteBotIsNotBeamBlockerTrigger::IsActiveInEncounter()
 
 bool NetherspiteInBanishPhaseTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     return netherspite && IsBanishPhase(netherspite);
 }
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
-    return AI_VALUE2(Unit*, "find target", "netherspite");
+    return GetEncounterBoss();
 }
 
 // Prince Malchezaar
@@ -267,7 +264,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
 
 bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActiveInEncounter()
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = GetEncounterBoss();
     if (!malchezaar)
         return false;
 
@@ -285,7 +282,7 @@ bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActiveInEncounter()
 
 bool PrinceMalchezaarShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = GetEncounterBoss();
     if (!malchezaar)
         return false;
 

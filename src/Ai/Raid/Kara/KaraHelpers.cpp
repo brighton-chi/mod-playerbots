@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "Spell.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <limits>
 #include <list>
@@ -49,26 +50,53 @@ bool IsManaWarpToStun(Player* bot, Unit* unit, float reach, uint32 reactionMs)
         bot->GetExactDist(unit) <= reach && IsManaWarpCastingWarpBreach(unit, reactionMs);
 }
 
+// The Opera is three plays with several actors each, and the Chess Event has no boss on a
+// threat list, so neither has a name.
+constexpr std::string_view BossName(KaraBosses boss)
+{
+    switch (boss)
+    {
+        case KaraBosses::DATA_ATTUMEN:
+            return "attumen the huntsman";
+        case KaraBosses::DATA_MOROES:
+            return "moroes";
+        case KaraBosses::DATA_MAIDEN:
+            return "maiden of virtue";
+        case KaraBosses::DATA_CURATOR:
+            return "the curator";
+        case KaraBosses::DATA_TERESTIAN:
+            return "terestian illhoof";
+        case KaraBosses::DATA_ARAN:
+            return "shade of aran";
+        case KaraBosses::DATA_NETHERSPITE:
+            return "netherspite";
+        case KaraBosses::DATA_MALCHEZAAR:
+            return "prince malchezaar";
+        case KaraBosses::DATA_NIGHTBANE:
+            return "nightbane";
+        default:
+            return {};
+    }
+}
+
 }
 
 // Shared
 
-Creature* GetKaraBoss(Player* bot, KaraBosses boss)
+Unit* GetKaraBoss(Player* bot, KaraBosses boss)
 {
-    return GetInstanceBoss(bot, KARA_MAP_ID, Id(boss));
+    if (!IsBossInProgress(bot, KARA_MAP_ID, Id(boss)))
+        return nullptr;
+
+    return FindThreatTarget(bot, BossName(boss));
 }
 
-Creature* GetKaraCreature(Player* bot, KaraCreatureData data)
-{
-    return GetInstanceCreature(bot, KARA_MAP_ID, Id(data));
-}
-
-Creature* GetOperaActor(Player* bot, KaraCreatureData data)
+Unit* GetOperaActor(Player* bot, std::string_view name)
 {
     if (!IsBossInProgress(bot, KARA_MAP_ID, Id(KaraBosses::DATA_OPERA_PERFORMANCE)))
         return nullptr;
 
-    Creature* actor = GetKaraCreature(bot, data);
+    Unit* actor = FindThreatTarget(bot, name);
     return actor && !actor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ? actor : nullptr;
 }
 
@@ -100,7 +128,7 @@ bool IsKarazhanFearCasterActive(Player* bot)
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return true;
 
-    return GetOperaActor(bot, KaraCreatureData::DATA_ROAR);
+    return GetOperaActor(bot, "roar");
 }
 
 // Trash

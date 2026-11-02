@@ -12,6 +12,7 @@
 #include "Position.h"
 #include <array>
 #include <optional>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -108,6 +109,7 @@ enum class KaraNpcs : uint32
     // Terestian Illhoof
     NPC_TERESTIAN_ILLHOOF           = 15688,
     NPC_KILREK                      = 17229,
+    NPC_DEMON_CHAINS                = 17248,
 
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL          = 17167,
@@ -130,8 +132,7 @@ enum class KaraNpcs : uint32
 // Shared
 inline constexpr uint32 KARA_MAP_ID = 532;
 
-// DungeonEncounter.dbc encounterIndex, map 532; also each boss's ObjectData key, but only
-// Attumen (unmounted), Terestian, Aran and Nightbane are registered
+// DungeonEncounter.dbc encounterIndex, map 532
 enum class KaraBosses : uint32
 {
     DATA_ATTUMEN                    = 0,
@@ -147,24 +148,10 @@ enum class KaraBosses : uint32
     DATA_NIGHTBANE                  = 10,
 };
 
-// ObjectData keys from karazhan.h; not in the DBC
-enum class KaraCreatureData : uint32
-{
-    DATA_MIDNIGHT                   = 32,
-    DATA_DOROTHEE                   = 38,
-    DATA_ROMULO                     = 39,
-    DATA_JULIANNE                   = 40,
-    DATA_ROAR                       = 41,
-    DATA_STRAWMAN                   = 42,
-    DATA_TINHEAD                    = 43,
-    DATA_TITO                       = 44,
-};
-
-Creature* GetKaraBoss(Player* bot, KaraBosses boss);
-Creature* GetKaraCreature(Player* bot, KaraCreatureData data);
-// Barnes spawns the Opera cast non-attackable and the play's release clears the flag, so an
+Unit* GetKaraBoss(Player* bot, KaraBosses boss);
+// Barnes spawns the Opera cast non-attackable, and the play's release clears the flag, so an
 // actor counts only once released, as the script itself tests.
-Creature* GetOperaActor(Player* bot, KaraCreatureData data);
+Unit* GetOperaActor(Player* bot, std::string_view name);
 
 bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
 
@@ -229,11 +216,11 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
 
 // Wizard of Oz
 inline std::array const OZ_TARGETS = {
-    KaraCreatureData::DATA_DOROTHEE,
-    KaraCreatureData::DATA_TITO,
-    KaraCreatureData::DATA_ROAR,
-    KaraCreatureData::DATA_STRAWMAN,
-    KaraCreatureData::DATA_TINHEAD,
+    "dorothee",
+    "tito",
+    "roar",
+    "strawman",
+    "tinhead",
 };
 
 // The Curator

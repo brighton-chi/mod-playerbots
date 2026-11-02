@@ -30,7 +30,7 @@ public:
 protected:
     virtual bool IsActiveInEncounter() = 0;
 
-    Creature* GetEncounterBoss() { return KaraHelpers::GetKaraBoss(bot, _boss); }
+    Unit* GetEncounterBoss() { return KaraHelpers::GetKaraBoss(bot, _boss); }
 
 private:
     KaraHelpers::KaraBosses const _boss;

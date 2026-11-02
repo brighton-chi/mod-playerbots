@@ -11,6 +11,7 @@
 #include "Playerbots.h"
 #include "Random.h"
 #include "RtiTargetValue.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -171,7 +172,7 @@ bool ManaWarpStunnerHoldForWarpBreachAction::Execute(Event /*event*/)
 // Unmounted Attumen's CombatReach is 1.5 yards
 bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
 {
-    Unit* midnight = GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT);
+    Unit* midnight = FindThreatTarget(bot, "midnight");
     if (!midnight)
         return false;
 
@@ -203,7 +204,7 @@ bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
 
 bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
 {
-    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
     if (!attumen)
         return false;
 
@@ -277,7 +278,7 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
 
     for (char const* name : moroesGuests)
     {
-        if (Unit* guest = AI_VALUE2(Unit*, "find target", name))
+        if (Unit* guest = FindThreatTarget(bot, name))
             return MarkTargetWithSkull(bot, guest);
     }
 
@@ -289,7 +290,7 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
 
 bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
+    Unit* maiden = GetKaraBoss(bot, KaraBosses::DATA_MAIDEN);
     if (!maiden)
         return false;
 
@@ -394,7 +395,7 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 
 bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+    Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)
         return false;
 
@@ -437,11 +438,11 @@ bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
 
 bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* romulo = GetOperaActor(bot, KaraCreatureData::DATA_ROMULO);
+    Unit* romulo = GetOperaActor(bot, "romulo");
     if (!romulo)
         return false;
 
-    Unit* julianne = GetOperaActor(bot, KaraCreatureData::DATA_JULIANNE);
+    Unit* julianne = GetOperaActor(bot, "julianne");
     if (!julianne)
         return false;
 
@@ -473,7 +474,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    for (KaraCreatureData actor : OZ_TARGETS)
+    for (char const* actor : OZ_TARGETS)
     {
         if (Unit* target = GetOperaActor(bot, actor))
             return MarkTargetWithSkull(bot, target);
@@ -484,7 +485,7 @@ bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 
 bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 {
-    Unit* strawman = GetOperaActor(bot, KaraCreatureData::DATA_STRAWMAN);
+    Unit* strawman = GetOperaActor(bot, "strawman");
     return strawman &&
         botAI->CanCastSpell("scorch", strawman) && botAI->CastSpell("scorch", strawman);
 }
@@ -493,13 +494,13 @@ bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 
 bool TheCuratorMarkAstralFlareAction::Execute(Event /*event*/)
 {
-    Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare");
+    Unit* flare = FindThreatTarget(bot, "astral flare");
     return flare && MarkTargetWithSkull(bot, flare);
 }
 
 bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
+    Unit* curator = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
     if (!curator)
         return false;
 
@@ -533,11 +534,15 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    static constexpr std::array illhoofAdds = { "demon chains", "kil'rek", };
+    constexpr float searchRadius = 100.0f;
+    static constexpr std::array illhoofAdds = {
+        KaraNpcs::NPC_DEMON_CHAINS,
+        KaraNpcs::NPC_KILREK,
+    };
 
-    for (char const* name : illhoofAdds)
+    for (KaraNpcs add : illhoofAdds)
     {
-        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+        if (Unit* target = bot->FindNearestCreature(Id(add), searchRadius))
             return MarkTargetWithSkull(bot, target);
     }
 
@@ -663,7 +668,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         _redBeamMoveTimer = getMSTime();
     }
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
 
@@ -730,7 +735,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingBlueBeam = true;
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
 
@@ -782,7 +787,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
     }
     _wasBlockingGreenBeam = true;
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
 
@@ -801,7 +806,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
 
@@ -940,7 +945,7 @@ bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 
 bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
 
@@ -989,7 +994,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
 bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
         return false;
 
@@ -1061,7 +1066,7 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 
 bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
         return false;
 
@@ -1096,7 +1101,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 
 bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
         return false;
 

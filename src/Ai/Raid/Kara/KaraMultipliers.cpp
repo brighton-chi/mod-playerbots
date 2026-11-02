@@ -23,6 +23,7 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "ThreatHelpers.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 
@@ -66,20 +67,35 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* boss = nullptr;
-    // Excluded: Moroes, Wizard of Oz, and Romulo and Julianne
     switch (static_cast<KaraBosses>(*bossId))
     {
         case KaraBosses::DATA_ATTUMEN:
-            boss = GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT);
+            boss = FindThreatTarget(bot, "midnight");
+            break;
+        case KaraBosses::DATA_MOROES:
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MOROES);
             break;
         case KaraBosses::DATA_MAIDEN:
-            boss = AI_VALUE2(Unit*, "find target", "maiden of virtue");
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MAIDEN);
             break;
         case KaraBosses::DATA_OPERA_PERFORMANCE:
-            boss = AI_VALUE2(Unit*, "find target", "the big bad wolf");
+        {
+            static constexpr std::array operaLeads = {
+                "the big bad wolf",
+                "dorothee",
+                "romulo",
+                "julianne",
+            };
+            for (char const* name : operaLeads)
+            {
+                boss = GetOperaActor(bot, name);
+                if (boss)
+                    break;
+            }
             break;
+        }
         case KaraBosses::DATA_CURATOR:
-            boss = AI_VALUE2(Unit*, "find target", "the curator");
+            boss = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
             break;
         case KaraBosses::DATA_TERESTIAN:
             boss = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
@@ -88,10 +104,10 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             boss = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
             break;
         case KaraBosses::DATA_NETHERSPITE:
-            boss = AI_VALUE2(Unit*, "find target", "netherspite");
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
             break;
         case KaraBosses::DATA_MALCHEZAAR:
-            boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
             break;
         case KaraBosses::DATA_NIGHTBANE:
             boss = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -182,7 +198,7 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    return GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT) ? 0.0f : 1.0f;
+    return FindThreatTarget(bot, "midnight") ? 0.0f : 1.0f;
 }
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
@@ -207,7 +223,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
+    if (!FindThreatTarget(bot, "midnight"))
         return 1.0f;
 
     return GetAttumenMounted(bot) ? 0.0f : 1.0f;
@@ -225,7 +241,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!GetKaraCreature(bot, KaraCreatureData::DATA_MIDNIGHT))
+    if (!FindThreatTarget(bot, "midnight"))
         return 1.0f;
 
     Unit* attumen = GetAttumenMounted(bot);
@@ -257,7 +273,7 @@ float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValueInEncounter(Ac
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "maiden of virtue") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 float MaidenOfVirtueSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
@@ -272,7 +288,7 @@ float MaidenOfVirtueSetGroundingTotemMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    return AI_VALUE2(Unit*, "find target", "maiden of virtue") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 // The Curator
@@ -285,7 +301,7 @@ float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "the curator") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
@@ -299,7 +315,7 @@ float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "the curator") ? 0.0f : 1.0f;
+    return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
 // Terestian Illhoof
@@ -312,7 +328,7 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValueInEncounter(Action*
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
 
-    Unit* imp = AI_VALUE2(Unit*, "find target", "fiendish imp");
+    Unit* imp = FindThreatTarget(bot, "fiendish imp");
     if (!imp)
         return 1.0f;
 
@@ -396,7 +412,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValueInEncounter(Action* action)
     if (!isBlockedAction)
         return 1.0f;
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite)
         return 1.0f;
 
@@ -430,7 +446,7 @@ float NetherspiteWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
+    Unit* netherspite = GetEncounterBoss();
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
