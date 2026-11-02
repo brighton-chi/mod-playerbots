@@ -37,7 +37,7 @@ bool BlackTempleHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* boss = _target ? FindThreatTargetByEntry(bot, Id(*_target)) : GetEncounterBoss();
+    Unit* boss = _target ? FindThreatTarget(bot, *_target) : GetEncounterBoss();
     return boss && boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
@@ -341,17 +341,17 @@ bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (desire && desire->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return true;
 
-    Unit* anger = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_ANGER);
+    Unit* anger = GetReliquaryEssence(bot, "essence of anger");
     return anger && anger->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT;
 }
 
 bool ReliquaryOfSoulsShouldPositionForSufferingTrigger::IsActiveInEncounter()
 {
-    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         IsOutOfSufferingPosition(bot, suffering);
 }
@@ -365,7 +365,7 @@ bool ReliquaryOfSoulsHealersShouldAttackSufferingTrigger::IsActiveInEncounter()
     if (bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("disc", BOT_STATE_COMBAT))
         return false;
 
-    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     return suffering && !suffering->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
 }
 
@@ -374,7 +374,7 @@ bool ReliquaryOfSoulsEssenceOfDesireHasRuneShieldTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_MAGE)
         return false;
 
-    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     return desire && desire->HasAura(Id(BtSpells::SPELL_RUNE_SHIELD));
 }
 
@@ -383,7 +383,7 @@ bool ReliquaryOfSoulsEssenceOfDesireCastingDeadenTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (!desire)
         return false;
 

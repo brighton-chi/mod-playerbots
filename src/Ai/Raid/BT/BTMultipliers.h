@@ -36,7 +36,7 @@ public:
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
 
-    Creature* GetEncounterBoss()
+    Unit* GetEncounterBoss()
     {
         return _boss ? BtHelpers::GetBtBoss(bot, *_boss) : nullptr;
     }

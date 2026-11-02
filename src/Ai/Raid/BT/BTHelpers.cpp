@@ -47,40 +47,40 @@ std::unordered_map<uint32, BtInstanceState> btStates;
 namespace
 {
 
-// The Illidari Council has no entry: its controller is a trigger and never on a threat list.
-constexpr uint32 BossEntry(BtBosses boss)
+// The Illidari Council has no name to find: its controller is a trigger and never on a threat list.
+constexpr std::string_view BossName(BtBosses boss)
 {
     switch (boss)
     {
         case BtBosses::DATA_HIGH_WARLORD_NAJENTUS:
-            return Id(BtNpcs::NPC_HIGH_WARLORD_NAJENTUS);
+            return "high warlord naj'entus";
         case BtBosses::DATA_SUPREMUS:
-            return Id(BtNpcs::NPC_SUPREMUS);
+            return "supremus";
         case BtBosses::DATA_SHADE_OF_AKAMA:
-            return Id(BtNpcs::NPC_SHADE_OF_AKAMA);
+            return "shade of akama";
         case BtBosses::DATA_TERON_GOREFIEND:
-            return Id(BtNpcs::NPC_TERON_GOREFIEND);
+            return "teron gorefiend";
         case BtBosses::DATA_GURTOGG_BLOODBOIL:
-            return Id(BtNpcs::NPC_GURTOGG_BLOODBOIL);
+            return "gurtogg bloodboil";
         case BtBosses::DATA_RELIQUARY_OF_SOULS:
-            return Id(BtNpcs::NPC_RELIQUARY_OF_THE_LOST);
+            return "reliquary of the lost";
         case BtBosses::DATA_MOTHER_SHAHRAZ:
-            return Id(BtNpcs::NPC_MOTHER_SHAHRAZ);
+            return "mother shahraz";
         case BtBosses::DATA_ILLIDAN_STORMRAGE:
-            return Id(BtNpcs::NPC_ILLIDAN_STORMRAGE);
+            return "illidan stormrage";
         default:
-            return 0;
+            return {};
     }
 }
 
 } // end anonymous namespace
 
-Creature* GetBtBoss(Player* bot, BtBosses boss)
+Unit* GetBtBoss(Player* bot, BtBosses boss)
 {
     if (!IsBossInProgress(bot, BT_MAP_ID, Id(boss)))
         return nullptr;
 
-    return FindThreatTargetByEntry(bot, BossEntry(boss));
+    return FindThreatTarget(bot, BossName(boss));
 }
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
@@ -1077,9 +1077,9 @@ Position GetBotPointInGurtoggRectangle(
 
 // Reliquary of Souls
 
-Creature* GetReliquaryEssence(Player* bot, BtNpcs essence)
+Unit* GetReliquaryEssence(Player* bot, std::string_view essence)
 {
-    return FindThreatTargetByEntry(bot, Id(essence));
+    return FindThreatTarget(bot, essence);
 }
 
 bool IsSufferingFixateTank(Player* bot)
@@ -1118,36 +1118,12 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    IllidariCouncilMembers members;
-    if (!bot->GetGroup())
-        return members;
-
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
-    {
-        Creature* creature = ref->GetOwner();
-        if (!creature || !creature->IsInWorld())
-            continue;
-
-        switch (static_cast<BtNpcs>(creature->GetEntry()))
-        {
-            case BtNpcs::NPC_GATHIOS_THE_SHATTERER:
-                members.gathios = creature;
-                break;
-            case BtNpcs::NPC_LADY_MALANDE:
-                members.malande = creature;
-                break;
-            case BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR:
-                members.zerevor = creature;
-                break;
-            case BtNpcs::NPC_VERAS_DARKSHADOW:
-                members.veras = creature;
-                break;
-            default:
-                break;
-        }
-    }
-
-    return members;
+    return {
+        FindThreatTarget(bot, "gathios the shatterer"),
+        FindThreatTarget(bot, "lady malande"),
+        FindThreatTarget(bot, "high nethermancer zerevor"),
+        FindThreatTarget(bot, "veras darkshadow"),
+    };
 }
 
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)

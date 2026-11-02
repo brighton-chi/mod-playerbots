@@ -1146,8 +1146,8 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
-    Unit* anger = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_ANGER);
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
+    Unit* anger = GetReliquaryEssence(bot, "essence of anger");
     if (!desire && !anger)
         return false;
 
@@ -1162,7 +1162,7 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     if (!suffering)
         return false;
 
@@ -1205,7 +1205,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
 
 bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, "essence of suffering");
     if (!suffering)
         return false;
 
@@ -1260,7 +1260,7 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
-    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
+    Unit* desire = GetReliquaryEssence(bot, "essence of desire");
     if (!desire)
         return false;
 

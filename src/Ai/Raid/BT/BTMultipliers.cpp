@@ -128,13 +128,13 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
                 return 1.0f;
 
             Unit* essence = nullptr;
-            for (BtNpcs entry : {
-                     BtNpcs::NPC_ESSENCE_OF_SUFFERING,
-                     BtNpcs::NPC_ESSENCE_OF_DESIRE,
-                     BtNpcs::NPC_ESSENCE_OF_ANGER,
+            for (std::string_view name : {
+                     "essence of suffering",
+                     "essence of desire",
+                     "essence of anger",
                  })
             {
-                Unit* unit = GetReliquaryEssence(bot, entry);
+                Unit* unit = GetReliquaryEssence(bot, name);
                 // After being defeated, an Essence stays on threat lists while it returns to the
                 // Reliquary with 1 HP. This check prevents cooldowns from being released during
                 // such period.
@@ -167,8 +167,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
         case BtBosses::DATA_ILLIDARI_COUNCIL:
         {
             // Empyreal Balance shares health, so Gathios's HP percentage is the Council's.
-            Unit* gathios =
-                FindThreatTargetByEntry(bot, Id(BtNpcs::NPC_GATHIOS_THE_SHATTERER));
+            Unit* gathios = FindThreatTarget(bot, "gathios the shatterer");
             return gathios && gathios->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
         default:
@@ -187,7 +186,7 @@ float BlackTempleDisableKillingSpreeMultiplier::GetValueInEncounter(Action* acti
     if (!IsKillingSpree(bot, action))
         return 1.0f;
 
-    return GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING) ||
+    return GetReliquaryEssence(bot, "essence of suffering") ||
         GetBtBoss(bot, BtBosses::DATA_SUPREMUS) ? 0.0f : 1.0f;
 }
 
@@ -507,7 +506,7 @@ float ReliquaryOfSoulsDoNotWasteHealingMultiplier::GetValueInEncounter(Action* a
         return 1.0f;
     }
 
-    return GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING) ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, "essence of suffering") ? 0.0f : 1.0f;
 }
 
 // Tank face, set behind, and disperse move melee around Suffering, which can mess with the
@@ -523,7 +522,7 @@ float ReliquaryOfSoulsControlMeleeMovementMultiplier::GetValueInEncounter(Action
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    return GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING) ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, "essence of suffering") ? 0.0f : 1.0f;
 }
 
 float ReliquaryOfSoulsLetMagesStealRuneShieldMultiplier::GetValueInEncounter(Action* action)
@@ -564,7 +563,7 @@ float ReliquaryOfSoulsSaveSpellReflectionForDeadenMultiplier::GetValueInEncounte
     if (!dynamic_cast<CastSpellReflectionAction*>(action))
         return 1.0f;
 
-    return GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE) ? 0.0f : 1.0f;
+    return GetReliquaryEssence(bot, "essence of desire") ? 0.0f : 1.0f;
 }
 
 // Mother Shahraz
@@ -1017,7 +1016,6 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
             PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
     }
 
-    // The Shadow Demon chase hold is timed for run speed at most 15% up.
     if (phase == IllidanPhase::Demon &&
         (dynamic_cast<CastSprintAction*>(action) || dynamic_cast<CastDashAction*>(action) ||
          dynamic_cast<CastSpiritWalkAction*>(action)))

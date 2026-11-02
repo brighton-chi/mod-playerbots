@@ -44,18 +44,3 @@ Unit* FindThreatTarget(Player* bot, std::string_view name)
 
     return nullptr;
 }
-
-Creature* FindThreatTargetByEntry(Player* bot, uint32 entry)
-{
-    if (entry == 0 || !bot->GetGroup())
-        return nullptr;
-
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
-    {
-        Creature* creature = ref->GetOwner();
-        if (creature && creature->GetEntry() == entry)
-            return creature->IsInWorld() ? creature : nullptr;
-    }
-
-    return nullptr;
-}

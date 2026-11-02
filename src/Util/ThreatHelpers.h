@@ -8,17 +8,12 @@
 #define PLAYERBOTS_THREATHELPERS_H
 
 #include <string_view>
-#include "Define.h"
 
-class Creature;
 class Player;
 class Unit;
 
 // The "find target" value without the value machinery. Like it, this sees only units that have the
 // bot on their threat list, ignores case, and returns null if the bot has no group.
 Unit* FindThreatTarget(Player* bot, std::string_view name);
-
-// Like FindThreatTarget, by creature entry.
-Creature* FindThreatTargetByEntry(Player* bot, uint32 entry);
 
 #endif
