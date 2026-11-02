@@ -609,7 +609,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetValueInEncounter(
 {
     bool const inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action))
-        return inCombat && GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+        return inCombat && GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 
     if (PlayerbotAI::IsTank(bot))
         return inCombat ? GetTankValue(action) : 1.0f;
@@ -623,14 +623,14 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
     {
         // Save Spell Reflection for Judgement of Command via BlackTempleCastSpellReflectionAction.
         if (dynamic_cast<CastSpellReflectionAction*>(action))
-            return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+            return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 
         if (dynamic_cast<CastVigilanceAction*>(action))
         {
-            if (!GetIllidariCouncilMembers(botAI).gathios)
+            if (!GetIllidariCouncilMembers(bot).gathios)
                 return 1.0f;
             // Do not siphon aggro from the mage tank.
-            Player* mageTank = GetZerevorMageTank(botAI);
+            Player* mageTank = GetZerevorMageTank(bot);
             return mageTank && action->GetTarget() == mageTank ? 0.0f : 1.0f;
         }
     }
@@ -644,7 +644,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
         return 1.0f;
     }
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* gathios = members.gathios;
     Unit* zerevor = members.zerevor;
     Unit* malande = members.malande;
@@ -712,7 +712,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Acti
         return PlayerbotAI::IsHeal(bot) ? GetHealerValue(action) : 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 }
 
 // The mage tank's healer moves only by its own positioning action when Zerevor is on the mage tank,
@@ -726,7 +726,7 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Actio
     if (!isHealReach && !isHealerMove)
         return 1.0f;
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     if (!members.zerevor)
         return 1.0f;
 
@@ -734,13 +734,13 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Actio
 
     if (isHealReach && !isMageTankHealer)
     {
-        Player* mageTank = GetZerevorMageTank(botAI);
+        Player* mageTank = GetZerevorMageTank(bot);
         if (mageTank && AI_VALUE(Unit*, "party member to heal") == mageTank)
             return 0.0f;
     }
 
     if (isHealerMove)
-        return isMageTankHealer && IsZerevorOnMageTank(botAI, members.zerevor) ? 0.0f : 1.0f;
+        return isMageTankHealer && IsZerevorOnMageTank(bot, members.zerevor) ? 0.0f : 1.0f;
 
     return 1.0f;
 }
@@ -757,10 +757,10 @@ float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    if (!IsZerevorMageTank(botAI))
+    if (!IsZerevorMageTank(bot))
         return 1.0f;
 
-    return GetIllidariCouncilMembers(botAI).zerevor ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).zerevor ? 0.0f : 1.0f;
 }
 
 // Dampen Magic is the only buff on the council that can be dispelled, and the mage tank steals it.
@@ -790,7 +790,7 @@ float IllidariCouncilHoldMisdirectionAndDispelsMultiplier::GetValueInEncounter(A
             return 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).gathios ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).gathios ? 0.0f : 1.0f;
 }
 
 // Ranged interrupts are saved for Circle of Healing. Melee ones are gated by a range check
@@ -833,14 +833,14 @@ float IllidariCouncilManageInterruptsMultiplier::GetValueInEncounter(Action* act
             if (!dynamic_cast<CastSpellOnEnemyHealerAction*>(action))
                 return 1.0f;
 
-            Unit* malande = GetIllidariCouncilMembers(botAI).malande;
+            Unit* malande = GetIllidariCouncilMembers(bot).malande;
             return malande && !bot->IsWithinMeleeRange(malande) ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;
     }
 
-    return GetIllidariCouncilMembers(botAI).malande ? 0.0f : 1.0f;
+    return GetIllidariCouncilMembers(bot).malande ? 0.0f : 1.0f;
 }
 
 float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
@@ -858,7 +858,7 @@ float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ||
-        IsZerevorMageTank(botAI))
+        IsZerevorMageTank(bot))
     {
         return 1.0f;
     }

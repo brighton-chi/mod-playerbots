@@ -1438,13 +1438,13 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == -1)
         return false;
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* councilTarget = nullptr;
     Player* tankTarget = nullptr;
     if (hunterIndex == 0 || hunterIndex >= 4)
     {
         councilTarget = members.zerevor;
-        tankTarget = GetZerevorMageTank(botAI);
+        tankTarget = GetZerevorMageTank(bot);
     }
     else if (hunterIndex == 1)
     {
@@ -1470,7 +1470,7 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
 
 bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 {
-    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
+    Unit* gathios = GetIllidariCouncilMembers(bot).gathios;
     if (!gathios)
         return false;
 
@@ -1503,7 +1503,7 @@ bool IllidariCouncilMainTankPositionGathiosAction::Execute(Event /*event*/)
 
 bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
 {
-    Unit* malande = GetIllidariCouncilMembers(botAI).malande;
+    Unit* malande = GetIllidariCouncilMembers(bot).malande;
     if (!malande)
         return false;
 
@@ -1575,7 +1575,7 @@ bool IllidariCouncilInterruptCircleOfHealingAction::CastWarriorInterrupt(Unit* m
 
 bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 {
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* malande = members.malande;
     if (!malande)
         return false;
@@ -1610,7 +1610,7 @@ bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 
 bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/)
 {
-    Unit* veras = GetIllidariCouncilMembers(botAI).veras;
+    Unit* veras = GetIllidariCouncilMembers(bot).veras;
     if (!veras)
         return false;
 
@@ -1640,7 +1640,7 @@ bool IllidariCouncilSecondAssistTankPositionVerasAction::Execute(Event /*event*/
 
 bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 {
-    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
+    Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
     if (!zerevor)
         return false;
 
@@ -1689,8 +1689,8 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     if (IsWaitingForLastMove(priority))
         return false;
 
-    Player* mageTank = GetZerevorMageTank(botAI);
-    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
+    Player* mageTank = GetZerevorMageTank(bot);
+    Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
     if (!mageTank || !zerevor)
         return false;
 
@@ -1727,7 +1727,7 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* veras = members.veras;
     if (IsVerasVanished(veras))
         veras = nullptr;
@@ -1806,7 +1806,7 @@ bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
 
 bool IllidariCouncilManageDpsTimerAction::Execute(Event /*event*/)
 {
-    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
+    Unit* gathios = GetIllidariCouncilMembers(bot).gathios;
     if (!gathios)
         return false;
 
@@ -2208,7 +2208,7 @@ bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, backwards);
     }
 
-    if (!IsIllidanTrapHunterOnDuty(botAI))
+    if (!IsIllidanTrapHunterOnDuty(bot))
         return false;
 
     return HunterSetFrostTrap();
@@ -2733,7 +2733,7 @@ bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     }
 
     constexpr bool inDemonForm = true;
-    int32 const slot = GetIllidanRangedIndex(botAI, layout.rangedDpsSlots.size(), inDemonForm);
+    int32 const slot = GetIllidanRangedIndex(bot, layout.rangedDpsSlots.size(), inDemonForm);
     if (slot < 0)
         return false;
 

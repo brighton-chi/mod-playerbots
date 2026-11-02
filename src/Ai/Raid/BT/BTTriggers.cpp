@@ -436,7 +436,7 @@ bool IllidariCouncilGathiosShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!GetIllidariCouncilMembers(botAI).gathios)
+    if (!GetIllidariCouncilMembers(bot).gathios)
         return false;
 
     return PlayerbotAI::IsMainTank(bot);
@@ -447,7 +447,7 @@ bool IllidariCouncilGathiosCastingJudgementOfCommandTrigger::IsActiveInEncounter
     if (bot->getClass() != CLASS_WARRIOR || !PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* gathios = GetIllidariCouncilMembers(botAI).gathios;
+    Unit* gathios = GetIllidariCouncilMembers(bot).gathios;
     if (!gathios || !gathios->HasAura(Id(BtSpells::SPELL_SEAL_OF_COMMAND)))
         return false;
 
@@ -464,10 +464,10 @@ bool IllidariCouncilMalandeCastingCircleOfHealingTrigger::IsActiveInEncounter()
         return false;
     }
 
-    if (!PlayerbotAI::IsDps(bot) || IsZerevorMageTank(botAI))
+    if (!PlayerbotAI::IsDps(bot) || IsZerevorMageTank(bot))
         return false;
 
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     if (!members.malande || !members.gathios || !members.zerevor)
         return false;
 
@@ -482,7 +482,7 @@ bool IllidariCouncilMalandeCastingCircleOfHealingTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilMalandeShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && GetIllidariCouncilMembers(botAI).malande &&
+    return PlayerbotAI::IsTank(bot) && GetIllidariCouncilMembers(bot).malande &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
 }
 
@@ -491,7 +491,7 @@ bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* veras = GetIllidariCouncilMembers(botAI).veras;
+    Unit* veras = GetIllidariCouncilMembers(bot).veras;
     if (!veras || IsVerasVanished(veras))
         return false;
 
@@ -500,7 +500,7 @@ bool IllidariCouncilVerasShouldBeTankedTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilZerevorShouldBeTankedByMageTrigger::IsActiveInEncounter()
 {
-    return IsZerevorMageTank(botAI) && GetIllidariCouncilMembers(botAI).zerevor;
+    return IsZerevorMageTank(bot) && GetIllidariCouncilMembers(bot).zerevor;
 }
 
 bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
@@ -508,14 +508,14 @@ bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsHeal(bot))
         return false;
 
-    Unit* zerevor = GetIllidariCouncilMembers(botAI).zerevor;
+    Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
     if (!zerevor)
         return false;
 
-    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) || !IsZerevorOnMageTank(botAI, zerevor))
+    if (!PlayerbotAI::IsAssistHealOfIndex(bot, 0, true) || !IsZerevorOnMageTank(bot, zerevor))
         return false;
 
-    Player* mageTank = GetZerevorMageTank(botAI);
+    Player* mageTank = GetZerevorMageTank(bot);
     return !IsMageTankHealerPositionSafe(bot->GetPosition(), mageTank, zerevor) ||
         !bot->IsWithinLOSInMap(mageTank);
 }
@@ -525,10 +525,10 @@ bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (!GetIllidariCouncilMembers(botAI).zerevor)
+    if (!GetIllidariCouncilMembers(bot).zerevor)
         return false;
 
-    if (IsZerevorMageTank(botAI) || PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+    if (IsZerevorMageTank(bot) || PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
         return false;
 
     return !HasDangerousCouncilAura(bot) &&
@@ -547,13 +547,13 @@ bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI);
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     if (!members.gathios)
         return false;
 
     if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-        IsZerevorMageTank(botAI))
+        IsZerevorMageTank(bot))
     {
         return false;
     }
@@ -567,7 +567,7 @@ bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 
 bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, BT_MAP_ID) && GetIllidariCouncilMembers(botAI).gathios;
+    return IsMechanicTrackerBot(bot, BT_MAP_ID) && GetIllidariCouncilMembers(bot).gathios;
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -622,7 +622,7 @@ bool IllidanStormrageShouldBeTankedTrigger::IsActiveInEncounter()
 // Frost Trap.
 bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncounter()
 {
-    if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(botAI))
+    if (!HasParasiticShadowfiend(bot) && !IsIllidanTrapHunterOnDuty(bot))
         return false;
 
     Unit* illidan = GetEncounterBoss();
@@ -633,7 +633,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == IllidanPhase::None)
         return false;
 
-    if (phase == IllidanPhase::Flying && !IsIllidanInfectionPositionKeptInFlight(botAI))
+    if (phase == IllidanPhase::Flying && !IsIllidanInfectionPositionKeptInFlight(bot))
         return false;
 
     return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
@@ -698,7 +698,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
-    return IsFlameOfAzzinothTank(bot) && !IsIllidanInfectionPositionKeptInFlight(botAI);
+    return IsFlameOfAzzinothTank(bot) && !IsIllidanInfectionPositionKeptInFlight(bot);
 }
 
 bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
@@ -786,7 +786,7 @@ bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Flying)
         return false;
 
-    if (IsIllidanInfectionPositionKeptInFlight(botAI))
+    if (IsIllidanInfectionPositionKeptInFlight(bot))
         return false;
 
     if (!PlayerbotAI::IsTank(bot))

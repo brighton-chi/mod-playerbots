@@ -23,7 +23,7 @@ public:
             botAI, "sisters of pleasure", BtHelpers::SISTER_OF_PLEASURE_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindSisterOfPleasureGuids(botAI); }
+    GuidVector Calculate() override { return BtHelpers::FindSisterOfPleasureGuids(bot); }
 };
 
 class ShadowmoonReaversValue : public CalculatedValue<GuidVector>
@@ -53,7 +53,7 @@ public:
 protected:
     std::vector<BtHelpers::SupremusHazard> Calculate() override
     {
-        return BtHelpers::FindSupremusHazards(botAI);
+        return BtHelpers::FindSupremusHazards(bot);
     }
 };
 
@@ -67,7 +67,7 @@ public:
             botAI, "shade of akama adds", BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindShadeOfAkamaAddGuids(botAI); }
+    GuidVector Calculate() override { return BtHelpers::FindShadeOfAkamaAddGuids(bot); }
 };
 
 // Teron Gorefiend
@@ -99,7 +99,7 @@ public:
             BtHelpers::GURTOGG_TANK_THREAT_CACHE_INTERVAL_MS) {}
 
 protected:
-    float Calculate() override { return BtHelpers::FindGurtoggSecondTankThreat(botAI); }
+    float Calculate() override { return BtHelpers::FindGurtoggSecondTankThreat(bot); }
 };
 
 // Illidan Stormrage <The Betrayer>
@@ -152,7 +152,7 @@ public:
             BtHelpers::ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
 
 protected:
-    GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(botAI); }
+    GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(bot); }
 };
 
 class IllidanStormrageShadowDemonsValue
@@ -167,7 +167,7 @@ public:
 protected:
     std::vector<BtHelpers::ShadowDemon> Calculate() override
     {
-        return BtHelpers::FindShadowDemons(botAI);
+        return BtHelpers::FindShadowDemons(bot);
     }
 };
 

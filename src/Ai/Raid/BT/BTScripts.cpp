@@ -145,7 +145,7 @@ public:
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
             if (!botAI || !botAI->HasStrategy("blacktemple", BOT_STATE_COMBAT) ||
-                !PlayerbotAI::IsRangedDps(player) || IsZerevorMageTank(botAI) ||
+                !PlayerbotAI::IsRangedDps(player) || IsZerevorMageTank(player) ||
                 !CanInterrupt(player, caster))
             {
                 continue;
