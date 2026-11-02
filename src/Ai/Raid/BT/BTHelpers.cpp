@@ -398,10 +398,9 @@ Unit* FindPetTargetOtherThanReaver(PlayerbotAI* botAI)
     if (isAllowed(currentTarget))
         return currentTarget;
 
-    auto const& attackers = context->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
+    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
+        Unit* unit = botAI->GetUnit(attackers);
         if (isAllowed(unit))
             return unit;
     }
@@ -1690,16 +1689,15 @@ IllidanDpsHold GetIllidanHoldWindow(Unit* illidan)
         IllidanDpsHold::AfterReset : IllidanDpsHold::None;
 }
 
-IllidanDpsHold GetIllidanDpsHold(PlayerbotAI* botAI, Unit* illidan)
+IllidanDpsHold GetIllidanDpsHold(Player* bot, Unit* illidan)
 {
     if (!illidan)
         return IllidanDpsHold::None;
 
     IllidanDpsHold const window = GetIllidanHoldWindow(illidan);
-    Player* bot = botAI->GetBot();
     if (window == IllidanDpsHold::DemonFormStart || window == IllidanDpsHold::DemonFormNoPush)
     {
-        return IsIllidanWarlockTank(botAI) ? IllidanDpsHold::None : window;
+        return IsIllidanWarlockTank(bot) ? IllidanDpsHold::None : window;
     }
     else if (window == IllidanDpsHold::AfterReset)
     {
@@ -1748,7 +1746,7 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
 // Each tank that should hold a creature must be its victim with ILLIDAN_TANK_AGGRO_THREAT.
 // Illidan: the main tank, or the warlock tank in Demon Form.
 // Flame of Azzinoth: its assigned assist tank, or the other Flame's tank if its assigned is dead.
-bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+bool DoIllidanTanksHaveAggro(Player* player, Unit const& illidan, IllidanPhase phase)
 {
     auto const hasAggro = [](Unit const& creature, Player* tank)
     {
@@ -1757,7 +1755,6 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
             threatManager.GetThreat(tank) >= ILLIDAN_TANK_AGGRO_THREAT;
     };
 
-    Player* bot = botAI->GetBot();
     switch (phase)
     {
         case IllidanPhase::Flying:
@@ -1773,9 +1770,9 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
                 if (!flame || !flame->IsAlive())
                     continue;
 
-                Player* tank = FindFlameOfAzzinothTank(bot, isEast);
+                Player* tank = FindFlameOfAzzinothTank(player, isEast);
                 if (!tank || !tank->IsAlive())
-                    tank = FindFlameOfAzzinothTank(bot, !isEast);
+                    tank = FindFlameOfAzzinothTank(player, !isEast);
 
                 if (tank && tank->IsAlive() && !hasAggro(*flame, tank))
                     return false;
@@ -1787,12 +1784,12 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
         case IllidanPhase::Grounded:
         case IllidanPhase::Maiev:
         {
-            Player* mainTank = GetGroupMainTank(bot);
+            Player* mainTank = GetGroupMainTank(player);
             return !mainTank || hasAggro(illidan, mainTank);
         }
         case IllidanPhase::Demon:
         {
-            Player* warlockTank = GetIllidanWarlockTank(botAI);
+            Player* warlockTank = GetIllidanWarlockTank(player);
             return !warlockTank || hasAggro(illidan, warlockTank);
         }
         default:
@@ -1800,7 +1797,7 @@ bool DoIllidanTanksHaveAggro(PlayerbotAI* botAI, Unit const& illidan, IllidanPha
     }
 }
 
-bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
+bool IsIllidanPickupPending(Player* player, Unit* illidan)
 {
     if (!illidan)
         return false;
@@ -1825,7 +1822,7 @@ bool IsIllidanPickupPending(PlayerbotAI* botAI, Unit* illidan)
         return false;
     }
 
-    return !DoIllidanTanksHaveAggro(botAI, *illidan, phase);
+    return !DoIllidanTanksHaveAggro(player, *illidan, phase);
 }
 
 // Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times.
@@ -1838,23 +1835,22 @@ bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe)
     return entry == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND) || entry == Id(BtNpcs::NPC_SHADOW_DEMON);
 }
 
-bool ShouldIllidanPetsBePassive(PlayerbotAI* botAI, Unit* illidan)
+bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan)
 {
     IllidanPhase const phase = GetIllidanPhase(illidan);
     return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
-        IsIllidanPickupPending(botAI, illidan);
+        IsIllidanPickupPending(bot, illidan);
 }
 
 // After a threat reset, a channel cast before the hold continues to build threat. This often
 // results in Illidan immediately killing the channeler before the main tank can pick him up. The
 // main culprit is Evocation. So everybody other than the main tank should cancel a channel (other
 // than single-target damage on an add).
-bool IsIllidanPickupChannelHeld(PlayerbotAI* botAI, Unit* illidan, Spell const& channel)
+bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const& channel)
 {
-    if (!IsIllidanPickupPending(botAI, illidan))
+    if (!IsIllidanPickupPending(bot, illidan))
         return false;
 
-    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -1982,10 +1978,9 @@ Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 // Every recorded infection shares one position, fixed when the first was recorded, so an infection
 // remaining as of a phase change keeps its position into the new phase. If none are recorded, this
 // returns the position an infection would be recorded at now.
-Position GetIllidanRecordedInfectionPosition(
-    PlayerbotAI* botAI, Unit const& illidan, IllidanPhase phase)
+Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, IllidanPhase phase)
 {
-    auto const* infections = FindIllidanInfections(botAI->GetBot()->GetInstanceId());
+    auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (infections && !infections->empty())
         return infections->begin()->second.infectionPosition;
 
@@ -2056,27 +2051,25 @@ bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
         }, Id(BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR));
 }
 
-ObjectGuid GetIllidanWarlockTankGuid(Player* bot)
+ObjectGuid GetIllidanWarlockTankGuid(Player* player)
 {
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state ? GetClassRolePlayerGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
 }
 
-Player* GetIllidanWarlockTank(PlayerbotAI* botAI)
+Player* GetIllidanWarlockTank(Player* player)
 {
-    Player* bot = botAI->GetBot();
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state ? GetClassRolePlayer(bot, state->illidanWarlockTank) : nullptr;
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
+    return state ? GetClassRolePlayer(player, state->illidanWarlockTank) : nullptr;
 }
 
-bool IsIllidanWarlockTank(PlayerbotAI* botAI)
+bool IsIllidanWarlockTank(Player* player)
 {
-    Player* bot = botAI->GetBot();
-    if (bot->getClass() != CLASS_WARLOCK)
+    if (player->getClass() != CLASS_WARLOCK)
         return false;
 
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    return state && IsClassRolePlayer(bot, state->illidanWarlockTank);
+    BtInstanceState const* state = FindBtState(player->GetInstanceId());
+    return state && IsClassRolePlayer(player, state->illidanWarlockTank);
 }
 
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)
@@ -2142,7 +2135,7 @@ bool IsIllidanTrapHunterOnDuty(Player* bot)
 
 // The bots that never run to the infection position (so Shadowfiends spawn where they stand):
 // Illidan's victim, the main tank, and the warlock tank in Demon Form.
-bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* player)
+bool IsExemptFromIllidanInfectionRun(Unit* illidan, Player* player)
 {
     if (!illidan || !player)
         return false;
@@ -2154,7 +2147,7 @@ bool IsExemptFromIllidanInfectionRun(PlayerbotAI* botAI, Unit* illidan, Player* 
     }
 
     return GetIllidanPhase(illidan) == IllidanPhase::Demon &&
-        GetIllidanWarlockTank(botAI) == player;
+        GetIllidanWarlockTank(player) == player;
 }
 
 // A bot infected in phase 1 that still has the debuff when phase 2 starts will stay at the
@@ -2244,9 +2237,8 @@ int32 GetIllidanRangedIndex(Player* bot, size_t slotCount, bool inDemonForm)
     return GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID(), slotCount);
 }
 
-int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
+int32 GetIllidanHealerIndex(Player* bot, size_t slotCount)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group || slotCount == 0)
         return -1;
@@ -2266,9 +2258,8 @@ int32 GetIllidanHealerIndex(PlayerbotAI* botAI, size_t slotCount)
 }
 
 // Phase 4 melee slots: melee DPS first, then tanks, each in GUID order.
-int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
+int32 GetIllidanMeleeIndex(Player* bot, size_t slotCount)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group || slotCount == 0)
         return -1;
@@ -2294,15 +2285,14 @@ int32 GetIllidanMeleeIndex(PlayerbotAI* botAI, size_t slotCount)
 // Phases 3 and 5: the grate slot by roster, except the bot indexed to the slot that is closest to
 // the warlock tank's Demon Form position (measured as of the start of the phase) swaps slots with
 // the warlock tank to facilitate a shorter move by the warlock tank to its phase 4 position.
-int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
+int32 GetIllidanGrateIndex(Player* bot, Unit const& illidan)
 {
-    Player* bot = botAI->GetBot();
     constexpr bool inDemonForm = false;
     int32 const index = GetIllidanRangedIndex(bot, ILLIDAN_RANGED_SLOT_COUNT, inDemonForm);
     if (index < 0)
         return index;
 
-    Player* warlockTank = GetIllidanWarlockTank(botAI);
+    Player* warlockTank = GetIllidanWarlockTank(bot);
     if (!warlockTank)
         return index;
 
@@ -2331,9 +2321,8 @@ int32 GetIllidanGrateIndex(PlayerbotAI* botAI, Unit const& illidan)
     return warlockIndex < 0 ? index : warlockIndex;
 }
 
-int32 GetIllidanGrateStackIndex(PlayerbotAI* botAI)
+int32 GetIllidanGrateStackIndex(Player* bot)
 {
-    Player* bot = botAI->GetBot();
     Group* group = bot->GetGroup();
     if (!group)
         return -1;

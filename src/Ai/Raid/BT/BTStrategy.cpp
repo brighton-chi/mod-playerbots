@@ -354,7 +354,7 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
     }
 }
 
-// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee dps while
+// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee DPS while
 // another add is up. The exclusion ensures the skull doesn't affect targeting.
 void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
@@ -366,9 +366,9 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, Guid
     if (adds.empty())
         return;
 
-    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        if (std::find(adds.begin(), adds.end(), guid) == adds.end())
+        if (std::find(adds.begin(), adds.end(), attackers) == adds.end())
         {
             exclusions.insert(adds.begin(), adds.end());
             return;
@@ -376,10 +376,10 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, Guid
     }
 }
 
-// Shadowy Constructs cannot be damaged by anyone other than the Spirit of Vengeance.
-void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+// Shadowy Constructs can be damaged only by a Spirit of Vengeance.
+void AppendShadowyConstructExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
 {
-    if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
+    if (bot->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
     auto const& constructs = botAI->GetAiObjectContext()
@@ -430,6 +430,6 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
     if (type == TargetValueExclusionType::TankTarget || type == TargetValueExclusionType::DpsTarget)
         AppendShadeOfAkamaChannelerExclusions(botAI, bot, exclusions);
 
-    AppendShadowyConstructExclusions(botAI, exclusions);
+    AppendShadowyConstructExclusions(botAI, bot, exclusions);
     AppendIllidanMeleeExclusions(botAI, bot, exclusions);
 }

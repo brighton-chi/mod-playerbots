@@ -187,9 +187,9 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
     if (needsComboPoints)
         return nullptr;
 
-    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* attacker = botAI->GetUnit(guid);
+        Unit* attacker = botAI->GetUnit(attackers);
         if (IsManaWarpToStun(bot, attacker, reach, reactionMs))
             return attacker;
     }

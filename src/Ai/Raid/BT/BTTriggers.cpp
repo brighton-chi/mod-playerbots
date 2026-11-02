@@ -636,7 +636,7 @@ bool IllidanStormrageParasiticShadowfiendOnGroupMemberTrigger::IsActiveInEncount
     if (phase == IllidanPhase::Flying && !IsIllidanInfectionPositionKeptInFlight(bot))
         return false;
 
-    return !IsExemptFromIllidanInfectionRun(botAI, illidan, bot);
+    return !IsExemptFromIllidanInfectionRun(illidan, bot);
 }
 
 // The mechanic tracker records each new infection while there is an infection position, keeps
@@ -655,6 +655,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     auto const* infections = FindIllidanInfections(bot->GetInstanceId());
+
     if (infections)
     {
         for (auto const& [player, infection] : *infections)
@@ -671,8 +672,7 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (infection.hunter.IsEmpty())
                 continue;
 
-            if (IsExemptFromIllidanInfectionRun(
-                    botAI, illidan, ObjectAccessor::GetPlayer(*bot, player)) ||
+            if (IsExemptFromIllidanInfectionRun(illidan, ObjectAccessor::GetPlayer(*bot, player)) ||
                 !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter)))
             {
                 return true;
@@ -711,7 +711,7 @@ bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    return ShouldIllidanPetsBePassive(botAI, illidan) != pet->HasReactState(REACT_PASSIVE);
+    return ShouldIllidanPetsBePassive(bot, illidan) != pet->HasReactState(REACT_PASSIVE);
 }
 
 // Pets are ideal for killing Shadowfiends because they cannot be infected.
@@ -895,13 +895,13 @@ bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    if (channel && IsIllidanPickupChannelHeld(botAI, illidan, *channel))
+    if (channel && IsIllidanPickupChannelHeld(bot, illidan, *channel))
         return true;
 
     ObjectGuid const guid = illidan->GetGUID();
     bool const isOnIllidan = (shot && shot->m_targets.GetUnitTargetGUID() == guid) ||
         (channel && channel->m_targets.GetUnitTargetGUID() == guid);
-    return isOnIllidan && GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None;
+    return isOnIllidan && GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None;
 }
 
 bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -917,7 +917,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
 
     if (phase == IllidanPhase::Demon)
     {
-        if (IsIllidanWarlockTank(botAI))
+        if (IsIllidanWarlockTank(bot))
             return false;
 
         if (!PlayerbotAI::IsHeal(bot) && GetShadowDemonMovingToWarlockTank(botAI))
@@ -930,7 +930,7 @@ bool IllidanStormrageRangedShouldSpreadTrigger::IsActiveInEncounter()
         phase == IllidanPhase::Maiev;
 }
 
-// A Demon fixated on the warlock tank is a 5-alarm fire so all ranged dps are freed from their
+// A Demon fixated on the warlock tank is a 5-alarm fire so all ranged DPS are freed from their
 // assigned positions to move into range to attack it.
 bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
 {
@@ -941,7 +941,7 @@ bool IllidanStormrageRangedShouldReachShadowDemonTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    if (HasParasiticShadowfiend(bot) || IsIllidanWarlockTank(botAI))
+    if (HasParasiticShadowfiend(bot) || IsIllidanWarlockTank(bot))
         return false;
 
     Unit* demon = GetShadowDemonMovingToWarlockTank(botAI);
@@ -972,7 +972,7 @@ bool IllidanStormrageWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    return IsIllidanWarlockTank(botAI);
+    return IsIllidanWarlockTank(bot);
 }
 
 // Every warlock, the tank included, casts Seed of Corruption on the Shadow Demons while two or more

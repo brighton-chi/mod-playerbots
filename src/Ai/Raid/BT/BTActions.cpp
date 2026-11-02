@@ -1913,7 +1913,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToWarlockTank(Unit* ill
     if (window == IllidanDpsHold::DemonFormEnd || window == IllidanDpsHold::DemonFormNoPush)
         return false;
 
-    return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(botAI));
+    return MisdirectTargetToTank(botAI, illidan, GetIllidanWarlockTank(bot));
 }
 
 // The main tank's movements are constructed around the core's chase rules in order to position
@@ -1975,7 +1975,7 @@ bool IllidanStormrageMainTankRepositionBossAction::Execute(Event /*event*/)
         if (!FindDemonFormPosition(*illidan, position))
             return false;
     }
-    else if (illidan->GetVictim() == bot && !DoIllidanTanksHaveAggro(botAI, *illidan, phase))
+    else if (illidan->GetVictim() == bot && !DoIllidanTanksHaveAggro(bot, *illidan, phase))
     {
         FaceUnit(bot, illidan);
         return false;
@@ -2056,7 +2056,7 @@ bool IllidanStormrageMainTankRepositionBossAction::FindDemonFormPosition(
         return true;
     }
 
-    int32 const slot = GetIllidanMeleeIndex(botAI, layout.meleeSlots.size());
+    int32 const slot = GetIllidanMeleeIndex(bot, layout.meleeSlots.size());
     if (slot < 0)
         return false;
 
@@ -2196,7 +2196,7 @@ bool IllidanStormrageIsolateBotWithInfectionAction::Execute(Event /*event*/)
         return false;
 
     Position const position =
-        GetIllidanRecordedInfectionPosition(botAI, *illidan, GetIllidanPhase(illidan));
+        GetIllidanRecordedInfectionPosition(bot, *illidan, GetIllidanPhase(illidan));
     float moveX;
     float moveY;
     bool backwards;
@@ -2278,7 +2278,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
         {
             Player* player = ObjectAccessor::GetPlayer(*bot, guid);
             if (!infection.hunter.IsEmpty() &&
-                (IsExemptFromIllidanInfectionRun(botAI, illidan, player) ||
+                (IsExemptFromIllidanInfectionRun(illidan, player) ||
                  !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter))))
             {
                 infection.hunter.Clear();
@@ -2293,7 +2293,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
             if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
                 continue;
 
-            if (IsExemptFromIllidanInfectionRun(botAI, illidan, player))
+            if (IsExemptFromIllidanInfectionRun(illidan, player))
                 continue;
 
             if (FindTrapHunter(*player, infection.infectionPosition, infections, infection.hunter))
@@ -2483,13 +2483,13 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
     auto const& waypoints =
         flame == eastFlame ? ILLIDAN_E_GLAIVE_TANK_POSITIONS : ILLIDAN_W_GLAIVE_TANK_POSITIONS;
 
-    auto const& npcs =
+    auto const& triggerGuids =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->RefGet();
 
     constexpr float blazeRadius = 8.0f; // Exact hazard radius (no reaches are added)
     constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
-    for (ObjectGuid const& guid : npcs)
+    for (ObjectGuid const& guid : triggerGuids)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->GetEntry() == Id(BtNpcs::NPC_BLAZE) &&
@@ -2530,7 +2530,7 @@ bool IllidanStormrageControlPetAggressionAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    if (ShouldIllidanPetsBePassive(botAI, GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE)))
+    if (ShouldIllidanPetsBePassive(bot, GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE)))
     {
         if (!pet->HasReactState(REACT_PASSIVE))
         {
@@ -2579,7 +2579,7 @@ bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)
 
 bool IllidanStormragePositionAboveGrateAction::Execute(Event /*event*/)
 {
-    int32 const index = GetIllidanGrateStackIndex(botAI);
+    int32 const index = GetIllidanGrateStackIndex(bot);
     if (index < 0)
         return false;
 
@@ -2646,7 +2646,7 @@ bool IllidanStormrageStopShootingAction::Execute(Event /*event*/)
 
     bool isStopped = false;
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && IsIllidanPickupChannelHeld(botAI, illidan, *channel))
+    if (channel && IsIllidanPickupChannelHeld(bot, illidan, *channel))
     {
         bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
         isStopped = true;
@@ -2687,7 +2687,7 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
     }
     else
     {
-        int32 const slot = GetIllidanGrateIndex(botAI, *illidan);
+        int32 const slot = GetIllidanGrateIndex(bot, *illidan);
         if (slot < 0)
             return false;
 
@@ -2724,7 +2724,7 @@ bool IllidanStormrageSpreadRangedAction::FindDemonFormSlot(
     DemonFormLayout const layout = GetDemonFormLayout(illidan);
     if (PlayerbotAI::IsHeal(bot))
     {
-        int32 const slot = GetIllidanHealerIndex(botAI, layout.healerSlots.size());
+        int32 const slot = GetIllidanHealerIndex(bot, layout.healerSlots.size());
         if (slot < 0)
             return false;
 
@@ -2786,7 +2786,7 @@ bool IllidanStormrageMeleeStayAwayFromDemonFormAction::Execute(Event /*event*/)
         return false;
 
     DemonFormLayout const layout = GetDemonFormLayout(*illidan);
-    int32 const slot = GetIllidanMeleeIndex(botAI, layout.meleeSlots.size());
+    int32 const slot = GetIllidanMeleeIndex(bot, layout.meleeSlots.size());
     if (slot < 0)
         return false;
 
@@ -2828,7 +2828,7 @@ bool IllidanStormrageWarlockTankHandleDemonFormAction::Execute(Event /*event*/)
             false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None)
+    if (GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None)
         return false;
 
     return botAI->CanCastSpell("searing pain", illidan) &&
@@ -2901,7 +2901,7 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     if (!target)
     {
         // Melee in Demon Form drop target if the only available targets are a Shadow Demon on the
-        // warlock tank and/or Illidan so that dps target does not cause melee to attack them.
+        // warlock tank and/or Illidan so that `dps target` does not cause melee to attack them.
         if (phase != IllidanPhase::Demon || !PlayerbotAI::IsMelee(bot) ||
             (!currentTarget && !bot->GetVictim()))
         {
@@ -2918,7 +2918,7 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
         return false;
 
     bool const isHeld = target == illidan ?
-        GetIllidanDpsHold(botAI, illidan) != IllidanDpsHold::None :
+        GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None :
         phase == IllidanPhase::Flying && IsFlameOfAzzinothDpsHeld(*illidan);
     if (isHeld && !PlayerbotAI::IsRanged(bot))
     {
@@ -2939,7 +2939,7 @@ std::vector<Unit*> IllidanStormrageAssignTargetPriorityAction::GetTargetsInPrior
 
     if (phase == IllidanPhase::Demon)
     {
-        if (IsIllidanWarlockTank(botAI))
+        if (IsIllidanWarlockTank(bot))
         {
             return { GetShadowDemonForRangedToAttack(botAI, *bot), illidan };
         }
@@ -3050,7 +3050,7 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
         updated |= ResetIfSet(state.westFlameGuid);
     }
 
-    if (!state.illidanTankAggroPhase && DoIllidanTanksHaveAggro(botAI, *illidan, phase))
+    if (!state.illidanTankAggroPhase && DoIllidanTanksHaveAggro(bot, *illidan, phase))
     {
         state.illidanTankAggroPhase = phase;
         updated = true;
