@@ -1115,14 +1115,50 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 
 // Illidari Council
 
+namespace
+{
+// The Council members add the raid to their threat lists only at the pull, not every 5s like most
+// bosses. So a resurrected bot can't find a member through its own threat list until it attacks or
+// is attacked by that member, or casts on an ally in the fight. Being blind to some members can
+// cause undesired behaviors (e.g., a bot attacks the wrong member because it doesn't see its
+// assigned one). To solve this, on a miss for any member, we check groupmates' threat lists for it.
+//
+// This approach is cheap here only because the members share a health pool and die together. So if
+// one is on a bot's threat list, all four are present, and the first living groupmate is likely to
+// have all members on its list. In other council fights, where members die separately, misses are
+// normal, and this approach would result in frequent inefficient full-raid scans.
+Unit* FindCouncilMember(Player* bot, std::string_view name)
+{
+    if (Unit* member = FindThreatTarget(bot, name))
+        return member;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* player = ref->GetSource();
+        if (!player || player == bot || !player->IsAlive() || player->GetMapId() != BT_MAP_ID)
+            continue;
+
+        if (Unit* member = FindThreatTarget(player, name))
+            return member;
+    }
+
+    return nullptr;
+}
+
+} // end anonymous namespace (Illidari Council)
+
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     return {
-        FindThreatTarget(bot, "gathios the shatterer"),
-        FindThreatTarget(bot, "lady malande"),
-        FindThreatTarget(bot, "high nethermancer zerevor"),
-        FindThreatTarget(bot, "veras darkshadow"),
+        FindCouncilMember(bot, "gathios the shatterer"),
+        FindCouncilMember(bot, "lady malande"),
+        FindCouncilMember(bot, "high nethermancer zerevor"),
+        FindCouncilMember(bot, "veras darkshadow"),
     };
 }
 
