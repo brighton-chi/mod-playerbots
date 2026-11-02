@@ -158,6 +158,9 @@ public:
 private:
     static bool CanInterrupt(Player* player, Unit* malande)
     {
+        if (!player)
+            return false;
+
         uint32 interrupt = 0;
         float range = 0.0f;
         switch (player->getClass())

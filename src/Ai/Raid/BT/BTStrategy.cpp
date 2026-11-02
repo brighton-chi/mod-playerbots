@@ -340,8 +340,9 @@ void AppendSisterOfPainExclusions(Player* bot, GuidSet& exclusions)
         exclusions.insert(pain->GetGUID());
 }
 
-void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
         return;
 
@@ -355,8 +356,9 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
 
 // Tanks and ranged other than shadow priests leave channelers and sorcerers to melee DPS while
 // another add is up. The exclusion ensures the skull doesn't affect targeting.
-void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsDps(bot) && (bot->getClass() == CLASS_PRIEST || PlayerbotAI::IsMelee(bot)))
         return;
 
@@ -376,9 +378,9 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, Guid
 }
 
 // Shadowy Constructs can be damaged only by a Spirit of Vengeance.
-void AppendShadowyConstructExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendShadowyConstructExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (bot->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
+    if (botAI->GetBot()->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
     auto const& constructGuids = botAI->GetAiObjectContext()
@@ -386,8 +388,9 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
     exclusions.insert(constructGuids.begin(), constructGuids.end());
 }
 
-void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
+void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
@@ -421,15 +424,15 @@ void RaidBlackTempleStrategy::AppendTargetExclusions(
     if (type != TargetValueExclusionType::TankTarget)
     {
         AppendSisterOfPainExclusions(bot, exclusions);
-        AppendShadowmoonReaverExclusions(botAI, bot, exclusions);
+        AppendShadowmoonReaverExclusions(botAI, exclusions);
     }
 
     if (!IsEncounterInProgress(bot, BT_MAP_ID))
         return;
 
     if (type == TargetValueExclusionType::TankTarget || type == TargetValueExclusionType::DpsTarget)
-        AppendShadeOfAkamaChannelerExclusions(botAI, bot, exclusions);
+        AppendShadeOfAkamaChannelerExclusions(botAI, exclusions);
 
-    AppendShadowyConstructExclusions(botAI, bot, exclusions);
-    AppendIllidanMeleeExclusions(botAI, bot, exclusions);
+    AppendShadowyConstructExclusions(botAI, exclusions);
+    AppendIllidanMeleeExclusions(botAI, exclusions);
 }

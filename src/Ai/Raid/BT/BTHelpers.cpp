@@ -419,10 +419,10 @@ bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
         !IsNajentusImpaled(player);
 }
 
-bool CanThrowNajentusSpine(Player* bot)
+bool CanThrowNajentusSpine(Player* player)
 {
-    return bot && bot->IsAlive() && bot->GetMapId() == BT_MAP_ID && !IsNajentusImpaled(bot) &&
-        bot->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
+    return player && player->IsAlive() && player->GetMapId() == BT_MAP_ID &&
+        !IsNajentusImpaled(player) && player->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
 std::vector<NajentusSpineAssignment> const* FindNajentusSpineAssignments(uint32 instanceId)
@@ -965,7 +965,7 @@ Player* GetGurtoggFelRageTarget(Unit* gurtogg)
 
 bool IsGurtoggFelRageTarget(Player* player)
 {
-    return player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
+    return player && player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 }
 
 Position GetGurtoggFelRageMeleePosition(
@@ -1184,15 +1184,15 @@ bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
-Player* GetZerevorMageTank(Player* player)
+Player* GetZerevorMageTank(Player* bot)
 {
-    BtInstanceState const* state = FindBtState(player->GetInstanceId());
-    return state ? GetClassRolePlayer(player, state->zerevorMageTank) : nullptr;
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state ? GetClassRolePlayer(bot, state->zerevorMageTank) : nullptr;
 }
 
 bool IsZerevorMageTank(Player* player)
 {
-    if (player->getClass() != CLASS_MAGE)
+    if (!player || player->getClass() != CLASS_MAGE)
         return false;
 
     BtInstanceState const* state = FindBtState(player->GetInstanceId());
@@ -1281,12 +1281,12 @@ bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* ze
         IsMalandeInCouncilPatch(malande, gathios, zerevor);
 }
 
-bool IsZerevorOnMageTank(Player* player, Unit* zerevor)
+bool IsZerevorOnMageTank(Player* bot, Unit* zerevor)
 {
     if (!zerevor)
         return false;
 
-    Player* mageTank = GetZerevorMageTank(player);
+    Player* mageTank = GetZerevorMageTank(bot);
     return mageTank && zerevor->GetVictim() == mageTank;
 }
 
@@ -1745,7 +1745,7 @@ bool IsIllidanTankAggroPending(Unit const& illidan, IllidanPhase phase)
 // Each tank that should hold a creature must be its victim with ILLIDAN_TANK_AGGRO_THREAT.
 // Illidan: the main tank, or the warlock tank in Demon Form.
 // Flame of Azzinoth: its assigned assist tank, or the other Flame's tank if its assigned is dead.
-bool DoIllidanTanksHaveAggro(Player* player, Unit const& illidan, IllidanPhase phase)
+bool DoIllidanTanksHaveAggro(Player* bot, Unit const& illidan, IllidanPhase phase)
 {
     auto const hasAggro = [](Unit const& creature, Player* tank)
     {
@@ -1769,9 +1769,9 @@ bool DoIllidanTanksHaveAggro(Player* player, Unit const& illidan, IllidanPhase p
                 if (!flame || !flame->IsAlive())
                     continue;
 
-                Player* tank = FindFlameOfAzzinothTank(player, isEast);
+                Player* tank = FindFlameOfAzzinothTank(bot, isEast);
                 if (!tank || !tank->IsAlive())
-                    tank = FindFlameOfAzzinothTank(player, !isEast);
+                    tank = FindFlameOfAzzinothTank(bot, !isEast);
 
                 if (tank && tank->IsAlive() && !hasAggro(*flame, tank))
                     return false;
@@ -1783,12 +1783,12 @@ bool DoIllidanTanksHaveAggro(Player* player, Unit const& illidan, IllidanPhase p
         case IllidanPhase::Grounded:
         case IllidanPhase::Maiev:
         {
-            Player* mainTank = GetGroupMainTank(player);
+            Player* mainTank = GetGroupMainTank(bot);
             return !mainTank || hasAggro(illidan, mainTank);
         }
         case IllidanPhase::Demon:
         {
-            Player* warlockTank = GetIllidanWarlockTank(player);
+            Player* warlockTank = GetIllidanWarlockTank(bot);
             return !warlockTank || hasAggro(illidan, warlockTank);
         }
         default:
@@ -1796,7 +1796,7 @@ bool DoIllidanTanksHaveAggro(Player* player, Unit const& illidan, IllidanPhase p
     }
 }
 
-bool IsIllidanPickupPending(Player* player, Unit* illidan)
+bool IsIllidanPickupPending(Player* bot, Unit* illidan)
 {
     if (!illidan)
         return false;
@@ -1821,7 +1821,7 @@ bool IsIllidanPickupPending(Player* player, Unit* illidan)
         return false;
     }
 
-    return !DoIllidanTanksHaveAggro(player, *illidan, phase);
+    return !DoIllidanTanksHaveAggro(bot, *illidan, phase);
 }
 
 // Single-target damage on a Shadowfiend or a Shadow Demon is permitted at all times.
@@ -2001,19 +2001,19 @@ std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot)
     return { findLivingFlame(state->eastFlameGuid), findLivingFlame(state->westFlameGuid) };
 }
 
-bool IsWestFlameOfAzzinothTank(Player* bot)
+bool IsWestFlameOfAzzinothTank(Player* player)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_WEST_FLAME_TANK_INDEX);
+    return player && PlayerbotAI::IsAssistTankOfIndex(player, ILLIDAN_WEST_FLAME_TANK_INDEX);
 }
 
-bool IsEastFlameOfAzzinothTank(Player* bot)
+bool IsEastFlameOfAzzinothTank(Player* player)
 {
-    return PlayerbotAI::IsAssistTankOfIndex(bot, ILLIDAN_EAST_FLAME_TANK_INDEX);
+    return player && PlayerbotAI::IsAssistTankOfIndex(player, ILLIDAN_EAST_FLAME_TANK_INDEX);
 }
 
-bool IsFlameOfAzzinothTank(Player* bot)
+bool IsFlameOfAzzinothTank(Player* player)
 {
-    return IsEastFlameOfAzzinothTank(bot) || IsWestFlameOfAzzinothTank(bot);
+    return IsEastFlameOfAzzinothTank(player) || IsWestFlameOfAzzinothTank(player);
 }
 
 Unit* GetAssignedFlameOfAzzinoth(Player* bot)
@@ -2052,23 +2052,29 @@ bool UpdateIllidanClassRoleAnnouncement(PlayerbotAI* botAI)
 
 ObjectGuid GetIllidanWarlockTankGuid(Player* player)
 {
+    if (!player)
+        return ObjectGuid::Empty;
+
     BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state ? GetClassRolePlayerGuid(state->illidanWarlockTank) : ObjectGuid::Empty;
 }
 
 Player* GetIllidanWarlockTank(Player* player)
 {
+    if (!player)
+        return nullptr;
+
     BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state ? GetClassRolePlayer(player, state->illidanWarlockTank) : nullptr;
 }
 
-bool IsIllidanWarlockTank(Player* player)
+bool IsIllidanWarlockTank(Player* bot)
 {
-    if (player->getClass() != CLASS_WARLOCK)
+    if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    BtInstanceState const* state = FindBtState(player->GetInstanceId());
-    return state && IsClassRolePlayer(player, state->illidanWarlockTank);
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return state && IsClassRolePlayer(bot, state->illidanWarlockTank);
 }
 
 bool CastIllidanLifeTapIfLow(PlayerbotAI* botAI)
@@ -2201,14 +2207,17 @@ bool IsFrostTrapAt(Player* bot, Position const& infectionPosition, int32 minDura
 
 // The index wraps round slotCount, so in the unlikely event that there are more bots than available
 // slots, they start stacking up.
-int32 GetIllidanRangedIndex(Player* bot, size_t slotCount, bool inDemonForm)
+int32 GetIllidanRangedIndex(Player* player, size_t slotCount, bool inDemonForm)
 {
-    Group* group = bot->GetGroup();
+    if (!player)
+        return -1;
+
+    Group* group = player->GetGroup();
     if (!group || slotCount == 0)
         return -1;
 
     ObjectGuid const warlockTankGuid =
-        inDemonForm ? GetIllidanWarlockTankGuid(bot) : ObjectGuid::Empty;
+        inDemonForm ? GetIllidanWarlockTankGuid(player) : ObjectGuid::Empty;
 
     std::vector<ObjectGuid> healers;
     std::vector<ObjectGuid> rangedDps;
@@ -2233,7 +2242,7 @@ int32 GetIllidanRangedIndex(Player* bot, size_t slotCount, bool inDemonForm)
         }
     }
 
-    return GetIllidanRosterIndex(healers, rangedDps, bot->GetGUID(), slotCount);
+    return GetIllidanRosterIndex(healers, rangedDps, player->GetGUID(), slotCount);
 }
 
 int32 GetIllidanHealerIndex(Player* bot, size_t slotCount)
