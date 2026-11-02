@@ -116,18 +116,18 @@ protected:
     bool Calculate() override { return BtHelpers::IsIllidanSpeechInProgress(bot); }
 };
 
-class IllidanStormragePlayersWithParasiticShadowfiendValue : public CalculatedValue<GuidVector>
+class IllidanStormrageInfectedPlayersValue : public CalculatedValue<GuidVector>
 {
 public:
-    IllidanStormragePlayersWithParasiticShadowfiendValue(PlayerbotAI* botAI)
+    IllidanStormrageInfectedPlayersValue(PlayerbotAI* botAI)
         : CalculatedValue<GuidVector>(
-            botAI, "illidan stormrage players with parasitic shadowfiend",
+            botAI, "illidan stormrage infected players",
             BtHelpers::ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
 
 protected:
     GuidVector Calculate() override
     {
-        return BtHelpers::FindPlayersWithParasiticShadowfiendGuids(bot);
+        return BtHelpers::FindInfectedPlayerGuids(bot);
     }
 };
 
@@ -186,8 +186,8 @@ public:
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
         creators["illidan stormrage speech in progress"] =
             &RaidBlackTempleValueContext::illidan_stormrage_speech_in_progress;
-        creators["illidan stormrage players with parasitic shadowfiend"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_players_with_parasitic_shadowfiend;
+        creators["illidan stormrage infected players"] =
+            &RaidBlackTempleValueContext::illidan_stormrage_infected_players;
         creators["illidan stormrage trap hunters"] =
             &RaidBlackTempleValueContext::illidan_stormrage_trap_hunters;
         creators["illidan stormrage parasitic shadowfiends"] =
@@ -225,9 +225,9 @@ private:
     {
         return new IllidanStormrageSpeechInProgressValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_players_with_parasitic_shadowfiend(PlayerbotAI* botAI)
+    static UntypedValue* illidan_stormrage_infected_players(PlayerbotAI* botAI)
     {
-        return new IllidanStormragePlayersWithParasiticShadowfiendValue(botAI);
+        return new IllidanStormrageInfectedPlayersValue(botAI);
     }
     static UntypedValue* illidan_stormrage_trap_hunters(PlayerbotAI* botAI)
     {

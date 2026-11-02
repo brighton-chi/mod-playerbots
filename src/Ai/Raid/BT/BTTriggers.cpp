@@ -650,8 +650,8 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    auto const& infected = context->GetValue<GuidVector>(
-        "illidan stormrage players with parasitic shadowfiend")->RefGet();
+    auto const& infectedGuids = context
+        ->GetValue<GuidVector>("illidan stormrage infected players")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     auto const* infections = FindIllidanInfections(bot->GetInstanceId());
@@ -660,8 +660,11 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
     {
         for (auto const& [player, infection] : *infections)
         {
-            if (std::find(infected.begin(), infected.end(), player) == infected.end())
+            if (std::find(
+                    infectedGuids.begin(), infectedGuids.end(), player) == infectedGuids.end())
+            {
                 return true;
+            }
 
             if (!hasInfectionPosition)
                 continue;
@@ -669,20 +672,20 @@ bool IllidanStormrageShouldTrackInfectionsTrigger::IsActiveInEncounter()
             if (!infection.isTrapAssigned)
                 return true;
 
-            if (infection.hunter.IsEmpty())
+            if (infection.hunterGuid.IsEmpty())
                 continue;
 
             if (IsExemptFromIllidanInfectionRun(illidan, ObjectAccessor::GetPlayer(*bot, player)) ||
-                !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter)))
+                !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunterGuid)))
             {
                 return true;
             }
         }
     }
 
-    for (ObjectGuid const& guid : infected)
+    for (auto const& infectedGuid : infectedGuids)
     {
-        if (hasInfectionPosition && (!infections || !infections->contains(guid)))
+        if (hasInfectionPosition && (!infections || !infections->contains(infectedGuid)))
             return true;
     }
 
@@ -898,9 +901,9 @@ bool IllidanStormrageShouldStopShootingTrigger::IsActiveInEncounter()
     if (channel && IsIllidanPickupChannelHeld(bot, illidan, *channel))
         return true;
 
-    ObjectGuid const guid = illidan->GetGUID();
-    bool const isOnIllidan = (shot && shot->m_targets.GetUnitTargetGUID() == guid) ||
-        (channel && channel->m_targets.GetUnitTargetGUID() == guid);
+    ObjectGuid const illidanGuid = illidan->GetGUID();
+    bool const isOnIllidan = (shot && shot->m_targets.GetUnitTargetGUID() == illidanGuid) ||
+        (channel && channel->m_targets.GetUnitTargetGUID() == illidanGuid);
     return isOnIllidan && GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None;
 }
 

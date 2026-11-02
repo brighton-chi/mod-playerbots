@@ -213,8 +213,8 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    auto const& reavers = context->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    if (reavers.empty())
+    auto const& reaverGuids = context->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
+    if (reaverGuids.empty())
         return RestoreReactState(pet);
 
     Unit* target = FindPetTargetOtherThanReaver(botAI);
@@ -262,9 +262,9 @@ bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
         if (canAttackReaver(ownerTarget))
             return sendPet(ownerTarget);
 
-        for (ObjectGuid const& guid : reavers)
+        for (ObjectGuid const& reaverGuid : reaverGuids)
         {
-            Unit* reaver = botAI->GetUnit(guid);
+            Unit* reaver = botAI->GetUnit(reaverGuid);
             if (canAttackReaver(reaver))
                 return sendPet(reaver);
         }
@@ -2226,8 +2226,8 @@ bool IllidanStormrageIsolateBotWithInfectionAction::HunterSetFrostTrap()
     {
         for (auto& [infected, infection] : *infections)
         {
-            if (infection.hunter == bot->GetGUID())
-                infection.hunter.Clear();
+            if (infection.hunterGuid == bot->GetGUID())
+                infection.hunterGuid.Clear();
         }
     }
 
@@ -2242,8 +2242,8 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     if (!illidan)
         return false;
 
-    auto const& infected = context->GetValue<GuidVector>(
-        "illidan stormrage players with parasitic shadowfiend")->RefGet();
+    auto const& infectedGuids =
+        context->GetValue<GuidVector>("illidan stormrage infected players")->RefGet();
     IllidanPhase const phase = GetIllidanPhase(illidan);
     bool const hasInfectionPosition = phase != IllidanPhase::None && phase != IllidanPhase::Flying;
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>>& infectionsField =
@@ -2253,35 +2253,36 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
     auto& infections = *infectionsField;
     std::erase_if(
         infections,
-        [&infected](auto const& entry)
+        [&infectedGuids](auto const& entry)
         {
-            return std::find(infected.begin(), infected.end(), entry.first) == infected.end();
+            return std::find(
+                infectedGuids.begin(), infectedGuids.end(), entry.first) == infectedGuids.end();
         });
 
     if (hasInfectionPosition)
     {
-        for (ObjectGuid const& guid : infected)
+        for (ObjectGuid const& infectedGuid : infectedGuids)
         {
-            if (infections.contains(guid))
+            if (infections.contains(infectedGuid))
                 continue;
 
             IllidanInfection infection;
             if (infections.empty())
-                infection.infectionPosition = GetIllidanInfectionPosition(*illidan, phase);
+                infection.position = GetIllidanInfectionPosition(*illidan, phase);
             else
-                infection.infectionPosition = infections.begin()->second.infectionPosition;
+                infection.position = infections.begin()->second.position;
 
-            infections.emplace(guid, infection);
+            infections.emplace(infectedGuid, infection);
         }
 
-        for (auto& [guid, infection] : infections)
+        for (auto& [infectedGuid, infection] : infections)
         {
-            Player* player = ObjectAccessor::GetPlayer(*bot, guid);
-            if (!infection.hunter.IsEmpty() &&
+            Player* player = ObjectAccessor::GetPlayer(*bot, infectedGuid);
+            if (!infection.hunterGuid.IsEmpty() &&
                 (IsExemptFromIllidanInfectionRun(illidan, player) ||
-                 !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter))))
+                 !IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunterGuid))))
             {
-                infection.hunter.Clear();
+                infection.hunterGuid.Clear();
                 infection.isTrapAssigned = false;
             }
 
@@ -2296,7 +2297,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
             if (IsExemptFromIllidanInfectionRun(illidan, player))
                 continue;
 
-            if (FindTrapHunter(*player, infection.infectionPosition, infections, infection.hunter))
+            if (FindTrapHunter(*player, infection.position, infections, infection.hunterGuid))
                 infection.isTrapAssigned = true;
         }
     }
@@ -2309,13 +2310,13 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
 bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     Player& infected, Position const& infectionPosition,
-    std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunter)
+    std::unordered_map<ObjectGuid, IllidanInfection> const& infections, ObjectGuid& hunterGuid)
 {
-    for (auto const& [player, infection] : infections)
+    for (auto const& [infectedGuid, infection] : infections)
     {
-        if (IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunter)))
+        if (IsIllidanTrapHunterReady(ObjectAccessor::GetPlayer(*bot, infection.hunterGuid)))
         {
-            hunter = infection.hunter;
+            hunterGuid = infection.hunterGuid;
             return true;
         }
     }
@@ -2341,7 +2342,7 @@ bool IllidanStormrageTrackInfectionsAction::FindTrapHunter(
     int32 const parasiteMs = parasite ? parasite->GetDuration() : 0;
     bool const isCovered =
         IsFrostTrapAt(bot, infectionPosition, parasiteMs + ILLIDAN_FROST_TRAP_SLOW_MS);
-    hunter = isCovered ? ObjectGuid::Empty : candidate;
+    hunterGuid = isCovered ? ObjectGuid::Empty : candidate;
     return true;
 }
 
@@ -2483,15 +2484,12 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
     auto const& waypoints =
         flame == eastFlame ? ILLIDAN_E_GLAIVE_TANK_POSITIONS : ILLIDAN_W_GLAIVE_TANK_POSITIONS;
 
-    auto const& triggerGuids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible triggers")->RefGet();
-
     constexpr float blazeRadius = 8.0f; // Exact hazard radius (no reaches are added)
     constexpr float blazeMargin = 1.0f;
     bool blazeNearby = false;
-    for (ObjectGuid const& guid : triggerGuids)
+    for (auto const& triggerGuid : context->GetValue<GuidVector>("possible triggers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
+        Unit* unit = botAI->GetUnit(triggerGuid);
         if (unit && unit->GetEntry() == Id(BtNpcs::NPC_BLAZE) &&
             bot->GetExactDist(unit) <= blazeRadius + blazeMargin)
         {
@@ -2705,6 +2703,7 @@ bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)
                     (position.GetPositionX() - illidan->GetPositionX()) * scale;
                 float const y = illidan->GetPositionY() +
                     (position.GetPositionY() - illidan->GetPositionY()) * scale;
+
                 position.Relocate(x, y, position.GetPositionZ());
             }
         }
@@ -2871,7 +2870,7 @@ Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
         if (canSeed(demon))
             return demon;
     }

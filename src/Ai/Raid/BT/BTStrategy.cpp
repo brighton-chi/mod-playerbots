@@ -345,12 +345,11 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
     if (!PlayerbotAI::IsCaster(bot) && !PlayerbotAI::IsHeal(bot))
         return;
 
-    auto const& reavers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    for (ObjectGuid const& guid : reavers)
+    for (ObjectGuid const& reaverGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet())
     {
-        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
-            exclusions.insert(guid);
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(reaverGuid)))
+            exclusions.insert(reaverGuid);
     }
 }
 
@@ -362,15 +361,15 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, Player* bot, Guid
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& adds = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
-    if (adds.empty())
+    auto const& addGuids = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    if (addGuids.empty())
         return;
 
-    for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
+    for (auto const& attackerGuids : context->GetValue<GuidVector>("attackers")->RefGet())
     {
-        if (std::find(adds.begin(), adds.end(), attackers) == adds.end())
+        if (std::find(addGuids.begin(), addGuids.end(), attackerGuids) == addGuids.end())
         {
-            exclusions.insert(adds.begin(), adds.end());
+            exclusions.insert(addGuids.begin(), addGuids.end());
             return;
         }
     }
@@ -382,9 +381,9 @@ void AppendShadowyConstructExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& 
     if (bot->HasAura(Id(BtSpells::SPELL_SPIRITUAL_VENGEANCE)))
         return;
 
-    auto const& constructs = botAI->GetAiObjectContext()
+    auto const& constructGuids = botAI->GetAiObjectContext()
         ->GetValue<GuidVector>("teron gorefiend shadowy constructs")->RefGet();
-    exclusions.insert(constructs.begin(), constructs.end());
+    exclusions.insert(constructGuids.begin(), constructGuids.end());
 }
 
 void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& exclusions)
@@ -392,14 +391,15 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, Player* bot, GuidSet& excl
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
     if (!illidan)
         return;
 
-    auto const& shadowfiends =
-        context->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
-    exclusions.insert(shadowfiends.begin(), shadowfiends.end());
+    // Skip Shadowfiends with standard targeting. IllidanStormrageAssignTargetPriorityAction directs
+    // melee to attack them if under 50% HP and in melee range.
+    auto const& shadowfiendGuids = botAI->GetAiObjectContext()
+        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
+    exclusions.insert(shadowfiendGuids.begin(), shadowfiendGuids.end());
 
     if (GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return;

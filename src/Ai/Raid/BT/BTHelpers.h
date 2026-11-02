@@ -613,16 +613,16 @@ struct DemonFormLayout
 // A Shadow Demon and the player it has paralyzed and is moving to.
 struct ShadowDemon
 {
-    ObjectGuid demon = ObjectGuid::Empty;
-    ObjectGuid target = ObjectGuid::Empty;
+    ObjectGuid demonGuid = ObjectGuid::Empty;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
 };
 
 // One Shadowfiend infection, recorded by the mechanic tracker. Once the trap is assigned, hunter is
 // empty if a Frost Trap already covered the position, or once the hunter has laid its trap.
 struct IllidanInfection
 {
-    Position infectionPosition;
-    ObjectGuid hunter = ObjectGuid::Empty;
+    Position position;
+    ObjectGuid hunterGuid = ObjectGuid::Empty;
     bool isTrapAssigned = false;
 };
 
@@ -907,7 +907,7 @@ bool HasParasiticShadowfiend(Player* player);
 GuidVector FindParasiticShadowfiendGuids(Player* bot);
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit const& unit);
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
-GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot);
+GuidVector FindInfectedPlayerGuids(Player* bot);
 std::vector<ShadowDemon> FindShadowDemons(Player* bot);
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from);
 Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI);

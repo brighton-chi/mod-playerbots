@@ -116,17 +116,16 @@ bool CommandPetAttack(Creature* pet, Unit* target)
 
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry)
 {
-    GuidVector guids;
-    auto const& attackers =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet();
-    for (ObjectGuid const& guid : attackers)
+    GuidVector matchingGuids;
+    for (ObjectGuid const& attackerGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-            guids.push_back(guid);
+        Unit* attacker = botAI->GetUnit(attackerGuid);
+        if (attacker && attacker->IsAlive() && attacker->GetEntry() == entry)
+            matchingGuids.push_back(attackerGuid);
     }
 
-    return guids;
+    return matchingGuids;
 }
 
 uint32 GetAuraElapsedMs(Aura const* aura)
@@ -248,11 +247,11 @@ GuidVector FindSisterOfPleasureGuids(Player* bot)
     bot->GetCreatureListWithEntryInGrid(
         sisters, Id(BtNpcs::NPC_SISTER_OF_PLEASURE), SISTER_OF_PLEASURE_SEARCH_RADIUS);
 
-    GuidVector guids;
+    GuidVector sisterGuids;
     for (Creature* sister : sisters)
-        guids.push_back(sister->GetGUID());
+        sisterGuids.push_back(sister->GetGUID());
 
-    return guids;
+    return sisterGuids;
 }
 
 Unit* GetLinkedSisterOfPain(Unit* pleasure)
@@ -270,11 +269,11 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
 
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
-    auto const& sisters =
+    auto const& sisterGuids =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet();
-    for (ObjectGuid const& guid : sisters)
+    for (ObjectGuid const& sisterGuid : sisterGuids)
     {
-        Unit* sister = botAI->GetUnit(guid);
+        Unit* sister = botAI->GetUnit(sisterGuid);
         if (GetLinkedSisterOfPain(sister))
             return sister;
     }
@@ -299,12 +298,12 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
     if (!unit || unit->GetEntry() != Id(BtNpcs::NPC_SHADOWMOON_REAVER) || !unit->IsAlive())
         return false;
 
-    ObjectGuid const guid = unit->GetGUID();
+    ObjectGuid const unitGuid = unit->GetGUID();
     uint32 const instanceId = unit->GetInstanceId();
     std::lock_guard lock(btStateMutex);
     if (Aura* absorption = unit->GetAura(Id(BtSpells::SPELL_SPELL_ABSORPTION)))
     {
-        reaverAbsorptionStarts[instanceId][guid] = getMSTime() - GetAuraElapsedMs(absorption);
+        reaverAbsorptionStarts[instanceId][unitGuid] = getMSTime() - GetAuraElapsedMs(absorption);
         return true;
     }
 
@@ -312,7 +311,7 @@ bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)
     if (instanceIt == reaverAbsorptionStarts.end())
         return true;
 
-    auto const it = instanceIt->second.find(guid);
+    auto const it = instanceIt->second.find(unitGuid);
     if (it == instanceIt->second.end())
         return true;
 
@@ -325,9 +324,9 @@ bool IsAnyShadowmoonReaverUnsafeForMagic(PlayerbotAI* botAI)
 {
     auto const& reavers =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("shadowmoon reavers")->RefGet();
-    for (ObjectGuid const& guid : reavers)
+    for (ObjectGuid const& reaverGuid : reavers)
     {
-        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(guid)))
+        if (IsShadowmoonReaverUnsafeForMagic(botAI->GetUnit(reaverGuid)))
             return true;
     }
 
@@ -790,13 +789,13 @@ Unit* GetSupremusFireBlockedReachTarget(PlayerbotAI* botAI)
 // Only the adds that must be prioritized to complete the encounter (Channelers and Sorcerers).
 GuidVector FindShadeOfAkamaAddGuids(Player* bot)
 {
-    GuidVector adds;
+    GuidVector addGuids;
     if (bot->GetPositionX() < SHADE_OF_AKAMA_BOUNDARY_MIN_X ||
         bot->GetPositionX() > SHADE_OF_AKAMA_BOUNDARY_MAX_X ||
         bot->GetPositionY() < SHADE_OF_AKAMA_BOUNDARY_MIN_Y ||
         bot->GetPositionY() > SHADE_OF_AKAMA_BOUNDARY_MAX_Y)
     {
-        return adds;
+        return addGuids;
     }
 
     for (BtNpcs const entry : { BtNpcs::NPC_ASHTONGUE_CHANNELER, BtNpcs::NPC_ASHTONGUE_SORCERER })
@@ -815,10 +814,10 @@ GuidVector FindShadeOfAkamaAddGuids(Player* bot)
             { return first->GetGUID() < second->GetGUID(); });
 
         for (Creature* creature : living)
-            adds.push_back(creature->GetGUID());
+            addGuids.push_back(creature->GetGUID());
     }
 
-    return adds;
+    return addGuids;
 }
 
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI)
@@ -935,14 +934,14 @@ GuidVector FindGurtoggBloodboilSoakerGuids(Player* bot)
         }
     }
 
-    GuidVector guids;
+    GuidVector soakerGuids;
     if (soakers)
     {
         for (Player* member : *soakers)
-            guids.push_back(member->GetGUID());
+            soakerGuids.push_back(member->GetGUID());
     }
 
-    return guids;
+    return soakerGuids;
 }
 
 } // end anonymous namespace (Gurtogg Bloodboil)
@@ -1982,7 +1981,7 @@ Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, I
 {
     auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (infections && !infections->empty())
-        return infections->begin()->second.infectionPosition;
+        return infections->begin()->second.position;
 
     return GetIllidanInfectionPosition(illidan, phase);
 }
@@ -2126,7 +2125,7 @@ bool IsIllidanTrapHunterOnDuty(Player* bot)
 
     for (auto const& [infected, infection] : *infections)
     {
-        if (infection.hunter == bot->GetGUID())
+        if (infection.hunterGuid == bot->GetGUID())
             return true;
     }
 
@@ -2365,14 +2364,14 @@ GuidVector FindParasiticShadowfiendGuids(Player* bot)
     bot->GetCreatureListWithEntryInGrid(
         creatures, Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND), ILLIDAN_ADD_SEARCH_RADIUS);
 
-    GuidVector shadowfiends;
+    GuidVector shadowfiendGuids;
     for (Creature* creature : creatures)
     {
         if (creature->IsAlive())
-            shadowfiends.push_back(creature->GetGUID());
+            shadowfiendGuids.push_back(creature->GetGUID());
     }
 
-    return shadowfiends;
+    return shadowfiendGuids;
 }
 
 // A Shadowfiend has a 1 yd combat reach.
@@ -2424,7 +2423,7 @@ bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI)
 
 // Living group members with either Shadowfiend debuff, humans included. Thus, trap hunters will
 // trap for humans also. Make sure to follow the hunter to the active infection position!
-GuidVector FindPlayersWithParasiticShadowfiendGuids(Player* bot)
+GuidVector FindInfectedPlayerGuids(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -2474,8 +2473,8 @@ std::vector<ShadowDemon> FindShadowDemons(Player* bot)
 
         for (ShadowDemon& shadowDemon : shadowDemons)
         {
-            if (shadowDemon.demon == paralyze->GetCasterGUID())
-                shadowDemon.target = member->GetGUID();
+            if (shadowDemon.demonGuid == paralyze->GetCasterGUID())
+                shadowDemon.targetGuid = member->GetGUID();
         }
     }
 
@@ -2500,17 +2499,17 @@ Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit const& from)
     std::tuple<uint32, uint32, float> bestKey = { std::numeric_limits<uint32>::max(), 0, 0.0f };
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
         if (!demon || !demon->IsAlive())
             continue;
 
         Unit* target =
-            shadowDemon.target.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.target);
+            shadowDemon.targetGuid.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.targetGuid);
         uint32 rank = idle;
         uint32 step = 0;
         if (target && target->IsAlive())
         {
-            rank = shadowDemon.target == warlockTank ? fixatedOnWarlock : moving;
+            rank = shadowDemon.targetGuid == warlockTank ? fixatedOnWarlock : moving;
             step = static_cast<uint32>(demon->GetExactDist2d(target) / targetDistanceStep);
         }
 
@@ -2535,11 +2534,11 @@ Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI)
         ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        if (shadowDemon.target != warlockTank)
+        if (shadowDemon.targetGuid != warlockTank)
             continue;
 
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
-        Unit* target = botAI->GetUnit(shadowDemon.target);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
+        Unit* target = botAI->GetUnit(shadowDemon.targetGuid);
         if (demon && demon->IsAlive() && target && target->IsAlive())
             return demon;
     }
@@ -2558,15 +2557,15 @@ Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit const& from)
         ->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
     for (ShadowDemon const& shadowDemon : shadowDemons)
     {
-        Unit* demon = botAI->GetUnit(shadowDemon.demon);
+        Unit* demon = botAI->GetUnit(shadowDemon.demonGuid);
         if (!demon || !demon->IsAlive() ||
-            (!warlockTank.IsEmpty() && shadowDemon.target == warlockTank))
+            (!warlockTank.IsEmpty() && shadowDemon.targetGuid == warlockTank))
         {
             continue;
         }
 
         Unit* target =
-            shadowDemon.target.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.target);
+            shadowDemon.targetGuid.IsEmpty() ? nullptr : botAI->GetUnit(shadowDemon.targetGuid);
         bool const isIdle = !target || !target->IsAlive();
         std::pair<bool, float> const key = { isIdle, from.GetExactDist2d(demon) };
         if (key < nearestKey)
