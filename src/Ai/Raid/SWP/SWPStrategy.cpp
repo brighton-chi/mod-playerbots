@@ -316,8 +316,9 @@ void AppendMuruDarkFiendExclusions(
 }
 
 void AppendMuruTankExclusions(
-    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (!PlayerbotAI::IsTank(bot))
         return;
 
@@ -353,9 +354,9 @@ void AppendMuruTankExclusions(
 }
 
 void AppendKiljaedenShieldOrbExclusions(
-    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(bot))
+    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
         return;
 
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
@@ -383,6 +384,6 @@ void RaidSwpStrategy::AppendTargetExclusions(
 
     AppendFelmystVaporPhaseMeleeExclusions(bot, context, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
-    AppendMuruTankExclusions(botAI, bot, context, exclusions);
-    AppendKiljaedenShieldOrbExclusions(botAI, bot, context, exclusions);
+    AppendMuruTankExclusions(botAI, context, exclusions);
+    AppendKiljaedenShieldOrbExclusions(botAI, context, exclusions);
 }
