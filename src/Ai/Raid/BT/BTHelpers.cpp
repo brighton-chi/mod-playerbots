@@ -20,6 +20,7 @@
 #include "SpellAuras.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "ThreatHelpers.h"
 #include "ThreatManager.h"
 #include <algorithm>
 #include <iterator>
@@ -43,14 +44,43 @@ std::unordered_map<uint32, BtInstanceState> btStates;
 
 // Shared
 
-Creature* GetBtBoss(Player* bot, BtBosses boss)
+namespace
 {
-    return GetInstanceBoss(bot, BT_MAP_ID, Id(boss));
+
+// The Illidari Council has no entry: its controller is a trigger and never on a threat list.
+constexpr uint32 BossEntry(BtBosses boss)
+{
+    switch (boss)
+    {
+        case BtBosses::DATA_HIGH_WARLORD_NAJENTUS:
+            return Id(BtNpcs::NPC_HIGH_WARLORD_NAJENTUS);
+        case BtBosses::DATA_SUPREMUS:
+            return Id(BtNpcs::NPC_SUPREMUS);
+        case BtBosses::DATA_SHADE_OF_AKAMA:
+            return Id(BtNpcs::NPC_SHADE_OF_AKAMA);
+        case BtBosses::DATA_TERON_GOREFIEND:
+            return Id(BtNpcs::NPC_TERON_GOREFIEND);
+        case BtBosses::DATA_GURTOGG_BLOODBOIL:
+            return Id(BtNpcs::NPC_GURTOGG_BLOODBOIL);
+        case BtBosses::DATA_RELIQUARY_OF_SOULS:
+            return Id(BtNpcs::NPC_RELIQUARY_OF_THE_LOST);
+        case BtBosses::DATA_MOTHER_SHAHRAZ:
+            return Id(BtNpcs::NPC_MOTHER_SHAHRAZ);
+        case BtBosses::DATA_ILLIDAN_STORMRAGE:
+            return Id(BtNpcs::NPC_ILLIDAN_STORMRAGE);
+        default:
+            return 0;
+    }
 }
 
-Creature* GetBtCreature(Player* bot, BtCreatureData data)
+} // end anonymous namespace
+
+Creature* GetBtBoss(Player* bot, BtBosses boss)
 {
-    return GetInstanceCreature(bot, BT_MAP_ID, Id(data));
+    if (!IsBossInProgress(bot, BT_MAP_ID, Id(boss)))
+        return nullptr;
+
+    return FindThreatTargetByEntry(bot, BossEntry(boss));
 }
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
@@ -1047,10 +1077,9 @@ Position GetBotPointInGurtoggRectangle(
 
 // Reliquary of Souls
 
-Creature* GetReliquaryEssence(Player* bot, BtCreatureData essence)
+Creature* GetReliquaryEssence(Player* bot, BtNpcs essence)
 {
-    Creature* creature = GetBtCreature(bot, essence);
-    return creature && creature->IsInCombat() ? creature : nullptr;
+    return FindThreatTargetByEntry(bot, Id(essence));
 }
 
 bool IsSufferingFixateTank(Player* bot)
@@ -1089,18 +1118,36 @@ bool IsShahrazBeingPositioned(Unit* shahraz)
 IllidariCouncilMembers GetIllidariCouncilMembers(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    auto const getMember = [bot](BtCreatureData data) -> Unit*
-    {
-        Creature* member = GetBtCreature(bot, data);
-        return member && member->IsInCombat() ? member : nullptr;
-    };
+    IllidariCouncilMembers members;
+    if (!bot->GetGroup())
+        return members;
 
-    return {
-        getMember(BtCreatureData::DATA_GATHIOS_THE_SHATTERER),
-        getMember(BtCreatureData::DATA_LADY_MALANDE),
-        getMember(BtCreatureData::DATA_HIGH_NETHERMANCER_ZEREVOR),
-        getMember(BtCreatureData::DATA_VERAS_DARKSHADOW),
-    };
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Creature* creature = ref->GetOwner();
+        if (!creature || !creature->IsInWorld())
+            continue;
+
+        switch (static_cast<BtNpcs>(creature->GetEntry()))
+        {
+            case BtNpcs::NPC_GATHIOS_THE_SHATTERER:
+                members.gathios = creature;
+                break;
+            case BtNpcs::NPC_LADY_MALANDE:
+                members.malande = creature;
+                break;
+            case BtNpcs::NPC_HIGH_NETHERMANCER_ZEREVOR:
+                members.zerevor = creature;
+                break;
+            case BtNpcs::NPC_VERAS_DARKSHADOW:
+                members.veras = creature;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return members;
 }
 
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI)
@@ -1546,8 +1593,8 @@ bool IsIllidanSpeechInProgress(Player* bot)
         return false;
     }
 
-    Creature* illidan =
-        GetInstanceCreature(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDAN_STORMRAGE));
+    Creature* illidan = bot->FindNearestCreature(
+        Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
 
     return illidan && illidan->getStandState() == UNIT_STAND_STATE_STAND &&
         illidan->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) && !illidan->IsInCombat();

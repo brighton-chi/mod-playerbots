@@ -59,14 +59,14 @@ class BlackTempleHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigg
 public:
     BlackTempleHunterShouldMisdirectTrigger(
         PlayerbotAI* botAI, std::string const& name, BtHelpers::BtBosses boss,
-        std::optional<BtHelpers::BtCreatureData> target = std::nullopt)
+        std::optional<BtHelpers::BtNpcs> target = std::nullopt)
         : BlackTempleEncounterTrigger(botAI, name, boss), _target(target) {}
 
 protected:
     bool IsActiveInEncounter() override;
 
 private:
-    std::optional<BtHelpers::BtCreatureData> const _target;
+    std::optional<BtHelpers::BtNpcs> const _target;
 };
 
 // Trash

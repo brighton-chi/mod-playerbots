@@ -158,7 +158,11 @@ enum class BtNpcs : uint32
     NPC_SISTER_OF_PLEASURE          = 22964,
     NPC_SHADOWMOON_REAVER           = 22879,
 
+    // High Warlord Naj'entus
+    NPC_HIGH_WARLORD_NAJENTUS       = 22887,
+
     // Supremus
+    NPC_SUPREMUS                    = 22898,
     NPC_SUPREMUS_VOLCANO            = 23085,
 
     // Shade of Akama
@@ -167,17 +171,26 @@ enum class BtNpcs : uint32
     NPC_ASHTONGUE_SORCERER          = 23215,
 
     // Teron Gorefiend
+    NPC_TERON_GOREFIEND             = 22871,
     NPC_SHADOWY_CONSTRUCT           = 23111,
 
     // Gurtogg Bloodboil
     NPC_GURTOGG_BLOODBOIL           = 22948,
 
     // Reliquary of Souls
+    NPC_RELIQUARY_OF_THE_LOST       = 22856,
+    NPC_ESSENCE_OF_SUFFERING        = 23418,
     NPC_ESSENCE_OF_DESIRE           = 23419,
+    NPC_ESSENCE_OF_ANGER            = 23420,
+
+    // Mother Shahraz
+    NPC_MOTHER_SHAHRAZ              = 22947,
 
     // Illidari Council
+    NPC_GATHIOS_THE_SHATTERER       = 22949,
     NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
     NPC_LADY_MALANDE                = 22951,
+    NPC_VERAS_DARKSHADOW            = 22952,
 
     // Illidan Stormrage <The Betrayer>
     NPC_ILLIDAN_STORMRAGE           = 22917,
@@ -207,7 +220,7 @@ enum class BtObjects : uint32
 
 inline constexpr uint32 BT_MAP_ID = 564;
 
-// DungeonEncounter.dbc encounterIndex, map 564; also each boss's ObjectData key
+// DungeonEncounter.dbc encounterIndex, map 564
 enum class BtBosses : uint32
 {
     DATA_HIGH_WARLORD_NAJENTUS      = 0,
@@ -221,21 +234,7 @@ enum class BtBosses : uint32
     DATA_ILLIDAN_STORMRAGE          = 8,
 };
 
-// ObjectData keys of the Council members and the Reliquary's essences, from black_temple.h; not in
-// the DBC
-enum class BtCreatureData : uint32
-{
-    DATA_GATHIOS_THE_SHATTERER      = 12,
-    DATA_HIGH_NETHERMANCER_ZEREVOR  = 13,
-    DATA_LADY_MALANDE               = 14,
-    DATA_VERAS_DARKSHADOW           = 15,
-    DATA_ESSENCE_OF_SUFFERING       = 19,
-    DATA_ESSENCE_OF_DESIRE          = 20,
-    DATA_ESSENCE_OF_ANGER           = 21,
-};
-
 Creature* GetBtBoss(Player* bot, BtBosses boss);
-Creature* GetBtCreature(Player* bot, BtCreatureData data);
 
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 // How close to its assigned spot a bot has to stand to count as arrived.
@@ -465,7 +464,7 @@ inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
 // Null until the essence is in combat, about 4s after it emerges.
-Creature* GetReliquaryEssence(Player* bot, BtCreatureData essence);
+Creature* GetReliquaryEssence(Player* bot, BtNpcs essence);
 bool IsSufferingFixateTank(Player* bot);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 
@@ -501,6 +500,7 @@ inline constexpr float COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE = 125.0f;
 // 175 yd extends to the top of the steps leading to the courtyard outside the Council's room.
 inline constexpr float COUNCIL_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 
+inline constexpr float COUNCIL_MEMBER_SEARCH_RADIUS = COUNCIL_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr uint32 COUNCIL_DPS_WAIT_MS = 5 * IN_MILLISECONDS; // on pull
 inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 // A minor spread is maintained by ranged when clear of hazards to avoid the next one hitting too

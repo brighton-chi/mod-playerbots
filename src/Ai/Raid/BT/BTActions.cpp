@@ -1146,8 +1146,8 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* desire = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE);
-    Unit* anger = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_ANGER);
+    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
+    Unit* anger = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_ANGER);
     if (!desire && !anger)
         return false;
 
@@ -1162,7 +1162,7 @@ bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
     if (!suffering)
         return false;
 
@@ -1205,7 +1205,7 @@ bool ReliquaryOfSoulsAdjustDistanceFromSufferingAction::RangedMoveAwayFromBoss(U
 
 bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 {
-    Unit* suffering = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_SUFFERING);
+    Unit* suffering = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_SUFFERING);
     if (!suffering)
         return false;
 
@@ -1260,7 +1260,7 @@ bool ReliquaryOfSoulsHealersDpsSufferingAction::Execute(Event /*event*/)
 
 bool ReliquaryOfSoulsSpellstealRuneShieldAction::Execute(Event /*event*/)
 {
-    Unit* desire = GetReliquaryEssence(bot, BtCreatureData::DATA_ESSENCE_OF_DESIRE);
+    Unit* desire = GetReliquaryEssence(bot, BtNpcs::NPC_ESSENCE_OF_DESIRE);
     if (!desire)
         return false;
 
@@ -1836,8 +1836,8 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     Position const& position = ILLIDAN_PULL_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        Creature* illidan =
-            GetInstanceCreature(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDAN_STORMRAGE));
+        Creature* illidan = bot->FindNearestCreature(
+            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
         FaceUnit(bot, illidan);
         return false;
     }
