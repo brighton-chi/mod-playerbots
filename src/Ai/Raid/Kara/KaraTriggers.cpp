@@ -103,7 +103,16 @@ bool MaidenOfVirtueShouldBeTankedTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
 }
 
-bool MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger::IsActiveInEncounter()
+bool MaidenOfVirtueShouldBreakRepentanceTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* maiden = GetEncounterBoss();
+    return maiden && maiden->GetVictim() == bot;
+}
+
+bool MaidenOfVirtueShouldGroundHolyFireTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return false;

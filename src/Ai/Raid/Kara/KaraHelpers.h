@@ -205,7 +205,11 @@ bool IsAttumenMounted(Unit const& midnight);
 Unit* GetMountedAttumen(Player* bot);
 
 // Maiden of Virtue
-inline Position const MAIDEN_OF_VIRTUE_TANK_POSITION = { -10945.881f, -2103.782f, 92.712f };
+// Her spawn point; the ranged spots are a ring around it.
+inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
+inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
+// She stops 6.8 yd from a tank she follows, so the tank aims this far past her spot.
+inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
 inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
     Position{ -10944.495f, -2123.857f, 92.180f }, // E
@@ -216,6 +220,12 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10947.590f, -2082.815f, 92.180f }, // W
     Position{ -10933.089f, -2088.502f, 92.180f }, // NW (entrance)
 };
+// Holy Ground hits a player within 12 yd of her plus the player's reach, and breaks Repentance.
+inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
+inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
+
+// Repentance stuns every healer at once; the tank takes her to the nearest one.
+Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden);
 
 // The Big Bad Wolf
 inline Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };

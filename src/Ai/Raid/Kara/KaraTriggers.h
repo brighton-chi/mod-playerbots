@@ -160,6 +160,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MaidenOfVirtueShouldBreakRepentanceTrigger : public KarazhanEncounterTrigger
+{
+public:
+    MaidenOfVirtueShouldBreakRepentanceTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "maiden of virtue should break repentance",
+            KaraHelpers::KaraBosses::DATA_MAIDEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class MaidenOfVirtueRangedShouldSpreadTrigger : public KarazhanEncounterTrigger
 {
 public:
@@ -171,12 +183,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger : public KarazhanEncounterTrigger
+class MaidenOfVirtueShouldGroundHolyFireTrigger : public KarazhanEncounterTrigger
 {
 public:
-    MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger(PlayerbotAI* botAI)
+    MaidenOfVirtueShouldGroundHolyFireTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "maiden of virtue grounding totem consumes holy fire",
+            botAI, "maiden of virtue should ground holy fire",
             KaraHelpers::KaraBosses::DATA_MAIDEN) {}
 
 protected:

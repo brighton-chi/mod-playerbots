@@ -342,39 +342,31 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != maiden)
         return Attack(maiden);
 
-    if (maiden->GetVictim() != bot)
+    if (maiden->GetVictim() != bot || !bot->IsWithinMeleeRange(maiden))
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
+    // While a healer is stunned she is taken to them, and stays until Holy Ground breaks it.
+    if (GetNearestRepentantHealer(bot, *maiden))
         return false;
 
-    Player* healer = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !PlayerbotAI::IsHeal(member) ||
-            !member->HasAura(Id(KaraSpells::SPELL_REPENTANCE)))
-        {
-            continue;
-        }
-
-        healer = member;
-        break;
-    }
-
-    if (healer)
-        return MoveBossToStunnedHealer(healer);
-
-    if (!bot->IsWithinMeleeRange(maiden))
+    Position const& position = MAIDEN_OF_VIRTUE_POSITION;
+    float const distToPosition = maiden->GetExactDist2d(position);
+    if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
         return false;
 
-    Position const& position = MAIDEN_OF_VIRTUE_TANK_POSITION;
-    constexpr float arrivalDist = 2.0f;
+    // The tank leads her along the line from her through her spot, so it walks through her when
+    // she is between it and the spot.
+    float const ratio = MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE / distToPosition;
+    Position const destination(
+        position.GetPositionX() + (position.GetPositionX() - maiden->GetPositionX()) * ratio,
+        position.GetPositionY() + (position.GetPositionY() - maiden->GetPositionY()) * ratio,
+        bot->GetPositionZ());
+
+    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, maiden, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, destination, arrivalDist, maiden, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -382,16 +374,31 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool MaidenOfVirtueTankPositionBossAction::MoveBossToStunnedHealer(Player* healer)
+bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
 {
-    constexpr float endDistance = 6.0f;
-    float const angle = healer->GetOrientation();
-    float const targetX = healer->GetPositionX() + std::cos(angle) * endDistance;
-    float const targetY = healer->GetPositionY() + std::sin(angle) * endDistance;
+    Unit* maiden = GetKaraBoss(bot, KaraBosses::DATA_MAIDEN);
+    if (!maiden || maiden->GetVictim() != bot)
+        return false;
+
+    Player* healer = GetNearestRepentantHealer(bot, *maiden);
+    if (!healer)
+        return false;
+
+    float const breakReach =
+        HOLY_GROUND_RADIUS + healer->GetCombatReach() - MAIDEN_REPENTANCE_BREAK_CLEARANCE;
+    if (maiden->GetExactDist2d(healer) <= breakReach)
+        return false;
+
+    constexpr float arrivalDist = 2.0f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, *healer, arrivalDist, nullptr, moveX, moveY, backwards))
+        return false;
 
     return MoveTo(
-        KARA_MAP_ID, targetX, targetY, healer->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)

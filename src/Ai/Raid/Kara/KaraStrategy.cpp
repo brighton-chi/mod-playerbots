@@ -51,10 +51,13 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("maiden of virtue should be tanked",
         { NextAction("maiden of virtue tank position boss", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("maiden of virtue should break repentance",
+        { NextAction("maiden of virtue move boss to stunned healer", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("maiden of virtue ranged should spread",
         { NextAction("maiden of virtue position ranged between pillars", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("maiden of virtue grounding totem consumes holy fire",
+    triggers.push_back(new TriggerNode("maiden of virtue should ground holy fire",
         { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }));
 
     // The Big Bad Wolf

@@ -53,6 +53,9 @@ public:
         creators["maiden of virtue tank position boss"] =
             &RaidKarazhanActionContext::maiden_of_virtue_tank_position_boss;
 
+        creators["maiden of virtue move boss to stunned healer"] =
+            &RaidKarazhanActionContext::maiden_of_virtue_move_boss_to_stunned_healer;
+
         creators["maiden of virtue position ranged between pillars"] =
             &RaidKarazhanActionContext::maiden_of_virtue_position_ranged_between_pillars;
 
@@ -206,6 +209,10 @@ private:
     static Action* maiden_of_virtue_tank_position_boss(PlayerbotAI* botAI)
     {
         return new MaidenOfVirtueTankPositionBossAction(botAI);
+    }
+    static Action* maiden_of_virtue_move_boss_to_stunned_healer(PlayerbotAI* botAI)
+    {
+        return new MaidenOfVirtueMoveBossToStunnedHealerAction(botAI);
     }
     static Action* maiden_of_virtue_position_ranged_between_pillars(PlayerbotAI* botAI)
     {

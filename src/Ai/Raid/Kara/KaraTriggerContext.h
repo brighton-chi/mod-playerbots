@@ -53,11 +53,14 @@ public:
         creators["maiden of virtue should be tanked"] =
             &RaidKarazhanTriggerContext::maiden_of_virtue_should_be_tanked;
 
+        creators["maiden of virtue should break repentance"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_should_break_repentance;
+
         creators["maiden of virtue ranged should spread"] =
             &RaidKarazhanTriggerContext::maiden_of_virtue_ranged_should_spread;
 
-        creators["maiden of virtue grounding totem consumes holy fire"] =
-            &RaidKarazhanTriggerContext::maiden_of_virtue_grounding_totem_consumes_holy_fire;
+        creators["maiden of virtue should ground holy fire"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_should_ground_holy_fire;
 
         // The Big Bad Wolf
         creators["big bad wolf should be tanked"] =
@@ -207,13 +210,17 @@ private:
     {
         return new MaidenOfVirtueShouldBeTankedTrigger(botAI);
     }
+    static Trigger* maiden_of_virtue_should_break_repentance(PlayerbotAI* botAI)
+    {
+        return new MaidenOfVirtueShouldBreakRepentanceTrigger(botAI);
+    }
     static Trigger* maiden_of_virtue_ranged_should_spread(PlayerbotAI* botAI)
     {
         return new MaidenOfVirtueRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* maiden_of_virtue_grounding_totem_consumes_holy_fire(PlayerbotAI* botAI)
+    static Trigger* maiden_of_virtue_should_ground_holy_fire(PlayerbotAI* botAI)
     {
-        return new MaidenOfVirtueGroundingTotemConsumesHolyFireTrigger(botAI);
+        return new MaidenOfVirtueShouldGroundHolyFireTrigger(botAI);
     }
 
     // The Big Bad Wolf

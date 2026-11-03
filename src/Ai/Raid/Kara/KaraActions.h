@@ -110,9 +110,14 @@ public:
     MaidenOfVirtueTankPositionBossAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "maiden of virtue tank position boss") {}
     bool Execute(Event event) override;
+};
 
-private:
-    bool MoveBossToStunnedHealer(Player* healer);
+class MaidenOfVirtueMoveBossToStunnedHealerAction : public MovementAction
+{
+public:
+    MaidenOfVirtueMoveBossToStunnedHealerAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "maiden of virtue move boss to stunned healer") {}
+    bool Execute(Event event) override;
 };
 
 class MaidenOfVirtuePositionRangedBetweenPillarsAction : public MovementAction

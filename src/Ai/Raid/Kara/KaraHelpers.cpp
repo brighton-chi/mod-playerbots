@@ -223,6 +223,36 @@ Unit* GetMountedAttumen(Player* bot)
     return attumen;
 }
 
+// Maiden of Virtue
+
+Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* nearest = nullptr;
+    float nearestDist = std::numeric_limits<float>::max();
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() ||
+            !member->HasAura(Id(KaraSpells::SPELL_REPENTANCE)) || !PlayerbotAI::IsHeal(member))
+        {
+            continue;
+        }
+
+        float const dist = maiden.GetExactDist2d(member);
+        if (dist < nearestDist)
+        {
+            nearest = member;
+            nearestDist = dist;
+        }
+    }
+
+    return nearest;
+}
+
 // Shade of Aran
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
