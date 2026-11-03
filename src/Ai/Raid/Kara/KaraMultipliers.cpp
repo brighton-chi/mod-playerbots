@@ -53,7 +53,7 @@ float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
 
 float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->GetMapId() != KARA_MAP_ID || botAI->GetState() == BOT_STATE_NON_COMBAT)
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     if (!IsDpsCooldownAction(bot, action))
@@ -251,13 +251,12 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    std::optional<uint32> const& waitStart =
-        KaraState(attumen->GetInstanceId()).attumenDpsWaitTimer;
-    if (!waitStart)
+    KaraInstanceState const* state = FindKaraState(attumen->GetInstanceId());
+    if (!state || !state->attumenDpsWaitTimer)
         return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
 
     constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*state->attumenDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Maiden of Virtue
@@ -328,11 +327,8 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValueInEncounter(Action*
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
 
-    Unit* imp = FindThreatTarget(bot, "fiendish imp");
-    if (!imp)
-        return 1.0f;
-
-    return AI_VALUE(Unit*, "current target") == imp ? 0.0f : 1.0f;
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->GetEntry() == Id(KaraNpcs::NPC_FIENDISH_IMP) ? 0.0f : 1.0f;
 }
 
 // Shade of Aran
@@ -450,13 +446,12 @@ float NetherspiteWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (!netherspite || IsBanishPhase(netherspite))
         return 1.0f;
 
-    std::optional<uint32> const& waitStart =
-        KaraState(netherspite->GetInstanceId()).netherspiteDpsWaitTimer;
-    if (!waitStart)
+    KaraInstanceState const* state = FindKaraState(netherspite->GetInstanceId());
+    if (!state || !state->netherspiteDpsWaitTimer)
         return 0.0f;
 
     constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*state->netherspiteDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 // Prince Malchezaar
@@ -561,13 +556,12 @@ float NightbaneWaitForDpsMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    std::optional<uint32> const& waitStart =
-        KaraState(nightbane->GetInstanceId()).nightbaneDpsWaitTimer;
-    if (!waitStart)
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneDpsWaitTimer)
         return 0.0f;
 
     constexpr uint32 dpsWaitMs = 8 * IN_MILLISECONDS;
-    return getMSTimeDiff(*waitStart, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*state->nightbaneDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
 }
 
 float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
@@ -617,11 +611,11 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
         return 0.0f;
 
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    std::optional<uint32> const& flightStart =
-        KaraState(nightbane->GetInstanceId()).nightbaneFlightPhaseStartTimer;
-    if (!flightStart)
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneFlightPhaseStartTimer)
         return 0.0f;
 
     constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
-    return getMSTimeDiff(*flightStart, getMSTime()) < flightPhaseDurationMs ? 0.0f : 1.0f;
+    return getMSTimeDiff(*state->nightbaneFlightPhaseStartTimer, getMSTime()) <
+        flightPhaseDurationMs ? 0.0f : 1.0f;
 }

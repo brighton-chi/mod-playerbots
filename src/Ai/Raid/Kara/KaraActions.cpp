@@ -51,11 +51,16 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    reset |= KaraResetBeamBlockers(instanceId);
-
     Action* wolfAction = context->GetAction("big bad wolf little red riding hood run away");
     if (wolfAction &&
         static_cast<BigBadWolfLittleRedRidingHoodRunAwayAction*>(wolfAction)->ResetRunIndex())
+    {
+        reset = true;
+    }
+
+    Action* flightAction = context->GetAction("nightbane flight phase stack and move");
+    if (flightAction &&
+        static_cast<NightbaneFlightPhaseStackAndMoveAction*>(flightAction)->ResetRainOfBonesHit())
     {
         reset = true;
     }
@@ -930,13 +935,14 @@ bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> voidZones = GetAllVoidZones(bot);
     constexpr float safeDistance = 4.0f;
+    constexpr uint32 minInterval = 0;
 
     for (Unit* voidZone : voidZones)
     {
         if (voidZone->GetEntry() == Id(KaraNpcs::NPC_VOID_ZONE) &&
             bot->GetExactDist2d(voidZone) < safeDistance)
         {
-            return FleePosition(voidZone->GetPosition(), safeDistance);
+            return FleePosition(voidZone->GetPosition(), safeDistance, minInterval);
         }
     }
 

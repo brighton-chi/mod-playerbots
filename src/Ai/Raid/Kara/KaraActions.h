@@ -258,13 +258,12 @@ public:
     bool Execute(Event event) override;
     bool ResetRedBeamState()
     {
-        if (!_redBeamTimerWasSet)
-            return false;
+        bool const wasSet = _redBeamTimerWasSet || _lastBeamMoveSideways || _wasBlockingRedBeam;
         _redBeamMoveTimer = 0;
         _lastBeamMoveSideways = false;
         _wasBlockingRedBeam = false;
         _redBeamTimerWasSet = false;
-        return true;
+        return wasSet;
     }
 
 private:

@@ -114,15 +114,8 @@ bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float h
 
 bool IsKarazhanFearCasterActive(Player* bot)
 {
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
-    {
-        Unit* unit = ref->GetOwner();
-        if (unit && (unit->GetEntry() == Id(KaraNpcs::NPC_SPECTRAL_CHARGER) ||
-                     unit->GetEntry() == Id(KaraNpcs::NPC_THE_BIG_BAD_WOLF)))
-        {
-            return true;
-        }
-    }
+    if (FindThreatTarget(bot, "spectral charger") || GetOperaActor(bot, "the big bad wolf"))
+        return true;
 
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
@@ -628,19 +621,11 @@ KaraInstanceState& KaraState(uint32 instanceId)
     return karaStates[instanceId];
 }
 
-bool KaraResetBeamBlockers(uint32 instanceId)
+KaraInstanceState const* FindKaraState(uint32 instanceId)
 {
     std::lock_guard lock(karaStateMutex);
     auto it = karaStates.find(instanceId);
-    if (it == karaStates.end())
-        return false;
-
-    KaraInstanceState& state = it->second;
-    bool reset = false;
-    reset |= ResetIfSet(state.currentRedBlocker);
-    reset |= ResetIfSet(state.currentGreenBlocker);
-    reset |= ResetIfSet(state.currentBlueBlocker);
-    return reset;
+    return it != karaStates.end() ? &it->second : nullptr;
 }
 
 bool KaraResetInstance(uint32 instanceId)

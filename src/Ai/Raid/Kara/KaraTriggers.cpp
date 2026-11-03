@@ -330,12 +330,12 @@ bool NightbaneInFlightPhaseTrigger::IsActiveInEncounter()
 
     constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
     // After 35s, Nightbane goes to land, and bots freely follow their master
-    std::optional<uint32> const& flightStart =
-        KaraState(nightbane->GetInstanceId()).nightbaneFlightPhaseStartTimer;
-    if (!flightStart)
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneFlightPhaseStartTimer)
         return false;
 
-    return getMSTimeDiff(*flightStart, getMSTime()) < flightPhaseDurationMs;
+    return getMSTimeDiff(*state->nightbaneFlightPhaseStartTimer, getMSTime()) <
+        flightPhaseDurationMs;
 }
 
 bool NightbaneBotWentOutOfBoundsTrigger::IsActiveInEncounter()

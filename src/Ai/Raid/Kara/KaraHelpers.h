@@ -75,7 +75,6 @@ enum class KaraSpells : uint32
 enum class KaraNpcs : uint32
 {
     // Trash
-    NPC_SPECTRAL_CHARGER            = 15547,
     NPC_MANA_WARP                   = 16530,
 
     // Attumen the Huntsman
@@ -88,9 +87,6 @@ enum class KaraNpcs : uint32
     NPC_BARON_RAFE_DREUGER          = 19874,
     NPC_BARONESS_DOROTHEA_MILLSTIPE = 19875,
     NPC_LORD_ROBIN_DARIS            = 19876,
-
-    // The Big Bad Wolf
-    NPC_THE_BIG_BAD_WOLF            = 17521,
 
     // Romulo and Julianne
     NPC_ROMULO                      = 17533,
@@ -110,6 +106,7 @@ enum class KaraNpcs : uint32
     NPC_TERESTIAN_ILLHOOF           = 15688,
     NPC_KILREK                      = 17229,
     NPC_DEMON_CHAINS                = 17248,
+    NPC_FIENDISH_IMP                = 17267,
 
     // Shade of Aran
     NPC_CONJURED_ELEMENTAL          = 17167,
@@ -281,8 +278,7 @@ struct KaraInstanceState
 };
 
 KaraInstanceState& KaraState(uint32 instanceId);
-// Every bot runs this one in the reset; only the mechanic tracker runs KaraResetInstance().
-bool KaraResetBeamBlockers(uint32 instanceId);
+KaraInstanceState const* FindKaraState(uint32 instanceId);
 bool KaraResetInstance(uint32 instanceId);
 
 }
